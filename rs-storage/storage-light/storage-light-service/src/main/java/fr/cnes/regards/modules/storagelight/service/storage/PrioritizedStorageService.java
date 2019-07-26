@@ -74,20 +74,37 @@ public class PrioritizedStorageService {
         return prioritizedStorageRepo.findAllByStorageTypeOrderByPriorityAsc(type);
     }
 
+    public Optional<PrioritizedStorage> search(String label) {
+        return prioritizedStorageRepo.findByStorageConfigurationLabel(label);
+    }
+
     /**
-     * Return the highest priotized storage location for the given storage location list.
+     * Return the highest prioritized storage location for the given storage location list and the given type.
      * This method can return an empty optional value in case no configuration match the given storage location list.
      */
     public Optional<PrioritizedStorage> searchActiveHigherPriority(Collection<String> confLabels, StorageType type) {
         Optional<PrioritizedStorage> storage = Optional.empty();
-        for (PrioritizedStorage c : prioritizedStorageRepo
-                .findByStorageTypeAndStorageConfigurationLabelIn(type, confLabels)) {
-            if (c.getDataStorageConfiguration().isActive()
+        Set<PrioritizedStorage> confs;
+        if (type != null) {
+            confs = prioritizedStorageRepo.findByStorageTypeAndStorageConfigurationLabelIn(type, confLabels);
+        } else {
+            confs = prioritizedStorageRepo.findByStorageConfigurationLabelIn(confLabels);
+        }
+        for (PrioritizedStorage c : confs) {
+            if (c.getStorageConfiguration().isActive()
                     && (!storage.isPresent() || (c.getPriority() < storage.get().getPriority()))) {
                 storage = Optional.of(c);
             }
         }
         return storage;
+    }
+
+    /**
+     * Return the highest prioritized storage location for the given storage location list.
+     * This method can return an empty optional value in case no configuration match the given storage location list.
+     */
+    public Optional<PrioritizedStorage> searchActiveHigherPriority(Set<String> confLabels) {
+        return this.searchActiveHigherPriority(confLabels, null);
     }
 
     @Nullable
@@ -170,8 +187,8 @@ public class PrioritizedStorageService {
         }
 
         PluginConfUpdatable updatable = null;
-        boolean oldConfActive = oldOne.getDataStorageConfiguration().isActive();
-        String storageLabel = oldOne.getDataStorageConfiguration().getLabel();
+        boolean oldConfActive = oldOne.getStorageConfiguration().isActive();
+        String storageLabel = oldOne.getStorageConfiguration().getLabel();
 
         if (oldConfActive) {
             // Count number of files stored by the plugin configuration
@@ -179,10 +196,9 @@ public class PrioritizedStorageService {
 
             // Ask plugin if the update is allowed
             try {
-                IStorageLocation plugin = pluginService.getPlugin(oldOne.getDataStorageConfiguration().getId());
-                updatable = plugin.allowConfigurationUpdate(updated.getDataStorageConfiguration(),
-                                                            oldOne.getDataStorageConfiguration(),
-                                                            nbfilesAlreadyStored > 0);
+                IStorageLocation plugin = pluginService.getPlugin(oldOne.getStorageConfiguration().getId());
+                updatable = plugin.allowConfigurationUpdate(updated.getStorageConfiguration(),
+                                                            oldOne.getStorageConfiguration(), nbfilesAlreadyStored > 0);
             } catch (NotAvailablePluginConfigurationException e) {
                 throw new EntityOperationForbiddenException(e.getMessage());
             }
@@ -191,11 +207,11 @@ public class PrioritizedStorageService {
         // if oldConfActive is true, updatable cannot be null
         if (!oldConfActive || updatable.isUpdateAllowed()) {
             PluginConfiguration updatedConf = pluginService
-                    .updatePluginConfiguration(updated.getDataStorageConfiguration());
-            oldOne.setDataStorageConfiguration(updatedConf);
+                    .updatePluginConfiguration(updated.getStorageConfiguration());
+            oldOne.setStorageConfiguration(updatedConf);
             return prioritizedStorageRepo.save(oldOne);
         } else {
-            throw new EntityOperationForbiddenException(oldOne.getDataStorageConfiguration().getLabel(),
+            throw new EntityOperationForbiddenException(oldOne.getStorageConfiguration().getLabel(),
                     PrioritizedStorage.class, updatable.getUpdateNotAllowedReason());
         }
     }
@@ -215,7 +231,7 @@ public class PrioritizedStorageService {
                         .findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(toDelete.getStorageType(),
                                                                                       toDelete.getPriority());
                 prioritizedStorageRepo.delete(toDelete);
-                pluginService.deletePluginConfiguration(toDelete.getDataStorageConfiguration().getId());
+                pluginService.deletePluginConfiguration(toDelete.getStorageConfiguration().getId());
                 em.flush();
                 for (PrioritizedStorage lessPrioritized : lessPrioritizeds) {
                     lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);
@@ -223,7 +239,7 @@ public class PrioritizedStorageService {
                 prioritizedStorageRepo.saveAll(lessPrioritizeds);
             } else {
                 String msg = String.format("Data storage %s could not be deleted because it contains files",
-                                           toDelete.getDataStorageConfiguration().getLabel());
+                                           toDelete.getStorageConfiguration().getLabel());
                 LOG.info(msg);
                 throw new EntityOperationForbiddenException(msg);
             }
@@ -236,7 +252,7 @@ public class PrioritizedStorageService {
      */
     public boolean canDelete(PrioritizedStorage prioritizedDataStorage) {
         return fileRefereceRepository
-                .countByLocationStorage(prioritizedDataStorage.getDataStorageConfiguration().getLabel()) == 0L;
+                .countByLocationStorage(prioritizedDataStorage.getStorageConfiguration().getLabel()) == 0L;
     }
 
     /**

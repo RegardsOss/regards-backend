@@ -23,26 +23,26 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 
 /**
  * Default implementation for simple file workingsubsets.
  *
  * @author Sébastien Binda
  */
-public class FileReferenceWorkingSubset {
+public class FileStorageWorkingSubset {
 
     /**
-     * Raw {@link FileReferenceRequest}s associate
+     * Raw {@link FileStorageRequest}s associate
      */
-    private final Set<FileReferenceRequest> fileRefenreceRequests = Sets.newHashSet();
+    private final Set<FileStorageRequest> fileRefenreceRequests = Sets.newHashSet();
 
-    public FileReferenceWorkingSubset(Collection<FileReferenceRequest> dataFiles) {
+    public FileStorageWorkingSubset(Collection<FileStorageRequest> dataFiles) {
         super();
         this.fileRefenreceRequests.addAll(dataFiles);
     }
 
-    public Set<FileReferenceRequest> getFileReferenceRequests() {
+    public Set<FileStorageRequest> getFileReferenceRequests() {
         return fileRefenreceRequests;
     }
 

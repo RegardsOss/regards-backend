@@ -104,4 +104,10 @@ public class FileRefEventPublisher {
                 destinationLocation));
     }
 
+    public void publishFileRefAvailable(FileReference fileRef, String message) {
+        LOGGER.debug("Publish FileReferenceEvent available for download. {}", message);
+        publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(), FileReferenceEventState.AVAILABLE,
+                fileRef.getOwners(), message, fileRef.getLocation()));
+    }
+
 }

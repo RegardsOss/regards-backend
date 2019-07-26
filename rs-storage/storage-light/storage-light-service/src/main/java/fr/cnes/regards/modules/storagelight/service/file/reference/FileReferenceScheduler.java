@@ -32,12 +32,12 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 
 /**
  * Scheduler to periodically handle bulk requests for storage and deletion on storage locations.<br />
  * Those requests are <ul>
- * <li> {@link FileReferenceRequest} for storage</li>
+ * <li> {@link FileStorageRequest} for storage</li>
  * <li> {@link FileDeletionRequest} for deletion</li>
  * </ul>
  * @author Sébastien Binda
@@ -55,10 +55,13 @@ public class FileReferenceScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private FileReferenceRequestService fileRefRequestService;
+    private FileStorageRequestService fileStorageRequestService;
 
     @Autowired
     private FileDeletionRequestService fileDeletionRequestService;
+
+    @Autowired
+    private FileRestorationRequestService fileRestorationRequestService;
 
     /**
      * Number of created AIPs processed on each iteration by project
@@ -67,11 +70,24 @@ public class FileReferenceScheduler {
     private Integer aipIterationLimit;
 
     @Scheduled(fixedDelayString = "${regards.storage.store.delay:5000}", initialDelay = 10000)
-    public void handleFileReferenceRequests() throws ModuleException {
+    public void handleFileStorageRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                fileRefRequestService.scheduleStoreJobs(FileRequestStatus.TODO, Sets.newHashSet(), Sets.newHashSet());
+                fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.TODO, Sets.newHashSet(),
+                                                            Sets.newHashSet());
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
+    }
+
+    @Scheduled(fixedDelayString = "${regards.storage.store.delay:5000}", initialDelay = 10000)
+    public void handleFileRestorationRequests() throws ModuleException {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                fileRestorationRequestService.scheduleRestorationJobs(FileRequestStatus.TODO);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

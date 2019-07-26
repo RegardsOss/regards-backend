@@ -51,25 +51,24 @@ import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
  *
  */
 @Entity
-@Table(name = "t_file_reference_request",
-        indexes = { @Index(name = "idx_file_reference_request", columnList = "destination_storage, checksum") },
-        uniqueConstraints = { @UniqueConstraint(name = "t_file_reference_request_checksum_storage",
+@Table(name = "t_file_storage_request",
+        indexes = { @Index(name = "idx_file_storage_request", columnList = "destination_storage, checksum") },
+        uniqueConstraints = { @UniqueConstraint(name = "t_file_storage_request_checksum_storage",
                 columnNames = { "checksum", "destination_storage" }) })
-public class FileReferenceRequest {
+public class FileStorageRequest {
 
     /**
      * Internal database unique identifier
      */
     @Id
-    @SequenceGenerator(name = "fileReferenceRequestSequence", initialValue = 1,
-            sequenceName = "seq_file_reference_request")
-    @GeneratedValue(generator = "fileReferenceRequestSequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "fileStorageRequestSequence", initialValue = 1, sequenceName = "seq_file_storage_request")
+    @GeneratedValue(generator = "fileStorageRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(name = "owner")
     @ElementCollection
-    @CollectionTable(name = "ta_file_ref_request_owners", joinColumns = @JoinColumn(name = "file_ref_id",
-            foreignKey = @ForeignKey(name = "fk_ta_file_ref_request_owners_t_file_reference_request")))
+    @CollectionTable(name = "ta_file_storage_request_owners", joinColumns = @JoinColumn(name = "file_ref_id",
+            foreignKey = @ForeignKey(name = "fk_ta_file_storage_request_owners_t_file_storage_request")))
     private final List<String> owners = Lists.newArrayList();
 
     @Embedded
@@ -92,18 +91,18 @@ public class FileReferenceRequest {
     @Column(name = "error_cause", length = 512)
     private String errorCause;
 
-    public FileReferenceRequest() {
+    public FileStorageRequest() {
         super();
     }
 
-    public FileReferenceRequest(String owner, FileReferenceMetaInfo metaInfos, FileLocation origin,
+    public FileStorageRequest(String owner, FileReferenceMetaInfo metaInfos, FileLocation origin,
             FileLocation destination) {
         super();
-        Assert.notNull(owner, "File reference request need a owner !");
-        Assert.notNull(origin, "File reference request need an origin location !");
-        Assert.notNull(destination, "File reference request need a destination location !");
-        Assert.notNull(metaInfos, "File reference request need file meta information !");
-        Assert.notNull(metaInfos.getChecksum(), "File reference request need file checkusm !");
+        Assert.notNull(owner, "File storage request need a owner !");
+        Assert.notNull(origin, "File storage request need an origin location !");
+        Assert.notNull(destination, "File storage request need a destination location !");
+        Assert.notNull(metaInfos, "File storage request need file meta information !");
+        Assert.notNull(metaInfos.getChecksum(), "File storage request need file checkusm !");
 
         this.owners.add(owner);
         this.origin = origin;
@@ -111,15 +110,15 @@ public class FileReferenceRequest {
         this.metaInfo = metaInfos;
     }
 
-    public FileReferenceRequest(Collection<String> owners, FileReferenceMetaInfo metaInfos, FileLocation origin,
+    public FileStorageRequest(Collection<String> owners, FileReferenceMetaInfo metaInfos, FileLocation origin,
             FileLocation destination) {
         super();
-        Assert.notNull(owners, "File reference request need a owner !");
-        Assert.isTrue(!owners.isEmpty(), "File reference request need a owner !");
-        Assert.notNull(origin, "File reference request need an origin location !");
-        Assert.notNull(destination, "File reference request need a destination location !");
-        Assert.notNull(metaInfos, "File reference request need file meta information !");
-        Assert.notNull(metaInfos.getChecksum(), "File reference request need file checkusm !");
+        Assert.notNull(owners, "File storage request need a owner !");
+        Assert.isTrue(!owners.isEmpty(), "File storage request need a owner !");
+        Assert.notNull(origin, "File storage request need an origin location !");
+        Assert.notNull(destination, "File storage request need a destination location !");
+        Assert.notNull(metaInfos, "File storage request need file meta information !");
+        Assert.notNull(metaInfos.getChecksum(), "File storage request need file checkusm !");
 
         this.owners.addAll(owners);
         this.origin = origin;
@@ -246,7 +245,7 @@ public class FileReferenceRequest {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        FileReferenceRequest other = (FileReferenceRequest) obj;
+        FileStorageRequest other = (FileStorageRequest) obj;
         if (id == null) {
             if (other.id != null) {
                 return false;

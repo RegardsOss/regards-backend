@@ -29,10 +29,10 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileDeletionRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileReference
 public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
 
     @Autowired
-    private FileReferenceRequestService fileReferenceRequestService;
+    private FileStorageRequestService fileReferenceRequestService;
 
     @Autowired
     private FileDeletionRequestService fileDeletionRequestService;
@@ -71,7 +71,6 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
                                                         wrapper.getContent().getLocation().getStorage());
                     break;
                 case DELETED_FOR_OWNER:
-                case AVAILABILITY_ERROR:
                 case AVAILABLE:
                 case STORED:
                 case STORE_ERROR:
@@ -88,7 +87,7 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
      * After a deletion success, we can schedule the file reference request delayed. Those request was waiting for deletion ends.
      */
     private void scheduleDelayedFileRefRequests(String fileRefChecksum, String fileRefStorage) {
-        Optional<FileReferenceRequest> oRequest = fileReferenceRequestService.search(fileRefStorage, fileRefChecksum);
+        Optional<FileStorageRequest> oRequest = fileReferenceRequestService.search(fileRefStorage, fileRefChecksum);
         if (oRequest.isPresent() && (oRequest.get().getStatus() == FileRequestStatus.DELAYED)) {
             // As a storage is scheduled, we can delete the deletion request
             Optional<FileReference> oFileRef = fileReferenceService.search(fileRefStorage, fileRefChecksum);
@@ -98,9 +97,9 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
                     fileDeletionRequestService.deleteFileDeletionRequest(oDeletionRequest.get());
                 }
             }
-            FileReferenceRequest request = oRequest.get();
+            FileStorageRequest request = oRequest.get();
             request.setStatus(FileRequestStatus.TODO);
-            fileReferenceRequestService.updateFileReferenceRequest(request);
+            fileReferenceRequestService.update(request);
         }
     }
 

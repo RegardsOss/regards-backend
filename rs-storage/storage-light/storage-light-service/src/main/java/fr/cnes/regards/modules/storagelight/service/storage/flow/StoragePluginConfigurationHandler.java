@@ -40,8 +40,8 @@ import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 
 /**
  * This component handle the pool of {@link IStorageLocation} plugins configuration as known as {@link PrioritizedStorage}.
@@ -139,9 +139,14 @@ public class StoragePluginConfigurationHandler implements IHandler<PluginConfEve
      */
     private void refresh(String tenant) {
         List<PluginConfiguration> confs = pluginService.getPluginConfigurationsByType(IStorageLocation.class);
-        List<PluginConfiguration> onlineConfs = pluginService.getPluginConfigurationsByType(IOnlineStorageLocation.class);
+        List<PluginConfiguration> onlineConfs = pluginService
+                .getPluginConfigurationsByType(IOnlineStorageLocation.class);
         confs.forEach(c -> this.storages.put(tenant, c.getLabel()));
         onlineConfs.forEach(c -> this.onlineStorages.put(tenant, c.getLabel()));
+    }
+
+    public boolean isOnline(String storage) {
+        return this.getConfiguredOnlineStorages().contains(storage);
     }
 
 }

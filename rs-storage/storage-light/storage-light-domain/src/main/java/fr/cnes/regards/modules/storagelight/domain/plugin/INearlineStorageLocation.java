@@ -18,22 +18,19 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.plugin;
 
-import java.nio.file.Path;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
- * @author Sylvain VISSIERE-GUERINET
+ * @author Sébastien Binda
  */
 @PluginInterface(description = "Contract to respect by any NEARLINE data storage plugin")
 public interface INearlineStorageLocation extends IStorageLocation {
 
     /**
      * Do the retrieve action for the given working subset.
-     * @param workingSubset Subset of files to store.
-     * @param destinationPath {@link Path} where to put retrieved files.
-     * @param progressManager {@link IStorageProgressManager} object to inform global store process after each transfer succeed or fail.
+     * @param workingSubset Subset of files to restore.
+     * @param progressManager {@link IRestorationProgressManager} object to inform global store process after each transfer succeed or fail.
      */
-    void retrieve(FileReferenceWorkingSubset workingSubset, IStorageProgressManager progressManager);
+    void retrieve(FileRestorationWorkingSubset workingSubset, IRestorationProgressManager progressManager);
 
 }

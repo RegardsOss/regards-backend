@@ -37,7 +37,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 
 /**
  * @author sbinda
@@ -59,17 +59,17 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
         // Add a new file reference without storage with two owners
         String storage = "anywhere";
         List<String> owners = Lists.newArrayList("someone", "someone-else");
-        Optional<FileReference> oFileRef = referenceRandomFile(owners, Lists.newArrayList(), "file1.test", storage);
+        Optional<FileReference> oFileRef = referenceRandomFile(owners, null, "file1.test", storage);
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
-        Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService
+        Optional<FileStorageRequest> oFileRefReq = fileRefRequestService
                 .search(oFileRef.get().getLocation().getStorage(), oFileRef.get().getMetaInfo().getChecksum());
         Assert.assertTrue("File reference request should not exists anymore as file is well referenced",
                           !oFileRefReq.isPresent());
         FileReference fileRef = oFileRef.get();
 
         // Delete file reference for one owner
-        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(),
-                                                   fileRef.getLocation().getStorage(), owners.get(0), false);
+        fileRefService.removeOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
+                                   owners.get(0), false);
 
         // File reference should still exists for the remaining owner
         Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
@@ -81,8 +81,8 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
                           afterDeletion.get().getOwners().contains(owners.get(1)));
 
         // Delete file reference for the remaining owner
-        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(),
-                                                   fileRef.getLocation().getStorage(), owners.get(1), false);
+        fileRefService.removeOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
+                                   owners.get(1), false);
 
         // File reference should be deleted
         afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum());
@@ -100,8 +100,8 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
         Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
 
         // Delete file reference
-        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(),
-                                                   fileRef.getLocation().getStorage(), firstOwner, false);
+        fileRefService.removeOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), firstOwner,
+                                   false);
 
         // File reference should still exists with no owners
         Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
@@ -145,8 +145,8 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
         fileRef = oFileRef.get();
 
         // Delete file reference for one owner
-        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(),
-                                                   fileRef.getLocation().getStorage(), firstOwner, false);
+        fileRefService.removeOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), firstOwner,
+                                   false);
 
         // File reference should still exists for the remaining owner
         Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
@@ -158,8 +158,8 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
                           afterDeletion.get().getOwners().contains(secondOwner));
 
         // Delete file reference for the remaining owner
-        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(),
-                                                   fileRef.getLocation().getStorage(), secondOwner, false);
+        fileRefService.removeOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), secondOwner,
+                                   false);
 
         // File reference should still exists with no owners
         afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum());

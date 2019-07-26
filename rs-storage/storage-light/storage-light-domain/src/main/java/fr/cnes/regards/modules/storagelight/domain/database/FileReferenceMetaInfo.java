@@ -18,15 +18,9 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.database;
 
-import java.util.List;
-
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
-import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
-import javax.persistence.ForeignKey;
-import javax.persistence.JoinColumn;
 
 import org.springframework.util.MimeType;
 
@@ -85,14 +79,8 @@ public class FileReferenceMetaInfo {
     @Convert(converter = MimeTypeConverter.class)
     private MimeType mimeType;
 
-    /**
-     * File type
-     */
-    @Column(name = "type")
-    @ElementCollection
-    @CollectionTable(name = "ta_file_ref_types", joinColumns = @JoinColumn(name = "file_ref_id",
-            foreignKey = @ForeignKey(name = "fk_ta_file_ref_types_t_file_reference")))
-    private List<String> types;
+    @Column(length = 256)
+    private String type;
 
     public FileReferenceMetaInfo() {
         super();
@@ -192,17 +180,17 @@ public class FileReferenceMetaInfo {
     }
 
     /**
-     * @return the types
+     * @return the type
      */
-    public List<String> getTypes() {
-        return types;
+    public String getType() {
+        return type;
     }
 
     /**
-     * @param types the types to set
+     * @param type the type to set
      */
-    public void setTypes(List<String> types) {
-        this.types = types;
+    public void setType(String type) {
+        this.type = type;
     }
 
     /**
@@ -229,7 +217,7 @@ public class FileReferenceMetaInfo {
         result = (prime * result) + ((fileSize == null) ? 0 : fileSize.hashCode());
         result = (prime * result) + ((height == null) ? 0 : height.hashCode());
         result = (prime * result) + ((mimeType == null) ? 0 : mimeType.hashCode());
-        result = (prime * result) + ((types == null) ? 0 : types.hashCode());
+        result = (prime * result) + ((type == null) ? 0 : type.hashCode());
         result = (prime * result) + ((width == null) ? 0 : width.hashCode());
         return result;
     }
@@ -288,11 +276,11 @@ public class FileReferenceMetaInfo {
         } else if (!mimeType.equals(other.mimeType)) {
             return false;
         }
-        if (types == null) {
-            if (other.types != null) {
+        if (type == null) {
+            if (other.type != null) {
                 return false;
             }
-        } else if (!types.equals(other.types)) {
+        } else if (!type.equals(other.type)) {
             return false;
         }
         if (width == null) {

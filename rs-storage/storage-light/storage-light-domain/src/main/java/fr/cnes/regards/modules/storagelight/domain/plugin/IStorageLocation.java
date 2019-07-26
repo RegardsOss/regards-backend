@@ -19,11 +19,13 @@
 package fr.cnes.regards.modules.storagelight.domain.plugin;
 
 import java.util.Collection;
+import java.util.List;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.FileRestorationRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 
 /**
  * Plugin interface for all storage systems.
@@ -33,13 +35,15 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest
 @PluginInterface(description = "Contract to respect by any data storage plugin")
 public interface IStorageLocation {
 
-    Collection<FileReferenceWorkingSubset> prepareForStorage(Collection<FileReferenceRequest> fileReferenceRequests);
+    Collection<FileStorageWorkingSubset> prepareForStorage(Collection<FileStorageRequest> fileReferenceRequests);
 
     Collection<FileDeletionWorkingSubset> prepareForDeletion(Collection<FileDeletionRequest> fileDeletionRequests);
 
+    Collection<FileRestorationWorkingSubset> prepareForRestoration(List<FileRestorationRequest> requests);
+
     void delete(FileDeletionWorkingSubset workingSet, IDeletionProgressManager progressManager);
 
-    void store(FileReferenceWorkingSubset workingSet, IStorageProgressManager progressManager);
+    void store(FileStorageWorkingSubset workingSet, IStorageProgressManager progressManager);
 
     /**
      * Method called before each configuration update of this plugin to know if the modification is allowed or not.

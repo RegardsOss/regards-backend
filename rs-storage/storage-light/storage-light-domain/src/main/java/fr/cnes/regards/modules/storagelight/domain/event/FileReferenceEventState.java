@@ -53,10 +53,6 @@ public enum FileReferenceEventState {
      * File reference is available for download
      */
     AVAILABLE,
-
-    /**
-     * Error occurs during file reference retrieve
-     */
     AVAILABILITY_ERROR;
 
 }

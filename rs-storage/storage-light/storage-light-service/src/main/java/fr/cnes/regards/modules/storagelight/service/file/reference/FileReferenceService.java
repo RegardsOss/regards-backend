@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.service.file.reference;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -102,7 +103,7 @@ public class FileReferenceService {
     private IFileReferenceRepository fileRefRepo;
 
     @Autowired
-    private FileReferenceRequestService fileRefRequestService;
+    private FileStorageRequestService fileRefRequestService;
 
     @Autowired
     private FileDeletionRequestService fileDeletionRequestService;
@@ -176,7 +177,7 @@ public class FileReferenceService {
         } else {
             // If destination equals origin location so file is already stored and can be referenced directly
             if (destination.equals(origin)) {
-                oFileRef = Optional.of(this.createNewFileReference(owners, fileMetaInfo, destination));
+                oFileRef = Optional.of(this.create(owners, fileMetaInfo, destination));
             } else {
                 fileRefRequestService.createNewFileReferenceRequest(owners, fileMetaInfo, origin, destination);
             }
@@ -190,7 +191,7 @@ public class FileReferenceService {
      *
      * @param fileRef {@link FileReference} to delete.
      */
-    public void deleteFileReference(FileReference fileRef) {
+    public void delete(FileReference fileRef) {
         Assert.notNull(fileRef, "File reference to delete cannot be null");
         Assert.notNull(fileRef.getId(), "File reference identifier to delete cannot be null");
         fileRefRepo.deleteById(fileRef.getId());
@@ -200,7 +201,7 @@ public class FileReferenceService {
     }
 
     /**
-     * Download a file reference thanks to his checksum. If the file is stored in multiple storage location,
+     * Download a file thanks to its checksum. If the file is stored in multiple storage location,
      * this method decide which one to retrieve by : <ul>
      *  <li>Only Files on an {@link IOnlineStorageLocation} location can be download</li>
      *  <li>Use the {@link PrioritizedStorage} configuration with the highest priority</li>
@@ -209,7 +210,7 @@ public class FileReferenceService {
      * @param checksum Checksum of the file to download
      * @return
      */
-    public DownloadableFile downloadFileReference(String checksum) throws ModuleException {
+    public DownloadableFile downloadFile(String checksum) throws ModuleException {
         // 1. Retrieve all the FileReference matching the given checksum
         Set<FileReference> fileRefs = this.search(checksum);
         Map<String, FileReference> storages = fileRefs.stream()
@@ -218,32 +219,47 @@ public class FileReferenceService {
         Optional<PrioritizedStorage> storageLocation = prioritizedStorageService
                 .searchActiveHigherPriority(storages.keySet(), StorageType.ONLINE);
         if (storageLocation.isPresent()) {
-            PluginConfiguration conf = storageLocation.get().getDataStorageConfiguration();
+            PluginConfiguration conf = storageLocation.get().getStorageConfiguration();
             FileReference fileToDownload = storages.get(conf.getLabel());
-            try {
-                IOnlineStorageLocation plugin = pluginService.getPlugin(conf.getId());
-                return new DownloadableFile(plugin.retrieve(fileToDownload), fileToDownload.getMetaInfo().getFileSize(),
-                        fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getMimeType());
-            } catch (ModuleException e) {
-                LOGGER.warn(String
-                        .format("Internal error storage location plugin instanciation %s. Download is not possible for the file %s). Cause %s.",
-                                conf.getLabel(), checksum, e.getMessage()),
-                            e);
-                throw e;
-            } catch (NotAvailablePluginConfigurationException e) {
-                throw new ModuleException(
-                        String.format("Storage %s is disabled. Download is not possible for the file %s).",
-                                      conf.getLabel(), checksum),
-                        e);
-            } catch (IOException e) {
-                throw new ModuleException(String.format("Error during download of file %s from %s. Cause : %s.",
-                                                        checksum, conf.getLabel(), e.getMessage()),
-                        e);
-            }
+            return new DownloadableFile(downloadFileReference(fileToDownload),
+                    fileToDownload.getMetaInfo().getFileSize(), fileToDownload.getMetaInfo().getFileName(),
+                    fileToDownload.getMetaInfo().getMimeType());
+
         } else {
             throw new ModuleException(String
                     .format("No storage location configured for the given file reference (checksum %s). The file can not be download from %s.",
                             checksum, Arrays.toString(storages.keySet().toArray())));
+        }
+    }
+
+    public InputStream downloadFileReference(FileReference fileToDownload) throws ModuleException {
+        Optional<PrioritizedStorage> conf = prioritizedStorageService.search(fileToDownload.getLocation().getStorage());
+        if (conf.isPresent()) {
+            if (conf.get().getStorageType() != StorageType.ONLINE) {
+                throw new ModuleException(String
+                        .format("Unable to download file %s (checksum : %s) as its storage location %s is not online.",
+                                fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getChecksum(),
+                                fileToDownload.getLocation().toString()));
+            } else {
+                try {
+                    IOnlineStorageLocation plugin = pluginService
+                            .getPlugin(conf.get().getStorageConfiguration().getId());
+                    return plugin.retrieve(fileToDownload);
+                } catch (NotAvailablePluginConfigurationException e) {
+                    throw new ModuleException(String
+                            .format("Unable to download file %s (checksum : %s) as its storage location %s is not active.",
+                                    fileToDownload.getMetaInfo().getFileName(),
+                                    fileToDownload.getMetaInfo().getChecksum(),
+                                    fileToDownload.getLocation().toString()));
+                } catch (IOException e) {
+                    throw new ModuleException(e.getMessage(), e);
+                }
+            }
+        } else {
+            throw new ModuleException(String
+                    .format("Unable to download file %s (checksum : %s) as its storage location %s is not available",
+                            fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getChecksum(),
+                            fileToDownload.getLocation().toString()));
         }
     }
 
@@ -253,7 +269,7 @@ public class FileReferenceService {
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
      * @throws EntityNotFoundException
      */
-    public void removeFileReferenceForOwner(String checksum, String storage, String owner, boolean forceDelete)
+    public void removeOwner(String checksum, String storage, String owner, boolean forceDelete)
             throws EntityNotFoundException {
         Assert.notNull(checksum, "Checksum is mandatory to delete a file reference");
         Assert.notNull(storage, "Storage is mandatory to delete a file reference");
@@ -297,7 +313,7 @@ public class FileReferenceService {
                 fileDeletionRequestService.createNewFileDeletionRequest(fileReference, forceDelete);
             } else {
                 // Else, directly delete the file reference
-                this.deleteFileReference(fileReference);
+                this.delete(fileReference);
             }
         }
     }
@@ -308,8 +324,7 @@ public class FileReferenceService {
      *
      * @return {@link FileReference} created.
      */
-    private FileReference createNewFileReference(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
-            FileLocation location) {
+    private FileReference create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo, FileLocation location) {
         FileReference fileRef = new FileReference(owners, fileMetaInfo, location);
         fileRef = fileRefRepo.save(fileRef);
         String message = String.format("New file <%s> referenced at <%s> (checksum: %s)",
@@ -325,7 +340,7 @@ public class FileReferenceService {
      * @param lastReferencedFileId
      * @return
      */
-    public Collection<StorageMonitoringAggregation> calculateTotalFileSizeAggregation(Long lastReferencedFileId) {
+    public Collection<StorageMonitoringAggregation> aggragateFilesSizePerStorage(Long lastReferencedFileId) {
         if (lastReferencedFileId != null) {
             return fileRefRepo.getTotalFileSizeAggregation(lastReferencedFileId);
         } else {
@@ -351,7 +366,7 @@ public class FileReferenceService {
         Optional<FileDeletionRequest> deletionRequest = fileDeletionRequestService.search(fileReference);
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
             // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
-            fileRefRequestService.createNewFileReferenceRequest(owners, newMetaInfo, origin, destination,
+            fileRefRequestService.addFileReferenceRequest(owners, newMetaInfo, origin, destination,
                                                                 FileRequestStatus.DELAYED);
         } else {
             if (deletionRequest.isPresent()) {
@@ -399,5 +414,4 @@ public class FileReferenceService {
                                   item.getDestination());
         }
     }
-
 }

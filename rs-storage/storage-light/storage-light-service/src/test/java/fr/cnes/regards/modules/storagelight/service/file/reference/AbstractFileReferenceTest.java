@@ -51,12 +51,12 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
-import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRequestRepository;
+import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
@@ -76,7 +76,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected FileReferenceService fileRefService;
 
     @Autowired
-    protected FileReferenceRequestService fileRefRequestService;
+    protected FileStorageRequestService fileRefRequestService;
 
     @Autowired
     protected FileDeletionRequestService fileDeletionRequestService;
@@ -91,7 +91,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected IFileReferenceRepository fileRefRepo;
 
     @Autowired
-    protected IFileReferenceRequestRepository fileRefRequestRepo;
+    protected IFileStorageRequestRepository fileRefRequestRepo;
 
     @Autowired
     protected IFileDeletetionRequestRepository fileDeletionRequestRepo;
@@ -142,7 +142,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                               getBaseStorageLocation().toString())
                 .addParameter(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, newErrorPattern)
                 .addParameter(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*").getParameters();
-        conf.getDataStorageConfiguration().setParameters(parameters);
+        conf.getStorageConfiguration().setParameters(parameters);
         prioritizedDataStorageService.update(conf.getId(), conf);
     }
 
@@ -172,7 +172,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), checksum);
-        Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService.search(destination.getStorage(), checksum);
+        Optional<FileStorageRequest> oFileRefReq = fileRefRequestService.search(destination.getStorage(), checksum);
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
         Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TODO,
@@ -190,22 +190,22 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         return oFileRef.get();
     }
 
-    protected Optional<FileReference> referenceFile(String checksum, Collection<String> owners, List<String> types,
+    protected Optional<FileReference> referenceFile(String checksum, Collection<String> owners, String type,
             String fileName, String storage) {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
-        fileMetaInfo.setTypes(types);
+        fileMetaInfo.setType(type);
         FileLocation origin = new FileLocation(storage, "anywhere://in/this/directory/file.test");
         fileRefService.addFileReference(owners, fileMetaInfo, origin, origin);
         return fileRefService.search(origin.getStorage(), fileMetaInfo.getChecksum());
     }
 
-    protected Optional<FileReference> referenceRandomFile(List<String> owners, List<String> types, String fileName,
+    protected Optional<FileReference> referenceRandomFile(List<String> owners, String type, String fileName,
             String storage) {
-        return this.referenceFile(UUID.randomUUID().toString(), owners, types, fileName, storage);
+        return this.referenceFile(UUID.randomUUID().toString(), owners, type, fileName, storage);
     }
 
-    protected FileReferenceRequest generateStoreFileError(String owner, String storageDestination)
+    protected FileStorageRequest generateStoreFileError(String owner, String storageDestination)
             throws InterruptedException, ExecutionException {
         List<String> owners = Lists.newArrayList();
         owners.add(owner);
@@ -217,8 +217,8 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-        Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService.search(destination.getStorage(),
-                                                                                  fileMetaInfo.getChecksum());
+        Optional<FileStorageRequest> oFileRefReq = fileRefRequestService.search(destination.getStorage(),
+                                                                                fileMetaInfo.getChecksum());
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
         if (storageDestination.equals(ONLINE_CONF_LABEL)) {

@@ -88,7 +88,7 @@ public class StorageLocationService {
         // lets ask the data base to calculate the used space per data storage
         long start = System.currentTimeMillis();
         Collection<StorageMonitoringAggregation> aggregations = fileReferenceService
-                .calculateTotalFileSizeAggregation(storageMonitoring.getLastFileReferenceIdMonitored());
+                .aggragateFilesSizePerStorage(storageMonitoring.getLastFileReferenceIdMonitored());
         for (StorageMonitoringAggregation agg : aggregations) {
             // Retrieve associated storage info if exists
             Optional<StorageLocation> oStorage = storageLocationRepo.findByName(agg.getStorage());

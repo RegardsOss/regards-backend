@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.plugin;
 
-import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 
 /**
  * The ProgressManager is used by {@link IStorageLocation} plugins to notidy the upper service of storage action results :
@@ -35,16 +35,16 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest
 public interface IStorageProgressManager {
 
     /**
-     * Notify system that the given {@link FileReferenceRequest} is stored.
-     * @param fileReferenceRequest {@link FileReferenceRequest} stored.
+     * Notify system that the given {@link FileStorageRequest} is stored.
+     * @param fileReferenceRequest {@link FileStorageRequest} stored.
      */
-    public void storageSucceed(FileReferenceRequest fileReferenceRequest, String storedUrl, Long fileSize);
+    public void storageSucceed(FileStorageRequest fileReferenceRequest, String storedUrl, Long fileSize);
 
     /**
-     * Notify the system that the given {@link FileReferenceRequest} couldn't be stored.
-     * @param fileReferenceRequest {@link FileReferenceRequest} not stored.
+     * Notify the system that the given {@link FileStorageRequest} couldn't be stored.
+     * @param fileReferenceRequest {@link FileStorageRequest} not stored.
      * @param cause {@link String} error message.
      */
-    public void storageFailed(FileReferenceRequest fileReferenceRequest, String cause);
+    public void storageFailed(FileStorageRequest fileReferenceRequest, String cause);
 
 }

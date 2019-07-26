@@ -55,8 +55,7 @@ public class FileReferenceSpecification {
             }
 
             if ((types != null) && !types.isEmpty()) {
-                Join<Object, Object> typesJoin = metaInfoJoin.join("types");
-                predicates.add(typesJoin.in(types));
+                predicates.add(metaInfoJoin.get("type").in(types));
             }
             if ((storages != null) && !storages.isEmpty()) {
                 predicates.add(root.get("location").get("storage").in(storages));

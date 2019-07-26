@@ -23,7 +23,7 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.FileRestorationRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 
 /**
@@ -31,20 +31,20 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
  *
  * @author Sébastien Binda
  */
-public class FileDeletionWorkingSubset {
+public class FileRestorationWorkingSubset {
 
     /**
      * Raw {@link FileStorageRequest}s associate
      */
-    private final Set<FileDeletionRequest> fileDeletionRequests = Sets.newHashSet();
+    private final Set<FileRestorationRequest> fileRestorationRequests = Sets.newHashSet();
 
-    public FileDeletionWorkingSubset(Collection<FileDeletionRequest> dataFiles) {
+    public FileRestorationWorkingSubset(Collection<FileRestorationRequest> requests) {
         super();
-        this.fileDeletionRequests.addAll(dataFiles);
+        this.fileRestorationRequests.addAll(requests);
     }
 
-    public Set<FileDeletionRequest> getFileDeletionRequests() {
-        return fileDeletionRequests;
+    public Set<FileRestorationRequest> getFileRestorationRequests() {
+        return fileRestorationRequests;
     }
 
 }

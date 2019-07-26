@@ -79,7 +79,7 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
             // Delete file deletion request
             fileDeletionRequestService.deleteFileDeletionRequest(fileDeletionRequest);
             // Delete file reference
-            fileReferenceService.deleteFileReference(fileRef);
+            fileReferenceService.delete(fileRef);
             // NOTE : The file reference event is published by the fileReferenceService
             LOGGER.warn(String
                     .format("File %s from %s (checksum: %s) has been removed by force from referenced files. (File may still exists on storage).",
@@ -99,7 +99,7 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
         job.advanceCompletion();
         // Delete file deletion request
         fileDeletionRequestService.deleteFileDeletionRequest(fileDeletionRequest);
-        fileReferenceService.deleteFileReference(fileRef);
+        fileReferenceService.delete(fileRef);
         // NOTE : the FileReferenceEvent is published by the fileReferenceService when the file is completely deleted
         handled.add(fileDeletionRequest);
     }

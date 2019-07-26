@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
@@ -70,7 +70,7 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
     FileReferenceService fileRefService;
 
     @Autowired
-    FileReferenceRequestService fileRefRequestService;
+    FileStorageRequestService fileStorageRequestService;
 
     @SpyBean
     public IPublisher publisher;
@@ -235,18 +235,18 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         Assert.assertFalse("File should not be referenced yet", fileRefService.search(storage, checksum).isPresent());
         // Check a file reference request is created
         Assert.assertTrue("File request should be created",
-                          fileRefRequestService.search(ONLINE_CONF_LABEL, checksum).isPresent());
+                          fileStorageRequestService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         // Now check for event published
         Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
 
         // SImulate job schedule
-        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.TODO,
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.TODO,
                                                                            Lists.newArrayList(ONLINE_CONF_LABEL),
                                                                            Lists.newArrayList(owner));
         runAndWaitJob(jobs);
         Assert.assertTrue("File should be referenced", fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         Assert.assertFalse("File request should be deleted",
-                           fileRefRequestService.search(ONLINE_CONF_LABEL, checksum).isPresent());
+                           fileStorageRequestService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         // Now check for event published
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -305,16 +305,16 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         Mockito.clearInvocations(publisher);
 
         // Simulate job schedule
-        Collection<JobInfo> jobs = fileRefRequestService
+        Collection<JobInfo> jobs = fileStorageRequestService
                 .scheduleStoreJobs(FileRequestStatus.TODO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList());
         runAndWaitJob(jobs);
 
         Assert.assertFalse("File should not be referenced",
                            fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         Assert.assertTrue("File request should be still present",
-                          fileRefRequestService.search(ONLINE_CONF_LABEL, checksum).isPresent());
+                          fileStorageRequestService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         Assert.assertEquals("File request should be in ERROR state", FileRequestStatus.ERROR,
-                            fileRefRequestService.search(ONLINE_CONF_LABEL, checksum).get().getStatus());
+                            fileStorageRequestService.search(ONLINE_CONF_LABEL, checksum).get().getStatus());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
@@ -322,9 +322,9 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
                             getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
 
         Assert.assertTrue("File request still present",
-                          fileRefRequestService.search(ONLINE_CONF_LABEL, checksum).isPresent());
+                          fileStorageRequestService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         Assert.assertEquals("File request in ERROR state", FileRequestStatus.ERROR,
-                            fileRefRequestService.search(ONLINE_CONF_LABEL, checksum).get().getStatus());
+                            fileStorageRequestService.search(ONLINE_CONF_LABEL, checksum).get().getStatus());
 
         // Retry same storage request
         handler.handleSync(wrapper);
@@ -332,9 +332,9 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
 
         // Only one file reference request in db, with status in todo, to allow retry
         Assert.assertTrue("File request still present",
-                          fileRefRequestService.search(ONLINE_CONF_LABEL, checksum).isPresent());
+                          fileStorageRequestService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         Assert.assertEquals("File request in TODO state", FileRequestStatus.TODO,
-                            fileRefRequestService.search(ONLINE_CONF_LABEL, checksum).get().getStatus());
+                            fileStorageRequestService.search(ONLINE_CONF_LABEL, checksum).get().getStatus());
     }
 
 }

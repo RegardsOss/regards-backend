@@ -27,6 +27,8 @@ public interface IFileReferenceRepository
 
     Set<FileReference> findByMetaInfoChecksum(String checksum);
 
+    Set<FileReference> findByMetaInfoChecksumIn(Collection<String> checksums);
+
     @Query("select fr.location.storage as storage, sum(fr.metaInfo.fileSize) as usedSize, count(*) as numberOfFileReference, max(fr.id) as lastFileReferenceId"
             + " from FileReference fr group by storage")
     Collection<StorageMonitoringAggregation> getTotalFileSizeAggregation();

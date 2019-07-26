@@ -61,7 +61,7 @@ public class DeleteFileReferenceFlowHandler
         runtimeTenantResolver.forceTenant(tenant);
         DeleteFileRefFlowItem item = wrapper.getContent();
         try {
-            fileRefService.removeFileReferenceForOwner(item.getChecksum(), item.getStorage(), item.getOwner(),
+            fileRefService.removeOwner(item.getChecksum(), item.getStorage(), item.getOwner(),
                                                        item.isForceDelete());
         } catch (EntityNotFoundException e) {
             LOGGER.error("Unable to delete file with checksum : <{}> at <{}> cause file does not exsts ({}).",

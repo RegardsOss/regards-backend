@@ -44,7 +44,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
-import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRequestRepository;
+import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
@@ -71,7 +71,7 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
     private IFileReferenceRepository fileRefRepo;
 
     @Autowired
-    private IFileReferenceRequestRepository fileRefRequestRepo;
+    private IFileStorageRequestRepository fileRefRequestRepo;
 
     @Autowired
     private IJobInfoRepository jobInfoRepo;
@@ -105,7 +105,7 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
         String label = "updateConf label";
         PrioritizedStorage pds = createPrioritizedDataStorage(label);
         PluginConfiguration updatedConf = getPluginConf(label);
-        updatedConf.setId(pds.getDataStorageConfiguration().getId());
+        updatedConf.setId(pds.getStorageConfiguration().getId());
         PrioritizedStorage upds = new PrioritizedStorage(updatedConf, 0L, StorageType.ONLINE);
         upds.setId(pds.getId());
         prioritizedDataStorageService.update(upds.getId(), upds);
@@ -122,7 +122,7 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
         PluginConfiguration updatedConf = getPluginConf(label);
         updatedConf.getParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME)
                 .setValue(newbaseStorageLocation.toString());
-        updatedConf.setId(pds.getDataStorageConfiguration().getId());
+        updatedConf.setId(pds.getStorageConfiguration().getId());
         PrioritizedStorage upds = new PrioritizedStorage(updatedConf, 0L, StorageType.ONLINE);
         upds.setId(pds.getId());
         prioritizedDataStorageService.update(upds.getId(), upds);

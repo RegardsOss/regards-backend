@@ -45,29 +45,29 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRequestRepository;
+import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
-import fr.cnes.regards.modules.storagelight.domain.plugin.FileReferenceWorkingSubset;
+import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
+import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileReferenceRequestJob;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
 /**
- * Service to handle {@link FileReferenceRequest}s.
+ * Service to handle {@link FileStorageRequest}s.
  * Those requests are created when a file reference need to be stored physically thanks to an existing {@link IStorageLocation} plugin.
  *
  * @author Sébastien Binda
  */
 @Service
 @MultitenantTransactional
-public class FileReferenceRequestService {
+public class FileStorageRequestService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceRequestService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageRequestService.class);
 
     private static final int NB_REFERENCE_BY_PAGE = 1000;
 
@@ -75,7 +75,7 @@ public class FileReferenceRequestService {
     private IPluginService pluginService;
 
     @Autowired
-    private IFileReferenceRequestRepository fileRefRequestRepo;
+    private IFileStorageRequestRepository fileStorageRequestRepo;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -90,51 +90,51 @@ public class FileReferenceRequestService {
     private StoragePluginConfigurationHandler storageHandler;
 
     /**
-     * Search for {@link FileReferenceRequest}s matching the given destination storage and checksum
+     * Search for {@link FileStorageRequest}s matching the given destination storage and checksum
      * @param destinationStorage
      * @param checksum
-     * @return {@link FileReferenceRequest}
+     * @return {@link FileStorageRequest}
      */
-    public Optional<FileReferenceRequest> search(String destinationStorage, String checksum) {
-        return fileRefRequestRepo.findByMetaInfoChecksumAndDestinationStorage(checksum, destinationStorage);
+    public Optional<FileStorageRequest> search(String destinationStorage, String checksum) {
+        return fileStorageRequestRepo.findByMetaInfoChecksumAndDestinationStorage(checksum, destinationStorage);
     }
 
     /**
-     * Search for all {@link FileReferenceRequest}s
+     * Search for all {@link FileStorageRequest}s
      * @param pageable
-     * @return {@link FileReferenceRequest}s by page
+     * @return {@link FileStorageRequest}s by page
      */
-    public Page<FileReferenceRequest> search(Pageable pageable) {
-        return fileRefRequestRepo.findAll(pageable);
+    public Page<FileStorageRequest> search(Pageable pageable) {
+        return fileStorageRequestRepo.findAll(pageable);
     }
 
     /**
-     * Search for {@link FileReferenceRequest}s associated to the given destination storage location.
+     * Search for {@link FileStorageRequest}s associated to the given destination storage location.
      * @param pageable
-     * @return {@link FileReferenceRequest}s by page
+     * @return {@link FileStorageRequest}s by page
      */
-    public Page<FileReferenceRequest> search(String destinationStorage, Pageable pageable) {
-        return fileRefRequestRepo.findByDestinationStorage(destinationStorage, pageable);
+    public Page<FileStorageRequest> search(String destinationStorage, Pageable pageable) {
+        return fileStorageRequestRepo.findByDestinationStorage(destinationStorage, pageable);
     }
 
     /**
-     * Delete a {@link FileReferenceRequest}
-     * @param fileRefRequest to delete
+     * Delete a {@link FileStorageRequest}
+     * @param fileStorageRequestuest to delete
      */
-    public void deleteFileReferenceRequest(FileReferenceRequest fileRefRequest) {
-        fileRefRequestRepo.deleteById(fileRefRequest.getId());
+    public void deleteFileReferenceRequest(FileStorageRequest fileStorageRequestuest) {
+        fileStorageRequestRepo.deleteById(fileStorageRequestuest.getId());
     }
 
     /**
-     * Update a {@link FileReferenceRequest}
-     * @param fileRefRequest to delete
+     * Update a {@link FileStorageRequest}
+     * @param fileStorageRequestuest to delete
      */
-    public void updateFileReferenceRequest(FileReferenceRequest fileRefRequest) {
-        fileRefRequestRepo.save(fileRefRequest);
+    public void update(FileStorageRequest fileStorageRequestuest) {
+        fileStorageRequestRepo.save(fileStorageRequestuest);
     }
 
     /**
-     * Schedule {@link FileReferenceRequestJob}s for all {@link FileReferenceRequest}s matching the given parameters
+     * Schedule {@link FileReferenceRequestJob}s for all {@link FileStorageRequest}s matching the given parameters
      * @param status of the request to handle
      * @param storages of the request to handle
      * @param owners of the request to handle
@@ -143,25 +143,25 @@ public class FileReferenceRequestService {
     public Collection<JobInfo> scheduleStoreJobs(FileRequestStatus status, Collection<String> storages,
             Collection<String> owners) {
         Collection<JobInfo> jobList = Lists.newArrayList();
-        Set<String> allStorages = fileRefRequestRepo.findDestinationStoragesByStatus(status);
+        Set<String> allStorages = fileStorageRequestRepo.findDestinationStoragesByStatus(status);
         Set<String> storagesToSchedule = (storages != null) && !storages.isEmpty()
                 ? allStorages.stream().filter(storages::contains).collect(Collectors.toSet())
                 : allStorages;
         for (String storage : storagesToSchedule) {
-            Page<FileReferenceRequest> filesPage;
+            Page<FileStorageRequest> filesPage;
             Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE);
             do {
                 if ((owners != null) && !owners.isEmpty()) {
-                    filesPage = fileRefRequestRepo.findAllByDestinationStorageAndOwnersIn(storage, owners, page);
+                    filesPage = fileStorageRequestRepo.findAllByDestinationStorageAndOwnersIn(storage, owners, page);
                 } else {
-                    filesPage = fileRefRequestRepo.findAllByDestinationStorage(storage, page);
+                    filesPage = fileStorageRequestRepo.findAllByDestinationStorage(storage, page);
                 }
-                List<FileReferenceRequest> fileReferenceRequests = filesPage.getContent();
+                List<FileStorageRequest> fileStorageRequests = filesPage.getContent();
 
                 if (storageHandler.getConfiguredStorages().contains(storage)) {
-                    jobList = this.scheduleStoreJobsByStorage(storage, fileReferenceRequests);
+                    jobList = this.scheduleStoreJobsByStorage(storage, fileStorageRequests);
                 } else {
-                    this.handleStorageNotAvailable(fileReferenceRequests);
+                    this.handleStorageNotAvailable(fileStorageRequests);
                 }
                 page = filesPage.nextPageable();
             } while (filesPage.hasNext());
@@ -170,37 +170,36 @@ public class FileReferenceRequestService {
     }
 
     /**
-     * Schedule {@link FileReferenceRequestJob}s for all given {@link FileReferenceRequest}s and a given storage location.
+     * Schedule {@link FileReferenceRequestJob}s for all given {@link FileStorageRequest}s and a given storage location.
      * @param storage
-     * @param fileRefRequests
+     * @param fileStorageRequests
      * @return {@link JobInfo}s scheduled
      */
     private Collection<JobInfo> scheduleStoreJobsByStorage(String storage,
-            Collection<FileReferenceRequest> fileRefRequests) {
+            Collection<FileStorageRequest> fileStorageRequests) {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
         try {
-
             PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
             IStorageLocation storagePlugin = pluginService.getPlugin(conf.getId());
-
-            Collection<FileReferenceWorkingSubset> workingSubSets = storagePlugin.prepareForStorage(fileRefRequests);
+            Collection<FileStorageWorkingSubset> workingSubSets = storagePlugin
+                    .prepareForStorage(fileStorageRequests);
             workingSubSets.forEach(ws -> {
                 Set<JobParameter> parameters = Sets.newHashSet();
                 parameters.add(new JobParameter(FileReferenceRequestJob.DATA_STORAGE_CONF_ID, conf.getId()));
                 parameters.add(new JobParameter(FileReferenceRequestJob.WORKING_SUB_SET, ws));
-                ws.getFileReferenceRequests().forEach(fileRefReq -> fileRefRequestRepo
-                        .updateStatus(FileRequestStatus.PENDING, fileRefReq.getId()));
+                ws.getFileReferenceRequests().forEach(fileStorageRequest -> fileStorageRequestRepo
+                        .updateStatus(FileRequestStatus.PENDING, fileStorageRequest.getId()));
                 jobInfoList.add(jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
                         FileReferenceRequestJob.class.getName())));
             });
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-            this.handleStorageNotAvailable(fileRefRequests);
+            this.handleStorageNotAvailable(fileStorageRequests);
         }
         return jobInfoList;
     }
 
     /**
-     * Create a new {@link FileReferenceRequest}
+     * Create a new {@link FileStorageRequest}
      * @param owners owners of the file to reference
      * @param fileMetaInfo meta information of the file to reference
      * @param origin file origin location
@@ -208,73 +207,73 @@ public class FileReferenceRequestService {
      */
     public void createNewFileReferenceRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             FileLocation origin, FileLocation destination) {
-        this.createNewFileReferenceRequest(owners, fileMetaInfo, origin, destination, FileRequestStatus.TODO);
+        this.addFileReferenceRequest(owners, fileMetaInfo, origin, destination, FileRequestStatus.TODO);
+    }
+
+    public void addFileReferenceRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
+            FileLocation origin, FileLocation destination, FileRequestStatus status) {
+        // Check if file reference request already exists
+        Optional<FileStorageRequest> oFileRefRequest = search(destination.getStorage(), fileMetaInfo.getChecksum());
+        if (oFileRefRequest.isPresent()) {
+            handleFileReferenceRequestAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owners);
+        } else {
+            newFileReferenceRequest(owners, fileMetaInfo, origin, destination, status);
+        }
     }
 
     /**
-     * Create a new {@link FileReferenceRequest}
+     * Create a new {@link FileStorageRequest}
      * @param owners owners of the file to reference
      * @param fileMetaInfo meta information of the file to reference
      * @param origin file origin location
      * @param destination file destination location (where the file will be stored).
      * @param status status of the file request to create.
      */
-    public void createNewFileReferenceRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
+    private void newFileReferenceRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             FileLocation origin, FileLocation destination, FileRequestStatus status) {
-
-        // Check if file reference request already exists
-        Optional<FileReferenceRequest> oFileRefRequest = this.search(destination.getStorage(),
-                                                                     fileMetaInfo.getChecksum());
-        if (oFileRefRequest.isPresent()) {
-            this.handleFileReferenceRequestAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owners);
+        FileStorageRequest fileStorageRequest = new FileStorageRequest(owners, fileMetaInfo, origin, destination);
+        fileStorageRequest.setStatus(status);
+        if (!storageHandler.getConfiguredStorages().contains(destination.getStorage())) {
+            // The storage destination is unknown, we can already set the request in error status
+            String message = String
+                    .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown. Known storages are %s",
+                            fileMetaInfo.getFileName(), destination.getStorage(),
+                            Arrays.toString(storageHandler.getConfiguredStorages().toArray()));
+            fileStorageRequest.setStatus(FileRequestStatus.ERROR);
+            fileStorageRequest.setErrorCause(message);
+            LOGGER.error(message);
+            fileRefEventPublisher.publishFileRefStoreError(fileMetaInfo.getChecksum(), owners, destination, message);
         } else {
-            FileReferenceRequest fileRefReq = new FileReferenceRequest(owners, fileMetaInfo, origin, destination);
-            fileRefReq.setStatus(status);
-            if (!storageHandler.getConfiguredStorages().contains(destination.getStorage())) {
-                // The storage destination is unknown, we can already set the request in error status
-                String message = String
-                        .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown. Known storages are %s",
-                                fileMetaInfo.getFileName(), destination.getStorage(),
-                                Arrays.toString(storageHandler.getConfiguredStorages().toArray()));
-                fileRefReq.setStatus(FileRequestStatus.ERROR);
-                fileRefReq.setErrorCause(message);
-                LOGGER.error(message);
-                fileRefEventPublisher.publishFileRefStoreError(fileMetaInfo.getChecksum(), owners, destination,
-                                                               message);
-
-            } else {
-                LOGGER.debug("New file reference request created for file <{}> to store to {} with status {}",
-                             fileRefReq.getMetaInfo().getFileName(), fileRefReq.getDestination().toString(),
-                             fileRefReq.getStatus());
-            }
-            fileRefRequestRepo.save(fileRefReq);
+            LOGGER.debug("New file reference request created for file <{}> to store to {} with status {}",
+                         fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getDestination().toString(),
+                         fileStorageRequest.getStatus());
         }
-
+        fileStorageRequestRepo.save(fileStorageRequest);
     }
 
     /**
-     * Method to update a {@link FileReferenceRequest} when a new request is sent for the same associated {@link FileReference}.<br/>
+     * Method to update a {@link FileStorageRequest} when a new request is sent for the same associated {@link FileReference}.<br/>
      * If the existing file request is in error state, update the state to todo to allow store request retry.<br/>
      * The existing request is also updated to add new owners of the future stored and referenced {@link FileReference}.
-     * @param fileReferenceRequest
+     * @param fileStorageRequest
      * @param newMetaInfo
      * @param owners
      */
-    public void handleFileReferenceRequestAlreadyExists(FileReferenceRequest fileReferenceRequest,
+    public void handleFileReferenceRequestAlreadyExists(FileStorageRequest fileStorageRequest,
             FileReferenceMetaInfo newMetaInfo, Collection<String> owners) {
         for (String owner : owners) {
-            if (!fileReferenceRequest.getOwners().contains(owner)) {
-                fileReferenceRequest.getOwners().add(owner);
-                if (newMetaInfo.equals(fileReferenceRequest.getMetaInfo())) {
+            if (!fileStorageRequest.getOwners().contains(owner)) {
+                fileStorageRequest.getOwners().add(owner);
+                if (newMetaInfo.equals(fileStorageRequest.getMetaInfo())) {
                     LOGGER.warn("Existing referenced file meta information differs "
                             + "from new reference meta information. Previous ones are maintained");
                 }
             }
         }
-        switch (fileReferenceRequest.getStatus()) {
+        switch (fileStorageRequest.getStatus()) {
             case ERROR:
                 // Allows storage retry.
-                fileReferenceRequest.setStatus(FileRequestStatus.TODO);
+                fileStorageRequest.setStatus(FileRequestStatus.TODO);
                 break;
             case PENDING:
                 // A storage is already in progress for this request.
@@ -284,35 +283,37 @@ public class FileReferenceRequestService {
                 // Request has not been handled yet, we can update it.
                 break;
         }
-        fileRefRequestRepo.save(fileReferenceRequest);
+        fileStorageRequestRepo.save(fileStorageRequest);
     }
 
     /**
-     * Update a list of {@link FileReferenceRequest}s when the storage destination cannot be handled.
+     * Update a list of {@link FileStorageRequest}s when the storage destination cannot be handled.
      * A storage destination cannot be handled if <ul>
      * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
      * <li> the plugin configuration is disabled </li>
      * </ul>
-     * @param fileRefRequests
+     * @param fileStorageRequests
      */
-    private void handleStorageNotAvailable(Collection<FileReferenceRequest> fileRefRequests) {
-        fileRefRequests.forEach(this::handleStorageNotAvailable);
+    private void handleStorageNotAvailable(Collection<FileStorageRequest> fileStorageRequests) {
+        fileStorageRequests.forEach(this::handleStorageNotAvailable);
     }
 
     /**
-     * Update a {@link FileReferenceRequest} when the storage destination cannot be handled.
+     * Update a {@link FileStorageRequest} when the storage destination cannot be handled.
      * A storage destination cannot be handled if <ul>
      * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
      * <li> the plugin configuration is disabled </li>
      * </ul>
-     * @param fileRefRequest
+     * @param fileStorageRequestuest
      */
-    private void handleStorageNotAvailable(FileReferenceRequest fileRefReq) {
+    private void handleStorageNotAvailable(FileStorageRequest fileStorageRequest) {
         // The storage destination is unknown, we can already set the request in error status
-        fileRefReq.setStatus(FileRequestStatus.ERROR);
-        fileRefReq.setErrorCause(String
+        fileStorageRequest.setStatus(FileRequestStatus.ERROR);
+        fileStorageRequest.setErrorCause(String
                 .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown or disabled.",
-                        fileRefReq.getMetaInfo().getFileName(), fileRefReq.getDestination().getStorage()));
+                        fileStorageRequest.getMetaInfo().getFileName(),
+                        fileStorageRequest.getDestination().getStorage()));
+        update(fileStorageRequest);
     }
 
 }

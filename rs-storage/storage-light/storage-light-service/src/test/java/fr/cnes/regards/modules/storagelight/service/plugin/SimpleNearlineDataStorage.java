@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.storagelight.service.plugin;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -41,14 +40,14 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileRestorationRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileDeletionWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileRestorationWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDeletionProgressManager;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
+import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IRestorationProgressManager;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storagelight.domain.plugin.PluginConfUpdatable;
 
@@ -57,11 +56,11 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.PluginConfUpdatable;
  *
  */
 @Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system",
-        id = "SimpleOnlineTest", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+        id = "SimpleNearlineTest", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
-public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
+public class SimpleNearlineDataStorage implements INearlineStorageLocation {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleOnlineDataStorage.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleNearlineDataStorage.class);
 
     /**
      * Plugin parameter name of the storage base location as a string
@@ -180,11 +179,6 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public InputStream retrieve(FileReference fileRef) throws IOException {
-        return Files.newInputStream(Paths.get(fileRef.getLocation().getUrl()));
-    }
-
-    @Override
     public PluginConfUpdatable allowConfigurationUpdate(PluginConfiguration newConfiguration,
             PluginConfiguration currentConfiguration, boolean filesAlreadyStored) {
         // Only the baseStorageDirectory cannot be changed
@@ -204,6 +198,13 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
         Collection<FileRestorationWorkingSubset> workingSubSets = Lists.newArrayList();
         workingSubSets.add(new FileRestorationWorkingSubset(Sets.newHashSet(requests)));
         return workingSubSets;
+    }
+
+    @Override
+    public void retrieve(FileRestorationWorkingSubset workingSubset, IRestorationProgressManager progressManager) {
+        workingSubset.getFileRestorationRequests().forEach(f -> {
+            progressManager.restoreSucceed(f.getFileReference(), Paths.get(f.getFileDestinationPath()));
+        });
     }
 
 }

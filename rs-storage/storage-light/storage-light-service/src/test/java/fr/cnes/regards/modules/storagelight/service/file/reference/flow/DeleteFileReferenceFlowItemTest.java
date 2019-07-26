@@ -47,8 +47,8 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
 
 /**
  * @author Sébastien Binda
@@ -66,7 +66,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
     FileReferenceService fileRefService;
 
     @Autowired
-    FileReferenceRequestService fileRefRequestService;
+    FileStorageRequestService fileRefRequestService;
 
     @SpyBean
     public IPublisher publisher;
@@ -103,7 +103,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         String checksum = UUID.randomUUID().toString();
         String storage = "some-storage";
         String owner = "owner";
-        this.referenceFile(checksum, Sets.newHashSet(owner), Lists.newArrayList(), "file.test", storage);
+        this.referenceFile(checksum, Sets.newHashSet(owner), null, "file.test", storage);
         Mockito.clearInvocations(publisher);
         DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);
         TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
@@ -131,7 +131,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         String checksum = UUID.randomUUID().toString();
         String storage = "some-storage";
         String owner = "owner";
-        this.referenceFile(checksum, Sets.newHashSet(owner, "other-owner"), Lists.newArrayList(), "file.test", storage);
+        this.referenceFile(checksum, Sets.newHashSet(owner, "other-owner"), null, "file.test", storage);
         Mockito.clearInvocations(publisher);
         DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);
         TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());

@@ -56,4 +56,8 @@ public interface IPrioritizedStorageRepository extends JpaRepository<Prioritized
 
     Set<PrioritizedStorage> findByStorageTypeAndStorageConfigurationLabelIn(StorageType storageType,
             Collection<String> confLabels);
+
+    Set<PrioritizedStorage> findByStorageConfigurationLabelIn(Collection<String> confLabels);
+
+    Optional<PrioritizedStorage> findByStorageConfigurationLabel(String label);
 }

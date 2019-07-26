@@ -28,14 +28,14 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocation;
 
 /**
  * Enable storage task schedulers.
  * This component run multiple scheduled and periodically executed methods :
  * <ul>
- * <li> Handle file reference request {@link FileReferenceRequest} </li>
+ * <li> Handle file reference request {@link FileStorageRequest} </li>
  * <li> Monitor storage locations {@link StorageLocation} </li>
  * <li> Cache purge: {@link #cleanCache()}</li>
  * </ul>

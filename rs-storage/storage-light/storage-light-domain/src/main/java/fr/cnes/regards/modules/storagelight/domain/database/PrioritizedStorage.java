@@ -71,11 +71,11 @@ public class PrioritizedStorage implements Comparable<PrioritizedStorage> {
         this.storageType = dataStorageType;
     }
 
-    public PluginConfiguration getDataStorageConfiguration() {
+    public PluginConfiguration getStorageConfiguration() {
         return storageConfiguration;
     }
 
-    public void setDataStorageConfiguration(PluginConfiguration dataStorageConfiguration) {
+    public void setStorageConfiguration(PluginConfiguration dataStorageConfiguration) {
         this.storageConfiguration = dataStorageConfiguration;
     }
 

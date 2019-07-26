@@ -30,9 +30,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 
@@ -52,12 +52,12 @@ public class FileReferenceJobProgressManager implements IStorageProgressManager 
 
     private final FileReferenceService fileReferenceService;
 
-    private final FileReferenceRequestService fileRefRequestService;
+    private final FileStorageRequestService fileRefRequestService;
 
-    private final Set<FileReferenceRequest> handledRequest = Sets.newHashSet();
+    private final Set<FileStorageRequest> handledRequest = Sets.newHashSet();
 
     public FileReferenceJobProgressManager(FileReferenceService fileReferenceService,
-            FileReferenceRequestService fileRefRequestService, FileRefEventPublisher publisher, IJob<?> job) {
+            FileStorageRequestService fileRefRequestService, FileRefEventPublisher publisher, IJob<?> job) {
         this.publisher = publisher;
         this.job = job;
         this.fileReferenceService = fileReferenceService;
@@ -65,7 +65,7 @@ public class FileReferenceJobProgressManager implements IStorageProgressManager 
     }
 
     @Override
-    public void storageSucceed(FileReferenceRequest fileRefRequest, String storedUrl, Long fileSize) {
+    public void storageSucceed(FileStorageRequest fileRefRequest, String storedUrl, Long fileSize) {
 
         if (storedUrl == null) {
             this.storageFailed(fileRefRequest, String
@@ -91,7 +91,7 @@ public class FileReferenceJobProgressManager implements IStorageProgressManager 
                 fileRefRequest.setOrigin(fileRefRequest.getDestination());
                 fileRefRequest.setStatus(FileRequestStatus.ERROR);
                 fileRefRequest.setErrorCause(errorCause);
-                fileRefRequestService.updateFileReferenceRequest(fileRefRequest);
+                fileRefRequestService.update(fileRefRequest);
                 publisher.publishFileRefStoreError(fileRefRequest.getMetaInfo().getChecksum(),
                                                    fileRefRequest.getOwners(), fileRefRequest.getDestination(),
                                                    errorCause);
@@ -101,7 +101,7 @@ public class FileReferenceJobProgressManager implements IStorageProgressManager 
     }
 
     @Override
-    public void storageFailed(FileReferenceRequest fileRefRequest, String cause) {
+    public void storageFailed(FileStorageRequest fileRefRequest, String cause) {
         LOG.error("[STORAGE ERROR] - Store error for file {} (id={})in {} (checksum: {}). Cause : {}",
                   fileRefRequest.getMetaInfo().getFileName(), fileRefRequest.getId(),
                   fileRefRequest.getDestination().toString(), fileRefRequest.getMetaInfo().getChecksum(), cause);
@@ -109,13 +109,13 @@ public class FileReferenceJobProgressManager implements IStorageProgressManager 
         fileRefRequest.setOrigin(fileRefRequest.getDestination());
         fileRefRequest.setStatus(FileRequestStatus.ERROR);
         fileRefRequest.setErrorCause(cause);
-        fileRefRequestService.updateFileReferenceRequest(fileRefRequest);
+        fileRefRequestService.update(fileRefRequest);
         publisher.publishFileRefStoreError(fileRefRequest.getMetaInfo().getChecksum(), fileRefRequest.getOwners(),
                                            fileRefRequest.getDestination(), cause);
         handledRequest.add(fileRefRequest);
     }
 
-    public boolean isHandled(FileReferenceRequest req) {
+    public boolean isHandled(FileStorageRequest req) {
         return this.handledRequest.contains(req);
     }
 }
