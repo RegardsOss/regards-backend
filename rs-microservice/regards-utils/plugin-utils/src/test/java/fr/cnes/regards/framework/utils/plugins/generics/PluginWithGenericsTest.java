@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.utils.cycle.generics.PluginWithCyclicPojoCollec
 import fr.cnes.regards.framework.utils.cycle.generics.PluginWithCyclicPojoMap;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * Test plugin containing collection as parameter
@@ -46,7 +47,7 @@ public class PluginWithGenericsTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginWithGenericsTest.class);
 
     @Test
-    public void primitiveTest() {
+    public void primitiveTest() throws NotAvailablePluginConfigurationException {
 
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(PluginWithBoolean.FIELD_NAME_OBJECT, true),
@@ -60,7 +61,7 @@ public class PluginWithGenericsTest {
     }
 
     @Test
-    public void stringCollectionTest() {
+    public void stringCollectionTest() throws NotAvailablePluginConfigurationException {
         List<String> infos = Arrays.asList("info 1", "info 2", "info 3");
 
         Set<IPluginParam> parameters = IPluginParam
@@ -74,7 +75,7 @@ public class PluginWithGenericsTest {
     }
 
     @Test
-    public void pojoCollectionTest() {
+    public void pojoCollectionTest() throws NotAvailablePluginConfigurationException {
         Info info1 = new Info();
         info1.setMessage("info 1");
         Info info2 = new Info();
@@ -94,7 +95,7 @@ public class PluginWithGenericsTest {
     }
 
     @Test
-    public void stringMapTest() {
+    public void stringMapTest() throws NotAvailablePluginConfigurationException {
         Map<String, String> infos = new HashMap<>();
         infos.put("info1", "info 1");
         infos.put("info2", "info 2");
@@ -110,7 +111,7 @@ public class PluginWithGenericsTest {
     }
 
     @Test
-    public void pojoMapTest() {
+    public void pojoMapTest() throws NotAvailablePluginConfigurationException {
         Info info1 = new Info();
         info1.setMessage("info 1");
         Info info2 = new Info();
@@ -132,13 +133,13 @@ public class PluginWithGenericsTest {
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
-    public void cyclicCollectionTest() {
+    public void cyclicCollectionTest() throws NotAvailablePluginConfigurationException {
         PluginUtils.setup(this.getClass().getPackage().getName());
         PluginUtils.getPlugin(null, PluginWithCyclicPojoCollection.class, null);
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
-    public void cyclicMapTest() {
+    public void cyclicMapTest() throws NotAvailablePluginConfigurationException {
         PluginUtils.setup(this.getClass().getPackage().getName());
         PluginUtils.getPlugin(null, PluginWithCyclicPojoMap.class, null);
     }

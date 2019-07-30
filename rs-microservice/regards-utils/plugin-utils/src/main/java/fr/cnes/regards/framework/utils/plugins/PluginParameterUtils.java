@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -83,7 +83,7 @@ public final class PluginParameterUtils {
         List<PluginParamDescriptor> parameters = new ArrayList<>();
 
         for (final Field field : ReflectionUtils.getAllDeclaredFields(pluginClass)) {
-            if (field.isAnnotationPresent(PluginParameter.class) || isChildParameters && isToBeConsidered(field)) {
+            if (field.isAnnotationPresent(PluginParameter.class) || (isChildParameters && isToBeConsidered(field))) {
                 // Initialize list of managed types for in depth scanning from root fields
                 List<String> managedTypes = new ArrayList<>();
                 if (isChildParameters) {
@@ -151,7 +151,7 @@ public final class PluginParameterUtils {
             result.setMarkdown(markdown);
 
             // Manage default value
-            if (pluginParameter.defaultValue() != null && !pluginParameter.defaultValue().isEmpty()) {
+            if ((pluginParameter.defaultValue() != null) && !pluginParameter.defaultValue().isEmpty()) {
                 result.setDefaultValue(pluginParameter.defaultValue());
             }
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,12 +18,8 @@
  */
 package fr.cnes.regards.framework.utils.file.compression;
 
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Sets;
 
 /**
  * Enumeration for compression modes
@@ -31,9 +27,11 @@ import com.google.common.collect.Sets;
  */
 public enum CompressionTypeEnum {
 
-    ZIP("zip", "zip"),
-    GZIP("gz", "gz", "z"),
-    TAR("tar", "tar");
+    ZIP("zip"),
+    GZIP("gz"),
+    TAR("tar"),
+    UNKNOWN(""),
+    Z("z");
 
     /**
      * Attribut permettant la journalisation.
@@ -45,37 +43,21 @@ public enum CompressionTypeEnum {
      */
     private final String fileExtension;
 
-    /**
-     * List of extensions handled by the compression type
-     */
-    private final Set<String> handledExtensions = Sets.newHashSet();
-
-    CompressionTypeEnum(String fileExtension, String... handledExtensions) {
+    CompressionTypeEnum(String fileExtension) {
         this.fileExtension = fileExtension;
-        if (handledExtensions != null) {
-            for (String ext : handledExtensions) {
-                this.handledExtensions.add(ext);
-            }
-        }
     }
 
     public String getFileExtension() {
         return fileExtension;
     }
 
-    public Set<String> getHandledExtensions() {
-        return this.handledExtensions;
-    }
-
     public static CompressionTypeEnum parse(String name) {
-        if (name != null) {
-            for (CompressionTypeEnum type : CompressionTypeEnum.values()) {
-                if (type.getHandledExtensions().contains(name.toLowerCase())) {
-                    return type;
-                }
-            }
+        try {
+            return CompressionTypeEnum.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("unknown compression tools type : \"{}\"", name);
+            LOGGER.error(e.getMessage(), e);
+            return CompressionTypeEnum.UNKNOWN;
         }
-        LOGGER.error("Unhandled extension \"{}\" for compression tools", name);
-        return null;
     }
 }

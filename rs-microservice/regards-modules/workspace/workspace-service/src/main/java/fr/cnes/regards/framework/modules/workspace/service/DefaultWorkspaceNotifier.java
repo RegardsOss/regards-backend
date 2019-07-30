@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,28 +18,32 @@
  */
 package fr.cnes.regards.framework.modules.workspace.service;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
- * Default implementation, doing nothing. This implementation is only used if no other implementation is detected by
- * spring.
+ * Default implementation. notify using notification client.
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
-@ConditionalOnMissingBean(IWorkspaceNotifier.class)
 public class DefaultWorkspaceNotifier implements IWorkspaceNotifier {
+
+    @Autowired
+    private INotificationClient notifClient;
 
     @Override
     public void sendErrorNotification(String message, String title, DefaultRole role) {
-        throw new UnsupportedOperationException("This bean has to overriden for real notification");
+        notifClient.notify(message, title, NotificationLevel.ERROR, role);
     }
 
     @Override
     public void sendWarningNotification(String message, String title, DefaultRole role) {
-        throw new UnsupportedOperationException("This bean has to overriden for real notification");
+        notifClient.notify(message, title, NotificationLevel.WARNING, role);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.utils.plugins.generics.IPluginWithGenerics;
  * @author Marc Sordi
  */
 @Plugin(author = "REGARDS Team", description = "Plugin with POJO collection parameter",
-        id = "PluginWithCyclicPojoCollection", version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3",
+        id = "PluginWithCyclicPojoCollection", version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class PluginWithCyclicPojoCollection implements IPluginWithGenerics {
 

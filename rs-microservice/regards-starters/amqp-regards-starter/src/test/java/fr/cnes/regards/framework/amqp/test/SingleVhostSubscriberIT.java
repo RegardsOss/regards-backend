@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -39,8 +39,9 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
-@TestPropertySource(properties = { "regards.amqp.management.mode=SINGLE", "regards.tenants=PROJECT, PROJECT1",
-        "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false", "" },
+@TestPropertySource(
+        properties = { "regards.amqp.management.mode=SINGLE", "regards.tenants=PROJECT, PROJECT1",
+                "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false", "" },
         locations = "classpath:amqp.properties")
 public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
 
@@ -80,6 +81,37 @@ public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
 
     private class MultipleReceiver extends AbstractInfoReceiver {
 
+    }
+
+    @Test
+    public void testBehaviourWithException() {
+
+        // Start listening
+        ExceptionReceiver receiver = new ExceptionReceiver();
+        subscriber.subscribeTo(Info.class, receiver, true);
+
+        // Publish
+        publisher.publish(Info.create(ExceptionReceiver.CRASH));
+        // Message not received due to exception and routed to Dead Letter Queue
+        receiver.assertCount(0);
+
+        // Publish a new message
+        publisher.publish(Info.create("Do no crash!"));
+        // Message is never received
+        receiver.assertCount(1);
+    }
+
+    private class ExceptionReceiver extends AbstractInfoReceiver {
+
+        public static final String CRASH = "crash";
+
+        @Override
+        protected void doHandle(TenantWrapper<Info> wrapper) {
+            super.doHandle(wrapper);
+            if (this.getLastInfo().getMessage().startsWith(CRASH)) {
+                throw new IllegalArgumentException("Message handling fails!");
+            }
+        }
     }
 
     @Override

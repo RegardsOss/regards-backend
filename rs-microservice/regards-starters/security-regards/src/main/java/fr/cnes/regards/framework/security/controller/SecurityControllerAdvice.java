@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -44,6 +44,6 @@ public class SecurityControllerAdvice {
      */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ServerErrorResponse> accessDeniedException(final AccessDeniedException pException) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage(), pException));
     }
 }

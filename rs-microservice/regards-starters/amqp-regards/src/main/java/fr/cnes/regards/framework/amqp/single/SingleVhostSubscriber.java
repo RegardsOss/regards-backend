@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -23,13 +23,13 @@ import java.util.Set;
 
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.retry.interceptor.StatefulRetryOperationsInterceptor;
 
 import fr.cnes.regards.framework.amqp.AbstractSubscriber;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -45,8 +45,8 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
     private final ITenantResolver tenantResolver;
 
     public SingleVhostSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, ITenantResolver tenantResolver, StatefulRetryOperationsInterceptor interceptor) {
-        super(virtualHostAdmin, amqpAdmin, jsonMessageConverters, interceptor);
+            MessageConverter jsonMessageConverters, ITenantResolver tenantResolver, RegardsErrorHandler errorHandler) {
+        super(virtualHostAdmin, amqpAdmin, jsonMessageConverters, errorHandler);
         this.tenantResolver = tenantResolver;
     }
 

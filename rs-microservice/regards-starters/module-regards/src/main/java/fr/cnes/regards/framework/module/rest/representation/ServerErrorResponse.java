@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -37,15 +37,16 @@ public class ServerErrorResponse {
      */
     private final List<String> messages;
 
-    public ServerErrorResponse(String message) {
-        this(Collections.singletonList(message));
+    public ServerErrorResponse(String message, Throwable throwable) {
+        this(Collections.singletonList(message), throwable);
     }
 
-    public ServerErrorResponse(List<String> messages) {
+    public ServerErrorResponse(List<String> messages, Throwable throwable) {
         this.messages = messages;
         if (messages != null) {
             messages.forEach(LOGGER::error);
         }
+        LOGGER.debug(throwable.getMessage(), throwable);
     }
 
     public List<String> getMessages() {

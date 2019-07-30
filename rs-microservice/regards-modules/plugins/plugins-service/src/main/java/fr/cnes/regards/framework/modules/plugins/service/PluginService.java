@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -65,6 +65,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * The implementation of {@link IPluginService}.
@@ -152,7 +153,7 @@ public class PluginService implements IPluginService {
 
         PluginUtils.getPlugins().forEach((pluginId, metaData) -> {
             try {
-                if (interfacePluginType == null
+                if ((interfacePluginType == null)
                         || interfacePluginType.isAssignableFrom(Class.forName(metaData.getPluginClassName()))) {
                     availablePlugins.add(metaData);
                 }
@@ -175,7 +176,7 @@ public class PluginService implements IPluginService {
 
         StringBuilder msg = new StringBuilder("Cannot save plugin configuration");
         PluginConfiguration pluginConfInDb = repos.findOneByLabel(plgConf.getLabel());
-        if (pluginConfInDb != null && !Objects.equals(pluginConfInDb.getId(), plgConf.getId())
+        if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), plgConf.getId())
                 && pluginConfInDb.getLabel().equals(plgConf.getLabel())) {
             msg.append(String.format(". A plugin configuration with same label (%s) already exists.",
                                      plgConf.getLabel()));
@@ -195,7 +196,7 @@ public class PluginService implements IPluginService {
                     PluginParametersFactory.updateParameter(param,
                                                             encryptionService.encrypt(param.getStripParameterValue()));
                 }
-            } else if (param != null && param.getPluginConfiguration() == null && !param.isDynamic()) {
+            } else if ((param != null) && (param.getPluginConfiguration() == null) && !param.isDynamic()) {
                 // Plugin param value is null or empty and is not associate an other plugin conf  so remove the parameter
                 plgConf.getParameters().remove(param);
             }
@@ -225,7 +226,7 @@ public class PluginService implements IPluginService {
                 PluginInterface pi;
                 try {
                     pi = Class.forName(interfaceName).getAnnotation(PluginInterface.class);
-                    if (pi != null && !pi.allowMultipleActiveConfigurations()) {
+                    if ((pi != null) && !pi.allowMultipleActiveConfigurations()) {
                         uniqueActiveConfInterfaces.add(interfaceName);
                     }
                 } catch (ClassNotFoundException e) {
@@ -302,7 +303,7 @@ public class PluginService implements IPluginService {
                     PluginParametersFactory
                             .updateParameter(newParam, encryptionService.encrypt(newParam.getStripParameterValue()));
                 }
-            } else if (newParam != null && newParam.getPluginConfiguration() == null && !newParam.isDynamic()) {
+            } else if ((newParam != null) && (newParam.getPluginConfiguration() == null) && !newParam.isDynamic()) {
                 // Plugin param value is null or empty and is not associated to an other plugin conf  so remove the parameter
                 pluginConf.getParameters().remove(newParam);
             }
@@ -337,7 +338,7 @@ public class PluginService implements IPluginService {
             // First desable all other active configurations
             List<PluginConfiguration> confs = repos.findAll();
             for (PluginConfiguration conf : confs) {
-                if (conf.getId().longValue() != plugin.getId().longValue()
+                if ((conf.getId().longValue() != plugin.getId().longValue())
                         && conf.getInterfaceNames().contains(pluginType.getName()) && conf.isActive()) {
                     conf.setIsActive(false);
                     updatePluginConfiguration(conf);
@@ -415,7 +416,7 @@ public class PluginService implements IPluginService {
         PluginConfiguration configuration = null;
 
         for (final PluginConfiguration conf : confs) {
-            if (configuration == null || conf.getPriorityOrder() < configuration.getPriorityOrder()) {
+            if ((configuration == null) || (conf.getPriorityOrder() < configuration.getPriorityOrder())) {
                 configuration = conf;
             }
         }
@@ -428,9 +429,10 @@ public class PluginService implements IPluginService {
      * We consider only plugin without dynamic parameters so we can profit from the cache system.
      * @return whether a plugin conf, without dynamic parameters is instanciable or not
      * @throws ModuleException when no plugin configuration with this id exists
+     * @throws NotAvailablePluginConfigurationException
      */
     @Override
-    public boolean canInstantiate(Long pluginConfId) throws ModuleException {
+    public boolean canInstantiate(Long pluginConfId) throws ModuleException, NotAvailablePluginConfigurationException {
         try {
             getPlugin(pluginConfId);
             return true;
@@ -444,7 +446,7 @@ public class PluginService implements IPluginService {
     @Override
     public <T> T getPlugin(Long pluginConfId, AbstractPluginParam... dynamicParameters) throws ModuleException {
 
-        if (!isPluginCached(pluginConfId) || dynamicParameters.length > 0) {
+        if (!isPluginCached(pluginConfId) || (dynamicParameters.length > 0)) {
             return instanciatePluginAndCache(pluginConfId, dynamicParameters);
         }
         return (T) getCachedPlugin(pluginConfId);
@@ -456,6 +458,7 @@ public class PluginService implements IPluginService {
      * @param dynamicParameters plugin parameters (including potential dynamic ones)
      * @return plugin instance
      * @throws ModuleException if error occurs!
+     * @throws NotAvailablePluginConfigurationException
      */
     private <T> T instanciatePluginAndCache(Long pluginConfId, AbstractPluginParam... dynamicParameters)
             throws ModuleException {

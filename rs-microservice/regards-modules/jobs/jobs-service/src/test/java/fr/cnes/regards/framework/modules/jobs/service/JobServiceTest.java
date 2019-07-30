@@ -14,15 +14,18 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -49,9 +52,19 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 @Ignore
 public class JobServiceTest {
 
+    public static final String TENANT = "JOBS";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(JobServiceTest.class);
 
-    public static final String TENANT = "JOBS";
+    private static Set<UUID> runnings = Collections.synchronizedSet(new HashSet<>());
+
+    private static Set<UUID> succeededs = Collections.synchronizedSet(new HashSet<>());
+
+    private static Set<UUID> aborteds = Collections.synchronizedSet(new HashSet<>());
+
+    private static Set<UUID> faileds = Collections.synchronizedSet(new HashSet<>());
+
+    private final JobHandler jobHandler = new JobHandler();
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -68,23 +81,16 @@ public class JobServiceTest {
     @Autowired
     private ISubscriber subscriber;
 
-    private static Set<UUID> runnings = Collections.synchronizedSet(new HashSet<>());
-
-    private static Set<UUID> succeededs = Collections.synchronizedSet(new HashSet<>());
-
-    private static Set<UUID> aborteds = Collections.synchronizedSet(new HashSet<>());
-
-    private static Set<UUID> faileds = Collections.synchronizedSet(new HashSet<>());
-
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
-
-    private final JobHandler jobHandler = new JobHandler();
 
     private boolean subscriptionsDone = false;
 
     @Autowired
     private Gson gson;
+
+    @Autowired
+    private ApplicationEventPublisher springPublisher;
 
     @Before
     public void setUp() {
@@ -92,59 +98,17 @@ public class JobServiceTest {
 
         tenantResolver.forceTenant(TENANT);
 
-        rabbitVhostAdmin.bind(tenantResolver.getTenant());
-
-        // FIXME deprecated. use subscriber.subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue)
-        // try {
-        // amqpAdmin.purgeQueue(StopJobEvent.class, (Class<IHandler<StopJobEvent>>) Class
-        // .forName("fr.cnes.regards.framework.modules.jobs.service.JobService$StopJobHandler"), false);
-        // amqpAdmin.purgeQueue(JobEvent.class, jobHandler.getClass(), false);
-        // } catch (Exception e) {
-        // // In case queues don't exist
-        // }
-        rabbitVhostAdmin.unbind();
-
         if (!subscriptionsDone) {
             subscriber.subscribeTo(JobEvent.class, jobHandler);
             subscriptionsDone = true;
         }
+        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
     }
 
     @After
     public void tearDown() {
         tenantResolver.forceTenant(TENANT);
         jobInfoRepos.deleteAll();
-    }
-
-    private class JobHandler implements IHandler<JobEvent> {
-
-        @Override
-        public void handle(TenantWrapper<JobEvent> wrapper) {
-            JobEvent event = wrapper.getContent();
-            JobEventType type = event.getJobEventType();
-            switch (type) {
-                case RUNNING:
-                    runnings.add(wrapper.getContent().getJobId());
-                    LOGGER.info("RUNNING for " + wrapper.getContent().getJobId());
-                    break;
-                case SUCCEEDED:
-
-                    succeededs.add(wrapper.getContent().getJobId());
-                    LOGGER.info("SUCCEEDED for " + wrapper.getContent().getJobId());
-                    break;
-                case ABORTED:
-                    aborteds.add(wrapper.getContent().getJobId());
-                    LOGGER.info("ABORTED for " + wrapper.getContent().getJobId());
-                    break;
-                case FAILED:
-                    faileds.add(wrapper.getContent().getJobId());
-                    LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
-                    break;
-                default:
-                    throw new IllegalArgumentException(type + " is not an handled type of JobEvent for this test: "
-                            + JobServiceTest.class.getSimpleName());
-            }
-        }
     }
 
     @Test
@@ -264,6 +228,38 @@ public class JobServiceTest {
         // Wait for job to terminate
         while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < 1) {
             Thread.sleep(1_000);
+        }
+    }
+
+    private class JobHandler implements IHandler<JobEvent> {
+
+        @Override
+        public void handle(TenantWrapper<JobEvent> wrapper) {
+            JobEvent event = wrapper.getContent();
+            JobEventType type = event.getJobEventType();
+            switch (type) {
+                case RUNNING:
+                    runnings.add(wrapper.getContent().getJobId());
+                    LOGGER.info("RUNNING for " + wrapper.getContent().getJobId());
+                    break;
+                case SUCCEEDED:
+
+                    succeededs.add(wrapper.getContent().getJobId());
+                    LOGGER.info("SUCCEEDED for " + wrapper.getContent().getJobId());
+                    break;
+                case ABORTED:
+                    aborteds.add(wrapper.getContent().getJobId());
+                    LOGGER.info("ABORTED for " + wrapper.getContent().getJobId());
+                    break;
+                case FAILED:
+                    faileds.add(wrapper.getContent().getJobId());
+                    LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            type + " is not an handled type of JobEvent for this test: " + JobServiceTest.class
+                                    .getSimpleName());
+            }
         }
     }
 }

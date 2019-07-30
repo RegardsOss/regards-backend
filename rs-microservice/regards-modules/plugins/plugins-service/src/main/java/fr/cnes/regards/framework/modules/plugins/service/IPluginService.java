@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -67,8 +67,9 @@ public interface IPluginService {
 
     /**
      * @return whether the plugin configured by the given plugin configuration threw its id cna be instantiated or not
+     * @throws NotAvailablePluginConfigurationException
      */
-    boolean canInstantiate(Long pluginConfigurationId) throws ModuleException;
+    boolean canInstantiate(Long pluginConfigurationId) throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
      * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
@@ -78,6 +79,7 @@ public interface IPluginService {
      * @param dynamicPluginParameters list of dynamic {@link AbstractPluginParam}
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
+     * @throws NotAvailablePluginConfigurationException
      */
     <T> T getPlugin(Long pluginConfigurationId, final AbstractPluginParam... dynamicPluginParameters)
             throws ModuleException;
@@ -108,6 +110,7 @@ public interface IPluginService {
      * @param pluginParameters an optional list of {@link AbstractPluginParam}
      * @return a plugin instance
      * @throws ModuleException thrown if an error occurs
+     * @throws NotAvailablePluginConfigurationException
      */
     <T> T getFirstPluginByType(Class<?> interfacePluginType, final AbstractPluginParam... pluginParameters)
             throws ModuleException;

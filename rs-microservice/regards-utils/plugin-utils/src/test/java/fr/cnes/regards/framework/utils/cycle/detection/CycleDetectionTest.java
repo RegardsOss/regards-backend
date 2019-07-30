@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTest;
 import fr.cnes.regards.framework.utils.plugins.basic.SamplePlugin;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * Unit testing of {@link PluginUtils}.
@@ -48,7 +49,7 @@ public class CycleDetectionTest {
     private static final String PLUGIN_PACKAGE = "fr.cnes.regards.framework.utils.plugins";
 
     @Test
-    public void cycleDetectionOK() {
+    public void cycleDetectionOK() throws NotAvailablePluginConfigurationException {
         List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");
@@ -87,7 +88,7 @@ public class CycleDetectionTest {
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
-    public void cycleDetectedWithTwoLevel() {
+    public void cycleDetectedWithTwoLevel() throws NotAvailablePluginConfigurationException {
         List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");
@@ -134,7 +135,7 @@ public class CycleDetectionTest {
     }
 
     @Test
-    public void cycleDetectedWithSet() {
+    public void cycleDetectedWithSet() throws NotAvailablePluginConfigurationException {
         TestPojoWithSet pojoParent = new TestPojoWithSet();
 
         TestPojoChildWithSet pojoChild = new TestPojoChildWithSet();
@@ -166,7 +167,7 @@ public class CycleDetectionTest {
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
-    public void cycleDetectedWithThreeLevel() {
+    public void cycleDetectedWithThreeLevel() throws NotAvailablePluginConfigurationException {
         List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");

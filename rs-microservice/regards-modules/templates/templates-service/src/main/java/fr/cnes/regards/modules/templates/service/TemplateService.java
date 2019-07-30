@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -95,6 +95,9 @@ public class TemplateService implements ITemplateService {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
+    private ITemplateService self;
+
+    @Autowired
     private Set<Template> templates;
 
     @Value("${regards.microservice.type:multitenant}")
@@ -118,13 +121,13 @@ public class TemplateService implements ITemplateService {
     public void onApplicationStarted(ApplicationStartedEvent event) {
         if (microserviceType.equals(MICROSERVICE_TYPE)) {
             // Init default templates for this tenant
-            initDefaultTemplates();
+            self.initDefaultTemplates();
         } else {
             for (final String tenant : tenantResolver.getAllActiveTenants()) {
                 // Set working tenant
                 runtimeTenantResolver.forceTenant(tenant);
                 // Init default templates for this tenant
-                initDefaultTemplates();
+                self.initDefaultTemplates();
             }
         }
     }
@@ -135,13 +138,14 @@ public class TemplateService implements ITemplateService {
         // Set working tenant
         runtimeTenantResolver.forceTenant(event.getTenant());
         // Init default templates for this tenant
-        initDefaultTemplates();
+        self.initDefaultTemplates();
     }
 
     /**
      * Populate the templates with default
      */
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void initDefaultTemplates() {
         // Look into classpath (via TemplateConfigUtil) if some templates are present. If yes, check if they
         // exist into Database, if not, create them

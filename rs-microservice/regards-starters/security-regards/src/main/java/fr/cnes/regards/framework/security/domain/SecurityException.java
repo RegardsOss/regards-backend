@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -35,11 +35,15 @@ public class SecurityException extends Exception {
      * @param pMessage the message
      * @param pCause the cause
      */
-    public SecurityException(final String pMessage, final Throwable pCause) {
-        super(pMessage, pCause);
+    public SecurityException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 
     public SecurityException(Throwable cause) {
         super(cause);
+    }
+
+    public SecurityException(String message) {
+        super(message);
     }
 }

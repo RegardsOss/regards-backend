@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -113,4 +113,9 @@ public interface IRabbitVirtualHostAdmin {
      * @return true if the virtual host {@link ConnectionFactory} is already bound
      */
     boolean isBound(String virtualHost);
+
+    /**
+     * Retrieve Virtual host mode
+     */
+    public VirtualHostMode getMode();
 }

@@ -3,6 +3,7 @@ package fr.cnes.regards.framework.utils.file;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.file.Files;
@@ -10,10 +11,13 @@ import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import com.google.common.collect.Sets;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -57,7 +61,7 @@ public class DownloadUtilsTests {
         String fileLocation = "src/test/resources/data.txt";
         URL source = new URL("file", "localhost", fileLocation);
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy2.si.c-s.fr", 3128));
-        InputStream is = DownloadUtils.getInputStreamThroughProxy(source, proxy);
+        InputStream is = DownloadUtils.getInputStreamThroughProxy(source, proxy, null);
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
         while (dis.read() != -1) {
         }
@@ -93,7 +97,7 @@ public class DownloadUtilsTests {
     public void testDownloadWithHttpProtocolWithProxy() throws IOException, NoSuchAlgorithmException {
         URL source = new URL("http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-3");
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy2.si.c-s.fr", 3128));
-        InputStream is = DownloadUtils.getInputStreamThroughProxy(source, proxy);
+        InputStream is = DownloadUtils.getInputStreamThroughProxy(source, proxy, null);
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
         while (dis.read() != -1) {
         }
@@ -101,5 +105,13 @@ public class DownloadUtilsTests {
         dis.close();
         // expected checksum was calculated thanks to md5sum after a wget of the file
         Assert.assertEquals("464530a4e23f4f831eeabf9678c43bdf", checksum);
+    }
+
+    @Test
+    public void testNonProxyHosts() throws MalformedURLException {
+        Set<String> nonProxyHosts = Sets.newHashSet("localhost", "plop.com");
+        Assert.assertFalse(DownloadUtils.needProxy(new URL("http://plop.com/files/myFile.txt"), nonProxyHosts));
+
+        Assert.assertTrue(DownloadUtils.needProxy(new URL("http://plip.com/files/myFile.txt"), nonProxyHosts));
     }
 }

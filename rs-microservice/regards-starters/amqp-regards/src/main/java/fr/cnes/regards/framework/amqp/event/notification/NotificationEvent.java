@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -25,6 +25,7 @@ import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 
@@ -34,7 +35,7 @@ import fr.cnes.regards.framework.notification.NotificationDTO;
  * @author Marc SORDI
  *
  */
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class NotificationEvent implements ISubscribable {
 
     @Valid

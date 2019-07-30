@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -85,9 +85,9 @@ public @interface Plugin {
     String owner();
 
     /**
-     * Licence of the plugin.
-     * @return the plugin's licence
+     * License of the plugin.
+     * @return the plugin's license
      */
-    String licence();
+    String license();
 
 }

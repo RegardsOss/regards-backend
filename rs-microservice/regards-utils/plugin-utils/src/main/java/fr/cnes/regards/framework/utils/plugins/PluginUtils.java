@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -52,6 +52,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.bean.PluginUtilsBean;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * This class contains all the utilities to create a {@link Plugin} instance, to retrieve all annotated plugins and to
@@ -149,19 +150,16 @@ public final class PluginUtils {
             // Check a plugin does not already exists with the same plugin id
             if (pluginMetadataCache.containsKey(plugin.getPluginId())) {
                 PluginMetaData pMeta = pluginMetadataCache.get(plugin.getPluginId());
-                String message = String.format(
-                        "Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
-                        plugin.getPluginId(),
-                        plugin.getPluginClassName(),
-                        pMeta.getPluginClassName());
+                String message = String
+                        .format("Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
+                                plugin.getPluginId(), plugin.getPluginClassName(), pMeta.getPluginClassName());
                 LOGGER.warn(message);
             }
 
             // Store plugin reference
             pluginMetadataCache.put(plugin.getPluginId(), plugin);
 
-            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.",
-                                      plugin.getPluginClassName(),
+            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.", plugin.getPluginClassName(),
                                       plugin.getPluginId()));
         }
         LOGGER.info("{} Plugins loaded!", HR);
@@ -220,7 +218,12 @@ public final class PluginUtils {
      * @return an instance of a {@link Plugin} @ if a problem occurs
      */
     public static <T> T getPlugin(PluginConfiguration conf, PluginMetaData pluginMetadata,
-            Map<Long, Object> instantiatedPlugins, IPluginParam... dynamicParams) {
+            Map<Long, Object> instantiatedPlugins, IPluginParam... dynamicParams)
+            throws NotAvailablePluginConfigurationException {
+        if (!conf.isActive()) {
+            throw new NotAvailablePluginConfigurationException(
+                    String.format("Plugin configuration <%d - %s> is not active.", conf.getId(), conf.getLabel()));
+        }
         return getPlugin(conf, pluginMetadata.getPluginClassName(), instantiatedPlugins, dynamicParams);
     }
 
@@ -267,7 +270,7 @@ public final class PluginUtils {
      * @return a {@link Plugin} instance
      */
     public static <T> T getPlugin(Set<IPluginParam> params, Class<T> pluginClass, Map<Long, Object> instantiatedPlugins,
-            IPluginParam... dynamicPlugins) {
+            IPluginParam... dynamicPlugins) throws NotAvailablePluginConfigurationException {
         // Build plugin metadata
         PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pluginClass);
 
@@ -285,7 +288,6 @@ public final class PluginUtils {
             if (method.isAnnotationPresent(PluginDestroy.class)) {
                 // Invoke method
                 ReflectionUtils.makeAccessible(method);
-
                 try {
                     method.invoke(plugin);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
@@ -392,15 +394,16 @@ public final class PluginUtils {
             // the plugin configuration should not have any reference to plugin parameters that are only dynamic
             // lets check that all remaining parameters are correctly given
             for (PluginParamDescriptor plgParamMeta : pluginParametersFromMeta) {
-                if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable()
-                        && conf.getParameter(plgParamMeta.getName()) == null
+                IPluginParam parameterFromConf = conf.getParameter(plgParamMeta.getName());
+                if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && parameterFromConf == null
                         && plgParamMeta.getDefaultValue() == null) {
                     validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
                 }
                 // lets add some basic type validation while we are iterating over parameters
                 // in case it is not optional or missing
                 if (parameterFromConf != null) {
-                    checkPrimitiveBoundaries(validationErrors, plgParamMeta, parameterFromConf);
+                    // FIXME check if not useful anymore
+                    // checkPrimitiveBoundaries(validationErrors, plgParamMeta, parameterFromConf);
                 }
             }
         } catch (ClassNotFoundException e) {
@@ -410,38 +413,82 @@ public final class PluginUtils {
         return validationErrors.isEmpty() ? null : new EntityInvalidException(validationErrors);
     }
 
-    private static void checkPrimitiveBoundaries(List<String> validationErrors, PluginParameterType plgParamMeta,
-            PluginParameter parameterFromConf) throws ClassNotFoundException {
-        if (plgParamMeta.getParamType() == PluginParameterType.ParamType.PRIMITIVE) {
-            // String are not checked as we cannot imagine a string which is not valid in term of java representation
-            // Boolean aren't either because unless its string representation is "true" if it considered false
-            Class<?> clazz = Class.forName(plgParamMeta.getType());
-            try {
-                // paramStrippedValue nullability is not a problem here.
-                // If it is null it means that the parameter is of type string with an empty value and we do not check them here.
-                String paramStrippedValue = parameterFromConf.getStripParameterValue();
-                // check numbers boundaries
-                if (clazz.isAssignableFrom(Long.class)) {
-                    Long.parseLong(paramStrippedValue);
-                } else if (clazz.isAssignableFrom(Integer.class)) {
-                    Integer.parseInt(paramStrippedValue);
-                } else if (clazz.isAssignableFrom(Short.class)) {
-                    Short.parseShort(paramStrippedValue);
-                } else if (clazz.isAssignableFrom(Byte.class)) {
-                    Byte.parseByte(paramStrippedValue);
-                } else if (clazz.isAssignableFrom(Float.class)) {
-                    Float.parseFloat(paramStrippedValue);
-                } else if (clazz.isAssignableFrom(Double.class)) {
-                    Double.parseDouble(paramStrippedValue);
-                }
-            } catch (NumberFormatException e) {
-                LOGGER.error(e.getMessage(), e);
-                validationErrors.add(String.format(
-                        "Plugin Parameter %s has an invalid value. " + "It is of type %s and could not be parsed. "
-                                + "Value might be too high or too low.",
-                        plgParamMeta.getName(),
-                        clazz.getSimpleName()));
-            }
-        }
-    }
+    // FIXME check if not useful anymore
+    //    private static void checkPrimitiveBoundaries(List<String> validationErrors, PluginParamDescriptor plgParamMeta,
+    //            IPluginParam param) {
+    //        if (plgParamMeta.getParamType() == PluginParameterType.ParamType.PRIMITIVE) {
+    //            String plgParamType = plgParamMeta.getType();
+    //            // first handle real primitive types then use class.forName
+    //            Class<?> clazz = null;
+    //            try {
+    //                switch (plgParamType) {
+    //                    case "long":
+    //                        clazz = Long.TYPE;
+    //                        break;
+    //                    case "int":
+    //                        clazz = Integer.TYPE;
+    //                        break;
+    //                    case "short":
+    //                        clazz = Short.TYPE;
+    //                        break;
+    //                    case "byte":
+    //                        clazz = Byte.TYPE;
+    //                        break;
+    //                    case "float":
+    //                        clazz = Float.TYPE;
+    //                        break;
+    //                    case "double":
+    //                        clazz = Double.TYPE;
+    //                        break;
+    //                    case "char":
+    //                        clazz = Character.TYPE;
+    //                        break;
+    //                    case "void":
+    //                        clazz = Void.TYPE;
+    //                        break;
+    //                    case "boolean":
+    //                        clazz = Boolean.TYPE;
+    //                        break;
+    //                    default:
+    //                        clazz = Class.forName(plgParamType);
+    //                        break;
+    //                }
+    //                // String are not checked as we cannot imagine a string which is not valid in term of java representation
+    //                // Boolean aren't either because unless its string representation is "true" if it considered false
+    //                // paramStrippedValue nullability is not a problem here.
+    //                // If it is null it means that the parameter is of type string with an empty value and we do not check them here.
+    //                String paramStrippedValue = param.getStripParameterValue();
+    //
+    //                if ((plgParamMeta.isOptional() || !Strings.isNullOrEmpty(plgParamMeta.getDefaultValue()))
+    //                        && (paramStrippedValue == null || paramStrippedValue.isEmpty())) {
+    //                    // Skip check for optional value and default param value
+    //                    return;
+    //                }
+    //
+    //                // check numbers boundaries
+    //                if (clazz.isAssignableFrom(Long.class)) {
+    //                    Long.parseLong(paramStrippedValue);
+    //                } else if (clazz.isAssignableFrom(Integer.class)) {
+    //                    Integer.parseInt(paramStrippedValue);
+    //                } else if (clazz.isAssignableFrom(Short.class)) {
+    //                    Short.parseShort(paramStrippedValue);
+    //                } else if (clazz.isAssignableFrom(Byte.class)) {
+    //                    Byte.parseByte(paramStrippedValue);
+    //                } else if (clazz.isAssignableFrom(Float.class)) {
+    //                    Float.parseFloat(paramStrippedValue);
+    //                } else if (clazz.isAssignableFrom(Double.class)) {
+    //                    Double.parseDouble(paramStrippedValue);
+    //                }
+    //            } catch (ClassNotFoundException e) {
+    //                LOGGER.error(e.getMessage(), e);
+    //                validationErrors.add(String
+    //                        .format("Plugin parameter %s is of type %s. We could not find the class descriptor associated to.",
+    //                                plgParamMeta.getName(), plgParamType));
+    //            } catch (NumberFormatException e) {
+    //                LOGGER.error(e.getMessage(), e);
+    //                validationErrors.add(String.format("Plugin Parameter %s has an invalid value. "
+    //                        + "It is of type %s and could not be parsed. " + "Value might be too high or too low.",
+    //                                                   plgParamMeta.getName(), clazz.getSimpleName()));
+    //            }
+    //        }
 }

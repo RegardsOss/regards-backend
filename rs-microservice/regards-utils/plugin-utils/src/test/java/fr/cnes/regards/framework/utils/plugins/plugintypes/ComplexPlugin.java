@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.utils.plugins.basic.ISamplePlugin;
  * @author Christophe Mertz
  */
 @Plugin(description = "Complex plugin test", id = "aComplexPlugin", version = "0.0.1", author = "REGARDS Team",
-        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class ComplexPlugin implements ISamplePlugin {
 
     // Field names

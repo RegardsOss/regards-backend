@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * Test plugin with inheritance
@@ -33,7 +34,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 public class InheritanceTests {
 
     @Test
-    public void test() {
+    public void test() throws NotAvailablePluginConfigurationException {
 
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(BasicPlugin.FIELD_NAME_STRING, "hello!"),

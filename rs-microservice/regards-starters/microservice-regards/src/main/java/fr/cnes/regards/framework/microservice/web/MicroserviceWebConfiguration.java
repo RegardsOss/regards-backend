@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,12 @@
  */
 package fr.cnes.regards.framework.microservice.web;
 
+import java.util.Iterator;
+import java.util.List;
+
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -40,5 +46,18 @@ public class MicroserviceWebConfiguration implements WebMvcConfigurer {
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         // Avoid to match uri path extension with a content negociator.
         configurer.favorPathExtension(false);
+    }
+
+    @Override
+    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        Iterator<HttpMessageConverter<?>> it = converters.iterator();
+        // Remove all converters for XML format to only add one which is Jaxb.
+        while (it.hasNext()) {
+            HttpMessageConverter<?> converter = it.next();
+            if (converter.getSupportedMediaTypes().contains(MediaType.APPLICATION_XML)) {
+                it.remove();
+            }
+        }
+        converters.add(new Jaxb2RootElementHttpMessageConverter());
     }
 }

@@ -1,7 +1,5 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.OffsetDateTime;
@@ -15,6 +13,9 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -161,7 +163,7 @@ public class JobService implements IJobService {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                                             + "of the end, pray for your soul", e);
+                                + "of the end, pray for your soul", e);
                     }
                 }
                 // Find highest priority job to execute
@@ -182,7 +184,7 @@ public class JobService implements IJobService {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                                         + "of the end, pray for your soul", e);
+                            + "of the end, pray for your soul", e);
                 }
             }
         }
@@ -213,11 +215,18 @@ public class JobService implements IJobService {
         }
     }
 
+    @Override
+    public RunnableFuture<Void> runJob(JobInfo jobInfo, String tenant) {
+        jobInfo.setTenant(tenant);
+        return this.execute(jobInfo);
+    }
+
     @SuppressWarnings("unchecked")
-    public void execute(JobInfo jobInfo) {
+    public RunnableFuture<Void> execute(JobInfo jobInfo) {
+        RunnableFuture<Void> future = null;
         try {
             // we force tenant in all cases even if everything is good there is no need to.
-            // forced tenant is neccessary when updating database so for the following cases:
+            // forced tenant is necessary when updating database so for the following cases:
             // expired job, aborted job, instantiation errors and job resetting
             runtimeTenantResolver.forceTenant(jobInfo.getTenant());
             // Case expiration date reached
@@ -226,7 +235,7 @@ public class JobService implements IJobService {
                 jobInfo.getStatus().setStackTrace("Expiration date reached");
                 jobInfoService.save(jobInfo);
                 publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
-                return;
+                return null;
             }
             // Case job aborted before its execution
             if (abortedBeforeStartedJobs.contains(jobInfo.getId())) {
@@ -234,10 +243,11 @@ public class JobService implements IJobService {
                 jobInfo.updateStatus(JobStatus.ABORTED);
                 jobInfoService.save(jobInfo);
                 publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
-                return;
+                return null;
             }
             // First, instantiate job
-            @SuppressWarnings("rawtypes") IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
+            @SuppressWarnings("rawtypes")
+            IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
             beanFactory.autowireBean(job);
             job.setParameters(jobInfo.getParametersAsMap());
             if (job.needWorkspace()) {
@@ -245,7 +255,9 @@ public class JobService implements IJobService {
             }
             jobInfo.setJob(job);
             // Run job (before executing Job, JobThreadPoolExecutor save JobInfo, have a look if you don't believe me)
-            jobsMap.put(jobInfo, (RunnableFuture<Void>) threadPool.submit(job));
+            future = (RunnableFuture<Void>) threadPool.submit(job);
+            jobsMap.put(jobInfo, future);
+            return future;
         } catch (RejectedExecutionException e) {
             // ThreadPool has been shutted down (maybe due to a refresh)
             LOGGER.warn("Job thread pool rejects job {}", jobInfo.getId());
@@ -262,10 +274,10 @@ public class JobService implements IJobService {
         } catch (JobParameterInvalidException e) {
             LOGGER.error("Invalid parameter", e);
             manageJobInstantiationError(jobInfo, e);
-        }
-        finally {
+        } finally {
             runtimeTenantResolver.clearTenant();
         }
+        return future;
     }
 
     /**

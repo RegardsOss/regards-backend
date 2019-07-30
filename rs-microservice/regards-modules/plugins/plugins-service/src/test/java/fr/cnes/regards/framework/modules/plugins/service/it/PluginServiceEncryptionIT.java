@@ -21,6 +21,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * Integration tests on sensitive plugin parameter handling
@@ -58,7 +59,7 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
     }
 
     @Test
-    public void testInstanciateSensitivePlugin() throws ModuleException {
+    public void testInstanciateSensitivePlugin() throws ModuleException, NotAvailablePluginConfigurationException {
         PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class);
         String paramValue = "Un petit test";
         Set<AbstractPluginParam> params = PluginParametersFactory.build()

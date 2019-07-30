@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.framework.utils.plugins.generics.PluginWithBoolean;
 
 /**
@@ -39,7 +40,7 @@ public class PluginFreeTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginFreeTest.class);
 
     @Test
-    public void stringTest() {
+    public void stringTest() throws NotAvailablePluginConfigurationException {
 
         String expected = "string1";
 

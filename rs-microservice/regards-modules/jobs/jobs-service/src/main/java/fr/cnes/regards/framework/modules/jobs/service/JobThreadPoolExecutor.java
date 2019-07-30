@@ -4,6 +4,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RunnableFuture;
@@ -17,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.FileSystemUtils;
 
 import com.google.common.collect.BiMap;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -31,6 +32,38 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * @author oroussel
  */
 public class JobThreadPoolExecutor extends ThreadPoolExecutor {
+
+    /**
+     * The default thread factory
+     */
+    private static final class DefaultJobThreadFactory implements ThreadFactory {
+
+        private static final AtomicInteger poolNumber = new AtomicInteger(1);
+
+        private final ThreadGroup group;
+
+        private final AtomicInteger threadNumber = new AtomicInteger(1);
+
+        private final String namePrefix;
+
+        private DefaultJobThreadFactory() {
+            SecurityManager s = System.getSecurityManager();
+            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+            namePrefix = "job-pool-" + poolNumber.getAndIncrement() + "-thread-";
+        }
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+            if (t.isDaemon()) {
+                t.setDaemon(false);
+            }
+            if (t.getPriority() != Thread.NORM_PRIORITY) {
+                t.setPriority(Thread.NORM_PRIORITY);
+            }
+            return t;
+        }
+    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
 
@@ -46,6 +79,8 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
     private final BiMap<JobInfo, RunnableFuture<Void>> jobsMap;
 
     private final IPublisher publisher;
+
+    private final Executor singleThreadExecutor = Executors.newSingleThreadExecutor();
 
     public JobThreadPoolExecutor(int poolSize, IJobInfoService jobInfoService,
             BiMap<JobInfo, RunnableFuture<Void>> jobsMap, IRuntimeTenantResolver runtimeTenantResolver,
@@ -83,24 +118,33 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
             try {
                 ((Future<?>) r).get();
             } catch (CancellationException ce) {
+                // after execute being execute in the thread that is ending,
+                // to avoid issues with interruption at the wrong moment,
+                // we need to create a new thread to update the db
                 t = ce;
-                jobInfo.updateStatus(JobStatus.ABORTED);
-                jobInfoService.save(jobInfo);
-                publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
+                singleThreadExecutor.execute(() -> {
+                    runtimeTenantResolver.forceTenant(jobInfo.getTenant());
+                    jobInfo.updateStatus(JobStatus.ABORTED);
+                    jobInfoService.save(jobInfo);
+                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
+                });
             } catch (ExecutionException ee) {
                 t = ee.getCause();
                 LOGGER.error("Job failed", t);
-                jobInfo.updateStatus(JobStatus.FAILED);
                 StringWriter sw = new StringWriter();
                 t.printStackTrace(new PrintWriter(sw));
-                jobInfo.getStatus().setStackTrace(sw.toString());
-                jobInfoService.save(jobInfo);
-                publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
+                singleThreadExecutor.execute(() -> {
+                    runtimeTenantResolver.forceTenant(jobInfo.getTenant());
+                    jobInfo.updateStatus(JobStatus.FAILED);
+                    jobInfo.getStatus().setStackTrace(sw.toString());
+                    jobInfoService.save(jobInfo);
+                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
+                });
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt(); // ignore/reset
             }
         }
-        // If no error
+        // If no error, we don't create a new thread as there should not be any issues
         if (t == null) {
             jobInfo.updateStatus(JobStatus.SUCCEEDED);
             jobInfo.setResult(jobInfo.getJob().getResult());
@@ -113,38 +157,6 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         }
         // Clean jobsMap
         jobsMap.remove(jobInfo);
-    }
-
-    /**
-     * The default thread factory
-     */
-    private static final class DefaultJobThreadFactory implements ThreadFactory {
-
-        private static final AtomicInteger poolNumber = new AtomicInteger(1);
-
-        private final ThreadGroup group;
-
-        private final AtomicInteger threadNumber = new AtomicInteger(1);
-
-        private final String namePrefix;
-
-        private DefaultJobThreadFactory() {
-            SecurityManager s = System.getSecurityManager();
-            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-            namePrefix = "job-pool-" + poolNumber.getAndIncrement() + "-thread-";
-        }
-
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
-            if (t.isDaemon()) {
-                t.setDaemon(false);
-            }
-            if (t.getPriority() != Thread.NORM_PRIORITY) {
-                t.setPriority(Thread.NORM_PRIORITY);
-            }
-            return t;
-        }
     }
 
 }

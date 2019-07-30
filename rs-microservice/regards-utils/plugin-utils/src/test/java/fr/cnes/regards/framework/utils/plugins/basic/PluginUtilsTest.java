@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils.PrimitiveObject;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * Unit testing of {@link PluginUtils}.
@@ -72,7 +73,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         Assert.assertNotNull(pluginMetaData.getContact());
         Assert.assertNotNull(pluginMetaData.getOwner());
         Assert.assertNotNull(pluginMetaData.getVersion());
-        Assert.assertNotNull(pluginMetaData.getLicence());
+        Assert.assertNotNull(pluginMetaData.getLicense());
 
         LOGGER.debug(ENDING + toString());
     }
@@ -93,9 +94,10 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Get a {@link SamplePlugin} with a specific parameters
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test
-    public void getSamplePlugin() {
+    public void getSamplePlugin() throws NotAvailablePluginConfigurationException {
         SamplePlugin samplePlugin = null;
 
         LOGGER.debug(STARTING + toString());
@@ -122,9 +124,10 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Get a {@link SamplePlugin} with a specific parameters
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test
-    public void getSamplePluginWithOneDynamicParameter() {
+    public void getSamplePluginWithOneDynamicParameter() throws NotAvailablePluginConfigurationException {
         SamplePlugin samplePlugin = null;
 
         LOGGER.debug(STARTING + toString());
@@ -149,7 +152,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     }
 
     @Test
-    public void getSamplePluginDynamicParameterNull() {
+    public void getSamplePluginDynamicParameterNull() throws NotAvailablePluginConfigurationException {
         SamplePlugin samplePlugin = null;
 
         LOGGER.debug(STARTING + toString());
@@ -175,9 +178,10 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Get a {@link SamplePlugin} with a specific parameters
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test
-    public void getSamplePluginWithOneDynamicParameterWithValues() {
+    public void getSamplePluginWithOneDynamicParameterWithValues() throws NotAvailablePluginConfigurationException {
         SamplePlugin samplePlugin = null;
 
         LOGGER.debug(STARTING + toString());
@@ -206,9 +210,10 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Get a {@link SamplePlugin} with a specific parameters
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test
-    public void getSamplePluginWithoutDynamicParameterWithValues() {
+    public void getSamplePluginWithoutDynamicParameterWithValues() throws NotAvailablePluginConfigurationException {
         SamplePlugin samplePlugin = null;
 
         LOGGER.debug(STARTING + toString());
@@ -234,9 +239,10 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Get a {@link SamplePlugin} with a specific parameters @ An error occurs
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test(expected = PluginUtilsRuntimeException.class)
-    public void getSamplePluginWithUnknownDynamicParameterWithValues() {
+    public void getSamplePluginWithUnknownDynamicParameterWithValues() throws NotAvailablePluginConfigurationException {
         LOGGER.debug(STARTING + toString());
 
         Set<IPluginParam> parameters = IPluginParam
@@ -255,9 +261,10 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Used the default parameter value when the Integer parameter is missing
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test
-    public void getSamplePluginMissingIntegerParameter() {
+    public void getSamplePluginMissingIntegerParameter() throws NotAvailablePluginConfigurationException {
         SamplePlugin samplePlugin = null;
 
         LOGGER.debug(STARTING + toString());
@@ -279,7 +286,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
-    public void getSamplePluginMissingStringParameter() {
+    public void getSamplePluginMissingStringParameter() throws NotAvailablePluginConfigurationException {
 
         LOGGER.debug(STARTING + toString());
 
@@ -297,10 +304,11 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     }
 
     /**
-     * Error when calling init method
+     * Unable to get {@link SamplePlugin} an Integer parameter is missing
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test(expected = PluginUtilsRuntimeException.class)
-    public void getSamplePluginWithErrorInitMethod() {
+    public void getSamplePluginWithErrorInitMethod() throws NotAvailablePluginConfigurationException {
         LOGGER.debug(STARTING + toString());
 
         // Set parameters

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -25,7 +25,6 @@ import java.nio.file.NoSuchFileException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
@@ -44,18 +43,13 @@ public class WorkspaceServiceMonitoringIT extends AbstractRegardsServiceIT {
     @Autowired
     private IWorkspaceService workspaceService;
 
-    @Autowired
-    private IWorkspaceNotifier notifier;
-
-    @Test(expected = UnsupportedOperationException.class) // because of default workspace notifier implementation
+    @Test
     @Requirement("REGARDS_DSL_ING_CMP_010")
     @Requirement("REGARDS_DSL_ING_CMP_020")
     @Requirement("REGARDS_DSL_ING_CMP_030")
     public void testMonitor() {
-        IWorkspaceNotifier spiedNotifier = Mockito.spy(notifier);
+        Assert.assertFalse(MaintenanceManager.getMaintenance(getDefaultTenant()));
         workspaceService.monitor(getDefaultTenant());
-        Mockito.verify(spiedNotifier, Mockito.times(1)).sendErrorNotification(Mockito.any(), Mockito.any(),
-                                                                              Mockito.any());
         Assert.assertTrue(MaintenanceManager.getMaintenance(getDefaultTenant()));
     }
 
