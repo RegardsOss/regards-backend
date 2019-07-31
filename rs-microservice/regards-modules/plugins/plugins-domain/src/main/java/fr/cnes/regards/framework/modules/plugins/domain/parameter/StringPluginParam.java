@@ -57,4 +57,9 @@ public class StringPluginParam extends AbstractPluginParam<String> {
     public void setDecryptedValue(String decryptedValue) {
         this.decryptedValue = decryptedValue;
     }
+
+    @Override
+    public boolean hasValue() {
+        return value != null && !value.isEmpty();
+    }
 }

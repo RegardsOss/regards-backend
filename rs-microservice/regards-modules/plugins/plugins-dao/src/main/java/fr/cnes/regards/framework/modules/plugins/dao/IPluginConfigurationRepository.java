@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.modules.plugins.dao;
 
 import java.util.List;
 
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -41,7 +40,6 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
      * @param pluginId the plugin identifier
      * @return a {@link List} of {@link PluginConfiguration}
      */
-    @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
     List<PluginConfiguration> findByPluginIdOrderByPriorityOrderDesc(String pluginId);
 
     /**
@@ -62,10 +60,16 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
     /**
      * Find a plugin configuration loading its parameters and dynamic values
      * @param id pluginConfiguration id
-     * @return a PluginConfiguration without lazy relations
+     * @return a PluginConfiguration
      */
-    @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
     PluginConfiguration findCompleteById(Long id);
+
+    /**
+     * Find a plugin configuration loading its parameters and dynamic values
+     * @param businessId pluginConfiguration business id
+     * @return a PluginConfiguration
+     */
+    PluginConfiguration findCompleteByBusinessId(String businessId);
 
     List<PluginConfiguration> findByParametersPluginConfiguration(PluginConfiguration plgConf);
 
@@ -74,6 +78,6 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
     @Query(value = "TRUNCATE {h-schema}t_plugin_configuration CASCADE", nativeQuery = true)
     void deleteAll();
 
-    @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
+    @Override
     List<PluginConfiguration> findAll();
 }

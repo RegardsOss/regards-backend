@@ -49,11 +49,10 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
@@ -198,6 +197,11 @@ public class PluginServiceTest extends PluginServiceUtility {
         }
     }
 
+    private PluginConfiguration clone(PluginConfiguration source) {
+        return new PluginConfiguration(source.getMetaData(), source.getLabel(), source.getParameters(),
+                source.getPriorityOrder());
+    }
+
     /**
      * Save a {@link PluginConfiguration}.
      */
@@ -207,7 +211,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Purpose("Create a new plugin configuration")
     public void saveAPluginConfiguration() {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
-        final PluginConfiguration aPluginConfigurationWithId = new PluginConfiguration(aPluginConfiguration);
+        final PluginConfiguration aPluginConfigurationWithId = clone(aPluginConfiguration);
         aPluginConfigurationWithId.setId(AN_ID);
         try {
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfigurationWithId);
@@ -231,7 +235,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Test(expected = ModuleException.class)
     public void saveTwoPluginConfigurationWithSameLabel() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
-        final PluginConfiguration aPluginConfigurationWithId = new PluginConfiguration(aPluginConfiguration);
+        final PluginConfiguration aPluginConfigurationWithId = clone(aPluginConfiguration);
         aPluginConfigurationWithId.setId(AN_ID);
 
         final PluginConfiguration theSamePluginConfiguration = getPluginConfigurationWithParameters();
@@ -281,7 +285,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         aPluginConfiguration.setId(AN_ID);
         Mockito.when(pluginConfRepositoryMocked.findCompleteById(aPluginConfiguration.getId()))
                 .thenReturn(aPluginConfiguration);
-        PluginConfiguration toBeUpdated = new PluginConfiguration(aPluginConfiguration);
+        PluginConfiguration toBeUpdated = clone(aPluginConfiguration);
         toBeUpdated.setIsActive(false);
         Mockito.when(pluginConfRepositoryMocked.save(toBeUpdated)).thenReturn(toBeUpdated);
 
@@ -302,7 +306,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         aPluginConfiguration.setIsActive(false);
         Mockito.when(pluginConfRepositoryMocked.findCompleteById(aPluginConfiguration.getId()))
                 .thenReturn(aPluginConfiguration);
-        PluginConfiguration toBeUpdated = new PluginConfiguration(aPluginConfiguration);
+        PluginConfiguration toBeUpdated = clone(aPluginConfiguration);
         toBeUpdated.setIsActive(true);
         Mockito.when(pluginConfRepositoryMocked.save(toBeUpdated)).thenReturn(toBeUpdated);
 
@@ -473,8 +477,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
-        final AbstractPluginParam aDynamicPlgParam = PluginParametersFactory.build()
-                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().stream().findFirst().get();
+        IPluginParam aDynamicPlgParam = IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).dynamic();
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
                                                                                     aDynamicPlgParam);
@@ -508,8 +511,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
-        final AbstractPluginParam aDynamicPlgParam = PluginParametersFactory.build()
-                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().stream().findFirst().get();
+        IPluginParam aDynamicPlgParam = IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).dynamic();
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
         Assert.assertNotNull(aSamplePlugin);
@@ -547,8 +549,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
-        final AbstractPluginParam aDynamicPlgParam = PluginParametersFactory.build()
-                .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, -1).getParameters().stream().findFirst().get();
+        IPluginParam aDynamicPlgParam = IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, -1).dynamic();
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
                                                                                     aDynamicPlgParam);
@@ -618,9 +619,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
-        final AbstractPluginParam aDynamicPlgParam = PluginParametersFactory.build()
-                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().stream().findFirst().get();
-
+        IPluginParam aDynamicPlgParam = IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).dynamic();
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
                                                                                     aDynamicPlgParam);
 

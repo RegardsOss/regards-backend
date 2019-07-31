@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.framework.modules.plugins.service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.google.common.collect.Sets;
 
@@ -29,7 +30,7 @@ import fr.cnes.regards.framework.modules.plugins.SamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 
 /***
  * Constants and datas for unit testing of plugin's Service.
@@ -107,61 +108,61 @@ public class PluginServiceUtility {
     /**
      * A {@link List} of values
      */
-    protected static final List<String> DYNAMICVALUES = Arrays.asList(RED, BLUE, GREEN);
+    protected static final Set<String> DYNAMICVALUES = Stream.of(RED, BLUE, GREEN).collect(Collectors.toSet());
 
     /**
      * A {@link AbstractPluginParam}
      */
-    protected static final Set<AbstractPluginParam> DYNAMICPARAMETERS = PluginParametersFactory.build()
-            .addParameter("param11", "value11").addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, 0)
-            .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
-            .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, RED, DYNAMICVALUES).getParameters();
+    protected static final Set<IPluginParam> DYNAMICPARAMETERS = IPluginParam
+            .set(IPluginParam.build("param11", "value11"),
+                 IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, 0).dynamic(),
+                 IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE),
+                 IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, RED).dynamic(DYNAMICVALUES));
 
     /**
      * A {@link AbstractPluginParam}
      */
-    protected static final Set<AbstractPluginParam> DYNAMICPARAMETERS_TO_UPDATE = PluginParametersFactory.build()
-            .addParameter("param11", "value11").addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, 0)
-            .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
-            .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, RED, DYNAMICVALUES).getParameters();
+    protected static final Set<IPluginParam> DYNAMICPARAMETERS_TO_UPDATE = IPluginParam
+            .set(IPluginParam.build("param11", "value11"),
+                 IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, 0).dynamic(),
+                 IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE),
+                 IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, RED).dynamic(DYNAMICVALUES));
 
     /**
      * A list of {@link AbstractPluginParam}
      */
-    protected static final Set<AbstractPluginParam> INTERFACEPARAMETERS = PluginParametersFactory.build()
-            .addParameter("param31", "value31").addParameter("param32", "value32").addParameter("param33", "value33")
-            .addParameter("param34", "value34").addParameter("param35", "value35")
-            .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, 3)
-            .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
-            .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, "Toulouse").getParameters();
+    protected static final Set<IPluginParam> INTERFACEPARAMETERS = IPluginParam
+            .set(IPluginParam.build("param31", "value31"),
+
+                 IPluginParam.build("param32", "value32"), IPluginParam.build("param33", "value33"),
+                 IPluginParam.build("param34", "value34"), IPluginParam.build("param35", "value35"),
+                 IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, 3).dynamic(),
+                 IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE),
+                 IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, "Toulouse"));
 
     /**
      * A {@link PluginConfiguration}
      */
     private final PluginConfiguration pluginConfiguration1 = new PluginConfiguration(getPluginMetaData(),
-                                                                                     "a configuration from PluginServiceUtility",
-                                                                                     INTERFACEPARAMETERS, 0);
+            "a configuration from PluginServiceUtility", INTERFACEPARAMETERS, 0);
 
     /**
      * A list of {@link AbstractPluginParam} with a dynamic {@link AbstractPluginParam}.
      */
     private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
-                                                                                     "second configuration from PluginServiceUtility",
-                                                                                     DYNAMICPARAMETERS, 0);
+            "second configuration from PluginServiceUtility", DYNAMICPARAMETERS, 0);
 
     /**
      * A list of {@link AbstractPluginParam} without parameters.
      */
     private final PluginConfiguration pluginConfiguration3 = new PluginConfiguration(getPluginMetaData(),
-                                                                                     "third configuration from PluginServiceUtility",
-                                                                                     CINQ);
+            "third configuration from PluginServiceUtility", CINQ);
 
     /**
      * A list of {@link AbstractPluginParam} with a dynamic {@link AbstractPluginParam}.
      */
     private final PluginConfiguration pluginConfiguration4 = new PluginConfiguration(getPluginMetaData(),
-                                                                                     "fourth configuration",
-                                                                                     DYNAMICPARAMETERS_TO_UPDATE, 0);
+            "fourth configuration", DYNAMICPARAMETERS_TO_UPDATE, 0);
 
     protected PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
@@ -191,9 +192,7 @@ public class PluginServiceUtility {
 
     protected void resetId() {
         getPluginConfigurationWithDynamicParameter().setId(null);
-        getPluginConfigurationWithDynamicParameter().getParameters().forEach(p -> p.setId(null));
         getPluginConfigurationWithParameters().setId(null);
-        getPluginConfigurationWithParameters().getParameters().forEach(p -> p.setId(null));
     }
 
 }

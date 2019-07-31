@@ -152,7 +152,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
          * Get the configuration for the complex Plugin (ie the parent)
          */
         final Set<IPluginParam> complexParameters = IPluginParam
-                .set(IPluginParam.plugin(ComplexPlugin.FIELD_NAME_PLUGIN, pluginConfigurationInterface.getId()),
+                .set(IPluginParam.plugin(ComplexPlugin.FIELD_NAME_PLUGIN, pluginConfigurationInterface.getLabel()),
                      IPluginParam.build(ComplexPlugin.FIELD_NAME_ACTIVE, TRUE),
                      IPluginParam.build(ComplexPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ));
 

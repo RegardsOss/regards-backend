@@ -47,6 +47,16 @@ public interface IPluginParam {
     boolean isDynamic();
 
     /**
+     * Check if parameter has dynamic values
+     */
+    boolean hasDynamicValues();
+
+    /**
+     * Remove dynamic values and switch to static parameter
+     */
+    void toStatic();
+
+    /**
      * Check if dynamic parameter is consistent with static one
      */
     default boolean isValid(IPluginParam staticParam) {
@@ -128,10 +138,12 @@ public interface IPluginParam {
     }
 
     /**
-     * Build a plugin parameter referencing a nested plugin configuration
+     * Build a plugin parameter referencing a nested plugin configuration with its business identifier
+     * @param name parameter name
+     * @key plugin business identifier
      */
-    static NestedPluginParam plugin(String name, Long configurationId) {
-        return new NestedPluginParam().with(name, configurationId);
+    static NestedPluginParam plugin(String name, String identifier) {
+        return new NestedPluginParam().with(name, identifier);
     }
 
     static Set<IPluginParam> set(IPluginParam... params) {

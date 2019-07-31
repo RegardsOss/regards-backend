@@ -60,9 +60,11 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
 import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.NestedPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -153,7 +155,7 @@ public class PluginService implements IPluginService {
 
         PluginUtils.getPlugins().forEach((pluginId, metaData) -> {
             try {
-                if ((interfacePluginType == null)
+                if (interfacePluginType == null
                         || interfacePluginType.isAssignableFrom(Class.forName(metaData.getPluginClassName()))) {
                     availablePlugins.add(metaData);
                 }
@@ -176,7 +178,7 @@ public class PluginService implements IPluginService {
 
         StringBuilder msg = new StringBuilder("Cannot save plugin configuration");
         PluginConfiguration pluginConfInDb = repos.findOneByLabel(plgConf.getLabel());
-        if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), plgConf.getId())
+        if (pluginConfInDb != null && !Objects.equals(pluginConfInDb.getId(), plgConf.getId())
                 && pluginConfInDb.getLabel().equals(plgConf.getLabel())) {
             msg.append(String.format(". A plugin configuration with same label (%s) already exists.",
                                      plgConf.getLabel()));
@@ -190,15 +192,8 @@ public class PluginService implements IPluginService {
         // only way to know if a plugin parameter is sensitive is via the plugin metadata
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(plgConf.getPluginId());
         for (PluginParamDescriptor paramMeta : pluginMeta.getParameters()) {
-            AbstractPluginParam param = plgConf.getParameter(paramMeta.getName());
-            if (param != null && param.getValue() != null && !param.getStripParameterValue().isEmpty()) {
-                if (paramMeta.isSensible()) {
-                    PluginParametersFactory.updateParameter(param,
-                                                            encryptionService.encrypt(param.getStripParameterValue()));
-                }
-            } else if ((param != null) && (param.getPluginConfiguration() == null) && !param.isDynamic()) {
-                // Plugin param value is null or empty and is not associate an other plugin conf  so remove the parameter
-                plgConf.getParameters().remove(param);
+            if (paramMeta.isSensible()) {
+                manageSensibleParameter(plgConf.getParameter(paramMeta.getName()));
             }
         }
 
@@ -211,6 +206,34 @@ public class PluginService implements IPluginService {
 
         }
         return newConf;
+    }
+
+    private void manageSensibleParameter(IPluginParam param) throws EncryptionException {
+        if (param != null && param.hasValue()) {
+            if (param.getType().equals(PluginParamType.STRING)) {
+                StringPluginParam sensibleParam = (StringPluginParam) param;
+                sensibleParam.setValue(encryptionService.encrypt(sensibleParam.getValue()));
+            } else {
+                String message = String
+                        .format("Only STRING type parameter can be encrypted at the moment : inconsistent type \"%s\" for parameter \"%s\"",
+                                param.getType(), param.getName());
+                LOGGER.error(message);
+                throw new EncryptionException(message, null);
+            }
+        }
+    }
+
+    /**
+     * Set decrypted value for plugin instanciation.
+     */
+    private void decryptSensibleParameter(PluginMetaData pluginMetadata, PluginConfiguration conf)
+            throws EncryptionException {
+        for (PluginParamDescriptor paramType : pluginMetadata.getParameters()) {
+            if (paramType.isSensible()) {
+                StringPluginParam pluginParam = (StringPluginParam) conf.getParameter(paramType.getName());
+                pluginParam.setDecryptedValue(encryptionService.decrypt(pluginParam.getValue()));
+            }
+        }
     }
 
     /**
@@ -226,7 +249,7 @@ public class PluginService implements IPluginService {
                 PluginInterface pi;
                 try {
                     pi = Class.forName(interfaceName).getAnnotation(PluginInterface.class);
-                    if ((pi != null) && !pi.allowMultipleActiveConfigurations()) {
+                    if (pi != null && !pi.allowMultipleActiveConfigurations()) {
                         uniqueActiveConfInterfaces.add(interfaceName);
                     }
                 } catch (ClassNotFoundException e) {
@@ -294,18 +317,13 @@ public class PluginService implements IPluginService {
         // only way to know if a plugin parameter is sensitive is via the plugin metadata
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(pluginConf.getPluginId());
         for (PluginParamDescriptor paramMeta : pluginMeta.getParameters()) {
-            AbstractPluginParam newParam = pluginConf.getParameter(paramMeta.getName());
-            AbstractPluginParam oldParam = oldConf.getParameter(paramMeta.getName());
-            if (newParam != null && newParam.getValue() != null && !newParam.getStripParameterValue().isEmpty()) {
+            IPluginParam newParam = pluginConf.getParameter(paramMeta.getName());
+            IPluginParam oldParam = oldConf.getParameter(paramMeta.getName());
+            if (newParam != null && newParam.hasValue()) {
                 // Check if parameter is sensitive and value changed. If it does, encrypt the new value
-                if (paramMeta.isSensible()
-                        && !Objects.equals(newParam.getStripParameterValue(), oldParam.getStripParameterValue())) {
-                    PluginParametersFactory
-                            .updateParameter(newParam, encryptionService.encrypt(newParam.getStripParameterValue()));
+                if (paramMeta.isSensible() && !Objects.equals(newParam.getValue(), oldParam.getValue())) {
+                    manageSensibleParameter(newParam);
                 }
-            } else if ((newParam != null) && (newParam.getPluginConfiguration() == null) && !newParam.isDynamic()) {
-                // Plugin param value is null or empty and is not associated to an other plugin conf  so remove the parameter
-                pluginConf.getParameters().remove(newParam);
             }
         }
 
@@ -338,7 +356,7 @@ public class PluginService implements IPluginService {
             // First desable all other active configurations
             List<PluginConfiguration> confs = repos.findAll();
             for (PluginConfiguration conf : confs) {
-                if ((conf.getId().longValue() != plugin.getId().longValue())
+                if (conf.getId().longValue() != plugin.getId().longValue()
                         && conf.getInterfaceNames().contains(pluginType.getName()) && conf.isActive()) {
                     conf.setIsActive(false);
                     updatePluginConfiguration(conf);
@@ -401,8 +419,8 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public <T> T getFirstPluginByType(Class<?> interfacePluginType, AbstractPluginParam... dynamicParameters)
-            throws ModuleException {
+    public <T> T getFirstPluginByType(Class<?> interfacePluginType, IPluginParam... dynamicParameters)
+            throws ModuleException, NotAvailablePluginConfigurationException {
 
         // Get pluginMap configuration for given type
         final List<PluginConfiguration> confs = getPluginConfigurationsByType(interfacePluginType);
@@ -416,7 +434,7 @@ public class PluginService implements IPluginService {
         PluginConfiguration configuration = null;
 
         for (final PluginConfiguration conf : confs) {
-            if ((configuration == null) || (conf.getPriorityOrder() < configuration.getPriorityOrder())) {
+            if (configuration == null || conf.getPriorityOrder() < configuration.getPriorityOrder()) {
                 configuration = conf;
             }
         }
@@ -444,12 +462,24 @@ public class PluginService implements IPluginService {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T getPlugin(Long pluginConfId, AbstractPluginParam... dynamicParameters) throws ModuleException {
+    public <T> T getPlugin(Long pluginConfId, IPluginParam... dynamicParameters)
+            throws ModuleException, NotAvailablePluginConfigurationException {
 
-        if (!isPluginCached(pluginConfId) || (dynamicParameters.length > 0)) {
+        if (!isPluginCached(pluginConfId) || dynamicParameters.length > 0) {
             return instanciatePluginAndCache(pluginConfId, dynamicParameters);
         }
         return (T) getCachedPlugin(pluginConfId);
+    }
+
+    /**
+     * Load plugin from its business identifier
+     * @param businessId business identifier
+     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException
+     */
+    private void loadNestedPlugin(String businessId) throws ModuleException, NotAvailablePluginConfigurationException {
+        PluginConfiguration conf = repos.findCompleteByBusinessId(businessId);
+        getPlugin(conf.getId());
     }
 
     /**
@@ -457,15 +487,13 @@ public class PluginService implements IPluginService {
      * @param pluginConfId plugin configuration identifier
      * @param dynamicParameters plugin parameters (including potential dynamic ones)
      * @return plugin instance
-     * @throws ModuleException if error occurs!
-     * @throws NotAvailablePluginConfigurationException
      */
-    private <T> T instanciatePluginAndCache(Long pluginConfId, AbstractPluginParam... dynamicParameters)
-            throws ModuleException {
+    private <T> T instanciatePluginAndCache(Long pluginConfId, IPluginParam... dynamicParameters)
+            throws ModuleException, NotAvailablePluginConfigurationException {
 
         // Check if all parameters are really dynamic
-        for (AbstractPluginParam dynamicParameter : dynamicParameters) {
-            if (!dynamicParameter.isDynamic() && !dynamicParameter.isOnlyDynamic()) {
+        for (IPluginParam dynamicParameter : dynamicParameters) {
+            if (!dynamicParameter.isDynamic()) {
                 String errorMessage = String
                         .format("The parameter \"%s\" is not identified as dynamic. Plugin instanciation is cancelled.",
                                 dynamicParameter.getName());
@@ -497,28 +525,22 @@ public class PluginService implements IPluginService {
         // So :
         // For all pluginMetada parameters, find PLUGIN ones, get key
         for (PluginParamDescriptor paramType : pluginMetadata.getParameters()) {
-            if (paramType.getParamType() == PluginParameterType.PluginParamDescriptor.PLUGIN) {
-                String paramName = paramType.getName();
-                // Now search from PluginConfiguration parameters associated Plugin
-                for (AbstractPluginParam param : pluginConf.getParameters()) {
-                    if (param.getName().equals(paramName) && param.getPluginConfiguration() != null) {
-                        // LOAD embedded plugin
-                        this.getPlugin(param.getPluginConfiguration().getId());
-                        break;
-                    }
+            if (paramType.getParamType() == PluginParamType.PLUGIN) {
+                NestedPluginParam pluginParam = (NestedPluginParam) pluginConf.getParameter(paramType.getName());
+                if (pluginParam != null && pluginParam.hasValue()) {
+                    // LOAD embedded plugin from its business identifier
+                    this.loadNestedPlugin(pluginParam.getValue());
                 }
             }
-            if (paramType.isSensible()) {
-                AbstractPluginParam pluginParam = pluginConf.getParameter(paramType.getName());
-                pluginParam.setDecryptedValue(encryptionService.decrypt(pluginParam.getStripParameterValue()));
-            }
         }
+
+        decryptSensibleParameter(pluginMetadata, pluginConf);
 
         T resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginCache(), dynamicParameters);
 
         // Put in the map, only if there is no dynamic parameters
         if (dynamicParameters.length == 0) {
-            addPluginToCache(pluginConfId, resultPlugin);
+            addPluginToCache(pluginConfId, pluginConf.getBusinessId(), resultPlugin);
         }
 
         return resultPlugin;
@@ -583,39 +605,36 @@ public class PluginService implements IPluginService {
         return Optional.ofNullable(repos.findOneByLabel(configurationLabel));
     }
 
-    @Override
-    public void addPluginToCache(Long confId, Object plugin) {
+    private void addPluginToCache(Long confId, String businessId, Object plugin) {
         Assert.notNull(confId, PLUGIN_CONF_ID_REQUIRED_MSG);
         Assert.notNull(plugin, "Plugin instance is required");
-
-        Map<Long, Object> tenantCache = getPluginCache();
-        if (tenantCache == null) {
-            // Init tenant cache
-            tenantCache = new ConcurrentHashMap<>();
-            instantiatePluginMap.put(runtimeTenantResolver.getTenant(), tenantCache);
-        }
-        tenantCache.put(confId, plugin);
+        getPluginCache().put(confId, plugin);
     }
 
     @Override
     public boolean isPluginCached(Long confId) {
         Assert.notNull(confId, PLUGIN_CONF_ID_REQUIRED_MSG);
-
-        Map<Long, Object> tenantCache = getPluginCache();
-        if (tenantCache != null) {
-            return tenantCache.containsKey(confId);
-        }
-        return false;
+        return getPluginCache().containsKey(confId);
     }
 
     @Override
     public void cleanPluginCache(Long confId) {
         Assert.notNull(confId, PLUGIN_CONF_ID_REQUIRED_MSG);
 
-        Map<Long, Object> tenantCache = getPluginCache();
-        if (tenantCache != null) {
-            // Remove plugin from cache
-            Object plugin = tenantCache.remove(confId);
+        // Remove plugin from cache
+        Object plugin = getPluginCache().remove(confId);
+        if (plugin != null) {
+            // Launch destroy method
+            PluginUtils.doDestroyPlugin(plugin);
+        }
+    }
+
+    @Override
+    public void cleanPluginCache() {
+        // Remove plugin from cache
+        for (Iterator<Entry<Long, Object>> i = getPluginCache().entrySet().iterator(); i.hasNext();) {
+            Object plugin = i.next().getValue();
+            i.remove();
             if (plugin != null) {
                 // Launch destroy method
                 PluginUtils.doDestroyPlugin(plugin);
@@ -623,138 +642,82 @@ public class PluginService implements IPluginService {
         }
     }
 
-    @Override
-    public void cleanPluginCache() {
-        Map<Long, Object> tenantCache = getPluginCache();
-        if (tenantCache != null) {
-            // Remove plugin from cache
-            for (Iterator<Entry<Long, Object>> i = tenantCache.entrySet().iterator(); i.hasNext();) {
-                Object plugin = i.next().getValue();
-                i.remove();
-                if (plugin != null) {
-                    // Launch destroy method
-                    PluginUtils.doDestroyPlugin(plugin);
-                }
-            }
-        }
-    }
-
+    /**
+     * @return a not null map of plugins
+     */
     @Override
     public Map<Long, Object> getPluginCache() {
         // Resolve tenant
         String tenant = runtimeTenantResolver.getTenant();
         Assert.notNull(tenant, "Tenant is required");
-
-        return instantiatePluginMap.get(tenant);
+        Map<Long, Object> tenantCache = instantiatePluginMap.get(tenant);
+        if (tenantCache == null) {
+            // Init tenant cache
+            tenantCache = new ConcurrentHashMap<>();
+            instantiatePluginMap.put(runtimeTenantResolver.getTenant(), tenantCache);
+        }
+        return tenantCache;
     }
 
     @Override
     public Object getCachedPlugin(Long confId) {
         Assert.notNull(confId, PLUGIN_CONF_ID_REQUIRED_MSG);
+        return getPluginCache().get(confId);
+    }
 
-        Map<Long, Object> tenantCache = getPluginCache();
-        if (tenantCache != null) {
-            return tenantCache.get(confId);
+    @Override
+    public PluginConfiguration prepareForExport(PluginConfiguration pluginConf) {
+
+        // Retrieve meta information
+        PluginMetaData pluginMeta = PluginUtils.getPlugins().get(pluginConf.getPluginId());
+
+        // Create a clone if sensible plugin
+        for (PluginParamDescriptor paramDesc : pluginMeta.getParameters()) {
+            if (paramDesc.isSensible()) {
+                // Create a clone with decrypted value
+                return cloneSensiblePlugin(pluginMeta, pluginConf);
+            }
         }
-        return null;
+
+        // Default behaviour : return passed configuration
+        return pluginConf;
     }
 
     /**
-     * Return a {@link PluginConfiguration} for a plugin identifier.
-     * If it does not exists, the {@link PluginConfiguration} is created.
-     * @param pluginId a plugin identifier
-     * @param interfacePluginType the {@link PluginInterface}
-     * @return a {@link PluginConfiguration}
-     * @throws ModuleException an error is thrown
+     * Make a shallow clone of this sensible plugin configuration with decrypted values
      */
-    @Override
-    public PluginConfiguration getPluginConfiguration(String pluginId, Class<?> interfacePluginType)
-            throws ModuleException {
+    private PluginConfiguration cloneSensiblePlugin(PluginMetaData pluginMeta, PluginConfiguration pluginConf) {
 
-        // Test if a configuration exists for this pluginId
-        List<PluginConfiguration> pluginConfigurations = getPluginConfigurationsByType(interfacePluginType);
-        if (!pluginConfigurations.isEmpty()) {
-            PluginConfiguration plgConf = loadPluginConfiguration(pluginId, pluginConfigurations);
-            if (plgConf != null) {
-                return plgConf;
-            }
-        }
-
-        // Get the PluginMetadata
-        List<PluginMetaData> plgMetaDatas = getPluginsByType(interfacePluginType);
-
-        Optional<PluginMetaData> optPlgMetaData = plgMetaDatas.stream().filter(md -> md.getPluginId().equals(pluginId))
-                .findAny();
-
-        if (optPlgMetaData.isPresent()) {
-            PluginMetaData metaData = optPlgMetaData.get();
-            PluginConfiguration plgConf = new PluginConfiguration(metaData,
-                    "Automatic plugin configuration for plugin id : " + pluginId);
-            plgConf.setPluginId(pluginId);
-
-            PluginParametersFactory ppFactory = PluginParametersFactory.build();
-            metaData.getParameters()
-                    .forEach(param -> ppFactory.addDynamicParameter(param.getName(), param.getDefaultValue()));
-            plgConf.setParameters(ppFactory.getParameters());
-
-            return this.savePluginConfiguration(plgConf);
-        } else {
-            throw new ModuleException(
-                    "Unexpected error : the plugin id <" + pluginId + " > is found more that one time in a Plugin");
-        }
-    }
-
-    @Override
-    public PluginConfiguration exportConfiguration(PluginConfiguration pluginConf) {
-
-        PluginConfiguration exportedConf = new PluginConfiguration();
-        PluginMetaData pluginMeta = PluginUtils.getPlugins().get(pluginConf.getPluginId());
-
-        // Handle default parameters
+        // Create a clone with decrypted value
+        PluginConfiguration exportedConf = new PluginConfiguration(pluginMeta, pluginConf.getLabel(),
+                pluginConf.getPriorityOrder());
+        exportedConf.setBusinessId(pluginConf.getBusinessId());
         exportedConf.setIsActive(false);
         exportedConf.setIconUrl(pluginConf.getIconUrl());
-        exportedConf.setLabel(pluginConf.getLabel());
-        exportedConf.setPluginId(pluginConf.getPluginId());
-        exportedConf.setPriorityOrder(pluginConf.getPriorityOrder());
-        exportedConf.setVersion(pluginConf.getVersion());
 
         // Handle parameters
-        for (AbstractPluginParam param : pluginConf.getParameters()) {
-            AbstractPluginParam exported = new AbstractPluginParam();
-            exported.setValue(param.getValue());
-            pluginMeta.getParameters().stream().filter(pt -> pt.getName().equals(param.getName())).findFirst()
-                    .ifPresent(pt -> {
-                        if (pt.isSensible()) {
-                            try {
-                                exported.setValue(encryptionService.decrypt(param.getStripParameterValue()));
-                            } catch (EncryptionException e) { // NOSONAR (only message is usable, not need to log e
-                                // Nothing to do
-                                LOGGER.warn("Error decrypting sensitive parameter {}:{}. Cause : {}.",
-                                            pluginConf.getPluginId(), param.getName(), e.getMessage());
-                            }
-                        }
-                    });
+        for (PluginParamDescriptor paramDesc : pluginMeta.getParameters()) {
 
-            exported.setIsDynamic(param.isDynamic());
-            exported.setName(param.getName());
-            exported.setOnlyDynamic(param.isOnlyDynamic());
-            if (param.getPluginConfiguration() != null) {
-                exported.setPluginConfiguration(exportConfiguration(param.getPluginConfiguration()));
+            // Get related configuration parameter
+            IPluginParam param = pluginConf.getParameter(paramDesc.getName());
+
+            if (paramDesc.isSensible()) {
+                StringPluginParam source = (StringPluginParam) param;
+                StringPluginParam sensibleParam = IPluginParam.build(source.getName(), source.getValue());
+                try {
+                    // Try to decrypt
+                    sensibleParam = IPluginParam.build(source.getName(), encryptionService.decrypt(source.getValue()));
+                } catch (EncryptionException e) { // NOSONAR (only message is usable, not need to log e
+                    // Nothing to do
+                    LOGGER.warn("Error decrypting sensitive parameter {}:{}. Cause : {}.", pluginConf.getPluginId(),
+                                param.getName(), e.getMessage());
+                }
+                exportedConf.getParameters().add(sensibleParam);
+            } else {
+                exportedConf.getParameters().add(param);
             }
-            exportedConf.getParameters().add(exported);
         }
 
         return exportedConf;
-
-    }
-
-    /**
-     * Return a {@link PluginConfiguration} for a pluginId
-     * @param pluginId the pluginid to search
-     * @return the found {@link PluginConfiguration}
-     */
-    private PluginConfiguration loadPluginConfiguration(String pluginId, List<PluginConfiguration> pluginConfs) {
-        return pluginConfs.stream().filter(conf -> conf.getPluginId().equals(pluginId)).findAny().orElse(null);
-
     }
 }

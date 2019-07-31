@@ -96,6 +96,11 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
     }
 
     @Override
+    public boolean hasDynamicValues() {
+        return dynamicsValues != null && !dynamicsValues.isEmpty();
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -236,5 +241,11 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
         this.setDynamic(Boolean.TRUE);
         this.setDynamicsValues(new HashSet<>(Arrays.asList(dyn1, dyn2, dyn3, dyn4, dyn5)));
         return this;
+    }
+
+    @Override
+    public void toStatic() {
+        this.setDynamic(Boolean.FALSE);
+        this.setDynamicsValues(null);
     }
 }

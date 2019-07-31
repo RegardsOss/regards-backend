@@ -20,12 +20,12 @@ package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
 /**
  * Supported plugin parameter.<br/>
- * Nested plugin param keeps the reference to a another plugin configuration.
+ * Nested plugin param keeps the reference to another plugin configuration. Business key has to be used.
  *
  * @author Marc SORDI
  *
  */
-public class NestedPluginParam extends AbstractPluginParam<Long> {
+public class NestedPluginParam extends AbstractPluginParam<String> {
 
     public NestedPluginParam() {
         super(PluginParamType.PLUGIN);

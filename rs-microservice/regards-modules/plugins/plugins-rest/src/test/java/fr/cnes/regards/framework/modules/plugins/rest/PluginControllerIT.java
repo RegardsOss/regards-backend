@@ -32,11 +32,11 @@ import com.jayway.jsonpath.JsonPath;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.CannotInstanciatePluginException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
@@ -92,9 +92,8 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
         // With dynamic parameter
         String dynValue = "toto";
-        PluginParametersFactory dynParametersFactory = PluginParametersFactory.build().addDynamicParameter("pString",
-                                                                                                           dynValue);
-        plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class, dynParametersFactory.asArray());
+        plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class,
+                                                    IPluginParam.build("pString", dynValue).dynamic());
         Assert.assertNotNull(plugin);
 
         if (plugin instanceof ParamTestPlugin) {
@@ -105,10 +104,10 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         }
 
         // With bad dynamic parameter
-        dynParametersFactory = PluginParametersFactory.build().addDynamicParameter("pString", "fake");
         boolean unexpectedValue = false;
         try {
-            plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class, dynParametersFactory.asArray());
+            plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class,
+                                                        IPluginParam.build("pString", dynValue).dynamic());
         } catch (PluginUtilsRuntimeException e) {
             unexpectedValue = true;
         }
@@ -116,9 +115,9 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
         // With integer dynamic parameter
         Integer dynInt = 10;
-        dynParametersFactory = PluginParametersFactory.build().addDynamicParameter("pString", dynValue)
-                .addDynamicParameter("pInteger", dynInt);
-        plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class, dynParametersFactory.asArray());
+        plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class,
+                                                    IPluginParam.build("pString", dynValue).dynamic(),
+                                                    IPluginParam.build("pInteger", dynInt).dynamic());
         Assert.assertNotNull(plugin);
         if (plugin instanceof ParamTestPlugin) {
             ParamTestPlugin p = (ParamTestPlugin) plugin;

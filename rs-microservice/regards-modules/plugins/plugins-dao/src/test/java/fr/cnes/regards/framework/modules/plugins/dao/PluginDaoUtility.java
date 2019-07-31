@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.modules.plugins.dao;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -30,7 +31,7 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 
 /***
  * Constants and datas for unit testing of plugin's DAO.
@@ -79,43 +80,31 @@ public abstract class PluginDaoUtility extends AbstractDaoTest {
      */
     protected static final String INVALID_JWT = "Invalid JWT";
 
-    /**
-     * A {@link AbstractPluginParam}
-     */
-    protected static final AbstractPluginParam ONE_PARAMETER = PluginParametersFactory.build()
-            .addParameter("param11", "value11").getParameters().stream().findFirst().get();
+    protected static final IPluginParam ONE_PARAMETER = IPluginParam.build("param11", "value11");
 
     /**
      * A {@link List} of values
      */
-    protected static final List<String> DYNAMICVALUES = Arrays.asList(RED, BLUE, GREEN);
+    protected static final Set<String> DYNAMICVALUES = new HashSet<>(Arrays.asList(RED, BLUE, GREEN));
 
-    /**
-     * A {@link List} of {@link AbstractPluginParam}
-     */
-    protected static final Set<AbstractPluginParam> LIST_PARAMETERS = PluginParametersFactory.build()
-            .addDynamicParameter("param-dyn21", RED, DYNAMICVALUES)
-            .addDynamicParameter("param-dyn31", GREEN, DYNAMICVALUES).addParameter("param31", "value31")
-            .addParameter("param51", "value51").addParameter("param61", "value61").getParameters();
+    protected static final Set<IPluginParam> LIST_PARAMETERS = IPluginParam
+            .set(IPluginParam.build("param-dyn21", RED).dynamic(DYNAMICVALUES),
+                 IPluginParam.build("param-dyn31", GREEN).dynamic(DYNAMICVALUES),
+                 IPluginParam.build("param51", "value51"), IPluginParam.build("param61", "value61"));
 
     /**
      * A list of {@link AbstractPluginParam}
      */
-    protected static final Set<AbstractPluginParam> INTERFACEPARAMETERS = PluginParametersFactory.build()
-            .addParameter("param41", "value41").addParameter("param42", "value42").addParameter("param43", "value43")
-            .addParameter("param44", "value44").addParameter("param45", "value45").getParameters();
+    protected static final Set<IPluginParam> INTERFACEPARAMETERS = IPluginParam
+            .set(IPluginParam.build("param41", "value41"), IPluginParam.build("param42", "value42"),
+                 IPluginParam.build("param43", "value43"), IPluginParam.build("param44", "value44"),
+                 IPluginParam.build("param45", "value45"));
 
     /**
      * IPluginConfigurationRepository
      */
     @Autowired
     protected IPluginConfigurationRepository plgRepository;
-
-    /**
-     * IPluginParameterRepository
-     */
-    @Autowired
-    protected IPluginParameterRepository paramRepository;
 
     static PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
@@ -133,7 +122,7 @@ public abstract class PluginDaoUtility extends AbstractDaoTest {
      */
     public static PluginConfiguration getPlgConfWithParameters() {
         return new PluginConfiguration(getPluginMetaData(), "a configuration from PluginDaoUtility",
-                                       INTERFACEPARAMETERS, 0);
+                INTERFACEPARAMETERS, 0);
     }
 
     /**
@@ -142,36 +131,10 @@ public abstract class PluginDaoUtility extends AbstractDaoTest {
      */
     public static PluginConfiguration getPlgConfWithDynamicParameter() {
         return new PluginConfiguration(getPluginMetaData(), "second configuration from PluginDaoUtility",
-                                       LIST_PARAMETERS, 0);
+                LIST_PARAMETERS, 0);
     }
 
     protected void cleanDb() {
-        paramRepository.deleteAll();
         plgRepository.deleteAll();
-        resetId();
     }
-
-    protected static void resetId() {
-        getPlgConfWithDynamicParameter().setId(null);
-        getPlgConfWithDynamicParameter().getParameters().forEach(p -> p.setId(null));
-
-        getPlgConfWithParameters().setId(null);
-        getPlgConfWithParameters().getParameters().forEach(p -> p.setId(null));
-
-        INTERFACEPARAMETERS.forEach(p -> p.setId(null));
-    }
-
-    protected void displayParams() {
-        LOGGER.info("=====> parameter");
-        paramRepository.findAll().forEach(p -> LOGGER
-                .info("name=" + p.getName() + "-value=" + p.getValue() + "-nb dyns=" + p.getDynamicsValuesAsString()
-                        .size()));
-        for (AbstractPluginParam pP : paramRepository.findAll()) {
-            if ((pP.getDynamicsValues() != null) && !pP.getDynamicsValues().isEmpty()) {
-                pP.getDynamicsValues().forEach(p -> LOGGER.info("-value=" + p.getValue()));
-            }
-        }
-        LOGGER.info("<=====");
-    }
-
 }
