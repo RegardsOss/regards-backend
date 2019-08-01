@@ -28,8 +28,8 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocation;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 
 /**
  * Enable storage task schedulers.

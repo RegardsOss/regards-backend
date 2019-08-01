@@ -29,7 +29,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
-import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 
 /**
  * @author sbinda

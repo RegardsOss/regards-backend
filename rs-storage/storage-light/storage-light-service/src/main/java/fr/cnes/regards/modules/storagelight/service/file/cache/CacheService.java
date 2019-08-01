@@ -26,7 +26,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -58,7 +57,6 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storagelight.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.CachedFile;
-import fr.cnes.regards.modules.storagelight.domain.database.CachedFileState;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.exception.StorageException;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
@@ -82,9 +80,9 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocati
  */
 @Service
 @MultitenantTransactional
-public class CachedFileService implements ApplicationListener<ApplicationReadyEvent> {
+public class CacheService implements ApplicationListener<ApplicationReadyEvent> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CachedFileService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CacheService.class);
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -97,7 +95,7 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
 
     @Autowired
     @Lazy
-    private CachedFileService self;
+    private CacheService self;
 
     /**
      * {@link ICachedFileRepository} instance
@@ -116,24 +114,6 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
      */
     @Value("${regards.storage.cache.size.limit.ko.per.tenant:500000000}")
     private Long maxCacheSizeKo;
-
-    /**
-     * Upper threshold per tenant in ko to trigger the purge of older files.
-     */
-    @Value("${regards.storage.cache.purge.upper.threshold.ko.per.tenant:450000000}")
-    private Long cacheSizePurgeUpperThreshold;
-
-    /**
-     * Lower threshold per tenant in ko to trigger the purge of older files.
-     */
-    @Value("${regards.storage.cache.purge.lower.threshold.ko.per.tenant:400000000}")
-    private Long cacheSizePurgeLowerThreshold;
-
-    /**
-     * Cache file minimum time to live
-     */
-    @Value("${regards.storage.cache.minimum.time.to.live.hours}")
-    private Long cacheFilesMinTtl;
 
     /**
      * Number of created AIPs processed on each iteration by project
@@ -159,7 +139,7 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
         Page<CachedFile> shouldBeAvailableSet;
         Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
         do {
-            shouldBeAvailableSet = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE, page);
+            shouldBeAvailableSet = cachedFileRepository.findAll(page);
             for (CachedFile shouldBeAvailable : shouldBeAvailableSet) {
                 if (Files.notExists(Paths.get(shouldBeAvailable.getLocation().getPath()))) {
                     cachedFileRepository.delete(shouldBeAvailable);
@@ -171,7 +151,7 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
         page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
         Page<CachedFile> availableFiles;
         do {
-            availableFiles = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE, page);
+            availableFiles = cachedFileRepository.findAll(page);
             Set<String> availableFilePaths = availableFiles.getContent().stream()
                     .map(availableFile -> availableFile.getLocation().getPath().toString()).collect(Collectors.toSet());
             Files.walk(getTenantCachePath())
@@ -217,32 +197,39 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
         runtimeTenantResolver.clearTenant();
     }
 
-    public Optional<CachedFile> getAvailableCachedFile(String pChecksum) {
-        Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum(pChecksum);
-        if (ocf.isPresent() && CachedFileState.AVAILABLE.equals(ocf.get().getState())) {
+    public Optional<CachedFile> getAvailable(FileReference fileReference) {
+        Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum(fileReference.getMetaInfo().getChecksum());
+        if (ocf.isPresent()) {
             return ocf;
         } else {
             return Optional.empty();
         }
     }
 
+    public Set<FileReference> getAvailables(Set<FileReference> fileReferences) {
+        Set<FileReference> availables = Sets.newHashSet();
+        Set<String> checksums = fileReferences.stream().map(f -> f.getMetaInfo().getChecksum())
+                .collect(Collectors.toSet());
+        Set<CachedFile> cacheFiles = cachedFileRepository.findAllByChecksumIn(checksums);
+        Set<String> cacheFileChecksums = cacheFiles.stream().map(f -> f.getChecksum()).collect(Collectors.toSet());
+        for (FileReference f : fileReferences) {
+            if (cacheFileChecksums.contains(f.getMetaInfo().getChecksum())) {
+                availables.add(f);
+            }
+        }
+        return availables;
+    }
+
     /**
      * Return the current size of the cache in bytes.
      * @return {@link Long}
      */
-    private Long getCacheSizeUsedBytes() {
-        // @formatter:off
-        return cachedFileRepository.findAll()
-                .stream()
-                .filter(cf -> CachedFileState.AVAILABLE.equals(cf.getState())
-                        || CachedFileState.RESTORING.equals(cf.getState()))
-                .mapToLong(CachedFile::getFileSize)
-                .sum();
-        // @formatter:on
+    public Long getCacheSizeUsedBytes() {
+        return cachedFileRepository.getTotalFileSize();
     }
 
     public int purge() {
-        return purgeExpiredCachedFiles() + purgeOlderCachedFiles();
+        return purgeExpiredCachedFiles();
     }
 
     /**
@@ -259,51 +246,6 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
             page = files.nextPageable();
             nbPurged = nbPurged + files.getNumberOfElements();
         } while (files.hasNext());
-        return nbPurged;
-    }
-
-    /**
-     * Delete older {@link CachedFile}s if the {link {@link #cacheSizePurgeUpperThreshold}} is reached.<br/>
-     * This method method deletes as many {@link CachedFile}s as needed to set the cache size under the
-     * {@link #cacheSizePurgeLowerThreshold}.
-     */
-    private int purgeOlderCachedFiles() {
-        int nbPurged = 0;
-        // Calculate cache size
-        Long cacheCurrentSize = getCacheSizeUsedBytes();
-        Long cacheSizePurgeUpperThresholdInOctets = cacheSizePurgeUpperThreshold * 1024;
-        Long cacheSizePurgeLowerThresholdInOctets = cacheSizePurgeLowerThreshold * 1024;
-        // If cache is over upper threshold size then delete older files to reached the lower threshold.
-        if ((cacheCurrentSize > cacheSizePurgeUpperThresholdInOctets)
-                && (cacheSizePurgeUpperThreshold > cacheSizePurgeLowerThreshold)) {
-            // If files are in queued mode, so delete older files if there minimum time to live (minTtl) is reached.
-            // This limit is configurable is sprinf properties of the current microservice.
-            if (cachedFileRepository.countByState(CachedFileState.QUEUED) > 0) {
-                LOGGER.warn("Cache is overloaded.({}Mo) Deleting older files from cache to reached lower threshold ({}Mo). ",
-                            cacheCurrentSize / (1024 * 1024), cacheSizePurgeLowerThresholdInOctets / (1024 * 1024));
-                Long filesTotalSizeToDelete = cacheCurrentSize - cacheSizePurgeLowerThresholdInOctets;
-                Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
-                Page<CachedFile> allOlderDeletableCachedFiles;
-                do {
-                    allOlderDeletableCachedFiles = cachedFileRepository
-                            .findByStateAndLastRequestDateBeforeOrderByLastRequestDateAsc(CachedFileState.AVAILABLE,
-                                                                                          OffsetDateTime.now()
-                                                                                                  .minusHours(this.cacheFilesMinTtl),
-                                                                                          page);
-                    Long fileSizesSum = 0L;
-                    Set<CachedFile> filesToDelete = Sets.newHashSet();
-                    Iterator<CachedFile> it = allOlderDeletableCachedFiles.iterator();
-                    while ((fileSizesSum < filesTotalSizeToDelete) && it.hasNext()) {
-                        CachedFile fileToDelete = it.next();
-                        filesToDelete.add(fileToDelete);
-                        fileSizesSum += fileToDelete.getFileSize();
-                    }
-                    deleteCachedFiles(filesToDelete);
-                    page = allOlderDeletableCachedFiles.nextPageable();
-                    nbPurged = nbPurged + filesToDelete.size();
-                } while (allOlderDeletableCachedFiles.hasNext());
-            }
-        }
         return nbPurged;
     }
 
@@ -360,4 +302,27 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
         }
         return Paths.get(globalCachePath, currentTenant);
     }
+
+    /**
+     * Calculate a file path in the cache system by creating a sub folder for each 2 character of its checksum.
+     * @param fileChecksum
+     * @return file path
+     */
+    public String getFilePath(String fileChecksum) {
+        String filePath = "";
+        int idx = 0;
+        int subFolders = 0;
+        while ((idx < fileChecksum.length()) && (subFolders < 6)) {
+            filePath = Paths.get(filePath, fileChecksum.substring(idx, idx + 2)).toString();
+            idx = idx + 2;
+        }
+        return Paths.get(getTenantCachePath().toString(), filePath, fileChecksum).toString();
+    }
+
+    public Long getCacheAvailableSizeBytes() {
+        Long currentCacheTotalSize = getCacheSizeUsedBytes();
+        Long cacheMaxSizeInOctets = maxCacheSizeKo * 1024;
+        return cacheMaxSizeInOctets - currentCacheTotalSize;
+    }
+
 }

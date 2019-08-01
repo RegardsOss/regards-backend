@@ -23,8 +23,8 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.storagelight.domain.database.FileRestorationRequest;
-import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 
 /**
  * Default implementation for simple file workingsubsets.
@@ -36,14 +36,14 @@ public class FileRestorationWorkingSubset {
     /**
      * Raw {@link FileStorageRequest}s associate
      */
-    private final Set<FileRestorationRequest> fileRestorationRequests = Sets.newHashSet();
+    private final Set<FileCacheRequest> fileRestorationRequests = Sets.newHashSet();
 
-    public FileRestorationWorkingSubset(Collection<FileRestorationRequest> requests) {
+    public FileRestorationWorkingSubset(Collection<FileCacheRequest> requests) {
         super();
         this.fileRestorationRequests.addAll(requests);
     }
 
-    public Set<FileRestorationRequest> getFileRestorationRequests() {
+    public Set<FileCacheRequest> getFileRestorationRequests() {
         return fileRestorationRequests;
     }
 

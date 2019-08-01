@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.plugin;
 
-import java.nio.file.Path;
-
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.database.FileRestorationRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 
 /**
  * The ProgressManager is used by {@link IStorageLocation} plugins to notidy the upper service of storage action results :
@@ -35,16 +33,15 @@ public interface IRestorationProgressManager {
 
     /**
      * Notify system that the given {@link FileReference} is restored.
-     * @param FileRestorationRequest {@link FileRestorationRequest} restored.
-     * @param restoredFilePath {@link Path} of the restored file.
+     * @param FileCacheRequest {@link FileCacheRequest} restored.
      */
-    public void restoreSucceed(FileRestorationRequest fileRequest, Path restoredFilePath);
+    public void restoreSucceed(FileCacheRequest fileRequest);
 
     /**
      * Notify the system that the given {@link FileReference} couldn't be restored.
-     * @param FileRestorationRequest {@link FileRestorationRequest} not restored.
+     * @param FileCacheRequest {@link FileCacheRequest} not restored.
      * @param cause {@link String} error message.
      */
-    public void restoreFailed(FileRestorationRequest fileRequest, String cause);
+    public void restoreFailed(FileCacheRequest fileRequest, String cause);
 
 }

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.domain.database;
+package fr.cnes.regards.modules.storagelight.domain.database.request;
 
 import java.util.Collection;
 import java.util.List;
@@ -45,6 +45,8 @@ import org.springframework.util.Assert;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 
 /**
  * @author Sébastien Binda

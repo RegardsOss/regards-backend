@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.domain.database;
+package fr.cnes.regards.modules.storagelight.domain.database.request;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -29,20 +29,22 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 
 /**
  * @author sbinda
  *
  */
 @Entity
-@Table(name = "t_file_restoration_request")
-public class FileRestorationRequest {
+@Table(name = "t_file_cache_request", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_t_file_cache_request_checksum", columnNames = { "checksum" }) })
+public class FileCacheRequest {
 
-    /**
-     * Internal database unique identifier
-     */
     @Id
     @SequenceGenerator(name = "fileRestorationRequestSequence", initialValue = 1,
             sequenceName = "seq_file_restoration_request")
@@ -50,14 +52,20 @@ public class FileRestorationRequest {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "file_ref_id")
+    @JoinColumn(name = "file_ref_id", nullable = false)
     private FileReference fileReference;
 
-    @Column(name = "origin_storage", length = FileLocation.STORAGE_MAX_LENGTH)
-    private String originStorage;
+    @Column(name = "checksum", length = FileReferenceMetaInfo.CHECKSUM_MAX_LENGTH, nullable = false)
+    private String checksum;
 
-    @Column(name = "file_destination_path")
-    private String fileDestinationPath;
+    @Column(name = "storage", length = FileLocation.STORAGE_MAX_LENGTH, nullable = false)
+    private String storage;
+
+    @Column(name = "file_size", nullable = false)
+    private Long fileSize;
+
+    @Column(name = "destination_path", length = FileLocation.URL_MAX_LENGTH, nullable = false)
+    private String destinationPath;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -66,14 +74,16 @@ public class FileRestorationRequest {
     @Column(name = "error_cause", length = 512)
     private String errorCause;
 
-    public FileRestorationRequest(FileReference fileReference, String fileDestinationPath) {
+    public FileCacheRequest(FileReference fileReference, String destinationPath) {
         super();
         this.fileReference = fileReference;
-        this.originStorage = fileReference.getLocation().getStorage();
-        this.fileDestinationPath = fileDestinationPath;
+        this.storage = fileReference.getLocation().getStorage();
+        this.fileSize = fileReference.getMetaInfo().getFileSize();
+        this.checksum = fileReference.getMetaInfo().getChecksum();
+        this.destinationPath = destinationPath;
     }
 
-    public FileRestorationRequest() {
+    public FileCacheRequest() {
         super();
     }
 
@@ -81,32 +91,20 @@ public class FileRestorationRequest {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public FileReference getFileReference() {
         return fileReference;
     }
 
-    public void setFileReference(FileReference fileReference) {
-        this.fileReference = fileReference;
+    public String getStorage() {
+        return storage;
     }
 
-    public String getFileDestinationPath() {
-        return fileDestinationPath;
+    public String getChecksum() {
+        return checksum;
     }
 
-    public void setFileDestinationPath(String fileDestinationPath) {
-        this.fileDestinationPath = fileDestinationPath;
-    }
-
-    public String getOriginStorage() {
-        return originStorage;
-    }
-
-    public void setOriginStorage(String originStorage) {
-        this.originStorage = originStorage;
+    public Long getFileSize() {
+        return fileSize;
     }
 
     public String getErrorCause() {
@@ -123,6 +121,10 @@ public class FileRestorationRequest {
 
     public void setStatus(FileRequestStatus status) {
         this.status = status;
+    }
+
+    public String getDestinationPath() {
+        return destinationPath;
     }
 
 }

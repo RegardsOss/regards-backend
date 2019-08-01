@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storagelight.service.file.reference;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -28,7 +29,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,11 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -50,12 +54,12 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.domain.DownloadableFile;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
-import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
@@ -109,6 +113,9 @@ public class FileReferenceService {
     private FileDeletionRequestService fileDeletionRequestService;
 
     @Autowired
+    private NLFileReferenceService nearlineFileService;
+
+    @Autowired
     private StoragePluginConfigurationHandler storageHandler;
 
     @Autowired
@@ -145,6 +152,19 @@ public class FileReferenceService {
                 item.getFileName(), item.getFileSize(), MediaType.valueOf(item.getMimeType()));
         return this.addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigine(),
                                      item.getDestination());
+    }
+
+    /**
+     * Call {@link #addFileReference(AddFileRefFlowItem)} method for each item.
+     * @param items
+     */
+    public void addFileReferences(List<AddFileRefFlowItem> items) {
+        for (AddFileRefFlowItem item : items) {
+            FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(item.getChecksum(), item.getAlgorithm(),
+                    item.getFileName(), item.getFileSize(), MediaType.valueOf(item.getMimeType()));
+            this.addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigine(),
+                                  item.getDestination());
+        }
     }
 
     /**
@@ -236,10 +256,7 @@ public class FileReferenceService {
         Optional<PrioritizedStorage> conf = prioritizedStorageService.search(fileToDownload.getLocation().getStorage());
         if (conf.isPresent()) {
             if (conf.get().getStorageType() != StorageType.ONLINE) {
-                throw new ModuleException(String
-                        .format("Unable to download file %s (checksum : %s) as its storage location %s is not online.",
-                                fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getChecksum(),
-                                fileToDownload.getLocation().toString()));
+                return nearlineFileService.download(fileToDownload);
             } else {
                 try {
                     IOnlineStorageLocation plugin = pluginService
@@ -336,6 +353,57 @@ public class FileReferenceService {
     }
 
     /**
+     * Ensure availability of given files by their checksum for download.
+     * @param checksums
+     * @param expirationDate availability expiration date.
+     */
+    public void makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
+
+        Set<FileReference> onlines = Sets.newHashSet();
+        Set<FileReference> nearlines = Sets.newHashSet();
+        Set<FileReference> offlines = Sets.newHashSet();
+        Set<FileReference> refs = fileRefRepo.findByMetaInfoChecksumIn(checksums);
+        Set<String> remainingChecksums = Sets.newHashSet(checksums);
+
+        // TODO : Check delegated security ??
+
+        // Dispatch by storage
+        ImmutableListMultimap<String, FileReference> filesByStorage = Multimaps
+                .index(refs, f -> f.getLocation().getStorage());
+        Set<String> remainingStorages = filesByStorage.keySet();
+
+        Optional<PrioritizedStorage> storage = prioritizedStorageService.searchActiveHigherPriority(remainingStorages);
+        // Handle storage by priority
+        while (storage.isPresent() && !remainingStorages.isEmpty() && !remainingChecksums.isEmpty()) {
+            // For each storage dispatch files in online, near line and not available
+            PluginConfiguration conf = storage.get().getStorageConfiguration();
+            String storageName = conf.getLabel();
+            ImmutableList<FileReference> storageFiles = filesByStorage.get(storageName);
+            switch (storage.get().getStorageType()) {
+                case NEARLINE:
+                    nearlines.addAll(storageFiles);
+                    break;
+                case ONLINE:
+                    // If storage is an online one, so file is already available
+                    onlines.addAll(storageFiles);
+                default:
+                    // Unknown storage type
+                    offlines.addAll(storageFiles);
+                    break;
+            }
+            remainingChecksums.removeAll(storageFiles.stream().map(f -> f.getMetaInfo().getChecksum())
+                    .collect(Collectors.toSet()));
+            remainingStorages.remove(storageName);
+            storage = prioritizedStorageService.searchActiveHigherPriority(remainingStorages);
+        }
+
+        notifyAvailables(onlines);
+        notifyNotAvailables(offlines);
+
+        nearlineFileService.makeAvailable(nearlines, expirationDate);
+    }
+
+    /**
      * Calculate the total file size by adding fileSize of each {@link FileReference} with an id over the given id.
      * @param lastReferencedFileId
      * @return
@@ -367,7 +435,7 @@ public class FileReferenceService {
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
             // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
             fileRefRequestService.addFileReferenceRequest(owners, newMetaInfo, origin, destination,
-                                                                FileRequestStatus.DELAYED);
+                                                          FileRequestStatus.DELAYED);
         } else {
             if (deletionRequest.isPresent()) {
                 // Delete not running deletion request to add the new owner
@@ -406,12 +474,18 @@ public class FileReferenceService {
         }
     }
 
-    public void addFileReferences(List<AddFileRefFlowItem> items) {
-        for (AddFileRefFlowItem item : items) {
-            FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(item.getChecksum(), item.getAlgorithm(),
-                    item.getFileName(), item.getFileSize(), MediaType.valueOf(item.getMimeType()));
-            this.addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigine(),
-                                  item.getDestination());
-        }
+    private void notifyAvailables(Set<FileReference> availables) {
+        availables.forEach(f -> fileRefPublisher
+                .publishFileRefAvailable(f.getMetaInfo().getChecksum(),
+                                         String.format("file %s (checksum %s) is available for download.",
+                                                       f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum())));
+    }
+
+    private void notifyNotAvailables(Set<FileReference> availables) {
+        availables.forEach(f -> fileRefPublisher
+                .publishFileRefNotAvailable(f.getMetaInfo().getChecksum(),
+                                            String.format("file %s (checksum %s) is not available for download.",
+                                                          f.getMetaInfo().getFileName(),
+                                                          f.getMetaInfo().getChecksum())));
     }
 }

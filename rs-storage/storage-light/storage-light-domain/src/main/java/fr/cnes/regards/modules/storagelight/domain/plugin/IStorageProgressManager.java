@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.plugin;
 
-import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 
 /**
  * The ProgressManager is used by {@link IStorageLocation} plugins to notidy the upper service of storage action results :

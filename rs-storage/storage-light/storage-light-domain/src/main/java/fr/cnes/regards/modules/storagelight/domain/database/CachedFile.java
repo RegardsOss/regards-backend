@@ -6,8 +6,6 @@ import java.time.OffsetDateTime;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -17,9 +15,6 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
-import org.springframework.util.MimeType;
-
-import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
 /**
@@ -28,9 +23,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_cached_file",
-        indexes = { @Index(name = "idx_cached_file_checksum", columnList = "checksum"),
-                @Index(name = "idx_cached_file_state", columnList = "state") },
+@Table(name = "t_cached_file", indexes = { @Index(name = "idx_cached_file_checksum", columnList = "checksum") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_cached_file_checksum", columnNames = "checksum") })
 public class CachedFile {
 
@@ -46,7 +39,7 @@ public class CachedFile {
      * The cached file checksum
      */
     @NotNull
-    @Column(length = 128)
+    @Column(length = FileReferenceMetaInfo.CHECKSUM_MAX_LENGTH)
     private String checksum;
 
     /**
@@ -76,26 +69,6 @@ public class CachedFile {
     private OffsetDateTime lastRequestDate;
 
     /**
-     * The cached file state
-     */
-    @Column
-    @Enumerated(EnumType.STRING)
-    private CachedFileState state;
-
-    /**
-     * Causes why a file could not be set into the cache
-     */
-    @Column(length = 512, name = "failure_cause")
-    private String failureCause;
-
-    @Column
-    private String fileName;
-
-    @Column(nullable = false, name = "mime_type")
-    @Convert(converter = MimeTypeConverter.class)
-    private MimeType mimeType;
-
-    /**
      * Default constructor
      */
     public CachedFile() {
@@ -106,144 +79,52 @@ public class CachedFile {
      * Constructor initializing the cached file from the parameters
      * @param df
      * @param expirationDate
-     * @param fileState
      */
-    public CachedFile(FileReference fileRef, OffsetDateTime expirationDate, CachedFileState fileState) {
+    public CachedFile(FileReference fileRef, OffsetDateTime expirationDate) {
         checksum = fileRef.getMetaInfo().getChecksum();
         fileSize = fileRef.getMetaInfo().getFileSize();
-        fileName = fileRef.getMetaInfo().getFileName();
-        mimeType = fileRef.getMetaInfo().getMimeType();
         expiration = expirationDate;
         lastRequestDate = OffsetDateTime.now();
-        state = fileState;
     }
 
-    /**
-     * @return the id
-     */
     public Long getId() {
         return id;
     }
 
-    /**
-     * Set the id
-     * @param id
-     */
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    /**
-     * @return the location
-     */
     public URL getLocation() {
         return location;
     }
 
-    /**
-     * Set the location
-     * @param location
-     */
     public void setLocation(URL location) {
         this.location = location;
     }
 
-    /**
-     * @return the expiration date
-     */
     public OffsetDateTime getExpiration() {
         return expiration;
     }
 
-    /**
-     * Set the expiration date
-     * @param expiration
-     */
     public void setExpiration(OffsetDateTime expiration) {
         this.expiration = expiration;
     }
 
-    /**
-     * @return the state
-     */
-    public CachedFileState getState() {
-        return state;
-    }
-
-    /**
-     * Set the state
-     * @param state
-     */
-    public void setState(CachedFileState state) {
-        this.state = state;
-    }
-
-    /**
-     * @return the failure cause
-     */
-    public String getFailureCause() {
-        return failureCause;
-    }
-
-    /**
-     * Set the failure cause
-     * @param failureCause
-     */
-    public void setFailureCause(String failureCause) {
-        this.failureCause = failureCause;
-    }
-
-    /**
-     * @return the last request date
-     */
     public OffsetDateTime getLastRequestDate() {
         return lastRequestDate;
     }
 
-    /**
-     * Set last request date
-     * @param pLastRequestDate
-     */
     public void setLastRequestDate(OffsetDateTime pLastRequestDate) {
         lastRequestDate = pLastRequestDate;
     }
 
-    /**
-     * @return the file size
-     */
     public Long getFileSize() {
         return fileSize;
     }
 
-    /**
-     * @return the checksum
-     */
     public String getChecksum() {
         return checksum;
     }
 
-    /**
-     * Set the checksum
-     * @param pChecksum
-     */
     public void setChecksum(String pChecksum) {
         checksum = pChecksum;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
-    public MimeType getMimeType() {
-        return mimeType;
-    }
-
-    public void setMimeType(MimeType mimeType) {
-        this.mimeType = mimeType;
     }
 
     @Override

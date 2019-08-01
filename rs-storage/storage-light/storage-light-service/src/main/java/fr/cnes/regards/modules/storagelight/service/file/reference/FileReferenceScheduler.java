@@ -31,8 +31,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
-import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
-import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 
 /**
  * Scheduler to periodically handle bulk requests for storage and deletion on storage locations.<br />
@@ -61,7 +61,7 @@ public class FileReferenceScheduler {
     private FileDeletionRequestService fileDeletionRequestService;
 
     @Autowired
-    private FileRestorationRequestService fileRestorationRequestService;
+    private FileCacheRequestService fileCacheRequestService;
 
     /**
      * Number of created AIPs processed on each iteration by project
@@ -83,11 +83,11 @@ public class FileReferenceScheduler {
     }
 
     @Scheduled(fixedDelayString = "${regards.storage.store.delay:5000}", initialDelay = 10000)
-    public void handleFileRestorationRequests() throws ModuleException {
+    public void handleFileCacheRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                fileRestorationRequestService.scheduleRestorationJobs(FileRequestStatus.TODO);
+                fileCacheRequestService.scheduleRestorationJobs(FileRequestStatus.TODO);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

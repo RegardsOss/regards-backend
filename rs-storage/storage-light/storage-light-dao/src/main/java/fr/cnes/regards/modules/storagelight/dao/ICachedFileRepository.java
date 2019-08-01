@@ -19,21 +19,19 @@
 package fr.cnes.regards.modules.storagelight.dao;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.modules.storagelight.domain.database.CachedFile;
-import fr.cnes.regards.modules.storagelight.domain.database.CachedFileState;
 
 /**
  * JPA Interface to access {@link CachedFile}s entities.
  *
- * @author Sylvain VISSIERE-GUERINET
  * @author Sébastien Binda
  */
 public interface ICachedFileRepository extends JpaRepository<CachedFile, Long> {
@@ -44,13 +42,6 @@ public interface ICachedFileRepository extends JpaRepository<CachedFile, Long> {
      * @return {@link CachedFile}s
      */
     Set<CachedFile> findAllByChecksumIn(Set<String> checksums);
-
-    /**
-     * Get all {@link CachedFile}s for the given {@link String}s of checksums.
-     * @param checksums {@link String}s
-     * @return {@link CachedFile}s
-     */
-    List<CachedFile> findAllByChecksumInOrderByLastRequestDateAsc(Set<String> checksums);
 
     /**
      * Retrieve a {@link CachedFile} by his checksum
@@ -65,40 +56,8 @@ public interface ICachedFileRepository extends JpaRepository<CachedFile, Long> {
      */
     void removeByChecksum(String checksum);
 
-    /**
-     * Retrieve all {@link CachedFile}s for the given {@link CachedFileState}.
-     * @param pQueued {@link CachedFileState}
-     * @return {@link Set}<{@link CachedFile}
-     */
-    Page<CachedFile> findAllByState(CachedFileState pQueued, Pageable pageable);
-
-    /**
-     * Count number of {@link CachedFile} for the given {@link CachedFileState}
-     */
-    Long countByState(CachedFileState pQueued);
-
-    /**
-     * Retrieve all {@link CachedFile}s for the given {@link CachedFileState} ordered by last request date
-     * @param pQueued
-     * @return {@link Set}<{@link CachedFile}
-     */
-    Page<CachedFile> findByStateOrderByLastRequestDateAsc(CachedFileState pQueued, Pageable pageable);
-
-    /**
-     * Retrieve all {@link CachedFile}s for the given {@link CachedFileState} ordered by last request date
-     * @param pQueued
-     * @return {@link Set}<{@link CachedFile}
-     */
-    Page<CachedFile> findByStateOrderByLastRequestDateDesc(CachedFileState pQueued, Pageable pageable);
-
-    /**
-     * Retrieve all {@link CachedFile}s for the given {@link CachedFileState} and {@link OffsetDateTime} last request date before the given one
-     * ordered by last request date.
-     * @param pQueued
-     * @return {@link Set}<{@link CachedFile}
-     */
-    Page<CachedFile> findByStateAndLastRequestDateBeforeOrderByLastRequestDateAsc(CachedFileState pQueued,
-            OffsetDateTime pLastRequestDate, Pageable pageable);
+    @Query("select SUM(cf.fileSize) from CachedFile cf")
+    Long getTotalFileSize();
 
     /**
      * Retrieve all {@link CachedFile}s with expiration date before the given {@link OffsetDateTime}

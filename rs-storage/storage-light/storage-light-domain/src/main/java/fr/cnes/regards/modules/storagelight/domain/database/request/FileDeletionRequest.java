@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.domain.database;
+package fr.cnes.regards.modules.storagelight.domain.database.request;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -37,6 +37,8 @@ import javax.persistence.UniqueConstraint;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 
 /**
  * @author sbinda

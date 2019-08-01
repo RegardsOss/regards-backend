@@ -23,8 +23,8 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
-import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 
 /**
  * Default implementation for simple file workingsubsets.

@@ -23,9 +23,9 @@ import java.util.List;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
-import fr.cnes.regards.modules.storagelight.domain.database.FileRestorationRequest;
-import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 
 /**
  * Plugin interface for all storage systems.
@@ -39,7 +39,7 @@ public interface IStorageLocation {
 
     Collection<FileDeletionWorkingSubset> prepareForDeletion(Collection<FileDeletionRequest> fileDeletionRequests);
 
-    Collection<FileRestorationWorkingSubset> prepareForRestoration(List<FileRestorationRequest> requests);
+    Collection<FileRestorationWorkingSubset> prepareForRestoration(List<FileCacheRequest> requests);
 
     void delete(FileDeletionWorkingSubset workingSet, IDeletionProgressManager progressManager);
 

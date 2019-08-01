@@ -27,8 +27,8 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
-import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDeletionProgressManager;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileDeletionRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;

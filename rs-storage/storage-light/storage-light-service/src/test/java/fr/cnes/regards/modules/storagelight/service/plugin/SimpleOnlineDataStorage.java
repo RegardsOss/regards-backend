@@ -40,10 +40,10 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.database.FileRestorationRequest;
-import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileDeletionWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileRestorationWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubset;
@@ -206,7 +206,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public Collection<FileRestorationWorkingSubset> prepareForRestoration(List<FileRestorationRequest> requests) {
+    public Collection<FileRestorationWorkingSubset> prepareForRestoration(List<FileCacheRequest> requests) {
         Collection<FileRestorationWorkingSubset> workingSubSets = Lists.newArrayList();
         workingSubSets.add(new FileRestorationWorkingSubset(Sets.newHashSet(requests)));
         return workingSubSets;

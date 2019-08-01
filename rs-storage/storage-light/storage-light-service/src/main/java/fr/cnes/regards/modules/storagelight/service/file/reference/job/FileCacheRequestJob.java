@@ -30,8 +30,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.database.FileRestorationRequest;
-import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileRestorationWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefE
  * @author Sébastien Binda
  *
  */
-public class FileRestorationRequestJob extends AbstractJob<Void> {
+public class FileCacheRequestJob extends AbstractJob<Void> {
 
     /**
      * JOB Parameter key for the storage plugin configuration identifier to use for the restoration.
@@ -52,7 +52,7 @@ public class FileRestorationRequestJob extends AbstractJob<Void> {
     public static final String DATA_STORAGE_CONF_ID = "dscId";
 
     /**
-     * JOB Parameter key for the Working subset of {@link FileRestorationRequest} to handle for storage.
+     * JOB Parameter key for the Working subset of {@link FileCacheRequest} to handle for storage.
      */
     public static final String WORKING_SUB_SET = "wss";
 
@@ -79,7 +79,7 @@ public class FileRestorationRequestJob extends AbstractJob<Void> {
     @Override
     public void run() {
         // Initiate the job progress manager
-        FileRestorationJobProgressManager progressManager = new FileRestorationJobProgressManager(publisher, this);
+        FileCacheJobProgressManager progressManager = new FileCacheJobProgressManager(publisher, this);
         // lets instantiate the plugin to use
         Long confIdToUse = parameters.get(DATA_STORAGE_CONF_ID).getValue();
         FileRestorationWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
@@ -94,7 +94,7 @@ public class FileRestorationRequestJob extends AbstractJob<Void> {
             throw new JobRuntimeException(e);
         } finally {
             // Publish event for all not handled files
-            for (FileRestorationRequest req : workingSubset.getFileRestorationRequests()) {
+            for (FileCacheRequest req : workingSubset.getFileRestorationRequests()) {
                 if (!progressManager.isHandled(req)) {
                     FileReference fileRef = req.getFileReference();
                     progressManager.restoreFailed(req,

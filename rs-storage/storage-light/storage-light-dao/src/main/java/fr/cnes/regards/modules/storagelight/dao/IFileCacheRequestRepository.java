@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storagelight.dao;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -28,23 +29,28 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
-import fr.cnes.regards.modules.storagelight.domain.database.FileRestorationRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 
 /**
  * @author sbinda
  *
  */
-public interface IFileRestorationRequestRepository extends JpaRepository<FileRestorationRequest, Long> {
+public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequest, Long> {
 
-    Page<FileRestorationRequest> findByStatus(FileRequestStatus status, Pageable page);
+    Page<FileCacheRequest> findByStatus(FileRequestStatus status, Pageable page);
 
-    @Query("select originStorage from FileRestorationRequest where status = :status")
-    Set<String> findOriginStoragesByStatus(FileRequestStatus status);
+    @Query("select storage from FileCacheRequest where status = :status")
+    Set<String> findStoragesByStatus(FileRequestStatus status);
 
-    Page<FileRestorationRequest> findAllByOriginStorage(String storage, Pageable page);
+    Optional<FileCacheRequest> findByChecksum(String checksum);
+
+    Page<FileCacheRequest> findAllByStorage(String storage, Pageable page);
 
     @Modifying
-    @Query("update FileRestorationRequest frr set frr.status = :status where frr.id = :id")
+    @Query("update FileCacheRequest fcr set fcr.status = :status where fcr.id = :id")
     int updateStatus(@Param("status") FileRequestStatus status, @Param("id") Long id);
+
+    @Query("select SUM(fcr.fileSize) from FileCacheRequest fcr")
+    Long getTotalFileSize();
 
 }
