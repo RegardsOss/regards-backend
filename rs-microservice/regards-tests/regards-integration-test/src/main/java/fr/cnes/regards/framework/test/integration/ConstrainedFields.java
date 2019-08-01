@@ -102,4 +102,12 @@ public class ConstrainedFields {
         return PayloadDocumentation.fieldWithPath(fullPayloadPath).description(description)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value(constraints));
     }
+
+    /**
+     * Mark every sub property to the provided path to ignore
+     * @param payloadPath payload path
+     */
+    public FieldDescriptor ignoreSubsectionWithPath(String payloadPath) {
+        return PayloadDocumentation.subsectionWithPath(payloadPath).ignored();
+    }
 }
