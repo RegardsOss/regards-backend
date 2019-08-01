@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.FileRestorationWorking
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.cache.CacheService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileStorageRequestJob;
+import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileCacheRequestJob;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
 /**
@@ -143,9 +143,9 @@ public class FileCacheRequestService {
         List<FileCacheRequest> restorables = Lists.newArrayList();
         // Calculate cache size available by adding cache file sizes sum and already queued requests
         Long availableCacheSize = cacheService.getCacheAvailableSizeBytes();
-        Long pendingSize = repository.getTotalFileSize();
+        Long pendingSize = repository.getPendingFileSize();
         Long availableSize = availableCacheSize - pendingSize;
-        Iterator<FileCacheRequest> it = restorables.iterator();
+        Iterator<FileCacheRequest> it = requests.iterator();
         Long totalSize = 0L;
         while (it.hasNext()) {
             FileCacheRequest request = it.next();
@@ -159,21 +159,23 @@ public class FileCacheRequestService {
 
     private Collection<JobInfo> scheduleRestorationJobsByStorage(String storage, List<FileCacheRequest> requests) {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
-        try {
-            PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
-            IStorageLocation storagePlugin = pluginService.getPlugin(conf.getId());
-            Collection<FileRestorationWorkingSubset> workingSubSets = storagePlugin.prepareForRestoration(requests);
-            workingSubSets.forEach(ws -> {
-                Set<JobParameter> parameters = Sets.newHashSet();
-                parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_ID, conf.getId()));
-                parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, ws));
-                ws.getFileRestorationRequests()
-                        .forEach(r -> repository.updateStatus(FileRequestStatus.PENDING, r.getId()));
-                jobInfoList.add(jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
-                        FileStorageRequestJob.class.getName())));
-            });
-        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-            this.handleStorageNotAvailable(requests);
+        if ((requests != null) && !requests.isEmpty()) {
+            try {
+                PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
+                IStorageLocation storagePlugin = pluginService.getPlugin(conf.getId());
+                Collection<FileRestorationWorkingSubset> workingSubSets = storagePlugin.prepareForRestoration(requests);
+                workingSubSets.forEach(ws -> {
+                    Set<JobParameter> parameters = Sets.newHashSet();
+                    parameters.add(new JobParameter(FileCacheRequestJob.DATA_STORAGE_CONF_ID, conf.getId()));
+                    parameters.add(new JobParameter(FileCacheRequestJob.WORKING_SUB_SET, ws));
+                    ws.getFileRestorationRequests()
+                            .forEach(r -> repository.updateStatus(FileRequestStatus.PENDING, r.getId()));
+                    jobInfoList.add(jobInfoService.createAsQueued(new JobInfo(false, 0, parameters,
+                            authResolver.getUser(), FileCacheRequestJob.class.getName())));
+                });
+            } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+                this.handleStorageNotAvailable(requests);
+            }
         }
         return jobInfoList;
     }

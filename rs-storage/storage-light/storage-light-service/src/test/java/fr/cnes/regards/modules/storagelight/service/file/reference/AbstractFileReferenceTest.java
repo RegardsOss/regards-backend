@@ -61,6 +61,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
+import fr.cnes.regards.modules.storagelight.service.file.cache.CacheService;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedStorageService;
@@ -84,6 +85,9 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
 
     @Autowired
     protected FileCacheRequestService fileCacheRequestService;
+
+    @Autowired
+    protected CacheService cacheService;
 
     @Autowired
     protected FileDeletionRequestService fileDeletionRequestService;

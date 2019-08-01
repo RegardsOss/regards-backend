@@ -134,6 +134,10 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
         }
     }
 
+    public Optional<CachedFile> search(String checksum) {
+        return cachedFileRepository.findOneByChecksum(checksum);
+    }
+
     private void checkDiskDBCoherence(String tenant) throws IOException {
         runtimeTenantResolver.forceTenant(tenant);
         Page<CachedFile> shouldBeAvailableSet;

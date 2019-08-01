@@ -56,6 +56,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.storagelight.dao.FileReferenceSpecification;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.database.CachedFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
@@ -487,6 +488,15 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
                                 NEARLINE_CONF_LABEL, oReq.get().getStorage());
             Assert.assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
                                 FileRequestStatus.TODO, oReq.get().getStatus());
+            Collection<JobInfo> jobs = fileCacheRequestService.scheduleRestorationJobs(FileRequestStatus.TODO);
+            runAndWaitJob(jobs);
+
+            Optional<CachedFile> oCf = cacheService.search(fileRef.getMetaInfo().getChecksum());
+            Assert.assertTrue("File should be present in cache", oCf.isPresent());
+            Assert.assertEquals("File should be present in cache",
+                                cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()),
+                                oCf.get().getLocation().getPath().toString());
+
             LOGGER.error(e.getMessage());
         }
     }

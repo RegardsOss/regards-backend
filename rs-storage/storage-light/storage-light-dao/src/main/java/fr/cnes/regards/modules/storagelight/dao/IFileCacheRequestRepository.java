@@ -40,7 +40,7 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
     Page<FileCacheRequest> findByStatus(FileRequestStatus status, Pageable page);
 
     @Query("select storage from FileCacheRequest where status = :status")
-    Set<String> findStoragesByStatus(FileRequestStatus status);
+    Set<String> findStoragesByStatus(@Param("status") FileRequestStatus status);
 
     Optional<FileCacheRequest> findByChecksum(String checksum);
 
@@ -50,7 +50,7 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
     @Query("update FileCacheRequest fcr set fcr.status = :status where fcr.id = :id")
     int updateStatus(@Param("status") FileRequestStatus status, @Param("id") Long id);
 
-    @Query("select SUM(fcr.fileSize) from FileCacheRequest fcr")
-    Long getTotalFileSize();
+    @Query("select coalesce(sum(fcr.fileSize),0) from FileCacheRequest fcr where fcr.status = 'PENDING'")
+    Long getPendingFileSize();
 
 }

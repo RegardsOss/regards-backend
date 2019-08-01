@@ -209,7 +209,19 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     @Override
     public void retrieve(FileRestorationWorkingSubset workingSubset, IRestorationProgressManager progressManager) {
         workingSubset.getFileRestorationRequests().forEach(f -> {
-            progressManager.restoreSucceed(f);
+            // Create file
+            try {
+                if (!Files.exists(Paths.get(f.getDestinationPath()).getParent())) {
+                    Files.createDirectories(Paths.get(f.getDestinationPath()).getParent());
+                }
+                if (!Files.exists(Paths.get(f.getDestinationPath()))) {
+                    Files.createFile(Paths.get(f.getDestinationPath()));
+                }
+                progressManager.restoreSucceed(f);
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                progressManager.restoreFailed(f, e.getMessage());
+            }
         });
     }
 

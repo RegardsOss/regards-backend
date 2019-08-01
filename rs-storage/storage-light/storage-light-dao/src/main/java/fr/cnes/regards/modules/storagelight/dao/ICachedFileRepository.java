@@ -56,7 +56,7 @@ public interface ICachedFileRepository extends JpaRepository<CachedFile, Long> {
      */
     void removeByChecksum(String checksum);
 
-    @Query("select SUM(cf.fileSize) from CachedFile cf")
+    @Query("select coalesce(sum(cf.fileSize), 0) from CachedFile cf")
     Long getTotalFileSize();
 
     /**
