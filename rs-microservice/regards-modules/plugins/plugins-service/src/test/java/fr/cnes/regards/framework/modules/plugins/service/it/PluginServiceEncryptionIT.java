@@ -46,12 +46,11 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
         encryptionService.encrypt(paramValue);
         PluginConfiguration pluginConf = new PluginConfiguration(pluginMeta, PLUGIN_CONF_LABEL,
                 IPluginParam.set(IPluginParam.build(SensitivePlugin.MESSAGE_PLUGIN_PARAM, paramValue)), 0);
-        Long dbId = pluginService.savePluginConfiguration(pluginConf).getId();
+        pluginService.savePluginConfiguration(pluginConf);
         // now that it has been saved, lets check that parameter has been encrypted into DB
-        PluginConfiguration dbPluginConf = pluginService.loadPluginConfiguration(dbId);
+        PluginConfiguration dbPluginConf = pluginService.loadPluginConfiguration(pluginConf.getBusinessId());
         // Thanks to gson normalization, some chars are escaped into the hex form
-        Assert.assertEquals("Plugin parameter value in DB should be encrypted",
-                            "\"zRqQBURkGfCTNF+JLFkY7A\\u003d\\u003d\"",
+        Assert.assertEquals("Plugin parameter value in DB should be encrypted", "zRqQBURkGfCTNF+JLFkY7A==",
                             dbPluginConf.getParameterValue(SensitivePlugin.MESSAGE_PLUGIN_PARAM));
     }
 
@@ -61,8 +60,8 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
         String paramValue = "Un petit test";
         PluginConfiguration pluginConf = new PluginConfiguration(pluginMeta, PLUGIN_CONF_LABEL,
                 IPluginParam.set(IPluginParam.build(SensitivePlugin.MESSAGE_PLUGIN_PARAM, paramValue)), 0);
-        Long dbId = pluginService.savePluginConfiguration(pluginConf).getId();
-        SensitivePlugin sensitivePlg = pluginService.getPlugin(dbId);
+        pluginService.savePluginConfiguration(pluginConf);
+        SensitivePlugin sensitivePlg = pluginService.getPlugin(pluginConf.getBusinessId());
         Assert.assertEquals("Once the plugin instantiated, the parameter should not be encrypted anymore", paramValue,
                             sensitivePlg.echo(""));
     }
@@ -77,8 +76,7 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
         PluginConfiguration savedPlgConf = pluginService.savePluginConfiguration(pluginConf);
         savedPlgConf.setIsActive(!savedPlgConf.isActive());
         PluginConfiguration updated = pluginService.updatePluginConfiguration(savedPlgConf);
-        Assert.assertEquals("Plugin parameter value in DB should not have changed",
-                            "\"zRqQBURkGfCTNF+JLFkY7A\\u003d\\u003d\"",
+        Assert.assertEquals("Plugin parameter value in DB should not have changed", "zRqQBURkGfCTNF+JLFkY7A==",
                             updated.getParameterValue(SensitivePlugin.MESSAGE_PLUGIN_PARAM));
     }
 
@@ -96,7 +94,7 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
         savedParam.setValue(updatedParamValue);
         PluginConfiguration updated = pluginService.updatePluginConfiguration(savedPlgConf);
         Assert.assertEquals("Plugin parameter value in DB should have been updated and encrypted",
-                            "\"P4PXqn1DisXaK1g9X5koZA\\u003d\\u003d\"",
+                            "P4PXqn1DisXaK1g9X5koZA==",
                             updated.getParameterValue(SensitivePlugin.MESSAGE_PLUGIN_PARAM));
     }
 

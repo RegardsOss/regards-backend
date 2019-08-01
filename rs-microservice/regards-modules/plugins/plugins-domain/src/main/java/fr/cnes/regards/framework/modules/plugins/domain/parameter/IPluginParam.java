@@ -59,7 +59,7 @@ public interface IPluginParam {
     /**
      * Check if dynamic parameter is consistent with static one
      */
-    default boolean isValid(IPluginParam staticParam) {
+    default boolean isValid(IPluginParam dynamicParam) {
         return false;
     }
 
@@ -67,11 +67,6 @@ public interface IPluginParam {
      * Check if parameter has a corresponding value
      */
     boolean hasValue();
-
-    /**
-     * Check if parameter value is instance of the specified class
-     */
-    boolean isInstance(Class<?> clazz);
 
     /**
      * Get parameter value

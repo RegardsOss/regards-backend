@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.utils.plugins.plugintypes;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -152,12 +153,12 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
          * Get the configuration for the complex Plugin (ie the parent)
          */
         final Set<IPluginParam> complexParameters = IPluginParam
-                .set(IPluginParam.plugin(ComplexPlugin.FIELD_NAME_PLUGIN, pluginConfigurationInterface.getLabel()),
+                .set(IPluginParam.plugin(ComplexPlugin.FIELD_NAME_PLUGIN, pluginConfigurationInterface.getBusinessId()),
                      IPluginParam.build(ComplexPlugin.FIELD_NAME_ACTIVE, TRUE),
                      IPluginParam.build(ComplexPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ));
 
-        HashMap<Long, Object> instantiatedPluginMap = new HashMap<>();
-        instantiatedPluginMap.put(pluginConfigurationInterface.getId(),
+        Map<String, Object> instantiatedPluginMap = new HashMap<>();
+        instantiatedPluginMap.put(pluginConfigurationInterface.getBusinessId(),
                                   PluginUtils.getPlugin(pluginConfigurationInterface,
                                                         pluginConfigurationInterface.getPluginClassName(),
                                                         instantiatedPluginMap));

@@ -78,10 +78,10 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                                                   customizer().expectStatusCreated(), "Configuration should be saved!",
                                                   "InnerParamTestPlugin");
         String resultAsString = payload(result);
-        Integer innerConfigId = JsonPath.read(resultAsString, "$.content.id");
+        String innerConfigId = JsonPath.read(resultAsString, "$.content.businessId");
 
         // Creation plugin with inner plugin as parameter
-        String json = readJsonContract("fakeConf.json").replace("\"id\":-1", "\"id\": " + innerConfigId.toString());
+        String json = readJsonContract("fakeConfLight.json").replace("@ref@", innerConfigId);
         result = performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, json, customizer().expectStatusCreated(),
                                     "Configuration should be saved!", "ParamTestPlugin");
         resultAsString = payload(result);
@@ -107,7 +107,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         boolean unexpectedValue = false;
         try {
             plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class,
-                                                        IPluginParam.build("pString", dynValue).dynamic());
+                                                        IPluginParam.build("pString", "fake").dynamic());
         } catch (PluginUtilsRuntimeException e) {
             unexpectedValue = true;
         }
@@ -128,7 +128,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         }
 
         // Update Inner Plugin
-        json = readJsonContract("innerConfUpdated.json").replace("\"id\":0", "\"id\":" + innerConfigId.toString());
+        json = readJsonContract("innerConfUpdated.json").replace("@ref@", innerConfigId);
         performDefaultPut(PluginController.PLUGINS_PLUGINID_CONFIGID, json, customizer().expectStatusOk(),
                           "Configuration should be saved!", "InnerParamTestPlugin", innerConfigId);
 
@@ -150,8 +150,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                              "Configuration mustn't have been deleted", "InnerParamTestPlugin", innerConfigId);
 
         // Update Inner Plugin with a different version (2.0.0)
-        json = readJsonContract("innerConfUpdatedVersion.json").replace("\"id\":0",
-                                                                        "\"id\":" + innerConfigId.toString());
+        json = readJsonContract("innerConfUpdatedVersion.json").replace("@ref@", innerConfigId);
         performDefaultPut(PluginController.PLUGINS_PLUGINID_CONFIGID, json,
                           customizer().expect(MockMvcResultMatchers.status().isUnprocessableEntity()),
                           "Configuration should be saved!", "InnerParamTestPlugin", innerConfigId);
@@ -165,13 +164,13 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                                                   customizer().expectStatusCreated(), "Configuration should be saved!",
                                                   "InnerParamTestPlugin");
         String resultAsString = payload(result);
-        long innerConfigId = (Integer) JsonPath.read(resultAsString, "$.content.id");
+        String innerBusinessId = (String) JsonPath.read(resultAsString, "$.content.businessId");
         // Remove from cache
         resolver.forceTenant(getDefaultTenant());
-        pluginService.cleanPluginCache(innerConfigId);
+        pluginService.cleanPluginCache(innerBusinessId);
 
         // Retrieve PLugin Configuration
-        PluginConfiguration pluginConf = pluginService.loadPluginConfiguration(innerConfigId);
+        PluginConfiguration pluginConf = pluginService.loadPluginConfiguration(innerBusinessId);
 
         // Change version
         pluginConf.setVersion("3.0.0");
@@ -180,7 +179,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
         // Try load it
         @SuppressWarnings("unused")
-        InnerParamTestPlugin plugin = pluginService.getPlugin(pluginConf.getId());
+        InnerParamTestPlugin plugin = pluginService.getPlugin(pluginConf.getBusinessId());
     }
 
     @Test

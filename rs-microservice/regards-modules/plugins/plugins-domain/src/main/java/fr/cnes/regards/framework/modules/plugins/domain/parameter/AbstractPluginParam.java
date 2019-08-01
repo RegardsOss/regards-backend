@@ -46,12 +46,9 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
     @NotNull(message = "Parameter value is required")
     protected T value;
 
-    /** Parameter value type */
-    protected Class<T> clazz;
-
     protected boolean dynamic = false;
 
-    protected Set<T> dynamicsValues = new HashSet<>();
+    protected Set<T> dynamicsValues;
 
     public AbstractPluginParam(PluginParamType type) {
         this.type = type;
@@ -63,20 +60,15 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
     }
 
     @Override
-    public boolean isInstance(Class<?> clazz) {
-        return clazz.isInstance(value);
-    }
-
-    @Override
     public PluginParamType getType() {
         return type;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public boolean isValid(IPluginParam staticParam) {
-        if (this.getClass().isInstance(staticParam)) {
-            return isValidDynamicValue((T) staticParam.getValue());
+    public boolean isValid(IPluginParam dynamicParam) {
+        if (this.getClass().isInstance(dynamicParam)) {
+            return isValidDynamicValue((T) dynamicParam.getValue());
         }
         return false;
     }
@@ -156,14 +148,6 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
         this.value = value;
     }
 
-    public Class<T> getClazz() {
-        return clazz;
-    }
-
-    public void setClazz(Class<T> clazz) {
-        this.clazz = clazz;
-    }
-
     @Override
     public boolean isDynamic() {
         return dynamic;
@@ -189,16 +173,13 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
         Assert.notNull(name, "Plugin parameter value is required");
         this.name = name;
         this.value = value;
-        this.clazz = (Class<T>) value.getClass();
         return (P) this;
     }
 
     @SuppressWarnings("unchecked")
-    public <P extends AbstractPluginParam<T>> P with(Class<T> clazz, String name) {
-        Assert.notNull(clazz, "Plugin parameter value type is required");
+    public <P extends AbstractPluginParam<T>> P with(String name) {
         Assert.hasText(name, "Plugin parameter name is required");
         this.name = name;
-        this.clazz = clazz;
         return (P) this;
     }
 

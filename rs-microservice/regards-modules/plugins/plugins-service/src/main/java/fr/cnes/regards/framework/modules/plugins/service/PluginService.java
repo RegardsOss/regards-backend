@@ -31,7 +31,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -80,15 +79,9 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 @Service
 public class PluginService implements IPluginService {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
 
-    /**
-     * Error message when a plugin configuration identifier is missing
-     */
-    private static final String PLUGIN_CONF_ID_REQUIRED_MSG = "Plugin configuration identifier is required";
+    private static final String PLUGIN_BUSINESS_ID_REQUIRED_MSG = "Plugin configuration business identifier is required";
 
     /**
      * {@link PluginConfiguration} JPA Repository
@@ -107,7 +100,7 @@ public class PluginService implements IPluginService {
      * <b>Note: </b> PluginService is used in multi-thread environment (see IngesterService and CrawlerService) so
      * ConcurrentHashMap is used instead of HashMap
      */
-    private final Map<String, Map<Long, Object>> instantiatePluginMap = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, Object>> instantiatePluginMap = new ConcurrentHashMap<>();
 
     /**
      * Amqp publisher
@@ -170,10 +163,11 @@ public class PluginService implements IPluginService {
     @Override
     public PluginConfiguration savePluginConfiguration(PluginConfiguration plgConf)
             throws EntityInvalidException, EncryptionException, EntityNotFoundException {
+
         // Check plugin configuration validity
-        EntityInvalidException validityException = PluginUtils.validate(plgConf);
-        if (validityException != null) {
-            throw validityException;
+        List<String> validationErrors = PluginUtils.validateOnCreate(plgConf);
+        if (!validationErrors.isEmpty()) {
+            throw new EntityInvalidException(validationErrors);
         }
 
         StringBuilder msg = new StringBuilder("Cannot save plugin configuration");
@@ -185,12 +179,17 @@ public class PluginService implements IPluginService {
             throw new EntityInvalidException(msg.toString());
         }
 
+        PluginMetaData pluginMeta = PluginUtils.getPlugins().get(plgConf.getPluginId());
+        plgConf.setMetaData(pluginMeta);
+
+        // Create business id
+        plgConf.createBusinessId();
+
         ensureOnlyOneConfIsActive(plgConf);
         boolean shouldPublishCreation = plgConf.getId() == null;
 
         // Now that generic concerns on PluginConfiguration are dealt with, lets encrypt sensitive plugin parameter
         // only way to know if a plugin parameter is sensitive is via the plugin metadata
-        PluginMetaData pluginMeta = PluginUtils.getPlugins().get(plgConf.getPluginId());
         for (PluginParamDescriptor paramMeta : pluginMeta.getParameters()) {
             if (paramMeta.isSensible()) {
                 manageSensibleParameter(plgConf.getParameter(paramMeta.getName()));
@@ -274,23 +273,23 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public PluginConfiguration getPluginConfiguration(Long id) throws EntityNotFoundException {
-        PluginConfiguration plgConfOpt = repos.findCompleteById(id);
-        if (plgConfOpt == null) {
-            LOGGER.error(String.format("Error while getting the plugin configuration <%s>.", id));
-            throw new EntityNotFoundException(id, PluginConfiguration.class);
+    public PluginConfiguration getPluginConfiguration(String businessId) throws EntityNotFoundException {
+        PluginConfiguration plgConf = repos.findCompleteByBusinessId(businessId);
+        if (plgConf == null) {
+            LOGGER.error(String.format("Error while getting the plugin configuration <%s>.", businessId));
+            throw new EntityNotFoundException(businessId, PluginConfiguration.class);
         }
-        return plgConfOpt;
+        return plgConf;
     }
 
     @Override
-    public PluginConfiguration loadPluginConfiguration(Long id) {
-        return repos.findCompleteById(id);
+    public PluginConfiguration loadPluginConfiguration(String businessId) {
+        return repos.findCompleteByBusinessId(businessId);
     }
 
     @Override
-    public boolean exists(Long id) {
-        return repos.existsById(id);
+    public boolean exists(String businessId) {
+        return repos.existsByBusinessId(businessId);
     }
 
     @Override
@@ -301,21 +300,24 @@ public class PluginService implements IPluginService {
     @Override
     public PluginConfiguration updatePluginConfiguration(PluginConfiguration pluginConf)
             throws EntityNotFoundException, EntityInvalidException, EncryptionException {
-        final PluginConfiguration oldConf = repos.findCompleteById(pluginConf.getId());
+        final PluginConfiguration oldConf = repos.findCompleteByBusinessId(pluginConf.getBusinessId());
         if (oldConf == null) {
             LOGGER.error(String.format("Error while updating the plugin configuration <%d>.", pluginConf.getId()));
             throw new EntityNotFoundException(pluginConf.getId().toString(), PluginConfiguration.class);
         }
+        // Retrieve id
+        pluginConf.setId(oldConf.getId());
         boolean oldConfActive = oldConf.isActive();
-        // Check plugin configuration validity
-        EntityInvalidException validityException = PluginUtils.validate(pluginConf);
-        if (validityException != null) {
-            throw validityException;
-        }
 
+        // Check plugin configuration validity
+        List<String> validationErrors = PluginUtils.validateOnUpdate(pluginConf);
+        if (!validationErrors.isEmpty()) {
+            throw new EntityInvalidException(validationErrors);
+        }
         // Now that generic concerns on PluginConfiguration are dealt with, lets encrypt updated sensitive plugin parameter
         // only way to know if a plugin parameter is sensitive is via the plugin metadata
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(pluginConf.getPluginId());
+        pluginConf.setMetaData(pluginMeta);
         for (PluginParamDescriptor paramMeta : pluginMeta.getParameters()) {
             IPluginParam newParam = pluginConf.getParameter(paramMeta.getName());
             IPluginParam oldParam = oldConf.getParameter(paramMeta.getName());
@@ -335,14 +337,14 @@ public class PluginService implements IPluginService {
             // For CATALOG
             publisher.publish(new BroadcastPluginConfEvent(pluginConf.getId(),
                     newConf.isActive() ? PluginServiceAction.ACTIVATE : PluginServiceAction.DISABLE,
-                    newConf.getInterfaceNames()));
+                    pluginMeta.getInterfaceNames()));
             // For DAM
             publisher.publish(new PluginConfEvent(pluginConf.getId(),
                     newConf.isActive() ? PluginServiceAction.ACTIVATE : PluginServiceAction.DISABLE,
-                    newConf.getInterfaceNames()));
+                    pluginMeta.getInterfaceNames()));
         } else {
             publisher.publish(new PluginConfEvent(pluginConf.getId(), PluginServiceAction.UPDATE,
-                    newConf.getInterfaceNames()));
+                    pluginMeta.getInterfaceNames()));
         }
         // Remove the plugin configuration from cache
         cleanRecursively(pluginConf);
@@ -372,35 +374,60 @@ public class PluginService implements IPluginService {
      */
     private void cleanRecursively(PluginConfiguration pluginConf) {
         // And don't forget to clean all PluginConfiguration that have this plugin as a parameter
-        List<PluginConfiguration> parentPluginConfs = repos.findByParametersPluginConfiguration(pluginConf);
+        Set<PluginConfiguration> parentPluginConfs = getDependentPlugins(pluginConf.getBusinessId());
         parentPluginConfs.forEach(this::cleanRecursively);
-        cleanPluginCache(pluginConf.getId());
+        cleanPluginCache(pluginConf.getBusinessId());
     }
 
     @Override
-    public void deletePluginConfiguration(Long confId) throws ModuleException {
-        Optional<PluginConfiguration> toDeleteOpt = repos.findById(confId);
-        if (!toDeleteOpt.isPresent()) {
-            LOGGER.error(String.format("Error while deleting the plugin configuration <%d>.", confId));
-            throw new EntityNotFoundException(confId.toString(), PluginConfiguration.class);
+    public void deletePluginConfiguration(String businessId) throws ModuleException {
+        PluginConfiguration toDelete = repos.findCompleteByBusinessId(businessId);
+        if (toDelete == null) {
+            LOGGER.error(String.format("Error while deleting the plugin configuration <%s>.", businessId));
+            throw new EntityNotFoundException(businessId, PluginConfiguration.class);
         }
-        PluginConfiguration toDelete = toDeleteOpt.get();
-        if (!repos.findByParametersPluginConfiguration(toDelete).isEmpty()) {
+        if (!getDependentPlugins(businessId).isEmpty()) {
             throw new EntityOperationForbiddenException("Operation cancelled: dependent plugin configurations exist.");
         }
-        publisher.publish(new BroadcastPluginConfEvent(confId, PluginServiceAction.DELETE,
-                toDelete.getInterfaceNames()));
-        repos.deleteById(confId);
+        PluginMetaData pluginMeta = PluginUtils.getPlugins().get(toDelete.getPluginId());
+        publisher.publish(new BroadcastPluginConfEvent(toDelete.getId(), PluginServiceAction.DELETE,
+                pluginMeta.getInterfaceNames()));
+        repos.deleteById(toDelete.getId());
 
         // Remove the PluginConfiguration from the map
-        PluginUtils.doDestroyPlugin(toDeleteOpt);
-        cleanPluginCache(confId);
+        PluginUtils.doDestroyPlugin(toDelete);
+        cleanPluginCache(toDelete.getBusinessId());
+    }
+
+    /**
+     * @param businessId
+     * @return list of dependent plugin configuration
+     */
+    private Set<PluginConfiguration> getDependentPlugins(String businessId) {
+        Set<PluginConfiguration> dependents = new HashSet<>();
+        for (PluginConfiguration conf : repos.findAll()) {
+            for (IPluginParam param : conf.getParameters()) {
+                if (param.getType() == PluginParamType.PLUGIN) {
+                    NestedPluginParam nested = (NestedPluginParam) param;
+                    if (businessId.equals(nested.getValue())) {
+                        dependents.add(conf);
+                    }
+                }
+            }
+        }
+        return dependents;
     }
 
     @Override
     public List<PluginConfiguration> getPluginConfigurationsByType(Class<?> interfacePluginType) {
-        return repos.findAll().stream().filter(conf -> conf.getInterfaceNames().contains(interfacePluginType.getName()))
-                .collect(Collectors.toList());
+        List<PluginConfiguration> result = new ArrayList<>();
+        for (PluginConfiguration conf : repos.findAll()) {
+            PluginMetaData pluginMeta = PluginUtils.getPlugins().get(conf.getPluginId());
+            if (pluginMeta.getInterfaceNames().contains(interfacePluginType.getName())) {
+                result.add(conf);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -440,7 +467,7 @@ public class PluginService implements IPluginService {
         }
 
         // Get the plugin associated to this configuration
-        return configuration != null ? getPlugin(configuration.getId(), dynamicParameters) : null;
+        return configuration != null ? getPlugin(configuration.getBusinessId(), dynamicParameters) : null;
     }
 
     /**
@@ -450,45 +477,34 @@ public class PluginService implements IPluginService {
      * @throws NotAvailablePluginConfigurationException
      */
     @Override
-    public boolean canInstantiate(Long pluginConfId) throws ModuleException, NotAvailablePluginConfigurationException {
+    public boolean canInstantiate(String businessId) throws ModuleException, NotAvailablePluginConfigurationException {
         try {
-            getPlugin(pluginConfId);
+            getPlugin(businessId);
             return true;
         } catch (PluginUtilsRuntimeException e) {
-            LOGGER.warn(String.format("Plugin with configuration %s couldn't be instanciated", pluginConfId), e);
+            LOGGER.warn(String.format("Plugin with configuration %s couldn't be instanciated", businessId), e);
             return false;
         }
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T getPlugin(Long pluginConfId, IPluginParam... dynamicParameters)
+    public <T> T getPlugin(String businessId, IPluginParam... dynamicParameters)
             throws ModuleException, NotAvailablePluginConfigurationException {
 
-        if (!isPluginCached(pluginConfId) || dynamicParameters.length > 0) {
-            return instanciatePluginAndCache(pluginConfId, dynamicParameters);
+        if (!isPluginCached(businessId) || dynamicParameters.length > 0) {
+            return instanciatePluginAndCache(businessId, dynamicParameters);
         }
-        return (T) getCachedPlugin(pluginConfId);
-    }
-
-    /**
-     * Load plugin from its business identifier
-     * @param businessId business identifier
-     * @throws NotAvailablePluginConfigurationException
-     * @throws ModuleException
-     */
-    private void loadNestedPlugin(String businessId) throws ModuleException, NotAvailablePluginConfigurationException {
-        PluginConfiguration conf = repos.findCompleteByBusinessId(businessId);
-        getPlugin(conf.getId());
+        return (T) getCachedPlugin(businessId);
     }
 
     /**
      * Instanciate a plugin and cache it <b>if it doesn't have dynamic parameters</b>
-     * @param pluginConfId plugin configuration identifier
+     * @param businessId plugin configuration business identifier
      * @param dynamicParameters plugin parameters (including potential dynamic ones)
      * @return plugin instance
      */
-    private <T> T instanciatePluginAndCache(Long pluginConfId, IPluginParam... dynamicParameters)
+    private <T> T instanciatePluginAndCache(String businessId, IPluginParam... dynamicParameters)
             throws ModuleException, NotAvailablePluginConfigurationException {
 
         // Check if all parameters are really dynamic
@@ -503,7 +519,7 @@ public class PluginService implements IPluginService {
         }
 
         // Get last saved plugin configuration
-        PluginConfiguration pluginConf = loadPluginConfiguration(pluginConfId);
+        PluginConfiguration pluginConf = loadPluginConfiguration(businessId);
 
         // Get the plugin implementation associated
         PluginMetaData pluginMetadata = PluginUtils.getPlugins().get(pluginConf.getPluginId());
@@ -529,7 +545,7 @@ public class PluginService implements IPluginService {
                 NestedPluginParam pluginParam = (NestedPluginParam) pluginConf.getParameter(paramType.getName());
                 if (pluginParam != null && pluginParam.hasValue()) {
                     // LOAD embedded plugin from its business identifier
-                    this.loadNestedPlugin(pluginParam.getValue());
+                    this.getPlugin(pluginParam.getValue());
                 }
             }
         }
@@ -540,7 +556,7 @@ public class PluginService implements IPluginService {
 
         // Put in the map, only if there is no dynamic parameters
         if (dynamicParameters.length == 0) {
-            addPluginToCache(pluginConfId, pluginConf.getBusinessId(), resultPlugin);
+            addPluginToCache(businessId, resultPlugin);
         }
 
         return resultPlugin;
@@ -605,24 +621,24 @@ public class PluginService implements IPluginService {
         return Optional.ofNullable(repos.findOneByLabel(configurationLabel));
     }
 
-    private void addPluginToCache(Long confId, String businessId, Object plugin) {
-        Assert.notNull(confId, PLUGIN_CONF_ID_REQUIRED_MSG);
+    private void addPluginToCache(String businessId, Object plugin) {
+        Assert.notNull(businessId, PLUGIN_BUSINESS_ID_REQUIRED_MSG);
         Assert.notNull(plugin, "Plugin instance is required");
-        getPluginCache().put(confId, plugin);
+        getPluginCache().put(businessId, plugin);
     }
 
     @Override
-    public boolean isPluginCached(Long confId) {
-        Assert.notNull(confId, PLUGIN_CONF_ID_REQUIRED_MSG);
-        return getPluginCache().containsKey(confId);
+    public boolean isPluginCached(String businessId) {
+        Assert.notNull(businessId, PLUGIN_BUSINESS_ID_REQUIRED_MSG);
+        return getPluginCache().containsKey(businessId);
     }
 
     @Override
-    public void cleanPluginCache(Long confId) {
-        Assert.notNull(confId, PLUGIN_CONF_ID_REQUIRED_MSG);
+    public void cleanPluginCache(String businessId) {
+        Assert.notNull(businessId, PLUGIN_BUSINESS_ID_REQUIRED_MSG);
 
         // Remove plugin from cache
-        Object plugin = getPluginCache().remove(confId);
+        Object plugin = getPluginCache().remove(businessId);
         if (plugin != null) {
             // Launch destroy method
             PluginUtils.doDestroyPlugin(plugin);
@@ -632,7 +648,7 @@ public class PluginService implements IPluginService {
     @Override
     public void cleanPluginCache() {
         // Remove plugin from cache
-        for (Iterator<Entry<Long, Object>> i = getPluginCache().entrySet().iterator(); i.hasNext();) {
+        for (Iterator<Entry<String, Object>> i = getPluginCache().entrySet().iterator(); i.hasNext();) {
             Object plugin = i.next().getValue();
             i.remove();
             if (plugin != null) {
@@ -646,11 +662,11 @@ public class PluginService implements IPluginService {
      * @return a not null map of plugins
      */
     @Override
-    public Map<Long, Object> getPluginCache() {
+    public Map<String, Object> getPluginCache() {
         // Resolve tenant
         String tenant = runtimeTenantResolver.getTenant();
         Assert.notNull(tenant, "Tenant is required");
-        Map<Long, Object> tenantCache = instantiatePluginMap.get(tenant);
+        Map<String, Object> tenantCache = instantiatePluginMap.get(tenant);
         if (tenantCache == null) {
             // Init tenant cache
             tenantCache = new ConcurrentHashMap<>();
@@ -660,9 +676,9 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public Object getCachedPlugin(Long confId) {
-        Assert.notNull(confId, PLUGIN_CONF_ID_REQUIRED_MSG);
-        return getPluginCache().get(confId);
+    public Object getCachedPlugin(String businessId) {
+        Assert.notNull(businessId, PLUGIN_BUSINESS_ID_REQUIRED_MSG);
+        return getPluginCache().get(businessId);
     }
 
     @Override

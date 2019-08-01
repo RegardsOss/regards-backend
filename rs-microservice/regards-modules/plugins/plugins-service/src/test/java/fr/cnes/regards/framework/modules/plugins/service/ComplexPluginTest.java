@@ -97,11 +97,12 @@ public class ComplexPluginTest {
 
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc("complexPlugin"))
                 .thenReturn(pluginConfs);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteById(aPluginConfiguration.getId()))
+        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                 .thenReturn(aPluginConfiguration);
-        Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
+        Mockito.when(pluginConfRepositoryMocked.existsByBusinessId(aPluginConfiguration.getBusinessId()))
+                .thenReturn(true);
 
-        ITestPlugin plugin = pluginServiceMocked.getPlugin(pPluginConfigurationId);
+        ITestPlugin plugin = pluginServiceMocked.getPlugin(aPluginConfiguration.getBusinessId());
 
         Assert.assertEquals(plugin.getPojoParam().getPojoParam(), pojo.getPojoParam());
         Assert.assertEquals(plugin.getPojoParam().getOtherPojoParam().getIntValue(),

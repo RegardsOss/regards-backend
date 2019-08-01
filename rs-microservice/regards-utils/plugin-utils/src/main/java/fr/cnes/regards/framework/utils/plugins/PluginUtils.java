@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginDestroy;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
@@ -78,7 +77,7 @@ public final class PluginUtils {
     private static Set<Class<?>> pluginCache;
 
     /**
-     * Plugin metadata map cache, should be only populate one on startup calling {@link #setup(List)}<br/>
+     * Plugin metadata map cache, should be only populate once on startup calling {@link #setup(List)}<br/>
      * Map key is the plugin identifier, map value is the related plugin metadata.
      */
     private static Map<String, PluginMetaData> pluginMetadataCache = new ConcurrentHashMap<>();
@@ -218,7 +217,7 @@ public final class PluginUtils {
      * @return an instance of a {@link Plugin} @ if a problem occurs
      */
     public static <T> T getPlugin(PluginConfiguration conf, PluginMetaData pluginMetadata,
-            Map<Long, Object> instantiatedPlugins, IPluginParam... dynamicParams)
+            Map<String, Object> instantiatedPlugins, IPluginParam... dynamicParams)
             throws NotAvailablePluginConfigurationException {
         if (!conf.isActive()) {
             throw new NotAvailablePluginConfigurationException(
@@ -236,7 +235,7 @@ public final class PluginUtils {
      * @return an instance of {@link Plugin} @ if a problem occurs
      */
     @SuppressWarnings("unchecked")
-    public static <T> T getPlugin(PluginConfiguration conf, String pluginClass, Map<Long, Object> instantiatedPlugins,
+    public static <T> T getPlugin(PluginConfiguration conf, String pluginClass, Map<String, Object> instantiatedPlugins,
             IPluginParam... dynamicParams) {
         T returnPlugin = null;
 
@@ -269,8 +268,9 @@ public final class PluginUtils {
      * @param dynamicPlugins an optional {@link List} of {@link IPluginParam}
      * @return a {@link Plugin} instance
      */
-    public static <T> T getPlugin(Set<IPluginParam> params, Class<T> pluginClass, Map<Long, Object> instantiatedPlugins,
-            IPluginParam... dynamicPlugins) throws NotAvailablePluginConfigurationException {
+    public static <T> T getPlugin(Set<IPluginParam> params, Class<T> pluginClass,
+            Map<String, Object> instantiatedPlugins, IPluginParam... dynamicPlugins)
+            throws NotAvailablePluginConfigurationException {
         // Build plugin metadata
         PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pluginClass);
 
@@ -341,17 +341,32 @@ public final class PluginUtils {
         return new PluginConfiguration(pluginMetadata, UUID.randomUUID().toString(), params);
     }
 
+    public static List<String> validateOnCreate(PluginConfiguration conf) {
+        List<String> validationErrors = validate(conf);
+        if (conf.getBusinessId() != null) {
+            validationErrors.add("The plugin configuration business id must be null.");
+        }
+        return validationErrors;
+    }
+
+    public static List<String> validateOnUpdate(PluginConfiguration conf) {
+        List<String> validationErrors = validate(conf);
+        if (conf.getBusinessId() == null) {
+            validationErrors.add("The plugin configuration business id required.");
+        }
+        return validationErrors;
+    }
+
     /**
      * Validate the plugin configuration
      * @param conf the plugin configuration to be validated
      * @return null if there is no validation issues, the exception containing all validation errors as messages
      */
-    public static EntityInvalidException validate(PluginConfiguration conf) {
+    private static List<String> validate(PluginConfiguration conf) {
         List<String> validationErrors = new ArrayList<>();
         // First lets apply equivalent to hibernate validation
         if (conf == null) {
             validationErrors.add("The plugin configuration cannot be null.");
-            return new EntityInvalidException(validationErrors);
         }
         if (conf.getPriorityOrder() == null) {
             validationErrors.add(String.format("The plugin configuration priority order is required (pluginId: %s).",
@@ -362,55 +377,49 @@ public final class PluginUtils {
                                                conf.getPluginId()));
         }
         // Now lets apply some more complicated validation that required introspection
-        try {
-            Class<?> pluginClass = Class.forName(conf.getPluginClassName());
-            PluginMetaData pluginMetadata = createPluginMetaData(pluginClass);
-            // Now that we have the metadata, lets check everything and eventually set some properties
-            // as version (a null version means a plugin configuration creation
-            if (conf.getVersion() == null) {
-                conf.setVersion(pluginMetadata.getVersion());
-            } else {
-                // Check that version is the same between plugin one and plugin configuration one
-                if (!Objects.equals(pluginMetadata.getVersion(), conf.getVersion())) {
-                    validationErrors
-                            .add(String.format("Plugin configuration version (%s) is different from plugin one (%s).",
-                                               conf.getVersion(), pluginMetadata.getVersion()));
-                }
+        PluginMetaData pluginMetadata = getPlugins().get(conf.getPluginId());
+        // Now that we have the metadata, lets check everything and eventually set some properties
+        // as version (a null version means a plugin configuration creation
+        if (conf.getVersion() == null) {
+            conf.setVersion(pluginMetadata.getVersion());
+        } else {
+            // Check that version is the same between plugin one and plugin configuration one
+            if (!Objects.equals(pluginMetadata.getVersion(), conf.getVersion())) {
+                validationErrors
+                        .add(String.format("Plugin configuration version (%s) is different from plugin one (%s).",
+                                           conf.getVersion(), pluginMetadata.getVersion()));
             }
-            if (conf.getPluginId() == null) {
-                conf.setPluginId(pluginMetadata.getPluginId());
-            } else {
-                // Check that pluginId is the same between plugin one and plugin configuration one
-                if (!Objects.equals(pluginMetadata.getPluginId(), conf.getPluginId())) {
-                    validationErrors
-                            .add(String.format("Plugin configuration pluginId (%s) is different from plugin one (%s).",
-                                               conf.getPluginId(), pluginMetadata.getPluginId()));
-                }
-            }
-
-            // First lets check the plugin parameters
-            // first simple test, are there enough parameters?
-            List<PluginParamDescriptor> pluginParametersFromMeta = pluginMetadata.getParameters();
-            // the plugin configuration should not have any reference to plugin parameters that are only dynamic
-            // lets check that all remaining parameters are correctly given
-            for (PluginParamDescriptor plgParamMeta : pluginParametersFromMeta) {
-                IPluginParam parameterFromConf = conf.getParameter(plgParamMeta.getName());
-                if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && parameterFromConf == null
-                        && plgParamMeta.getDefaultValue() == null) {
-                    validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
-                }
-                // lets add some basic type validation while we are iterating over parameters
-                // in case it is not optional or missing
-                if (parameterFromConf != null) {
-                    // FIXME check if not useful anymore
-                    // checkPrimitiveBoundaries(validationErrors, plgParamMeta, parameterFromConf);
-                }
-            }
-        } catch (ClassNotFoundException e) {
-            LOGGER.error(e.getMessage(), e);
-            validationErrors.add(e.getMessage());
         }
-        return validationErrors.isEmpty() ? null : new EntityInvalidException(validationErrors);
+        if (conf.getPluginId() == null) {
+            conf.setPluginId(pluginMetadata.getPluginId());
+        } else {
+            // Check that pluginId is the same between plugin one and plugin configuration one
+            if (!Objects.equals(pluginMetadata.getPluginId(), conf.getPluginId())) {
+                validationErrors
+                        .add(String.format("Plugin configuration pluginId (%s) is different from plugin one (%s).",
+                                           conf.getPluginId(), pluginMetadata.getPluginId()));
+            }
+        }
+
+        // First lets check the plugin parameters
+        // first simple test, are there enough parameters?
+        List<PluginParamDescriptor> pluginParametersFromMeta = pluginMetadata.getParameters();
+        // the plugin configuration should not have any reference to plugin parameters that are only dynamic
+        // lets check that all remaining parameters are correctly given
+        for (PluginParamDescriptor plgParamMeta : pluginParametersFromMeta) {
+            IPluginParam parameterFromConf = conf.getParameter(plgParamMeta.getName());
+            if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && parameterFromConf == null
+                    && plgParamMeta.getDefaultValue() == null) {
+                validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
+            }
+            // lets add some basic type validation while we are iterating over parameters
+            // in case it is not optional or missing
+            if (parameterFromConf != null) {
+                // FIXME check if not useful anymore
+                // checkPrimitiveBoundaries(validationErrors, plgParamMeta, parameterFromConf);
+            }
+        }
+        return validationErrors;
     }
 
     // FIXME check if not useful anymore

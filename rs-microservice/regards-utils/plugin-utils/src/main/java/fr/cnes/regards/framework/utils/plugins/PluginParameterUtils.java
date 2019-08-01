@@ -83,7 +83,7 @@ public final class PluginParameterUtils {
         List<PluginParamDescriptor> parameters = new ArrayList<>();
 
         for (final Field field : ReflectionUtils.getAllDeclaredFields(pluginClass)) {
-            if (field.isAnnotationPresent(PluginParameter.class) || (isChildParameters && isToBeConsidered(field))) {
+            if (field.isAnnotationPresent(PluginParameter.class) || isChildParameters && isToBeConsidered(field)) {
                 // Initialize list of managed types for in depth scanning from root fields
                 List<String> managedTypes = new ArrayList<>();
                 if (isChildParameters) {
@@ -151,7 +151,7 @@ public final class PluginParameterUtils {
             result.setMarkdown(markdown);
 
             // Manage default value
-            if ((pluginParameter.defaultValue() != null) && !pluginParameter.defaultValue().isEmpty()) {
+            if (pluginParameter.defaultValue() != null && !pluginParameter.defaultValue().isEmpty()) {
                 result.setDefaultValue(pluginParameter.defaultValue());
             }
         }
@@ -323,7 +323,7 @@ public final class PluginParameterUtils {
      * @param instantiatedPlugins a {@link Map} of already instantiated {@link Plugin}
      * @param dynamicParams an optional set of {@link IPluginParam}
      */
-    public static <T> void postProcess(T plugin, PluginConfiguration conf, Map<Long, Object> instantiatedPlugins,
+    public static <T> void postProcess(T plugin, PluginConfiguration conf, Map<String, Object> instantiatedPlugins,
             IPluginParam... dynamicParams) {
 
         LOGGER.debug("Post processing plugin \"{}\"", plugin.getClass().getSimpleName());
@@ -356,7 +356,7 @@ public final class PluginParameterUtils {
      * @param dynamicParams an optional set of {@link IPluginParam}
      */
     private static <T> void processPluginParameter(T plugin, PluginConfiguration conf, Field field,
-            PluginParameter paramAnnotation, Map<Long, Object> instantiatedPlugins, IPluginParam... dynamicParams) {
+            PluginParameter paramAnnotation, Map<String, Object> instantiatedPlugins, IPluginParam... dynamicParams) {
 
         // Inject value
         ReflectionUtils.makeAccessible(field);
@@ -418,7 +418,7 @@ public final class PluginParameterUtils {
                 LOGGER.debug("Dynamic parameter found for parameter \"{}\" with value \"{}\"", parameterName,
                              dynamicParam);
 
-                if (!dynamicParam.isValid(staticParam)) {
+                if (!staticParam.isValid(dynamicParam)) {
                     throw new PluginUtilsRuntimeException(String
                             .format("Dynamic param %s not consistent with static one %s", dynamicParam, staticParam));
                 }
@@ -605,7 +605,7 @@ public final class PluginParameterUtils {
      * @param instantiatedPlugins a Map of all already instantiated plugins
      */
     private static <T> void postProcessInterface(T plugin, PluginConfiguration conf, Field field,
-            PluginParameter paramAnnotation, Map<Long, Object> instantiatedPlugins) {
+            PluginParameter paramAnnotation, Map<String, Object> instantiatedPlugins) {
 
         LOGGER.debug("Injecting nested plugin parameter \"{}\"", paramAnnotation.label());
 
@@ -670,28 +670,28 @@ public final class PluginParameterUtils {
      */
     private static IPluginParam buildByType(Class<?> clazz, String name) {
         if (clazz.isAssignableFrom(String.class)) {
-            return new StringPluginParam().with(String.class, name);
+            return new StringPluginParam().with(name);
         }
         if (clazz.isAssignableFrom(Integer.class)) {
-            return new IntegerPluginParam().with(Integer.class, name);
+            return new IntegerPluginParam().with(name);
         }
         if (clazz.isAssignableFrom(Boolean.class)) {
-            return new BooleanPluginParam().with(Boolean.class, name);
+            return new BooleanPluginParam().with(name);
         }
         if (clazz.isAssignableFrom(Long.class)) {
-            return new LongPluginParam().with(Long.class, name);
+            return new LongPluginParam().with(name);
         }
         if (clazz.isAssignableFrom(Short.class)) {
-            return new ShortPluginParam().with(Short.class, name);
+            return new ShortPluginParam().with(name);
         }
         if (clazz.isAssignableFrom(Float.class)) {
-            return new FloatPluginParam().with(Float.class, name);
+            return new FloatPluginParam().with(name);
         }
         if (clazz.isAssignableFrom(Double.class)) {
-            return new DoublePluginParam().with(Double.class, name);
+            return new DoublePluginParam().with(name);
         }
         if (clazz.isAssignableFrom(Byte.class)) {
-            return new BytePluginParam().with(Byte.class, name);
+            return new BytePluginParam().with(name);
         }
         throw new IllegalArgumentException(String.format("Unsupported type %s", clazz));
     }

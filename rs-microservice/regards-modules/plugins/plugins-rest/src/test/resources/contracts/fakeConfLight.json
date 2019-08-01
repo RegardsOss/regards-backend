@@ -65,54 +65,6 @@
     },
     {
       "dynamic": false,
-      "value": [
-        "test"
-      ],
-      "type": "COLLECTION",
-      "name": "sList"
-    },
-    {
-      "dynamic": false,
-      "value": {
-        "1513011860928": "test"
-      },
-      "type": "MAP",
-      "name": "ssMap"
-    },
-    {
-      "dynamic": false,
-      "value": {
-        "message": "test"
-      },
-      "type": "fr.cnes.regards.modules.ingest.service.plugin.FakeSipValidation$Pojo",
-      "name": "pojo"
-    },
-    {
-      "dynamic": false,
-      "value": {
-        "constraints": [
-          {
-            "pattern": "test",
-            "enabled": true
-          }
-        ]
-      },
-      "type": "fr.cnes.regards.modules.ingest.service.plugin.FakeSipValidation$Constraints",
-      "name": "constraints"
-    },
-    {
-      "dynamic": false,
-      "value": {
-        "1513011806553": {
-          "pattern": "ff",
-          "enabled": false
-        }
-      },
-      "type": "MAP",
-      "name": "scMap"
-    },
-    {
-      "dynamic": false,
       "type": "PLUGIN",
       "name": "innerPlugin",
       "value": "@ref@"

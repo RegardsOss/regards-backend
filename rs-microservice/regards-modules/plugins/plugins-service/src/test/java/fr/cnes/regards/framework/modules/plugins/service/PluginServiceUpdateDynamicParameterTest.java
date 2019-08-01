@@ -86,7 +86,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParametersToUpdate();
         aPluginConfiguration.setId(AN_ID);
         try {
-            Mockito.when(pluginConfRepositoryMocked.findCompleteById(aPluginConfiguration.getId()))
+            Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                     .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 
@@ -133,7 +133,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParametersToUpdate();
         aPluginConfiguration.setId(AN_ID);
         try {
-            Mockito.when(pluginConfRepositoryMocked.findCompleteById(aPluginConfiguration.getId()))
+            Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                     .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 
@@ -147,16 +147,12 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
             aPluginConfiguration.logParams();
             final Set<IPluginParam> parameters = aPluginConfiguration.getParameters();
             for (final IPluginParam p : updatedConf.getParameters()) {
-                if (!p.isDynamic()) {
+                if (!p.isDynamic() && p.getType() == PluginParamType.STRING) {
                     parameters.remove(p);
-                    if (p.getType() == PluginParamType.STRING) {
-                        // Update
-                        StringPluginParam stringParam = (StringPluginParam) p;
-                        stringParam.setValue("one");
-                        stringParam.dynamic(new HashSet<>(Arrays.asList("one", "two", "three", "four", "five", "six")));
-                    } else {
-                        Assert.fail("First parameter should be of type string");
-                    }
+                    // Update
+                    StringPluginParam stringParam = (StringPluginParam) p;
+                    stringParam.setValue("one");
+                    stringParam.dynamic(new HashSet<>(Arrays.asList("one", "two", "three", "four", "five", "six")));
                     parameters.add(p);
                     break;
                 }

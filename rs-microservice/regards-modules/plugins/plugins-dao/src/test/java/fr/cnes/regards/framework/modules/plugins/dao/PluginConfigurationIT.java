@@ -30,7 +30,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 
 /***
  * Unit testing of {@link PluginConfiguration} persistence.
@@ -79,37 +78,6 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         plgRepository.save(getPlgConfWithDynamicParameter());
 
         Assert.assertEquals(2, plgRepository.count());
-    }
-
-    /**
-     * Unit test of creation {@link PluginConfiguration}
-     */
-    @Test
-    public void createAndFindPluginConfigurationWithParameters() {
-        // save a plugin configuration
-        PluginConfiguration plgConf = getPlgConfWithParameters();
-        final PluginConfiguration aPluginConf = plgRepository.save(plgConf);
-        Assert.assertEquals(1, plgRepository.count());
-
-        plgRepository.save(getPlgConfWithDynamicParameter());
-
-        // find it
-        final PluginConfiguration jpaConf = plgRepository.findOneWithPluginParameter(aPluginConf.getId());
-        Assert.assertNotNull(jpaConf.getParameters());
-        Assert.assertTrue(!jpaConf.getParameters().isEmpty());
-
-        // compare the initial conf with the results of the search
-        Assert.assertEquals(aPluginConf.getLabel(), jpaConf.getLabel());
-        Assert.assertEquals(aPluginConf.getVersion(), jpaConf.getVersion());
-        Assert.assertEquals(aPluginConf.getPluginId(), jpaConf.getPluginId());
-        Assert.assertEquals(aPluginConf.isActive(), jpaConf.isActive());
-        Assert.assertEquals(aPluginConf.getPluginClassName(), jpaConf.getPluginClassName());
-        Assert.assertEquals(aPluginConf.getParameters().size(), getPlgConfWithParameters().getParameters().size());
-        Assert.assertEquals(aPluginConf.getPriorityOrder(), jpaConf.getPriorityOrder());
-
-        for (IPluginParam p : aPluginConf.getParameters()) {
-            Assert.assertEquals(aPluginConf.getParameter(p.getName()), jpaConf.getParameter(p.getName()));
-        }
     }
 
     @Test(expected = DataIntegrityViolationException.class)

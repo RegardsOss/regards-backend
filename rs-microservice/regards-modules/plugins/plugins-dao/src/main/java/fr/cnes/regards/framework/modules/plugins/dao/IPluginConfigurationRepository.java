@@ -23,7 +23,6 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -49,20 +48,10 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
      */
     List<PluginConfiguration> findByPluginIdAndActiveTrueOrderByPriorityOrderDesc(String pluginId);
 
-    @Query("from PluginConfiguration conf join fetch conf.parameters where conf.id=:id")
-    PluginConfiguration findOneWithPluginParameter(@Param("id") Long id);
-
     /**
      * @return the plugin configuration which label is the given label in parameter
      */
     PluginConfiguration findOneByLabel(String label);
-
-    /**
-     * Find a plugin configuration loading its parameters and dynamic values
-     * @param id pluginConfiguration id
-     * @return a PluginConfiguration
-     */
-    PluginConfiguration findCompleteById(Long id);
 
     /**
      * Find a plugin configuration loading its parameters and dynamic values
@@ -71,7 +60,11 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
      */
     PluginConfiguration findCompleteByBusinessId(String businessId);
 
-    List<PluginConfiguration> findByParametersPluginConfiguration(PluginConfiguration plgConf);
+    /**
+     * Check if plugin configuration exists for this business id
+     * @param businessId pluginConfiguration business id
+     */
+    boolean existsByBusinessId(String businessId);
 
     @Override
     @Modifying

@@ -38,6 +38,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -47,8 +48,10 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
@@ -86,6 +89,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pluginConfSequence")
     private Long id;
 
+    @GsonIgnore
     @Transient
     private PluginMetaData metaData;
 
@@ -137,7 +141,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     @Valid
     @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+            value = "fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam") })
     private final Set<IPluginParam> parameters = Sets.newHashSet();
 
     /**
@@ -191,7 +196,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public PluginConfiguration(PluginMetaData metaData, String label, Collection<IPluginParam> parameters, int order) {
         super();
-        this.businessId = UUID.randomUUID().toString();
+        createBusinessId();
         this.setMetaData(metaData);
         if (parameters != null) {
             this.parameters.addAll(parameters);
@@ -341,6 +346,10 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public void setIconUrl(URL pIconUrl) {
         iconUrl = pIconUrl;
+    }
+
+    public void createBusinessId() {
+        this.businessId = UUID.randomUUID().toString();
     }
 
     public String getBusinessId() {

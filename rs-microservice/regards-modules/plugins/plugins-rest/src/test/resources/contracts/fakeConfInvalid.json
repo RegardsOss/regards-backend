@@ -2,14 +2,13 @@
   "label": "sebbbbb",
   "active": true,
   "pluginId": "ParamTestPlugin",
-  "pluginClassName": "fr.cnes.regards.framework.modules.plugins.rest.ParamTestPlugin",
   "version": "1.0.0",
   "priorityOrder": 1,
   "parameters": [
     {
       "dynamic": true,
       "value": "file:/home/msordi/git/rs-storage/storage/storage-service/target/AIPServiceIT",
-      "type": "java.lang.String",
+      "type": "STRING",
       "name": "pString",
       "dynamicsValues": [
         "toto",
@@ -20,19 +19,19 @@
     {
       "dynamic": false,
       "value": 130,
-      "type": "java.lang.Byte",
+      "type": "BYTE",
       "name": "pByte"
     },
     {
       "dynamic": false,
       "value": 50000,
-      "type": "java.lang.Short",
+      "type": "SHORT",
       "name": "pShort"
     },
     {
       "dynamic": true,
       "value": 1000000000000000000000,
-      "type": "java.lang.Integer",
+      "type": "INTEGER",
       "name": "pInteger",
       "dynamicsValues": [
         10,
@@ -43,25 +42,25 @@
     {
       "dynamic": false,
       "value": -1000000000000000000000,
-      "type": "java.lang.Long",
+      "type": "LONG",
       "name": "pLong"
     },
     {
       "dynamic": false,
       "value": 1000000000000000000000000000000000000000000000000000,
-      "type": "java.lang.Float",
+      "type": "FLOAT",
       "name": "pFloat"
     },
     {
       "dynamic": false,
       "value": -1000000.5560,
-      "type": "java.lang.Double",
+      "type": "DOUBLE",
       "name": "pDouble"
     },
     {
       "dynamic": false,
       "value": true,
-      "type": "java.lang.Boolean",
+      "type": "BOOLEAN",
       "name": "pBoolean"
     },
     {
@@ -69,7 +68,7 @@
       "value": [
         "test"
       ],
-      "type": "java.util.List",
+      "type": "COLLECTION",
       "name": "sList"
     },
     {
@@ -77,7 +76,7 @@
       "value": {
         "1513011860928": "test"
       },
-      "type": "java.util.Map",
+      "type": "MAP",
       "name": "ssMap"
     },
     {
@@ -109,21 +108,14 @@
           "enabled": false
         }
       },
-      "type": "java.util.Map",
+      "type": "MAP",
       "name": "scMap"
     },
     {
       "dynamic": false,
       "name": "innerPlugin",
-      "pluginConfiguration": {
-        "id": -1,
-        "active": true,
-        "interfaceNames": [],
-        "parameters": [],
-        "pluginId": "undefined",
-        "priorityOrder": 0,
-        "version": 0.0
-      }
+      "type" : "PLUGIN",
+      "value" : "refInnerPlugin"
     }
   ]
 }

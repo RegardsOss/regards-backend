@@ -200,7 +200,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
                            .expectToHaveToString("$..content.active", "[true]")
                            .expectToHaveToString("$..content.parameters[?(@.name == 'param31')].dynamic", "[true]")
                            .expectToHaveToString("$..content.parameters[?(@.name == 'param32')].dynamic", "[false]"),
-                   "unable to load a plugin configuration", aPluginConfiguration.getId());
+                   "unable to load a plugin configuration", aPluginConfiguration.getBusinessId());
     }
 
     @Test
@@ -273,7 +273,8 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
                         .pathParameters(RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_PLUGIN_ID)
                                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                                 .description("Plugin identifier"),
-                                        RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_CONFIG_ID)
+                                        RequestDocumentation
+                                                .parameterWithName(PluginController.REQUEST_PARAM_BUSINESS_ID)
                                                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
                                                         .value(JSON_NUMBER_TYPE))
                                                 .description("Plugin configuration identifier")));
@@ -370,12 +371,13 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
                         .pathParameters(RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_PLUGIN_ID)
                                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                                 .description("Plugin identifier"),
-                                        RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_CONFIG_ID)
+                                        RequestDocumentation
+                                                .parameterWithName(PluginController.REQUEST_PARAM_BUSINESS_ID)
                                                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                        .value(JSON_NUMBER_TYPE))
+                                                        .value(JSON_STRING_TYPE))
                                                 .description("Plugin configuration identifier"))),
                       "unable to delete a plugin configuration", aPluginConfiguration.getPluginId(),
-                      aPluginConfiguration.getId());
+                      aPluginConfiguration.getBusinessId());
     }
 
     @Test

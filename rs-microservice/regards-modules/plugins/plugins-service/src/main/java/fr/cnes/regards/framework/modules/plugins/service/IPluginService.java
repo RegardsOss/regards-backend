@@ -67,22 +67,22 @@ public interface IPluginService {
     List<PluginMetaData> getPluginsByType(Class<?> interfacePluginType);
 
     /**
-     * @return whether the plugin configured by the given plugin configuration threw its id cna be instantiated or not
+     * @return whether the plugin configured by the given plugin configuration threw its id can be instantiated or not
      * @throws NotAvailablePluginConfigurationException
      */
-    boolean canInstantiate(Long pluginConfigurationId) throws ModuleException, NotAvailablePluginConfigurationException;
+    boolean canInstantiate(String businessId) throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
      * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
      * return type.
      * @param <T> a plugin instance
-     * @param pluginConfigurationId the id of a {@link PluginConfiguration}.
+     * @param businessId business identifier of the {@link PluginConfiguration}.
      * @param dynamicPluginParameters list of dynamic {@link AbstractPluginParam}
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
      * @throws NotAvailablePluginConfigurationException
      */
-    <T> T getPlugin(Long pluginConfigurationId, IPluginParam... dynamicPluginParameters)
+    <T> T getPlugin(String businessId, IPluginParam... dynamicPluginParameters)
             throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
@@ -115,10 +115,10 @@ public interface IPluginService {
 
     /**
      * Delete a {@link PluginConfiguration}.
-     * @param confId a specific configuration
+     * @param businessId business identifier of the {@link PluginConfiguration}.
      * @throws ModuleException Entity to delete does not exist
      */
-    void deletePluginConfiguration(Long confId) throws ModuleException;
+    void deletePluginConfiguration(String businessId) throws ModuleException;
 
     /**
      * Update a {@link PluginConfiguration}.
@@ -130,25 +130,25 @@ public interface IPluginService {
 
     /**
      * Get the {@link PluginConfiguration}.
-     * @param id a plugin identifier
+     * @param businessId business identifier of the {@link PluginConfiguration}.
      * @return a specific configuration
      * @throws EntityNotFoundException thrown if we cannot find any PluginConfiguration corresponding to pId
      */
-    PluginConfiguration getPluginConfiguration(Long id) throws EntityNotFoundException;
+    PluginConfiguration getPluginConfiguration(String businessId) throws EntityNotFoundException;
 
     /**
      * Load a PluginConfiguration with all its relations
      * @param id {@link Long}
      * @return {@link PluginConfiguration}
      */
-    PluginConfiguration loadPluginConfiguration(Long id);
+    PluginConfiguration loadPluginConfiguration(String businessId);
 
     /**
      * Does given PluginConfiguration exist ?
-     * @param id PluginConfiguration id to test
+     * @param businessId business identifier of the {@link PluginConfiguration}.
      * @return true or false (it's a boolean !!!)
      */
-    boolean exists(Long id);
+    boolean exists(String businessId);
 
     /**
      * Does given PluginConfiguration exist ?
@@ -210,16 +210,16 @@ public interface IPluginService {
 
     /**
      * Check if plugin is cached (resolving tenant internally)
-     * @param confId configuration identifier
+     * @param businessId business identifier
      * @return {@link boolean}
      */
-    boolean isPluginCached(Long confId);
+    boolean isPluginCached(String businessId);
 
     /**
      * Remove plugin instance cache with specified configuration identifier (resolving tenant internally)
-     * @param confId configuration identifier
+     * @param businessId business identifier
      */
-    void cleanPluginCache(Long confId);
+    void cleanPluginCache(String businessId);
 
     /**
      * Remove all plugin instances from cache
@@ -229,13 +229,13 @@ public interface IPluginService {
     /**
      * @return tenant plugin cache
      */
-    Map<Long, Object> getPluginCache();
+    Map<String, Object> getPluginCache();
 
     /**
-     * @param confId configuration identifier
+     * @param businessId business identifier
      * @return tenant plugin instance
      */
-    Object getCachedPlugin(Long confId);
+    Object getCachedPlugin(String businessId);
 
     /**
      * Prepare {@link PluginConfiguration} by decrypting all crypted values.

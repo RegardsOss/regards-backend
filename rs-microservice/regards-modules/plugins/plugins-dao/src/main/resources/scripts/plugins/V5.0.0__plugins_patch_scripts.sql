@@ -14,7 +14,7 @@ ALTER TABLE t_plugin_configuration DROP CONSTRAINT uk_plugin_configuration_label
 ALTER TABLE t_plugin_configuration ADD CONSTRAINT uk_plugin_bid UNIQUE (bid);
 
 -- Switch parameters to jsonb type
-ALTER TABLE t_entity ADD COLUMN parameters jsonb;
+ALTER TABLE t_plugin_configuration ADD COLUMN parameters jsonb;
 
 
 

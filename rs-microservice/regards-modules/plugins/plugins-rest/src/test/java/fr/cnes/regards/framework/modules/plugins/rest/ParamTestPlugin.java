@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.modules.plugins.rest;
 
 import java.util.List;
-import java.util.Map;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -57,21 +56,21 @@ public class ParamTestPlugin implements IParamTestPlugin {
     @PluginParameter(label = "Simple boolean", description = "Simple boolean description")
     private Boolean pBoolean;
 
-    @PluginParameter(label = "List of string", description = "List of string description")
-    private List<String> sList;
-
-    @PluginParameter(keylabel = "ssMapKey", label = "Map string to string",
-            description = "Map string to string description")
-    private Map<String, String> ssMap;
-
-    @PluginParameter(label = "Pojo containing string")
-    private Pojo pojo;
-
-    @PluginParameter(label = "Constraint pojo wrapper")
-    private Constraints constraints;
-
-    @PluginParameter(keylabel = "scMapKey", label = "Constraint map")
-    private Map<String, Constraint> scMap;
+    //    @PluginParameter(label = "List of string", description = "List of string description")
+    //    private List<String> sList;
+    //
+    //    @PluginParameter(keylabel = "ssMapKey", label = "Map string to string",
+    //            description = "Map string to string description")
+    //    private Map<String, String> ssMap;
+    //
+    //    @PluginParameter(label = "Pojo containing string")
+    //    private Pojo pojo;
+    //
+    //    @PluginParameter(label = "Constraint pojo wrapper")
+    //    private Constraints constraints;
+    //
+    //    @PluginParameter(keylabel = "scMapKey", label = "Constraint map")
+    //    private Map<String, Constraint> scMap;
 
     @PluginParameter(keylabel = "innerPlugin", label = "innerPlugin")
     private IParamTestPlugin innerPlugin;
@@ -198,45 +197,45 @@ public class ParamTestPlugin implements IParamTestPlugin {
         this.pBoolean = pBoolean;
     }
 
-    public List<String> getsList() {
-        return sList;
-    }
-
-    public void setsList(List<String> sList) {
-        this.sList = sList;
-    }
-
-    public Map<String, String> getSsMap() {
-        return ssMap;
-    }
-
-    public void setSsMap(Map<String, String> ssMap) {
-        this.ssMap = ssMap;
-    }
-
-    public Pojo getPojo() {
-        return pojo;
-    }
-
-    public void setPojo(Pojo pojo) {
-        this.pojo = pojo;
-    }
-
-    public Constraints getConstraints() {
-        return constraints;
-    }
-
-    public void setConstraints(Constraints constraints) {
-        this.constraints = constraints;
-    }
-
-    public Map<String, Constraint> getScMap() {
-        return scMap;
-    }
-
-    public void setScMap(Map<String, Constraint> scMap) {
-        this.scMap = scMap;
-    }
+    //    public List<String> getsList() {
+    //        return sList;
+    //    }
+    //
+    //    public void setsList(List<String> sList) {
+    //        this.sList = sList;
+    //    }
+    //
+    //    public Map<String, String> getSsMap() {
+    //        return ssMap;
+    //    }
+    //
+    //    public void setSsMap(Map<String, String> ssMap) {
+    //        this.ssMap = ssMap;
+    //    }
+    //
+    //    public Pojo getPojo() {
+    //        return pojo;
+    //    }
+    //
+    //    public void setPojo(Pojo pojo) {
+    //        this.pojo = pojo;
+    //    }
+    //
+    //    public Constraints getConstraints() {
+    //        return constraints;
+    //    }
+    //
+    //    public void setConstraints(Constraints constraints) {
+    //        this.constraints = constraints;
+    //    }
+    //
+    //    public Map<String, Constraint> getScMap() {
+    //        return scMap;
+    //    }
+    //
+    //    public void setScMap(Map<String, Constraint> scMap) {
+    //        this.scMap = scMap;
+    //    }
 
     public IParamTestPlugin getInnerPlugin() {
         return innerPlugin;

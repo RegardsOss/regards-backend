@@ -90,18 +90,18 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     public static final String PLUGINS_CONFIGS = PLUGINS + "/configs";
 
-    public static final String REQUEST_PARAM_CONFIG_ID = "configId";
+    public static final String REQUEST_PARAM_BUSINESS_ID = "configId";
 
     /**
      * REST mapping resource : /plugins/{pluginId}/config/{configId}
      */
-    public static final String PLUGINS_PLUGINID_CONFIGID = PLUGINS_PLUGINID_CONFIGS + "/{" + REQUEST_PARAM_CONFIG_ID
+    public static final String PLUGINS_PLUGINID_CONFIGID = PLUGINS_PLUGINID_CONFIGS + "/{" + REQUEST_PARAM_BUSINESS_ID
             + "}";
 
     /**
      * REST mapping resource : /plugins/configs/{configId}
      */
-    public static final String PLUGINS_CONFIGID = PLUGINS_CONFIGS + "/{" + REQUEST_PARAM_CONFIG_ID + "}";
+    public static final String PLUGINS_CONFIGID = PLUGINS_CONFIGS + "/{" + REQUEST_PARAM_BUSINESS_ID + "}";
 
     /**
      * REST mapping resource : /plugins/cache
@@ -273,7 +273,8 @@ public class PluginController implements IResourceController<PluginConfiguration
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get a the plugin configuration of a specific plugin", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<PluginConfiguration>> getPluginConfiguration(
-            @PathVariable("pluginId") String pluginId, @PathVariable("configId") Long configId) throws ModuleException {
+            @PathVariable("pluginId") String pluginId, @PathVariable("configId") String configId)
+            throws ModuleException {
         PluginConfiguration pluginConfig = pluginService.getPluginConfiguration(configId);
         return ResponseEntity.ok(toResource(pluginConfig));
     }
@@ -287,7 +288,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @RequestMapping(value = PLUGINS_CONFIGID, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get a the plugin configuration", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<PluginConfiguration>> getPluginConfigurationDirectAccess(
-            @PathVariable("configId") Long configId) throws ModuleException {
+            @PathVariable("configId") String configId) throws ModuleException {
         return new ResponseEntity<>(new Resource<>(pluginService.getPluginConfiguration(configId)), HttpStatus.OK);
     }
 
@@ -303,7 +304,7 @@ public class PluginController implements IResourceController<PluginConfiguration
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Update a plugin configuration")
     public ResponseEntity<Resource<PluginConfiguration>> updatePluginConfiguration(
-            @PathVariable("pluginId") String pluginId, @PathVariable("configId") Long configId,
+            @PathVariable("pluginId") String pluginId, @PathVariable("configId") String configId,
             @Valid @RequestBody PluginConfiguration pluginConf) throws ModuleException {
 
         if (!pluginId.equals(pluginConf.getPluginId())) {
@@ -312,7 +313,7 @@ public class PluginController implements IResourceController<PluginConfiguration
             throw new EntityNotFoundException(pluginId, PluginConfiguration.class);
         }
 
-        if (!configId.equals(pluginConf.getId())) {
+        if (!configId.equals(pluginConf.getBusinessId())) {
             throw new EntityNotFoundException(configId.toString(), PluginConfiguration.class);
         }
 
@@ -335,7 +336,7 @@ public class PluginController implements IResourceController<PluginConfiguration
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Delete a plugin configuration")
     public ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") String pluginId,
-            @PathVariable("configId") Long configId) throws ModuleException {
+            @PathVariable("configId") String configId) throws ModuleException {
         pluginService.deletePluginConfiguration(configId);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
