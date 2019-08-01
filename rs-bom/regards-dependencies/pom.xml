@@ -109,6 +109,7 @@
         </fr.cnes.regards.microservices.catalog.plugin-client.version>
         <fr.cnes.regards.utils.plugin-utils.version>0.5.0-SNAPSHOT</fr.cnes.regards.utils.plugin-utils.version>
         <fr.cnes.regards.modules.project.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.project.version>
+        <fr.cnes.regards.modules.session-manager.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.session-manager.version>
         <fr.cnes.regards.modules.crawler.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.crawler.version>
         <fr.cnes.regards.modules.indexer.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.indexer.version>
         <fr.cnes.regards.modules.accessrights-instance.version>0.5.0-SNAPSHOT
@@ -589,6 +590,34 @@
                 <artifactId>project-client</artifactId>
                 <version>${fr.cnes.regards.modules.project.version}</version>
             </dependency>
+
+            <!-- Session manager -->
+            <dependency>
+                <groupId>fr.cnes.regards.modules.session-manager</groupId>
+                <artifactId>session-manager-rest</artifactId>
+                <version>${fr.cnes.regards.modules.session-manager.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.session-manager</groupId>
+                <artifactId>session-manager-client</artifactId>
+                <version>${fr.cnes.regards.modules.session-manager.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.session-manager</groupId>
+                <artifactId>session-manager-service</artifactId>
+                <version>${fr.cnes.regards.modules.session-manager.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.session-manager</groupId>
+                <artifactId>session-manager-domain</artifactId>
+                <version>${fr.cnes.regards.modules.session-manager.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.session-manager</groupId>
+                <artifactId>session-manager-dao</artifactId>
+                <version>${fr.cnes.regards.modules.session-manager.version}</version>
+            </dependency>
+
             <!-- Datasource plugins -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
