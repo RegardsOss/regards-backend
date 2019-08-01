@@ -19,20 +19,21 @@
 package fr.cnes.regards.modules.storagelight.service.file.reference.job;
 
 import java.nio.file.Path;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.storagelight.domain.database.FileRestorationRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IRestorationProgressManager;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 
 /**
  * Implementation of {@link IStorageProgressManager} used by {@link IStorageLocation} plugins.<br/>
@@ -44,49 +45,46 @@ public class FileRestorationJobProgressManager implements IRestorationProgressMa
 
     private static final Logger LOG = LoggerFactory.getLogger(FileRestorationJobProgressManager.class);
 
-    private final IPublisher publisher;
+    private final FileRefEventPublisher publisher;
 
     private final IJob<?> job;
 
-    private final IRuntimeTenantResolver runtimeTenantResolver;
+    private final Set<FileRestorationRequest> handled = Sets.newHashSet();
 
-    private final String tenant;
-
-    public FileRestorationJobProgressManager(IPublisher publisher, IJob<?> job,
-            IRuntimeTenantResolver runtimeTenantResolver, String tenant) {
+    public FileRestorationJobProgressManager(FileRefEventPublisher publisher, IJob<?> job) {
         super();
         this.publisher = publisher;
         this.job = job;
-        this.runtimeTenantResolver = runtimeTenantResolver;
-        this.tenant = tenant;
     }
 
     @Override
-    public void restoreSucceed(FileReference fileRef, Path restoredFilePath) {
-        String successMessage = String.format("File %s successfully restored from %s to %s (checksum : %s).",
-                                              fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
-                                              restoredFilePath.toString(), fileRef.getMetaInfo().getChecksum());
+    public void restoreSucceed(FileRestorationRequest fileReq, Path restoredFilePath) {
+        FileReference fileRef = fileReq.getFileReference();
+        String successMessage = String.format("File %s (checksum %s) successfully restored from %s to %s.",
+                                              fileRef.getMetaInfo().getFileName(), fileRef.getMetaInfo().getChecksum(),
+                                              fileRef.getLocation().toString(), restoredFilePath.toString());
         LOG.debug("[RESTORATION SUCCESS] - {}", successMessage);
         job.advanceCompletion();
-        FileReferenceEvent event = new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.AVAILABLE, fileRef.getOwners(), successMessage,
-                new FileLocation(null, "file:///" + restoredFilePath.toString()));
-        publishWithTenant(event);
+        FileLocation availabilityLocation = new FileLocation(null, "file:///" + restoredFilePath.toString());
+        publisher.publishFileRefAvailable(fileRef, availabilityLocation, successMessage);
+        handled.add(fileReq);
     }
 
     @Override
-    public void restoreFailed(FileReference fileRef, String cause) {
+    public void restoreFailed(FileRestorationRequest fileReq, String cause) {
+        FileReference fileRef = fileReq.getFileReference();
         LOG.error("[RESTORATION ERROR] - Restoration error for file {} from {} (checksum: {}). Cause : {}",
                   fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
                   fileRef.getMetaInfo().getChecksum(), cause);
         job.advanceCompletion();
-        FileReferenceEvent event = new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.AVAILABILITY_ERROR, fileRef.getOwners(), cause);
-        publishWithTenant(event);
+        publisher.publishFileRefNotAvailable(fileRef, cause);
+        handled.add(fileReq);
     }
 
-    private void publishWithTenant(FileReferenceEvent event) {
-        runtimeTenantResolver.forceTenant(tenant);
-        publisher.publish(event);
+    /**
+     * Does the given {@link FileRestorationRequest} has been handled by the restorage job ?
+     */
+    public boolean isHandled(FileRestorationRequest req) {
+        return handled.contains(req);
     }
 }

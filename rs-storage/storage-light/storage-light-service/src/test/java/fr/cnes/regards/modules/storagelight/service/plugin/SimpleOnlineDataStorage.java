@@ -93,6 +93,8 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
             label = "Delete Error file pattern")
     private String deleteErrorFilePattern;
 
+    private final String doNotHandlePattern = "doNotHandle.*";
+
     /**
      * Plugin init method
      * @throws IOException
@@ -132,7 +134,11 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
                              fileRefRequest.getDestination());
         Assert.assertNotNull("File reference request origin location cannot be null", fileRefRequest.getOrigin());
         String fileName = fileRefRequest.getMetaInfo().getFileName();
-        if (Pattern.matches(errorFilePattern, fileName)) {
+        if (Pattern.matches(doNotHandlePattern, fileName)) {
+            // Do nothing to test not handled files
+            LOGGER.info("File {} ignored for storage", fileName);
+            return;
+        } else if (Pattern.matches(errorFilePattern, fileName)) {
             progressManager.storageFailed(fileRefRequest, "Specific error generated for tests");
         } else {
             String directory;

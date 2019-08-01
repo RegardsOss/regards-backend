@@ -42,8 +42,8 @@ import fr.cnes.regards.framework.utils.file.CommonFileUtils;
 import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 
 /**
@@ -54,9 +54,9 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefE
  * @author Sébastien Binda
  *
  */
-public class FileReferenceRequestJob extends AbstractJob<Void> {
+public class FileStorageRequestJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceRequestJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageRequestJob.class);
 
     /**
      * JOB Parameter key for the storage plugin configuration identifier to use for the storage.
@@ -97,27 +97,31 @@ public class FileReferenceRequestJob extends AbstractJob<Void> {
     @Override
     public void run() {
         // Initiate the job progress manager
-        FileReferenceJobProgressManager progressManager = new FileReferenceJobProgressManager(fileReferenceService,
+        FileStorageJobProgressManager progressManager = new FileStorageJobProgressManager(fileReferenceService,
                 fileRefRequestService, publisher, this);
         // lets instantiate the plugin to use
         Long confIdToUse = parameters.get(DATA_STORAGE_CONF_ID).getValue();
         FileStorageWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         workingSubset.getFileReferenceRequests().forEach(this::calculateImageDimension);
         IStorageLocation storagePlugin;
+        String errorCause = null;
         try {
             storagePlugin = pluginService.getPlugin(confIdToUse);
             storagePlugin.store(workingSubset, progressManager);
         } catch (Exception e) {
+            errorCause = String.format("Storage job failed cause : %s", e.getMessage());
+            // throwing new runtime allows us to make the job fail.
+            throw new JobRuntimeException(e);
+        } finally {
             // Publish event for all not handled files
             for (FileStorageRequest req : workingSubset.getFileReferenceRequests()) {
                 if (!progressManager.isHandled(req)) {
-                    progressManager.storageFailed(req, String
-                            .format("File %s (checksum: %s) not handled by storage job. Storage job failed cause : %s",
-                                    req.getMetaInfo().getFileName(), req.getMetaInfo().getChecksum(), e.getMessage()));
+                    progressManager.storageFailed(req,
+                                                  String.format("File %s (checksum: %s) not handled by storage job. %s",
+                                                                req.getMetaInfo().getFileName(),
+                                                                req.getMetaInfo().getChecksum(), errorCause));
                 }
             }
-            // throwing new runtime allows us to make the job fail.
-            throw new JobRuntimeException(e);
         }
     }
 

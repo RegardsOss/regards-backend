@@ -60,6 +60,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
+import fr.cnes.regards.modules.storagelight.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedStorageService;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
@@ -71,6 +72,8 @@ import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginCo
 public abstract class AbstractFileReferenceTest extends AbstractMultitenantServiceTest {
 
     protected static final String ONLINE_CONF_LABEL = "target";
+
+    protected static final String NEARLINE_CONF_LABEL = "NL_target";
 
     @Autowired
     protected FileReferenceService fileRefService;
@@ -114,7 +117,15 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                 Assert.fail(e.getMessage());
             }
         });
+        prioritizedDataStorageService.search(StorageType.NEARLINE).forEach(c -> {
+            try {
+                prioritizedDataStorageService.delete(c.getId());
+            } catch (ModuleException e) {
+                Assert.fail(e.getMessage());
+            }
+        });
         initDataStoragePluginConfiguration(ONLINE_CONF_LABEL);
+        initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
         storageHandler.refresh();
     }
 
@@ -135,6 +146,24 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         }
     }
 
+    protected PrioritizedStorage initDataStorageNLPluginConfiguration(String label) throws ModuleException {
+        try {
+            PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleNearlineDataStorage.class);
+            Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
+            Set<PluginParameter> parameters = PluginParametersFactory.build()
+                    .addParameter(SimpleNearlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                  getBaseStorageLocation().toString())
+                    .addParameter(SimpleNearlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*")
+                    .addParameter(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*")
+                    .getParameters();
+            PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
+            dataStorageConf.setIsActive(true);
+            return prioritizedDataStorageService.create(dataStorageConf);
+        } catch (IOException | URISyntaxException e) {
+            throw new ModuleException(e.getMessage(), e);
+        }
+    }
+
     protected void updatePluginConfForError(String newErrorPattern) throws MalformedURLException, ModuleException {
         PrioritizedStorage conf = prioritizedDataStorageService.getFirstActive(StorageType.ONLINE);
         Set<PluginParameter> parameters = PluginParametersFactory.build()
@@ -146,8 +175,15 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         prioritizedDataStorageService.update(conf.getId(), conf);
     }
 
-    protected FileReference generateRandomStoredFileReference() throws InterruptedException, ExecutionException {
-        return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", "file.test");
+    protected FileReference generateRandomStoredOnlineFileReference() throws InterruptedException, ExecutionException {
+        return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", "file.test",
+                                                ONLINE_CONF_LABEL);
+    }
+
+    protected FileReference generateRandomStoredNearlineFileReference()
+            throws InterruptedException, ExecutionException {
+        return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", "file.test",
+                                                NEARLINE_CONF_LABEL);
     }
 
     protected Optional<FileReference> generateStoredFileReferenceAlreadyReferenced(String checksum, String storage,
@@ -160,14 +196,14 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
 
     }
 
-    protected FileReference generateStoredFileReference(String checksum, String owner, String fileName)
+    protected FileReference generateStoredFileReference(String checksum, String owner, String fileName, String storage)
             throws InterruptedException, ExecutionException {
         List<String> owners = Lists.newArrayList();
         owners.add(owner);
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
         FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/" + fileName);
-        FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
+        FileLocation destination = new FileLocation(storage, "/in/this/directory");
         // Run file reference creation.
         fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
@@ -221,7 +257,8 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                                                                                 fileMetaInfo.getChecksum());
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
-        if (storageDestination.equals(ONLINE_CONF_LABEL)) {
+        // only the configured storage can be used for storage. Otherwise the request should be set in eroor.
+        if (storageDestination.equals(ONLINE_CONF_LABEL) || storageDestination.equals(NEARLINE_CONF_LABEL)) {
             Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TODO,
                                 oFileRefReq.get().getStatus());
             // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before

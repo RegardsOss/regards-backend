@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileRestorationReque
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileRestorationWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
-import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileReferenceRequestJob;
+import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileStorageRequestJob;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
 /**
@@ -112,12 +112,12 @@ public class FileRestorationRequestService {
             Collection<FileRestorationWorkingSubset> workingSubSets = storagePlugin.prepareForRestoration(requests);
             workingSubSets.forEach(ws -> {
                 Set<JobParameter> parameters = Sets.newHashSet();
-                parameters.add(new JobParameter(FileReferenceRequestJob.DATA_STORAGE_CONF_ID, conf.getId()));
-                parameters.add(new JobParameter(FileReferenceRequestJob.WORKING_SUB_SET, ws));
+                parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_ID, conf.getId()));
+                parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, ws));
                 ws.getFileRestorationRequests()
                         .forEach(r -> repository.updateStatus(FileRequestStatus.PENDING, r.getId()));
                 jobInfoList.add(jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
-                        FileReferenceRequestJob.class.getName())));
+                        FileStorageRequestJob.class.getName())));
             });
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             this.handleStorageNotAvailable(requests);

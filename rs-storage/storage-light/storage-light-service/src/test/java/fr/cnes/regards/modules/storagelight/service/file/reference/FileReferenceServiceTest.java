@@ -198,7 +198,8 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         // Reference & store a file
         String fileRefChecksum = "file-ref-1";
         String fileRefOwner = "first-owner";
-        FileReference fileRef = this.generateStoredFileReference(fileRefChecksum, fileRefOwner, "file.test");
+        FileReference fileRef = this.generateStoredFileReference(fileRefChecksum, fileRefOwner, "file.test",
+                                                                 ONLINE_CONF_LABEL);
         String fileRefStorage = fileRef.getLocation().getStorage();
 
         // Remove all his owners
@@ -260,12 +261,17 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     }
 
     @Test
-    public void storeWithPlugin() throws InterruptedException, ExecutionException {
-        this.generateRandomStoredFileReference();
+    public void storeWithOnlinePlugin() throws InterruptedException, ExecutionException {
+        this.generateRandomStoredOnlineFileReference();
     }
 
     @Test
-    public void storeImageWithPlugin()
+    public void storeWithNearlinePlugin() throws InterruptedException, ExecutionException {
+        this.generateRandomStoredNearlineFileReference();
+    }
+
+    @Test
+    public void storeImageWithOnlinePlugin()
             throws InterruptedException, ExecutionException, IOException, NoSuchAlgorithmException {
         File inputImage = Paths.get("src/test/resources/input/cnes.png").toFile();
         InputStream stream = Files.asByteSource(inputImage).openStream();
@@ -295,8 +301,53 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     }
 
     @Test
-    public void storeWithPluginError() throws InterruptedException, ExecutionException {
+    public void storeWithOnlinePluginError() throws InterruptedException, ExecutionException {
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
+    }
+
+    @Test
+    public void storeWithNearlinePluginError() throws InterruptedException, ExecutionException {
+        this.generateStoreFileError("someone", NEARLINE_CONF_LABEL);
+    }
+
+    @Test
+    public void storeWithNotHandledFiles() throws InterruptedException, ExecutionException {
+
+        List<String> owners = Lists.newArrayList();
+        owners.add("owner");
+        // Add a file reference request for a file that will not be handled by the storage plugin (ignored by his name in the test plugin)
+        String checksumNotHandled = UUID.randomUUID().toString();
+        String fileNameNotHandled = "doNotHandle.file.test";
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksumNotHandled, "MD5", fileNameNotHandled,
+                132L, MediaType.APPLICATION_OCTET_STREAM);
+        FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/" + fileNameNotHandled);
+        FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
+        fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
+        // Add a valid one for storage
+        String fileNameHandled = "file.test";
+        String checksumHandled = UUID.randomUUID().toString();
+        fileMetaInfo = new FileReferenceMetaInfo(checksumHandled, "MD5", fileNameHandled, 132L,
+                MediaType.APPLICATION_OCTET_STREAM);
+        origin = new FileLocation("anywhere", "anywhere://in/this/directory/" + fileNameHandled);
+        destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
+        fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
+
+        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.TODO, null, null);
+        Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
+        // Run Job and wait for end
+        runAndWaitJob(jobs);
+
+        Optional<FileReference> fileRef = fileRefService.search(ONLINE_CONF_LABEL, checksumNotHandled);
+        Optional<FileStorageRequest> req = fileRefRequestService.search(ONLINE_CONF_LABEL, checksumNotHandled);
+        Assert.assertFalse("File reference should not exists has the file to store has not been handled",
+                           fileRef.isPresent());
+        Assert.assertTrue("File reference request should still exists has the file to store has not been handled",
+                          req.isPresent());
+        fileRef = fileRefService.search(ONLINE_CONF_LABEL, checksumHandled);
+        req = fileRefRequestService.search(ONLINE_CONF_LABEL, checksumHandled);
+        Assert.assertTrue("File reference should exists has the file to store has been handled", fileRef.isPresent());
+        Assert.assertFalse("File reference request should not exists anymore has the file to store has been handled",
+                           req.isPresent());
     }
 
     @Test
@@ -405,7 +456,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
 
     @Test
     public void downloadFileReference() throws ModuleException, InterruptedException, ExecutionException {
-        fileRefService.downloadFile(this.generateRandomStoredFileReference().getMetaInfo().getChecksum());
+        fileRefService.downloadFile(this.generateRandomStoredOnlineFileReference().getMetaInfo().getChecksum());
     }
 
     @Test

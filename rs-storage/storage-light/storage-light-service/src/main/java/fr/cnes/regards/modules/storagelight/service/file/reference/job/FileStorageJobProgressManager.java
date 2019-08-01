@@ -37,14 +37,14 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileReference
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 
 /**
- * Progress manager class to handle {@link FileReferenceRequestJob} advancement.
+ * Progress manager class to handle {@link FileStorageRequestJob} advancement.
  * This progress manager should be used by all storage plugin to inform a storage success or a storage error.
  *
  * @author Sébastien Binda
  */
-public class FileReferenceJobProgressManager implements IStorageProgressManager {
+public class FileStorageJobProgressManager implements IStorageProgressManager {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FileReferenceJobProgressManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FileStorageJobProgressManager.class);
 
     private final FileRefEventPublisher publisher;
 
@@ -56,7 +56,7 @@ public class FileReferenceJobProgressManager implements IStorageProgressManager 
 
     private final Set<FileStorageRequest> handledRequest = Sets.newHashSet();
 
-    public FileReferenceJobProgressManager(FileReferenceService fileReferenceService,
+    public FileStorageJobProgressManager(FileReferenceService fileReferenceService,
             FileStorageRequestService fileRefRequestService, FileRefEventPublisher publisher, IJob<?> job) {
         this.publisher = publisher;
         this.job = job;

@@ -49,8 +49,8 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
 
 /**
  *
@@ -165,7 +165,7 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
     public void addFileRefFlowItemAlreadyExists() throws InterruptedException, ExecutionException {
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
-        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test");
+        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL);
         String storage = fileRef.getLocation().getStorage();
         // Create a new bus message File reference request
         AddFileRefFlowItem item = new AddFileRefFlowItem("file.name", checksum, "MD5", "application/octet-stream", 10L,
@@ -196,7 +196,7 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
         String storage = "aStorage";
-        this.generateStoredFileReference(checksum, owner, "file.test");
+        this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL);
         // Create a new bus message File reference request
         AddFileRefFlowItem item = new AddFileRefFlowItem("file.name", checksum, "MD5", "application/octet-stream", 10L,
                 "owner-test", storage, "file://storage/location/file.name", storage,
@@ -241,8 +241,8 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
 
         // SImulate job schedule
         Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.TODO,
-                                                                           Lists.newArrayList(ONLINE_CONF_LABEL),
-                                                                           Lists.newArrayList(owner));
+                                                                               Lists.newArrayList(ONLINE_CONF_LABEL),
+                                                                               Lists.newArrayList(owner));
         runAndWaitJob(jobs);
         Assert.assertTrue("File should be referenced", fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         Assert.assertFalse("File request should be deleted",

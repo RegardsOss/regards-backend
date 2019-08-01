@@ -21,16 +21,13 @@ package fr.cnes.regards.modules.storagelight.domain.plugin;
 import java.nio.file.Path;
 
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.database.FileRestorationRequest;
 
 /**
  * The ProgressManager is used by {@link IStorageLocation} plugins to notidy the upper service of storage action results :
  * <ul>
- * <li>Storage succeed {@link #storageSucceed}</li>
- * <li>Storage failed {@link #storageFailed}</li>
  * <li>Restoration succeed {@link #restoreSucceed}</li>
  * <li>Restoration failed {@link #restoreFailed}</li>
- * <li>Deletion succeed {@link #deletionSucceed}</li>
- * <li>Deletion failed {@link #deletionFailed}</li>
  * </ul>
  * @author Sébastien Binda
  */
@@ -38,16 +35,16 @@ public interface IRestorationProgressManager {
 
     /**
      * Notify system that the given {@link FileReference} is restored.
-     * @param fileReference {@link FileReference} restored.
+     * @param FileRestorationRequest {@link FileRestorationRequest} restored.
      * @param restoredFilePath {@link Path} of the restored file.
      */
-    public void restoreSucceed(FileReference fileReference, Path restoredFilePath);
+    public void restoreSucceed(FileRestorationRequest fileRequest, Path restoredFilePath);
 
     /**
      * Notify the system that the given {@link FileReference} couldn't be restored.
-     * @param fileReference {@link FileReference} not restored.
+     * @param FileRestorationRequest {@link FileRestorationRequest} not restored.
      * @param cause {@link String} error message.
      */
-    public void restoreFailed(FileReference fileReference, String cause);
+    public void restoreFailed(FileRestorationRequest fileRequest, String cause);
 
 }

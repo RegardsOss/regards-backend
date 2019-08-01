@@ -108,7 +108,7 @@ public class NLFileReferenceService {
 
     private void notifyAvailables(Set<FileReference> availables) {
         availables.forEach(f -> publisher
-                .publishFileRefAvailable(f,
+                .publishFileRefAvailable(f, f.getLocation(),
                                          String.format("file %s (checksum %s) available at %s",
                                                        f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum(),
                                                        f.getLocation().toString())));

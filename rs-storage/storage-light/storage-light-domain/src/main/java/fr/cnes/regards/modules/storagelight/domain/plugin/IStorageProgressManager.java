@@ -25,10 +25,6 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
  * <ul>
  * <li>Storage succeed {@link #storageSucceed}</li>
  * <li>Storage failed {@link #storageFailed}</li>
- * <li>Restoration succeed {@link #restoreSucceed}</li>
- * <li>Restoration failed {@link #restoreFailed}</li>
- * <li>Deletion succeed {@link #deletionSucceed}</li>
- * <li>Deletion failed {@link #deletionFailed}</li>
  * </ul>
  * @author Sébastien Binda
  */

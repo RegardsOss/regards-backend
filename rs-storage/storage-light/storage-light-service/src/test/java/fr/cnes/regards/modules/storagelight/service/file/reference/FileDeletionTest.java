@@ -95,7 +95,8 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
 
         String fileChecksum = "file-1";
         String firstOwner = "first-owner";
-        FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "delErr.file1.test");
+        FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "delErr.file1.test",
+                                                            ONLINE_CONF_LABEL);
         Assert.assertNotNull("File reference should have been created", fileRef);
         Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
 
@@ -130,7 +131,7 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
         String fileChecksum = "file-1";
         String firstOwner = "first-owner";
         String secondOwner = "second-owner";
-        FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "file.test");
+        FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "file.test", ONLINE_CONF_LABEL);
         Assert.assertNotNull("File reference should have been created", fileRef);
         Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
         Optional<FileReference> oFileRef = generateStoredFileReferenceAlreadyReferenced(fileChecksum,

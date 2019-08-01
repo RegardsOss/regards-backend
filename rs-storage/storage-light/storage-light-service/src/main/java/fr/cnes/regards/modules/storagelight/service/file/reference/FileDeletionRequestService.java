@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileDeletionWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileDeletionRequestJob;
-import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileReferenceRequestJob;
+import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileStorageRequestJob;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
 /**
@@ -136,8 +136,8 @@ public class FileDeletionRequestService {
                     .prepareForDeletion(fileDeletionRequests);
             workingSubSets.forEach(ws -> {
                 Set<JobParameter> parameters = Sets.newHashSet();
-                parameters.add(new JobParameter(FileReferenceRequestJob.DATA_STORAGE_CONF_ID, conf.getId()));
-                parameters.add(new JobParameter(FileReferenceRequestJob.WORKING_SUB_SET, ws));
+                parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_ID, conf.getId()));
+                parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, ws));
                 ws.getFileDeletionRequests().forEach(fileRefReq -> fileDeletionRequestRepo
                         .updateStatus(FileRequestStatus.PENDING, fileRefReq.getId()));
                 jobInfoList.add(jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),

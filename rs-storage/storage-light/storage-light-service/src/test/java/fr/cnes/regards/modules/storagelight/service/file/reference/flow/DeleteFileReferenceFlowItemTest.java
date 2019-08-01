@@ -156,7 +156,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
     public void deleteFlowItemStored() throws InterruptedException, ExecutionException {
         String checksum = UUID.randomUUID().toString();
         String owner = "owner";
-        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test");
+        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
         DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);
@@ -200,7 +200,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
     public void deleteFlowItemStoredError() throws InterruptedException, ExecutionException {
         String checksum = UUID.randomUUID().toString();
         String owner = "owner";
-        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "delErr.file.test");
+        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "delErr.file.test",
+                                                                 ONLINE_CONF_LABEL);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
         DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);
@@ -245,7 +246,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
     public void deleteFlowItemStoredErrorWithForce() throws InterruptedException, ExecutionException {
         String checksum = UUID.randomUUID().toString();
         String owner = "owner";
-        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "delErr.file.test");
+        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "delErr.file.test",
+                                                                 ONLINE_CONF_LABEL);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
         DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);

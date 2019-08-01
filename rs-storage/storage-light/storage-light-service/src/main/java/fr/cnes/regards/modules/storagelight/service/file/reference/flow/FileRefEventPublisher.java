@@ -104,10 +104,16 @@ public class FileRefEventPublisher {
                 destinationLocation));
     }
 
-    public void publishFileRefAvailable(FileReference fileRef, String message) {
+    public void publishFileRefAvailable(FileReference fileRef, FileLocation availabilityLocation, String message) {
         LOGGER.debug("Publish FileReferenceEvent available for download. {}", message);
         publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(), FileReferenceEventState.AVAILABLE,
-                fileRef.getOwners(), message, fileRef.getLocation()));
+                fileRef.getOwners(), message, availabilityLocation));
+    }
+
+    public void publishFileRefNotAvailable(FileReference fileRef, String message) {
+        LOGGER.debug("Publish FileReferenceEvent available for download. {}", message);
+        publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
+                FileReferenceEventState.AVAILABILITY_ERROR, fileRef.getOwners(), message, null));
     }
 
 }

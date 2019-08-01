@@ -54,7 +54,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
-import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileReferenceRequestJob;
+import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileStorageRequestJob;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
 /**
@@ -134,7 +134,7 @@ public class FileStorageRequestService {
     }
 
     /**
-     * Schedule {@link FileReferenceRequestJob}s for all {@link FileStorageRequest}s matching the given parameters
+     * Schedule {@link FileStorageRequestJob}s for all {@link FileStorageRequest}s matching the given parameters
      * @param status of the request to handle
      * @param storages of the request to handle
      * @param owners of the request to handle
@@ -170,7 +170,7 @@ public class FileStorageRequestService {
     }
 
     /**
-     * Schedule {@link FileReferenceRequestJob}s for all given {@link FileStorageRequest}s and a given storage location.
+     * Schedule {@link FileStorageRequestJob}s for all given {@link FileStorageRequest}s and a given storage location.
      * @param storage
      * @param fileStorageRequests
      * @return {@link JobInfo}s scheduled
@@ -185,12 +185,12 @@ public class FileStorageRequestService {
                     .prepareForStorage(fileStorageRequests);
             workingSubSets.forEach(ws -> {
                 Set<JobParameter> parameters = Sets.newHashSet();
-                parameters.add(new JobParameter(FileReferenceRequestJob.DATA_STORAGE_CONF_ID, conf.getId()));
-                parameters.add(new JobParameter(FileReferenceRequestJob.WORKING_SUB_SET, ws));
+                parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_ID, conf.getId()));
+                parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, ws));
                 ws.getFileReferenceRequests().forEach(fileStorageRequest -> fileStorageRequestRepo
                         .updateStatus(FileRequestStatus.PENDING, fileStorageRequest.getId()));
                 jobInfoList.add(jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
-                        FileReferenceRequestJob.class.getName())));
+                        FileStorageRequestJob.class.getName())));
             });
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             this.handleStorageNotAvailable(fileStorageRequests);

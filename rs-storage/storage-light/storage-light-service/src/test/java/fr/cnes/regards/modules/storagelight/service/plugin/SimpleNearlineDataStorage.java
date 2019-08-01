@@ -92,6 +92,8 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
             label = "Delete Error file pattern")
     private String deleteErrorFilePattern;
 
+    private final String doNotHandlePattern = "doNotHandle.*";
+
     /**
      * Plugin init method
      * @throws IOException
@@ -131,7 +133,11 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                              fileRefRequest.getDestination());
         Assert.assertNotNull("File reference request origin location cannot be null", fileRefRequest.getOrigin());
         String fileName = fileRefRequest.getMetaInfo().getFileName();
-        if (Pattern.matches(errorFilePattern, fileName)) {
+        if (Pattern.matches(doNotHandlePattern, fileName)) {
+            // Do nothing to test not handled files
+            LOGGER.info("File {} ignored for storage", fileName);
+            return;
+        } else if (Pattern.matches(errorFilePattern, fileName)) {
             progressManager.storageFailed(fileRefRequest, "Specific error generated for tests");
         } else {
             String directory;
@@ -203,7 +209,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     @Override
     public void retrieve(FileRestorationWorkingSubset workingSubset, IRestorationProgressManager progressManager) {
         workingSubset.getFileRestorationRequests().forEach(f -> {
-            progressManager.restoreSucceed(f.getFileReference(), Paths.get(f.getFileDestinationPath()));
+            progressManager.restoreSucceed(f, Paths.get(f.getFileDestinationPath()));
         });
     }
 
