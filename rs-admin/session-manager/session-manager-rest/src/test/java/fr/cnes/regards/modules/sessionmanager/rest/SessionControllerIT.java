@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.sessionmanager.dao.ISessionRepository;
 import fr.cnes.regards.modules.sessionmanager.domain.Session;
 import fr.cnes.regards.modules.sessionmanager.domain.SessionLifeCycle;
 import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
@@ -30,21 +31,19 @@ import fr.cnes.regards.modules.sessionmanager.domain.dto.UpdateSession;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
-import fr.cnes.regards.modules.sessionmanager.service.SessionService;
+import fr.cnes.regards.modules.sessionmanager.service.ISessionService;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.annotation.Resource;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.PagedResources;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.PayloadDocumentation;
@@ -62,8 +61,17 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionControllerIT.class);
+
     @Autowired
-    public SessionService sessionService;
+    public ISessionService sessionService;
+
+    @Autowired
+    public ISessionRepository sessionRepository;
+
+    @Before
+    public void clean() {
+        sessionRepository.deleteAll();
+    }
 
     public static List<FieldDescriptor> documentBody() {
         String prefixPath = "content[].content.";
@@ -120,7 +128,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expect(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(10)));
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(9)));
 
         requestBuilderCustomizer.document(PayloadDocumentation.responseFields(documentBody()));
 
@@ -163,7 +171,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expect(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(7)));
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(6)));
 
         requestBuilderCustomizer.document(RequestDocumentation
                 .requestParameters(
