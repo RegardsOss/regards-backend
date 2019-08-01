@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
-public class DeleteSessionNotification implements ISubscribable {
+public class DeleteSessionEvent implements ISubscribable {
     /**
      * The source of the session
      */
@@ -33,8 +33,8 @@ public class DeleteSessionNotification implements ISubscribable {
      */
     String name;
 
-    public static DeleteSessionNotification build(String source, String name) {
-        DeleteSessionNotification notif = new DeleteSessionNotification();
+    public static DeleteSessionEvent build(String source, String name) {
+        DeleteSessionEvent notif = new DeleteSessionEvent();
         notif.setSource(source);
         notif.setName(name);
         return notif;

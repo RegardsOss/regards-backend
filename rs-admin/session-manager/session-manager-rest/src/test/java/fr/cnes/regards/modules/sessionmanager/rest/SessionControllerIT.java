@@ -54,7 +54,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-@TestPropertySource(locations = "classpath:test.properties", properties = "spring.jpa.properties.hibernate.default_schema=session")
+@TestPropertySource(properties = "spring.jpa.properties.hibernate.default_schema=session")
 @MultitenantTransactional
 public class SessionControllerIT extends AbstractRegardsTransactionalIT {
 

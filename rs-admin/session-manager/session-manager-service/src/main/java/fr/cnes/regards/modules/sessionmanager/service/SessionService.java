@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.sessionmanager.domain.Session;
 import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
 import fr.cnes.regards.modules.sessionmanager.dao.ISessionRepository;
 import fr.cnes.regards.modules.sessionmanager.dao.SessionSpecifications;
-import fr.cnes.regards.modules.sessionmanager.domain.event.DeleteSessionNotification;
+import fr.cnes.regards.modules.sessionmanager.domain.event.DeleteSessionEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
@@ -39,7 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -216,7 +215,7 @@ public class SessionService implements ISessionService {
      * @param session
      */
     private void sendDeleteNotification(Session session) {
-        DeleteSessionNotification notif = DeleteSessionNotification.build(session.getSource(), session.getName());
+        DeleteSessionEvent notif = DeleteSessionEvent.build(session.getSource(), session.getName());
         publisher.publish(notif);
     }
 }
