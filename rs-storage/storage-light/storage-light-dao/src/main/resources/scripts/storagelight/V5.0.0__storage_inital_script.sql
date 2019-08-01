@@ -1,7 +1,7 @@
 create table t_cached_file (id int8 not null, checksum varchar(128), expiration timestamp, file_size int8, last_request_date timestamp, location varchar(255), primary key (id));
 create table t_file_deletion_request (file_reference int8 not null, error_cause varchar(512), force_delete boolean, status varchar(255) not null, storage varchar(128) not null, primary key (file_reference));
 create table t_file_reference (id int8 not null, storage varchar(128), url varchar(2048), algorithm varchar(16) not null, checksum varchar(128) not null, fileName varchar(256) not null, fileSize int8, height int4, mime_type varchar(255) not null, type varchar(256), width int4, storageDate timestamp, primary key (id));
-create table t_file_cache_request (id int8 not null, error_cause varchar(512), checksum varchar(128) not null, storage varchar(128) not null, destiation_path varchar(2048) not null,file_size int8 not null, status varchar(255) not null, file_ref_id int8 not null, primary key (id));
+create table t_file_cache_request (id int8 not null, error_cause varchar(512), checksum varchar(128) not null, storage varchar(128) not null, destination_path varchar(2048) not null,file_size int8 not null, status varchar(255) not null, file_ref_id int8 not null, primary key (id));
 create table t_file_storage_request (id int8 not null, destination_storage varchar(255), destination_url varchar(255), error_cause varchar(512), algorithm varchar(16) not null, checksum varchar(128) not null, fileName varchar(256) not null, fileSize int8, height int4, mime_type varchar(255) not null, type varchar(256), width int4, origin_storage varchar(255), origin_url varchar(255), status varchar(255) not null, primary key (id));
 create table t_prioritized_storage (storage_conf_id int8 not null, priority int8, storage_type varchar(255), primary key (storage_conf_id));
 create table t_storage_location (id int8 not null, allowed_size int8, last_update_date timestamp, name varchar(128), nb_ref_files int8, total_size int8, primary key (id));
@@ -18,6 +18,7 @@ alter table t_file_storage_request add constraint t_file_storage_request_checksu
 alter table t_prioritized_storage add constraint uk_priotitized_storage unique (storage_type, priority);
 create index idx_storage_location on t_storage_location (name);
 alter table t_storage_location add constraint uk_t_storage_location_name unique (name);
+alter table t_file_cache_request add constraint uk_t_file_cache_request_checksum unique (checksum);
 create sequence seq_cached_file start 1 increment 50;
 create sequence seq_file_reference start 1 increment 50;
 create sequence seq_file_cache_request start 1 increment 50;

@@ -87,22 +87,29 @@ public class FileCacheRequestService {
     @Autowired
     private StoragePluginConfigurationHandler storageHandler;
 
+    public Optional<FileCacheRequest> search(String checksum) {
+        return repository.findByChecksum(checksum);
+    }
+
     public Optional<FileCacheRequest> create(FileReference fileRefToRestore) {
         String checksum = fileRefToRestore.getMetaInfo().getChecksum();
         Optional<FileCacheRequest> oFcr = repository.findByChecksum(checksum);
+        FileCacheRequest request = null;
         if (!oFcr.isPresent()) {
-            return Optional
-                    .of(repository.save(new FileCacheRequest(fileRefToRestore, cacheService.getFilePath(checksum))));
+            request = new FileCacheRequest(fileRefToRestore, cacheService.getFilePath(checksum));
+            request = repository.save(request);
+            LOGGER.debug("File {} (checksum {}) is requested for cache.", fileRefToRestore.getMetaInfo().getFileName(),
+                         fileRefToRestore.getMetaInfo().getChecksum());
         } else {
-            FileCacheRequest fcr = oFcr.get();
-            if (fcr.getStatus() == FileRequestStatus.ERROR) {
-                fcr.setStatus(FileRequestStatus.TODO);
-                repository.save(fcr);
+            request = oFcr.get();
+            if (request.getStatus() == FileRequestStatus.ERROR) {
+                request.setStatus(FileRequestStatus.TODO);
+                request = repository.save(request);
             }
             LOGGER.debug("File {} (checksum {}) is already requested for cache.",
                          fileRefToRestore.getMetaInfo().getFileName(), fileRefToRestore.getMetaInfo().getChecksum());
-            return Optional.empty();
         }
+        return Optional.ofNullable(request);
     }
 
     public Collection<JobInfo> scheduleRestorationJobs(FileRequestStatus status) {

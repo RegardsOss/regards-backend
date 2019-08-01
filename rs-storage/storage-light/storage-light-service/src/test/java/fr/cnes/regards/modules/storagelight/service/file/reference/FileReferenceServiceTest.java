@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
@@ -455,7 +456,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     }
 
     @Test
-    public void downloadFileReference() throws ModuleException, InterruptedException, ExecutionException {
+    public void downloadFileReferenceOnline() throws ModuleException, InterruptedException, ExecutionException {
         fileRefService.downloadFile(this.generateRandomStoredOnlineFileReference().getMetaInfo().getChecksum());
     }
 
@@ -468,6 +469,24 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
             fileRefService.downloadFile(fileRef.getMetaInfo().getChecksum());
             Assert.fail("File should not be available for download as it is not handled by a known storage location plugin");
         } catch (ModuleException e) {
+            LOGGER.error(e.getMessage());
+        }
+    }
+
+    @Test
+    public void downloadFileReferenceNearline() throws ModuleException, InterruptedException, ExecutionException {
+        FileReference fileRef = this.generateRandomStoredNearlineFileReference();
+        try {
+            fileRefService.downloadFile(fileRef.getMetaInfo().getChecksum());
+            Assert.fail("File should not be available for download as it is not online");
+        } catch (EntityNotFoundException e) {
+            // A cache request should be created
+            Optional<FileCacheRequest> oReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
+            Assert.assertTrue("FileCacheRequest should be createdd", oReq.isPresent());
+            Assert.assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
+                                NEARLINE_CONF_LABEL, oReq.get().getStorage());
+            Assert.assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
+                                FileRequestStatus.TODO, oReq.get().getStatus());
             LOGGER.error(e.getMessage());
         }
     }

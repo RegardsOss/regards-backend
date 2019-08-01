@@ -49,6 +49,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.storagelight.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
@@ -82,6 +83,9 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected FileStorageRequestService fileRefRequestService;
 
     @Autowired
+    protected FileCacheRequestService fileCacheRequestService;
+
+    @Autowired
     protected FileDeletionRequestService fileDeletionRequestService;
 
     @Autowired
@@ -92,6 +96,9 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
 
     @Autowired
     protected IFileReferenceRepository fileRefRepo;
+
+    @Autowired
+    protected IFileCacheRequestRepository fileCacheReqRepo;
 
     @Autowired
     protected IFileStorageRequestRepository fileRefRequestRepo;
@@ -108,6 +115,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected void init() throws ModuleException {
         fileDeletionRequestRepo.deleteAll();
         fileRefRequestRepo.deleteAll();
+        fileCacheReqRepo.deleteAll();
         fileRefRepo.deleteAll();
         jobInfoRepo.deleteAll();
         prioritizedDataStorageService.search(StorageType.ONLINE).forEach(c -> {

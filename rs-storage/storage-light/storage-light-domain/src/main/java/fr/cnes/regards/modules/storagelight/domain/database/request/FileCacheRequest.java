@@ -46,9 +46,8 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
 public class FileCacheRequest {
 
     @Id
-    @SequenceGenerator(name = "fileRestorationRequestSequence", initialValue = 1,
-            sequenceName = "seq_file_restoration_request")
-    @GeneratedValue(generator = "fileRestorationRequestSequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "fileCacheRequestSequence", initialValue = 1, sequenceName = "seq_file_cache_request")
+    @GeneratedValue(generator = "fileCacheRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @ManyToOne

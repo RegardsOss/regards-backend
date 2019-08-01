@@ -37,6 +37,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.ImmutableList;
@@ -65,7 +66,6 @@ import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
-import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedStorageService;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
@@ -230,6 +230,7 @@ public class FileReferenceService {
      * @param checksum Checksum of the file to download
      * @return
      */
+    @Transactional(noRollbackFor = { EntityNotFoundException.class })
     public DownloadableFile downloadFile(String checksum) throws ModuleException {
         // 1. Retrieve all the FileReference matching the given checksum
         Set<FileReference> fileRefs = this.search(checksum);
@@ -237,7 +238,7 @@ public class FileReferenceService {
                 .collect(Collectors.toMap(f -> f.getLocation().getStorage(), f -> f));
         // 2. get the storage location with the higher priority
         Optional<PrioritizedStorage> storageLocation = prioritizedStorageService
-                .searchActiveHigherPriority(storages.keySet(), StorageType.ONLINE);
+                .searchActiveHigherPriority(storages.keySet());
         if (storageLocation.isPresent()) {
             PluginConfiguration conf = storageLocation.get().getStorageConfiguration();
             FileReference fileToDownload = storages.get(conf.getLabel());
@@ -252,31 +253,51 @@ public class FileReferenceService {
         }
     }
 
+    /**
+     * Try to download the given {@link FileReference}.
+     * @param fileToDownload
+     * @return {@link InputStream} of the file
+     * @throws ModuleException
+     */
+    @Transactional(noRollbackFor = { EntityNotFoundException.class })
     public InputStream downloadFileReference(FileReference fileToDownload) throws ModuleException {
         Optional<PrioritizedStorage> conf = prioritizedStorageService.search(fileToDownload.getLocation().getStorage());
         if (conf.isPresent()) {
-            if (conf.get().getStorageType() != StorageType.ONLINE) {
-                return nearlineFileService.download(fileToDownload);
-            } else {
-                try {
-                    IOnlineStorageLocation plugin = pluginService
-                            .getPlugin(conf.get().getStorageConfiguration().getId());
-                    return plugin.retrieve(fileToDownload);
-                } catch (NotAvailablePluginConfigurationException e) {
-                    throw new ModuleException(String
-                            .format("Unable to download file %s (checksum : %s) as its storage location %s is not active.",
-                                    fileToDownload.getMetaInfo().getFileName(),
-                                    fileToDownload.getMetaInfo().getChecksum(),
-                                    fileToDownload.getLocation().toString()));
-                } catch (IOException e) {
-                    throw new ModuleException(e.getMessage(), e);
-                }
+            switch (conf.get().getStorageType()) {
+                case NEARLINE:
+                    return nearlineFileService.download(fileToDownload);
+                case ONLINE:
+                    return downloadOnline(fileToDownload, conf.get());
+                default:
+                    break;
             }
-        } else {
+        }
+        throw new ModuleException(
+                String.format("Unable to download file %s (checksum : %s) as its storage location %s is not available",
+                              fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getChecksum(),
+                              fileToDownload.getLocation().toString()));
+    }
+
+    /**
+     * Download a file from an ONLINE storage location.
+     * @param fileToDownload
+     * @param storagePluginConf
+     * @return
+     * @throws ModuleException
+     */
+    private InputStream downloadOnline(FileReference fileToDownload, PrioritizedStorage storagePluginConf)
+            throws ModuleException {
+        try {
+            IOnlineStorageLocation plugin = pluginService
+                    .getPlugin(storagePluginConf.getStorageConfiguration().getId());
+            return plugin.retrieve(fileToDownload);
+        } catch (NotAvailablePluginConfigurationException e) {
             throw new ModuleException(String
-                    .format("Unable to download file %s (checksum : %s) as its storage location %s is not available",
+                    .format("Unable to download file %s (checksum : %s) as its storage location %s is not active.",
                             fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getChecksum(),
                             fileToDownload.getLocation().toString()));
+        } catch (IOException e) {
+            throw new ModuleException(e.getMessage(), e);
         }
     }
 

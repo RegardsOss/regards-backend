@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -59,7 +60,7 @@ public class NLFileReferenceService {
     private CacheService cachedFileService;
 
     @Autowired
-    private FileCacheRequestService fileRestorationReqService;
+    private FileCacheRequestService fileCacheReqService;
 
     /**
      * Try to download a nearline file. If the file is in the cache system, then the file can be downloaded. Else,
@@ -68,6 +69,7 @@ public class NLFileReferenceService {
      * @return stream of the file from its cache copy.
      * @throws EntityNotFoundException If file is not in cache currently.
      */
+    @Transactional(noRollbackFor = EntityNotFoundException.class)
     public InputStream download(FileReference fileToDownload) throws EntityNotFoundException {
         Optional<CachedFile> ocf = cachedFileService.getAvailable(fileToDownload);
         if (ocf.isPresent()) {
@@ -95,14 +97,14 @@ public class NLFileReferenceService {
     public void makeAvailable(Set<FileReference> fileReferences, OffsetDateTime expirationDate) {
         // Check files already available in cache
         Set<FileReference> availables = cachedFileService.getAvailables(fileReferences);
-        Set<FileReference> toRestore = fileReferences.stream().filter(f -> availables.contains(f))
+        Set<FileReference> toRestore = fileReferences.stream().filter(f -> !availables.contains(f))
                 .collect(Collectors.toSet());
         // Notify available
         notifyAvailables(availables);
         // Create a restoration request for all to restore
-        toRestore.stream().forEach(f -> {
-            fileRestorationReqService.create(f);
-        });
+        for (FileReference f : toRestore) {
+            fileCacheReqService.create(f);
+        }
     }
 
     /**
