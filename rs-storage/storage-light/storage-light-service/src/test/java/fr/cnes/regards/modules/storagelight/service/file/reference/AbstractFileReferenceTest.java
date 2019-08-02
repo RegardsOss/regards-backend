@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -80,6 +81,9 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
 
     @Autowired
     protected FileReferenceService fileRefService;
+
+    @Autowired
+    protected NLFileReferenceService nearlineFileRefService;
 
     @Autowired
     protected FileStorageRequestService fileRefRequestService;
@@ -343,6 +347,24 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         }
         Assert.assertFalse("No file reference event checked", events.isEmpty());
         return evts;
+    }
+
+    protected void simulateFileInCache(String checksum) {
+        try {
+            String filePath = cacheService.getFilePath(checksum);
+            cacheService.addFile(checksum, 123L, new URL("file", null, filePath), OffsetDateTime.now().plusDays(1));
+            // Create file on disk
+            if (!Files.exists(Paths.get(filePath).getParent())) {
+
+                Files.createDirectories(Paths.get(filePath).getParent());
+
+            }
+            if (!Files.exists(Paths.get(filePath))) {
+                Files.createFile(Paths.get(filePath));
+            }
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
 }
