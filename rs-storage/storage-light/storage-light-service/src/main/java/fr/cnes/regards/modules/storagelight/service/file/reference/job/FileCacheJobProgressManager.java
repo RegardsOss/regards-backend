@@ -18,7 +18,11 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.reference.job;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
 
@@ -33,6 +37,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheReq
 import fr.cnes.regards.modules.storagelight.domain.plugin.IRestorationProgressManager;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileCacheRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 
 /**
@@ -43,7 +48,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefE
  */
 public class FileCacheJobProgressManager implements IRestorationProgressManager {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FileCacheJobProgressManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileCacheJobProgressManager.class);
 
     private final FileRefEventPublisher publisher;
 
@@ -51,25 +56,43 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
 
     private final Set<FileCacheRequest> handled = Sets.newHashSet();
 
-    public FileCacheJobProgressManager(FileRefEventPublisher publisher, IJob<?> job) {
+    private final FileCacheRequestService fileCacheRequestService;
+
+    public FileCacheJobProgressManager(FileCacheRequestService fileCacheRequestService, FileRefEventPublisher publisher,
+            IJob<?> job) {
         super();
         this.publisher = publisher;
         this.job = job;
+        this.fileCacheRequestService = fileCacheRequestService;
     }
 
     @Override
     public void restoreSucceed(FileCacheRequest fileReq) {
         FileReference fileRef = fileReq.getFileReference();
         // Check file exists in cache
-        if (Files.exists(Paths.get(fileReq.getDestinationPath()))) {
-            String successMessage = String.format("File %s (checksum %s) successfully restored from %s to %s.",
-                                                  fileRef.getMetaInfo().getFileName(),
-                                                  fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().toString(),
-                                                  fileReq.getDestinationPath());
-            LOG.debug("[RESTORATION SUCCESS] - {}", successMessage);
-            job.advanceCompletion();
-            publisher.publishFileRefAvailable(fileRef.getMetaInfo().getChecksum(), successMessage);
-            handled.add(fileReq);
+        Path cacheFilePath = Paths.get(fileReq.getDestinationPath());
+        if (Files.exists(cacheFilePath)) {
+            try {
+                URL cacheFileLocation = new URL("file", null, cacheFilePath.toString());
+                String successMessage = String.format("File %s (checksum %s) successfully restored from %s to %s.",
+                                                      fileRef.getMetaInfo().getFileName(),
+                                                      fileRef.getMetaInfo().getChecksum(),
+                                                      fileRef.getLocation().toString(), fileReq.getDestinationPath());
+                LOGGER.debug("[RESTORATION SUCCESS] - {}", successMessage);
+                job.advanceCompletion();
+                fileCacheRequestService.handleSuccess(fileReq, cacheFileLocation, cacheFilePath.toFile().length());
+                publisher.publishFileRefAvailable(fileRef.getMetaInfo().getChecksum(), successMessage);
+                handled.add(fileReq);
+            } catch (MalformedURLException e) {
+                LOGGER.error(e.getMessage(), e);
+                restoreFailed(fileReq, e.getMessage());
+                try {
+                    Files.delete(cacheFilePath);
+                } catch (IOException e1) {
+                    // Nothing to do, only log error.
+                    LOGGER.error(e1.getMessage(), e1);
+                }
+            }
         } else {
             String errorCause = String
                     .format("Unknown error during file %s restoration in cache. Storage location plugin indicates that the file is restored but file does not exists at %s.",
@@ -81,10 +104,11 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
     @Override
     public void restoreFailed(FileCacheRequest fileReq, String cause) {
         FileReference fileRef = fileReq.getFileReference();
-        LOG.error("[RESTORATION ERROR] - Restoration error for file {} from {} (checksum: {}). Cause : {}",
-                  fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
-                  fileRef.getMetaInfo().getChecksum(), cause);
+        LOGGER.error("[RESTORATION ERROR] - Restoration error for file {} from {} (checksum: {}). Cause : {}",
+                     fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
+                     fileRef.getMetaInfo().getChecksum(), cause);
         job.advanceCompletion();
+        fileCacheRequestService.handleError(fileReq, cause);
         publisher.publishFileRefNotAvailable(fileRef.getMetaInfo().getChecksum(), cause);
         handled.add(fileReq);
     }

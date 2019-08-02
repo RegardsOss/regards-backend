@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_deletion_tests",
-        "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=12" })
+        "regards.storage.cache.path=target/cache" })
 public class FileDeletionTest extends AbstractFileReferenceTest {
 
     @Before

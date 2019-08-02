@@ -58,7 +58,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRe
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
-        "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=12" })
+        "regards.storage.cache.path=target/cache" })
 public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AddFileReferenceFlowItemTest.class);

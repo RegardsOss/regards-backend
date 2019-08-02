@@ -21,20 +21,22 @@ package fr.cnes.regards.modules.storagelight.service.file.reference.flow;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.flow.AvaibilityFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
  * @author sbinda
  *
  */
-public class AvaibilityFileReferenceFlowItemHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<AvaibilityFileRefFlowItem> {
+@Component
+public class AvailabilityFileReferenceFlowItemHandler
+        implements ApplicationListener<ApplicationReadyEvent>, IHandler<AvailabilityFileRefFlowItem> {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -47,14 +49,14 @@ public class AvaibilityFileReferenceFlowItemHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(AvaibilityFileRefFlowItem.class, this);
+        subscriber.subscribeTo(AvailabilityFileRefFlowItem.class, this);
     }
 
     @Override
-    public void handle(TenantWrapper<AvaibilityFileRefFlowItem> wrapper) {
+    public void handle(TenantWrapper<AvailabilityFileRefFlowItem> wrapper) {
         runtimeTenantResolver.forceTenant(wrapper.getTenant());
         try {
-            AvaibilityFileRefFlowItem item = wrapper.getContent();
+            AvailabilityFileRefFlowItem item = wrapper.getContent();
             fileRefService.makeAvailable(item.getChecksums(), item.getExpirationDate());
         } finally {
             runtimeTenantResolver.clearTenant();

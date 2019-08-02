@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheReq
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileRestorationWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileCacheRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 
 /**
@@ -63,6 +64,9 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
     private FileRefEventPublisher publisher;
 
     @Autowired
+    private FileCacheRequestService fileCacheRequestService;
+
+    @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
@@ -79,7 +83,8 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
     @Override
     public void run() {
         // Initiate the job progress manager
-        FileCacheJobProgressManager progressManager = new FileCacheJobProgressManager(publisher, this);
+        FileCacheJobProgressManager progressManager = new FileCacheJobProgressManager(fileCacheRequestService,
+                publisher, this);
         // lets instantiate the plugin to use
         Long confIdToUse = parameters.get(DATA_STORAGE_CONF_ID).getValue();
         FileRestorationWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();

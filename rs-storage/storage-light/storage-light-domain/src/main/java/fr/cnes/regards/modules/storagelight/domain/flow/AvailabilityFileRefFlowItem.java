@@ -33,13 +33,13 @@ import fr.cnes.regards.framework.amqp.event.Target;
  *
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
-public class AvaibilityFileRefFlowItem implements ISubscribable {
+public class AvailabilityFileRefFlowItem implements ISubscribable {
 
     private final Set<String> checksums = Sets.newHashSet();
 
     private final OffsetDateTime expirationDate;
 
-    public AvaibilityFileRefFlowItem(Collection<String> checksums, OffsetDateTime expirationDate) {
+    public AvailabilityFileRefFlowItem(Collection<String> checksums, OffsetDateTime expirationDate) {
         super();
         this.checksums.addAll(checksums);
         this.expirationDate = expirationDate;

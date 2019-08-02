@@ -23,30 +23,30 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_cached_file", indexes = { @Index(name = "idx_cached_file_checksum", columnList = "checksum") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_cached_file_checksum", columnNames = "checksum") })
-public class CachedFile {
+@Table(name = "t_cache_file", indexes = { @Index(name = "idx_cache_file_checksum", columnList = "checksum") },
+        uniqueConstraints = { @UniqueConstraint(name = "uk_cache_file_checksum", columnNames = "checksum") })
+public class CacheFile {
 
     /**
      * db id
      */
     @Id
-    @SequenceGenerator(name = "cachedFileSequence", initialValue = 1, sequenceName = "seq_cached_file")
-    @GeneratedValue(generator = "cachedFileSequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "cacheFileSequence", initialValue = 1, sequenceName = "seq_cache_file")
+    @GeneratedValue(generator = "cacheFileSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
     /**
-     * The cached file checksum
+     * The cache file checksum
      */
     @NotNull
     @Column(length = FileReferenceMetaInfo.CHECKSUM_MAX_LENGTH)
     private String checksum;
 
     /**
-     * the cached file size, this field is final because it should mirror the information from StorageDataFile
+     * the cache file size, this field is final because it should mirror the information from StorageDataFile
      */
     @Column(name = "file_size")
-    private final Long fileSize;
+    private Long fileSize;
 
     /**
      * location into the cache
@@ -57,9 +57,9 @@ public class CachedFile {
     /**
      * expiration date of the file into the cache
      */
-    @Column
+    @Column(name = "expiration_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime expiration;
+    private OffsetDateTime expirationDate;
 
     /**
      * Date of the last request to make the file available.
@@ -71,20 +71,21 @@ public class CachedFile {
     /**
      * Default constructor
      */
-    public CachedFile() {
+    public CacheFile() {
         fileSize = 0L;
     }
 
     /**
-     * Constructor initializing the cached file from the parameters
+     * Constructor initializing the cache file from the parameters
      * @param df
      * @param expirationDate
      */
-    public CachedFile(FileReference fileRef, OffsetDateTime expirationDate) {
-        checksum = fileRef.getMetaInfo().getChecksum();
-        fileSize = fileRef.getMetaInfo().getFileSize();
-        expiration = expirationDate;
-        lastRequestDate = OffsetDateTime.now();
+    public CacheFile(String checksum, Long fileSize, URL location, OffsetDateTime expirationDate) {
+        this.checksum = checksum;
+        this.fileSize = fileSize;
+        this.location = location;
+        this.expirationDate = expirationDate;
+        this.lastRequestDate = OffsetDateTime.now();
     }
 
     public Long getId() {
@@ -99,12 +100,12 @@ public class CachedFile {
         this.location = location;
     }
 
-    public OffsetDateTime getExpiration() {
-        return expiration;
+    public OffsetDateTime getExpirationDate() {
+        return expirationDate;
     }
 
-    public void setExpiration(OffsetDateTime expiration) {
-        this.expiration = expiration;
+    public void setExpirationDate(OffsetDateTime expiration) {
+        this.expirationDate = expiration;
     }
 
     public OffsetDateTime getLastRequestDate() {
@@ -117,6 +118,10 @@ public class CachedFile {
 
     public Long getFileSize() {
         return fileSize;
+    }
+
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
     }
 
     public String getChecksum() {
@@ -136,7 +141,7 @@ public class CachedFile {
             return false;
         }
 
-        CachedFile that = (CachedFile) o;
+        CacheFile that = (CacheFile) o;
 
         return checksum.equals(that.checksum);
     }
@@ -148,6 +153,6 @@ public class CachedFile {
 
     @Override
     public String toString() {
-        return "CachedFile[id=" + id + ", checksum=" + checksum + "]";
+        return "CacheFile[id=" + id + ", checksum=" + checksum + "]";
     }
 }

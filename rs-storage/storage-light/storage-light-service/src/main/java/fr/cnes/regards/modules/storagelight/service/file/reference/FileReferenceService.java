@@ -391,7 +391,7 @@ public class FileReferenceService {
         // Dispatch by storage
         ImmutableListMultimap<String, FileReference> filesByStorage = Multimaps
                 .index(refs, f -> f.getLocation().getStorage());
-        Set<String> remainingStorages = filesByStorage.keySet();
+        Set<String> remainingStorages = Sets.newHashSet(filesByStorage.keySet());
 
         Optional<PrioritizedStorage> storage = prioritizedStorageService.searchActiveHigherPriority(remainingStorages);
         // Handle storage by priority
@@ -400,27 +400,38 @@ public class FileReferenceService {
             PluginConfiguration conf = storage.get().getStorageConfiguration();
             String storageName = conf.getLabel();
             ImmutableList<FileReference> storageFiles = filesByStorage.get(storageName);
+            // Calculate remaining files to make available for the current storage
+            Set<FileReference> files = storageFiles.stream()
+                    .filter(f -> remainingChecksums.contains(f.getMetaInfo().getChecksum()))
+                    .collect(Collectors.toSet());
             switch (storage.get().getStorageType()) {
                 case NEARLINE:
-                    nearlines.addAll(storageFiles);
+                    nearlines.addAll(files);
                     break;
                 case ONLINE:
                     // If storage is an online one, so file is already available
-                    onlines.addAll(storageFiles);
+                    onlines.addAll(files);
+                    break;
                 default:
                     // Unknown storage type
-                    offlines.addAll(storageFiles);
+                    offlines.addAll(files);
                     break;
             }
+            // Remove handled checksum by the current storage
             remainingChecksums.removeAll(storageFiles.stream().map(f -> f.getMetaInfo().getChecksum())
                     .collect(Collectors.toSet()));
+            // Remove handled storage
             remainingStorages.remove(storageName);
+            // Retrieve the new highest storage priority with the remaining ones
             storage = prioritizedStorageService.searchActiveHigherPriority(remainingStorages);
         }
-
+        if (!remainingChecksums.isEmpty()) {
+            // Notify files not available
+            offlines.addAll(refs.stream().filter(ref -> remainingChecksums.contains(ref.getMetaInfo().getChecksum()))
+                    .collect(Collectors.toSet()));
+        }
         notifyAvailables(onlines);
         notifyNotAvailables(offlines);
-
         nearlineFileService.makeAvailable(nearlines, expirationDate);
     }
 
@@ -502,8 +513,8 @@ public class FileReferenceService {
                                                        f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum())));
     }
 
-    private void notifyNotAvailables(Set<FileReference> availables) {
-        availables.forEach(f -> fileRefPublisher
+    private void notifyNotAvailables(Set<FileReference> notAvailable) {
+        notAvailable.forEach(f -> fileRefPublisher
                 .publishFileRefNotAvailable(f.getMetaInfo().getChecksum(),
                                             String.format("file %s (checksum %s) is not available for download.",
                                                           f.getMetaInfo().getFileName(),

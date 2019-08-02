@@ -35,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.storagelight.domain.database.CachedFile;
+import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storagelight.service.file.cache.CacheService;
@@ -71,7 +71,7 @@ public class NLFileReferenceService {
      */
     @Transactional(noRollbackFor = EntityNotFoundException.class)
     public InputStream download(FileReference fileToDownload) throws EntityNotFoundException {
-        Optional<CachedFile> ocf = cachedFileService.getAvailable(fileToDownload);
+        Optional<CacheFile> ocf = cachedFileService.getAvailable(fileToDownload);
         if (ocf.isPresent()) {
             // File is in cache and can be downloaded
             try {
@@ -103,7 +103,7 @@ public class NLFileReferenceService {
         notifyAvailables(availables);
         // Create a restoration request for all to restore
         for (FileReference f : toRestore) {
-            fileCacheReqService.create(f);
+            fileCacheReqService.create(f, expirationDate);
         }
     }
 

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storagelight.service.file.cache;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -50,13 +51,14 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.storagelight.dao.ICachedFileRepository;
-import fr.cnes.regards.modules.storagelight.domain.database.CachedFile;
+import fr.cnes.regards.modules.storagelight.dao.ICacheFileRepository;
+import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.exception.StorageException;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
@@ -70,8 +72,8 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocati
  *
  * Files in cache are purged when :
  * <ul>
- * <li>Files are outdated in cache ({@link CachedFile#getExpiration()} date is past.</li>
- * <li>Cache is full and no outdated files are in cache, then the older {@link CachedFile}s are deleted.</li>
+ * <li>Files are outdated in cache ({@link CacheFile#getExpirationDate()} date is past.</li>
+ * <li>Cache is full and no outdated files are in cache, then the older {@link CacheFile}s are deleted.</li>
  * </ul>
  *
  *
@@ -98,10 +100,10 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
     private CacheService self;
 
     /**
-     * {@link ICachedFileRepository} instance
+     * {@link ICacheFileRepository} instance
      */
     @Autowired
-    private ICachedFileRepository cachedFileRepository;
+    private ICacheFileRepository cachedFileRepository;
 
     /**
      * Cache path origine for all tenants.
@@ -134,17 +136,46 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
         }
     }
 
-    public Optional<CachedFile> search(String checksum) {
+    /**
+     * Creates a new cache file if the checksum does not match an existing file.
+     * If file already exists in cache, updates the associated information.
+     * @param checksum
+     * @param fileSize
+     * @param location
+     * @param expirationDate
+     * @throws EntityAlreadyExistsException
+     */
+    public void addFile(String checksum, Long fileSize, URL location, OffsetDateTime expirationDate) {
+        Optional<CacheFile> oCf = search(checksum);
+        CacheFile cachedFile;
+        if (!oCf.isPresent()) {
+            cachedFile = new CacheFile(checksum, fileSize, location, expirationDate);
+        } else {
+            cachedFile = oCf.get();
+            if (expirationDate.isAfter(cachedFile.getExpirationDate())) {
+                cachedFile.setExpirationDate(expirationDate);
+            }
+            cachedFile.setFileSize(fileSize);
+        }
+        cachedFileRepository.save(cachedFile);
+    }
+
+    /**
+     * Search for a file in cache with the given checksum.
+     * @param checksum
+     * @return {@link CacheFile}
+     */
+    public Optional<CacheFile> search(String checksum) {
         return cachedFileRepository.findOneByChecksum(checksum);
     }
 
     private void checkDiskDBCoherence(String tenant) throws IOException {
         runtimeTenantResolver.forceTenant(tenant);
-        Page<CachedFile> shouldBeAvailableSet;
+        Page<CacheFile> shouldBeAvailableSet;
         Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
         do {
             shouldBeAvailableSet = cachedFileRepository.findAll(page);
-            for (CachedFile shouldBeAvailable : shouldBeAvailableSet) {
+            for (CacheFile shouldBeAvailable : shouldBeAvailableSet) {
                 if (Files.notExists(Paths.get(shouldBeAvailable.getLocation().getPath()))) {
                     cachedFileRepository.delete(shouldBeAvailable);
                 }
@@ -153,7 +184,7 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
         } while (shouldBeAvailableSet.hasNext());
 
         page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
-        Page<CachedFile> availableFiles;
+        Page<CacheFile> availableFiles;
         do {
             availableFiles = cachedFileRepository.findAll(page);
             Set<String> availableFilePaths = availableFiles.getContent().stream()
@@ -201,8 +232,8 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
         runtimeTenantResolver.clearTenant();
     }
 
-    public Optional<CachedFile> getAvailable(FileReference fileReference) {
-        Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum(fileReference.getMetaInfo().getChecksum());
+    public Optional<CacheFile> getAvailable(FileReference fileReference) {
+        Optional<CacheFile> ocf = cachedFileRepository.findOneByChecksum(fileReference.getMetaInfo().getChecksum());
         if (ocf.isPresent()) {
             return ocf;
         } else {
@@ -214,7 +245,7 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
         Set<FileReference> availables = Sets.newHashSet();
         Set<String> checksums = fileReferences.stream().map(f -> f.getMetaInfo().getChecksum())
                 .collect(Collectors.toSet());
-        Set<CachedFile> cacheFiles = cachedFileRepository.findAllByChecksumIn(checksums);
+        Set<CacheFile> cacheFiles = cachedFileRepository.findAllByChecksumIn(checksums);
         Set<String> cacheFileChecksums = cacheFiles.stream().map(f -> f.getChecksum()).collect(Collectors.toSet());
         for (FileReference f : fileReferences) {
             if (cacheFileChecksums.contains(f.getMetaInfo().getChecksum())) {
@@ -237,15 +268,15 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
     }
 
     /**
-     * Delete all out dated {@link CachedFile}s.<br/>
+     * Delete all out dated {@link CacheFile}s.<br/>
      */
     private int purgeExpiredCachedFiles() {
         int nbPurged = 0;
         LOGGER.debug("Deleting expired files from cache. Current date : {}", OffsetDateTime.now().toString());
         Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
-        Page<CachedFile> files;
+        Page<CacheFile> files;
         do {
-            files = cachedFileRepository.findByExpirationBefore(OffsetDateTime.now(), page);
+            files = cachedFileRepository.findByExpirationDateBefore(OffsetDateTime.now(), page);
             deleteCachedFiles(files.getContent());
             page = files.nextPageable();
             nbPurged = nbPurged + files.getNumberOfElements();
@@ -254,32 +285,32 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
     }
 
     /**
-     * Delete all given {@link CachedFile}s.<br/>
+     * Delete all given {@link CacheFile}s.<br/>
      * <ul>
      * <li>1. Disk deletion of the physical files</li>
-     * <li>2. Database deletion of the {@link CachedFile}s
+     * <li>2. Database deletion of the {@link CacheFile}s
      * </ul>
-     * @param filesToDelete {@link Set}<{@link CachedFile}> to delete.
+     * @param filesToDelete {@link Set}<{@link CacheFile}> to delete.
      */
-    private void deleteCachedFiles(Collection<CachedFile> filesToDelete) {
+    private void deleteCachedFiles(Collection<CacheFile> filesToDelete) {
         LOGGER.debug("Deleting {} files from cache.", filesToDelete.size());
-        for (CachedFile cachedFile : filesToDelete) {
+        for (CacheFile cachedFile : filesToDelete) {
             if (cachedFile.getLocation() != null) {
                 Path fileLocation = Paths.get(cachedFile.getLocation().getPath());
                 if (fileLocation.toFile().exists()) {
                     try {
                         LOGGER.debug("Deletion of cached file {} (exp date={}). {}", cachedFile.getChecksum(),
-                                     cachedFile.getExpiration().toString(), fileLocation);
+                                     cachedFile.getExpirationDate().toString(), fileLocation);
                         Files.delete(fileLocation);
                         cachedFileRepository.delete(cachedFile);
                         LOGGER.debug("Cached file {} deleted (exp date={}). {}", cachedFile.getChecksum(),
-                                     cachedFile.getExpiration().toString(), fileLocation);
+                                     cachedFile.getExpirationDate().toString(), fileLocation);
                     } catch (NoSuchFileException e) {
                         // File does not exists, just log a warning and do delet file in db.
                         LOGGER.warn(e.getMessage(), e);
                         cachedFileRepository.delete(cachedFile);
                         LOGGER.debug("Cached file {} deleted (exp date={}).", cachedFile.getChecksum(),
-                                     cachedFile.getExpiration().toString(), fileLocation);
+                                     cachedFile.getExpirationDate().toString(), fileLocation);
                     } catch (IOException e) {
                         // File exists but is not deletable.
                         LOGGER.error(e.getMessage(), e);
@@ -288,12 +319,12 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
                     LOGGER.error("File to delete {} does not exists", fileLocation);
                     cachedFileRepository.delete(cachedFile);
                     LOGGER.debug("Cached file {} deleted (exp date={}). {}", cachedFile.getChecksum(),
-                                 cachedFile.getExpiration().toString(), fileLocation);
+                                 cachedFile.getExpirationDate().toString(), fileLocation);
                 }
             } else {
                 cachedFileRepository.delete(cachedFile);
                 LOGGER.debug("Cached file {} deleted (exp date={}).", cachedFile.getChecksum(),
-                             cachedFile.getExpiration().toString());
+                             cachedFile.getExpirationDate().toString());
             }
         }
     }
@@ -320,7 +351,7 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
             filePath = Paths.get(filePath, fileChecksum.substring(idx, idx + 2)).toString();
             idx = idx + 2;
         }
-        return Paths.get(getTenantCachePath().toString(), filePath, fileChecksum).toString();
+        return Paths.get(getTenantCachePath().toString(), filePath, fileChecksum).toAbsolutePath().toString();
     }
 
     public Long getCacheAvailableSizeBytes() {

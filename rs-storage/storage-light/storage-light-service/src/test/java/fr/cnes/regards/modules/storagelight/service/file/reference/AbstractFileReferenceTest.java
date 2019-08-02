@@ -49,6 +49,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.storagelight.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
@@ -105,6 +106,9 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected IFileCacheRequestRepository fileCacheReqRepo;
 
     @Autowired
+    protected ICacheFileRepository cacheFileRepo;
+
+    @Autowired
     protected IFileStorageRequestRepository fileRefRequestRepo;
 
     @Autowired
@@ -120,6 +124,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         fileDeletionRequestRepo.deleteAll();
         fileRefRequestRepo.deleteAll();
         fileCacheReqRepo.deleteAll();
+        cacheFileRepo.deleteAll();
         fileRefRepo.deleteAll();
         jobInfoRepo.deleteAll();
         prioritizedDataStorageService.search(StorageType.ONLINE).forEach(c -> {
@@ -188,14 +193,22 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     }
 
     protected FileReference generateRandomStoredOnlineFileReference() throws InterruptedException, ExecutionException {
-        return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", "file.test",
-                                                ONLINE_CONF_LABEL);
+        return this.generateRandomStoredOnlineFileReference("file.test");
+    }
+
+    protected FileReference generateRandomStoredOnlineFileReference(String fileName)
+            throws InterruptedException, ExecutionException {
+        return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", fileName, ONLINE_CONF_LABEL);
     }
 
     protected FileReference generateRandomStoredNearlineFileReference()
             throws InterruptedException, ExecutionException {
-        return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", "file.test",
-                                                NEARLINE_CONF_LABEL);
+        return this.generateRandomStoredNearlineFileReference("file.test");
+    }
+
+    protected FileReference generateRandomStoredNearlineFileReference(String fileName)
+            throws InterruptedException, ExecutionException {
+        return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", fileName, NEARLINE_CONF_LABEL);
     }
 
     protected Optional<FileReference> generateStoredFileReferenceAlreadyReferenced(String checksum, String storage,

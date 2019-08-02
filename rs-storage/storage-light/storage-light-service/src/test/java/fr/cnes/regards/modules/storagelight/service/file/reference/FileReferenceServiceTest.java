@@ -55,8 +55,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.storagelight.dao.FileReferenceSpecification;
+import fr.cnes.regards.modules.storagelight.domain.DownloadableFile;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
-import fr.cnes.regards.modules.storagelight.domain.database.CachedFile;
+import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
@@ -73,7 +74,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefe
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
-        "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=12" })
+        "regards.storage.cache.path=target/cache" })
 public class FileReferenceServiceTest extends AbstractFileReferenceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceServiceTest.class);
@@ -475,7 +476,8 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     }
 
     @Test
-    public void downloadFileReferenceNearline() throws ModuleException, InterruptedException, ExecutionException {
+    public void downloadFileReferenceNearline()
+            throws ModuleException, InterruptedException, ExecutionException, IOException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
         try {
             fileRefService.downloadFile(fileRef.getMetaInfo().getChecksum());
@@ -491,13 +493,21 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
             Collection<JobInfo> jobs = fileCacheRequestService.scheduleRestorationJobs(FileRequestStatus.TODO);
             runAndWaitJob(jobs);
 
-            Optional<CachedFile> oCf = cacheService.search(fileRef.getMetaInfo().getChecksum());
+            Optional<CacheFile> oCf = cacheService.search(fileRef.getMetaInfo().getChecksum());
             Assert.assertTrue("File should be present in cache", oCf.isPresent());
             Assert.assertEquals("File should be present in cache",
                                 cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()),
                                 oCf.get().getLocation().getPath().toString());
 
-            LOGGER.error(e.getMessage());
+            // Now the file is available in cache try to download it again.
+            DownloadableFile file = fileRefService.downloadFile(fileRef.getMetaInfo().getChecksum());
+            Assert.assertNotNull("File should be downloadable", file);
+            Assert.assertNotNull("File should be downloadable", file.getFileInputStream());
+            Assert.assertEquals("File should be downloadable with a valid name", fileRef.getMetaInfo().getFileName(),
+                                file.getFileName());
+            Assert.assertEquals("File should be downloadable with a valid mime type",
+                                fileRef.getMetaInfo().getMimeType(), file.getMimeType());
+            file.getFileInputStream().close();
         }
     }
 }

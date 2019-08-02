@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.reference;
 
+import java.net.URL;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -91,12 +93,12 @@ public class FileCacheRequestService {
         return repository.findByChecksum(checksum);
     }
 
-    public Optional<FileCacheRequest> create(FileReference fileRefToRestore) {
+    public Optional<FileCacheRequest> create(FileReference fileRefToRestore, OffsetDateTime expirationDate) {
         String checksum = fileRefToRestore.getMetaInfo().getChecksum();
         Optional<FileCacheRequest> oFcr = repository.findByChecksum(checksum);
         FileCacheRequest request = null;
         if (!oFcr.isPresent()) {
-            request = new FileCacheRequest(fileRefToRestore, cacheService.getFilePath(checksum));
+            request = new FileCacheRequest(fileRefToRestore, cacheService.getFilePath(checksum), expirationDate);
             request = repository.save(request);
             LOGGER.debug("File {} (checksum {}) is requested for cache.", fileRefToRestore.getMetaInfo().getFileName(),
                          fileRefToRestore.getMetaInfo().getChecksum());
@@ -132,6 +134,26 @@ public class FileCacheRequestService {
             } while (filesPage.hasNext());
         }
         return jobList;
+    }
+
+    public void handleSuccess(FileCacheRequest fileReq, URL cacheLocation, Long realFileSize) {
+        Optional<FileCacheRequest> oRequest = repository.findById(fileReq.getId());
+        if (oRequest.isPresent()) {
+            // Create the cache file associated
+            cacheService.addFile(oRequest.get().getChecksum(), realFileSize, cacheLocation,
+                                 oRequest.get().getExpirationDate());
+            repository.deleteById(oRequest.get().getId());
+        }
+    }
+
+    public void handleError(FileCacheRequest fileReq, String cause) {
+        Optional<FileCacheRequest> oRequest = repository.findById(fileReq.getId());
+        if (oRequest.isPresent()) {
+            FileCacheRequest request = oRequest.get();
+            request.setStatus(FileRequestStatus.ERROR);
+            request.setErrorCause(cause);
+            repository.save(request);
+        }
     }
 
     /**

@@ -110,7 +110,7 @@ public class FileRefEventPublisher {
     }
 
     public void publishFileRefNotAvailable(String checksum, String message) {
-        LOGGER.debug("Publish FileReferenceEvent available for download. {}", message);
+        LOGGER.debug("Publish FileReferenceEvent not available for download. {}", message);
         publisher.publish(new FileReferenceEvent(checksum, FileReferenceEventState.AVAILABILITY_ERROR, null, message,
                 null));
     }

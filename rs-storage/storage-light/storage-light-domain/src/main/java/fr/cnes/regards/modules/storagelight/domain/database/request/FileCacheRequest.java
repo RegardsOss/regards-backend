@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.database.request;
 
+import java.time.OffsetDateTime;
+
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -31,6 +34,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
@@ -66,6 +70,10 @@ public class FileCacheRequest {
     @Column(name = "destination_path", length = FileLocation.URL_MAX_LENGTH, nullable = false)
     private String destinationPath;
 
+    @Column(name = "expiration_date")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime expirationDate;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private FileRequestStatus status = FileRequestStatus.TODO;
@@ -73,13 +81,14 @@ public class FileCacheRequest {
     @Column(name = "error_cause", length = 512)
     private String errorCause;
 
-    public FileCacheRequest(FileReference fileReference, String destinationPath) {
+    public FileCacheRequest(FileReference fileReference, String destinationPath, OffsetDateTime expirationDate) {
         super();
         this.fileReference = fileReference;
         this.storage = fileReference.getLocation().getStorage();
         this.fileSize = fileReference.getMetaInfo().getFileSize();
         this.checksum = fileReference.getMetaInfo().getChecksum();
         this.destinationPath = destinationPath;
+        this.expirationDate = expirationDate;
     }
 
     public FileCacheRequest() {
@@ -124,6 +133,14 @@ public class FileCacheRequest {
 
     public String getDestinationPath() {
         return destinationPath;
+    }
+
+    public OffsetDateTime getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(OffsetDateTime expirationDate) {
+        this.expirationDate = expirationDate;
     }
 
 }

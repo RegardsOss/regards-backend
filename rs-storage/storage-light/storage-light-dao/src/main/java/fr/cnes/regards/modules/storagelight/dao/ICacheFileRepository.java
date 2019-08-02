@@ -27,42 +27,42 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import fr.cnes.regards.modules.storagelight.domain.database.CachedFile;
+import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 
 /**
- * JPA Interface to access {@link CachedFile}s entities.
+ * JPA Interface to access {@link CacheFile}s entities.
  *
  * @author Sébastien Binda
  */
-public interface ICachedFileRepository extends JpaRepository<CachedFile, Long> {
+public interface ICacheFileRepository extends JpaRepository<CacheFile, Long> {
 
     /**
-     * Get all {@link CachedFile}s for the given {@link String}s of checksums.
+     * Get all {@link CacheFile}s for the given {@link String}s of checksums.
      * @param checksums {@link String}s
-     * @return {@link CachedFile}s
+     * @return {@link CacheFile}s
      */
-    Set<CachedFile> findAllByChecksumIn(Set<String> checksums);
+    Set<CacheFile> findAllByChecksumIn(Set<String> checksums);
 
     /**
-     * Retrieve a {@link CachedFile} by his checksum
+     * Retrieve a {@link CacheFile} by his checksum
      * @param checksum
-     * @return {@link Optional} {@link CachedFile}
+     * @return {@link Optional} {@link CacheFile}
      */
-    Optional<CachedFile> findOneByChecksum(String checksum);
+    Optional<CacheFile> findOneByChecksum(String checksum);
 
     /**
-     * Remove a {@link CachedFile} by his checksum.
+     * Remove a {@link CacheFile} by his checksum.
      * @param checksum {@link String}
      */
     void removeByChecksum(String checksum);
 
-    @Query("select coalesce(sum(cf.fileSize), 0) from CachedFile cf")
+    @Query("select coalesce(sum(cf.fileSize), 0) from CacheFile cf")
     Long getTotalFileSize();
 
     /**
-     * Retrieve all {@link CachedFile}s with expiration date before the given {@link OffsetDateTime}
+     * Retrieve all {@link CacheFile}s with expiration date before the given {@link OffsetDateTime}
      * @param pEpirationDate {@link OffsetDateTime}
-     * @return {@link Set}<{@link CachedFile}
+     * @return {@link Set}<{@link CacheFile}
      */
-    Page<CachedFile> findByExpirationBefore(OffsetDateTime pEpirationDate, Pageable pageable);
+    Page<CacheFile> findByExpirationDateBefore(OffsetDateTime pEpirationDate, Pageable pageable);
 }

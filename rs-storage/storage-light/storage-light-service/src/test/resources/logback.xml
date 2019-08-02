@@ -37,7 +37,7 @@
 	
 	<logger name="org.hibernate.engine.transaction.internal" level="WARN" />
 	<logger name="org.hibernate" level="WARN" />
-	<logger name="org.hibernate.SQL" level="TRACE" />
+	<logger name="org.hibernate.SQL" level="WARN" />
 	<logger name="org.hibernate.type.descriptor.sql" level="WARN" />
 	
 	<logger name="fr.cnes.regards" level="WARN" />
