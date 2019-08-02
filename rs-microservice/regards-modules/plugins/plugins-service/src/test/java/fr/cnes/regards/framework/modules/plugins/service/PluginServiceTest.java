@@ -90,7 +90,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         blowfishEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked, runtimeTenantResolver,
-                blowfishEncryptionService);
+                blowfishEncryptionService, null);
         PluginUtils.setup(Arrays.asList("fr.cnes.regards.plugins", "fr.cnes.regards.framework.plugins",
                                         "fr.cnes.regards.framework.modules.plugins"));
     }

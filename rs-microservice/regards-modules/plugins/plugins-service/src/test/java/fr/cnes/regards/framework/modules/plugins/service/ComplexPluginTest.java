@@ -71,7 +71,7 @@ public class ComplexPluginTest {
         blowfishEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked, runtimeTenantResolver,
-                blowfishEncryptionService);
+                blowfishEncryptionService, null);
         PluginUtils.setup();
     }
 

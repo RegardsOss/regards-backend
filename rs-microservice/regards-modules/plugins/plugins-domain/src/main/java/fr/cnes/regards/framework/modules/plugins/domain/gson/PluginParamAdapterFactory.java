@@ -22,15 +22,15 @@ import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.BooleanPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.BytePluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.CollectionPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.DoublePluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.FloatPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IntegerPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonCollectionPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonMapPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonObjectPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.LongPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.MapPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.NestedPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.ObjectPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.ShortPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginParam;
@@ -53,9 +53,9 @@ public class PluginParamAdapterFactory extends PolymorphicTypeAdapterFactory<IPl
         registerSubtype(FloatPluginParam.class, PluginParamType.FLOAT);
         registerSubtype(DoublePluginParam.class, PluginParamType.DOUBLE);
         registerSubtype(BooleanPluginParam.class, PluginParamType.BOOLEAN);
-        registerSubtype(MapPluginParam.class, PluginParamType.MAP);
-        registerSubtype(CollectionPluginParam.class, PluginParamType.COLLECTION);
-        registerSubtype(ObjectPluginParam.class, PluginParamType.POJO);
+        registerSubtype(JsonMapPluginParam.class, PluginParamType.JSON_MAP);
+        registerSubtype(JsonCollectionPluginParam.class, PluginParamType.JSON_COLLECTION);
+        registerSubtype(JsonObjectPluginParam.class, PluginParamType.JSON_POJO);
         registerSubtype(NestedPluginParam.class, PluginParamType.PLUGIN);
     }
 }

@@ -115,7 +115,7 @@
       "dynamic": false,
       "name": "innerPlugin",
       "type" : "PLUGIN",
-      "value" : "refInnerPlugin"
+      "value" : "@ref@"
     }
   ]
 }

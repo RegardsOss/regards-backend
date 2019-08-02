@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginDestroy;
@@ -106,14 +107,23 @@ public final class PluginUtils {
         setup(Collections.singletonList(reflectionPackage));
     }
 
+    public static synchronized void setup(List<String> reflectionPackages) {
+        setup(reflectionPackages, null);
+    }
+
     /**
      * Method to set up plugin context.<br/>
      * <b>Must be call on startup in a thread safe manner</b>
      * @param reflectionPackages packages to scan
+     * @param gson gson instance
      * <b>Note: this method is synchronized due to pluginInterfaceCache, pluginCache and pluginMetadataCache
      * initializations. This not a problem because this method should be called only once.</b>
      */
-    public static synchronized void setup(List<String> reflectionPackages) {
+    public static synchronized void setup(List<String> reflectionPackages, Gson gson) {
+
+        // GSON
+        PluginParameterTransformer.setup(gson);
+
         LOGGER.info("{} Loading plugins...", HR);
         // Initialize reflection tool
         Reflections reflections;

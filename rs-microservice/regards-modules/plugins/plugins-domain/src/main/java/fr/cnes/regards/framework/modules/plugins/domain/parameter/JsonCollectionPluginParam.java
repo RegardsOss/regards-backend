@@ -18,39 +18,20 @@
  */
 package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
+import java.util.Collection;
+
+import com.google.gson.JsonElement;
+
 /**
- * Supported plugin parameter types
+ * JSON plugin parameter representation of {@link PluginParamType#COLLECTION}.
+ * It must be transform to {@link PluginParamType#COLLECTION} to be used in the plugin engine.
  *
  * @author Marc SORDI
  *
  */
-public enum PluginParamType {
+public class JsonCollectionPluginParam extends AbstractJsonPluginParam<Collection<JsonElement>> {
 
-    STRING,
-    BYTE,
-    SHORT,
-    INTEGER,
-    LONG,
-    FLOAT,
-    DOUBLE,
-    BOOLEAN,
-    MAP,
-    COLLECTION,
-    POJO,
-    PLUGIN,
-    /**
-     * This parameter type must only be used in API for (de)serialization.
-     * Transform it to {@link #MAP} for use in plugin engine.
-     */
-    JSON_MAP,
-    /**
-     * This parameter type must only be used in API for (de)serialization.
-     * Transform it to {@link #COLLECTION} for use in plugin engine.
-     */
-    JSON_COLLECTION,
-    /**
-     * This parameter type must only be used in API for (de)serialization.
-     * Transform it to {@link #POJO} for use in plugin engine.
-     */
-    JSON_POJO;
+    public JsonCollectionPluginParam() {
+        super(PluginParamType.JSON_COLLECTION);
+    }
 }

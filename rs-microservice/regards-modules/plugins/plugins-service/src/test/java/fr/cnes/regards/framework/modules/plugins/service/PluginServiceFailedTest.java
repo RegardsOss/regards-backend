@@ -78,7 +78,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         blowfishEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class),
-                runtimeTenantResolver, blowfishEncryptionService);
+                runtimeTenantResolver, blowfishEncryptionService, null);
         PluginUtils.setup();
     }
 

@@ -84,7 +84,7 @@
       "value": {
         "message": "test"
       },
-      "type": "fr.cnes.regards.modules.ingest.service.plugin.FakeSipValidation$Pojo",
+      "type": "fr.cnes.regards.framework.modules.plugins.rest.ParamTestPlugin$Pojo",
       "name": "pojo"
     },
     {
@@ -97,7 +97,7 @@
           }
         ]
       },
-      "type": "fr.cnes.regards.modules.ingest.service.plugin.FakeSipValidation$Constraints",
+      "type": "fr.cnes.regards.framework.modules.plugins.rest.ParamTestPlugin$Constraints",
       "name": "constraints"
     },
     {

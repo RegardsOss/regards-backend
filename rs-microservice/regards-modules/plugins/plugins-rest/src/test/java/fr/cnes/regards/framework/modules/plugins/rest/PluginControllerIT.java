@@ -48,6 +48,8 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
         "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678" })
 public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
+    private static final String REF_INNER_PLUGIN = "@ref@";
+
     @Autowired
     private IPluginService pluginService;
 
@@ -81,7 +83,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         String innerConfigId = JsonPath.read(resultAsString, "$.content.businessId");
 
         // Creation plugin with inner plugin as parameter
-        String json = readJsonContract("fakeConfLight.json").replace("@ref@", innerConfigId);
+        String json = readJsonContract("fakeConfLight.json").replace(REF_INNER_PLUGIN, innerConfigId);
         result = performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, json, customizer().expectStatusCreated(),
                                     "Configuration should be saved!", "ParamTestPlugin");
         resultAsString = payload(result);
@@ -128,7 +130,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         }
 
         // Update Inner Plugin
-        json = readJsonContract("innerConfUpdated.json").replace("@ref@", innerConfigId);
+        json = readJsonContract("innerConfUpdated.json").replace(REF_INNER_PLUGIN, innerConfigId);
         performDefaultPut(PluginController.PLUGINS_PLUGINID_CONFIGID, json, customizer().expectStatusOk(),
                           "Configuration should be saved!", "InnerParamTestPlugin", innerConfigId);
 
@@ -150,7 +152,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                              "Configuration mustn't have been deleted", "InnerParamTestPlugin", innerConfigId);
 
         // Update Inner Plugin with a different version (2.0.0)
-        json = readJsonContract("innerConfUpdatedVersion.json").replace("@ref@", innerConfigId);
+        json = readJsonContract("innerConfUpdatedVersion.json").replace(REF_INNER_PLUGIN, innerConfigId);
         performDefaultPut(PluginController.PLUGINS_PLUGINID_CONFIGID, json,
                           customizer().expect(MockMvcResultMatchers.status().isUnprocessableEntity()),
                           "Configuration should be saved!", "InnerParamTestPlugin", innerConfigId);
@@ -190,11 +192,10 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                                                   customizer().expectStatusCreated(), "Configuration should be saved!",
                                                   "InnerParamTestPlugin");
         String resultAsString = payload(result);
-        Integer innerConfigId = JsonPath.read(resultAsString, "$.content.id");
+        String innerConfigId = JsonPath.read(resultAsString, "$.content.businessId");
 
         // Creation plugin with inner plugin as parameter
-        String json = readJsonContract("fakeConfInvalid.json").replace("\"id\":-1",
-                                                                       "\"id\": " + innerConfigId.toString());
+        String json = readJsonContract("fakeConfInvalid.json").replace(REF_INNER_PLUGIN, innerConfigId);
         // Errors should be on each numerical value: pByte, pShort, pInteger, pLong
         // Error case on double and float is not tested because large float or double are interpreted as Infinity unless gson breaks.
         performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, json,

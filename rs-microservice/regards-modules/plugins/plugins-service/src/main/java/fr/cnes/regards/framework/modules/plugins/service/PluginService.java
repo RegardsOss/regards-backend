@@ -41,6 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
@@ -84,9 +85,14 @@ public class PluginService implements IPluginService {
     private static final String PLUGIN_BUSINESS_ID_REQUIRED_MSG = "Plugin configuration business identifier is required";
 
     /**
+     * GSON instance for plugin transformation
+     */
+    private Gson gson;
+
+    /**
      * {@link PluginConfiguration} JPA Repository
      */
-    private final IPluginConfigurationRepository repos;
+    private IPluginConfigurationRepository repos;
 
     /**
      * {@link IRuntimeTenantResolver}
@@ -113,7 +119,7 @@ public class PluginService implements IPluginService {
     private String[] packagesToScan;
 
     public PluginService(IPluginConfigurationRepository pluginConfigurationRepository, IPublisher publisher,
-            IRuntimeTenantResolver runtimeTenantResolver, IEncryptionService encryptionService) {
+            IRuntimeTenantResolver runtimeTenantResolver, IEncryptionService encryptionService, Gson gson) {
         this.repos = pluginConfigurationRepository;
         this.publisher = publisher;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -122,7 +128,7 @@ public class PluginService implements IPluginService {
 
     @PostConstruct
     public void setup() {
-        PluginUtils.setup(packagesToScan == null ? null : Arrays.asList(packagesToScan));
+        PluginUtils.setup(packagesToScan == null ? null : Arrays.asList(packagesToScan), gson);
     }
 
     @Override

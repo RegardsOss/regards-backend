@@ -18,39 +18,29 @@
  */
 package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
+import javax.validation.constraints.NotBlank;
+
 /**
- * Supported plugin parameter types
- *
+ * Parameter associated to a plugin configuration.
+ * This type of plugin parameter is only use for complex type (de)serialization.
  * @author Marc SORDI
  *
+ * @param <T> parameter type
  */
-public enum PluginParamType {
+public abstract class AbstractJsonPluginParam<T> extends AbstractPluginParam<T> {
 
-    STRING,
-    BYTE,
-    SHORT,
-    INTEGER,
-    LONG,
-    FLOAT,
-    DOUBLE,
-    BOOLEAN,
-    MAP,
-    COLLECTION,
-    POJO,
-    PLUGIN,
-    /**
-     * This parameter type must only be used in API for (de)serialization.
-     * Transform it to {@link #MAP} for use in plugin engine.
-     */
-    JSON_MAP,
-    /**
-     * This parameter type must only be used in API for (de)serialization.
-     * Transform it to {@link #COLLECTION} for use in plugin engine.
-     */
-    JSON_COLLECTION,
-    /**
-     * This parameter type must only be used in API for (de)serialization.
-     * Transform it to {@link #POJO} for use in plugin engine.
-     */
-    JSON_POJO;
+    @NotBlank(message = "Fully qualified class name is required")
+    protected String clazz;
+
+    public AbstractJsonPluginParam(PluginParamType type) {
+        super(type);
+    }
+
+    public String getClazz() {
+        return clazz;
+    }
+
+    public void setClazz(String clazz) {
+        this.clazz = clazz;
+    }
 }

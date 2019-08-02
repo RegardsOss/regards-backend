@@ -497,6 +497,7 @@ public final class PluginParameterUtils {
 
         try {
             // FIXME may check with param.isInstance before!
+            // TODO transform to real object
             field.set(plugin, param.getValue());
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception
