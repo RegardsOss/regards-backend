@@ -16,38 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.modules.plugins.domain.parameter;
+package fr.cnes.regards.framework.modules.plugins.rest;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 
 /**
- * Supported plugin parameter types
  *
+ * Test metadata build process
  * @author Marc SORDI
  *
  */
-public enum PluginParamType {
+public class PluginMetadataTest {
 
-    STRING,
-    BYTE,
-    SHORT,
-    INTEGER,
-    LONG,
-    FLOAT,
-    DOUBLE,
-    BOOLEAN,
-    MAP,
-    COLLECTION,
-    POJO,
-    PLUGIN,
-    /**
-     * This parameter has to be used for (de)serialization instead of {@link #MAP}
-     */
-    JSON_MAP,
-    /**
-     * This parameter has to be used for (de)serialization instead of {@link #COLLECTION}
-     */
-    JSON_COLLECTION,
-    /**
-     * This parameter has to be used for (de)serialization instead of {@link #POJO}
-     */
-    JSON_POJO;
+    @Test
+    public void buildMetadata() {
+        PluginUtils.setup(ParamTestPlugin.class.getPackage().getName());
+        PluginMetaData mtd = PluginUtils.createPluginMetaData(ParamTestPlugin.class);
+        Assert.assertNotNull(mtd);
+    }
 }

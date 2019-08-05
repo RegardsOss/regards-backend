@@ -52,7 +52,7 @@ public class PluginParameterTransformer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginParameterTransformer.class);
 
-    private static final String TRANSFO_MESSAGE = "Transforming {} parameter to {} parameter";
+    private static final String TRANSFO_MESSAGE = "Transforming parameter {} from {} to {}";
 
     private static Gson gsonInstance;
 
@@ -69,14 +69,19 @@ public class PluginParameterTransformer {
 
         // Check type transformation constistency
         if (PluginParamType.COLLECTION.equals(targetType) && PluginParamType.JSON_COLLECTION.equals(param.getType())) {
-            LOGGER.debug(TRANSFO_MESSAGE, targetType, param.getType());
+            LOGGER.debug(TRANSFO_MESSAGE, param.getName(), param.getType(), targetType);
             return transform((JsonCollectionPluginParam) param).getValue();
         } else if (PluginParamType.MAP.equals(targetType) && PluginParamType.JSON_MAP.equals(param.getType())) {
-            LOGGER.debug(TRANSFO_MESSAGE, targetType, param.getType());
+            LOGGER.debug(TRANSFO_MESSAGE, param.getName(), param.getType(), targetType);
             return transform((JsonMapPluginParam) param).getValue();
         } else if (PluginParamType.POJO.equals(targetType) && PluginParamType.JSON_POJO.equals(param.getType())) {
-            LOGGER.debug(TRANSFO_MESSAGE, targetType, param.getType());
+            LOGGER.debug(TRANSFO_MESSAGE, param.getName(), param.getType(), targetType);
             return transform((JsonObjectPluginParam) param).getValue();
+        } else if (param.getType().equals(targetType)
+                && (PluginParamType.COLLECTION.equals(targetType) || PluginParamType.MAP.equals(targetType))
+                || PluginParamType.POJO.equals(targetType)) {
+            LOGGER.debug("Skip tranformation for parameter {}", param.getName());
+            return param.getValue();
         } else {
             String message = String.format("Cannot transform \"%s\" parameter with name \"%s\" to \"%s\" parameter",
                                            param.getType(), param.getName(), targetType);
