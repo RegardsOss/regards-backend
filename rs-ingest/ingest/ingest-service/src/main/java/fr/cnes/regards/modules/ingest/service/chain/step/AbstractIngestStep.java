@@ -55,7 +55,7 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
         return job.getIngestProcessingService().updateSIPEntity(job.getCurrentEntity());
     }
 
-    protected <T> T getStepPlugin(Long confId) throws ProcessingStepException {
+    protected <T> T getStepPlugin(String confId) throws ProcessingStepException {
         try {
             return pluginService.getPlugin(confId);
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {

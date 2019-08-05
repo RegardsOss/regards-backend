@@ -54,7 +54,7 @@ public class ValidationStep extends AbstractIngestStep<SIP, Void> {
     protected Void doExecute(SIP sip) throws ProcessingStepException {
         LOGGER.debug("Validating SIP \"{}\"", sip.getId());
         PluginConfiguration conf = processingChain.getValidationPlugin();
-        ISipValidation validation = this.getStepPlugin(conf.getId());
+        ISipValidation validation = this.getStepPlugin(conf.getBusinessId());
         Errors errors = new MapBindingResult(new HashMap<>(), sip.getId());
         validation.validate(sip, errors);
 

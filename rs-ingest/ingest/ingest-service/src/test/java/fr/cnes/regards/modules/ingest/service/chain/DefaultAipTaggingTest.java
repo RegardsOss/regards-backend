@@ -30,12 +30,11 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -69,8 +68,7 @@ public class DefaultAipTaggingTest {
     @Test
     public void addOnlyTags() throws TagAIPException, NotAvailablePluginConfigurationException {
 
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS).getParameters();
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS));
 
         DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);
@@ -80,8 +78,7 @@ public class DefaultAipTaggingTest {
     @Test
     public void addOnlyLinks() throws TagAIPException, NotAvailablePluginConfigurationException {
 
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS).getParameters();
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS));
 
         DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);
@@ -90,10 +87,9 @@ public class DefaultAipTaggingTest {
 
     @Test
     public void addTagsAndLinks() throws TagAIPException, NotAvailablePluginConfigurationException {
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS)
-                .addParameter(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS).getParameters();
 
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS),
+                                                        IPluginParam.build(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS));
         DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);
         tag(plugin, TAGS, LINKS);
@@ -101,8 +97,8 @@ public class DefaultAipTaggingTest {
 
     @Test(expected = PluginUtilsRuntimeException.class)
     public void addNothing() throws TagAIPException, NotAvailablePluginConfigurationException {
-        Set<PluginParameter> parameters = PluginParametersFactory.build().getParameters();
 
+        Set<IPluginParam> parameters = IPluginParam.set();
         PluginUtils.setup(MODULE_PACKAGE);
         DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);

@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,6 +31,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.stream.JsonWriter;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.gson.GsonBuilderFactory;
@@ -160,13 +162,14 @@ public class IngestProcessingService implements IIngestProcessingService {
             defaultChain.setName(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
 
             // Create default validation plugin configuration
-            PluginConfiguration validationDefaultConf = new PluginConfiguration(PluginUtils.createPluginMetaData(
-                    DefaultSipValidation.class), DEFAULT_VALIDATION_PLUGIN_CONF_LABEL);
+            PluginConfiguration validationDefaultConf = new PluginConfiguration(
+                    PluginUtils.createPluginMetaData(DefaultSipValidation.class), DEFAULT_VALIDATION_PLUGIN_CONF_LABEL);
             defaultChain.setValidationPlugin(validationDefaultConf);
 
             // Create default generation plugin configuration
-            PluginConfiguration generationDefaultConf = new PluginConfiguration(PluginUtils.createPluginMetaData(
-                    DefaultSingleAIPGeneration.class), DEFAULT_GENERATION_PLUGIN_CONF_LABEL);
+            PluginConfiguration generationDefaultConf = new PluginConfiguration(
+                    PluginUtils.createPluginMetaData(DefaultSingleAIPGeneration.class),
+                    DEFAULT_GENERATION_PLUGIN_CONF_LABEL);
             defaultChain.setGenerationPlugin(generationDefaultConf);
 
             createNewChain(defaultChain);
@@ -248,17 +251,13 @@ public class IngestProcessingService implements IIngestProcessingService {
             return;
         }
 
-        LOGGER.debug("Scheduling new IngestProcessingJob for SIP {} and processing chain {}",
-                     entityIdsToProcess,
+        LOGGER.debug("Scheduling new IngestProcessingJob for SIP {} and processing chain {}", entityIdsToProcess,
                      processingChain);
         Set<JobParameter> jobParameters = Sets.newHashSet();
         jobParameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, entityIdsToProcess));
         jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, processingChain));
-        JobInfo jobInfo = new JobInfo(false,
-                                      IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
-                                      jobParameters,
-                                      authResolver.getUser(),
-                                      IngestProcessingJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
+                jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
         sipRepository.updateSIPEntitiesState(SIPState.QUEUED, entityIdsToProcess);
         jobInfoService.createAsQueued(jobInfo);
     }
@@ -268,16 +267,15 @@ public class IngestProcessingService implements IIngestProcessingService {
 
         // Check no identifier
         if (newChain.getId() != null) {
-            throw new EntityInvalidException(String.format("New chain %s must not already have and identifier.",
-                                                           newChain.getName()));
+            throw new EntityInvalidException(
+                    String.format("New chain %s must not already have and identifier.", newChain.getName()));
         }
 
         // Check not already exists
         Optional<IngestProcessingChain> oChain = ingestChainRepository.findOneByName(newChain.getName());
         if (oChain.isPresent()) {
-            throw new EntityAlreadyExistsException(String.format("%s for name %s aleady exists",
-                                                                 IngestProcessingChain.class.getName(),
-                                                                 newChain.getName()));
+            throw new EntityAlreadyExistsException(String
+                    .format("%s for name %s aleady exists", IngestProcessingChain.class.getName(), newChain.getName()));
         }
 
         // Register plugin configurations
@@ -334,9 +332,9 @@ public class IngestProcessingService implements IIngestProcessingService {
         // Check no identifier. For each new chain, we force plugin configuration creation. A configuration cannot be
         // reused.
         if (pluginConfiguration.getId() != null) {
-            throw new EntityInvalidException(String.format(
-                    "Plugin configuration %s must not already have and identifier.",
-                    pluginConfiguration.getLabel()));
+            throw new EntityInvalidException(
+                    String.format("Plugin configuration %s must not already have and identifier.",
+                                  pluginConfiguration.getLabel()));
         }
         return pluginService.savePluginConfiguration(pluginConfiguration);
     }
@@ -376,7 +374,7 @@ public class IngestProcessingService implements IIngestProcessingService {
         // Clean unused plugin configuration after chain update avoiding foreign keys constraints restrictions.
         for (Optional<PluginConfiguration> confToRemove : confsToRemove) {
             if (confToRemove.isPresent()) {
-                pluginService.deletePluginConfiguration(confToRemove.get().getId());
+                pluginService.deletePluginConfiguration(confToRemove.get().getBusinessId());
             }
         }
 
@@ -430,7 +428,7 @@ public class IngestProcessingService implements IIngestProcessingService {
         ingestChainRepository.delete(chain);
         // Delete related plugin configurations
         for (PluginConfiguration pluginConf : plugins) {
-            pluginService.deletePluginConfiguration(pluginConf.getId());
+            pluginService.deletePluginConfiguration(pluginConf.getBusinessId());
         }
     }
 

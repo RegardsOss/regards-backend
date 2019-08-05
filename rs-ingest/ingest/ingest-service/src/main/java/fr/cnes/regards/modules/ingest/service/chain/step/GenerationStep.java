@@ -51,7 +51,7 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
     protected List<AIP> doExecute(SIP sip) throws ProcessingStepException {
         LOGGER.debug("Generating AIP(s) from SIP \"{}\"", sip.getId());
         PluginConfiguration conf = processingChain.getGenerationPlugin();
-        IAipGeneration generation = this.getStepPlugin(conf.getId());
+        IAipGeneration generation = this.getStepPlugin(conf.getBusinessId());
 
         // Retrieve SIP URN from internal identifier
         UniformResourceName sipId = job.getCurrentEntity().getSipIdUrn();

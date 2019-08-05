@@ -52,7 +52,7 @@ public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
     protected Void doExecute(List<AIP> aips) throws ProcessingStepException {
         Optional<PluginConfiguration> conf = processingChain.getTagPlugin();
         if (conf.isPresent()) {
-            IAipTagging tagging = this.getStepPlugin(conf.get().getId());
+            IAipTagging tagging = this.getStepPlugin(conf.get().getBusinessId());
             aips.forEach(aip -> LOGGER.debug("Tagging AIP \"{}\" from SIP \"{}\"", aip.getId(), aip.getProviderId()));
             tagging.tag(aips);
         } else {

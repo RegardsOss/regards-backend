@@ -56,7 +56,7 @@ public class PreprocessingStep extends AbstractIngestStep<SIP, SIP> {
         Optional<PluginConfiguration> conf = processingChain.getPreProcessingPlugin();
         if (conf.isPresent()) {
             LOGGER.debug("Preprocessing for SIP \"{}\"", sip.getId());
-            ISipPreprocessing preprocessing = this.getStepPlugin(conf.get().getId());
+            ISipPreprocessing preprocessing = this.getStepPlugin(conf.get().getBusinessId());
             preprocessing.preprocess(sip);
             if (sip.isRef()) {
                 LOGGER.debug("Reading referenced SIP \"{}\"", sip.getId());

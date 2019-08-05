@@ -53,7 +53,7 @@ public class PostprocessingStep extends AbstractIngestStep<SIP, Void> {
         Optional<PluginConfiguration> conf = processingChain.getPostProcessingPlugin();
         if (conf.isPresent()) {
             LOGGER.debug("Postprocessing for SIP \"{}\"", sip.getId());
-            ISipPostprocessing postprocessing = this.getStepPlugin(conf.get().getId());
+            ISipPostprocessing postprocessing = this.getStepPlugin(conf.get().getBusinessId());
             postprocessing.postprocess(sip);
         } else {
             LOGGER.debug("No postprocessing for SIP \"{}\"", sip.getId());
