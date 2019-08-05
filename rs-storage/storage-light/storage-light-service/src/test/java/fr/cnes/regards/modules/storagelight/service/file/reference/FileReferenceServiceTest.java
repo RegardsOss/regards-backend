@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
@@ -47,7 +48,6 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
 
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -282,7 +282,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     public void storeImageWithOnlinePlugin()
             throws InterruptedException, ExecutionException, IOException, NoSuchAlgorithmException {
         File inputImage = Paths.get("src/test/resources/input/cnes.png").toFile();
-        InputStream stream = Files.asByteSource(inputImage).openStream();
+        InputStream stream = com.google.common.io.Files.asByteSource(inputImage).openStream();
         String checksum = ChecksumUtils.computeHexChecksum(stream, "MD5");
         stream.close();
         List<String> owners = Lists.newArrayList();
@@ -518,7 +518,17 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     }
 
     @Test
-    public void restore() {
-        //FileReference fileRef = this.generateRandomStoredNearlineFileReference();
+    public void restore() throws InterruptedException, ExecutionException {
+        FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test");
+        fileRefService.makeAvailable(Sets.newHashSet(fileRef.getMetaInfo().getChecksum()),
+                                     OffsetDateTime.now().plusDays(1));
+        Assert.assertTrue("A cache request should be created",
+                          fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
+
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleRestorationJobs(FileRequestStatus.TODO);
+        runAndWaitJob(jobs);
+
+        Assert.assertTrue("file should be restored in cache",
+                          Files.exists(Paths.get(cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()))));
     }
 }

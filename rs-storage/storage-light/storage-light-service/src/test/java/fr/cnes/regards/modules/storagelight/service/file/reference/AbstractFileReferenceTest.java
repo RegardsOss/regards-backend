@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.commons.io.FileUtils;
 import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,6 +131,16 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected PrioritizedStorageService prioritizedDataStorageService;
 
     protected void init() throws ModuleException {
+        try {
+            if (Files.exists(Paths.get("target/cache"))) {
+                FileUtils.deleteDirectory(Paths.get("target/cache").toFile());
+            }
+            if (Files.exists(Paths.get("target/storage"))) {
+                FileUtils.deleteDirectory(Paths.get("target/storage").toFile());
+            }
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
         fileDeletionRequestRepo.deleteAll();
         fileRefRequestRepo.deleteAll();
         fileCacheReqRepo.deleteAll();
