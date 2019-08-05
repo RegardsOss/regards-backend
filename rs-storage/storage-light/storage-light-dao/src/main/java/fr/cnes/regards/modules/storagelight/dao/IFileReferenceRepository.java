@@ -23,7 +23,7 @@ public interface IFileReferenceRepository
 
     Page<FileReference> findByLocationStorage(String storage, Pageable page);
 
-    Optional<FileReference> findByMetaInfoChecksumAndLocationStorage(String checksum, String storage);
+    Optional<FileReference> findByLocationStorageAndMetaInfoChecksum(String storage, String checksum);
 
     Set<FileReference> findByMetaInfoChecksum(String checksum);
 

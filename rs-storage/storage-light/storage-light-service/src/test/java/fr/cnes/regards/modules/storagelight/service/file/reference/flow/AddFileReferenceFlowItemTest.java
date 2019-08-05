@@ -24,7 +24,6 @@ import java.util.concurrent.ExecutionException;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -32,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -109,50 +107,6 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference event STORED should be published", FileReferenceEventState.STORED,
                             getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
-    }
-
-    @Test
-    @Ignore("Performance test for asynchrone bulk requests")
-    public void addFileRefFlowItems() throws InterruptedException {
-        LOGGER.info("Starting ...");
-        for (int i = 0; i < 5000; i++) {
-            String checksum = UUID.randomUUID().toString();
-            String storage = "storage";
-            // Create a new bus message File reference request
-            AddFileRefFlowItem item = new AddFileRefFlowItem("file.name", checksum, "MD5", "application/octet-stream",
-                    10L, "owner-test", storage, "file://storage/location/file.name", storage,
-                    "file://storage/location/file.name");
-            TenantWrapper<AddFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
-            // Publish request
-            handler.handle(wrapper);
-        }
-        Thread.sleep(20000);
-        Assert.assertEquals("There should be 2000 file referenced", 2000,
-                            fileRefService.search(PageRequest.of(0, 5000)).getTotalElements());
-    }
-
-    @Test
-    @Ignore("Performance test for synchrone request")
-    public void addFileRefFlowItemsSync() throws InterruptedException {
-        int size = 5_000;
-        LOGGER.info("Starting ...");
-        long start = System.currentTimeMillis();
-        for (int i = 0; i < size; i++) {
-            String checksum = UUID.randomUUID().toString();
-            String storage = "storage";
-            // Create a new bus message File reference request
-            AddFileRefFlowItem item = new AddFileRefFlowItem("file.name", checksum, "MD5", "application/octet-stream",
-                    10L, "owner-test", storage, "file://storage/location/file.name", storage,
-                    "file://storage/location/file.name");
-            TenantWrapper<AddFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
-            // Publish request
-            handler.handleSync(wrapper);
-            runtimeTenantResolver.forceTenant(getDefaultTenant());
-        }
-        LOGGER.info("Done in {} ms", System.currentTimeMillis() - start);
-
-        Assert.assertEquals("There should be 2000 file referenced", size,
-                            fileRefService.search(PageRequest.of(0, 10_000)).getTotalElements());
     }
 
     /**

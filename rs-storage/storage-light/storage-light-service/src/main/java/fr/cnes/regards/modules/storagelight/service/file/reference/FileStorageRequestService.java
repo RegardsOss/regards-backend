@@ -181,8 +181,7 @@ public class FileStorageRequestService {
         try {
             PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
             IStorageLocation storagePlugin = pluginService.getPlugin(conf.getId());
-            Collection<FileStorageWorkingSubset> workingSubSets = storagePlugin
-                    .prepareForStorage(fileStorageRequests);
+            Collection<FileStorageWorkingSubset> workingSubSets = storagePlugin.prepareForStorage(fileStorageRequests);
             workingSubSets.forEach(ws -> {
                 Set<JobParameter> parameters = Sets.newHashSet();
                 parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_ID, conf.getId()));

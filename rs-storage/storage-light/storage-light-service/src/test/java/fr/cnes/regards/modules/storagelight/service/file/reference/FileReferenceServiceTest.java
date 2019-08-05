@@ -67,6 +67,8 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventHandler;
+import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileDeletionJobProgressManager;
+import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileDeletionRequestJob;
 
 /**
  * @author sbinda
@@ -88,7 +90,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     }
 
     @Test
-    public void unknownStorageLocation() {
+    public void storeWithUnknownStorageLocation() {
         List<String> owners = Lists.newArrayList();
         owners.add("someone");
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo("invalid_checksum", "MD5", "file.test", 132L,
@@ -97,8 +99,8 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         FileLocation destination = new FileLocation("elsewhere", "elsewhere://in/this/directory/file.test");
         fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-        Optional<FileStorageRequest> oFileRefReq = fileRefRequestService.search(destination.getStorage(),
-                                                                                fileMetaInfo.getChecksum());
+        Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(),
+                                                                                    fileMetaInfo.getChecksum());
         Assert.assertFalse("File reference should not have been created. As storage is not possible into an unkown storage location",
                            oFileRef.isPresent());
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
@@ -112,7 +114,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         owners.add("someone");
         Optional<FileReference> oFileRef = referenceRandomFile(owners, null, "file.test", "anywhere");
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
-        Optional<FileStorageRequest> oFileRefReq = fileRefRequestService
+        Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService
                 .search(oFileRef.get().getLocation().getStorage(), oFileRef.get().getMetaInfo().getChecksum());
         Assert.assertTrue("File reference request should not exists anymore as file is well referenced",
                           !oFileRefReq.isPresent());
@@ -227,7 +229,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         Assert.assertEquals("File deletion request should always be running", FileRequestStatus.PENDING,
                             ofdr.get().getStatus());
         // check that a new reference request is made to store again the file after deletion request is done
-        Optional<FileStorageRequest> frr = fileRefRequestService.search(fileRefStorage, fileRefChecksum);
+        Optional<FileStorageRequest> frr = fileStorageRequestService.search(fileRefStorage, fileRefChecksum);
         Assert.assertTrue("A new file reference request should exists", frr.isPresent());
         Assert.assertEquals("A new file reference request should exists with DELAYED status", FileRequestStatus.DELAYED,
                             frr.get().getStatus());
@@ -238,6 +240,9 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         Assert.assertTrue("File reference should still have no owners", oFileRef.get().getOwners().isEmpty());
 
         // Simulate deletion request ends
+        FileDeletionJobProgressManager manager = new FileDeletionJobProgressManager(fileRefService,
+                fileDeletionRequestService, publisher, new FileDeletionRequestJob());
+        manager.deletionSucceed(fdr);
         fileRefHandler.handle(
                               new TenantWrapper<>(
                                       new FileReferenceEvent(fileRefChecksum, FileReferenceEventState.FULLY_DELETED,
@@ -245,21 +250,21 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
                                       runtimeTenantResolver.getTenant()));
         // Has the handler clear the tenant we have to force it here for tests.
         runtimeTenantResolver.forceTenant(tenant);
-        frr = fileRefRequestService.search(fileRefStorage, fileRefChecksum);
-        Assert.assertTrue("File reference request still exists", frr.isPresent());
-        Assert.assertEquals("File reference request still exists with TODO status", FileRequestStatus.TODO,
+        frr = fileStorageRequestService.search(fileRefStorage, fileRefChecksum);
+        Assert.assertTrue("File storage request still exists", frr.isPresent());
+        Assert.assertEquals("File storage request still exists with TODO status", FileRequestStatus.TODO,
                             frr.get().getStatus());
 
         // Now the deletion job is ended, the file reference request is in todo state.
-        Collection<JobInfo> jobs = fileRefRequestService
+        Collection<JobInfo> jobs = fileStorageRequestService
                 .scheduleStoreJobs(FileRequestStatus.TODO, Lists.newArrayList(fileRefStorage), Lists.newArrayList());
         runAndWaitJob(jobs);
 
-        frr = fileRefRequestService.search(fileRefStorage, fileRefChecksum);
+        frr = fileStorageRequestService.search(fileRefStorage, fileRefChecksum);
         oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
-        Assert.assertFalse("File reference shuld not exists anymore", frr.isPresent());
+        Assert.assertFalse("File storage request should not exists anymore", frr.isPresent());
         Assert.assertTrue("File reference should still exists", oFileRef.isPresent());
-        Assert.assertTrue("File reference should should belongs to new owner",
+        Assert.assertTrue("File reference should belongs to new owner",
                           oFileRef.get().getOwners().contains(fileRefNewOwner));
     }
 
@@ -290,7 +295,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         // Run file reference creation.
         fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.TODO, null, null);
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         runAndWaitJob(jobs);
@@ -335,19 +340,19 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
         fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
 
-        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.TODO, null, null);
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         runAndWaitJob(jobs);
 
         Optional<FileReference> fileRef = fileRefService.search(ONLINE_CONF_LABEL, checksumNotHandled);
-        Optional<FileStorageRequest> req = fileRefRequestService.search(ONLINE_CONF_LABEL, checksumNotHandled);
+        Optional<FileStorageRequest> req = fileStorageRequestService.search(ONLINE_CONF_LABEL, checksumNotHandled);
         Assert.assertFalse("File reference should not exists has the file to store has not been handled",
                            fileRef.isPresent());
         Assert.assertTrue("File reference request should still exists has the file to store has not been handled",
                           req.isPresent());
         fileRef = fileRefService.search(ONLINE_CONF_LABEL, checksumHandled);
-        req = fileRefRequestService.search(ONLINE_CONF_LABEL, checksumHandled);
+        req = fileStorageRequestService.search(ONLINE_CONF_LABEL, checksumHandled);
         Assert.assertTrue("File reference should exists has the file to store has been handled", fileRef.isPresent());
         Assert.assertFalse("File reference request should not exists anymore has the file to store has been handled",
                            req.isPresent());
@@ -360,12 +365,12 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, null, null);
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         runAndWaitJob(jobs);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        Optional<FileStorageRequest> oFileRefReq = fileRefRequestService
+        Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService
                 .search(fileRefReq.getDestination().getStorage(), fileRefReq.getMetaInfo().getChecksum());
         Optional<FileReference> oFileRef = fileRefService.search(fileRefReq.getDestination().getStorage(),
                                                                  fileRefReq.getMetaInfo().getChecksum());
@@ -382,15 +387,15 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, null, null);
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         String tenant = runtimeTenantResolver.getTenant();
         jobService.runJob(jobs.iterator().next(), tenant).get();
         runtimeTenantResolver.forceTenant(tenant);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        Page<FileStorageRequest> fileRefReqs = fileRefRequestService.search(fileRefReq.getDestination().getStorage(),
-                                                                            PageRequest.of(0, 1000));
+        Page<FileStorageRequest> fileRefReqs = fileStorageRequestService
+                .search(fileRefReq.getDestination().getStorage(), PageRequest.of(0, 1000));
         Page<FileReference> fileRefs = fileRefService.search(fileRefReq.getDestination().getStorage(),
                                                              PageRequest.of(0, 1000));
         Assert.assertEquals("File references should have been created.", 3, fileRefs.getContent().size());
@@ -409,14 +414,15 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
         Set<String> owners = Sets.newHashSet("someone-else");
-        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, null, owners);
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, null, owners);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         String tenant = runtimeTenantResolver.getTenant();
         jobService.runJob(jobs.iterator().next(), tenant).get();
         runtimeTenantResolver.forceTenant(tenant);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        Page<FileStorageRequest> fileRefReqs = fileRefRequestService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1000));
+        Page<FileStorageRequest> fileRefReqs = fileStorageRequestService.search(ONLINE_CONF_LABEL,
+                                                                                PageRequest.of(0, 1000));
         Page<FileReference> fileRefs = fileRefService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1000));
         Assert.assertEquals("File references should have been created for the given owner.", 2,
                             fileRefs.getContent().size());
@@ -440,14 +446,14 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
         Set<String> storages = Sets.newHashSet(ONLINE_CONF_LABEL);
-        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, storages, null);
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, storages, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         String tenant = runtimeTenantResolver.getTenant();
         jobService.runJob(jobs.iterator().next(), tenant).get();
         runtimeTenantResolver.forceTenant(tenant);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        Page<FileStorageRequest> fileRefReqs = fileRefRequestService.search(PageRequest.of(0, 1000));
+        Page<FileStorageRequest> fileRefReqs = fileStorageRequestService.search(PageRequest.of(0, 1000));
         Page<FileReference> fileRefs = fileRefService.search(PageRequest.of(0, 1000));
         Assert.assertEquals("File references should have been created.", 2, fileRefs.getContent().size());
         Assert.assertEquals("File reference requests should not exists anymore for given storage", 1,
@@ -509,5 +515,10 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
                                 fileRef.getMetaInfo().getMimeType(), file.getMimeType());
             file.getFileInputStream().close();
         }
+    }
+
+    @Test
+    public void restore() {
+        //FileReference fileRef = this.generateRandomStoredNearlineFileReference();
     }
 }

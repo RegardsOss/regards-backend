@@ -61,7 +61,7 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
         List<String> owners = Lists.newArrayList("someone", "someone-else");
         Optional<FileReference> oFileRef = referenceRandomFile(owners, null, "file1.test", storage);
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
-        Optional<FileStorageRequest> oFileRefReq = fileRefRequestService
+        Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService
                 .search(oFileRef.get().getLocation().getStorage(), oFileRef.get().getMetaInfo().getChecksum());
         Assert.assertTrue("File reference request should not exists anymore as file is well referenced",
                           !oFileRefReq.isPresent());
