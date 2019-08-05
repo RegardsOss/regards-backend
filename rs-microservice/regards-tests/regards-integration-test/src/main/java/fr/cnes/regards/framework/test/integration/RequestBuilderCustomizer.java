@@ -155,7 +155,16 @@ public class RequestBuilderCustomizer {
     protected ResultActions performPut(MockMvc mvc, String urlTemplate, String authToken, Object content,
             String errorMsg, Object... urlVariables) {
         return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.PUT, content, urlTemplate, urlVariables),
-                              errorMsg);
+                errorMsg);
+    }
+
+    /**
+     * Allows to perform PATCH request
+     */
+    protected ResultActions performPatch(MockMvc mvc, String urlTemplate, String authToken, Object content,
+            String errorMsg, Object... urlVariables) {
+        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.PATCH, content, urlTemplate, urlVariables),
+                errorMsg);
     }
 
     /**

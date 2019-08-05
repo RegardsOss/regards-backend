@@ -165,13 +165,31 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
                                                       getDefaultUserEmail(), getDefaultRole()),
                           content, requestBuilderCustomizer, errorMsg, urlVariables);
     }
-
     /**
      * Allows to perform PUT request without the security automatically handled
      */
     protected ResultActions performPut(String urlTemplate, String token, Object content,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
         return requestBuilderCustomizer.performPut(mvc, urlTemplate, token, content, errorMsg, urlVariables);
+    }
+
+
+    /**
+     * Allows to perform PATCH request with the security automatically handled
+     */
+    protected ResultActions performDefaultPatch(String urlTemplate, Object content,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return performPatch(urlTemplate, manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.PATCH,
+                getDefaultUserEmail(), getDefaultRole()),
+                content, requestBuilderCustomizer, errorMsg, urlVariables);
+    }
+
+    /**
+     * Allows to perform PATCH request without the security automatically handled
+     */
+    protected ResultActions performPatch(String urlTemplate, String token, Object content,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return requestBuilderCustomizer.performPatch(mvc, urlTemplate, token, content, errorMsg, urlVariables);
     }
 
     /**
