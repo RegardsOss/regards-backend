@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.modules.plugins.rest;
 
 import java.util.List;
+import java.util.Map;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -56,21 +57,21 @@ public class ParamTestPlugin implements IParamTestPlugin {
     @PluginParameter(label = "Simple boolean", description = "Simple boolean description")
     private Boolean pBoolean;
 
-    //    @PluginParameter(label = "List of string", description = "List of string description")
-    //    private List<String> sList;
-    //
-    //    @PluginParameter(keylabel = "ssMapKey", label = "Map string to string",
-    //            description = "Map string to string description")
-    //    private Map<String, String> ssMap;
-    //
-    //    @PluginParameter(label = "Pojo containing string")
-    //    private Pojo pojo;
-    //
-    //    @PluginParameter(label = "Constraint pojo wrapper")
-    //    private Constraints constraints;
-    //
-    //    @PluginParameter(keylabel = "scMapKey", label = "Constraint map")
-    //    private Map<String, Constraint> scMap;
+    @PluginParameter(label = "List of string", description = "List of string description")
+    private List<String> sList;
+
+    @PluginParameter(keylabel = "ssMapKey", label = "Map string to string",
+            description = "Map string to string description")
+    private Map<String, String> ssMap;
+
+    @PluginParameter(label = "Pojo containing string")
+    private Pojo pojo;
+
+    @PluginParameter(label = "Constraint pojo wrapper")
+    private Constraints constraints;
+
+    @PluginParameter(keylabel = "scMapKey", label = "Constraint map")
+    private Map<String, Constraint> scMap;
 
     @PluginParameter(keylabel = "innerPlugin", label = "innerPlugin")
     private IParamTestPlugin innerPlugin;

@@ -352,6 +352,10 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         this.businessId = UUID.randomUUID().toString();
     }
 
+    public void resetBusinessId() {
+        this.businessId = null;
+    }
+
     public String getBusinessId() {
         return businessId;
     }

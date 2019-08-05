@@ -360,13 +360,13 @@ public class PluginController implements IResourceController<PluginConfiguration
             resource = resourceService.toResource(element);
             resourceService.addLink(resource, this.getClass(), "getPluginConfiguration", LinkRels.SELF,
                                     MethodParamFactory.build(String.class, element.getPluginId()),
-                                    MethodParamFactory.build(Long.class, element.getId()));
+                                    MethodParamFactory.build(String.class, element.getBusinessId()));
             resourceService.addLink(resource, this.getClass(), "deletePluginConfiguration", LinkRels.DELETE,
                                     MethodParamFactory.build(String.class, element.getPluginId()),
-                                    MethodParamFactory.build(Long.class, element.getId()));
+                                    MethodParamFactory.build(String.class, element.getBusinessId()));
             resourceService.addLink(resource, this.getClass(), "updatePluginConfiguration", LinkRels.UPDATE,
                                     MethodParamFactory.build(String.class, element.getPluginId()),
-                                    MethodParamFactory.build(Long.class, element.getId()),
+                                    MethodParamFactory.build(String.class, element.getBusinessId()),
                                     MethodParamFactory.build(PluginConfiguration.class));
             resourceService.addLink(resource, this.getClass(), "getPluginConfigurations", LinkRels.LIST,
                                     MethodParamFactory.build(String.class, element.getPluginId()));

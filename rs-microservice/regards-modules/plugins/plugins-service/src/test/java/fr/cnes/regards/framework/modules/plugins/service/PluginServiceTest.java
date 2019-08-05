@@ -197,8 +197,9 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     private PluginConfiguration clone(PluginConfiguration source) {
-        return new PluginConfiguration(source.getMetaData(), source.getLabel(), source.getParameters(),
-                source.getPriorityOrder());
+        PluginConfiguration conf = new PluginConfiguration(source.getMetaData(), source.getLabel(),
+                source.getParameters(), source.getPriorityOrder());
+        return conf;
     }
 
     /**

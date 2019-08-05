@@ -496,9 +496,9 @@ public final class PluginParameterUtils {
         }
 
         try {
-            // FIXME may check with param.isInstance before!
-            // TODO transform to real object
-            field.set(plugin, param.getValue());
+            // Tansform to real value
+            Object o = PluginParameterTransformer.getParameterValue(param, paramType);
+            field.set(plugin, o);
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception
             throw new PluginUtilsRuntimeException(
@@ -583,7 +583,6 @@ public final class PluginParameterUtils {
                                     paramAnnotation.label(), plugin.getClass(), param));
                 }
             } else {
-                // FIXME may check with param.isInstance before!
                 field.set(plugin, param.getValue());
             }
         } catch (IllegalArgumentException | IllegalAccessException e) {
@@ -652,7 +651,6 @@ public final class PluginParameterUtils {
 
             NestedPluginParam npp = (NestedPluginParam) param;
             try {
-                // FIXME may check with param.isInstance before!
                 Object nestedPlugin = instantiatedPlugins.get(npp.getValue());
                 field.set(plugin, nestedPlugin);
             } catch (IllegalArgumentException | IllegalAccessException e) {

@@ -284,7 +284,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
         // Update the added PluginConfiguration
         performPut(PluginController.PLUGINS_PLUGINID_CONFIGID, token, aPluginConfiguration, customizer,
                    "unable to update a plugin configuration", aPluginConfiguration.getPluginId(),
-                   aPluginConfiguration.getId());
+                   aPluginConfiguration.getBusinessId());
     }
 
     @Test

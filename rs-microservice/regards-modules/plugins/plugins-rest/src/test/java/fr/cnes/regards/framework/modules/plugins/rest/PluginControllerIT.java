@@ -83,7 +83,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         String innerConfigId = JsonPath.read(resultAsString, "$.content.businessId");
 
         // Creation plugin with inner plugin as parameter
-        String json = readJsonContract("fakeConfLight.json").replace(REF_INNER_PLUGIN, innerConfigId);
+        String json = readJsonContract("fakeConf.json").replace(REF_INNER_PLUGIN, innerConfigId);
         result = performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, json, customizer().expectStatusCreated(),
                                     "Configuration should be saved!", "ParamTestPlugin");
         resultAsString = payload(result);
@@ -199,8 +199,8 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         // Errors should be on each numerical value: pByte, pShort, pInteger, pLong
         // Error case on double and float is not tested because large float or double are interpreted as Infinity unless gson breaks.
         performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, json,
-                           customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY).expectIsArray("$.messages")
-                                   .expectToHaveSize("$.messages", 4),
+                           customizer().expectStatus(HttpStatus.INTERNAL_SERVER_ERROR).expectIsArray("$.messages")
+                                   .expectToHaveSize("$.messages", 1),
                            "Configuration should not be saved!", "ParamTestPlugin");
     }
 }

@@ -353,15 +353,16 @@ public final class PluginUtils {
 
     public static List<String> validateOnCreate(PluginConfiguration conf) {
         List<String> validationErrors = validate(conf);
-        if (conf.getBusinessId() != null) {
-            validationErrors.add("The plugin configuration business id must be null.");
+        if (conf != null && conf.getBusinessId() != null) {
+            // FIXME : just log
+            // validationErrors.add("The plugin configuration business id must be null.");
         }
         return validationErrors;
     }
 
     public static List<String> validateOnUpdate(PluginConfiguration conf) {
         List<String> validationErrors = validate(conf);
-        if (conf.getBusinessId() == null) {
+        if (conf != null && conf.getBusinessId() == null) {
             validationErrors.add("The plugin configuration business id required.");
         }
         return validationErrors;
@@ -377,6 +378,7 @@ public final class PluginUtils {
         // First lets apply equivalent to hibernate validation
         if (conf == null) {
             validationErrors.add("The plugin configuration cannot be null.");
+            return validationErrors;
         }
         if (conf.getPriorityOrder() == null) {
             validationErrors.add(String.format("The plugin configuration priority order is required (pluginId: %s).",
@@ -422,92 +424,7 @@ public final class PluginUtils {
                     && plgParamMeta.getDefaultValue() == null) {
                 validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
             }
-            // lets add some basic type validation while we are iterating over parameters
-            // in case it is not optional or missing
-            if (parameterFromConf != null) {
-                // FIXME check if not useful anymore
-                // checkPrimitiveBoundaries(validationErrors, plgParamMeta, parameterFromConf);
-            }
         }
         return validationErrors;
     }
-
-    // FIXME check if not useful anymore
-    //    private static void checkPrimitiveBoundaries(List<String> validationErrors, PluginParamDescriptor plgParamMeta,
-    //            IPluginParam param) {
-    //        if (plgParamMeta.getParamType() == PluginParameterType.ParamType.PRIMITIVE) {
-    //            String plgParamType = plgParamMeta.getType();
-    //            // first handle real primitive types then use class.forName
-    //            Class<?> clazz = null;
-    //            try {
-    //                switch (plgParamType) {
-    //                    case "long":
-    //                        clazz = Long.TYPE;
-    //                        break;
-    //                    case "int":
-    //                        clazz = Integer.TYPE;
-    //                        break;
-    //                    case "short":
-    //                        clazz = Short.TYPE;
-    //                        break;
-    //                    case "byte":
-    //                        clazz = Byte.TYPE;
-    //                        break;
-    //                    case "float":
-    //                        clazz = Float.TYPE;
-    //                        break;
-    //                    case "double":
-    //                        clazz = Double.TYPE;
-    //                        break;
-    //                    case "char":
-    //                        clazz = Character.TYPE;
-    //                        break;
-    //                    case "void":
-    //                        clazz = Void.TYPE;
-    //                        break;
-    //                    case "boolean":
-    //                        clazz = Boolean.TYPE;
-    //                        break;
-    //                    default:
-    //                        clazz = Class.forName(plgParamType);
-    //                        break;
-    //                }
-    //                // String are not checked as we cannot imagine a string which is not valid in term of java representation
-    //                // Boolean aren't either because unless its string representation is "true" if it considered false
-    //                // paramStrippedValue nullability is not a problem here.
-    //                // If it is null it means that the parameter is of type string with an empty value and we do not check them here.
-    //                String paramStrippedValue = param.getStripParameterValue();
-    //
-    //                if ((plgParamMeta.isOptional() || !Strings.isNullOrEmpty(plgParamMeta.getDefaultValue()))
-    //                        && (paramStrippedValue == null || paramStrippedValue.isEmpty())) {
-    //                    // Skip check for optional value and default param value
-    //                    return;
-    //                }
-    //
-    //                // check numbers boundaries
-    //                if (clazz.isAssignableFrom(Long.class)) {
-    //                    Long.parseLong(paramStrippedValue);
-    //                } else if (clazz.isAssignableFrom(Integer.class)) {
-    //                    Integer.parseInt(paramStrippedValue);
-    //                } else if (clazz.isAssignableFrom(Short.class)) {
-    //                    Short.parseShort(paramStrippedValue);
-    //                } else if (clazz.isAssignableFrom(Byte.class)) {
-    //                    Byte.parseByte(paramStrippedValue);
-    //                } else if (clazz.isAssignableFrom(Float.class)) {
-    //                    Float.parseFloat(paramStrippedValue);
-    //                } else if (clazz.isAssignableFrom(Double.class)) {
-    //                    Double.parseDouble(paramStrippedValue);
-    //                }
-    //            } catch (ClassNotFoundException e) {
-    //                LOGGER.error(e.getMessage(), e);
-    //                validationErrors.add(String
-    //                        .format("Plugin parameter %s is of type %s. We could not find the class descriptor associated to.",
-    //                                plgParamMeta.getName(), plgParamType));
-    //            } catch (NumberFormatException e) {
-    //                LOGGER.error(e.getMessage(), e);
-    //                validationErrors.add(String.format("Plugin Parameter %s has an invalid value. "
-    //                        + "It is of type %s and could not be parsed. " + "Value might be too high or too low.",
-    //                                                   plgParamMeta.getName(), clazz.getSimpleName()));
-    //            }
-    //        }
 }
