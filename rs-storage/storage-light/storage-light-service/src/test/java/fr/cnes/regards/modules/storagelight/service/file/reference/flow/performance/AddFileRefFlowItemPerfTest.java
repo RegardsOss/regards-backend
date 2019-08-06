@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -50,11 +51,13 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.AddFileReferenceFlowItemHandler;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.DeleteFileReferenceFlowHandler;
 
 /**
  * Performances tests for creating and store new file references.
@@ -69,7 +72,10 @@ public class AddFileRefFlowItemPerfTest extends AbstractFileReferenceTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(AddFileRefFlowItemPerfTest.class);
 
     @Autowired
-    private AddFileReferenceFlowItemHandler handler;
+    private AddFileReferenceFlowItemHandler storageHandler;
+
+    @Autowired
+    private DeleteFileReferenceFlowHandler deleteHandler;
 
     @Autowired
     FileReferenceService fileRefService;
@@ -100,7 +106,7 @@ public class AddFileRefFlowItemPerfTest extends AbstractFileReferenceTest {
         if (prioritizedDataStorageService.search(NEARLINE_CONF_LABEL).isPresent()) {
             initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
         }
-        storageHandler.refresh();
+        storagePlgConfHandler.refresh();
 
         if (fileRefRepo.count() == 0) {
             // Insert many refs
@@ -114,13 +120,13 @@ public class AddFileRefFlowItemPerfTest extends AbstractFileReferenceTest {
                 if (toSave.size() > 10_000) {
                     long start = System.currentTimeMillis();
                     fileRefRepo.saveAll(toSave);
-                    LOGGER.info("Saves {} done ine {}ms", toSave.size(), System.currentTimeMillis() - start);
+                    LOGGER.info("Saves {} done in {}ms", toSave.size(), System.currentTimeMillis() - start);
                     toSave.clear();
                 }
             }
             long start = System.currentTimeMillis();
             fileRefRepo.saveAll(toSave);
-            LOGGER.info("Saves {} done ine {}ms", toSave.size(), System.currentTimeMillis() - start);
+            LOGGER.info("Saves {} done in {}ms", toSave.size(), System.currentTimeMillis() - start);
         }
     }
 
@@ -142,11 +148,9 @@ public class AddFileRefFlowItemPerfTest extends AbstractFileReferenceTest {
                     "file://storage/location/file.name");
             TenantWrapper<AddFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
             // Publish request
-            handler.handle(wrapper);
+            storageHandler.handle(wrapper);
         }
-
         Thread.sleep(30000);
-
         Assert.assertEquals("There should be 5000 file ref created",
                             fileRefRepo.findByLocationStorage(storage, PageRequest.of(0, 1)).getTotalElements(), 5000);
     }
@@ -160,7 +164,6 @@ public class AddFileRefFlowItemPerfTest extends AbstractFileReferenceTest {
         LOGGER.info(" ----------------------------------- ");
         LOGGER.info(" ----------------------------------- ");
         LOGGER.info(" ----------------------------------- ");
-
         OffsetDateTime now = OffsetDateTime.now();
         for (int i = 0; i < 5000; i++) {
             String checksum = UUID.randomUUID().toString();
@@ -170,7 +173,7 @@ public class AddFileRefFlowItemPerfTest extends AbstractFileReferenceTest {
                     "/storage/location");
             TenantWrapper<AddFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
             // Publish request
-            handler.handle(wrapper);
+            storageHandler.handle(wrapper);
         }
         Thread.sleep(30000);
 
@@ -180,7 +183,6 @@ public class AddFileRefFlowItemPerfTest extends AbstractFileReferenceTest {
         Assert.assertEquals("No file ref should be created", 0, fileRefService.search(FileReferenceSpecification
                 .search(null, null, null, Lists.newArrayList(ONLINE_CONF_LABEL), null, now, null), PageRequest.of(0, 1))
                 .getTotalElements());
-
         long start = System.currentTimeMillis();
         Collection<JobInfo> jobs = fileStorageRequestService
                 .scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList());
@@ -189,13 +191,34 @@ public class AddFileRefFlowItemPerfTest extends AbstractFileReferenceTest {
         start = System.currentTimeMillis();
         runAndWaitJob(jobs);
         LOGGER.info("...{} jobs handled in {} ms", jobs.size(), System.currentTimeMillis() - start);
-
         Assert.assertEquals("There should be no file storage request created", 0, fileStorageRequestService
                 .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1)).getTotalElements());
         Assert.assertEquals("5000 file ref should be created", 5000, fileRefService.search(FileReferenceSpecification
                 .search(null, null, null, Lists.newArrayList(ONLINE_CONF_LABEL), null, now, null), PageRequest.of(0, 1))
                 .getTotalElements());
-
     }
 
+    @Test
+    public void deleteFileReFlowItems_withoutStorage() throws InterruptedException {
+        LOGGER.info(" ----------------------------------- ");
+        LOGGER.info(" ----------------------------------- ");
+        LOGGER.info(" ----------------------------------- ");
+        LOGGER.info(" --------     Starting     --------- ");
+        LOGGER.info(" ----------------------------------- ");
+        LOGGER.info(" ----------------------------------- ");
+        LOGGER.info(" ----------------------------------- ");
+        int nbToDelete = 500;
+        Page<FileReference> page = fileRefService.search(PageRequest.of(0, nbToDelete));
+        Long total = page.getTotalElements();
+        for (FileReference fileRef : page.getContent()) {
+            DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(fileRef.getMetaInfo().getChecksum(),
+                    fileRef.getLocation().getStorage(), fileRef.getOwners().get(0));
+            TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+            deleteHandler.handle(wrapper);
+        }
+        LOGGER.info("Waiting ....");
+        Thread.sleep(30000);
+        page = fileRefService.search(PageRequest.of(0, 1));
+        Assert.assertEquals("500 ref should be deleted", nbToDelete, total - page.getTotalElements());
+    }
 }

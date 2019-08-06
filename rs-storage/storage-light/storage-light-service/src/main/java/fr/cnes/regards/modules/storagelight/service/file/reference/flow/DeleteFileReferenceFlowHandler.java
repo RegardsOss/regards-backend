@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -35,6 +37,7 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
@@ -48,10 +51,12 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileReference
 public class DeleteFileReferenceFlowHandler
         implements ApplicationListener<ApplicationReadyEvent>, IHandler<DeleteFileRefFlowItem> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeleteFileReferenceFlowHandler.class);
+
     /**
      * Bulk size limit to handle messages
      */
-    private static final int BULK_SIZE = 1_000;
+    private static final int BULK_SIZE = 100;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -69,8 +74,21 @@ public class DeleteFileReferenceFlowHandler
         subscriber.subscribeTo(DeleteFileRefFlowItem.class, this);
     }
 
+    /**
+     * Only add the message in the list of messages handled by bulk in the scheduled method
+     * @param wrapper containing {@link AddFileRefFlowItem} to handle
+     */
     @Override
     public void handle(TenantWrapper<DeleteFileRefFlowItem> wrapper) {
+        String tenant = wrapper.getTenant();
+        DeleteFileRefFlowItem item = wrapper.getContent();
+        if (!items.containsKey(tenant)) {
+            items.put(tenant, new ConcurrentLinkedQueue<>());
+        }
+        items.get(tenant).add(item);
+    }
+
+    public void handleSync(TenantWrapper<DeleteFileRefFlowItem> wrapper) {
         String tenant = wrapper.getTenant();
         runtimeTenantResolver.forceTenant(tenant);
         DeleteFileRefFlowItem item = wrapper.getContent();
@@ -109,11 +127,11 @@ public class DeleteFileReferenceFlowHandler
                             list.add(doc);
                         }
                     }
-                    LOGGER.info("Bulk saving {} AddFileRefFlowItem...", list.size());
+                    LOGGER.debug("Bulk saving {} DeleteFileRefFlowItem...", list.size());
                     long start = System.currentTimeMillis();
                     fileRefService.delete(list);
-                    LOGGER.info("...{} AddFileRefFlowItem handled in {} ms", list.size(),
-                                System.currentTimeMillis() - start);
+                    LOGGER.debug("...{} DeleteFileRefFlowItem handled in {} ms", list.size(),
+                                 System.currentTimeMillis() - start);
                     list.clear();
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
             } finally {
