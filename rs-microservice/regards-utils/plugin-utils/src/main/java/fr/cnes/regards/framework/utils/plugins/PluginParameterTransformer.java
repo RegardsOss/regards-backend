@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.framework.utils.plugins;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -69,18 +72,19 @@ public class PluginParameterTransformer {
      * Process value transformation on {@link JsonElement} to expected plugin pararameter JAVA type.
      *
      * @param param plugin parameter
+     * @param field field to set
      * @return value as a class instance
      */
-    public static Object getParameterValue(IPluginParam param) {
+    protected static Object getParameterValue(IPluginParam param, Field field) {
         Object value = null;
 
         // Check type transformation constistency
         if (PluginParamType.COLLECTION.equals(param.getType())) {
-            value = getCollectionValue(param);
+            value = getCollectionValue(param, field);
         } else if (PluginParamType.MAP.equals(param.getType())) {
-            value = getMapValue(param);
+            value = getMapValue(param, field);
         } else if (PluginParamType.POJO.equals(param.getType())) {
-            value = getPojoValue(param);
+            value = getPojoValue(param, field);
         } else {
             String message = String.format("Value transformation not available for parameter \"%s\" of type \"%s\"",
                                            param.getName(), param.getType());
@@ -91,73 +95,76 @@ public class PluginParameterTransformer {
         return value;
     }
 
-    private static Object getCollectionValue(IPluginParam param) {
+    private static Object getCollectionValue(IPluginParam param, Field field) {
         if (JsonCollectionPluginParam.class.isAssignableFrom(param.getClass())) {
             LOGGER.debug(TRANSFO_MESSAGE, param.getName(), param.getType());
-            return transformValue((JsonCollectionPluginParam) param);
+            ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
+            // Get first generic type
+            return transformValue((JsonCollectionPluginParam) param, parameterizedType.getActualTypeArguments()[0]);
         } else {
             LOGGER.debug(SKIP_TRANSFO_MESSAGE, param.getName());
             return param.getValue();
         }
     }
 
-    private static Object getMapValue(IPluginParam param) {
+    private static Object getMapValue(IPluginParam param, Field field) {
         if (JsonMapPluginParam.class.isAssignableFrom(param.getClass())) {
             LOGGER.debug(TRANSFO_MESSAGE, param.getName(), param.getType());
-            return transformValue((JsonMapPluginParam) param);
+            ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
+            // Get second generic type
+            return transformValue((JsonMapPluginParam) param, parameterizedType.getActualTypeArguments()[1]);
         } else {
             LOGGER.debug(SKIP_TRANSFO_MESSAGE, param.getName());
             return param.getValue();
         }
     }
 
-    private static Object getPojoValue(IPluginParam param) {
+    private static Object getPojoValue(IPluginParam param, Field field) {
         if (JsonObjectPluginParam.class.isAssignableFrom(param.getClass())) {
             LOGGER.debug(TRANSFO_MESSAGE, param.getName(), param.getType());
-            return transformValue((JsonObjectPluginParam) param);
+            return transformValue((JsonObjectPluginParam) param, field.getType());
         } else {
             LOGGER.debug(SKIP_TRANSFO_MESSAGE, param.getName());
             return param.getValue();
         }
     }
 
-    public static Object transformValue(JsonObjectPluginParam source) {
+    public static Object transformValue(JsonObjectPluginParam source, Type type) {
         try {
-            return source.getValue() == null ? null
-                    : gsonInstance.fromJson(source.getValue(), Class.forName(source.getClazz()));
-        } catch (JsonSyntaxException | ClassNotFoundException e) {
+            return source.getValue() == null ? null : gsonInstance.fromJson(source.getValue(), type);
+        } catch (JsonSyntaxException e) {
             throw propagateException(e, source);
         }
     }
 
-    public static Collection<Object> transformValue(JsonCollectionPluginParam source) {
+    public static Collection<Object> transformValue(JsonCollectionPluginParam source, Type type) {
         try {
             Collection<Object> collection = null;
             if (source.getValue() != null && !source.getValue().isEmpty()) {
                 collection = new ArrayList<>();
                 for (JsonElement el : source.getValue()) {
-                    Object o = gsonInstance.fromJson(el, Class.forName(source.getClazz()));
+                    Object o = gsonInstance.fromJson(el, type);
                     collection.add(o);
                 }
             }
             return collection;
-        } catch (JsonSyntaxException | ClassNotFoundException e) {
+        } catch (JsonSyntaxException e) {
             throw propagateException(e, source);
         }
     }
 
-    public static Map<String, Object> transformValue(JsonMapPluginParam source) {
+    public static Map<String, Object> transformValue(JsonMapPluginParam source, Type type) {
         try {
             Map<String, Object> map = null;
             if (source.getValue() != null && !source.getValue().isEmpty()) {
                 map = new HashMap<>();
                 for (Entry<String, JsonElement> entry : source.getValue().entrySet()) {
-                    Object o = gsonInstance.fromJson(entry.getValue(), Class.forName(source.getClazz()));
+                    Object o = gsonInstance.fromJson(entry.getValue(), type);
                     map.put(entry.getKey(), o);
                 }
             }
             return map;
-        } catch (JsonSyntaxException | ClassNotFoundException e) {
+        } catch (JsonSyntaxException e) {
             throw propagateException(e, source);
         }
     }

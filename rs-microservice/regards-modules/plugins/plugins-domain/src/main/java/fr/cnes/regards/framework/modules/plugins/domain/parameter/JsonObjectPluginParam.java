@@ -22,12 +22,12 @@ import com.google.gson.JsonObject;
 
 /**
  * JSON plugin parameter representation of {@link PluginParamType#POJO}.
- * It must be transform to {@link PluginParamType#POJO} to be used in the plugin engine.
+ * Its value will be transformed to target parameter type in plugin engine using GSON deserialization.
  *
  * @author Marc SORDI
  *
  */
-public class JsonObjectPluginParam extends AbstractJsonPluginParam<JsonObject> {
+public class JsonObjectPluginParam extends AbstractPluginParam<JsonObject> {
 
     public JsonObjectPluginParam() {
         super(PluginParamType.POJO);

@@ -24,12 +24,12 @@ import com.google.gson.JsonElement;
 
 /**
  * JSON plugin parameter representation of {@link PluginParamType#COLLECTION}.
- * It must be transform to {@link PluginParamType#COLLECTION} to be used in the plugin engine.
+ * Its value will be transformed to target parameter type in plugin engine using GSON deserialization.
  *
  * @author Marc SORDI
  *
  */
-public class JsonCollectionPluginParam extends AbstractJsonPluginParam<Collection<JsonElement>> {
+public class JsonCollectionPluginParam extends AbstractPluginParam<Collection<JsonElement>> {
 
     public JsonCollectionPluginParam() {
         super(PluginParamType.COLLECTION);

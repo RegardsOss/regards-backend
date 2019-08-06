@@ -71,7 +71,8 @@ public class GsonTest extends AbstractMultitenantServiceTest {
         Assert.assertNotNull(conf);
 
         // Tranform JSON to POJO
-        Object o = PluginParameterTransformer.transformValue((JsonObjectPluginParam) conf.getParameter("simple"));
+        Object o = PluginParameterTransformer.transformValue((JsonObjectPluginParam) conf.getParameter("simple"),
+                                                             SimplePojo.class);
         Assert.assertNotNull(o);
         Assert.assertTrue(SimplePojo.class.isInstance(o));
     }
@@ -83,7 +84,7 @@ public class GsonTest extends AbstractMultitenantServiceTest {
 
         // Tranform JSON to POJO
         Map<String, Object> map = PluginParameterTransformer
-                .transformValue((JsonMapPluginParam) conf.getParameter("simplemap"));
+                .transformValue((JsonMapPluginParam) conf.getParameter("simplemap"), SimplePojo.class);
         Assert.assertNotNull(map);
         map.entrySet().forEach(e -> Assert.assertTrue(SimplePojo.class.isInstance(e.getValue())));
     }
@@ -95,7 +96,7 @@ public class GsonTest extends AbstractMultitenantServiceTest {
 
         // Tranform JSON to POJO
         Collection<Object> collection = PluginParameterTransformer
-                .transformValue((JsonCollectionPluginParam) conf.getParameter("simplelist"));
+                .transformValue((JsonCollectionPluginParam) conf.getParameter("simplelist"), SimplePojo.class);
         Assert.assertNotNull(collection);
         collection.forEach(e -> Assert.assertTrue(SimplePojo.class.isInstance(e)));
     }

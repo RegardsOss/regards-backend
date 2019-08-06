@@ -499,7 +499,7 @@ public final class PluginParameterUtils {
 
         try {
             // Tansform to real value
-            Object o = PluginParameterTransformer.getParameterValue(param);
+            Object o = PluginParameterTransformer.getParameterValue(param, field);
             field.set(plugin, o);
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception

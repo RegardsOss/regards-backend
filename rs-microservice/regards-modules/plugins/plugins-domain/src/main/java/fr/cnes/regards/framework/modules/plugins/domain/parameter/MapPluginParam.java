@@ -23,6 +23,9 @@ import java.util.Map;
 /**
  * Supported plugin parameter
  *
+ * This parameter only exists for testing purpose at the moment.
+ * API uses {@link JsonMapPluginParam} to handle (de)serialization.
+ *
  * @author Marc SORDI
  *
  */

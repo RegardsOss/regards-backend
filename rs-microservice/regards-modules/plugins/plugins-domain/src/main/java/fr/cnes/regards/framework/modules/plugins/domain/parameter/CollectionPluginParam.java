@@ -21,7 +21,10 @@ package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 import java.util.Collection;
 
 /**
- * Supported plugin parameter
+ * Supported plugin parameter.
+ *
+ * This parameter only exists for testing purpose at the moment.
+ * API uses {@link JsonCollectionPluginParam} to handle (de)serialization.
  *
  * @author Marc SORDI
  *

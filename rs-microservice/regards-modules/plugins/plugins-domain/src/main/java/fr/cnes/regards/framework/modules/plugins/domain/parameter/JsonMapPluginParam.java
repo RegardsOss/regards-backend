@@ -24,12 +24,12 @@ import com.google.gson.JsonElement;
 
 /**
  * JSON plugin parameter representation of {@link PluginParamType#MAP}.
- * It must be transform to {@link PluginParamType#MAP} to be used in the plugin engine.
+ * Its value will be transformed to target parameter type in plugin engine using GSON deserialization.
  *
  * @author Marc SORDI
  *
  */
-public class JsonMapPluginParam extends AbstractJsonPluginParam<Map<String, JsonElement>> {
+public class JsonMapPluginParam extends AbstractPluginParam<Map<String, JsonElement>> {
 
     public JsonMapPluginParam() {
         super(PluginParamType.MAP);

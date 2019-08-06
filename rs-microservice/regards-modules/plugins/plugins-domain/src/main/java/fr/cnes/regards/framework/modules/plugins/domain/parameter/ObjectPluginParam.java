@@ -21,6 +21,9 @@ package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 /**
  * Supported plugin parameter
  *
+ * This parameter only exists for testing purpose at the moment.
+ * API uses {@link JsonObjectPluginParam} to handle (de)serialization.
+ *
  * @author Marc SORDI
  *
  */
