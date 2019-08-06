@@ -170,6 +170,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
             Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
+
             Set<IPluginParam> parameters = IPluginParam
                     .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                                             getBaseStorageLocation().toString()),

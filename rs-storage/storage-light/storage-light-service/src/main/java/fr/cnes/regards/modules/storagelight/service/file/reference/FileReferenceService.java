@@ -203,7 +203,6 @@ public class FileReferenceService {
      * <br/>
      * If the <b>origin destination equals the destination origin</b>, so reference the file as already stored.
      *
-     * @param fileRefRequest file to reference
      * @return FileReference if already exists or does not need a new storage job
      */
     public Optional<FileReference> addFileReference(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
@@ -282,7 +281,6 @@ public class FileReferenceService {
      * </ul>
      *
      * @param checksum Checksum of the file to download
-     * @return
      */
     @Transactional(noRollbackFor = { EntityNotFoundException.class })
     public DownloadableFile downloadFile(String checksum) throws ModuleException {
@@ -491,8 +489,6 @@ public class FileReferenceService {
 
     /**
      * Calculate the total file size by adding fileSize of each {@link FileReference} with an id over the given id.
-     * @param lastReferencedFileId
-     * @return
      */
     public Collection<StorageMonitoringAggregation> aggragateFilesSizePerStorage(Long lastReferencedFileId) {
         if (lastReferencedFileId != null) {
@@ -522,7 +518,7 @@ public class FileReferenceService {
         FileReference updatedFileRef = null;
 
         Optional<FileDeletionRequest> deletionRequest = fileDeletionRequestService.search(fileReference);
-        if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
+        if (deletionRequest.isPresent() && deletionRequest.get().getStatus() == FileRequestStatus.PENDING) {
             // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
             fileRefRequestService.create(owners, newMetaInfo, origin, destination, FileRequestStatus.DELAYED);
         } else {
