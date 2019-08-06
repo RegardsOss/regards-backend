@@ -50,8 +50,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileCacheRequestRepository;
@@ -171,11 +170,11 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
             Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
-            Set<PluginParameter> parameters = PluginParametersFactory.build()
-                    .addParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                  getBaseStorageLocation().toString())
-                    .addParameter(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*")
-                    .addParameter(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*").getParameters();
+            Set<IPluginParam> parameters = IPluginParam
+                    .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                            getBaseStorageLocation().toString()),
+                         IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
+                         IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
             return prioritizedDataStorageService.create(dataStorageConf);
@@ -188,12 +187,11 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleNearlineDataStorage.class);
             Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
-            Set<PluginParameter> parameters = PluginParametersFactory.build()
-                    .addParameter(SimpleNearlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                  getBaseStorageLocation().toString())
-                    .addParameter(SimpleNearlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*")
-                    .addParameter(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*")
-                    .getParameters();
+            Set<IPluginParam> parameters = IPluginParam
+                    .set(IPluginParam.build(SimpleNearlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                            getBaseStorageLocation().toString()),
+                         IPluginParam.build(SimpleNearlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
+                         IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
             return prioritizedDataStorageService.create(dataStorageConf);
@@ -204,11 +202,11 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
 
     protected void updatePluginConfForError(String newErrorPattern) throws MalformedURLException, ModuleException {
         PrioritizedStorage conf = prioritizedDataStorageService.getFirstActive(StorageType.ONLINE);
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              getBaseStorageLocation().toString())
-                .addParameter(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, newErrorPattern)
-                .addParameter(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*").getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                        getBaseStorageLocation().toString()),
+                     IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, newErrorPattern),
+                     IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
         conf.getStorageConfiguration().setParameters(parameters);
         prioritizedDataStorageService.update(conf.getId(), conf);
     }
@@ -308,8 +306,8 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
             Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TODO,
                                 oFileRefReq.get().getStatus());
             // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-            Collection<JobInfo> jobs = fileStorageRequestService
-                    .scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(), Sets.newHashSet());
+            Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(),
+                                                                              Sets.newHashSet());
             Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
             // Run Job and wait for end
             runAndWaitJob(jobs);

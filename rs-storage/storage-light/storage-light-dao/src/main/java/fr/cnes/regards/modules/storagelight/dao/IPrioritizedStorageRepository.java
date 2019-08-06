@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
@@ -26,15 +25,11 @@ public interface IPrioritizedStorageRepository extends JpaRepository<Prioritized
     PrioritizedStorage findFirstByStorageTypeOrderByPriorityDesc(StorageType storageType);
 
     @Override
-    @EntityGraph(
-            attributePaths = { "storageConfiguration.parameters", "storageConfiguration.parameters.dynamicsValues" })
     Optional<PrioritizedStorage> findById(Long pluginConfId);
 
     Set<PrioritizedStorage> findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(StorageType storageType,
             Long priority);
 
-    @EntityGraph(
-            attributePaths = { "storageConfiguration.parameters", "storageConfiguration.parameters.dynamicsValues" })
     List<PrioritizedStorage> findAllByStorageTypeOrderByPriorityAsc(StorageType storageType);
 
     /**
@@ -50,8 +45,6 @@ public interface IPrioritizedStorageRepository extends JpaRepository<Prioritized
 
     PrioritizedStorage findOneByStorageTypeAndPriority(StorageType storageType, long priority);
 
-    @EntityGraph(
-            attributePaths = { "storageConfiguration.parameters", "storageConfiguration.parameters.dynamicsValues" })
     Set<PrioritizedStorage> findAllByIdIn(Collection<Long> allIdUsedByAipInQuery);
 
     Set<PrioritizedStorage> findByStorageTypeAndStorageConfigurationLabelIn(StorageType storageType,

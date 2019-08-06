@@ -92,7 +92,7 @@ public class PrioritizedStorageService {
         }
         for (PrioritizedStorage c : confs) {
             if (c.getStorageConfiguration().isActive()
-                    && (!storage.isPresent() || (c.getPriority() < storage.get().getPriority()))) {
+                    && (!storage.isPresent() || c.getPriority() < storage.get().getPriority())) {
                 storage = Optional.of(c);
             }
         }
@@ -231,7 +231,7 @@ public class PrioritizedStorageService {
                         .findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(toDelete.getStorageType(),
                                                                                       toDelete.getPriority());
                 prioritizedStorageRepo.delete(toDelete);
-                pluginService.deletePluginConfiguration(toDelete.getStorageConfiguration().getId());
+                pluginService.deletePluginConfiguration(toDelete.getStorageConfiguration().getBusinessId());
                 em.flush();
                 for (PrioritizedStorage lessPrioritized : lessPrioritizeds) {
                     lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);

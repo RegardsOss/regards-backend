@@ -39,9 +39,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
@@ -106,6 +105,7 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
         PrioritizedStorage pds = createPrioritizedDataStorage(label);
         PluginConfiguration updatedConf = getPluginConf(label);
         updatedConf.setId(pds.getStorageConfiguration().getId());
+        updatedConf.setBusinessId(pds.getStorageConfiguration().getBusinessId());
         PrioritizedStorage upds = new PrioritizedStorage(updatedConf, 0L, StorageType.ONLINE);
         upds.setId(pds.getId());
         prioritizedDataStorageService.update(upds.getId(), upds);
@@ -119,10 +119,13 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
                 Paths.get(targetPath, "/update/conf").toFile().getAbsolutePath());
 
         PrioritizedStorage pds = createPrioritizedDataStorage(label);
+
         PluginConfiguration updatedConf = getPluginConf(label);
-        updatedConf.getParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME)
-                .setValue(newbaseStorageLocation.toString());
+        updatedConf.setBusinessId(pds.getStorageConfiguration().getBusinessId());
         updatedConf.setId(pds.getStorageConfiguration().getId());
+        updatedConf.getParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME)
+                .value(newbaseStorageLocation.toString());
+
         PrioritizedStorage upds = new PrioritizedStorage(updatedConf, 0L, StorageType.ONLINE);
         upds.setId(pds.getId());
         prioritizedDataStorageService.update(upds.getId(), upds);
@@ -133,11 +136,11 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
 
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              baseStorageLocation.toString())
-                .addParameter(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*")
-                .addParameter(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*").getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                        baseStorageLocation.toString()),
+                     IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
+                     IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
         return new PluginConfiguration(dataStoMeta, label, parameters, 0);
     }
 
