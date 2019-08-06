@@ -129,10 +129,19 @@ public interface IPluginService {
     PluginConfiguration updatePluginConfiguration(PluginConfiguration plugin) throws ModuleException;
 
     /**
+     * Get the {@link PluginConfiguration}. Use {@link #getPluginConfiguration(String)} with business identifier to be instance independent.
+     * @param id business identifier of the {@link PluginConfiguration}.
+     * @return a specific configuration
+     * @throws EntityNotFoundException thrown if we cannot find any PluginConfiguration corresponding to pId
+     */
+    @Deprecated
+    PluginConfiguration getPluginConfiguration(Long id) throws EntityNotFoundException;
+
+    /**
      * Get the {@link PluginConfiguration}.
      * @param businessId business identifier of the {@link PluginConfiguration}.
      * @return a specific configuration
-     * @throws EntityNotFoundException thrown if we cannot find any PluginConfiguration corresponding to pId
+     * @throws EntityNotFoundException thrown if we cannot find any PluginConfiguration corresponding
      */
     PluginConfiguration getPluginConfiguration(String businessId) throws EntityNotFoundException;
 

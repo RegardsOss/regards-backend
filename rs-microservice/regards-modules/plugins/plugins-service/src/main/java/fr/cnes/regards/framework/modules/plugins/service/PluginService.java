@@ -279,6 +279,17 @@ public class PluginService implements IPluginService {
     }
 
     @Override
+    public PluginConfiguration getPluginConfiguration(Long id) throws EntityNotFoundException {
+        Optional<PluginConfiguration> plgConf = repos.findById(id);
+        if (plgConf.isPresent()) {
+            return getPluginConfiguration(plgConf.get().getBusinessId());
+        } else {
+            LOGGER.error(String.format("Error while getting the plugin configuration <%d>.", id));
+            throw new EntityNotFoundException(id, PluginConfiguration.class);
+        }
+    }
+
+    @Override
     public PluginConfiguration getPluginConfiguration(String businessId) throws EntityNotFoundException {
         PluginConfiguration plgConf = repos.findCompleteByBusinessId(businessId);
         if (plgConf == null) {
