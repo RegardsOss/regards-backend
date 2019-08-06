@@ -44,6 +44,9 @@ public class CacheScheduler {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private CacheService service;
+
     /**
      * Periodically check the cache total size and delete expired files or/and older files if needed.
      * Default : scheduled to be run every 5minutes.
@@ -52,6 +55,7 @@ public class CacheScheduler {
     public void cleanCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
+            service.purge();
             runtimeTenantResolver.clearTenant();
         }
     }

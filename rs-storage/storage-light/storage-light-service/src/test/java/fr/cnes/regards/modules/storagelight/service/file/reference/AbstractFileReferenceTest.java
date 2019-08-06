@@ -161,6 +161,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                 Assert.fail(e.getMessage());
             }
         });
+
         initDataStoragePluginConfiguration(ONLINE_CONF_LABEL);
         initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
         storagePlgConfHandler.refresh();

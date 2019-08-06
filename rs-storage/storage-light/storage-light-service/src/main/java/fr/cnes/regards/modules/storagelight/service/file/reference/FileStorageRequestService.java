@@ -197,7 +197,7 @@ public class FileStorageRequestService {
             IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
             Collection<FileStorageWorkingSubset> workingSubSets = storagePlugin.prepareForStorage(fileStorageRequests);
             for (FileStorageWorkingSubset ws : workingSubSets) {
-                jobInfoList.add(self.scheduleJob(ws, conf.getId()));
+                jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId()));
             }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             this.handleStorageNotAvailable(fileStorageRequests);
@@ -213,9 +213,9 @@ public class FileStorageRequestService {
      * @return {@link JobInfo} scheduled.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public JobInfo scheduleJob(FileStorageWorkingSubset workingSubset, Long pluginConfId) {
+    public JobInfo scheduleJob(FileStorageWorkingSubset workingSubset, String plgBusinessId) {
         Set<JobParameter> parameters = Sets.newHashSet();
-        parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, pluginConfId));
+        parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, plgBusinessId));
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
         workingSubset.getFileReferenceRequests().forEach(fileStorageRequest -> fileStorageRequestRepo
                 .updateStatus(FileRequestStatus.PENDING, fileStorageRequest.getId()));

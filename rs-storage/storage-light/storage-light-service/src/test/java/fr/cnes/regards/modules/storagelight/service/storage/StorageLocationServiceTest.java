@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
@@ -37,12 +38,12 @@ import fr.cnes.regards.modules.storagelight.dao.IStorageMonitoringRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
-import fr.cnes.regards.modules.storagelight.service.storage.StorageLocationService;
 
 /**
  * @author sbinda
  *
  */
+@ActiveProfiles("noscheduler")
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=12" })
 public class StorageLocationServiceTest extends AbstractMultitenantServiceTest {

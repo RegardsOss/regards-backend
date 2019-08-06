@@ -169,19 +169,28 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
         return cachedFileRepository.findOneByChecksum(checksum);
     }
 
-    private void checkDiskDBCoherence(String tenant) throws IOException {
+    public void checkDiskDBCoherence(String tenant) throws IOException {
         runtimeTenantResolver.forceTenant(tenant);
         Page<CacheFile> shouldBeAvailableSet;
         Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
+        Set<Long> toDelete = Sets.newHashSet();
         do {
             shouldBeAvailableSet = cachedFileRepository.findAll(page);
             for (CacheFile shouldBeAvailable : shouldBeAvailableSet) {
                 if (Files.notExists(Paths.get(shouldBeAvailable.getLocation().getPath()))) {
-                    cachedFileRepository.delete(shouldBeAvailable);
+                    toDelete.add(shouldBeAvailable.getId());
                 }
             }
-            page = page.next();
+            if (toDelete.size() > 10_000) {
+                // Do deletion and restart and page 0
+                toDelete.forEach(id -> cachedFileRepository.deleteById(id));
+                toDelete.clear();
+                page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
+            } else {
+                page = page.next();
+            }
         } while (shouldBeAvailableSet.hasNext());
+        toDelete.forEach(id -> cachedFileRepository.deleteById(id));
 
         page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
         Page<CacheFile> availableFiles;
@@ -232,8 +241,8 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
         runtimeTenantResolver.clearTenant();
     }
 
-    public Optional<CacheFile> getAvailable(FileReference fileReference) {
-        Optional<CacheFile> ocf = cachedFileRepository.findOneByChecksum(fileReference.getMetaInfo().getChecksum());
+    public Optional<CacheFile> getCacheFile(String checksum) {
+        Optional<CacheFile> ocf = cachedFileRepository.findOneByChecksum(checksum);
         if (ocf.isPresent()) {
             return ocf;
         } else {
@@ -241,7 +250,7 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
         }
     }
 
-    public Set<FileReference> getAvailables(Set<FileReference> fileReferences) {
+    public Set<FileReference> getFilesAvailableInCache(Set<FileReference> fileReferences) {
         Set<FileReference> availables = Sets.newHashSet();
         Set<String> checksums = fileReferences.stream().map(f -> f.getMetaInfo().getChecksum())
                 .collect(Collectors.toSet());

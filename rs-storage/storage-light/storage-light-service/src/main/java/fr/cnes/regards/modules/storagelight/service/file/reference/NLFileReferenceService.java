@@ -71,7 +71,7 @@ public class NLFileReferenceService {
      */
     @Transactional(noRollbackFor = EntityNotFoundException.class)
     public InputStream download(FileReference fileToDownload) throws EntityNotFoundException {
-        Optional<CacheFile> ocf = cachedFileService.getAvailable(fileToDownload);
+        Optional<CacheFile> ocf = cachedFileService.getCacheFile(fileToDownload.getMetaInfo().getChecksum());
         if (ocf.isPresent()) {
             // File is in cache and can be downloaded
             try {
@@ -96,7 +96,7 @@ public class NLFileReferenceService {
      */
     public void makeAvailable(Set<FileReference> fileReferences, OffsetDateTime expirationDate) {
         // Check files already available in cache
-        Set<FileReference> availables = cachedFileService.getAvailables(fileReferences);
+        Set<FileReference> availables = cachedFileService.getFilesAvailableInCache(fileReferences);
         Set<FileReference> toRestore = fileReferences.stream().filter(f -> !availables.contains(f))
                 .collect(Collectors.toSet());
         // Notify available
