@@ -18,9 +18,16 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.reference.flow;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -41,6 +48,11 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileReference
 public class DeleteFileReferenceFlowHandler
         implements ApplicationListener<ApplicationReadyEvent>, IHandler<DeleteFileRefFlowItem> {
 
+    /**
+     * Bulk size limit to handle messages
+     */
+    private static final int BULK_SIZE = 1_000;
+
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -49,6 +61,8 @@ public class DeleteFileReferenceFlowHandler
 
     @Autowired
     private FileReferenceService fileRefService;
+
+    private final Map<String, ConcurrentLinkedQueue<DeleteFileRefFlowItem>> items = new ConcurrentHashMap<>();
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -61,13 +75,50 @@ public class DeleteFileReferenceFlowHandler
         runtimeTenantResolver.forceTenant(tenant);
         DeleteFileRefFlowItem item = wrapper.getContent();
         try {
-            fileRefService.removeOwner(item.getChecksum(), item.getStorage(), item.getOwner(),
-                                                       item.isForceDelete());
+            fileRefService.removeOwner(item.getChecksum(), item.getStorage(), item.getOwner(), item.isForceDelete());
         } catch (EntityNotFoundException e) {
             LOGGER.error("Unable to delete file with checksum : <{}> at <{}> cause file does not exsts ({}).",
                          item.getChecksum(), item.getStorage());
         } finally {
             runtimeTenantResolver.clearTenant();
+        }
+    }
+
+    /**
+     * Bulk save queued items every second.
+     */
+    @Scheduled(fixedDelay = 1_000)
+    public void handleQueue() {
+        for (Map.Entry<String, ConcurrentLinkedQueue<DeleteFileRefFlowItem>> entry : items.entrySet()) {
+            try {
+                runtimeTenantResolver.forceTenant(entry.getKey());
+                ConcurrentLinkedQueue<DeleteFileRefFlowItem> tenantItems = entry.getValue();
+                List<DeleteFileRefFlowItem> list = new ArrayList<>();
+                do {
+                    // Build a 10_000 (at most) documents bulk request
+                    for (int i = 0; i < BULK_SIZE; i++) {
+                        DeleteFileRefFlowItem doc = tenantItems.poll();
+                        if (doc == null) {
+                            if (list.isEmpty()) {
+                                // nothing to do
+                                return;
+                            }
+                            // Less than BULK_SIZE documents, bulk save what we have already
+                            break;
+                        } else { // enqueue document
+                            list.add(doc);
+                        }
+                    }
+                    LOGGER.info("Bulk saving {} AddFileRefFlowItem...", list.size());
+                    long start = System.currentTimeMillis();
+                    fileRefService.delete(list);
+                    LOGGER.info("...{} AddFileRefFlowItem handled in {} ms", list.size(),
+                                System.currentTimeMillis() - start);
+                    list.clear();
+                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
         }
     }
 

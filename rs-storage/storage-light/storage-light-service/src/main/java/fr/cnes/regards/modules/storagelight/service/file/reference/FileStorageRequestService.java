@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityManager;
+
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +34,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
 
@@ -89,12 +94,19 @@ public class FileStorageRequestService {
     @Autowired
     private StoragePluginConfigurationHandler storageHandler;
 
+    @Autowired
+    protected FileStorageRequestService self;
+
+    @Autowired
+    private EntityManager em;
+
     /**
      * Search for {@link FileStorageRequest}s matching the given destination storage and checksum
      * @param destinationStorage
      * @param checksum
      * @return {@link FileStorageRequest}
      */
+    @Transactional(readOnly = true)
     public Optional<FileStorageRequest> search(String destinationStorage, String checksum) {
         return fileStorageRequestRepo.findByMetaInfoChecksumAndDestinationStorage(checksum, destinationStorage);
     }
@@ -104,6 +116,7 @@ public class FileStorageRequestService {
      * @param pageable
      * @return {@link FileStorageRequest}s by page
      */
+    @Transactional(readOnly = true)
     public Page<FileStorageRequest> search(Pageable pageable) {
         return fileStorageRequestRepo.findAll(pageable);
     }
@@ -113,24 +126,25 @@ public class FileStorageRequestService {
      * @param pageable
      * @return {@link FileStorageRequest}s by page
      */
+    @Transactional(readOnly = true)
     public Page<FileStorageRequest> search(String destinationStorage, Pageable pageable) {
         return fileStorageRequestRepo.findByDestinationStorage(destinationStorage, pageable);
     }
 
     /**
      * Delete a {@link FileStorageRequest}
-     * @param fileStorageRequestuest to delete
+     * @param fileStorageRequest to delete
      */
-    public void deleteFileReferenceRequest(FileStorageRequest fileStorageRequestuest) {
-        fileStorageRequestRepo.deleteById(fileStorageRequestuest.getId());
+    public void delete(FileStorageRequest fileStorageRequest) {
+        fileStorageRequestRepo.deleteById(fileStorageRequest.getId());
     }
 
     /**
      * Update a {@link FileStorageRequest}
-     * @param fileStorageRequestuest to delete
+     * @param fileStorageRequest to delete
      */
-    public void update(FileStorageRequest fileStorageRequestuest) {
-        fileStorageRequestRepo.save(fileStorageRequestuest);
+    public void update(FileStorageRequest fileStorageRequest) {
+        fileStorageRequestRepo.save(fileStorageRequest);
     }
 
     /**
@@ -140,7 +154,7 @@ public class FileStorageRequestService {
      * @param owners of the request to handle
      * @return {@link JobInfo}s scheduled
      */
-    public Collection<JobInfo> scheduleStoreJobs(FileRequestStatus status, Collection<String> storages,
+    public Collection<JobInfo> scheduleJobs(FileRequestStatus status, Collection<String> storages,
             Collection<String> owners) {
         Collection<JobInfo> jobList = Lists.newArrayList();
         Set<String> allStorages = fileStorageRequestRepo.findDestinationStoragesByStatus(status);
@@ -149,7 +163,7 @@ public class FileStorageRequestService {
                 : allStorages;
         for (String storage : storagesToSchedule) {
             Page<FileStorageRequest> filesPage;
-            Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE);
+            Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by("id"));
             do {
                 if ((owners != null) && !owners.isEmpty()) {
                     filesPage = fileStorageRequestRepo.findAllByDestinationStorageAndOwnersIn(storage, owners, page);
@@ -159,9 +173,9 @@ public class FileStorageRequestService {
                 List<FileStorageRequest> fileStorageRequests = filesPage.getContent();
 
                 if (storageHandler.getConfiguredStorages().contains(storage)) {
-                    jobList = this.scheduleStoreJobsByStorage(storage, fileStorageRequests);
+                    jobList.addAll(scheduleJobsByStorage(storage, fileStorageRequests));
                 } else {
-                    this.handleStorageNotAvailable(fileStorageRequests);
+                    handleStorageNotAvailable(fileStorageRequests);
                 }
                 page = filesPage.nextPageable();
             } while (filesPage.hasNext());
@@ -175,23 +189,16 @@ public class FileStorageRequestService {
      * @param fileStorageRequests
      * @return {@link JobInfo}s scheduled
      */
-    private Collection<JobInfo> scheduleStoreJobsByStorage(String storage,
+    private Collection<JobInfo> scheduleJobsByStorage(String storage,
             Collection<FileStorageRequest> fileStorageRequests) {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
         try {
             PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
             IStorageLocation storagePlugin = pluginService.getPlugin(conf.getId());
-            Collection<FileStorageWorkingSubset> workingSubSets = storagePlugin
-                    .prepareForStorage(fileStorageRequests);
-            workingSubSets.forEach(ws -> {
-                Set<JobParameter> parameters = Sets.newHashSet();
-                parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_ID, conf.getId()));
-                parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, ws));
-                ws.getFileReferenceRequests().forEach(fileStorageRequest -> fileStorageRequestRepo
-                        .updateStatus(FileRequestStatus.PENDING, fileStorageRequest.getId()));
-                jobInfoList.add(jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
-                        FileStorageRequestJob.class.getName())));
-            });
+            Collection<FileStorageWorkingSubset> workingSubSets = storagePlugin.prepareForStorage(fileStorageRequests);
+            for (FileStorageWorkingSubset ws : workingSubSets) {
+                jobInfoList.add(self.scheduleJob(ws, conf.getId()));
+            }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             this.handleStorageNotAvailable(fileStorageRequests);
         }
@@ -199,26 +206,24 @@ public class FileStorageRequestService {
     }
 
     /**
-     * Create a new {@link FileStorageRequest}
-     * @param owners owners of the file to reference
-     * @param fileMetaInfo meta information of the file to reference
-     * @param origin file origin location
-     * @param destination file destination location (where the file will be stored).
+     * Schedule a {@link JobInfo} for the given {@link  FileStorageWorkingSubset}.<br/>
+     * NOTE : A new transaction is created for each call at this method. It is mandatory to avoid having too long transactions.
+     * @param workingSubset
+     * @param pluginConfId
+     * @return {@link JobInfo} scheduled.
      */
-    public void createNewFileReferenceRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
-            FileLocation origin, FileLocation destination) {
-        this.addFileReferenceRequest(owners, fileMetaInfo, origin, destination, FileRequestStatus.TODO);
-    }
-
-    public void addFileReferenceRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
-            FileLocation origin, FileLocation destination, FileRequestStatus status) {
-        // Check if file reference request already exists
-        Optional<FileStorageRequest> oFileRefRequest = search(destination.getStorage(), fileMetaInfo.getChecksum());
-        if (oFileRefRequest.isPresent()) {
-            handleFileReferenceRequestAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owners);
-        } else {
-            newFileReferenceRequest(owners, fileMetaInfo, origin, destination, status);
-        }
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public JobInfo scheduleJob(FileStorageWorkingSubset workingSubset, Long pluginConfId) {
+        Set<JobParameter> parameters = Sets.newHashSet();
+        parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_ID, pluginConfId));
+        parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
+        workingSubset.getFileReferenceRequests().forEach(fileStorageRequest -> fileStorageRequestRepo
+                .updateStatus(FileRequestStatus.PENDING, fileStorageRequest.getId()));
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
+                FileStorageRequestJob.class.getName()));
+        em.flush();
+        em.clear();
+        return jobInfo;
     }
 
     /**
@@ -227,28 +232,39 @@ public class FileStorageRequestService {
      * @param fileMetaInfo meta information of the file to reference
      * @param origin file origin location
      * @param destination file destination location (where the file will be stored).
-     * @param status status of the file request to create.
      */
-    private void newFileReferenceRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
-            FileLocation origin, FileLocation destination, FileRequestStatus status) {
-        FileStorageRequest fileStorageRequest = new FileStorageRequest(owners, fileMetaInfo, origin, destination);
-        fileStorageRequest.setStatus(status);
-        if (!storageHandler.getConfiguredStorages().contains(destination.getStorage())) {
-            // The storage destination is unknown, we can already set the request in error status
-            String message = String
-                    .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown. Known storages are %s",
-                            fileMetaInfo.getFileName(), destination.getStorage(),
-                            Arrays.toString(storageHandler.getConfiguredStorages().toArray()));
-            fileStorageRequest.setStatus(FileRequestStatus.ERROR);
-            fileStorageRequest.setErrorCause(message);
-            LOGGER.error(message);
-            fileRefEventPublisher.publishFileRefStoreError(fileMetaInfo.getChecksum(), owners, destination, message);
+    public void create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo, FileLocation origin,
+            FileLocation destination) {
+        create(owners, fileMetaInfo, origin, destination, FileRequestStatus.TODO);
+    }
+
+    public void create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo, FileLocation origin,
+            FileLocation destination, FileRequestStatus status) {
+        // Check if file reference request already exists
+        Optional<FileStorageRequest> oFileRefRequest = search(destination.getStorage(), fileMetaInfo.getChecksum());
+        if (oFileRefRequest.isPresent()) {
+            handleAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owners);
         } else {
-            LOGGER.debug("New file reference request created for file <{}> to store to {} with status {}",
-                         fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getDestination().toString(),
-                         fileStorageRequest.getStatus());
+            FileStorageRequest fileStorageRequest = new FileStorageRequest(owners, fileMetaInfo, origin, destination);
+            fileStorageRequest.setStatus(status);
+            if (!storageHandler.getConfiguredStorages().contains(destination.getStorage())) {
+                // The storage destination is unknown, we can already set the request in error status
+                String message = String
+                        .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown. Known storages are %s",
+                                fileMetaInfo.getFileName(), destination.getStorage(),
+                                Arrays.toString(storageHandler.getConfiguredStorages().toArray()));
+                fileStorageRequest.setStatus(FileRequestStatus.ERROR);
+                fileStorageRequest.setErrorCause(message);
+                LOGGER.error(message);
+                fileRefEventPublisher.publishFileRefStoreError(fileMetaInfo.getChecksum(), owners, destination,
+                                                               message);
+            } else {
+                LOGGER.debug("New file reference request created for file <{}> to store to {} with status {}",
+                             fileStorageRequest.getMetaInfo().getFileName(),
+                             fileStorageRequest.getDestination().toString(), fileStorageRequest.getStatus());
+            }
+            fileStorageRequestRepo.save(fileStorageRequest);
         }
-        fileStorageRequestRepo.save(fileStorageRequest);
     }
 
     /**
@@ -259,8 +275,8 @@ public class FileStorageRequestService {
      * @param newMetaInfo
      * @param owners
      */
-    public void handleFileReferenceRequestAlreadyExists(FileStorageRequest fileStorageRequest,
-            FileReferenceMetaInfo newMetaInfo, Collection<String> owners) {
+    private void handleAlreadyExists(FileStorageRequest fileStorageRequest, FileReferenceMetaInfo newMetaInfo,
+            Collection<String> owners) {
         for (String owner : owners) {
             if (!fileStorageRequest.getOwners().contains(owner)) {
                 fileStorageRequest.getOwners().add(owner);
@@ -304,7 +320,7 @@ public class FileStorageRequestService {
      * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
      * <li> the plugin configuration is disabled </li>
      * </ul>
-     * @param fileStorageRequestuest
+     * @param fileStorageRequest
      */
     private void handleStorageNotAvailable(FileStorageRequest fileStorageRequest) {
         // The storage destination is unknown, we can already set the request in error status

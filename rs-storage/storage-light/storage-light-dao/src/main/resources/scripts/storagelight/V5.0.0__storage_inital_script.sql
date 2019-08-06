@@ -12,6 +12,7 @@ create index idx_cache_file_checksum on t_cache_file (checksum);
 alter table t_cache_file add constraint uk_cache_file_checksum unique (checksum);
 create index idx_file_deletion_request on t_file_deletion_request (storage);
 create index idx_file_reference on t_file_reference (storage, checksum);
+create index idx_file_reference_checksum on t_file_reference (checksum);
 alter table t_file_reference add constraint uk_t_file_reference_checksum_storage unique (checksum, storage);
 create index idx_file_storage_request on t_file_storage_request (destination_storage, checksum);
 alter table t_file_storage_request add constraint t_file_storage_request_checksum_storage unique (checksum, destination_storage);

@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +36,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
 
@@ -48,6 +52,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storagelight.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileRestorationWorkingSubset;
@@ -89,10 +94,23 @@ public class FileCacheRequestService {
     @Autowired
     private StoragePluginConfigurationHandler storageHandler;
 
+    @Autowired
+    private EntityManager em;
+
+    @Autowired
+    protected FileCacheRequestService self;
+
+    @Transactional(readOnly = true)
     public Optional<FileCacheRequest> search(String checksum) {
         return repository.findByChecksum(checksum);
     }
 
+    /**
+     * Creates a new {@link FileCacheRequest} if does not exists already.
+     * @param fileRefToRestore
+     * @param expirationDate
+     * @return {@link FileCacheRequest} created.
+     */
     public Optional<FileCacheRequest> create(FileReference fileRefToRestore, OffsetDateTime expirationDate) {
         String checksum = fileRefToRestore.getMetaInfo().getChecksum();
         Optional<FileCacheRequest> oFcr = repository.findByChecksum(checksum);
@@ -114,8 +132,12 @@ public class FileCacheRequestService {
         return Optional.ofNullable(request);
     }
 
-    public Collection<JobInfo> scheduleRestorationJobs(FileRequestStatus status) {
-
+    /**
+     * Schedule all {@link FileCacheRequest}s with given status to be handled in {@link JobInfo}s
+     * @param status
+     * @return scheduled {@link JobInfo}s
+     */
+    public Collection<JobInfo> scheduleJobs(FileRequestStatus status) {
         Collection<JobInfo> jobList = Lists.newArrayList();
         Set<String> allStorages = repository.findStoragesByStatus(status);
         for (String storage : allStorages) {
@@ -126,7 +148,7 @@ public class FileCacheRequestService {
                 List<FileCacheRequest> requests = filesPage.getContent();
                 if (storageHandler.getConfiguredStorages().contains(storage)) {
                     requests = calculateRestorables(requests);
-                    jobList = this.scheduleRestorationJobsByStorage(storage, requests);
+                    jobList = scheduleJobsByStorage(storage, requests);
                 } else {
                     this.handleStorageNotAvailable(requests);
                 }
@@ -136,6 +158,15 @@ public class FileCacheRequestService {
         return jobList;
     }
 
+    /**
+     * Handle a {@link FileCacheRequest} end with success.<ul>
+     *  <li> Creates the new {@link CacheFile}</li>
+     *  <li> Deletes the {@link FileCacheRequest} handled.
+     *  </ul>
+     * @param fileReq
+     * @param cacheLocation
+     * @param realFileSize
+     */
     public void handleSuccess(FileCacheRequest fileReq, URL cacheLocation, Long realFileSize) {
         Optional<FileCacheRequest> oRequest = repository.findById(fileReq.getId());
         if (oRequest.isPresent()) {
@@ -146,6 +177,11 @@ public class FileCacheRequestService {
         }
     }
 
+    /**
+     * Handle a {@link FileCacheRequest} end with error.
+     * @param fileReq
+     * @param cause
+     */
     public void handleError(FileCacheRequest fileReq, String cause) {
         Optional<FileCacheRequest> oRequest = repository.findById(fileReq.getId());
         if (oRequest.isPresent()) {
@@ -179,27 +215,48 @@ public class FileCacheRequestService {
         return restorables;
     }
 
-    private Collection<JobInfo> scheduleRestorationJobsByStorage(String storage, List<FileCacheRequest> requests) {
+    /**
+     * Schedule all {@link FileCacheRequest}s to be handled in {@link JobInfo}s for the given storage location.
+     * @param storage
+     * @param requests
+     * @return {@link JobInfo}s scheduled
+     */
+    private Collection<JobInfo> scheduleJobsByStorage(String storage, List<FileCacheRequest> requests) {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
         if ((requests != null) && !requests.isEmpty()) {
             try {
                 PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
                 IStorageLocation storagePlugin = pluginService.getPlugin(conf.getId());
                 Collection<FileRestorationWorkingSubset> workingSubSets = storagePlugin.prepareForRestoration(requests);
-                workingSubSets.forEach(ws -> {
-                    Set<JobParameter> parameters = Sets.newHashSet();
-                    parameters.add(new JobParameter(FileCacheRequestJob.DATA_STORAGE_CONF_ID, conf.getId()));
-                    parameters.add(new JobParameter(FileCacheRequestJob.WORKING_SUB_SET, ws));
-                    ws.getFileRestorationRequests()
-                            .forEach(r -> repository.updateStatus(FileRequestStatus.PENDING, r.getId()));
-                    jobInfoList.add(jobInfoService.createAsQueued(new JobInfo(false, 0, parameters,
-                            authResolver.getUser(), FileCacheRequestJob.class.getName())));
-                });
+                for (FileRestorationWorkingSubset ws : workingSubSets) {
+                    jobInfoList.add(self.scheduleJob(ws, conf.getId()));
+                }
             } catch (ModuleException | NotAvailablePluginConfigurationException e) {
                 this.handleStorageNotAvailable(requests);
             }
         }
         return jobInfoList;
+    }
+
+    /**
+     * Schedule a {@link JobInfo} for the given {@link  FileRestorationWorkingSubset}.<br/>
+     * NOTE : A new transaction is created for each call at this method. It is mandatory to avoid having too long transactions.
+     * @param workingSubset
+     * @param pluginConfId
+     * @return {@link JobInfo} scheduled.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public JobInfo scheduleJob(FileRestorationWorkingSubset workingSubset, Long pluginConfId) {
+        Set<JobParameter> parameters = Sets.newHashSet();
+        parameters.add(new JobParameter(FileCacheRequestJob.DATA_STORAGE_CONF_ID, pluginConfId));
+        parameters.add(new JobParameter(FileCacheRequestJob.WORKING_SUB_SET, workingSubset));
+        workingSubset.getFileRestorationRequests()
+                .forEach(r -> repository.updateStatus(FileRequestStatus.PENDING, r.getId()));
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
+                FileCacheRequestJob.class.getName()));
+        em.flush();
+        em.clear();
+        return jobInfo;
     }
 
     /**
@@ -228,11 +285,6 @@ public class FileCacheRequestService {
         request.setErrorCause(String
                 .format("File <%s> cannot be handle for restoration as origin storage <%s> is unknown or disabled.",
                         request.getFileReference().getMetaInfo().getFileName(), request.getStorage()));
-        update(request);
+        repository.save(request);
     }
-
-    private FileCacheRequest update(FileCacheRequest request) {
-        return repository.save(request);
-    }
-
 }

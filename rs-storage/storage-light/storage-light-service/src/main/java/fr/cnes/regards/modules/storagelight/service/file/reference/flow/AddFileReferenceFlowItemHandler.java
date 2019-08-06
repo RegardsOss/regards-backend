@@ -54,7 +54,7 @@ public class AddFileReferenceFlowItemHandler
     /**
      * Bulk size limit to handle messages
      */
-    private static final int BULK_SIZE = 500;
+    private static final int BULK_SIZE = 1_000;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -132,7 +132,7 @@ public class AddFileReferenceFlowItemHandler
                     LOGGER.info("...{} AddFileRefFlowItem handled in {} ms", list.size(),
                                 System.currentTimeMillis() - start);
                     list.clear();
-                } while (tenantItems.size() >= BULK_SIZE); // redo while more than BULK_SIZE items are to be saved
+                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

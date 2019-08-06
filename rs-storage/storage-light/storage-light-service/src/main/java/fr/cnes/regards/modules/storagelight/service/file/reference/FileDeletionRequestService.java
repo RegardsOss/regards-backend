@@ -23,12 +23,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityManager;
+
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
@@ -78,12 +82,18 @@ public class FileDeletionRequestService {
     @Autowired
     private StoragePluginConfigurationHandler storageHandler;
 
+    @Autowired
+    private EntityManager em;
+
+    @Autowired
+    protected FileDeletionRequestService self;
+
     /**
      * Create a new {@link FileDeletionRequest}.
      * @param fileReferenceToDelete {@link FileReference} to delete
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
      */
-    public void createNewFileDeletionRequest(FileReference fileReferenceToDelete, boolean forceDelete) {
+    public void create(FileReference fileReferenceToDelete, boolean forceDelete) {
         if (!fileDeletionRequestRepo.findByFileReferenceId(fileReferenceToDelete.getId()).isPresent()) {
             fileDeletionRequestRepo.save(new FileDeletionRequest(fileReferenceToDelete, forceDelete));
         }
@@ -95,7 +105,7 @@ public class FileDeletionRequestService {
      * @param storages of the {@link FileDeletionRequest}s to handle
      * @return {@link JobInfo}s scheduled
      */
-    public Collection<JobInfo> scheduleDeletionJobs(FileRequestStatus status, Collection<String> storages) {
+    public Collection<JobInfo> scheduleJobs(FileRequestStatus status, Collection<String> storages) {
 
         Collection<JobInfo> jobList = Lists.newArrayList();
         Set<String> allStorages = fileDeletionRequestRepo.findStoragesByStatus(status);
@@ -108,9 +118,9 @@ public class FileDeletionRequestService {
             do {
                 deletionRequestPage = fileDeletionRequestRepo.findByStorage(storage, page);
                 if (storageHandler.getConfiguredStorages().contains(storage)) {
-                    jobList = this.scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
+                    jobList = scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
                 } else {
-                    this.handleStorageNotAvailable(deletionRequestPage.getContent());
+                    handleStorageNotAvailable(deletionRequestPage.getContent());
                 }
                 page = deletionRequestPage.nextPageable();
             } while (deletionRequestPage.hasNext());
@@ -134,19 +144,34 @@ public class FileDeletionRequestService {
 
             Collection<FileDeletionWorkingSubset> workingSubSets = storagePlugin
                     .prepareForDeletion(fileDeletionRequests);
-            workingSubSets.forEach(ws -> {
-                Set<JobParameter> parameters = Sets.newHashSet();
-                parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_ID, conf.getId()));
-                parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, ws));
-                ws.getFileDeletionRequests().forEach(fileRefReq -> fileDeletionRequestRepo
-                        .updateStatus(FileRequestStatus.PENDING, fileRefReq.getId()));
-                jobInfoList.add(jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
-                        FileDeletionRequestJob.class.getName())));
-            });
+            for (FileDeletionWorkingSubset ws : workingSubSets) {
+                jobInfoList.add(self.scheduleJob(ws, conf.getId()));
+            }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             this.handleStorageNotAvailable(fileDeletionRequests);
         }
         return jobInfoList;
+    }
+
+    /**
+     * Schedule a {@link JobInfo} for the given {@link  FileDeletionWorkingSubset}.<br/>
+     * NOTE : A new transaction is created for each call at this method. It is mandatory to avoid having too long transactions.
+     * @param workingSubset
+     * @param pluginConfId
+     * @return {@link JobInfo} scheduled.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public JobInfo scheduleJob(FileDeletionWorkingSubset workingSubset, Long pluginConfId) {
+        Set<JobParameter> parameters = Sets.newHashSet();
+        parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_ID, pluginConfId));
+        parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
+        workingSubset.getFileDeletionRequests().forEach(fileRefReq -> fileDeletionRequestRepo
+                .updateStatus(FileRequestStatus.PENDING, fileRefReq.getId()));
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
+                FileDeletionRequestJob.class.getName()));
+        em.flush();
+        em.clear();
+        return jobInfo;
     }
 
     /**
@@ -182,7 +207,7 @@ public class FileDeletionRequestService {
      * Delete a {@link FileDeletionRequest}
      * @param fileDeletionRequest
      */
-    public void deleteFileDeletionRequest(FileDeletionRequest fileDeletionRequest) {
+    public void delete(FileDeletionRequest fileDeletionRequest) {
         Assert.notNull(fileDeletionRequest, "File deletion request to delete cannot be null");
         Assert.notNull(fileDeletionRequest.getId(), "File deletion request to delete identifier cannot be null");
         fileDeletionRequestRepo.deleteById(fileDeletionRequest.getId());
@@ -203,6 +228,7 @@ public class FileDeletionRequestService {
      * @param fileReference to search for
      * @return {@link FileDeletionRequest} if exists
      */
+    @Transactional(readOnly = true)
     public Optional<FileDeletionRequest> search(FileReference fileReference) {
         return fileDeletionRequestRepo.findByFileReferenceId(fileReference.getId());
 

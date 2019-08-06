@@ -94,7 +94,7 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
             if (oFileRef.isPresent()) {
                 Optional<FileDeletionRequest> oDeletionRequest = fileDeletionRequestService.search(oFileRef.get());
                 if (oDeletionRequest.isPresent()) {
-                    fileDeletionRequestService.deleteFileDeletionRequest(oDeletionRequest.get());
+                    fileDeletionRequestService.delete(oDeletionRequest.get());
                 }
             }
             FileStorageRequest request = oRequest.get();

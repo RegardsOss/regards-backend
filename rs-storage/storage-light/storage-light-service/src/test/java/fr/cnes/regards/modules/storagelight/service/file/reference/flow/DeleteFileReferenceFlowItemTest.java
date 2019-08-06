@@ -178,7 +178,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         Mockito.clearInvocations(publisher);
 
         // Now schedule deletion jobs
-        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleDeletionJobs(FileRequestStatus.TODO,
+        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO,
                                                                                    Lists.newArrayList());
         runAndWaitJob(jobs);
 
@@ -223,7 +223,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         Mockito.clearInvocations(publisher);
 
         // Now schedule deletion jobs
-        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleDeletionJobs(FileRequestStatus.TODO,
+        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO,
                                                                                    Lists.newArrayList());
         runAndWaitJob(jobs);
 
@@ -269,7 +269,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         Mockito.clearInvocations(publisher);
 
         // Now schedule deletion jobs
-        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleDeletionJobs(FileRequestStatus.TODO,
+        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO,
                                                                                    Lists.newArrayList());
         runAndWaitJob(jobs);
 

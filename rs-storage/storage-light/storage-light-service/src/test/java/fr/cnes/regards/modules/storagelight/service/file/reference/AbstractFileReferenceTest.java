@@ -26,15 +26,18 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.commons.io.FileUtils;
 import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 
 import com.google.common.collect.Lists;
@@ -64,6 +67,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.file.cache.CacheService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedStorageService;
@@ -79,6 +83,9 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
 
     protected static final String NEARLINE_CONF_LABEL = "NL_target";
 
+    @SpyBean
+    protected FileRefEventPublisher publisher;
+
     @Autowired
     protected FileReferenceService fileRefService;
 
@@ -86,7 +93,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected NLFileReferenceService nearlineFileRefService;
 
     @Autowired
-    protected FileStorageRequestService fileRefRequestService;
+    protected FileStorageRequestService fileStorageRequestService;
 
     @Autowired
     protected FileCacheRequestService fileCacheRequestService;
@@ -113,7 +120,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected ICacheFileRepository cacheFileRepo;
 
     @Autowired
-    protected IFileStorageRequestRepository fileRefRequestRepo;
+    protected IFileStorageRequestRepository fileStorageRequestRepo;
 
     @Autowired
     protected IFileDeletetionRequestRepository fileDeletionRequestRepo;
@@ -125,8 +132,18 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected PrioritizedStorageService prioritizedDataStorageService;
 
     protected void init() throws ModuleException {
+        try {
+            if (Files.exists(Paths.get("target/cache"))) {
+                FileUtils.deleteDirectory(Paths.get("target/cache").toFile());
+            }
+            if (Files.exists(Paths.get("target/storage"))) {
+                FileUtils.deleteDirectory(Paths.get("target/storage").toFile());
+            }
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
         fileDeletionRequestRepo.deleteAll();
-        fileRefRequestRepo.deleteAll();
+        fileStorageRequestRepo.deleteAll();
         fileCacheReqRepo.deleteAll();
         cacheFileRepo.deleteAll();
         fileRefRepo.deleteAll();
@@ -237,18 +254,18 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), checksum);
-        Optional<FileStorageRequest> oFileRefReq = fileRefRequestService.search(destination.getStorage(), checksum);
+        Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(), checksum);
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
         Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TODO,
                             oFileRefReq.get().getStatus());
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.TODO, null, null);
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         runAndWaitJob(jobs);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        oFileRefReq = fileRefRequestService.search(destination.getStorage(), checksum);
+        oFileRefReq = fileStorageRequestService.search(destination.getStorage(), checksum);
         oFileRef = fileRefService.search(destination.getStorage(), checksum);
         Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
         Assert.assertFalse("File reference request should not exists anymore", oFileRefReq.isPresent());
@@ -282,8 +299,8 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-        Optional<FileStorageRequest> oFileRefReq = fileRefRequestService.search(destination.getStorage(),
-                                                                                fileMetaInfo.getChecksum());
+        Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(),
+                                                                                    fileMetaInfo.getChecksum());
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
         // only the configured storage can be used for storage. Otherwise the request should be set in eroor.
@@ -291,13 +308,13 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
             Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TODO,
                                 oFileRefReq.get().getStatus());
             // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-            Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.TODO,
-                                                                               Sets.newHashSet(), Sets.newHashSet());
+            Collection<JobInfo> jobs = fileStorageRequestService
+                    .scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(), Sets.newHashSet());
             Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
             // Run Job and wait for end
             runAndWaitJob(jobs);
             // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-            oFileRefReq = fileRefRequestService.search(destination.getStorage(), fileMetaInfo.getChecksum());
+            oFileRefReq = fileStorageRequestService.search(destination.getStorage(), fileMetaInfo.getChecksum());
             oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
             Assert.assertFalse("File reference should have been created.", oFileRef.isPresent());
             Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
@@ -319,7 +336,10 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         // Run Job and wait for end
         String tenant = runtimeTenantResolver.getTenant();
         try {
-            jobService.runJob(jobs.iterator().next(), tenant).get();
+            Iterator<JobInfo> it = jobs.iterator();
+            while (it.hasNext()) {
+                jobService.runJob(it.next(), tenant).get();
+            }
         } catch (InterruptedException | ExecutionException e) {
             Assert.fail(e.getMessage());
         } finally {

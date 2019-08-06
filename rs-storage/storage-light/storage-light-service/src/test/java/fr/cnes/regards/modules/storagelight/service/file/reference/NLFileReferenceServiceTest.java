@@ -28,14 +28,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 
 /**
  * @author Sébastien Binda
@@ -44,9 +42,6 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefE
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache" })
 public class NLFileReferenceServiceTest extends AbstractFileReferenceTest {
-
-    @SpyBean
-    private FileRefEventPublisher publisher;
 
     @Before
     public void initialize() throws ModuleException {
