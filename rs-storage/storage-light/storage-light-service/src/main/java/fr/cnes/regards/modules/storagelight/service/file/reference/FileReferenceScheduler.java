@@ -74,7 +74,7 @@ public class FileReferenceScheduler {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.TODO, Sets.newHashSet(),
+                fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(),
                                                             Sets.newHashSet());
             } finally {
                 runtimeTenantResolver.clearTenant();
@@ -87,7 +87,7 @@ public class FileReferenceScheduler {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                fileCacheRequestService.scheduleRestorationJobs(FileRequestStatus.TODO);
+                fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
@@ -99,7 +99,7 @@ public class FileReferenceScheduler {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                fileDeletionRequestService.scheduleDeletionJobs(FileRequestStatus.TODO, Sets.newHashSet());
+                fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet());
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -119,7 +120,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected ICacheFileRepository cacheFileRepo;
 
     @Autowired
-    protected IFileStorageRequestRepository fileRefRequestRepo;
+    protected IFileStorageRequestRepository fileStorageRequestRepo;
 
     @Autowired
     protected IFileDeletetionRequestRepository fileDeletionRequestRepo;
@@ -142,7 +143,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
             Assert.fail(e.getMessage());
         }
         fileDeletionRequestRepo.deleteAll();
-        fileRefRequestRepo.deleteAll();
+        fileStorageRequestRepo.deleteAll();
         fileCacheReqRepo.deleteAll();
         cacheFileRepo.deleteAll();
         fileRefRepo.deleteAll();
@@ -259,7 +260,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TODO,
                             oFileRefReq.get().getStatus());
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.TODO, null, null);
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         runAndWaitJob(jobs);
@@ -308,7 +309,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                                 oFileRefReq.get().getStatus());
             // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
             Collection<JobInfo> jobs = fileStorageRequestService
-                    .scheduleStoreJobs(FileRequestStatus.TODO, Sets.newHashSet(), Sets.newHashSet());
+                    .scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(), Sets.newHashSet());
             Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
             // Run Job and wait for end
             runAndWaitJob(jobs);
@@ -335,7 +336,10 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         // Run Job and wait for end
         String tenant = runtimeTenantResolver.getTenant();
         try {
-            jobService.runJob(jobs.iterator().next(), tenant).get();
+            Iterator<JobInfo> it = jobs.iterator();
+            while (it.hasNext()) {
+                jobService.runJob(it.next(), tenant).get();
+            }
         } catch (InterruptedException | ExecutionException e) {
             Assert.fail(e.getMessage());
         } finally {

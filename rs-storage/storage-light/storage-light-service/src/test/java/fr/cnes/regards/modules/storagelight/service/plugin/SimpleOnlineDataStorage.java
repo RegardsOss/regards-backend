@@ -41,8 +41,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileDeletionWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileRestorationWorkingSubset;
@@ -106,9 +106,10 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public Collection<FileStorageWorkingSubset> prepareForStorage(Collection<FileStorageRequest> FileReferenceRequest) {
+    public Collection<FileStorageWorkingSubset> prepareForStorage(
+            Collection<FileStorageRequest> fileReferenceRequests) {
         Collection<FileStorageWorkingSubset> workingSubSets = Lists.newArrayList();
-        workingSubSets.add(new FileStorageWorkingSubset(Sets.newHashSet(FileReferenceRequest)));
+        workingSubSets.add(new FileStorageWorkingSubset(fileReferenceRequests));
         return workingSubSets;
     }
 

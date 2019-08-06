@@ -132,22 +132,27 @@ public class FileReferenceService {
     @Autowired
     private EntityManager em;
 
+    @Transactional(readOnly = true)
     public Page<FileReference> search(String storage, Pageable pageable) {
         return fileRefRepo.findByLocationStorage(storage, pageable);
     }
 
+    @Transactional(readOnly = true)
     public Optional<FileReference> search(String storage, String checksum) {
         return fileRefRepo.findByLocationStorageAndMetaInfoChecksum(storage, checksum);
     }
 
+    @Transactional(readOnly = true)
     public Set<FileReference> search(String checksum) {
         return fileRefRepo.findByMetaInfoChecksum(checksum);
     }
 
+    @Transactional(readOnly = true)
     public Page<FileReference> search(Pageable pageable) {
         return fileRefRepo.findAll(pageable);
     }
 
+    @Transactional(readOnly = true)
     public Page<FileReference> search(Specification<FileReference> spec, Pageable page) {
         return fileRefRepo.findAll(spec, page);
     }
@@ -238,7 +243,7 @@ public class FileReferenceService {
             if (destination.equals(origin)) {
                 return Optional.of(this.create(owners, fileMetaInfo, destination));
             } else {
-                fileRefRequestService.createNewFileReferenceRequest(owners, fileMetaInfo, origin, destination);
+                fileRefRequestService.create(owners, fileMetaInfo, origin, destination);
             }
         }
         return fileRef;
@@ -257,6 +262,16 @@ public class FileReferenceService {
         String message = String.format("File reference %s (checksum: %s) as been completly deleted for all owners.",
                                        fileRef.getMetaInfo().getFileName(), fileRef.getMetaInfo().getChecksum());
         fileRefPublisher.publishFileRefDeleted(fileRef, message);
+    }
+
+    public void delete(Collection<DeleteFileRefFlowItem> items) {
+        for (DeleteFileRefFlowItem item : items) {
+            try {
+                removeOwner(item.getChecksum(), item.getStorage(), item.getOwner(), item.isForceDelete());
+            } catch (EntityNotFoundException e) {
+                LOGGER.debug(e.getMessage(), e);
+            }
+        }
     }
 
     /**
@@ -387,7 +402,7 @@ public class FileReferenceService {
         if (fileReference.getOwners().isEmpty()) {
             if (storageHandler.getConfiguredStorages().contains(fileReference.getLocation().getStorage())) {
                 // If the file is stored on an accessible storage, create a new deletion request
-                fileDeletionRequestService.createNewFileDeletionRequest(fileReference, forceDelete);
+                fileDeletionRequestService.create(fileReference, forceDelete);
             } else {
                 // Else, directly delete the file reference
                 this.delete(fileReference);
@@ -509,12 +524,11 @@ public class FileReferenceService {
         Optional<FileDeletionRequest> deletionRequest = fileDeletionRequestService.search(fileReference);
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
             // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
-            fileRefRequestService.addFileReferenceRequest(owners, newMetaInfo, origin, destination,
-                                                          FileRequestStatus.DELAYED);
+            fileRefRequestService.create(owners, newMetaInfo, origin, destination, FileRequestStatus.DELAYED);
         } else {
             if (deletionRequest.isPresent()) {
                 // Delete not running deletion request to add the new owner
-                fileDeletionRequestService.deleteFileDeletionRequest(deletionRequest.get());
+                fileDeletionRequestService.delete(deletionRequest.get());
             }
             for (String owner : owners) {
                 if (!fileReference.getOwners().contains(owner)) {
@@ -534,12 +548,12 @@ public class FileReferenceService {
             String message = null;
             if (!newOwners.isEmpty()) {
                 updatedFileRef = fileRefRepo.save(fileReference);
-                message = String
-                        .format("New owners <%s> added to existing referenced file <%s> at <%s> (checksum: %s) ",
-                                Arrays.toString(newOwners.toArray()), fileReference.getMetaInfo().getFileName(),
-                                fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
+                message = String.format("New owners %s added to existing referenced file %s at %s (checksum: %s)",
+                                        Arrays.toString(newOwners.toArray()), fileReference.getMetaInfo().getFileName(),
+                                        fileReference.getLocation().toString(),
+                                        fileReference.getMetaInfo().getChecksum());
             } else {
-                message = String.format("File <%s> already referenced at <%s> (checksum: %s) for owners <%>",
+                message = String.format("File %s already referenced at %s (checksum: %s) for owners %s",
                                         fileReference.getMetaInfo().getFileName(),
                                         fileReference.getLocation().toString(),
                                         fileReference.getMetaInfo().getChecksum(),

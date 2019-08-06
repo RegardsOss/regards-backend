@@ -257,7 +257,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
 
         // Now the deletion job is ended, the file reference request is in todo state.
         Collection<JobInfo> jobs = fileStorageRequestService
-                .scheduleStoreJobs(FileRequestStatus.TODO, Lists.newArrayList(fileRefStorage), Lists.newArrayList());
+                .scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(fileRefStorage), Lists.newArrayList());
         runAndWaitJob(jobs);
 
         frr = fileStorageRequestService.search(fileRefStorage, fileRefChecksum);
@@ -295,7 +295,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         // Run file reference creation.
         fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.TODO, null, null);
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         runAndWaitJob(jobs);
@@ -340,7 +340,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
         fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
 
-        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.TODO, null, null);
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         runAndWaitJob(jobs);
@@ -365,7 +365,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, null, null);
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.ERROR, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         runAndWaitJob(jobs);
@@ -387,7 +387,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, null, null);
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.ERROR, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         String tenant = runtimeTenantResolver.getTenant();
@@ -414,7 +414,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
         Set<String> owners = Sets.newHashSet("someone-else");
-        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, null, owners);
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.ERROR, null, owners);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         String tenant = runtimeTenantResolver.getTenant();
@@ -446,7 +446,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
         Set<String> storages = Sets.newHashSet(ONLINE_CONF_LABEL);
-        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, storages, null);
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.ERROR, storages, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         String tenant = runtimeTenantResolver.getTenant();
@@ -496,7 +496,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
                                 NEARLINE_CONF_LABEL, oReq.get().getStorage());
             Assert.assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
                                 FileRequestStatus.TODO, oReq.get().getStatus());
-            Collection<JobInfo> jobs = fileCacheRequestService.scheduleRestorationJobs(FileRequestStatus.TODO);
+            Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
             runAndWaitJob(jobs);
 
             Optional<CacheFile> oCf = cacheService.search(fileRef.getMetaInfo().getChecksum());
@@ -525,7 +525,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         Assert.assertTrue("A cache request should be created",
                           fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
 
-        Collection<JobInfo> jobs = fileCacheRequestService.scheduleRestorationJobs(FileRequestStatus.TODO);
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
         runAndWaitJob(jobs);
 
         Assert.assertTrue("file should be restored in cache",

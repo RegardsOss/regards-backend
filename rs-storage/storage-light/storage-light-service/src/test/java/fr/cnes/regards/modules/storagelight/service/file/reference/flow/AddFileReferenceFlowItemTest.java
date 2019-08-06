@@ -194,7 +194,7 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
 
         // SImulate job schedule
-        Collection<JobInfo> jobs = fileStorageRequestService.scheduleStoreJobs(FileRequestStatus.TODO,
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO,
                                                                                Lists.newArrayList(ONLINE_CONF_LABEL),
                                                                                Lists.newArrayList(owner));
         runAndWaitJob(jobs);
@@ -260,7 +260,7 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
 
         // Simulate job schedule
         Collection<JobInfo> jobs = fileStorageRequestService
-                .scheduleStoreJobs(FileRequestStatus.TODO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList());
+                .scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList());
         runAndWaitJob(jobs);
 
         Assert.assertFalse("File should not be referenced",

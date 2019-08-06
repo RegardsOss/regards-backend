@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import com.google.common.collect.Sets;
 
@@ -73,9 +74,9 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
                             fileRefRequest.getDestination().getStorage(), fileRefRequest.getMetaInfo().getFileName()));
         } else {
             FileLocation newLocation = new FileLocation(fileRefRequest.getDestination().getStorage(), storedUrl);
-            LOG.info("[STORAGE SUCCESS] - Store success for file {} (id={})in {} (checksum: {}).",
-                     fileRefRequest.getMetaInfo().getFileName(), fileRefRequest.getId(), newLocation,
-                     fileRefRequest.getMetaInfo().getChecksum());
+            LOG.debug("[STORAGE SUCCESS] - Store success for file {} (id={})in {} (checksum: {}).",
+                      fileRefRequest.getMetaInfo().getFileName(), fileRefRequest.getId(), newLocation,
+                      fileRefRequest.getMetaInfo().getChecksum());
             job.advanceCompletion();
             // Create FileReference resulting of the success of FileReferenceRequest
             Optional<FileReference> oFileRef = fileReferenceService.addFileReference(fileRefRequest.getOwners(),
@@ -83,7 +84,13 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
                                                                                      newLocation, newLocation);
             if (oFileRef.isPresent()) {
                 // Delete the FileRefRequest as it has been handled
-                fileRefRequestService.deleteFileReferenceRequest(fileRefRequest);
+                try {
+                    fileRefRequestService.delete(fileRefRequest);
+                } catch (EmptyResultDataAccessException e) {
+                    LOG.warn(String.format("Unable to delete storage request with id %s. Cause : %s",
+                                           fileRefRequest.getId(), e.getMessage()),
+                             e);
+                }
             } else {
                 String errorCause = String.format("Unable to save new file reference for file %s",
                                                   fileRefRequest.getDestination().toString());

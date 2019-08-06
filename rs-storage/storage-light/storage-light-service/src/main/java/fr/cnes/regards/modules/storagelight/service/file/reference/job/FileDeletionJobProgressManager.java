@@ -77,7 +77,7 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
             publisher.publishFileRefDeletionError(fileRef, cause);
         } else {
             // Delete file deletion request
-            fileDeletionRequestService.deleteFileDeletionRequest(fileDeletionRequest);
+            fileDeletionRequestService.delete(fileDeletionRequest);
             // Delete file reference
             fileReferenceService.delete(fileRef);
             // NOTE : The file reference event is published by the fileReferenceService
@@ -98,7 +98,7 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
         LOGGER.info("[DELETION SUCCESS] - {}", successMessage);
         job.advanceCompletion();
         // Delete file deletion request
-        fileDeletionRequestService.deleteFileDeletionRequest(fileDeletionRequest);
+        fileDeletionRequestService.delete(fileDeletionRequest);
         fileReferenceService.delete(fileRef);
         // NOTE : the FileReferenceEvent is published by the fileReferenceService when the file is completely deleted
         handled.add(fileDeletionRequest);
