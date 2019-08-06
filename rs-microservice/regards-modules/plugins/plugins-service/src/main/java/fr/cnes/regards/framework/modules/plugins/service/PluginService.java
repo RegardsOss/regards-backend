@@ -487,6 +487,17 @@ public class PluginService implements IPluginService {
         return configuration != null ? getPlugin(configuration.getBusinessId(), dynamicParameters) : null;
     }
 
+    @Override
+    public boolean canInstantiate(Long id) throws ModuleException, NotAvailablePluginConfigurationException {
+        Optional<PluginConfiguration> plgConf = repos.findById(id);
+        if (plgConf.isPresent()) {
+            return canInstantiate(plgConf.get().getBusinessId());
+        } else {
+            LOGGER.warn(String.format("Plugin with configuration %d couldn't be instanciated", id));
+            return false;
+        }
+    }
+
     /**
      * We consider only plugin without dynamic parameters so we can profit from the cache system.
      * @return whether a plugin conf, without dynamic parameters is instanciable or not
@@ -501,6 +512,18 @@ public class PluginService implements IPluginService {
         } catch (PluginUtilsRuntimeException e) {
             LOGGER.warn(String.format("Plugin with configuration %s couldn't be instanciated", businessId), e);
             return false;
+        }
+    }
+
+    @Override
+    public <T> T getPlugin(Long id, IPluginParam... dynamicPluginParameters)
+            throws ModuleException, NotAvailablePluginConfigurationException {
+        Optional<PluginConfiguration> plgConf = repos.findById(id);
+        if (plgConf.isPresent()) {
+            return getPlugin(plgConf.get().getBusinessId(), dynamicPluginParameters);
+        } else {
+            LOGGER.error(String.format("Error while getting the plugin configuration <%d>.", id));
+            throw new EntityNotFoundException(id, PluginConfiguration.class);
         }
     }
 

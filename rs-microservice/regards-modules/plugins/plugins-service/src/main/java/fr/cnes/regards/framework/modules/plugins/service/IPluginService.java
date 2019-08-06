@@ -70,7 +70,30 @@ public interface IPluginService {
      * @return whether the plugin configured by the given plugin configuration threw its id can be instantiated or not
      * @throws NotAvailablePluginConfigurationException
      */
+    @Deprecated
+    boolean canInstantiate(Long id) throws ModuleException, NotAvailablePluginConfigurationException;
+
+    /**
+     * Use {@link #canInstantiate(String)} with business identifier to be instance independent.
+     * @return whether the plugin configured by the given plugin configuration threw its id can be instantiated or not
+     * @throws NotAvailablePluginConfigurationException
+     */
     boolean canInstantiate(String businessId) throws ModuleException, NotAvailablePluginConfigurationException;
+
+    /**
+     * Use {@link #getPlugin(String, IPluginParam...)} with business identifier to be instance independent.
+     * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
+     * return type.
+     * @param <T> a plugin instance
+     * @param id database identifier of the {@link PluginConfiguration}.
+     * @param dynamicPluginParameters list of dynamic {@link AbstractPluginParam}
+     * @return a plugin instance
+     * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
+     * @throws NotAvailablePluginConfigurationException
+     */
+    @Deprecated
+    <T> T getPlugin(Long id, IPluginParam... dynamicPluginParameters)
+            throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
      * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
@@ -129,7 +152,8 @@ public interface IPluginService {
     PluginConfiguration updatePluginConfiguration(PluginConfiguration plugin) throws ModuleException;
 
     /**
-     * Get the {@link PluginConfiguration}. Use {@link #getPluginConfiguration(String)} with business identifier to be instance independent.
+     * Get the {@link PluginConfiguration}.
+     * Use {@link #getPluginConfiguration(String)} with business identifier to be instance independent.
      * @param id business identifier of the {@link PluginConfiguration}.
      * @return a specific configuration
      * @throws EntityNotFoundException thrown if we cannot find any PluginConfiguration corresponding to pId

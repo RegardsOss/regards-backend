@@ -88,48 +88,141 @@ public interface IPluginParam {
                 String.format("Cannot apply default value for parameter \"%s\" of type \"%s\"", getName(), getType()));
     }
 
+    default void illegalValueForParameter() {
+        throw new IllegalArgumentException(
+                String.format("Value is not compatible with \"%s\" parameter type", getType()));
+    }
+
     static StringPluginParam build(String name, String value) {
         return new StringPluginParam().with(name, value);
+    }
+
+    default void value(String value) {
+        if (PluginParamType.STRING.equals(getType())) {
+            ((StringPluginParam) this).setValue(value);
+        } else {
+            illegalValueForParameter();
+        }
     }
 
     static BytePluginParam build(String name, Byte value) {
         return new BytePluginParam().with(name, value);
     }
 
+    default void value(Byte value) {
+        if (PluginParamType.BYTE.equals(getType())) {
+            ((BytePluginParam) this).setValue(value);
+        } else {
+            illegalValueForParameter();
+        }
+    }
+
     static ShortPluginParam build(String name, Short value) {
         return new ShortPluginParam().with(name, value);
+    }
+
+    default void value(Short value) {
+        if (PluginParamType.SHORT.equals(getType())) {
+            ((ShortPluginParam) this).setValue(value);
+        } else {
+            illegalValueForParameter();
+        }
     }
 
     static IntegerPluginParam build(String name, Integer value) {
         return new IntegerPluginParam().with(name, value);
     }
 
+    default void value(Integer value) {
+        if (PluginParamType.INTEGER.equals(getType())) {
+            ((IntegerPluginParam) this).setValue(value);
+        } else {
+            illegalValueForParameter();
+        }
+    }
+
     static LongPluginParam build(String name, Long value) {
         return new LongPluginParam().with(name, value);
+    }
+
+    default void value(Long value) {
+        if (PluginParamType.LONG.equals(getType())) {
+            ((LongPluginParam) this).setValue(value);
+        } else {
+            illegalValueForParameter();
+        }
     }
 
     static FloatPluginParam build(String name, Float value) {
         return new FloatPluginParam().with(name, value);
     }
 
+    default void value(Float value) {
+        if (PluginParamType.FLOAT.equals(getType())) {
+            ((FloatPluginParam) this).setValue(value);
+        } else {
+            illegalValueForParameter();
+        }
+    }
+
     static DoublePluginParam build(String name, Double value) {
         return new DoublePluginParam().with(name, value);
+    }
+
+    default void value(Double value) {
+        if (PluginParamType.DOUBLE.equals(getType())) {
+            ((DoublePluginParam) this).setValue(value);
+        } else {
+            illegalValueForParameter();
+        }
     }
 
     static BooleanPluginParam build(String name, Boolean value) {
         return new BooleanPluginParam().with(name, value);
     }
 
+    default void value(Boolean value) {
+        if (PluginParamType.BOOLEAN.equals(getType())) {
+            ((BooleanPluginParam) this).setValue(value);
+        } else {
+            illegalValueForParameter();
+        }
+    }
+
     static CollectionPluginParam build(String name, Collection<?> value) {
         return new CollectionPluginParam().with(name, value);
+    }
+
+    default void value(Collection<?> value) {
+        if (PluginParamType.COLLECTION.equals(getType())) {
+            ((CollectionPluginParam) this).setValue(value);
+        } else {
+            illegalValueForParameter();
+        }
     }
 
     static MapPluginParam build(String name, Map<String, ?> value) {
         return new MapPluginParam().with(name, value);
     }
 
+    default void value(Map<String, ?> value) {
+        if (PluginParamType.MAP.equals(getType())) {
+            ((MapPluginParam) this).setValue(value);
+        } else {
+            illegalValueForParameter();
+        }
+    }
+
     static ObjectPluginParam build(String name, Object value) {
         return new ObjectPluginParam().with(name, value);
+    }
+
+    default void value(Object value) {
+        if (PluginParamType.POJO.equals(getType())) {
+            ((ObjectPluginParam) this).setValue(value);
+        } else {
+            illegalValueForParameter();
+        }
     }
 
     /**
