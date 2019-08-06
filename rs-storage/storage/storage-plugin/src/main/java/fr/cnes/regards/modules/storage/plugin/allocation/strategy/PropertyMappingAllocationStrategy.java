@@ -151,7 +151,7 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
             try {
                 String propertyValue = JsonPath.read(gson.toJson(dataFile.getAip()), propertyPath);
                 Set<Long> chosenOnes = valueConfIdMap.get(propertyValue);
-                if ((chosenOnes == null) || chosenOnes.isEmpty()) {
+                if (chosenOnes == null || chosenOnes.isEmpty()) {
                     // in case the value is unknown, lets set it into the default
                     if (defaultDataStorageConfId != null) {
                         dispatch.put(defaultDataStorageConfId, dataFile);

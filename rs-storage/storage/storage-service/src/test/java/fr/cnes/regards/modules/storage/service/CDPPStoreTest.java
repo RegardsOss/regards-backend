@@ -50,9 +50,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IAIPEntityRepository;
@@ -138,10 +137,10 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
     private void configure() throws ModuleException {
 
         // Define a local data storage
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              Paths.get("target", "localstorage").toUri().toString())
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 100_000_000).getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                        Paths.get("target", "localstorage").toUri().toString()),
+                     IPluginParam.build(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 100_000_000));
 
         PluginConfiguration localDataStorageConf = PluginUtils.getPluginConfiguration(parameters,
                                                                                       LocalDataStorage.class);
@@ -182,7 +181,7 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
             Thread.sleep(1_000);
             storedAIP = aipRepository.findAllByStateIn(AIPState.STORED, PageRequest.of(0, 100)).getTotalElements();
             loops--;
-        } while ((storedAIP != expected) && (loops != 0));
+        } while (storedAIP != expected && loops != 0);
 
         long stopTime = System.currentTimeMillis();
         LOGGER.info("Time elapsed : {}", stopTime - startTime);

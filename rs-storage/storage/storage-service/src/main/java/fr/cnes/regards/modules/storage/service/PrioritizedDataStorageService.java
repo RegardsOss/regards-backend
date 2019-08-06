@@ -188,7 +188,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
                         .findAllByDataStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(toDelete.getDataStorageType(),
                                                                                           toDelete.getPriority());
                 prioritizedDataStorageRepository.delete(toDelete);
-                pluginService.deletePluginConfiguration(toDelete.getDataStorageConfiguration().getId());
+                pluginService.deletePluginConfiguration(toDelete.getDataStorageConfiguration().getBusinessId());
                 em.flush();
                 for (PrioritizedDataStorage lessPrioritized : lessPrioritizeds) {
                     lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);

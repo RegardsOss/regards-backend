@@ -21,8 +21,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
-import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -102,7 +100,6 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         dataStorage1.setLabel("DataStorage1");
         dataStorage1.setPriorityOrder(0);
         dataStorage1.setVersion("1.0");
-        dataStorage1.setInterfaceNames(Sets.newHashSet());
         dataStorage1 = pluginRepo.save(dataStorage1);
         PrioritizedDataStorage pds1 = new PrioritizedDataStorage(dataStorage1, 0L, DataStorageType.ONLINE);
         pds1 = prioritizedDataStorageRepository.save(pds1);
@@ -111,7 +108,6 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         dataStorage2.setLabel("DataStorage2");
         dataStorage2.setPriorityOrder(0);
         dataStorage2.setVersion("1.0");
-        dataStorage2.setInterfaceNames(Sets.newHashSet());
         dataStorage2 = pluginRepo.save(dataStorage2);
         PrioritizedDataStorage pds2 = new PrioritizedDataStorage(dataStorage2, 1L, DataStorageType.ONLINE);
         pds2 = prioritizedDataStorageRepository.save(pds2);
@@ -120,7 +116,6 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         dataStorage3.setLabel("DataStorage3");
         dataStorage3.setPriorityOrder(0);
         dataStorage3.setVersion("1.0");
-        dataStorage3.setInterfaceNames(Sets.newHashSet());
         dataStorage3 = pluginRepo.save(dataStorage3);
         PrioritizedDataStorage pds3 = new PrioritizedDataStorage(dataStorage3, 2L, DataStorageType.ONLINE);
         pds3 = prioritizedDataStorageRepository.save(pds3);

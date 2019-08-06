@@ -34,11 +34,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
@@ -52,6 +49,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
@@ -63,14 +61,13 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobWorkspaceExcep
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
@@ -151,9 +148,10 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         // ... dataStorage ...
         baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/StoreJobIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
-        Set<PluginParameter> pluginParameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L).getParameters();
+        Set<IPluginParam> pluginParameters = IPluginParam
+                .set(IPluginParam.build(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                        baseStorageLocation.toString()),
+                     IPluginParam.build(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L));
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
         PluginMetaData localStorageMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         localStorageConf = new PluginConfiguration(localStorageMeta, LOCAL_STORAGE_LABEL, pluginParameters);
@@ -166,15 +164,8 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         aipSession.setLastActivationDate(OffsetDateTime.now());
         aipSession.setId(aip.getSession());
 
-        df = new StorageDataFile(Sets.newHashSet(source),
-                                 "de89a907d33a9716d11765582102b2e0",
-                                 "MD5",
-                                 DataType.OTHER,
-                                 0L,
-                                 new MimeType("text", "plain"),
-                                 new AIPEntity(aip, aipSession),
-                                 "data.txt",
-                                 null);
+        df = new StorageDataFile(Sets.newHashSet(source), "de89a907d33a9716d11765582102b2e0", "MD5", DataType.OTHER, 0L,
+                new MimeType("text", "plain"), new AIPEntity(aip, aipSession), "data.txt", null);
         workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
         // now that we have some parameters, lets storeAndCreate the job
         parameters = Sets.newHashSet();
@@ -194,24 +185,17 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     @Test
     public void storeQuicklookJobTest() throws IOException {
-        URL source = new URL("file",
-                             "",
-                             Paths.get("src", "test", "resources", "quicklook.png").toAbsolutePath().toString());
+        URL source = new URL("file", "",
+                Paths.get("src", "test", "resources", "quicklook.png").toAbsolutePath().toString());
         AIP aip = getAipFromFile(true);
         aip.addEvent(EventType.SUBMISSION.name(), "submission into our beautiful system");
         AIPSession aipSession = new AIPSession();
         aipSession.setLastActivationDate(OffsetDateTime.now());
         aipSession.setId(aip.getSession());
 
-        StorageDataFile df = new StorageDataFile(Sets.newHashSet(source),
-                                                 "540e72d5ac22f25c70d9c72b9b36fb96",
-                                                 "MD5",
-                                                 DataType.QUICKLOOK_SD,
-                                                 0L,
-                                                 new MimeType("image", "png"),
-                                                 new AIPEntity(aip, aipSession),
-                                                 "quicklook.png",
-                                                 null);
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(source), "540e72d5ac22f25c70d9c72b9b36fb96", "MD5",
+                DataType.QUICKLOOK_SD, 0L, new MimeType("image", "png"), new AIPEntity(aip, aipSession),
+                "quicklook.png", null);
         IWorkingSubset workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
 
         Set<JobParameter> jobParameters = Sets.newHashSet();
@@ -225,21 +209,16 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         StorageJobProgressManager progressManager = job.getProgressManager();
         Assert.assertFalse("there was a problem during the job", progressManager.isProcessError());
         Assert.assertTrue(progressManager.getHandledDataFile().size() == 1);
-        Assert.assertEquals("PNG should have a width of 1123 pixel",
-                            Integer.valueOf(1123),
+        Assert.assertEquals("PNG should have a width of 1123 pixel", Integer.valueOf(1123),
                             progressManager.getHandledDataFile().toArray(new StorageDataFile[0])[0].getWidth());
-        Assert.assertEquals("PNG should have a height of 764 pixel",
-                            Integer.valueOf(794),
+        Assert.assertEquals("PNG should have a height of 764 pixel", Integer.valueOf(794),
                             progressManager.getHandledDataFile().toArray(new StorageDataFile[0])[0].getHeight());
     }
 
     @Test
     public void storeMetadataFilesJobTest() {
-        JobInfo toTest = new JobInfo(false,
-                                     0,
-                                     parameters,
-                                     getDefaultUserEmail(),
-                                     StoreMetadataFilesJob.class.getName());
+        JobInfo toTest = new JobInfo(false, 0, parameters, getDefaultUserEmail(),
+                StoreMetadataFilesJob.class.getName());
         StoreMetadataFilesJob job = (StoreMetadataFilesJob) runJob(toTest);
         // now that we synchronously ran the job, lets do some asserts
         StorageJobProgressManager progressManager = job.getProgressManager();

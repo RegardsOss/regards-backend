@@ -288,8 +288,9 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     public PluginConfUpdatable allowConfigurationUpdate(PluginConfiguration newConfiguration,
             PluginConfiguration currentConfiguration, boolean filesAlreadyStored) {
         // Only the baseStorageDirectory cannot be changed if files are already stored
-        String currentLocation = currentConfiguration.getParameterValue(BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME);
-        String newLocation = newConfiguration.getParameterValue(BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME);
+        String currentLocation = (String) currentConfiguration
+                .getParameterValue(BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME);
+        String newLocation = (String) newConfiguration.getParameterValue(BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME);
         if (filesAlreadyStored && !currentLocation.equals(newLocation)) {
             return PluginConfUpdatable.preventUpdate(String
                     .format("Files are already stored in the base location %s. You can't modify this parameter. Maybe you want to create a new configuration for the %s location?",

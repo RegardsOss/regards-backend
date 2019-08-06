@@ -57,13 +57,12 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -110,9 +109,10 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
     public void init() throws IOException, ModuleException, URISyntaxException {
         baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/LocalDataStorageIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L).getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                        baseStorageLocation.toString()),
+                     IPluginParam.build(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L));
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
         PluginMetaData localStorageMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         localStorageConf = new PluginConfiguration(localStorageMeta, LOCAL_STORAGE_LABEL, parameters);
@@ -147,7 +147,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         Duration spent = Duration.between(startTime, endTime);
         LOG.info("#################################################");
         LOG.info("############# Sequential storage took: " + spent.getSeconds() + " seconds and "
-                + (spent.getNano() / 1_000_000) + " millis");
+                + spent.getNano() / 1_000_000 + " millis");
         LOG.info("#################################################");
         // lets reset the timer
         startTime = LocalTime.now();
@@ -168,7 +168,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         spent = Duration.between(startTime, endTime);
         LOG.info("#################################################");
         LOG.info("############# Parallel storage took: " + spent.getSeconds() + " seconds and "
-                + (spent.getNano() / 1_000_000) + " millis");
+                + spent.getNano() / 1_000_000 + " millis");
         LOG.info("#################################################");
     }
 
@@ -180,7 +180,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         aipSession.setId(SESSION);
         aipSession.setLastActivationDate(OffsetDateTime.now());
         aip.addEvent(EventType.SUBMISSION.name(), "just for fun", OffsetDateTime.now());
-        LocalDataStorage storagePlugin = pluginService.getPlugin(localStorageConf.getId());
+        LocalDataStorage storagePlugin = pluginService.getPlugin(localStorageConf.getBusinessId());
         // valid file to get a call to progressManager.storageSucceed
         StorageDataFile validDF = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt")),
@@ -229,7 +229,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
 
     @After
     public void cleanUp() throws ModuleException, URISyntaxException, IOException {
-        pluginService.deletePluginConfiguration(localStorageConf.getId());
+        pluginService.deletePluginConfiguration(localStorageConf.getBusinessId());
         Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
                 .forEach(File::delete);
     }

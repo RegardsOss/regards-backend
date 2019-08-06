@@ -52,7 +52,7 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -60,7 +60,6 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -112,9 +111,10 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
             throws ModuleException, IOException, URISyntaxException {
         URL baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/LocalDataStorageIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L).getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                        baseStorageLocation.toString()),
+                     IPluginParam.build(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L));
         PluginMetaData localDataStorageMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         PluginConfiguration localStorageConf = new PluginConfiguration(localDataStorageMeta, label, parameters);
         return pluginService.savePluginConfiguration(localStorageConf);
@@ -124,9 +124,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
             throws ModuleException {
         // lets get a allocation
         PluginMetaData allocation = PluginUtils.createPluginMetaData(AIPMiscAllocationStrategyPlugin.class);
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(AIPMiscAllocationStrategyPlugin.MAP_PLUGINID_PLUGINCONFID_PARAMETER, mapping)
-                .getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(AIPMiscAllocationStrategyPlugin.MAP_PLUGINID_PLUGINCONFID_PARAMETER, mapping));
         return pluginService.savePluginConfiguration(new PluginConfiguration(allocation, label, parameters));
     }
 
@@ -198,7 +197,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         mapping.put("Local", new PluginConfigurationIdentifiersWrapper(Arrays.asList(localConf1.getId())));
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", mapping);
 
-        AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
+        AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService
+                .getPlugin(allocationStrategyConf.getBusinessId());
         Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile1));
         Assert.assertFalse(result.containsKey(nearConf2.getId()));
@@ -234,7 +234,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
                     new PluginConfigurationIdentifiersWrapper(Arrays.asList(nearConf1.getId())));
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", mapping);
 
-        AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
+        AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService
+                .getPlugin(allocationStrategyConf.getBusinessId());
         Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile1));
         Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile2));
@@ -264,7 +265,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         // Init allocation strategy
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", null);
 
-        AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
+        AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService
+                .getPlugin(allocationStrategyConf.getBusinessId());
         Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile1));
         Assert.assertTrue(result.containsEntry(localConf1.getId(), dataFile1));
@@ -291,7 +293,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         // Init allocation strategy
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", null);
 
-        AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
+        AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService
+                .getPlugin(allocationStrategyConf.getBusinessId());
         Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertFalse(result.containsKey(nearConf1.getId()));
         Assert.assertFalse(result.containsKey(nearConf2.getId()));
@@ -319,7 +322,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         // Init allocation strategy
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", null);
 
-        AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
+        AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService
+                .getPlugin(allocationStrategyConf.getBusinessId());
         Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue(result.isEmpty());
     }

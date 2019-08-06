@@ -161,7 +161,7 @@ public class AIPMiscAllocationStrategyPlugin implements IAllocationStrategy {
         Multimap<Long, StorageDataFile> dispatched = HashMultimap.create();
         for (StorageDataFile file : dataFilesToHandle) {
             InformationPackageMap misc = file.getAip().getProperties().getMiscInformation();
-            if ((misc != null) && !misc.isEmpty()) {
+            if (misc != null && !misc.isEmpty()) {
                 List<PluginConfiguration> pluginConfigurations = Lists.newArrayList();
                 // 1. Read storage information from misc section
                 Set<AIPMiscStorageInformation> infos = readMiscStorageInformations(misc);
@@ -211,7 +211,7 @@ public class AIPMiscAllocationStrategyPlugin implements IAllocationStrategy {
         // 1. Retrieve confs for the given pluginId
         PluginConfigurationIdentifiersWrapper configuredConfs = mapPluginConfIdForPluginId.get(info.getPluginId());
         List<PluginConfiguration> confs = pluginService.getActivePluginConfigurations(info.getPluginId());
-        if ((configuredConfs == null) || configuredConfs.getPluginConfIdentifiers().isEmpty()) {
+        if (configuredConfs == null || configuredConfs.getPluginConfIdentifiers().isEmpty()) {
             // If mapPluginConfIdForPluginId parameter is not defined in this plugin :
             // Do not dispatch file if there is more than once available and active configuration
             // Else use the only one active.
@@ -246,7 +246,7 @@ public class AIPMiscAllocationStrategyPlugin implements IAllocationStrategy {
      */
     private void addPluginConfiguration(AIPMiscStorageInformation info, StorageDataFile file,
             PluginConfiguration pluginConf, List<PluginConfiguration> pluginConfigurations) {
-        if (!noEmptyDirectory || (info.getDirectory() != null)) {
+        if (!noEmptyDirectory || info.getDirectory() != null) {
             file.setStorageDirectory(info.getDirectory());
             pluginConfigurations.add(pluginConf);
         } else {
@@ -264,7 +264,7 @@ public class AIPMiscAllocationStrategyPlugin implements IAllocationStrategy {
         Set<AIPMiscStorageInformation> infos = Sets.newHashSet();
         JsonObject miscJson = gson.toJsonTree(miscInformation).getAsJsonObject();
         JsonElement storageSection = miscJson.get("storage");
-        if ((storageSection != null) && storageSection.isJsonArray()) {
+        if (storageSection != null && storageSection.isJsonArray()) {
             for (JsonElement storage : storageSection.getAsJsonArray()) {
                 try {
                     AIPMiscStorageInformation info = gson.fromJson(storage, AIPMiscStorageInformation.class);
@@ -286,7 +286,7 @@ public class AIPMiscAllocationStrategyPlugin implements IAllocationStrategy {
      * @param pluginConfigurations actual dispatched {@link PluginConfiguration}s for the given file.
      */
     private void handleMandatoryOnlineFile(StorageDataFile file, List<PluginConfiguration> pluginConfigurations) {
-        if (file.isOnlineMandatory() && (onlinePluginConfigration != null)) {
+        if (file.isOnlineMandatory() && onlinePluginConfigration != null) {
             for (PluginConfiguration conf : pluginConfigurations) {
                 if (!conf.getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
                     pluginConfigurations.add(onlinePluginConfigration);

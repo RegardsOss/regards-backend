@@ -74,7 +74,8 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.BooleanPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -88,7 +89,6 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IAIPSessionRepository;
@@ -223,7 +223,7 @@ public class AIPServiceIT extends AbstractRegardsIT {
                 .collect(Collectors.toSet());
         int waitCount = 0;
         LOG.info("Waiting for {} events {}. Current={}", nbExpectedEvents, state.getName(), events.size());
-        while ((events.size() < nbExpectedEvents) && (waitCount < 10)) {
+        while (events.size() < nbExpectedEvents && waitCount < 10) {
             Thread.sleep(WAITING_TIME_MS);
             events = mockEventHandler.getReceivedEvents().stream().filter(e -> e.getAipState().equals(state))
                     .collect(Collectors.toSet());
@@ -244,10 +244,11 @@ public class AIPServiceIT extends AbstractRegardsIT {
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         baseStorage1Location = new URL("file", "", Paths.get("target/AIPServiceIT/Local1").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorage1Location.toURI()));
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L)
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorage1Location.toString())
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION, true).getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L),
+                     IPluginParam.build(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                        baseStorage1Location.toString()),
+                     IPluginParam.build(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION, true));
         PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_1_CONF_LABEL,
                 parameters, 0);
         dataStorageConf.setIsActive(true);
@@ -258,10 +259,10 @@ public class AIPServiceIT extends AbstractRegardsIT {
         // third, lets create a second local storage
         baseStorage2Location = new URL("file", "", Paths.get("target/AIPServiceIT/Local2").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorage2Location.toURI()));
-        parameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L)
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorage2Location.toString())
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION, false).getParameters();
+        parameters = IPluginParam.set(IPluginParam.build(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L),
+                                      IPluginParam.build(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                                         baseStorage2Location.toString()),
+                                      IPluginParam.build(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION, false));
         dsConfWithDeleteDisabled = new PluginConfiguration(dataStoMeta, DATA_STORAGE_2_CONF_LABEL, parameters, 0);
         dsConfWithDeleteDisabled.setIsActive(true);
         pds = prioritizedDataStorageService.create(dsConfWithDeleteDisabled);
@@ -269,9 +270,8 @@ public class AIPServiceIT extends AbstractRegardsIT {
 
         // forth, lets create a plugin configuration for IAllocationStrategy
         PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultMultipleAllocationStrategy.class);
-        Set<PluginParameter> allocationParameter = PluginParametersFactory.build()
-                .addParameter(DefaultMultipleAllocationStrategy.DATA_STORAGE_IDS_PARAMETER_NAME, dataStorageIds)
-                .getParameters();
+        Set<IPluginParam> allocationParameter = IPluginParam.set(IPluginParam
+                .build(DefaultMultipleAllocationStrategy.DATA_STORAGE_IDS_PARAMETER_NAME, dataStorageIds));
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, ALLOCATION_CONF_LABEL,
                 allocationParameter, 0);
         allocationConfiguration.setIsActive(true);
@@ -297,7 +297,7 @@ public class AIPServiceIT extends AbstractRegardsIT {
             LOG.info("#############################");
             nbUnsucceedJobs = jobs.stream().filter(f -> !f.getStatus().getStatus().equals(JobStatus.SUCCEEDED)
                     && !f.getStatus().getStatus().equals(JobStatus.FAILED)).count();
-        } while (jobs.isEmpty() || (nbUnsucceedJobs > 0));
+        } while (jobs.isEmpty() || nbUnsucceedJobs > 0);
         // Wait for events handled.
         Thread.sleep(2000);
         LOG.info("Waiting jobs succeed ok");
@@ -650,8 +650,9 @@ public class AIPServiceIT extends AbstractRegardsIT {
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_030"), @Requirement("REGARDS_DSL_STO_AIP_040") })
     public void testUpdate() throws InterruptedException, ModuleException, URISyntaxException {
         // Allow deletion for all files.
-        dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
-                .setValue(Boolean.TRUE.toString());
+        BooleanPluginParam b = (BooleanPluginParam) dsConfWithDeleteDisabled
+                .getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION);
+        b.setValue(Boolean.TRUE);
         pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
         testUpdateWithoutLogicalPermission();
     }
@@ -660,8 +661,9 @@ public class AIPServiceIT extends AbstractRegardsIT {
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_030"), @Requirement("REGARDS_DSL_STO_AIP_040") })
     public void testMultipleUpdates() throws InterruptedException, ModuleException, URISyntaxException {
         // Allow deletion for all files to allow update.
-        dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
-                .setValue(Boolean.TRUE.toString());
+        BooleanPluginParam b = (BooleanPluginParam) dsConfWithDeleteDisabled
+                .getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION);
+        b.setValue(Boolean.TRUE);
         pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
         // first lets storeAndCreate the aip
         LOG.info("==================> 1. Store new AIP");
@@ -782,8 +784,9 @@ public class AIPServiceIT extends AbstractRegardsIT {
     @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_100"), @Requirement("REGARDS_DSL_STO_AIP_115") })
     public void testDeleteAip() throws InterruptedException, ModuleException, URISyntaxException {
 
-        dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
-                .setValue(Boolean.TRUE.toString());
+        BooleanPluginParam b = (BooleanPluginParam) dsConfWithDeleteDisabled
+                .getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION);
+        b.setValue(Boolean.TRUE);
         pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
 
         createSuccessTest();
@@ -909,8 +912,9 @@ public class AIPServiceIT extends AbstractRegardsIT {
     @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_100") })
     public void testDeleteSip() throws ModuleException, InterruptedException, MalformedURLException {
 
-        dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
-                .setValue(Boolean.TRUE.toString());
+        BooleanPluginParam b = (BooleanPluginParam) dsConfWithDeleteDisabled
+                .getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION);
+        b.setValue(Boolean.TRUE);
         pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
 
         // store a first AIP
@@ -955,8 +959,9 @@ public class AIPServiceIT extends AbstractRegardsIT {
 
     @Test
     public void testDeleteErrorAip() throws InterruptedException, ModuleException, URISyntaxException {
-        dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
-                .setValue(Boolean.TRUE.toString());
+        BooleanPluginParam b = (BooleanPluginParam) dsConfWithDeleteDisabled
+                .getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION);
+        b.setValue(Boolean.TRUE);
         pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
 
         // Store a new AIP

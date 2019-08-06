@@ -33,7 +33,6 @@ import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.manager.ModuleReadinessReport;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -82,15 +81,15 @@ public class StorageConfigurationManager extends AbstractModuleManager<StorageRe
                 if (pluginService.findPluginConfigurationByLabel(plgConf.getLabel()).isPresent()) {
                     importErrors.add(String.format(PLUGIN_CONFIGURATION_ALREADY_EXISTS, plgConf.getLabel()));
                 } else {
-                    EntityInvalidException validationIssues = PluginUtils.validate(plgConf);
-                    if (validationIssues == null) {
+                    List<String> validationErrors = PluginUtils.validateOnCreate(plgConf);
+                    if (validationErrors == null || validationErrors.isEmpty()) {
                         // Now that we are about to create the plugin configuration, lets check for IDataStorage
                         if (plgConf.getInterfaceNames().contains(IDataStorage.class.getName())) {
                             try {
                                 prioritizedDataStorageService.create(plgConf);
                             } catch (ModuleException e) {
                                 importErrors.add(String.format("Skipping import of Data Storage %s: %s",
-                                        plgConf.getLabel(), e.getMessage()));
+                                                               plgConf.getLabel(), e.getMessage()));
                                 logger.error(e.getMessage(), e);
                             }
                         } else {
@@ -99,13 +98,14 @@ public class StorageConfigurationManager extends AbstractModuleManager<StorageRe
                             } catch (ModuleException e) {
                                 // This should not occurs, but we never know
                                 importErrors.add(String.format("Skipping import of PluginConfiguration %s: %s",
-                                        plgConf.getLabel(), e.getMessage()));
+                                                               plgConf.getLabel(), e.getMessage()));
                                 logger.error(e.getMessage(), e);
                             }
                         }
                     } else {
-                        importErrors.add(String.format(VALIDATION_ISSUES, plgConf.getLabel(), validationIssues
-                                .getMessages().stream().collect(Collectors.joining(",", "", "."))));
+                        importErrors.add(String
+                                .format(VALIDATION_ISSUES, plgConf.getLabel(),
+                                        validationErrors.stream().collect(Collectors.joining(",", "", "."))));
                     }
                 }
             }

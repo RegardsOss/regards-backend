@@ -45,11 +45,12 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.EventType;
@@ -58,7 +59,6 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IAIPSessionRepository;
@@ -129,14 +129,13 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         Map<String, Object> dataMap = new HashMap<>();
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         URL baseStorageLocation = new URL("file", "", Paths.get("target/TemplateIT/Local2").toFile().getAbsolutePath());
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L)
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION, false).getParameters();
-        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta,
-                                                                      DATA_STORAGE_CONF_LABEL,
-                                                                      parameters,
-                                                                      0);
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L),
+                     IPluginParam.build(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                        baseStorageLocation.toString()),
+                     IPluginParam.build(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION, false));
+        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_CONF_LABEL, parameters,
+                0);
         dataStorageConf.setIsActive(true);
         PrioritizedDataStorage prioritizedDataStorage = prioritizedDataStorageService.create(dataStorageConf);
 
@@ -161,11 +160,11 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         dataMap.put("dataFilesMap", workingSubsetWrapper.getRejectedDataFiles());
         dataMap.put("dataStorage", pluginService.getPluginConfiguration(prioritizedDataStorage.getId()));
         // lets use the template service to get our message
-        String msg = templateService
-                .render(StorageTemplateConfiguration.NOT_SUBSETTED_DATA_FILES_TEMPLATE_NAME, dataMap);
+        String msg = templateService.render(StorageTemplateConfiguration.NOT_SUBSETTED_DATA_FILES_TEMPLATE_NAME,
+                                            dataMap);
         Assert.assertNotEquals(templateRepository
-                                       .findByName(StorageTemplateConfiguration.NOT_SUBSETTED_DATA_FILES_TEMPLATE_NAME)
-                                       .get().getContent(), msg);
+                .findByName(StorageTemplateConfiguration.NOT_SUBSETTED_DATA_FILES_TEMPLATE_NAME).get().getContent(),
+                               msg);
         LOGGER.info(msg);
     }
 
@@ -190,37 +189,31 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         dataMap.put("dataFiles", dataFiles);
         dataMap.put("allocationStrategy", alloConf);
         // lets use the template service to get our message
-        String msg = templateService
-                .render(StorageTemplateConfiguration.NOT_DISPATCHED_DATA_FILES_TEMPLATE_NAME, dataMap);
+        String msg = templateService.render(StorageTemplateConfiguration.NOT_DISPATCHED_DATA_FILES_TEMPLATE_NAME,
+                                            dataMap);
         Assert.assertNotEquals(templateRepository
-                                       .findByName(StorageTemplateConfiguration.NOT_DISPATCHED_DATA_FILES_TEMPLATE_NAME)
-                                       .get().getContent(), msg);
+                .findByName(StorageTemplateConfiguration.NOT_DISPATCHED_DATA_FILES_TEMPLATE_NAME).get().getContent(),
+                               msg);
         LOGGER.info(msg);
     }
 
     private AIP getAIP() throws MalformedURLException {
 
-        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP,
-                                                            EntityType.DATA,
-                                                            getDefaultTenant(),
-                                                            UUID.randomUUID(),
-                                                            1);
-        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP,
-                                                            EntityType.DATA,
-                                                            getDefaultTenant(),
-                                                            sipId.getEntityId(),
-                                                            1);
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA, getDefaultTenant(),
+                UUID.randomUUID(), 1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(),
+                sipId.getEntityId(), 1);
         AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), "providerId", EntityType.DATA, SESSION);
 
         Path path = Paths.get("src", "test", "resources", "data.txt");
-        aipBuilder.getContentInformationBuilder()
-                .setDataObject(DataType.RAWDATA, path, "MD5", "de89a907d33a9716d11765582102b2e0");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5",
+                                                                "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
-        aipBuilder.getPDIBuilder()
-                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
+        aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
+                                                                 OffsetDateTime.now());
         aipBuilder.addTags("tag");
 
         return aipBuilder.build();
