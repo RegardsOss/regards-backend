@@ -108,7 +108,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected IJobService jobService;
 
     @Autowired
-    protected StoragePluginConfigurationHandler storageHandler;
+    protected StoragePluginConfigurationHandler storagePlgConfHandler;
 
     @Autowired
     protected IFileReferenceRepository fileRefRepo;
@@ -164,7 +164,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         });
         initDataStoragePluginConfiguration(ONLINE_CONF_LABEL);
         initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
-        storageHandler.refresh();
+        storagePlgConfHandler.refresh();
     }
 
     protected PrioritizedStorage initDataStoragePluginConfiguration(String label) throws ModuleException {

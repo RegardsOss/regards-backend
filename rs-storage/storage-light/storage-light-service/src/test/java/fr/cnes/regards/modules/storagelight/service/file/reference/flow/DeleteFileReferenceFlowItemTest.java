@@ -87,7 +87,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(UUID.randomUUID().toString(), "some-stprage", "owner");
         TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
-        handler.handle(wrapper);
+        handler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Mockito.verify(publisher, Mockito.never()).publish(Mockito.any(FileReferenceEvent.class));
     }
@@ -108,7 +108,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);
         TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
-        handler.handle(wrapper);
+        handler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
@@ -136,7 +136,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);
         TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
-        handler.handle(wrapper);
+        handler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -162,7 +162,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);
         TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
-        handler.handle(wrapper);
+        handler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -179,7 +179,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
 
         // Now schedule deletion jobs
         Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO,
-                                                                                   Lists.newArrayList());
+                                                                           Lists.newArrayList());
         runAndWaitJob(jobs);
 
         argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
@@ -207,7 +207,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);
         TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
-        handler.handle(wrapper);
+        handler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -224,7 +224,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
 
         // Now schedule deletion jobs
         Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO,
-                                                                                   Lists.newArrayList());
+                                                                           Lists.newArrayList());
         runAndWaitJob(jobs);
 
         argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
@@ -253,7 +253,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);
         TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item.withForceDelete(), getDefaultTenant());
         // Publish request
-        handler.handle(wrapper);
+        handler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -270,7 +270,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
 
         // Now schedule deletion jobs
         Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO,
-                                                                                   Lists.newArrayList());
+                                                                           Lists.newArrayList());
         runAndWaitJob(jobs);
 
         argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);

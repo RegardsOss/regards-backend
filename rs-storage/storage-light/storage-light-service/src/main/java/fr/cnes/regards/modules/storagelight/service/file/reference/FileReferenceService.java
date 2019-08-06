@@ -160,8 +160,8 @@ public class FileReferenceService {
     public Optional<FileReference> addFileReference(AddFileRefFlowItem item) {
         FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(item.getChecksum(), item.getAlgorithm(),
                 item.getFileName(), item.getFileSize(), MediaType.valueOf(item.getMimeType()));
-        return this.addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigine(),
-                                     item.getDestination());
+        return addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigine(),
+                                item.getDestination());
     }
 
     /**
@@ -183,8 +183,8 @@ public class FileReferenceService {
                             && f.getLocation().getStorage().contentEquals(item.getDestination().getStorage()))
                     .findFirst();
 
-            this.addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigine(),
-                                  item.getDestination(), oFileRef);
+            addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigine(), item.getDestination(),
+                             oFileRef);
 
             // Performance optimization.
             flushCount++;
@@ -208,7 +208,7 @@ public class FileReferenceService {
      */
     public Optional<FileReference> addFileReference(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             FileLocation origin, FileLocation destination) {
-        return this.addFileReference(owners, fileMetaInfo, origin, destination, fileRefRepo
+        return addFileReference(owners, fileMetaInfo, origin, destination, fileRefRepo
                 .findByLocationStorageAndMetaInfoChecksum(destination.getStorage(), fileMetaInfo.getChecksum()));
 
     }
@@ -237,11 +237,11 @@ public class FileReferenceService {
         Assert.notNull(destination, "File must have an origin location to be referenced");
 
         if (fileRef.isPresent()) {
-            this.handleFileReferenceAlreadyExists(fileRef.get(), fileMetaInfo, origin, destination, owners);
+            handleFileReferenceAlreadyExists(fileRef.get(), fileMetaInfo, origin, destination, owners);
         } else {
             // If destination equals origin location so file is already stored and can be referenced directly
             if (destination.equals(origin)) {
-                return Optional.of(this.create(owners, fileMetaInfo, destination));
+                return Optional.of(create(owners, fileMetaInfo, destination));
             } else {
                 fileRefRequestService.create(owners, fileMetaInfo, origin, destination);
             }
@@ -264,14 +264,22 @@ public class FileReferenceService {
         fileRefPublisher.publishFileRefDeleted(fileRef, message);
     }
 
+    /**
+     * Handle the given {@link DeleteFileRefFlowItem}s.
+     * @param items
+     */
     public void delete(Collection<DeleteFileRefFlowItem> items) {
+        long start = System.currentTimeMillis();
+        Set<FileReference> existingOnes = fileRefRepo
+                .findByMetaInfoChecksumIn(items.stream().map(f -> f.getChecksum()).collect(Collectors.toSet()));
         for (DeleteFileRefFlowItem item : items) {
-            try {
-                removeOwner(item.getChecksum(), item.getStorage(), item.getOwner(), item.isForceDelete());
-            } catch (EntityNotFoundException e) {
-                LOGGER.debug(e.getMessage(), e);
+            Optional<FileReference> oFileRef = existingOnes.stream()
+                    .filter(f -> f.getLocation().getStorage().contentEquals(item.getStorage())).findFirst();
+            if (oFileRef.isPresent()) {
+                removeOwner(oFileRef.get(), item.getOwner(), item.isForceDelete());
             }
         }
+        LOGGER.debug("...deletion of {} refs handled in {} ms", items.size(), System.currentTimeMillis() - start);
     }
 
     /**
@@ -287,7 +295,7 @@ public class FileReferenceService {
     @Transactional(noRollbackFor = { EntityNotFoundException.class })
     public DownloadableFile downloadFile(String checksum) throws ModuleException {
         // 1. Retrieve all the FileReference matching the given checksum
-        Set<FileReference> fileRefs = this.search(checksum);
+        Set<FileReference> fileRefs = search(checksum);
         Map<String, FileReference> storages = fileRefs.stream()
                 .collect(Collectors.toMap(f -> f.getLocation().getStorage(), f -> f));
         // 2. get the storage location with the higher priority
@@ -368,7 +376,7 @@ public class FileReferenceService {
         Assert.notNull(owner, "Owner is mandatory to delete a file reference");
         Optional<FileReference> oFileRef = fileRefRepo.findByLocationStorageAndMetaInfoChecksum(storage, checksum);
         if (oFileRef.isPresent()) {
-            this.removeOwner(oFileRef.get(), owner, forceDelete);
+            removeOwner(oFileRef.get(), owner, forceDelete);
         } else {
             throw new EntityNotFoundException(String
                     .format("File reference with ckesum: <%s> and storage: <%s> doest not exists", checksum, storage));
@@ -405,7 +413,7 @@ public class FileReferenceService {
                 fileDeletionRequestService.create(fileReference, forceDelete);
             } else {
                 // Else, directly delete the file reference
-                this.delete(fileReference);
+                delete(fileReference);
             }
         }
     }
