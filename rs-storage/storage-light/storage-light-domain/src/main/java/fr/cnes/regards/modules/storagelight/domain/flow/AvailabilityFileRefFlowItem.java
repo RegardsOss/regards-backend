@@ -22,6 +22,8 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Set;
 
+import org.springframework.util.Assert;
+
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.event.Event;
@@ -41,6 +43,9 @@ public class AvailabilityFileRefFlowItem implements ISubscribable {
 
     public AvailabilityFileRefFlowItem(Collection<String> checksums, OffsetDateTime expirationDate) {
         super();
+        Assert.notNull(checksums, "Checksums is mandatory");
+        Assert.notEmpty(checksums, "Checksums is mandatory");
+        Assert.notNull(expirationDate, "Expiration date is mandatory");
         this.checksums.addAll(checksums);
         this.expirationDate = expirationDate;
     }

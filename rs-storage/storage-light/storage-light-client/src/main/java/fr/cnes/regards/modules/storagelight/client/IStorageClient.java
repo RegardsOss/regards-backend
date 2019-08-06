@@ -18,12 +18,15 @@
  */
 package fr.cnes.regards.modules.storagelight.client;
 
+import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 
 /**
  * Client interface for requesting the file storage service
@@ -36,7 +39,7 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState
 public interface IStorageClient {
 
     /**
-     * Requests the storage of a file ... TODO
+     * Requests the copy of a file identified by his checksum to a destination storage location.
      * <br/>
      *
      * @param fileName filename
@@ -45,13 +48,45 @@ public interface IStorageClient {
      * @param mimeType file MIME type
      * @param fileSize file size
      * @param owner
-     * @param origineStorage
-     * @param origineUrl
-     * @param destinationStorage
+     * @param destinationStorage {@link PluginConfiguration#getBusinessId()} of {@link IStorageLocation} plugin.
      * @param destinationDirectory optional subdirectory in destination storage location
      */
+    void copy(String fileName, String checksum, String algorithm, String mimeType, Long fileSize, String owner,
+            String destinationStorageId, Optional<String> destinationDirectory);
+
+    /**
+     * Requests storage of a file from an localy accessible URL to a destination storage defined
+     * by {@link PluginConfiguration#getBusinessId()} of {@link IStorageLocation} plugin.
+     * <br/>
+     *
+     * @param fileName
+     * @param checksum
+     * @param algorithm
+     * @param mimeType
+     * @param fileSize
+     * @param owner
+     * @param originUrl Accessible file URL.
+     * @param destinationStorage Plugin configuration business id for destination storage
+     * @param destinationDirectory Optional subdirectory into destination storage
+     */
     void store(String fileName, String checksum, String algorithm, String mimeType, Long fileSize, String owner,
-            String origineStorage, String origineUrl, String destinationStorage, Optional<String> destinationDirectory);
+            URL originUrl, String destinationStorage, Optional<String> destinationDirectory);
+
+    /**
+     * Requests to reference a file at a given storage location. With this request, file is not moved but referenced.
+     * <br/>.
+     *
+     * @param fileName
+     * @param checksum
+     * @param algorithm
+     * @param mimeType
+     * @param fileSize
+     * @param owner
+     * @param storage file storage location
+     * @param url file url expected by associated storage location
+     */
+    void reference(String fileName, String checksum, String algorithm, String mimeType, Long fileSize, String owner,
+            String storage, String url);
 
     /**
      * Requests the deletion of the file identified by its checksum on the specified storage.<br/>

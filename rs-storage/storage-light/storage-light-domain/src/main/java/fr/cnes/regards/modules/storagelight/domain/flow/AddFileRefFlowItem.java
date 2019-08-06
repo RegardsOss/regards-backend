@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.flow;
 
+import org.springframework.util.Assert;
+
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -44,7 +46,7 @@ public class AddFileRefFlowItem implements ISubscribable {
 
     private String type;
 
-    private FileLocation origine;
+    private FileLocation origin;
 
     private FileLocation destination;
 
@@ -52,13 +54,19 @@ public class AddFileRefFlowItem implements ISubscribable {
             String owner, String origineStorage, String origineUrl, String destinationStorage,
             String destinationDirectory) {
         super();
+        Assert.notNull(fileName, "File name is mandatory.");
+        Assert.notNull(checksum, "Checksum is mandatory.");
+        Assert.notNull(algorithm, "Algorithm is mandatory.");
+        Assert.notNull(mimeType, "MimeType is mandatory.");
+        Assert.notNull(fileSize, "FileSize is mandatory.");
+        Assert.notNull(owner, "Owner is mandatory.");
         this.fileName = fileName;
         this.checksum = checksum;
         this.algorithm = algorithm;
         this.mimeType = mimeType;
         this.fileSize = fileSize;
         this.owner = owner;
-        this.origine = new FileLocation(origineStorage, origineUrl);
+        this.origin = new FileLocation(origineStorage, origineUrl);
         this.destination = new FileLocation(destinationStorage, destinationDirectory);
     }
 
@@ -97,12 +105,12 @@ public class AddFileRefFlowItem implements ISubscribable {
         this.type = type;
     }
 
-    public FileLocation getOrigine() {
-        return origine;
+    public FileLocation getOrigin() {
+        return origin;
     }
 
-    public void setOrigine(FileLocation origine) {
-        this.origine = origine;
+    public void setOrigin(FileLocation origine) {
+        this.origin = origine;
     }
 
     public FileLocation getDestination() {

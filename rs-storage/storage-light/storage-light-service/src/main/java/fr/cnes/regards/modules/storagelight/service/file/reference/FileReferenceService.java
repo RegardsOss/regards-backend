@@ -109,7 +109,7 @@ public class FileReferenceService {
     private IFileReferenceRepository fileRefRepo;
 
     @Autowired
-    private FileStorageRequestService fileRefRequestService;
+    private FileStorageRequestService fileStorageRequestService;
 
     @Autowired
     private FileDeletionRequestService fileDeletionRequestService;
@@ -160,8 +160,7 @@ public class FileReferenceService {
     public Optional<FileReference> addFileReference(AddFileRefFlowItem item) {
         FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(item.getChecksum(), item.getAlgorithm(),
                 item.getFileName(), item.getFileSize(), MediaType.valueOf(item.getMimeType()));
-        return addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigine(),
-                                item.getDestination());
+        return addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigin(), item.getDestination());
     }
 
     /**
@@ -183,7 +182,7 @@ public class FileReferenceService {
                             && f.getLocation().getStorage().contentEquals(item.getDestination().getStorage()))
                     .findFirst();
 
-            addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigine(), item.getDestination(),
+            addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigin(), item.getDestination(),
                              oFileRef);
 
             // Performance optimization.
@@ -238,11 +237,14 @@ public class FileReferenceService {
         if (fileRef.isPresent()) {
             handleFileReferenceAlreadyExists(fileRef.get(), fileMetaInfo, origin, destination, owners);
         } else {
-            // If destination equals origin location so file is already stored and can be referenced directly
-            if (destination.equals(origin)) {
+            if (origin == null) {
+                // No origin location means that the file is already referenced and we have to copy it to the destination storage
+                // TODO !!
+            } else if (destination.equals(origin)) {
+                // If destination equals origin location so file is already stored and can be referenced directly
                 return Optional.of(create(owners, fileMetaInfo, destination));
             } else {
-                fileRefRequestService.create(owners, fileMetaInfo, origin, destination);
+                fileStorageRequestService.create(owners, fileMetaInfo, origin, destination);
             }
         }
         return fileRef;
@@ -528,7 +530,7 @@ public class FileReferenceService {
         Optional<FileDeletionRequest> deletionRequest = fileDeletionRequestService.search(fileReference);
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
             // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
-            fileRefRequestService.create(owners, newMetaInfo, origin, destination, FileRequestStatus.DELAYED);
+            fileStorageRequestService.create(owners, newMetaInfo, origin, destination, FileRequestStatus.DELAYED);
         } else {
             if (deletionRequest.isPresent()) {
                 // Delete not running deletion request to add the new owner

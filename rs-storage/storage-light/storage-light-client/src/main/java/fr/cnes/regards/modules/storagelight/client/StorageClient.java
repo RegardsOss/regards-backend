@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storagelight.client;
 
+import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
@@ -43,23 +44,34 @@ public class StorageClient implements IStorageClient {
     private IPublisher publisher;
 
     @Override
-    public void store(String fileName, String checksum, String algorithm, String mimeType, Long fileSize, String owner,
-            String origineStorage, String origineUrl, String destinationStorage,
-            Optional<String> destinationDirectory) {
-        publisher.publish(new AddFileRefFlowItem(fileName, checksum, algorithm, mimeType, fileSize, owner,
-                origineStorage, origineUrl, destinationStorage, destinationDirectory.orElse(null)));
-
+    public void copy(String fileName, String checksum, String algorithm, String mimeType, Long fileSize, String owner,
+            String destinationStorageId, Optional<String> destinationDirectory) {
+        publisher.publish(new AddFileRefFlowItem(fileName, checksum, algorithm, mimeType, fileSize, owner, null, null,
+                destinationStorageId, destinationDirectory.orElse(null)));
     }
 
     @Override
     public void delete(String checksum, String storage, String owner) {
         publisher.publish(new DeleteFileRefFlowItem(checksum, storage, owner));
-
     }
 
     @Override
     public void makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
         publisher.publish(new AvailabilityFileRefFlowItem(checksums, expirationDate));
+    }
+
+    @Override
+    public void reference(String fileName, String checksum, String algorithm, String mimeType, Long fileSize,
+            String owner, String storage, String url) {
+        publisher.publish(new AddFileRefFlowItem(fileName, checksum, algorithm, mimeType, fileSize, owner, storage, url,
+                storage, url));
+    }
+
+    @Override
+    public void store(String fileName, String checksum, String algorithm, String mimeType, Long fileSize, String owner,
+            URL originUrl, String destinationStorageId, Optional<String> destinationDirectory) {
+        publisher.publish(new AddFileRefFlowItem(fileName, checksum, algorithm, mimeType, fileSize, owner, null,
+                originUrl.toString(), destinationStorageId, destinationDirectory.orElse(null)));
     }
 
 }

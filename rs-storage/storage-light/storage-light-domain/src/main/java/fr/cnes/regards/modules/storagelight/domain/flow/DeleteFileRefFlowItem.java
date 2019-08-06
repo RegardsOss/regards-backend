@@ -41,11 +41,9 @@ public class DeleteFileRefFlowItem implements ISubscribable {
 
     public DeleteFileRefFlowItem(String checksum, String storage, String owner) {
         super();
-
         Assert.notNull(checksum, "Checksum is mandatory for file deletion");
         Assert.notNull(storage, "Storage is mandatory for file deletion");
         Assert.notNull(owner, "Owner is mandatory for file deletion");
-
         this.checksum = checksum;
         this.storage = storage;
         this.owner = owner;

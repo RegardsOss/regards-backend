@@ -51,12 +51,13 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
-import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.AddFileReferenceFlowItemHandler;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.AvailabilityFileReferenceFlowItemHandler;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.DeleteFileReferenceFlowHandler;
 
 /**
@@ -75,6 +76,9 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
     private AddFileReferenceFlowItemHandler storageHandler;
 
     @Autowired
+    private AvailabilityFileReferenceFlowItemHandler availabilityHandler;
+
+    @Autowired
     private DeleteFileReferenceFlowHandler deleteHandler;
 
     @Autowired
@@ -86,24 +90,20 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
     @SpyBean
     public IPublisher publisher;
 
+    private final Set<String> nlChecksums = Sets.newHashSet();
+
     @Before
     public void initialize() throws ModuleException {
         Mockito.clearInvocations(publisher);
 
         fileStorageRequestRepo.deleteAll();
+        fileCacheReqRepo.deleteAll();
         jobInfoRepo.deleteAll();
-        prioritizedDataStorageService.search(StorageType.NEARLINE).forEach(c -> {
-            try {
-                prioritizedDataStorageService.delete(c.getId());
-            } catch (ModuleException e) {
-                Assert.fail(e.getMessage());
-            }
-        });
         if (!prioritizedDataStorageService.search(ONLINE_CONF_LABEL).isPresent()) {
             initDataStoragePluginConfiguration(ONLINE_CONF_LABEL);
         }
 
-        if (prioritizedDataStorageService.search(NEARLINE_CONF_LABEL).isPresent()) {
+        if (!prioritizedDataStorageService.search(NEARLINE_CONF_LABEL).isPresent()) {
             initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
         }
         storagePlgConfHandler.refresh();
@@ -124,10 +124,26 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
                     toSave.clear();
                 }
             }
+
+            // Init nearline stored refs
             long start = System.currentTimeMillis();
             fileRefRepo.saveAll(toSave);
-            LOGGER.info("Saves {} done in {}ms", toSave.size(), System.currentTimeMillis() - start);
+            LOGGER.info("Saves {} NearLines done in {}ms", toSave.size(), System.currentTimeMillis() - start);
         }
+
+        Set<FileReference> toSave = Sets.newHashSet();
+        for (Long i = 0L; i < 1_000; i++) {
+            String checksum = UUID.randomUUID().toString();
+            nlChecksums.add(checksum);
+            FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum, "UUID", "file_" + i + ".test", i,
+                    MediaType.APPLICATION_OCTET_STREAM);
+            FileLocation location = new FileLocation(NEARLINE_CONF_LABEL, "storage://plop/file");
+            FileReference fileRef = new FileReference(Lists.newArrayList("owner"), metaInfo, location);
+            toSave.add(fileRef);
+        }
+        long start = System.currentTimeMillis();
+        fileRefRepo.saveAll(toSave);
+        LOGGER.info("Saves {} NearLines done in {}ms", toSave.size(), System.currentTimeMillis() - start);
     }
 
     @Test
@@ -220,5 +236,25 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         Thread.sleep(30000);
         page = fileRefService.search(PageRequest.of(0, 1));
         Assert.assertEquals("500 ref should be deleted", nbToDelete, total - page.getTotalElements());
+    }
+
+    @Test
+    public void makeAvailableFlowItem() throws InterruptedException {
+        LOGGER.info(" ----------------------------------- ");
+        LOGGER.info(" ----------------------------------- ");
+        LOGGER.info(" ----------------------------------- ");
+        LOGGER.info(" --------     Starting     --------- ");
+        LOGGER.info(" ----------------------------------- ");
+        LOGGER.info(" ----------------------------------- ");
+        LOGGER.info(" ----------------------------------- ");
+        Assert.assertEquals("Invalid count of cached files", 0, cacheFileRepo.count());
+        // Create a new bus message File reference request
+        AvailabilityFileRefFlowItem item = new AvailabilityFileRefFlowItem(nlChecksums,
+                OffsetDateTime.now().plusDays(1));
+        TenantWrapper<AvailabilityFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        // Publish request
+        availabilityHandler.handle(wrapper);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        Assert.assertEquals("Invalid count of cache file request", nlChecksums.size(), fileCacheReqRepo.count());
     }
 }
