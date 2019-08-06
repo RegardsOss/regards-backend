@@ -581,7 +581,7 @@ public class PluginService implements IPluginService {
         // So :
         // For all pluginMetada parameters, find PLUGIN ones, get key
         for (PluginParamDescriptor paramType : pluginMetadata.getParameters()) {
-            if (paramType.getParamType() == PluginParamType.PLUGIN) {
+            if (paramType.getType() == PluginParamType.PLUGIN) {
                 NestedPluginParam pluginParam = (NestedPluginParam) pluginConf.getParameter(paramType.getName());
                 if (pluginParam != null && pluginParam.hasValue()) {
                     // LOAD embedded plugin from its business identifier

@@ -37,17 +37,5 @@ public enum PluginParamType {
     MAP,
     COLLECTION,
     POJO,
-    PLUGIN,
-    /**
-     * This parameter has to be used for (de)serialization instead of {@link #MAP}
-     */
-    JSON_MAP,
-    /**
-     * This parameter has to be used for (de)serialization instead of {@link #COLLECTION}
-     */
-    JSON_COLLECTION,
-    /**
-     * This parameter has to be used for (de)serialization instead of {@link #POJO}
-     */
-    JSON_POJO;
+    PLUGIN
 }

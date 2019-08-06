@@ -30,6 +30,6 @@ import com.google.gson.JsonObject;
 public class JsonObjectPluginParam extends AbstractJsonPluginParam<JsonObject> {
 
     public JsonObjectPluginParam() {
-        super(PluginParamType.JSON_POJO);
+        super(PluginParamType.POJO);
     }
 }

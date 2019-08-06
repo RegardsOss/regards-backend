@@ -17,7 +17,7 @@
       },
       "clazz": "fr.cnes.regards.framework.modules.plugins.service.gson.SimplePojo",
       "name": "simple",
-      "type": "JSON_POJO"
+      "type": "POJO"
     }
   ]
 }

@@ -68,7 +68,7 @@
       "value": [
         "test"
       ],
-      "type": "JSON_COLLECTION",
+      "type": "COLLECTION",
       "clazz": "java.lang.String",
       "name": "sList"
     },
@@ -77,7 +77,7 @@
       "value": {
         "1513011860928": "test"
       },
-      "type": "JSON_MAP",
+      "type": "MAP",
       "clazz": "java.lang.String",
       "name": "ssMap"
     },
@@ -86,7 +86,7 @@
       "value": {
         "message": "test"
       },
-      "type": "JSON_POJO",
+      "type": "POJO",
       "clazz": "fr.cnes.regards.framework.modules.plugins.rest.ParamTestPlugin$Pojo",
       "name": "pojo"
     },
@@ -100,7 +100,7 @@
           }
         ]
       },
-      "type": "JSON_POJO",
+      "type": "POJO",
       "clazz": "fr.cnes.regards.framework.modules.plugins.rest.ParamTestPlugin$Constraints",
       "name": "constraints"
     },
@@ -112,7 +112,7 @@
           "enabled": false
         }
       },
-      "type": "JSON_MAP",
+      "type": "MAP",
       "clazz": "fr.cnes.regards.framework.modules.plugins.rest.ParamTestPlugin$Constraint",
       "name": "scMap"
     },

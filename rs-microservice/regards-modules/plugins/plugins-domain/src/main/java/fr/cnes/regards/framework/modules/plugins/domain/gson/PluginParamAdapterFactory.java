@@ -53,9 +53,9 @@ public class PluginParamAdapterFactory extends PolymorphicTypeAdapterFactory<IPl
         registerSubtype(FloatPluginParam.class, PluginParamType.FLOAT);
         registerSubtype(DoublePluginParam.class, PluginParamType.DOUBLE);
         registerSubtype(BooleanPluginParam.class, PluginParamType.BOOLEAN);
-        registerSubtype(JsonMapPluginParam.class, PluginParamType.JSON_MAP);
-        registerSubtype(JsonCollectionPluginParam.class, PluginParamType.JSON_COLLECTION);
-        registerSubtype(JsonObjectPluginParam.class, PluginParamType.JSON_POJO);
+        registerSubtype(JsonMapPluginParam.class, PluginParamType.MAP);
+        registerSubtype(JsonCollectionPluginParam.class, PluginParamType.COLLECTION);
+        registerSubtype(JsonObjectPluginParam.class, PluginParamType.POJO);
         registerSubtype(NestedPluginParam.class, PluginParamType.PLUGIN);
     }
 }

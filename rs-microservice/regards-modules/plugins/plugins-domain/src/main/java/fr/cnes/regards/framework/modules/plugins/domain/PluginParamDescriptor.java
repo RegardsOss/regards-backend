@@ -60,11 +60,6 @@ public class PluginParamDescriptor {
     private String markdown;
 
     /**
-     * The JAVA parameter's type
-     */
-    private String type;
-
-    /**
      * Argument parameter types for parameterized types
      */
     private String[] parameterizedSubTypes;
@@ -72,7 +67,7 @@ public class PluginParamDescriptor {
     /**
      * The parameters's type {@link PluginParamType}.
      */
-    private PluginParamType paramType;
+    private PluginParamType type;
 
     /**
      * A default value for the paramater
@@ -92,7 +87,7 @@ public class PluginParamDescriptor {
     /**
      * The parameters of the plugin
      */
-    private List<PluginParamDescriptor> parameters = new ArrayList<>();
+    private List<PluginParamDescriptor> parameters;
 
     private Boolean unconfigurable;
 
@@ -108,13 +103,12 @@ public class PluginParamDescriptor {
      * @param name parameter's name used as a key for database registration
      * @param label a required human readable information
      * @param description an optional further human readable information if the label is not explicit enough!
-     * @param clazz The JAVA class
      * @param paramType {@link PluginParamType}
      * @param optional true if parameter is optional
      * @return {@link PluginParamDescriptor}
      */
-    public static PluginParamDescriptor create(String name, String label, String description, Class<?> clazz,
-            PluginParamType paramType, Boolean optional, Boolean onlyDynamic, Boolean sensitive) {
+    public static PluginParamDescriptor create(String name, String label, String description, PluginParamType paramType,
+            Boolean optional, Boolean onlyDynamic, Boolean sensitive) {
         PluginParamDescriptor ppt = new PluginParamDescriptor();
 
         // Validate and set
@@ -126,11 +120,8 @@ public class PluginParamDescriptor {
 
         ppt.setDescription(description);
 
-        Assert.notNull(clazz, "Class is required");
-        ppt.setType(clazz.getName());
-
         Assert.notNull(paramType, "Parameter type is required");
-        ppt.setParamType(paramType);
+        ppt.setType(paramType);
 
         Assert.notNull(optional, "Optional value is required");
         ppt.setOptional(optional);
@@ -150,20 +141,12 @@ public class PluginParamDescriptor {
         this.name = pName;
     }
 
-    public String getType() {
+    public PluginParamType getType() {
         return type;
     }
 
-    private void setType(String pType) {
-        this.type = pType;
-    }
-
-    public PluginParamType getParamType() {
-        return paramType;
-    }
-
-    private void setParamType(PluginParamType pParamType) {
-        this.paramType = pParamType;
+    private void setType(PluginParamType type) {
+        this.type = type;
     }
 
     public String getDefaultValue() {

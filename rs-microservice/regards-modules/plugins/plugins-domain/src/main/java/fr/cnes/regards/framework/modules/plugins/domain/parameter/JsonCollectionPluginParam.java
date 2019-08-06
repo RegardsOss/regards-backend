@@ -32,6 +32,6 @@ import com.google.gson.JsonElement;
 public class JsonCollectionPluginParam extends AbstractJsonPluginParam<Collection<JsonElement>> {
 
     public JsonCollectionPluginParam() {
-        super(PluginParamType.JSON_COLLECTION);
+        super(PluginParamType.COLLECTION);
     }
 }

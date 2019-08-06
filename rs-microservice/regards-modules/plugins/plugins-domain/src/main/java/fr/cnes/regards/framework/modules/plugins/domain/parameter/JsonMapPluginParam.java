@@ -32,6 +32,6 @@ import com.google.gson.JsonElement;
 public class JsonMapPluginParam extends AbstractJsonPluginParam<Map<String, JsonElement>> {
 
     public JsonMapPluginParam() {
-        super(PluginParamType.JSON_MAP);
+        super(PluginParamType.MAP);
     }
 }

@@ -22,7 +22,7 @@
             ],
             "clazz": "fr.cnes.regards.framework.modules.plugins.service.gson.SimplePojo",
             "name": "simplelist",
-            "type": "JSON_COLLECTION"
+            "type": "COLLECTION"
         }
     ]
 }

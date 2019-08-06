@@ -125,8 +125,8 @@ public final class PluginParameterUtils {
         // Create PluginParameter
         if (pluginParameter == null) {
             // Guess values
-            result = PluginParamDescriptor.create(field.getName(), field.getName(), null, field.getType(), paramType,
-                                                  false, false, false);
+            result = PluginParamDescriptor.create(field.getName(), field.getName(), null, paramType, false, false,
+                                                  false);
         } else {
             // Report values from annotation
             String name = getFieldName(field, pluginParameter);
@@ -143,12 +143,14 @@ public final class PluginParameterUtils {
             }
 
             result = PluginParamDescriptor.create(name, pluginParameter.label(), pluginParameter.description(),
-                                                  field.getType(), paramType, pluginParameter.optional(),
+                                                  paramType, pluginParameter.optional(),
                                                   pluginParameter.unconfigurable(), pluginParameter.sensitive());
 
             // Manage markdown description
             String markdown = AnnotationUtils.loadMarkdown(pluginClass, pluginParameter.markdown());
-            result.setMarkdown(markdown);
+            if (markdown != null && !markdown.isEmpty()) {
+                result.setMarkdown(markdown);
+            }
 
             // Manage default value
             if (pluginParameter.defaultValue() != null && !pluginParameter.defaultValue().isEmpty()) {
@@ -497,7 +499,7 @@ public final class PluginParameterUtils {
 
         try {
             // Tansform to real value
-            Object o = PluginParameterTransformer.getParameterValue(param, paramType);
+            Object o = PluginParameterTransformer.getParameterValue(param);
             field.set(plugin, o);
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception

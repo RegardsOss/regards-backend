@@ -168,6 +168,16 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
+    public void getPluginMetadata() {
+        String pluginId = "ParamTestPlugin";
+
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+
+        performGet(PluginController.PLUGINS_PLUGINID, token, customizer,
+                   String.format("unable to load plugin id <%s>", pluginId), pluginId);
+    }
+
+    @Test
     @Requirement("REGARDS_DSL_CMP_PLG_400")
     @Purpose("The system allows to list all the plugin's type of a microservice")
     public void getAllPluginTypes() {
