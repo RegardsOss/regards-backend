@@ -200,7 +200,7 @@ public class FileCacheRequestService {
     private List<FileCacheRequest> calculateRestorables(Collection<FileCacheRequest> requests) {
         List<FileCacheRequest> restorables = Lists.newArrayList();
         // Calculate cache size available by adding cache file sizes sum and already queued requests
-        Long availableCacheSize = cacheService.getCacheAvailableSizeBytes();
+        Long availableCacheSize = cacheService.getFreeSpaceInBytes();
         Long pendingSize = repository.getPendingFileSize();
         Long availableSize = availableCacheSize - pendingSize;
         Iterator<FileCacheRequest> it = requests.iterator();

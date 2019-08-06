@@ -128,11 +128,6 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
     public void onApplicationEvent(ApplicationReadyEvent event) {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             initCacheFileSystem(tenant);
-            try {
-                checkDiskDBCoherence(tenant);
-            } catch (IOException e) {
-                LOGGER.error(String.format("Could not check if cache directory for tenant %s is dirty.", tenant), e);
-            }
         }
     }
 
@@ -169,8 +164,11 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
         return cachedFileRepository.findOneByChecksum(checksum);
     }
 
-    public void checkDiskDBCoherence(String tenant) throws IOException {
-        runtimeTenantResolver.forceTenant(tenant);
+    /**
+     * TODO Add rest endpoint to access this or schedule periodic job.
+     * @throws IOException
+     */
+    public void checkDiskDBCoherence() throws IOException {
         Page<CacheFile> shouldBeAvailableSet;
         Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
         Set<Long> toDelete = Sets.newHashSet();
@@ -206,7 +204,6 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
                                                                DefaultRole.PROJECT_ADMIN));
             page = availableFiles.nextPageable();
         } while (availableFiles.hasNext());
-        runtimeTenantResolver.clearTenant();
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
@@ -241,6 +238,11 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
         runtimeTenantResolver.clearTenant();
     }
 
+    /**
+     * Retrieve a file from the cache by is checksum.
+     * @param checksum
+     * @return {@link CacheFile}
+     */
     public Optional<CacheFile> getCacheFile(String checksum) {
         Optional<CacheFile> ocf = cachedFileRepository.findOneByChecksum(checksum);
         if (ocf.isPresent()) {
@@ -250,6 +252,11 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
         }
     }
 
+    /**
+     * Retrieve all {@link FileReference}s available in cache.
+     * @param fileReferences
+     * @return {@link FileReference}s available
+     */
     public Set<FileReference> getFilesAvailableInCache(Set<FileReference> fileReferences) {
         Set<FileReference> availables = Sets.newHashSet();
         Set<String> checksums = fileReferences.stream().map(f -> f.getMetaInfo().getChecksum())
@@ -272,14 +279,10 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
         return cachedFileRepository.getTotalFileSize();
     }
 
-    public int purge() {
-        return purgeExpiredCachedFiles();
-    }
-
     /**
      * Delete all out dated {@link CacheFile}s.<br/>
      */
-    private int purgeExpiredCachedFiles() {
+    public int purge() {
         int nbPurged = 0;
         LOGGER.debug("Deleting expired files from cache. Current date : {}", OffsetDateTime.now().toString());
         Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
@@ -338,6 +341,9 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
         }
     }
 
+    /**
+     * Retrieve the path of the cache for te curent tenant.
+     */
     private Path getTenantCachePath() {
         String currentTenant = runtimeTenantResolver.getTenant();
         if (currentTenant == null) {
@@ -363,7 +369,10 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
         return Paths.get(getTenantCachePath().toString(), filePath, fileChecksum).toAbsolutePath().toString();
     }
 
-    public Long getCacheAvailableSizeBytes() {
+    /**
+     * Return the free space in Bytes of the current tenant cache.
+     */
+    public Long getFreeSpaceInBytes() {
         Long currentCacheTotalSize = getCacheSizeUsedBytes();
         Long cacheMaxSizeInOctets = maxCacheSizeKo * 1024;
         return cacheMaxSizeInOctets - currentCacheTotalSize;

@@ -54,7 +54,6 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
     @Before
     public void init() {
         repository.deleteAll();
-
         simulateApplicationReadyEvent();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
     }
@@ -69,7 +68,6 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         Optional<CacheFile> oCf = service.getCacheFile(checksum);
         Assert.assertTrue("File should be referenced in cache", oCf.isPresent());
         Assert.assertEquals("Invalid expiration date", expirationDate, oCf.get().getExpirationDate());
-
         // Try to reference again the same file in cache
         OffsetDateTime newExpirationDate = OffsetDateTime.now().plusDays(2);
         service.addFile(checksum, 123L, new URL("file", null, "/plop/test.file.test"), newExpirationDate);
@@ -100,9 +98,8 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         Assert.assertEquals("There should be 1000 files in cache", 1000, repository.findAll().size());
         service.purge();
         Assert.assertEquals("There should be 900 files in cache", 900, repository.findAll().size());
-
         // As we do not have create files on disk, all files in cache are invalid and should deleted
-        service.checkDiskDBCoherence(runtimeTenantResolver.getTenant());
+        service.checkDiskDBCoherence();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Assert.assertEquals("There should be 0 files in cache", 0, repository.findAll().size());
     }
