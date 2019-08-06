@@ -61,7 +61,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
     /**
      * JOB Parameter key for the storage plugin configuration identifier to use for the storage.
      */
-    public static final String DATA_STORAGE_CONF_ID = "dscId";
+    public static final String DATA_STORAGE_CONF_BUSINESS_ID = "dscbid";
 
     /**
      * JOB Parameter key for the Working subset of {@link FileStorageRequest} to handle for storage.
@@ -100,13 +100,13 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
         FileStorageJobProgressManager progressManager = new FileStorageJobProgressManager(fileReferenceService,
                 fileRefRequestService, publisher, this);
         // lets instantiate the plugin to use
-        Long confIdToUse = parameters.get(DATA_STORAGE_CONF_ID).getValue();
+        String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         FileStorageWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         workingSubset.getFileReferenceRequests().forEach(this::calculateImageDimension);
         IStorageLocation storagePlugin;
         String errorCause = null;
         try {
-            storagePlugin = pluginService.getPlugin(confIdToUse);
+            storagePlugin = pluginService.getPlugin(plgBusinessId);
             storagePlugin.store(workingSubset, progressManager);
         } catch (Exception e) {
             errorCause = String.format("Storage job failed cause : %s", e.getMessage());

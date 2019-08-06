@@ -140,12 +140,12 @@ public class FileDeletionRequestService {
         try {
 
             PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
-            IStorageLocation storagePlugin = pluginService.getPlugin(conf.getId());
+            IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
 
             Collection<FileDeletionWorkingSubset> workingSubSets = storagePlugin
                     .prepareForDeletion(fileDeletionRequests);
             for (FileDeletionWorkingSubset ws : workingSubSets) {
-                jobInfoList.add(self.scheduleJob(ws, conf.getId()));
+                jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId()));
             }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             this.handleStorageNotAvailable(fileDeletionRequests);
@@ -161,9 +161,9 @@ public class FileDeletionRequestService {
      * @return {@link JobInfo} scheduled.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public JobInfo scheduleJob(FileDeletionWorkingSubset workingSubset, Long pluginConfId) {
+    public JobInfo scheduleJob(FileDeletionWorkingSubset workingSubset, String pluginConfBusinessId) {
         Set<JobParameter> parameters = Sets.newHashSet();
-        parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_ID, pluginConfId));
+        parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, pluginConfBusinessId));
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
         workingSubset.getFileDeletionRequests().forEach(fileRefReq -> fileDeletionRequestRepo
                 .updateStatus(FileRequestStatus.PENDING, fileRefReq.getId()));

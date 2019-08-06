@@ -194,7 +194,7 @@ public class FileStorageRequestService {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
         try {
             PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
-            IStorageLocation storagePlugin = pluginService.getPlugin(conf.getId());
+            IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
             Collection<FileStorageWorkingSubset> workingSubSets = storagePlugin.prepareForStorage(fileStorageRequests);
             for (FileStorageWorkingSubset ws : workingSubSets) {
                 jobInfoList.add(self.scheduleJob(ws, conf.getId()));
@@ -215,7 +215,7 @@ public class FileStorageRequestService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public JobInfo scheduleJob(FileStorageWorkingSubset workingSubset, Long pluginConfId) {
         Set<JobParameter> parameters = Sets.newHashSet();
-        parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_ID, pluginConfId));
+        parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, pluginConfId));
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
         workingSubset.getFileReferenceRequests().forEach(fileStorageRequest -> fileStorageRequestRepo
                 .updateStatus(FileRequestStatus.PENDING, fileStorageRequest.getId()));

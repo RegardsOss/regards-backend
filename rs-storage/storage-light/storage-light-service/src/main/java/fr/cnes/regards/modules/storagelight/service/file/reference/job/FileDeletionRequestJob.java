@@ -49,7 +49,7 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
     /**
      * JOB Parameter key for the storage plugin configuration identifier to use for the deletion.
      */
-    public static final String DATA_STORAGE_CONF_ID = "dscId";
+    public static final String DATA_STORAGE_CONF_BUSINESS_ID = "dscbid";
 
     /**
      * JOB Parameter key for the Working subset of {@link FileDeletionRequest} to handle for deletion.
@@ -88,10 +88,10 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
         FileDeletionJobProgressManager progressManager = new FileDeletionJobProgressManager(fileReferenceService,
                 fileDeletionRequestService, publisher, this);
         // lets instantiate the plugin to use
-        Long confIdToUse = parameters.get(DATA_STORAGE_CONF_ID).getValue();
+        String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         FileDeletionWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         try {
-            IStorageLocation storagePlugin = pluginService.getPlugin(confIdToUse);
+            IStorageLocation storagePlugin = pluginService.getPlugin(plgBusinessId);
             storagePlugin.delete(workingSubset, progressManager);
         } catch (Exception e) {
             // Publish event for all not handled files

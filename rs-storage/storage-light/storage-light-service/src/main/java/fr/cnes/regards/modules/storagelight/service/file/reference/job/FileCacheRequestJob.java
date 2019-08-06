@@ -50,7 +50,7 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
     /**
      * JOB Parameter key for the storage plugin configuration identifier to use for the restoration.
      */
-    public static final String DATA_STORAGE_CONF_ID = "dscId";
+    public static final String DATA_STORAGE_CONF_BUSINESS_ID = "dscbid";
 
     /**
      * JOB Parameter key for the Working subset of {@link FileCacheRequest} to handle for storage.
@@ -86,12 +86,12 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
         FileCacheJobProgressManager progressManager = new FileCacheJobProgressManager(fileCacheRequestService,
                 publisher, this);
         // lets instantiate the plugin to use
-        Long confIdToUse = parameters.get(DATA_STORAGE_CONF_ID).getValue();
+        String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         FileRestorationWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         INearlineStorageLocation storagePlugin;
         String errorCause = null;
         try {
-            storagePlugin = pluginService.getPlugin(confIdToUse);
+            storagePlugin = pluginService.getPlugin(plgBusinessId);
             storagePlugin.retrieve(workingSubset, progressManager);
         } catch (Exception e) {
             // throwing new runtime allows us to make the job fail.

@@ -95,7 +95,7 @@ import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginCo
  * File references can be created using AMQP messages {@link AddFileRefFlowItem}.<br/>
  * File references can be deleted using AMQP messages {@link DeleteFileRefFlowItem}.<br/>
  * File references can be copied in cache system using AMQP messages TODO<br/>
- * File references can be download using TODO<br/>
+ * File references can be download<br/>
  *
  * @author Sébastien Binda
  */
@@ -349,7 +349,7 @@ public class FileReferenceService {
             throws ModuleException {
         try {
             IOnlineStorageLocation plugin = pluginService
-                    .getPlugin(storagePluginConf.getStorageConfiguration().getId());
+                    .getPlugin(storagePluginConf.getStorageConfiguration().getBusinessId());
             return plugin.retrieve(fileToDownload);
         } catch (NotAvailablePluginConfigurationException e) {
             throw new ModuleException(String
@@ -526,7 +526,7 @@ public class FileReferenceService {
         FileReference updatedFileRef = null;
 
         Optional<FileDeletionRequest> deletionRequest = fileDeletionRequestService.search(fileReference);
-        if (deletionRequest.isPresent() && deletionRequest.get().getStatus() == FileRequestStatus.PENDING) {
+        if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
             // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
             fileRefRequestService.create(owners, newMetaInfo, origin, destination, FileRequestStatus.DELAYED);
         } else {

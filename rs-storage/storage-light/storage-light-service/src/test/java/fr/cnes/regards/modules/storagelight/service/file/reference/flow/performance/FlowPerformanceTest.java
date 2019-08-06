@@ -67,9 +67,9 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.flow.DeleteFi
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache" })
 @Ignore("Performances tests")
-public class AddFileRefFlowItemPerfTest extends AbstractFileReferenceTest {
+public class FlowPerformanceTest extends AbstractFileReferenceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AddFileRefFlowItemPerfTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceTest.class);
 
     @Autowired
     private AddFileReferenceFlowItemHandler storageHandler;

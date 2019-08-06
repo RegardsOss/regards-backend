@@ -226,10 +226,10 @@ public class FileCacheRequestService {
         if ((requests != null) && !requests.isEmpty()) {
             try {
                 PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
-                IStorageLocation storagePlugin = pluginService.getPlugin(conf.getId());
+                IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
                 Collection<FileRestorationWorkingSubset> workingSubSets = storagePlugin.prepareForRestoration(requests);
                 for (FileRestorationWorkingSubset ws : workingSubSets) {
-                    jobInfoList.add(self.scheduleJob(ws, conf.getId()));
+                    jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId()));
                 }
             } catch (ModuleException | NotAvailablePluginConfigurationException e) {
                 this.handleStorageNotAvailable(requests);
@@ -246,9 +246,9 @@ public class FileCacheRequestService {
      * @return {@link JobInfo} scheduled.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public JobInfo scheduleJob(FileRestorationWorkingSubset workingSubset, Long pluginConfId) {
+    public JobInfo scheduleJob(FileRestorationWorkingSubset workingSubset, String plgBusinessId) {
         Set<JobParameter> parameters = Sets.newHashSet();
-        parameters.add(new JobParameter(FileCacheRequestJob.DATA_STORAGE_CONF_ID, pluginConfId));
+        parameters.add(new JobParameter(FileCacheRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, plgBusinessId));
         parameters.add(new JobParameter(FileCacheRequestJob.WORKING_SUB_SET, workingSubset));
         workingSubset.getFileRestorationRequests()
                 .forEach(r -> repository.updateStatus(FileRequestStatus.PENDING, r.getId()));

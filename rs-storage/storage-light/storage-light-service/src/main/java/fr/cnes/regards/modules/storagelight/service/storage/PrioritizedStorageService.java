@@ -92,7 +92,7 @@ public class PrioritizedStorageService {
         }
         for (PrioritizedStorage c : confs) {
             if (c.getStorageConfiguration().isActive()
-                    && (!storage.isPresent() || c.getPriority() < storage.get().getPriority())) {
+                    && (!storage.isPresent() || (c.getPriority() < storage.get().getPriority()))) {
                 storage = Optional.of(c);
             }
         }
@@ -196,7 +196,7 @@ public class PrioritizedStorageService {
 
             // Ask plugin if the update is allowed
             try {
-                IStorageLocation plugin = pluginService.getPlugin(oldOne.getStorageConfiguration().getId());
+                IStorageLocation plugin = pluginService.getPlugin(oldOne.getStorageConfiguration().getBusinessId());
                 updatable = plugin.allowConfigurationUpdate(updated.getStorageConfiguration(),
                                                             oldOne.getStorageConfiguration(), nbfilesAlreadyStored > 0);
             } catch (NotAvailablePluginConfigurationException e) {
