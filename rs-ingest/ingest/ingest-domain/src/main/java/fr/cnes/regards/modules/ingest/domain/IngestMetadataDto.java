@@ -18,55 +18,40 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
-import java.util.Optional;
-
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-import javax.validation.constraints.NotNull;
 import org.springframework.util.Assert;
 
 /**
- * Extra information useful for bulk SIP submission.<br/>
- * The processing chain name is required and is linked to an existing processing chain.<br/>
- * The sessionSource and sessionName allows to make consistent group of SIP.
+ * This class is the Dto of {@link IngestMetadata}, so without the JPA stuff
  *
  * @author Marc Sordi
  * @author Léo Mieulet
  *
  */
-@Embeddable
-public class IngestMetadata {
+public class IngestMetadataDto {
+
     /**
      * {@link fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain} name
      */
-    @NotBlank(message = "Processing chain name is required")
-    @Column(length = 100)
+    @NotBlank
     private String processing;
 
     /**
      * Session source
      */
-    @NotNull(message = "Session source is required")
-    @Column(length = 128, name = "session_source")
     private String sessionSource;
 
     /**
      * Session name
      */
-    @NotNull(message = "Session name is required")
-    @Column(length = 128, name = "session_name")
     private String sessionName;
-
 
     public String getProcessing() {
         return processing;
     }
 
-    public String getIngestChain() {
-        return ingestChain;
+    public void setProcessing(String processing) {
+        this.processing = processing;
     }
 
     public String getSessionName() {
@@ -85,16 +70,12 @@ public class IngestMetadata {
         this.sessionSource = sessionSource;
     }
 
-    public static IngestMetadata build(String ingestProcessingChain, String sessionSource, String sessionName) {
+    public static IngestMetadataDto build(String ingestProcessingChain, String sessionSource, String sessionName) {
         Assert.notNull(ingestProcessingChain, "Ingest processing chain is required");
-        IngestMetadata m = new IngestMetadata();
+        IngestMetadataDto m = new IngestMetadataDto();
         m.setProcessing(ingestProcessingChain);
         m.setSessionSource(sessionSource);
         m.setSessionName(sessionName);
         return m;
-    }
-
-    public void setStorages(StorageMetadata storages) {
-        this.storages = storages;
     }
 }

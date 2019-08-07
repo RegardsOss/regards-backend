@@ -18,6 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
+<<<<<<< HEAD
+=======
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
+import javax.annotation.PostConstruct;
+>>>>>>> PM-040-session
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -181,10 +188,25 @@ public class IngestProcessingService implements IIngestProcessingService {
         // Retrieve all created sips
         // In order to avoid loading all rawSip in memory (can be huge), retrieve only the needed id and processing
         // parameters of SIPEntity
-        List<SIPIdNProcessing> sips = sipRepository.findIdAndProcessingByState(SIPState.CREATED);
+        List<SIPIdNProcessing> sips = sipRepository.findIdAndIngestMetadataByState(SIPState.CREATED);
 
+        // Store SIP id by chain name
         Multimap<String, Long> sipByChain = ArrayListMultimap.create();
-        sips.forEach(idNProc -> sipByChain.put(idNProc.getProcessing(), idNProc.getId()));
+        // Store how many SIP by session have been modified
+        HashBasedTable<String, String, Integer> nbSipBySession = HashBasedTable.create();
+
+        sips.forEach(idNProc -> {
+            // Add to the list of sipId by chain
+            sipByChain.put(idNProc.getIngestMetadata().getProcessing(), idNProc.getId());
+            // Compute how many SIP by session have been modified
+            String sessionSource = idNProc.getIngestMetadata().getSessionSource();
+            String sessionName = idNProc.getIngestMetadata().getSessionName();
+            Integer value = 0;
+            if (nbSipBySession.contains(sessionSource, sessionName)) {
+                value = nbSipBySession.get(sessionSource, sessionName);
+            }
+            nbSipBySession.put(sessionSource, sessionName, value + 1);
+        });
 
         for (String ingestChain : sipByChain.keySet()) {
             List<Long> ids = (List<Long>) sipByChain.get(ingestChain);
@@ -196,6 +218,14 @@ public class IngestProcessingService implements IIngestProcessingService {
                 toIndex = toIndex + IngestProperties.WORKING_UNIT;
             }
             self.scheduleIngestProcessingJob(new HashSet<>(ids.subList(fromIndex, ids.size())), ingestChain);
+        }
+
+        // Now send notification
+        for (Table.Cell<String, String, Integer> entry : nbSipBySession.cellSet()) {
+            sipService.notifySipsChangedState(
+                    IngestMetadata.build(null, entry.getRowKey(), entry.getColumnKey()),
+                    SIPState.CREATED, SIPState.QUEUED, entry.getValue()
+            );
         }
     }
 
@@ -213,9 +243,14 @@ public class IngestProcessingService implements IIngestProcessingService {
             AipFlowItem item = AipFlowItem.build(aip);
             publisher.publish(item);
         }
+
+        // Notify SIP session state change
+        sipService.notifySipChangedState(entity.getIngestMetadata(), entity.getState(), SIPState.AIP_SUBMITTED);
+
         // Update SIP entity state
         entity.setState(SIPState.INGESTED);
         sipService.saveSIPEntity(entity);
+
 
         return entity;
     }

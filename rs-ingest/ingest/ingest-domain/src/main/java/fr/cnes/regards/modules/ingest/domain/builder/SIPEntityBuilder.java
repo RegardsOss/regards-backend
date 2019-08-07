@@ -18,23 +18,21 @@
  */
 package fr.cnes.regards.modules.ingest.domain.builder;
 
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.UUID;
-
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * Tool class to generate new {@link SIPEntity} entities.
@@ -46,7 +44,7 @@ public final class SIPEntityBuilder {
 
     }
 
-    public static SIPEntity build(String tenant, SIPSession session, SIP sip, String processing, String owner,
+    public static SIPEntity build(String tenant, String sessionSource, String sessionName, SIP sip, String processing, String owner,
             Integer version, SIPState state, EntityType entityType) {
         SIPEntity sipEntity = new SIPEntity();
 
@@ -60,8 +58,7 @@ public final class SIPEntityBuilder {
         sipEntity.setProviderId(sip.getId());
         sipEntity.setState(state);
         sipEntity.setSip(sip);
-        sipEntity.setProcessing(processing);
-        sipEntity.setSession(session);
+        sipEntity.setIngestMetadata(IngestMetadata.build(processing, sessionSource, sessionName));
         sipEntity.setVersion(version);
 
         return sipEntity;

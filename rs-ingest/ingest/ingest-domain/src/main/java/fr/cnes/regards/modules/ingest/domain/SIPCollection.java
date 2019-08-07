@@ -35,14 +35,14 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 public class SIPCollection extends AbstractFeatureCollection<SIP> {
 
     @Valid
-    @NotNull(message = "SIP collection ingest metadata is required")
-    private final IngestMetadata metadata;
+    @NotNull
+    private final IngestMetadataDto metadata;
 
     public SIPCollection() {
-        metadata = new IngestMetadata();
+        metadata = new IngestMetadataDto();
     }
 
-    public IngestMetadata getMetadata() {
+    public IngestMetadataDto getMetadata() {
         return metadata;
     }
 }

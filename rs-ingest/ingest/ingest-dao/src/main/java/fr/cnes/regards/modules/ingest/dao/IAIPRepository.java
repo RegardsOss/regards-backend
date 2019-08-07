@@ -71,11 +71,7 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     @Query("select id from AIPEntity a where a.state= ?1")
     Set<Long> findIdByState(IAipState state);
 
-    @Deprecated // Do not use lock
-    @Lock(LockModeType.PESSIMISTIC_READ)
-    Page<AIPEntity> findWithLockBySipProcessingAndState(String processingChain, IAipState state, Pageable pageable);
-
-    Set<AIPEntity> findBySipProcessingAndState(String processingChain, IAipState state);
+    Set<AIPEntity> findBySipIngestMetadataProcessingAndState(String processingChain, IAipState state);
 
     /**
      * Update state of the given {@link AIPEntity}
@@ -85,13 +81,4 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     @Modifying
     @Query("UPDATE AIPEntity a set a.state = ?1, a.errorMessage = ?3 where a.aipId = ?2")
     void updateAIPEntityStateAndErrorMessage(IAipState state, String aipId, String errorMessage);
-
-    /**
-     * Switch state for a given session
-     */
-    @Modifying
-    @Query(value = "UPDATE {h-schema}t_aip set state = ?1, error_message = ?2 FROM {h-schema}t_sip sip WHERE t_aip.sip_id = sip.id AND t_aip.state = ?3 AND sip.session = ?4",
-            nativeQuery = true)
-    void updateAIPEntityStateAndErrorMessageByStateAndSessionId(String state, String errorMessage, String filterState,
-            String sessionId);
 }

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -53,7 +54,7 @@ public interface ISIPService {
     /**
      * Retrieve all {@link SIPEntity}s matching the parameters. SIPs are ordered by {@link SIPEntity#getIngestDate()}
      */
-    Page<SIPEntity> search(String providerId, String sessionId, String owner, OffsetDateTime from, List<SIPState> state,
+    Page<SIPEntity> search(String providerId, String sessionSource, String sessionName, String owner, OffsetDateTime from, List<SIPState> state,
             String processing, Pageable page);
 
     /**
@@ -79,11 +80,12 @@ public interface ISIPService {
 
     /**
      * Delete all {@link SIPEntity}s associated to the given session.
-     * @param sessionId
+     * @param sessionSource
+     * @param sessionName
      * @return rejected or undeletable {@link SIPEntity}s
      * @throws ModuleException
      */
-    Collection<RejectedSip> deleteSIPEntitiesForSessionId(String sessionId) throws ModuleException;
+    Collection<RejectedSip> deleteSIPEntitiesForSession(String sessionSource, String sessionName) throws ModuleException;
 
     /**
      * Delete all {@link SIPEntity}s.
@@ -105,4 +107,21 @@ public interface ISIPService {
      */
     SIPEntity saveSIPEntity(SIPEntity sip);
 
+
+    /**
+     * Notify a SIP state changed from previousStep to the nextStep
+     * @param metadata
+     * @param previousState
+     * @param nextState
+     */
+    void notifySipChangedState(IngestMetadata metadata, SIPState previousState, SIPState nextState);
+
+
+    /**
+     * Notify several SIPs state changed from previousStep to the nextStep
+     * @param metadata
+     * @param previousState
+     * @param nextState
+     */
+    void notifySipsChangedState(IngestMetadata metadata, SIPState previousState, SIPState nextState, int nbSip);
 }

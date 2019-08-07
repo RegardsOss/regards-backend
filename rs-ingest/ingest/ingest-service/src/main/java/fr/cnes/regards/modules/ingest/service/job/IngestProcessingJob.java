@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import fr.cnes.regards.modules.ingest.service.ISIPService;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,9 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     private INotificationClient notificationClient;
 
     private IngestProcessingChain processingChain;
+
+    @Autowired
+    private ISIPService sipService;
 
     private Set<SIPEntity> entities;
 
@@ -172,7 +176,8 @@ public class IngestProcessingJob extends AbstractJob<Void> {
      */
     private List<AIP> setSessionOnAips(SIPEntity entity, List<AIP> aips) {
         for (AIP aip : aips) {
-            aip.getProperties().getPdi().getProvenanceInformation().setSession(entity.getSession().getId());
+            aip.getProperties().getPdi().getProvenanceInformation().setSessionSource(entity.getIngestMetadata().getSessionSource());
+            aip.getProperties().getPdi().getProvenanceInformation().setSessionName(entity.getIngestMetadata().getSessionName());
         }
         return aips;
     }
@@ -196,5 +201,9 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     public SIPEntity getCurrentEntity() {
         return currentEntity;
+    }
+
+    public ISIPService getSipService() {
+        return sipService;
     }
 }

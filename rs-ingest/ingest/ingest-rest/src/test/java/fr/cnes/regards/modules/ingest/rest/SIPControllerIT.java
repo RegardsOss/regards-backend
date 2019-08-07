@@ -18,32 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.restdocs.payload.PayloadDocumentation;
-import org.springframework.restdocs.request.ParameterDescriptor;
-import org.springframework.restdocs.request.RequestDocumentation;
-import org.springframework.restdocs.snippet.Attributes;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import com.google.gson.JsonObject;
-
 import fr.cnes.regards.framework.geojson.GeoJsonFieldDescriptors;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.geojson.OaisFieldDescriptors;
@@ -63,10 +38,30 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
-import fr.cnes.regards.modules.ingest.service.ISIPSessionService;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.hamcrest.Matchers;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
+import org.springframework.restdocs.request.ParameterDescriptor;
+import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.snippet.Attributes;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 /**
  *
@@ -81,11 +76,13 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPControllerIT.class);
 
-    @Autowired
-    private ISIPService sipService;
+
+    public static final String SESSION_SOURCE = "sessionSource";
+
+    public static final String SESSION_NAME = "sessionName";
 
     @Autowired
-    private ISIPSessionService sessionService;
+    private ISIPService sipService;
 
     @Override
     protected Logger getLogger() {
@@ -98,7 +95,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void ingestSips() {
 
         SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "sessionId");
+                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, SESSION_SOURCE, SESSION_NAME);
 
         SIP firstSIPwithGeometry = buildSipOne("SIP_001", "data1.fits").build();
         firstSIPwithGeometry
@@ -126,7 +123,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
         List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
         lfd.add(fields.withPath("metadata.processing", "The ingest processing chain to used"));
-        lfd.add(fields.withPath("metadata.session", "The ingestion session identifier"));
+        lfd.add(fields.withPath("metadata.sessionName", "The ingestion session name"));
+        lfd.add(fields.withPath("metadata.sessionSource", "The ingestion session source"));
         lfd.add(fields.withPath("type", "Feature collection"));
 
         GeoJsonFieldDescriptors geoJsonDescriptors = new GeoJsonFieldDescriptors("features[].");
@@ -146,7 +144,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void getSips() {
 
         SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "sessionId");
+                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, SESSION_SOURCE, SESSION_NAME);
 
         collectionBuilder.add(buildSipOne("SIP_001", "data1.fits").build());
         collectionBuilder.add(buildSipOne("SIP_002", "data2.fits").build());
@@ -191,8 +189,12 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                 .description("Ingest processing name filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
-        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_SESSION_ID).optional()
-                .description("Session identifier filter")
+        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_SESSION_SOURCE).optional()
+                .description("Session source filter")
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
+        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_SESSION_NAME).optional()
+                .description("Session name filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
 
@@ -200,80 +202,6 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramDescrList));
     }
 
-    @Test
-    @Requirement("REGARDS_DSL_ING_PRO_110")
-    @Purpose("Get ingest session")
-    public void getSession() {
-
-        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "session-id");
-
-        collectionBuilder.add(buildSipOne("SIP_001", "data1.fits").build());
-        collectionBuilder.add(buildSipTwo("SIP_002", "data2.fits").build());
-
-        // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
-        performDefaultPost(SIPController.TYPE_MAPPING, collectionBuilder.build(), requestBuilderCustomizer,
-                           "SIP collection should be submitted.");
-
-        // Retrieve sessions
-        requestBuilderCustomizer = customizer().expectStatusOk()
-                .expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(1)));
-
-        documentSearchSessionParameters(requestBuilderCustomizer);
-
-        performDefaultGet(SIPSessionController.TYPE_MAPPING, requestBuilderCustomizer, "Error retrieving SIP sessions");
-    }
-
-    @Test
-    @Requirement("REGARDS_DSL_ING_PRO_110")
-    @Purpose("Get one ingest session")
-    public void getOneSession() {
-        String sessionId = "sessions-id";
-
-        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, sessionId);
-
-        collectionBuilder.add(buildSipOne("SIP_001", "data1.fits").build());
-        collectionBuilder.add(buildSipTwo("SIP_002", "data2.fits").build());
-
-        // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
-        performDefaultPost(SIPController.TYPE_MAPPING, collectionBuilder.build(), requestBuilderCustomizer,
-                           "SIP collection should be submitted.");
-
-        // Retrieve sessions
-        requestBuilderCustomizer = customizer().expectStatusOk();
-        requestBuilderCustomizer.document(RequestDocumentation
-                .pathParameters(RequestDocumentation.parameterWithName(SIPSessionController.REQUEST_PARAM_ID)
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                        .description("The session identifier")));
-
-        performDefaultGet(SIPSessionController.TYPE_MAPPING + SIPSessionController.ID_PATH, requestBuilderCustomizer,
-                          "Error retrieving SIP sessions", sessionId);
-    }
-
-    private void documentSearchSessionParameters(RequestBuilderCustomizer requestBuilderCustomizer) {
-        List<ParameterDescriptor> paramDescrList = new ArrayList<ParameterDescriptor>();
-
-        paramDescrList.add(RequestDocumentation.parameterWithName(SIPSessionController.REQUEST_PARAM_ID).optional()
-                .description("Ingestion's session identifier filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
-        paramDescrList.add(RequestDocumentation.parameterWithName(SIPSessionController.REQUEST_PARAM_FROM).optional()
-                .description("ISO Date time starting filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
-        paramDescrList.add(RequestDocumentation.parameterWithName(SIPSessionController.REQUEST_PARAM_TO).optional()
-                .description("ISO Date time ending filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
-
-        // Add request parameters documentation
-        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramDescrList));
-    }
 
     @Test
     @Requirement("REGARDS_DSL_ING_PRO_110")
@@ -281,7 +209,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void ingestInvalidSips() {
 
         SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "sessionId");
+                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, SESSION_SOURCE, SESSION_NAME);
 
         // SIP 1
         SIPBuilder sipBuilder = new SIPBuilder("SIP_001");
@@ -376,9 +304,9 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         SIP sip = sipBuilder.build();
 
         // Store SIP entity
-        SIPSession session = sessionService.getSession("session", true);
-
-        SIPEntity sipEntity = SIPEntityBuilder.build(getDefaultTenant(), session, sip,
+        String sessionSource = "session";
+        String sessionName = OffsetDateTime.now().toString();
+        SIPEntity sipEntity = SIPEntityBuilder.build(getDefaultTenant(), sessionSource, sessionName, sip,
                                                      IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "me", 1,
                                                      SIPState.ERROR, EntityType.DATA);
         sipEntity.setChecksum("12332323f2ds3d6g6df");

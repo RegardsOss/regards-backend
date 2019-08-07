@@ -46,14 +46,15 @@ public class SIPCollectionBuilder {
 
     private final SIPCollection collection = new SIPCollection();
 
-    public SIPCollectionBuilder(String ingestChain, String sessionId) {
-        Assert.hasText(ingestChain, "Processing chain identifier is required");
-        collection.getMetadata().setIngestChain(ingestChain);
-        collection.getMetadata().setSession(sessionId);
+    public SIPCollectionBuilder(String processingChain, String sessionSource, String sessionName) {
+        Assert.hasText(processingChain, "Processing chain identifier is required");
+        collection.getMetadata().setProcessing(processingChain);
+        collection.getMetadata().setSessionSource(sessionSource);
+        collection.getMetadata().setSessionName(sessionName);
     }
 
     public SIPCollectionBuilder(String processingChain) {
-        this(processingChain, null);
+        this(processingChain, null, null);
     }
 
     public SIPCollection build() {
