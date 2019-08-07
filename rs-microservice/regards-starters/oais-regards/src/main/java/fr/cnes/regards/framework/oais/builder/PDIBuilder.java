@@ -214,8 +214,19 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
     /**
      * Set Regards session identifier
      */
-    public void setSession(String session) {
-        pdi.getProvenanceInformation().setSession(session);
+    @Deprecated
+    public void setSession(String sessionSource, String sessionName) {
+        pdi.getProvenanceInformation().setSessionSource(sessionSource);
+        pdi.getProvenanceInformation().setSessionName(sessionName);
+    }
+
+    /**
+     * Set Regards session identifier
+     */
+    @Deprecated
+    public void setSession(String sessionId) {
+        pdi.getProvenanceInformation().setSessionSource(sessionId);
+        pdi.getProvenanceInformation().setSessionName(sessionId);
     }
 
     /**
