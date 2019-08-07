@@ -37,6 +37,7 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -81,6 +82,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     private static final int MAX_STRING_LENGTH = 255;
 
+    public static final String BID_REGEXP = "[0-9a-zA-Z_-]*";
+
     /**
      * Unique id
      */
@@ -112,6 +115,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * A serialized {@link UUID} for business identifier
      */
+    @Pattern(regexp = BID_REGEXP,
+            message = "Business identifier must conform to regular expression \"" + BID_REGEXP + "\".")
     @Column(name = "bid", length = 36, nullable = false, updatable = false)
     private String businessId;
 
@@ -196,7 +201,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public PluginConfiguration(PluginMetaData metaData, String label, Collection<IPluginParam> parameters, int order) {
         super();
-        createBusinessId();
+        generateBusinessIdIfNotSet();
         this.setMetaData(metaData);
         if (parameters != null) {
             this.parameters.addAll(parameters);
@@ -348,8 +353,10 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         iconUrl = pIconUrl;
     }
 
-    public void createBusinessId() {
-        this.businessId = UUID.randomUUID().toString();
+    public void generateBusinessIdIfNotSet() {
+        if (this.businessId == null) {
+            this.businessId = UUID.randomUUID().toString();
+        }
     }
 
     public void resetBusinessId() {

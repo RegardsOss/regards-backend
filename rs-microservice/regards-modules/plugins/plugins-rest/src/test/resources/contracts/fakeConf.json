@@ -2,6 +2,7 @@
   "label": "sebbbbb",
   "active": true,
   "pluginId": "ParamTestPlugin",
+  "businessId" : "ParamTestPluginBid",
   "version": "1.0.0",
   "priorityOrder": 1,
   "parameters": [

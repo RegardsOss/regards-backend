@@ -188,8 +188,8 @@ public class PluginService implements IPluginService {
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(plgConf.getPluginId());
         plgConf.setMetaData(pluginMeta);
 
-        // Create business id
-        plgConf.createBusinessId();
+        // Generate business id
+        plgConf.generateBusinessIdIfNotSet();
 
         ensureOnlyOneConfIsActive(plgConf);
         boolean shouldPublishCreation = plgConf.getId() == null;
