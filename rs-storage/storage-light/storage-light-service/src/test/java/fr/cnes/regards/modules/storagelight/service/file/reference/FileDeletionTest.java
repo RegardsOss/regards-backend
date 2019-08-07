@@ -114,7 +114,7 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
 
         // Now schedule deletion jobs
         Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO,
-                                                                                   Lists.newArrayList());
+                                                                           Lists.newArrayList());
         runAndWaitJob(jobs);
 
         // File reference & request deletion should be deleted
@@ -171,7 +171,7 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
 
         // Now schedule deletion jobs
         Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO,
-                                                                                   Lists.newArrayList());
+                                                                           Lists.newArrayList());
         runAndWaitJob(jobs);
 
         // File reference & request deletion should be deleted

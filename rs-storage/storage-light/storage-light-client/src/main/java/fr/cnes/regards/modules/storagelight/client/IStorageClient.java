@@ -48,11 +48,10 @@ public interface IStorageClient {
      * @param mimeType file MIME type
      * @param fileSize file size
      * @param owner
-     * @param destinationStorage {@link PluginConfiguration#getBusinessId()} of {@link IStorageLocation} plugin.
-     * @param destinationDirectory optional subdirectory in destination storage location
+     * @param storage {@link PluginConfiguration#getBusinessId()} of {@link IStorageLocation} plugin.
+     * @param subDirectory optional subdirectory in destination storage location
      */
-    void copy(String fileName, String checksum, String algorithm, String mimeType, Long fileSize, String owner,
-            String destinationStorageId, Optional<String> destinationDirectory);
+    void copy(String fileName, String checksum, String owner, String storage, Optional<String> subDirectory);
 
     /**
      * Requests storage of a file from an localy accessible URL to a destination storage defined
@@ -63,14 +62,13 @@ public interface IStorageClient {
      * @param checksum
      * @param algorithm
      * @param mimeType
-     * @param fileSize
      * @param owner
      * @param originUrl Accessible file URL.
-     * @param destinationStorage Plugin configuration business id for destination storage
-     * @param destinationDirectory Optional subdirectory into destination storage
+     * @param storage Plugin configuration business id for destination storage
+     * @param subDirectory Optional sub directory into destination storage
      */
-    void store(String fileName, String checksum, String algorithm, String mimeType, Long fileSize, String owner,
-            URL originUrl, String destinationStorage, Optional<String> destinationDirectory);
+    void store(String fileName, String checksum, String algorithm, String mimeType, String owner, URL originUrl,
+            String storage, Optional<String> subDirectory);
 
     /**
      * Requests to reference a file at a given storage location. With this request, file is not moved but referenced.

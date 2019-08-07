@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -90,14 +91,14 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     }
 
     @Test
-    public void storeWithUnknownStorageLocation() {
+    public void storeWithUnknownStorageLocation() throws MalformedURLException {
         List<String> owners = Lists.newArrayList();
         owners.add("someone");
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo("invalid_checksum", "MD5", "file.test", 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
-        FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/file.test");
+        URL originUrl = new URL("file://in/this/directory/file.test");
         FileLocation destination = new FileLocation("elsewhere", "elsewhere://in/this/directory/file.test");
-        fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
+        fileRefService.addFileReference(owners, fileMetaInfo, Optional.of(originUrl), destination);
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
         Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(),
                                                                                     fileMetaInfo.getChecksum());
@@ -138,60 +139,52 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
 
         // Search all
         Assert.assertEquals("There should be 5 file references.", 5,
-                            fileRefService.search(PageRequest.of(0, 100)).getTotalElements());
+                            fileRefService.search(PageRequest.of(0, 100, Direction.ASC, "id")).getTotalElements());
         // Search by fileName
-        Assert.assertEquals("There should be one file references named file1.test.", 1,
-                            fileRefService
-                                    .search(FileReferenceSpecification.search("file1.test", null, null, null, null,
-                                                                              null, null),
-                                            PageRequest.of(0, 100))
-                                    .getTotalElements());
-        Assert.assertEquals("There should be 3 file references with name containing file", 3,
-                            fileRefService
-                                    .search(FileReferenceSpecification.search("file", null, null, null, null, null,
-                                                                              null),
-                                            PageRequest.of(0, 100))
-                                    .getTotalElements());
+        Assert.assertEquals("There should be one file references named file1.test.", 1, fileRefService
+                .search(FileReferenceSpecification.search("file1.test", null, null, null, null, null, null),
+                        PageRequest.of(0, 100, Direction.ASC, "id"))
+                .getTotalElements());
+        Assert.assertEquals("There should be 3 file references with name containing file", 3, fileRefService
+                .search(FileReferenceSpecification.search("file", null, null, null, null, null, null),
+                        PageRequest.of(0, 100, Direction.ASC, "id"))
+                .getTotalElements());
         // Search by checksum
-        Assert.assertEquals("There should be one file references with checksum given", 1,
-                            fileRefService.search(FileReferenceSpecification
-                                    .search(null, fileRef.getMetaInfo().getChecksum(), null, null, null, null, null),
-                                                  PageRequest.of(0, 100))
-                                    .getTotalElements());
+        Assert.assertEquals("There should be one file references with checksum given", 1, fileRefService
+                .search(FileReferenceSpecification.search(null, fileRef.getMetaInfo().getChecksum(), null, null, null,
+                                                          null, null),
+                        PageRequest.of(0, 100, Direction.ASC, "id"))
+                .getTotalElements());
         // Search by storage
-        Assert.assertEquals("There should be 5 file references in given storages", 5,
-                            fileRefService
-                                    .search(FileReferenceSpecification.search(null, null, null,
-                                                                              Sets.newHashSet("anywhere",
-                                                                                              "somewhere-else", "void"),
-                                                                              null, null, null),
-                                            PageRequest.of(0, 100))
-                                    .getTotalElements());
+        Assert.assertEquals("There should be 5 file references in given storages", 5, fileRefService
+                .search(FileReferenceSpecification.search(null, null, null,
+                                                          Sets.newHashSet("anywhere", "somewhere-else", "void"), null,
+                                                          null, null),
+                        PageRequest.of(0, 100, Direction.ASC, "id"))
+                .getTotalElements());
         Assert.assertEquals("There should be 3 file references in given storages", 3, fileRefService
                 .search(FileReferenceSpecification.search(null, null, null, Sets.newHashSet("somewhere-else"), null,
                                                           null, null),
-                        PageRequest.of(0, 100))
+                        PageRequest.of(0, 100, Direction.ASC, "id"))
                 .getTotalElements());
         // Search by type
-        Assert.assertEquals("There should be 0 file references for given type", 0,
-                            fileRefService.search(FileReferenceSpecification
-                                    .search(null, null, Lists.newArrayList("Type0"), null, null, null, null),
-                                                  PageRequest.of(0, 100))
-                                    .getTotalElements());
+        Assert.assertEquals("There should be 0 file references for given type", 0, fileRefService
+                .search(FileReferenceSpecification.search(null, null, Lists.newArrayList("Type0"), null, null, null,
+                                                          null),
+                        PageRequest.of(0, 100, Direction.ASC, "id"))
+                .getTotalElements());
         Assert.assertEquals("There should be 3 file references for given type", 1, fileRefService
                 .search(FileReferenceSpecification.search(null, null, Sets.newHashSet("Type2"), null, null, null, null),
-                        PageRequest.of(0, 100))
+                        PageRequest.of(0, 100, Direction.ASC, "id"))
                 .getTotalElements());
         // Search by date
-        Assert.assertEquals("There should be 5 file references for given from date", 5,
-                            fileRefService
-                                    .search(FileReferenceSpecification.search(null, null, null, null, null, beforeDate,
-                                                                              null),
-                                            PageRequest.of(0, 100))
-                                    .getTotalElements());
+        Assert.assertEquals("There should be 5 file references for given from date", 5, fileRefService
+                .search(FileReferenceSpecification.search(null, null, null, null, null, beforeDate, null),
+                        PageRequest.of(0, 100, Direction.ASC, "id"))
+                .getTotalElements());
         Assert.assertEquals("There should be 4 file references for given from and to date", 4, fileRefService
                 .search(FileReferenceSpecification.search(null, null, null, null, null, afterFirstDate, afterEndDate),
-                        PageRequest.of(0, 100))
+                        PageRequest.of(0, 100, Direction.ASC, "id"))
                 .getTotalElements());
 
     }
@@ -289,11 +282,10 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         owners.add("test");
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", inputImage.getName(),
                 inputImage.getTotalSpace(), MediaType.IMAGE_PNG);
-        FileLocation origin = new FileLocation("local",
-                new URL("file", "localhost", inputImage.getAbsolutePath()).toString());
+        URL origin = new URL("file", "localhost", inputImage.getAbsolutePath());
         FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
+        fileRefService.addFileReference(owners, fileMetaInfo, Optional.of(origin), destination);
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
         Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
@@ -328,17 +320,15 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         String fileNameNotHandled = "doNotHandle.file.test";
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksumNotHandled, "MD5", fileNameNotHandled,
                 132L, MediaType.APPLICATION_OCTET_STREAM);
-        FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/" + fileNameNotHandled);
         FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
-        fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
+        fileRefService.addFileReference(owners, fileMetaInfo, Optional.of(originUrl), destination);
         // Add a valid one for storage
         String fileNameHandled = "file.test";
         String checksumHandled = UUID.randomUUID().toString();
         fileMetaInfo = new FileReferenceMetaInfo(checksumHandled, "MD5", fileNameHandled, 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
-        origin = new FileLocation("anywhere", "anywhere://in/this/directory/" + fileNameHandled);
         destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
-        fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
+        fileRefService.addFileReference(owners, fileMetaInfo, Optional.of(originUrl), destination);
 
         Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
@@ -359,8 +349,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     }
 
     @Test
-    public void retryStoreErrors()
-            throws InterruptedException, ExecutionException, ModuleException, MalformedURLException {
+    public void retryStoreErrors() throws InterruptedException, ExecutionException, ModuleException {
         FileStorageRequest fileRefReq = this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
@@ -371,16 +360,15 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         runAndWaitJob(jobs);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
         Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService
-                .search(fileRefReq.getDestination().getStorage(), fileRefReq.getMetaInfo().getChecksum());
-        Optional<FileReference> oFileRef = fileRefService.search(fileRefReq.getDestination().getStorage(),
+                .search(fileRefReq.getStorage(), fileRefReq.getMetaInfo().getChecksum());
+        Optional<FileReference> oFileRef = fileRefService.search(fileRefReq.getStorage(),
                                                                  fileRefReq.getMetaInfo().getChecksum());
         Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
         Assert.assertFalse("File reference request should not exists anymore", oFileRefReq.isPresent());
     }
 
     @Test
-    public void retryMultipleStoreErrors()
-            throws InterruptedException, ExecutionException, ModuleException, MalformedURLException {
+    public void retryMultipleStoreErrors() throws InterruptedException, ExecutionException, ModuleException {
         FileStorageRequest fileRefReq = this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
@@ -395,16 +383,15 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         runtimeTenantResolver.forceTenant(tenant);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
         Page<FileStorageRequest> fileRefReqs = fileStorageRequestService
-                .search(fileRefReq.getDestination().getStorage(), PageRequest.of(0, 1000));
-        Page<FileReference> fileRefs = fileRefService.search(fileRefReq.getDestination().getStorage(),
-                                                             PageRequest.of(0, 1000));
+                .search(fileRefReq.getStorage(), PageRequest.of(0, 1000, Direction.ASC, "id"));
+        Page<FileReference> fileRefs = fileRefService.search(fileRefReq.getStorage(),
+                                                             PageRequest.of(0, 1000, Direction.ASC, "id"));
         Assert.assertEquals("File references should have been created.", 3, fileRefs.getContent().size());
         Assert.assertTrue("File reference requests should not exists anymore", fileRefReqs.getContent().isEmpty());
     }
 
     @Test
-    public void retryMultipleStoreErrorsByOwner()
-            throws InterruptedException, ExecutionException, ModuleException, MalformedURLException {
+    public void retryMultipleStoreErrorsByOwner() throws InterruptedException, ExecutionException, ModuleException {
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
@@ -421,9 +408,10 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         jobService.runJob(jobs.iterator().next(), tenant).get();
         runtimeTenantResolver.forceTenant(tenant);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        Page<FileStorageRequest> fileRefReqs = fileStorageRequestService.search(ONLINE_CONF_LABEL,
-                                                                                PageRequest.of(0, 1000));
-        Page<FileReference> fileRefs = fileRefService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1000));
+        Page<FileStorageRequest> fileRefReqs = fileStorageRequestService
+                .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1000, Direction.ASC, "id"));
+        Page<FileReference> fileRefs = fileRefService.search(ONLINE_CONF_LABEL,
+                                                             PageRequest.of(0, 1000, Direction.ASC, "id"));
         Assert.assertEquals("File references should have been created for the given owner.", 2,
                             fileRefs.getContent().size());
         Assert.assertTrue("File references should have been created for the given owner.", fileRefs.getContent()
@@ -437,8 +425,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     }
 
     @Test
-    public void retryMultipleStoreErrorsByStorage()
-            throws InterruptedException, ExecutionException, ModuleException, MalformedURLException {
+    public void retryMultipleStoreErrorsByStorage() throws InterruptedException, ExecutionException, ModuleException {
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
         FileStorageRequest fileRefReqOther = this.generateStoreFileError("someone", "other-target");
@@ -453,8 +440,9 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         jobService.runJob(jobs.iterator().next(), tenant).get();
         runtimeTenantResolver.forceTenant(tenant);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        Page<FileStorageRequest> fileRefReqs = fileStorageRequestService.search(PageRequest.of(0, 1000));
-        Page<FileReference> fileRefs = fileRefService.search(PageRequest.of(0, 1000));
+        Page<FileStorageRequest> fileRefReqs = fileStorageRequestService
+                .search(PageRequest.of(0, 1000, Direction.ASC, "id"));
+        Page<FileReference> fileRefs = fileRefService.search(PageRequest.of(0, 1000, Direction.ASC, "id"));
         Assert.assertEquals("File references should have been created.", 2, fileRefs.getContent().size());
         Assert.assertEquals("File reference requests should not exists anymore for given storage", 1,
                             fileRefReqs.getContent().size());

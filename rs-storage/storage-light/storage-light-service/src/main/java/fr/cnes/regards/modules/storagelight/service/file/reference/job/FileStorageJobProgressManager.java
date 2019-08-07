@@ -71,17 +71,18 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
         if (storedUrl == null) {
             this.storageFailed(fileRefRequest, String
                     .format("File {} has been successully stored, nevertheless plugin <%> does not provide the new file location",
-                            fileRefRequest.getDestination().getStorage(), fileRefRequest.getMetaInfo().getFileName()));
+                            fileRefRequest.getStorage(), fileRefRequest.getMetaInfo().getFileName()));
         } else {
-            FileLocation newLocation = new FileLocation(fileRefRequest.getDestination().getStorage(), storedUrl);
-            LOG.debug("[STORAGE SUCCESS] - Store success for file {} (id={})in {} (checksum: {}).",
-                      fileRefRequest.getMetaInfo().getFileName(), fileRefRequest.getId(), newLocation,
-                      fileRefRequest.getMetaInfo().getChecksum());
+            FileLocation newLocation = new FileLocation(fileRefRequest.getStorage(), storedUrl);
+            LOG.info("[STORAGE SUCCESS] - Store success for file {} (id={})in {} (checksum: {}).",
+                     fileRefRequest.getMetaInfo().getFileName(), fileRefRequest.getId(), newLocation,
+                     fileRefRequest.getMetaInfo().getChecksum());
             job.advanceCompletion();
             // Create FileReference resulting of the success of FileReferenceRequest
+            fileRefRequest.getMetaInfo().setFileSize(fileSize);
             Optional<FileReference> oFileRef = fileReferenceService.addFileReference(fileRefRequest.getOwners(),
                                                                                      fileRefRequest.getMetaInfo(),
-                                                                                     newLocation, newLocation);
+                                                                                     Optional.empty(), newLocation);
             if (oFileRef.isPresent()) {
                 // Delete the FileRefRequest as it has been handled
                 try {
@@ -93,15 +94,14 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
                 }
             } else {
                 String errorCause = String.format("Unable to save new file reference for file %s",
-                                                  fileRefRequest.getDestination().toString());
+                                                  fileRefRequest.getStorage());
                 // The file is not really referenced so handle reference error by modifying request to be retry later
-                fileRefRequest.setOrigin(fileRefRequest.getDestination());
+                fileRefRequest.setOriginUrl(null);
                 fileRefRequest.setStatus(FileRequestStatus.ERROR);
                 fileRefRequest.setErrorCause(errorCause);
                 fileRefRequestService.update(fileRefRequest);
                 publisher.publishFileRefStoreError(fileRefRequest.getMetaInfo().getChecksum(),
-                                                   fileRefRequest.getOwners(), fileRefRequest.getDestination(),
-                                                   errorCause);
+                                                   fileRefRequest.getOwners(), fileRefRequest.getStorage(), errorCause);
             }
             handledRequest.add(fileRefRequest);
         }
@@ -110,15 +110,14 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
     @Override
     public void storageFailed(FileStorageRequest fileRefRequest, String cause) {
         LOG.error("[STORAGE ERROR] - Store error for file {} (id={})in {} (checksum: {}). Cause : {}",
-                  fileRefRequest.getMetaInfo().getFileName(), fileRefRequest.getId(),
-                  fileRefRequest.getDestination().toString(), fileRefRequest.getMetaInfo().getChecksum(), cause);
+                  fileRefRequest.getMetaInfo().getFileName(), fileRefRequest.getId(), fileRefRequest.getStorage(),
+                  fileRefRequest.getMetaInfo().getChecksum(), cause);
         job.advanceCompletion();
-        fileRefRequest.setOrigin(fileRefRequest.getDestination());
         fileRefRequest.setStatus(FileRequestStatus.ERROR);
         fileRefRequest.setErrorCause(cause);
         fileRefRequestService.update(fileRefRequest);
         publisher.publishFileRefStoreError(fileRefRequest.getMetaInfo().getChecksum(), fileRefRequest.getOwners(),
-                                           fileRefRequest.getDestination(), cause);
+                                           fileRefRequest.getStorage(), cause);
         handledRequest.add(fileRefRequest);
     }
 

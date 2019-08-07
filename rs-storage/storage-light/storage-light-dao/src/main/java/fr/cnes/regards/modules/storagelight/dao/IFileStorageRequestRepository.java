@@ -21,17 +21,16 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
  */
 public interface IFileStorageRequestRepository extends JpaRepository<FileStorageRequest, Long> {
 
-    Page<FileStorageRequest> findByDestinationStorage(String destinationStorage, Pageable pageable);
+    Page<FileStorageRequest> findByStorage(String storage, Pageable pageable);
 
-    Optional<FileStorageRequest> findByMetaInfoChecksumAndDestinationStorage(String checksum, String storage);
+    Optional<FileStorageRequest> findByMetaInfoChecksumAndStorage(String checksum, String storage);
 
-    @Query("select destination.storage from FileStorageRequest where status = :status")
-    Set<String> findDestinationStoragesByStatus(@Param("status") FileRequestStatus status);
+    @Query("select storage from FileStorageRequest where status = :status")
+    Set<String> findStoragesByStatus(@Param("status") FileRequestStatus status);
 
-    Page<FileStorageRequest> findAllByDestinationStorage(String storage, Pageable page);
+    Page<FileStorageRequest> findAllByStorage(String storage, Pageable page);
 
-    Page<FileStorageRequest> findAllByDestinationStorageAndOwnersIn(String storage, Collection<String> owners,
-            Pageable page);
+    Page<FileStorageRequest> findAllByStorageAndOwnersIn(String storage, Collection<String> owners, Pageable page);
 
     @Modifying
     @Query("update FileStorageRequest fsr set fsr.status = :status where fsr.id = :id")

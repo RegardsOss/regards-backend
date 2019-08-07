@@ -130,6 +130,8 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     @Autowired
     protected PrioritizedStorageService prioritizedDataStorageService;
 
+    protected URL originUrl = null;
+
     protected void init() throws ModuleException {
         try {
             if (Files.exists(Paths.get("target/cache"))) {
@@ -165,6 +167,12 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         initDataStoragePluginConfiguration(ONLINE_CONF_LABEL);
         initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
         storagePlgConfHandler.refresh();
+
+        try {
+            originUrl = new URL("file://in/this/directory/file.test");
+        } catch (MalformedURLException e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     protected PrioritizedStorage initDataStoragePluginConfiguration(String label) throws ModuleException {
@@ -202,7 +210,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         }
     }
 
-    protected void updatePluginConfForError(String newErrorPattern) throws MalformedURLException, ModuleException {
+    protected void updatePluginConfForError(String newErrorPattern) throws ModuleException {
         PrioritizedStorage conf = prioritizedDataStorageService.getFirstActive(StorageType.ONLINE);
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
@@ -236,9 +244,8 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
             String newOwner) {
         Optional<FileReference> oFilef = fileRefService.search(storage, checksum);
         Assert.assertTrue("File reference should already exists", oFilef.isPresent());
-        FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/file.test");
-        return fileRefService.addFileReference(Lists.newArrayList(newOwner), oFilef.get().getMetaInfo(), origin,
-                                               oFilef.get().getLocation());
+        return fileRefService.addFileReference(Lists.newArrayList(newOwner), oFilef.get().getMetaInfo(),
+                                               Optional.of(originUrl), oFilef.get().getLocation());
 
     }
 
@@ -248,10 +255,9 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         owners.add(owner);
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
-        FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/" + fileName);
         FileLocation destination = new FileLocation(storage, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
+        fileRefService.addFileReference(owners, fileMetaInfo, Optional.of(originUrl), destination);
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), checksum);
         Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(), checksum);
@@ -277,9 +283,9 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
         fileMetaInfo.setType(type);
-        FileLocation origin = new FileLocation(storage, "anywhere://in/this/directory/file.test");
-        fileRefService.addFileReference(owners, fileMetaInfo, origin, origin);
-        return fileRefService.search(origin.getStorage(), fileMetaInfo.getChecksum());
+        FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/file.test");
+        fileRefService.addFileReference(owners, fileMetaInfo, Optional.empty(), location);
+        return fileRefService.search(location.getStorage(), fileMetaInfo.getChecksum());
     }
 
     protected Optional<FileReference> referenceRandomFile(List<String> owners, String type, String fileName,
@@ -293,10 +299,9 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         owners.add(owner);
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5",
                 "error.file.test", 132L, MediaType.APPLICATION_OCTET_STREAM);
-        FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/error.file.test");
         FileLocation destination = new FileLocation(storageDestination, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
+        fileRefService.addFileReference(owners, fileMetaInfo, Optional.of(originUrl), destination);
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
         Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(),
@@ -328,8 +333,13 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         return oFileRefReq.get();
     }
 
-    protected URL getBaseStorageLocation() throws MalformedURLException {
-        return new URL("file", "", Paths.get("target/simpleOnlineStorage").toFile().getAbsolutePath());
+    protected URL getBaseStorageLocation() {
+        try {
+            return new URL("file", "", Paths.get("target/simpleOnlineStorage").toFile().getAbsolutePath());
+        } catch (MalformedURLException e) {
+            Assert.fail(e.getMessage());
+            return null;
+        }
     }
 
     protected void runAndWaitJob(Collection<JobInfo> jobs) {

@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.database.request;
 
+import java.net.URL;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -54,9 +54,9 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
  */
 @Entity
 @Table(name = "t_file_storage_request",
-        indexes = { @Index(name = "idx_file_storage_request", columnList = "destination_storage, checksum") },
+        indexes = { @Index(name = "idx_file_storage_request", columnList = "storage, checksum") },
         uniqueConstraints = { @UniqueConstraint(name = "t_file_storage_request_checksum_storage",
-                columnNames = { "checksum", "destination_storage" }) })
+                columnNames = { "checksum", "storage" }) })
 public class FileStorageRequest {
 
     /**
@@ -73,15 +73,14 @@ public class FileStorageRequest {
             foreignKey = @ForeignKey(name = "fk_ta_file_storage_request_owners_t_file_storage_request")))
     private final List<String> owners = Lists.newArrayList();
 
-    @Embedded
-    @AttributeOverrides({ @AttributeOverride(name = "storage", column = @Column(name = "origin_storage")),
-            @AttributeOverride(name = "url", column = @Column(name = "origin_url")) })
-    private FileLocation origin;
+    @Column(name = "origin_url", length = FileLocation.URL_MAX_LENGTH)
+    private String originUrl;
 
-    @Embedded
-    @AttributeOverrides({ @AttributeOverride(name = "storage", column = @Column(name = "destination_storage")),
-            @AttributeOverride(name = "url", column = @Column(name = "destination_url")) })
-    private FileLocation destination;
+    @Column(name = "storage_subdirectory", length = FileLocation.URL_MAX_LENGTH)
+    private String storageSubDirectory;
+
+    @Column(name = "storage", length = FileLocation.STORAGE_MAX_LENGTH)
+    private String storage;
 
     @Embedded
     private FileReferenceMetaInfo metaInfo;
@@ -97,34 +96,36 @@ public class FileStorageRequest {
         super();
     }
 
-    public FileStorageRequest(String owner, FileReferenceMetaInfo metaInfos, FileLocation origin,
-            FileLocation destination) {
+    public FileStorageRequest(String owner, FileReferenceMetaInfo metaInfos, URL originUrl, String storage,
+            Optional<String> storageSubDirectory) {
         super();
         Assert.notNull(owner, "File storage request need a owner !");
-        Assert.notNull(origin, "File storage request need an origin location !");
-        Assert.notNull(destination, "File storage request need a destination location !");
+        Assert.notNull(originUrl, "File storage request need an origin location !");
+        Assert.notNull(storage, "File storage request need a destination location !");
         Assert.notNull(metaInfos, "File storage request need file meta information !");
         Assert.notNull(metaInfos.getChecksum(), "File storage request need file checkusm !");
 
         this.owners.add(owner);
-        this.origin = origin;
-        this.destination = destination;
+        this.originUrl = originUrl.toString();
+        this.storage = storage;
+        this.storageSubDirectory = storageSubDirectory.orElse(null);
         this.metaInfo = metaInfos;
     }
 
-    public FileStorageRequest(Collection<String> owners, FileReferenceMetaInfo metaInfos, FileLocation origin,
-            FileLocation destination) {
+    public FileStorageRequest(Collection<String> owners, FileReferenceMetaInfo metaInfos, URL originUrl, String storage,
+            Optional<String> storageSubDirectory) {
         super();
         Assert.notNull(owners, "File storage request need a owner !");
         Assert.isTrue(!owners.isEmpty(), "File storage request need a owner !");
-        Assert.notNull(origin, "File storage request need an origin location !");
-        Assert.notNull(destination, "File storage request need a destination location !");
+        Assert.notNull(originUrl, "File storage request need an origin location !");
+        Assert.notNull(storage, "File storage request need a destination location !");
         Assert.notNull(metaInfos, "File storage request need file meta information !");
         Assert.notNull(metaInfos.getChecksum(), "File storage request need file checkusm !");
 
         this.owners.addAll(owners);
-        this.origin = origin;
-        this.destination = destination;
+        this.originUrl = originUrl.toString();
+        this.storage = storage;
+        this.storageSubDirectory = storageSubDirectory.orElse(null);
         this.metaInfo = metaInfos;
     }
 
@@ -135,97 +136,66 @@ public class FileStorageRequest {
         return id;
     }
 
-    /**
-     * @param id the id to set
-     */
     public void setId(Long id) {
         this.id = id;
     }
 
-    /**
-     * @return the owners
-     */
     public List<String> getOwners() {
         return owners;
     }
 
-    /**
-     * @return the origin
-     */
-    public FileLocation getOrigin() {
-        return origin;
+    public String getOriginUrl() {
+        return originUrl;
     }
 
-    /**
-     * @param origin the origin to set
-     */
-    public void setOrigin(FileLocation origin) {
-        this.origin = origin;
+    public void setOriginUrl(String originUrl) {
+        this.originUrl = originUrl;
     }
 
-    /**
-     * @return the destination
-     */
-    public FileLocation getDestination() {
-        return destination;
-    }
-
-    /**
-     * @param destination the destination to set
-     */
-    public void setDestination(FileLocation destination) {
-        this.destination = destination;
-    }
-
-    /**
-     * @return the metaInfos
-     */
     public FileReferenceMetaInfo getMetaInfo() {
         return metaInfo;
     }
 
-    /**
-     * @param metaInfos the metaInfos to set
-     */
     public void setMetaInfo(FileReferenceMetaInfo metaInfos) {
         this.metaInfo = metaInfos;
     }
 
-    /**
-     * @return the state
-     */
     public FileRequestStatus getStatus() {
         return status;
     }
 
-    /**
-     * @param state the state to set
-     */
     public void setStatus(FileRequestStatus status) {
         this.status = status;
     }
 
-    /**
-     * @return the errorCause
-     */
     public String getErrorCause() {
         return errorCause;
     }
 
-    /**
-     * @param errorCause the errorCause to set
-     */
     public void setErrorCause(String errorCause) {
         this.errorCause = errorCause;
     }
 
+    public String getStorageSubDirectory() {
+        return storageSubDirectory;
+    }
+
+    public void setStorageSubDirectory(String storageSubDirectory) {
+        this.storageSubDirectory = storageSubDirectory;
+    }
+
     /**
-     * Indicates if the current request need to store the reference file.
-     * The storage needs to be done if the origin and the destination of the request are different
-     * @return
+     * @return the storage
      */
-    public boolean needFileStorage() {
-        return (this.destination != null) ? this.destination.equals(this.origin) : false;
+    public String getStorage() {
+        return storage;
+    }
+
+    /**
+     * @param storage the storage to set
+     */
+    public void setStorage(String storage) {
+        this.storage = storage;
     }
 
     @Override

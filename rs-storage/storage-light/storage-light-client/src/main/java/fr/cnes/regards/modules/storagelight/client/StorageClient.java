@@ -44,10 +44,8 @@ public class StorageClient implements IStorageClient {
     private IPublisher publisher;
 
     @Override
-    public void copy(String fileName, String checksum, String algorithm, String mimeType, Long fileSize, String owner,
-            String destinationStorageId, Optional<String> destinationDirectory) {
-        publisher.publish(new AddFileRefFlowItem(fileName, checksum, algorithm, mimeType, fileSize, owner, null, null,
-                destinationStorageId, destinationDirectory.orElse(null)));
+    public void copy(String fileName, String checksum, String owner, String storage, Optional<String> subDirectory) {
+        // TODO
     }
 
     @Override
@@ -63,15 +61,19 @@ public class StorageClient implements IStorageClient {
     @Override
     public void reference(String fileName, String checksum, String algorithm, String mimeType, Long fileSize,
             String owner, String storage, String url) {
-        publisher.publish(new AddFileRefFlowItem(fileName, checksum, algorithm, mimeType, fileSize, owner, storage, url,
-                storage, url));
+        publisher.publish(AddFileRefFlowItem.build(fileName, checksum, algorithm, mimeType, fileSize, owner, storage,
+                                                   url));
     }
 
     @Override
-    public void store(String fileName, String checksum, String algorithm, String mimeType, Long fileSize, String owner,
-            URL originUrl, String destinationStorageId, Optional<String> destinationDirectory) {
-        publisher.publish(new AddFileRefFlowItem(fileName, checksum, algorithm, mimeType, fileSize, owner, null,
-                originUrl.toString(), destinationStorageId, destinationDirectory.orElse(null)));
+    public void store(String fileName, String checksum, String algorithm, String mimeType, String owner, URL originUrl,
+            String storage, Optional<String> subDirectory) {
+        AddFileRefFlowItem item = AddFileRefFlowItem.build(fileName, checksum, algorithm, mimeType, owner, storage,
+                                                           originUrl);
+        if (subDirectory.isPresent()) {
+            item.storeIn(subDirectory.get());
+        }
+        publisher.publish(item);
     }
 
 }

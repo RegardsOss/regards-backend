@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storagelight.service.file.reference;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
@@ -160,7 +161,8 @@ public class FileReferenceService {
     public Optional<FileReference> addFileReference(AddFileRefFlowItem item) {
         FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(item.getChecksum(), item.getAlgorithm(),
                 item.getFileName(), item.getFileSize(), MediaType.valueOf(item.getMimeType()));
-        return addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigin(), item.getDestination());
+        return addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOriginUrl(),
+                                item.getDestination());
     }
 
     /**
@@ -182,7 +184,7 @@ public class FileReferenceService {
                             && f.getLocation().getStorage().contentEquals(item.getDestination().getStorage()))
                     .findFirst();
 
-            addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigin(), item.getDestination(),
+            addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOriginUrl(), item.getDestination(),
                              oFileRef);
 
             // Performance optimization.
@@ -205,10 +207,9 @@ public class FileReferenceService {
      * @return FileReference if already exists or does not need a new storage job
      */
     public Optional<FileReference> addFileReference(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
-            FileLocation origin, FileLocation destination) {
+            Optional<URL> origin, FileLocation destination) {
         return addFileReference(owners, fileMetaInfo, origin, destination, fileRefRepo
                 .findByLocationStorageAndMetaInfoChecksum(destination.getStorage(), fileMetaInfo.getChecksum()));
-
     }
 
     /**
@@ -222,7 +223,7 @@ public class FileReferenceService {
      * @return FileReference if already exists or does not need a new storage job
      */
     private Optional<FileReference> addFileReference(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
-            FileLocation origin, FileLocation destination, Optional<FileReference> fileRef) {
+            Optional<URL> originUrl, FileLocation destination, Optional<FileReference> fileRef) {
         Assert.notNull(owners, "File must have a owner to be referenced");
         Assert.isTrue(!owners.isEmpty(), "File must have a owner to be referenced");
         Assert.notNull(fileMetaInfo, "File must have an origin location to be referenced");
@@ -230,21 +231,18 @@ public class FileReferenceService {
         Assert.notNull(fileMetaInfo.getAlgorithm(), "File checksum algorithm is mandatory");
         Assert.notNull(fileMetaInfo.getFileName(), "File name is mandatory");
         Assert.notNull(fileMetaInfo.getMimeType(), "File mime type is mandatory");
-        Assert.notNull(fileMetaInfo.getFileSize(), "File size is mandatory");
-        Assert.notNull(origin, "File must have an origin location to be referenced");
         Assert.notNull(destination, "File must have an origin location to be referenced");
 
         if (fileRef.isPresent()) {
-            handleFileReferenceAlreadyExists(fileRef.get(), fileMetaInfo, origin, destination, owners);
+            handleFileReferenceAlreadyExists(fileRef.get(), fileMetaInfo, originUrl, destination, owners);
         } else {
-            if (origin == null) {
-                // No origin location means that the file is already referenced and we have to copy it to the destination storage
-                // TODO !!
-            } else if (destination.equals(origin)) {
-                // If destination equals origin location so file is already stored and can be referenced directly
-                return Optional.of(create(owners, fileMetaInfo, destination));
+            if (originUrl.isPresent()) {
+                // A new file storage request is needed
+                fileStorageRequestService.create(owners, fileMetaInfo, originUrl.get(), destination.getStorage(),
+                                                 Optional.ofNullable(destination.getUrl()));
             } else {
-                fileStorageRequestService.create(owners, fileMetaInfo, origin, destination);
+                // A new file reference is needed
+                return Optional.of(create(owners, fileMetaInfo, destination));
             }
         }
         return fileRef;
@@ -522,15 +520,23 @@ public class FileReferenceService {
      * @return {@link FileReference} if the file reference is updated. Null if a new store request is created.
      */
     private Optional<FileReference> handleFileReferenceAlreadyExists(FileReference fileReference,
-            FileReferenceMetaInfo newMetaInfo, FileLocation origin, FileLocation destination,
+            FileReferenceMetaInfo newMetaInfo, Optional<URL> originUrl, FileLocation destination,
             Collection<String> owners) {
         Set<String> newOwners = Sets.newHashSet();
         FileReference updatedFileRef = null;
 
         Optional<FileDeletionRequest> deletionRequest = fileDeletionRequestService.search(fileReference);
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
-            // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
-            fileStorageRequestService.create(owners, newMetaInfo, origin, destination, FileRequestStatus.DELAYED);
+            if (originUrl.isPresent()) {
+                // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
+                fileStorageRequestService.create(owners, newMetaInfo, originUrl.get(), destination.getStorage(),
+                                                 Optional.of(destination.getUrl()), FileRequestStatus.DELAYED);
+            } else {
+                // A deletion is pending on the existing file reference but the new reference request does not indicates the new file location
+                String message = String.format("File is being deleted. Please try later.");
+                fileRefPublisher.publishFileRefStoreError(newMetaInfo.getChecksum(), owners, destination.getStorage(),
+                                                          message);
+            }
         } else {
             if (deletionRequest.isPresent()) {
                 // Delete not running deletion request to add the new owner

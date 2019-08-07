@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -142,7 +143,7 @@ public class FileCacheRequestService {
         Set<String> allStorages = repository.findStoragesByStatus(status);
         for (String storage : allStorages) {
             Page<FileCacheRequest> filesPage;
-            Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE);
+            Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
             do {
                 filesPage = repository.findAllByStorage(storage, page);
                 List<FileCacheRequest> requests = filesPage.getContent();

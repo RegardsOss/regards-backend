@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -159,16 +160,16 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         for (int i = 0; i < 5000; i++) {
             String checksum = UUID.randomUUID().toString();
             // Create a new bus message File reference request
-            AddFileRefFlowItem item = new AddFileRefFlowItem("file.name", checksum, "MD5", "application/octet-stream",
-                    10L, "owner-test", storage, "file://storage/location/file.name", storage,
-                    "file://storage/location/file.name");
+            AddFileRefFlowItem item = AddFileRefFlowItem.build("error.file.name", checksum, "MD5",
+                                                               "application/octet-stream", 10L, "owner-test", storage,
+                                                               "file://storage/location/file.name");
             TenantWrapper<AddFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
             // Publish request
             storageHandler.handle(wrapper);
         }
         Thread.sleep(30000);
-        Assert.assertEquals("There should be 5000 file ref created",
-                            fileRefRepo.findByLocationStorage(storage, PageRequest.of(0, 1)).getTotalElements(), 5000);
+        Assert.assertEquals("There should be 5000 file ref created", fileRefRepo
+                .findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements(), 5000);
     }
 
     @Test
@@ -184,9 +185,9 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         for (int i = 0; i < 5000; i++) {
             String checksum = UUID.randomUUID().toString();
             // Create a new bus message File reference request
-            AddFileRefFlowItem item = new AddFileRefFlowItem("file.name", checksum, "MD5", "application/octet-stream",
-                    10L, "owner-test", null, "file://storage/location/file.name", ONLINE_CONF_LABEL,
-                    "/storage/location");
+            AddFileRefFlowItem item = AddFileRefFlowItem.build("error.file.name", checksum, "MD5",
+                                                               "application/octet-stream", "owner-test",
+                                                               ONLINE_CONF_LABEL, originUrl);
             TenantWrapper<AddFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
             // Publish request
             storageHandler.handle(wrapper);
@@ -194,10 +195,12 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         Thread.sleep(30000);
 
         Assert.assertEquals("There should be 5000 file storage request created", 5000, fileStorageRequestService
-                .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1)).getTotalElements());
+                .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
 
-        Assert.assertEquals("No file ref should be created", 0, fileRefService.search(FileReferenceSpecification
-                .search(null, null, null, Lists.newArrayList(ONLINE_CONF_LABEL), null, now, null), PageRequest.of(0, 1))
+        Assert.assertEquals("No file ref should be created", 0, fileRefService
+                .search(FileReferenceSpecification.search(null, null, null, Lists.newArrayList(ONLINE_CONF_LABEL), null,
+                                                          now, null),
+                        PageRequest.of(0, 1, Direction.ASC, "id"))
                 .getTotalElements());
         long start = System.currentTimeMillis();
         Collection<JobInfo> jobs = fileStorageRequestService
@@ -208,9 +211,11 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         runAndWaitJob(jobs);
         LOGGER.info("...{} jobs handled in {} ms", jobs.size(), System.currentTimeMillis() - start);
         Assert.assertEquals("There should be no file storage request created", 0, fileStorageRequestService
-                .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1)).getTotalElements());
-        Assert.assertEquals("5000 file ref should be created", 5000, fileRefService.search(FileReferenceSpecification
-                .search(null, null, null, Lists.newArrayList(ONLINE_CONF_LABEL), null, now, null), PageRequest.of(0, 1))
+                .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
+        Assert.assertEquals("5000 file ref should be created", 5000, fileRefService
+                .search(FileReferenceSpecification.search(null, null, null, Lists.newArrayList(ONLINE_CONF_LABEL), null,
+                                                          now, null),
+                        PageRequest.of(0, 1, Direction.ASC, "id"))
                 .getTotalElements());
     }
 
@@ -224,7 +229,7 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         LOGGER.info(" ----------------------------------- ");
         LOGGER.info(" ----------------------------------- ");
         int nbToDelete = 500;
-        Page<FileReference> page = fileRefService.search(PageRequest.of(0, nbToDelete));
+        Page<FileReference> page = fileRefService.search(PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
         Long total = page.getTotalElements();
         for (FileReference fileRef : page.getContent()) {
             DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(fileRef.getMetaInfo().getChecksum(),
@@ -234,7 +239,7 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         }
         LOGGER.info("Waiting ....");
         Thread.sleep(30000);
-        page = fileRefService.search(PageRequest.of(0, 1));
+        page = fileRefService.search(PageRequest.of(0, 1, Direction.ASC, "id"));
         Assert.assertEquals("500 ref should be deleted", nbToDelete, total - page.getTotalElements());
     }
 

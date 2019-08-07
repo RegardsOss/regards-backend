@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.service.storage;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.compress.utils.Lists;
@@ -76,8 +77,8 @@ public class StorageLocationServiceTest extends AbstractMultitenantServiceTest {
         String checksum = UUID.randomUUID().toString();
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", "file.test", fileSize,
                 MediaType.APPLICATION_OCTET_STREAM);
-        FileLocation origin = new FileLocation(storage, "anywhere://in/this/directory/" + checksum);
-        fileRefService.addFileReference(owners, fileMetaInfo, origin, origin);
+        FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/" + checksum);
+        fileRefService.addFileReference(owners, fileMetaInfo, Optional.empty(), location);
     }
 
     @Test

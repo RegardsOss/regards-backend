@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.flow;
 
+import java.net.URL;
+import java.util.Optional;
+
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.amqp.event.Event;
@@ -46,34 +49,29 @@ public class AddFileRefFlowItem implements ISubscribable {
 
     private String type;
 
-    private FileLocation origin;
-
     private FileLocation destination;
 
-    public AddFileRefFlowItem(String fileName, String checksum, String algorithm, String mimeType, Long fileSize,
-            String owner, String origineStorage, String origineUrl, String destinationStorage,
-            String destinationDirectory) {
+    private Optional<URL> originUrl = Optional.empty();
+
+    public AddFileRefFlowItem() {
+        super();
+    }
+
+    private AddFileRefFlowItem(String fileName, String checksum, String algorithm, String mimeType, String owner,
+            String destinationStorage) {
         super();
         Assert.notNull(fileName, "File name is mandatory.");
         Assert.notNull(checksum, "Checksum is mandatory.");
         Assert.notNull(algorithm, "Algorithm is mandatory.");
         Assert.notNull(mimeType, "MimeType is mandatory.");
-        Assert.notNull(fileSize, "FileSize is mandatory.");
         Assert.notNull(owner, "Owner is mandatory.");
+        Assert.notNull(destinationStorage, "Destination storage location is mandatory");
         this.fileName = fileName;
         this.checksum = checksum;
         this.algorithm = algorithm;
         this.mimeType = mimeType;
-        this.fileSize = fileSize;
         this.owner = owner;
-        this.origin = new FileLocation(origineStorage, origineUrl);
-        this.destination = new FileLocation(destinationStorage, destinationDirectory);
-    }
-
-    public AddFileRefFlowItem(String fileName, String checksum, String algorithm, String mimeType, Long fileSize,
-            String owner, String origineStorage, String origineUrl, String destinationStorage) {
-        this(fileName, checksum, algorithm, mimeType, fileSize, owner, origineStorage, origineUrl, destinationStorage,
-             null);
+        this.destination = new FileLocation(destinationStorage, null);
     }
 
     public AddFileRefFlowItem withType(String type) {
@@ -103,14 +101,6 @@ public class AddFileRefFlowItem implements ISubscribable {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public FileLocation getOrigin() {
-        return origin;
-    }
-
-    public void setOrigin(FileLocation origine) {
-        this.origin = origine;
     }
 
     public FileLocation getDestination() {
@@ -151,6 +141,65 @@ public class AddFileRefFlowItem implements ISubscribable {
 
     public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
+    }
+
+    public Optional<URL> getOriginUrl() {
+        return originUrl;
+    }
+
+    public void setOriginUrl(URL originUrl) {
+        this.originUrl = Optional.ofNullable(originUrl);
+    }
+
+    /**
+     * Build a {@link AddFileRefFlowItem} to request reference of a new file. No file movement is requested here.
+     * @param fileName
+     * @param checksum
+     * @param algorithm
+     * @param mimeType
+     * @param fileSize
+     * @param owner
+     * @param storage Name of the destination storage location
+     * @param url location of the file to reference in the destination storage
+     * @return new {@link AddFileRefFlowItem}
+     */
+    public static AddFileRefFlowItem build(String fileName, String checksum, String algorithm, String mimeType,
+            Long fileSize, String owner, String storage, String url) {
+        AddFileRefFlowItem item = new AddFileRefFlowItem(fileName, checksum, algorithm, mimeType, owner, storage);
+        item.storeIn(url);
+        item.setFileSize(fileSize);
+        return item;
+    }
+
+    /**
+     * Build a {@link AddFileRefFlowItem} to request storage of a new file. Storage copy the file from originUrl to destination storage.
+     * To define a sub directory where to copy file in destination storage, use {@link AddFileRefFlowItem#storeIn(String)}}
+     * @param fileName
+     * @param checksum
+     * @param algorithm
+     * @param mimeType
+     * @param fileSize
+     * @param owner
+     * @param destinationStorage
+     * @param originUrl
+     * @return new {@link AddFileRefFlowItem}
+     */
+    public static AddFileRefFlowItem build(String fileName, String checksum, String algorithm, String mimeType,
+            String owner, String destinationStorage, URL originUrl) {
+        AddFileRefFlowItem item = new AddFileRefFlowItem(fileName, checksum, algorithm, mimeType, owner,
+                destinationStorage);
+        item.setOriginUrl(originUrl);
+        return item;
+    }
+
+    /**
+     * Define a sub directory where to copy file in destination storage.
+     * @param subdirectory
+     * @return updated current {@link AddFileRefFlowItem}
+     */
+    public AddFileRefFlowItem storeIn(String subdirectory) {
+        this.getDestination().setUrl(subdirectory);
+        return this;
     }
 
 }

@@ -130,7 +130,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
             if (((fileRefRequest.getMetaInfo().getHeight() == null)
                     || (fileRefRequest.getMetaInfo().getWidth() == null))
                     && fileRefRequest.getMetaInfo().getMimeType().isCompatibleWith(MediaType.valueOf("image/*"))) {
-                URL localUrl = new URL(fileRefRequest.getOrigin().getUrl());
+                URL localUrl = new URL(fileRefRequest.getOriginUrl());
                 if (localUrl.getProtocol().equals("file")) {
                     Path filePath = Paths.get(localUrl.getPath());
                     if (Files.isReadable(filePath)) {
@@ -139,7 +139,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
                         fileRefRequest.getMetaInfo().setWidth(((Number) dimension.getWidth()).intValue());
                     } else {
                         LOGGER.warn("Error calculating image file height/width. Cause : File %s is not accessible.",
-                                    fileRefRequest.getOrigin().toString());
+                                    fileRefRequest.getOriginUrl());
                     }
                 }
             }

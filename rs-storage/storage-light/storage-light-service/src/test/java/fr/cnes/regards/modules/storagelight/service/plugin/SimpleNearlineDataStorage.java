@@ -129,9 +129,8 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                              fileRefRequest.getMetaInfo().getFileName());
         Assert.assertNotNull("File reference request checksum cannot be null",
                              fileRefRequest.getMetaInfo().getChecksum());
-        Assert.assertNotNull("File reference request destination location cannot be null",
-                             fileRefRequest.getDestination());
-        Assert.assertNotNull("File reference request origin location cannot be null", fileRefRequest.getOrigin());
+        Assert.assertNotNull("File reference request destination location cannot be null", fileRefRequest.getStorage());
+        Assert.assertNotNull("File reference request origin location cannot be null", fileRefRequest.getOriginUrl());
         String fileName = fileRefRequest.getMetaInfo().getFileName();
         if (Pattern.matches(doNotHandlePattern, fileName)) {
             // Do nothing to test not handled files
@@ -141,10 +140,10 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
             progressManager.storageFailed(fileRefRequest, "Specific error generated for tests");
         } else {
             String directory;
-            if (fileRefRequest.getDestination().getUrl() == null) {
+            if (fileRefRequest.getStorageSubDirectory() == null) {
                 directory = fileRefRequest.getMetaInfo().getChecksum().substring(0, 5);
             } else {
-                directory = fileRefRequest.getDestination().getUrl();
+                directory = fileRefRequest.getStorageSubDirectory();
             }
             String storedUrl = String
                     .format("%s%s", "target/storage",
@@ -156,7 +155,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                 if (!Files.exists(Paths.get(storedUrl))) {
                     Files.createFile(Paths.get(storedUrl));
                 }
-                progressManager.storageSucceed(fileRefRequest, storedUrl, fileRefRequest.getMetaInfo().getFileSize());
+                progressManager.storageSucceed(fileRefRequest, storedUrl, 10L);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
                 progressManager.storageFailed(fileRefRequest, e.getMessage());

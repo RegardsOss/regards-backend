@@ -97,11 +97,10 @@ public class FileRefEventPublisher {
      * @param destinationLocation
      * @param message Optional message
      */
-    public void publishFileRefStoreError(String checksum, Collection<String> owners, FileLocation destinationLocation,
-            String message) {
+    public void publishFileRefStoreError(String checksum, Collection<String> owners, String storage, String message) {
         LOGGER.debug("Publish FileReferenceEvent store error. {}", message);
         publisher.publish(new FileReferenceEvent(checksum, FileReferenceEventState.STORE_ERROR, owners, message,
-                destinationLocation));
+                new FileLocation(storage, null)));
     }
 
     public void publishFileRefAvailable(String checksum, String message) {

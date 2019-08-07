@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -114,7 +115,7 @@ public class FileDeletionRequestService {
                 : allStorages;
         for (String storage : deletionToSchedule) {
             Page<FileDeletionRequest> deletionRequestPage;
-            Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE);
+            Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
             do {
                 deletionRequestPage = fileDeletionRequestRepo.findByStorage(storage, page);
                 if (storageHandler.getConfiguredStorages().contains(storage)) {
