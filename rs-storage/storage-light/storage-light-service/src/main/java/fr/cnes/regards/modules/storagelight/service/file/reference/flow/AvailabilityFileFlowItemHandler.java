@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileReference
  *
  */
 @Component
-public class AvailabilityFileReferenceFlowItemHandler
+public class AvailabilityFileFlowItemHandler
         implements ApplicationListener<ApplicationReadyEvent>, IHandler<AvailabilityFileRefFlowItem> {
 
     @Autowired

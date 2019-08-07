@@ -18,18 +18,22 @@
  */
 package fr.cnes.regards.modules.storagelight.client;
 
-import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
 
 /**
  * Asynchronous client implementation based on the message broker for requesting the file storage service
@@ -38,42 +42,158 @@ import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
  *
  */
 @Component
-public class StorageClient implements IStorageClient {
+public class StorageClient implements IStorageClient, IStorageListener {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageClient.class);
 
     @Autowired
     private IPublisher publisher;
 
+    @Autowired(required = false)
+    private IStorageListener listener;
+
     @Override
-    public void copy(String fileName, String checksum, String owner, String storage, Optional<String> subDirectory) {
-        // TODO
+    public RequestInfo delete(FileDeletionRequestDTO file) {
+        RequestInfo requestInfo = RequestInfo.build();
+        publisher.publish(DeleteFileRefFlowItem.build(file, requestInfo.getRequestId()));
+        return requestInfo;
     }
 
     @Override
-    public void delete(String checksum, String storage, String owner) {
-        publisher.publish(new DeleteFileRefFlowItem(checksum, storage, owner));
+    public RequestInfo delete(Collection<FileDeletionRequestDTO> files) {
+        RequestInfo requestInfo = RequestInfo.build();
+        publisher.publish(DeleteFileRefFlowItem.build(files, requestInfo.getRequestId()));
+        return requestInfo;
     }
 
     @Override
-    public void makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
-        publisher.publish(new AvailabilityFileRefFlowItem(checksums, expirationDate));
+    public RequestInfo makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
+        RequestInfo requestInfo = RequestInfo.build();
+        publisher.publish(new AvailabilityFileRefFlowItem(checksums, expirationDate, requestInfo.getRequestId()));
+        return requestInfo;
     }
 
     @Override
-    public void reference(String fileName, String checksum, String algorithm, String mimeType, Long fileSize,
-            String owner, String storage, String url) {
-        publisher.publish(AddFileRefFlowItem.build(fileName, checksum, algorithm, mimeType, fileSize, owner, storage,
-                                                   url));
+    public RequestInfo reference(FileReferenceRequestDTO file) {
+        RequestInfo requestInfo = RequestInfo.build();
+        publisher.publish(FileReferenceFlowItem.build(file, requestInfo.getRequestId()));
+        return requestInfo;
     }
 
     @Override
-    public void store(String fileName, String checksum, String algorithm, String mimeType, String owner, URL originUrl,
-            String storage, Optional<String> subDirectory) {
-        AddFileRefFlowItem item = AddFileRefFlowItem.build(fileName, checksum, algorithm, mimeType, owner, storage,
-                                                           originUrl);
-        if (subDirectory.isPresent()) {
-            item.storeIn(subDirectory.get());
+    public RequestInfo reference(Collection<FileReferenceRequestDTO> files) {
+        RequestInfo requestInfo = RequestInfo.build();
+        publisher.publish(FileReferenceFlowItem.build(files, requestInfo.getRequestId()));
+        return requestInfo;
+    }
+
+    @Override
+    public void retry(RequestInfo requestInfo) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public RequestInfo store(FileStorageRequestDTO file) {
+        RequestInfo requestInfo = RequestInfo.build();
+        publisher.publish(FileStorageFlowItem.build(file, requestInfo.getRequestId()));
+        return requestInfo;
+    }
+
+    @Override
+    public RequestInfo store(Collection<FileStorageRequestDTO> files) {
+        RequestInfo requestInfo = RequestInfo.build();
+        publisher.publish(FileStorageFlowItem.build(files, requestInfo.getRequestId()));
+        return requestInfo;
+    }
+
+    @Override
+    public void onAvailable(RequestInfo request) {
+        if (listener != null) {
+            listener.onAvailable(request);
+        } else {
+            LOGGER.trace("No custom listener defined for StorageClient");
         }
-        publisher.publish(item);
+    }
+
+    @Override
+    public void onAvailabilityError(RequestInfo request, String checksum) {
+        if (listener != null) {
+            listener.onAvailabilityError(request, checksum);
+        } else {
+            LOGGER.trace("No custom listener defined for StorageClient");
+        }
+    }
+
+    @Override
+    public void onDeletionSuccess(RequestInfo request) {
+        if (listener != null) {
+            listener.onDeletionSuccess(request);
+        } else {
+            LOGGER.trace("No custom listener defined for StorageClient");
+        }
+    }
+
+    @Override
+    public void onDeletionError(RequestInfo request, Collection<FileDeletionRequestDTO> errors) {
+        if (listener != null) {
+            listener.onDeletionError(request, errors);
+        } else {
+            LOGGER.trace("No custom listener defined for StorageClient");
+        }
+    }
+
+    @Override
+    public void onReferenceSuccess(RequestInfo request) {
+        if (listener != null) {
+            listener.onReferenceSuccess(request);
+        } else {
+            LOGGER.trace("No custom listener defined for StorageClient");
+        }
+    }
+
+    @Override
+    public void onReferenceError(RequestInfo request, Collection<FileReferenceRequestDTO> errors) {
+        if (listener != null) {
+            listener.onReferenceError(request, errors);
+        } else {
+            LOGGER.trace("No custom listener defined for StorageClient");
+        }
+    }
+
+    @Override
+    public void onRequestGranted(RequestInfo request) {
+        if (listener != null) {
+            listener.onRequestGranted(request);
+        } else {
+            LOGGER.trace("No custom listener defined for StorageClient");
+        }
+    }
+
+    @Override
+    public void onRequestDenied(RequestInfo request) {
+        if (listener != null) {
+            listener.onRequestDenied(request);
+        } else {
+            LOGGER.trace("No custom listener defined for StorageClient");
+        }
+    }
+
+    @Override
+    public void onStoreSuccess(RequestInfo requestInfo) {
+        if (listener != null) {
+            listener.onStoreSuccess(requestInfo);
+        } else {
+            LOGGER.trace("No custom listener defined for StorageClient");
+        }
+    }
+
+    @Override
+    public void onStoreError(RequestInfo requestInfo, Collection<FileStorageRequestDTO> errors) {
+        if (listener != null) {
+            listener.onStoreError(requestInfo, errors);
+        } else {
+            LOGGER.trace("No custom listener defined for StorageClient");
+        }
     }
 
 }

@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.modules.storagelight.client;
 
-import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.Optional;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
@@ -39,21 +40,6 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 public interface IStorageClient {
 
     /**
-     * Requests the copy of a file identified by his checksum to a destination storage location.
-     * <br/>
-     *
-     * @param fileName filename
-     * @param checksum checksum for related algorithm
-     * @param algorithm checksum algorithm
-     * @param mimeType file MIME type
-     * @param fileSize file size
-     * @param owner
-     * @param storage {@link PluginConfiguration#getBusinessId()} of {@link IStorageLocation} plugin.
-     * @param subDirectory optional subdirectory in destination storage location
-     */
-    void copy(String fileName, String checksum, String owner, String storage, Optional<String> subDirectory);
-
-    /**
      * Requests storage of a file from an localy accessible URL to a destination storage defined
      * by {@link PluginConfiguration#getBusinessId()} of {@link IStorageLocation} plugin.
      * <br/>
@@ -67,8 +53,11 @@ public interface IStorageClient {
      * @param storage Plugin configuration business id for destination storage
      * @param subDirectory Optional sub directory into destination storage
      */
-    void store(String fileName, String checksum, String algorithm, String mimeType, String owner, URL originUrl,
-            String storage, Optional<String> subDirectory);
+    RequestInfo store(FileStorageRequestDTO file);
+
+    RequestInfo store(Collection<FileStorageRequestDTO> files);
+
+    void retry(RequestInfo requestInfo);
 
     /**
      * Requests to reference a file at a given storage location. With this request, file is not moved but referenced.
@@ -83,8 +72,9 @@ public interface IStorageClient {
      * @param storage file storage location
      * @param url file url expected by associated storage location
      */
-    void reference(String fileName, String checksum, String algorithm, String mimeType, Long fileSize, String owner,
-            String storage, String url);
+    RequestInfo reference(FileReferenceRequestDTO file);
+
+    RequestInfo reference(Collection<FileReferenceRequestDTO> files);
 
     /**
      * Requests the deletion of the file identified by its checksum on the specified storage.<br/>
@@ -95,7 +85,9 @@ public interface IStorageClient {
      * @param storage storage on which to delete the file
      * @param owner file owner
      */
-    void delete(String checksum, String storage, String owner);
+    RequestInfo delete(FileDeletionRequestDTO file);
+
+    RequestInfo delete(Collection<FileDeletionRequestDTO> files);
 
     /**
      * Requests that files identified by their checksums be put online so that they can be downloaded by a third party component.
@@ -104,5 +96,5 @@ public interface IStorageClient {
      * @param expirationDate date until which the file must be available
      * (after this date, the system could proceed to a possible cleaning of its cache, only offline files are concerned!)
      */
-    void makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate);
+    RequestInfo makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate);
 }

@@ -32,24 +32,27 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
- * Handler to handle {@link AddFileRefFlowItem} AMQP messages.<br/>
+ * Handler to handle {@link FileReferenceFlowItem} AMQP messages.<br/>
  * Those messages are sent to create new file reference.
  *
  * @author Sébastien Binda
  */
 @Component
-public class AddFileReferenceFlowItemHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<AddFileRefFlowItem> {
+public class StoreFileFlowItemHandler
+        implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileStorageFlowItem> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AddFileReferenceFlowItemHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StoreFileFlowItemHandler.class);
 
     /**
      * Bulk size limit to handle messages
@@ -65,21 +68,21 @@ public class AddFileReferenceFlowItemHandler
     @Autowired
     private FileReferenceService fileRefService;
 
-    private final Map<String, ConcurrentLinkedQueue<AddFileRefFlowItem>> items = new ConcurrentHashMap<>();
+    private final Map<String, ConcurrentLinkedQueue<FileStorageFlowItem>> items = new ConcurrentHashMap<>();
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(AddFileRefFlowItem.class, this);
+        subscriber.subscribeTo(FileStorageFlowItem.class, this);
     }
 
     /**
      * Only add the message in the list of messages handled by bulk in the scheduled method
-     * @param wrapper containing {@link AddFileRefFlowItem} to handle
+     * @param wrapper containing {@link FileReferenceFlowItem} to handle
      */
     @Override
-    public void handle(TenantWrapper<AddFileRefFlowItem> wrapper) {
+    public void handle(TenantWrapper<FileStorageFlowItem> wrapper) {
         String tenant = wrapper.getTenant();
-        AddFileRefFlowItem item = wrapper.getContent();
+        FileStorageFlowItem item = wrapper.getContent();
         if (!items.containsKey(tenant)) {
             items.put(tenant, new ConcurrentLinkedQueue<>());
         }
@@ -88,14 +91,14 @@ public class AddFileReferenceFlowItemHandler
 
     /**
      * Method for tests to handle synchronously one message
-     * @param wrapper containing {@link AddFileRefFlowItem} to handle
+     * @param wrapper containing {@link FileReferenceFlowItem} to handle
      */
-    public void handleSync(TenantWrapper<AddFileRefFlowItem> wrapper) {
+    public void handleSync(TenantWrapper<FileStorageFlowItem> wrapper) {
         String tenant = wrapper.getTenant();
-        AddFileRefFlowItem item = wrapper.getContent();
+        FileStorageFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            fileRefService.addFileReference(item);
+            fileRefService.storeFiles(Lists.newArrayList(item));
         } finally {
             runtimeTenantResolver.clearTenant();
         }
@@ -106,15 +109,15 @@ public class AddFileReferenceFlowItemHandler
      */
     @Scheduled(fixedDelay = 1_000)
     public void handleQueue() {
-        for (Map.Entry<String, ConcurrentLinkedQueue<AddFileRefFlowItem>> entry : items.entrySet()) {
+        for (Map.Entry<String, ConcurrentLinkedQueue<FileStorageFlowItem>> entry : items.entrySet()) {
             try {
                 runtimeTenantResolver.forceTenant(entry.getKey());
-                ConcurrentLinkedQueue<AddFileRefFlowItem> tenantItems = entry.getValue();
-                List<AddFileRefFlowItem> list = new ArrayList<>();
+                ConcurrentLinkedQueue<FileStorageFlowItem> tenantItems = entry.getValue();
+                List<FileStorageFlowItem> list = new ArrayList<>();
                 do {
                     // Build a 10_000 (at most) documents bulk request
                     for (int i = 0; i < BULK_SIZE; i++) {
-                        AddFileRefFlowItem doc = tenantItems.poll();
+                        FileStorageFlowItem doc = tenantItems.poll();
                         if (doc == null) {
                             if (list.isEmpty()) {
                                 // nothing to do
@@ -128,7 +131,7 @@ public class AddFileReferenceFlowItemHandler
                     }
                     LOGGER.info("Bulk saving {} AddFileRefFlowItem...", list.size());
                     long start = System.currentTimeMillis();
-                    fileRefService.addFileReferences(list);
+                    fileRefService.storeFiles(list);
                     LOGGER.info("...{} AddFileRefFlowItem handled in {} ms", list.size(),
                                 System.currentTimeMillis() - start);
                     list.clear();

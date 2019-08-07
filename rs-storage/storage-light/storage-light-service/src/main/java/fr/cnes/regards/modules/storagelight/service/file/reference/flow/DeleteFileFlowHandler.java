@@ -37,8 +37,9 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
@@ -48,10 +49,10 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileReference
  * @author Sébastien Binda
  */
 @Component
-public class DeleteFileReferenceFlowHandler
+public class DeleteFileFlowHandler
         implements ApplicationListener<ApplicationReadyEvent>, IHandler<DeleteFileRefFlowItem> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeleteFileReferenceFlowHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeleteFileFlowHandler.class);
 
     /**
      * Bulk size limit to handle messages
@@ -76,7 +77,7 @@ public class DeleteFileReferenceFlowHandler
 
     /**
      * Only add the message in the list of messages handled by bulk in the scheduled method
-     * @param wrapper containing {@link AddFileRefFlowItem} to handle
+     * @param wrapper containing {@link FileReferenceFlowItem} to handle
      */
     @Override
     public void handle(TenantWrapper<DeleteFileRefFlowItem> wrapper) {
@@ -92,11 +93,17 @@ public class DeleteFileReferenceFlowHandler
         String tenant = wrapper.getTenant();
         runtimeTenantResolver.forceTenant(tenant);
         DeleteFileRefFlowItem item = wrapper.getContent();
+
         try {
-            fileRefService.removeOwner(item.getChecksum(), item.getStorage(), item.getOwner(), item.isForceDelete());
-        } catch (EntityNotFoundException e) {
-            LOGGER.error("Unable to delete file with checksum : <{}> at <{}> cause file does not exsts ({}).",
-                         item.getChecksum(), item.getStorage());
+            for (FileDeletionRequestDTO request : item.getFiles()) {
+                try {
+                    fileRefService.removeOwner(request.getChecksum(), request.getStorage(), request.getOwner(),
+                                               request.isForceDelete());
+                } catch (EntityNotFoundException e) {
+                    LOGGER.error("Unable to delete file with checksum : <{}> at <{}> cause file does not exsts ({}).",
+                                 request.getChecksum(), request.getStorage());
+                }
+            }
         } finally {
             runtimeTenantResolver.clearTenant();
         }

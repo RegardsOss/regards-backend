@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storagelight.service.file.reference.flow.perform
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -51,15 +52,20 @@ import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.AddFileReferenceFlowItemHandler;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.AvailabilityFileReferenceFlowItemHandler;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.DeleteFileReferenceFlowHandler;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.AvailabilityFileFlowItemHandler;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.DeleteFileFlowHandler;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.ReferenceFileFlowItemHandler;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.StoreFileFlowItemHandler;
 
 /**
  * Performances tests for creating and store new file references.
@@ -74,13 +80,16 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceTest.class);
 
     @Autowired
-    private AddFileReferenceFlowItemHandler storageHandler;
+    private ReferenceFileFlowItemHandler referenceFlowHandler;
 
     @Autowired
-    private AvailabilityFileReferenceFlowItemHandler availabilityHandler;
+    private StoreFileFlowItemHandler storeFlowHandler;
 
     @Autowired
-    private DeleteFileReferenceFlowHandler deleteHandler;
+    private AvailabilityFileFlowItemHandler availabilityHandler;
+
+    @Autowired
+    private DeleteFileFlowHandler deleteHandler;
 
     @Autowired
     FileReferenceService fileRefService;
@@ -160,12 +169,13 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         for (int i = 0; i < 5000; i++) {
             String checksum = UUID.randomUUID().toString();
             // Create a new bus message File reference request
-            AddFileRefFlowItem item = AddFileRefFlowItem.build("error.file.name", checksum, "MD5",
-                                                               "application/octet-stream", 10L, "owner-test", storage,
-                                                               "file://storage/location/file.name");
-            TenantWrapper<AddFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+            ;
+            FileReferenceFlowItem item = FileReferenceFlowItem.build(FileReferenceRequestDTO
+                    .build("error.file.name", checksum, "MD5", "application/octet-stream", 10L, "owner-test", storage,
+                           "file://storage/location/file.name"), UUID.randomUUID().toString());
+            TenantWrapper<FileReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
             // Publish request
-            storageHandler.handle(wrapper);
+            referenceFlowHandler.handle(wrapper);
         }
         Thread.sleep(30000);
         Assert.assertEquals("There should be 5000 file ref created", fileRefRepo
@@ -185,12 +195,14 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         for (int i = 0; i < 5000; i++) {
             String checksum = UUID.randomUUID().toString();
             // Create a new bus message File reference request
-            AddFileRefFlowItem item = AddFileRefFlowItem.build("error.file.name", checksum, "MD5",
-                                                               "application/octet-stream", "owner-test",
-                                                               ONLINE_CONF_LABEL, originUrl);
-            TenantWrapper<AddFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+            ;
+            FileStorageFlowItem item = FileStorageFlowItem
+                    .build(FileStorageRequestDTO.build("error.file.name", checksum, "MD5", "application/octet-stream",
+                                                       "owner-test", originUrl, ONLINE_CONF_LABEL, Optional.empty()),
+                           UUID.randomUUID().toString());
+            TenantWrapper<FileStorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
             // Publish request
-            storageHandler.handle(wrapper);
+            storeFlowHandler.handle(wrapper);
         }
         Thread.sleep(30000);
 
@@ -232,8 +244,11 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         Page<FileReference> page = fileRefService.search(PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
         Long total = page.getTotalElements();
         for (FileReference fileRef : page.getContent()) {
-            DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(fileRef.getMetaInfo().getChecksum(),
-                    fileRef.getLocation().getStorage(), fileRef.getOwners().get(0));
+            FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
+                                         fileRef.getOwners().get(0), false);
+            DeleteFileRefFlowItem item = DeleteFileRefFlowItem.build(FileDeletionRequestDTO
+                    .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
+                           fileRef.getOwners().get(0), false), UUID.randomUUID().toString());
             TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
             deleteHandler.handle(wrapper);
         }
@@ -255,7 +270,7 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         Assert.assertEquals("Invalid count of cached files", 0, cacheFileRepo.count());
         // Create a new bus message File reference request
         AvailabilityFileRefFlowItem item = new AvailabilityFileRefFlowItem(nlChecksums,
-                OffsetDateTime.now().plusDays(1));
+                OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
         TenantWrapper<AvailabilityFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         availabilityHandler.handle(wrapper);

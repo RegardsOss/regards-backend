@@ -207,6 +207,11 @@ public class FileReferenceMetaInfo {
         this.mimeType = mimeType;
     }
 
+    public FileReferenceMetaInfo withType(String type) {
+        this.type = type;
+        return this;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;

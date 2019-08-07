@@ -27,7 +27,6 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -39,8 +38,6 @@ import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
-
-import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
@@ -244,20 +241,18 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
             String newOwner) {
         Optional<FileReference> oFilef = fileRefService.search(storage, checksum);
         Assert.assertTrue("File reference should already exists", oFilef.isPresent());
-        return fileRefService.addFileReference(Lists.newArrayList(newOwner), oFilef.get().getMetaInfo(),
-                                               Optional.of(originUrl), oFilef.get().getLocation());
+        return fileRefService.storeFile(newOwner, oFilef.get().getMetaInfo(), originUrl,
+                                        oFilef.get().getLocation().getStorage(), Optional.empty());
 
     }
 
     protected FileReference generateStoredFileReference(String checksum, String owner, String fileName, String storage)
             throws InterruptedException, ExecutionException {
-        List<String> owners = Lists.newArrayList();
-        owners.add(owner);
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
         FileLocation destination = new FileLocation(storage, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.addFileReference(owners, fileMetaInfo, Optional.of(originUrl), destination);
+        fileRefService.storeFile(owner, fileMetaInfo, originUrl, storage, Optional.empty());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), checksum);
         Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(), checksum);
@@ -278,30 +273,27 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         return oFileRef.get();
     }
 
-    protected Optional<FileReference> referenceFile(String checksum, Collection<String> owners, String type,
-            String fileName, String storage) {
+    protected Optional<FileReference> referenceFile(String checksum, String owner, String type, String fileName,
+            String storage) {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
         fileMetaInfo.setType(type);
         FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/file.test");
-        fileRefService.addFileReference(owners, fileMetaInfo, Optional.empty(), location);
+        fileRefService.referenceFile(owner, fileMetaInfo, location);
         return fileRefService.search(location.getStorage(), fileMetaInfo.getChecksum());
     }
 
-    protected Optional<FileReference> referenceRandomFile(List<String> owners, String type, String fileName,
-            String storage) {
-        return this.referenceFile(UUID.randomUUID().toString(), owners, type, fileName, storage);
+    protected Optional<FileReference> referenceRandomFile(String owner, String type, String fileName, String storage) {
+        return this.referenceFile(UUID.randomUUID().toString(), owner, type, fileName, storage);
     }
 
     protected FileStorageRequest generateStoreFileError(String owner, String storageDestination)
             throws InterruptedException, ExecutionException {
-        List<String> owners = Lists.newArrayList();
-        owners.add(owner);
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5",
                 "error.file.test", 132L, MediaType.APPLICATION_OCTET_STREAM);
         FileLocation destination = new FileLocation(storageDestination, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.addFileReference(owners, fileMetaInfo, Optional.of(originUrl), destination);
+        fileRefService.storeFile(owner, fileMetaInfo, originUrl, storageDestination, Optional.of("/in/this/directory"));
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
         Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(),

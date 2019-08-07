@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.service.file.reference.flow;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -43,9 +44,12 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
-import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
@@ -62,7 +66,10 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(AddFileReferenceFlowItemTest.class);
 
     @Autowired
-    private AddFileReferenceFlowItemHandler handler;
+    private ReferenceFileFlowItemHandler handler;
+
+    @Autowired
+    private StoreFileFlowItemHandler storeHandler;
 
     @Autowired
     FileReferenceService fileRefService;
@@ -89,10 +96,11 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         String checksum = UUID.randomUUID().toString();
         String storage = "storage";
         // Create a new bus message File reference request
-        AddFileRefFlowItem item = AddFileRefFlowItem.build("file.name", checksum, "MD5", "application/octet-stream",
-                                                           10L, "owner-test", storage,
-                                                           "file://storage/location/file.name");
-        TenantWrapper<AddFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        FileReferenceFlowItem item = FileReferenceFlowItem
+                .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
+                                                     "owner-test", storage, "file://storage/location/file.name"),
+                       UUID.randomUUID().toString());
+        TenantWrapper<FileReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         long start = System.currentTimeMillis();
         // Publish request
         handler.handleSync(wrapper);
@@ -122,10 +130,11 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL);
         String storage = fileRef.getLocation().getStorage();
         // Create a new bus message File reference request
-        AddFileRefFlowItem item = AddFileRefFlowItem.build("file.name", checksum, "MD5", "application/octet-stream",
-                                                           10L, "owner-test", storage,
-                                                           "file://storage/location/file.name");
-        TenantWrapper<AddFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        FileReferenceFlowItem item = FileReferenceFlowItem
+                .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
+                                                     "owner-test", storage, "file://storage/location/file.name"),
+                       UUID.randomUUID().toString());
+        TenantWrapper<FileReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -152,10 +161,11 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         String storage = "aStorage";
         this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL);
         // Create a new bus message File reference request
-        AddFileRefFlowItem item = AddFileRefFlowItem.build("file.name", checksum, "MD5", "application/octet-stream",
-                                                           10L, "owner-test", storage,
-                                                           "file://storage/location/file.name");
-        TenantWrapper<AddFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        FileReferenceFlowItem item = FileReferenceFlowItem
+                .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
+                                                     "owner-test", storage, "file://storage/location/file.name"),
+                       UUID.randomUUID().toString());
+        TenantWrapper<FileReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -179,11 +189,13 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         String checksum = UUID.randomUUID().toString();
         String storage = "storage";
         // Create a new bus message File reference request
-        AddFileRefFlowItem item = AddFileRefFlowItem.build("file.name", checksum, "MD5", "application/octet-stream",
-                                                           owner, ONLINE_CONF_LABEL, originUrl);
-        TenantWrapper<AddFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        FileStorageFlowItem item = FileStorageFlowItem
+                .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", owner,
+                                                   originUrl, ONLINE_CONF_LABEL, Optional.empty()),
+                       UUID.randomUUID().toString());
+        TenantWrapper<FileStorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
-        handler.handleSync(wrapper);
+        storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is not referenced yet
         Assert.assertFalse("File should not be referenced yet", fileRefService.search(storage, checksum).isPresent());
@@ -217,11 +229,13 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         String checksum = UUID.randomUUID().toString();
         String storageDestination = "somewheere";
         // Create a new bus message File reference request
-        AddFileRefFlowItem item = AddFileRefFlowItem.build("file.name", checksum, "MD5", "application/octet-stream",
-                                                           "owner-test", storageDestination, originUrl);
-        TenantWrapper<AddFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        FileStorageFlowItem item = FileStorageFlowItem
+                .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream",
+                                                   "owner-test", originUrl, storageDestination, Optional.empty()),
+                       UUID.randomUUID().toString());
+        TenantWrapper<FileStorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
-        handler.handleSync(wrapper);
+        storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
         Assert.assertFalse("File should not be referenced",
@@ -242,12 +256,13 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
     public void addFileRefFlowItemStoreError() {
         String checksum = UUID.randomUUID().toString();
         // Create a new bus message File reference request
-        AddFileRefFlowItem item = AddFileRefFlowItem.build("error.file.name", checksum, "MD5",
-                                                           "application/octet-stream", "owner-test", ONLINE_CONF_LABEL,
-                                                           originUrl);
-        TenantWrapper<AddFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        FileStorageFlowItem item = FileStorageFlowItem
+                .build(FileStorageRequestDTO.build("error.file.name", checksum, "MD5", "application/octet-stream",
+                                                   "owner-test", originUrl, ONLINE_CONF_LABEL, Optional.empty()),
+                       UUID.randomUUID().toString());
+        TenantWrapper<FileStorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
-        handler.handleSync(wrapper);
+        storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
         Assert.assertFalse("File should not be referenced",
@@ -279,7 +294,7 @@ public class AddFileReferenceFlowItemTest extends AbstractFileReferenceTest {
                             fileStorageRequestService.search(ONLINE_CONF_LABEL, checksum).get().getStatus());
 
         // Retry same storage request
-        handler.handleSync(wrapper);
+        storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // Only one file reference request in db, with status in todo, to allow retry

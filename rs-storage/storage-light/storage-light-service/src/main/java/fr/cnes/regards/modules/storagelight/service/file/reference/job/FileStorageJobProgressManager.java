@@ -66,44 +66,45 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
     }
 
     @Override
-    public void storageSucceed(FileStorageRequest fileRefRequest, String storedUrl, Long fileSize) {
+    public void storageSucceed(FileStorageRequest request, String storedUrl, Long fileSize) {
 
         if (storedUrl == null) {
-            this.storageFailed(fileRefRequest, String
+            this.storageFailed(request, String
                     .format("File {} has been successully stored, nevertheless plugin <%> does not provide the new file location",
-                            fileRefRequest.getStorage(), fileRefRequest.getMetaInfo().getFileName()));
+                            request.getStorage(), request.getMetaInfo().getFileName()));
         } else {
-            FileLocation newLocation = new FileLocation(fileRefRequest.getStorage(), storedUrl);
+            FileLocation newLocation = new FileLocation(request.getStorage(), storedUrl);
             LOG.info("[STORAGE SUCCESS] - Store success for file {} (id={})in {} (checksum: {}).",
-                     fileRefRequest.getMetaInfo().getFileName(), fileRefRequest.getId(), newLocation,
-                     fileRefRequest.getMetaInfo().getChecksum());
+                     request.getMetaInfo().getFileName(), request.getId(), newLocation,
+                     request.getMetaInfo().getChecksum());
             job.advanceCompletion();
             // Create FileReference resulting of the success of FileReferenceRequest
-            fileRefRequest.getMetaInfo().setFileSize(fileSize);
-            Optional<FileReference> oFileRef = fileReferenceService.addFileReference(fileRefRequest.getOwners(),
-                                                                                     fileRefRequest.getMetaInfo(),
-                                                                                     Optional.empty(), newLocation);
+            Optional<FileReference> oFileRef = Optional.empty();
+            request.getMetaInfo().setFileSize(fileSize);
+            for (String owner : request.getOwners()) {
+                oFileRef = fileReferenceService.referenceFile(owner, request.getMetaInfo(), newLocation);
+            }
             if (oFileRef.isPresent()) {
                 // Delete the FileRefRequest as it has been handled
                 try {
-                    fileRefRequestService.delete(fileRefRequest);
+                    fileRefRequestService.delete(request);
                 } catch (EmptyResultDataAccessException e) {
-                    LOG.warn(String.format("Unable to delete storage request with id %s. Cause : %s",
-                                           fileRefRequest.getId(), e.getMessage()),
+                    LOG.warn(String.format("Unable to delete storage request with id %s. Cause : %s", request.getId(),
+                                           e.getMessage()),
                              e);
                 }
             } else {
                 String errorCause = String.format("Unable to save new file reference for file %s",
-                                                  fileRefRequest.getStorage());
+                                                  request.getStorage());
                 // The file is not really referenced so handle reference error by modifying request to be retry later
-                fileRefRequest.setOriginUrl(null);
-                fileRefRequest.setStatus(FileRequestStatus.ERROR);
-                fileRefRequest.setErrorCause(errorCause);
-                fileRefRequestService.update(fileRefRequest);
-                publisher.publishFileRefStoreError(fileRefRequest.getMetaInfo().getChecksum(),
-                                                   fileRefRequest.getOwners(), fileRefRequest.getStorage(), errorCause);
+                request.setOriginUrl(null);
+                request.setStatus(FileRequestStatus.ERROR);
+                request.setErrorCause(errorCause);
+                fileRefRequestService.update(request);
+                publisher.publishFileRefStoreError(request.getMetaInfo().getChecksum(), request.getOwners(),
+                                                   request.getStorage(), errorCause);
             }
-            handledRequest.add(fileRefRequest);
+            handledRequest.add(request);
         }
     }
 

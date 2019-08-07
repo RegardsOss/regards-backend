@@ -43,6 +43,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
@@ -60,7 +61,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRe
 public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
 
     @Autowired
-    private DeleteFileReferenceFlowHandler handler;
+    private DeleteFileFlowHandler handler;
 
     @Autowired
     FileReferenceService fileRefService;
@@ -84,7 +85,10 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
      */
     @Test
     public void deleteFlowItemNotExists() {
-        DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(UUID.randomUUID().toString(), "some-stprage", "owner");
+
+        DeleteFileRefFlowItem item = DeleteFileRefFlowItem
+                .build(FileDeletionRequestDTO.build(UUID.randomUUID().toString(), "some-stprage", "owner", false),
+                       UUID.randomUUID().toString());
         TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
@@ -103,9 +107,11 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         String checksum = UUID.randomUUID().toString();
         String storage = "some-storage";
         String owner = "owner";
-        this.referenceFile(checksum, Sets.newHashSet(owner), null, "file.test", storage);
+        this.referenceFile(checksum, owner, null, "file.test", storage);
         Mockito.clearInvocations(publisher);
-        DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);
+        DeleteFileRefFlowItem item = DeleteFileRefFlowItem
+                .build(FileDeletionRequestDTO.build(UUID.randomUUID().toString(), storage, owner, false),
+                       UUID.randomUUID().toString());
         TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
@@ -131,9 +137,12 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         String checksum = UUID.randomUUID().toString();
         String storage = "some-storage";
         String owner = "owner";
-        this.referenceFile(checksum, Sets.newHashSet(owner, "other-owner"), null, "file.test", storage);
+        this.referenceFile(checksum, owner, null, "file.test", storage);
+        this.referenceFile(checksum, "other-owner", null, "file.test", storage);
         Mockito.clearInvocations(publisher);
-        DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);
+        DeleteFileRefFlowItem item = DeleteFileRefFlowItem
+                .build(FileDeletionRequestDTO.build(UUID.randomUUID().toString(), storage, owner, false),
+                       UUID.randomUUID().toString());
         TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
@@ -159,7 +168,9 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
-        DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);
+        DeleteFileRefFlowItem item = DeleteFileRefFlowItem
+                .build(FileDeletionRequestDTO.build(UUID.randomUUID().toString(), storage, owner, false),
+                       UUID.randomUUID().toString());
         TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
@@ -204,7 +215,9 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
                                                                  ONLINE_CONF_LABEL);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
-        DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);
+        DeleteFileRefFlowItem item = DeleteFileRefFlowItem
+                .build(FileDeletionRequestDTO.build(UUID.randomUUID().toString(), storage, owner, false),
+                       UUID.randomUUID().toString());
         TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
@@ -250,8 +263,10 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
                                                                  ONLINE_CONF_LABEL);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
-        DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(checksum, storage, owner);
-        TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item.withForceDelete(), getDefaultTenant());
+        DeleteFileRefFlowItem item = DeleteFileRefFlowItem
+                .build(FileDeletionRequestDTO.build(UUID.randomUUID().toString(), storage, owner, true),
+                       UUID.randomUUID().toString());
+        TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());

@@ -18,52 +18,51 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.flow;
 
-import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Set;
-
-import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 
 /**
- * @author sbinda
+ * @author Sébastien Binda
  *
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
-public class AvailabilityFileRefFlowItem implements ISubscribable {
+public class FileReferenceFlowItem implements ISubscribable {
 
-    private final Set<String> checksums = Sets.newHashSet();
+    private final Set<FileReferenceRequestDTO> files = Sets.newHashSet();
 
-    private final OffsetDateTime expirationDate;
-
-    private final String requestId;
-
-    public AvailabilityFileRefFlowItem(Collection<String> checksums, OffsetDateTime expirationDate, String requestId) {
-        super();
-        Assert.notNull(checksums, "Checksums is mandatory");
-        Assert.notEmpty(checksums, "Checksums is mandatory");
-        Assert.notNull(expirationDate, "Expiration date is mandatory");
-        Assert.notNull(requestId, "Request id is mandatory");
-        this.checksums.addAll(checksums);
-        this.expirationDate = expirationDate;
-        this.requestId = requestId;
-    }
-
-    public Set<String> getChecksums() {
-        return checksums;
-    }
-
-    public OffsetDateTime getExpirationDate() {
-        return expirationDate;
-    }
+    private String requestId;
 
     public String getRequestId() {
         return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
+    public Set<FileReferenceRequestDTO> getFiles() {
+        return files;
+    }
+
+    public static FileReferenceFlowItem build(FileReferenceRequestDTO file, String requestId) {
+        FileReferenceFlowItem item = new FileReferenceFlowItem();
+        item.files.add(file);
+        item.requestId = requestId;
+        return item;
+    }
+
+    public static FileReferenceFlowItem build(Collection<FileReferenceRequestDTO> files, String requestId) {
+        FileReferenceFlowItem item = new FileReferenceFlowItem();
+        item.files.addAll(files);
+        item.requestId = requestId;
+        return item;
     }
 
 }

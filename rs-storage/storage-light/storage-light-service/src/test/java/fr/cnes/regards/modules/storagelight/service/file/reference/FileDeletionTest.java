@@ -59,7 +59,10 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
         // Add a new file reference without storage with two owners
         String storage = "anywhere";
         List<String> owners = Lists.newArrayList("someone", "someone-else");
-        Optional<FileReference> oFileRef = referenceRandomFile(owners, null, "file1.test", storage);
+        Optional<FileReference> oFileRef = Optional.empty();
+        for (String owner : owners) {
+            oFileRef = referenceRandomFile(owner, null, "file1.test", storage);
+        }
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
         Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService
                 .search(oFileRef.get().getLocation().getStorage(), oFileRef.get().getMetaInfo().getChecksum());

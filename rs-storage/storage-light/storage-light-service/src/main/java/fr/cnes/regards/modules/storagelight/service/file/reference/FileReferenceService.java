@@ -38,7 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -64,9 +63,13 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
@@ -93,7 +96,7 @@ import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginCo
  * When a file reference does not have any owner, then it is scheduled for deletion.<br/>
  *
  * <b> Entry points : </b><br/>
- * File references can be created using AMQP messages {@link AddFileRefFlowItem}.<br/>
+ * File references can be created using AMQP messages {@link FileReferenceFlowItem}.<br/>
  * File references can be deleted using AMQP messages {@link DeleteFileRefFlowItem}.<br/>
  * File references can be copied in cache system using AMQP messages TODO<br/>
  * File references can be download<br/>
@@ -158,94 +161,102 @@ public class FileReferenceService {
         return fileRefRepo.findAll(spec, page);
     }
 
-    public Optional<FileReference> addFileReference(AddFileRefFlowItem item) {
-        FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(item.getChecksum(), item.getAlgorithm(),
-                item.getFileName(), item.getFileSize(), MediaType.valueOf(item.getMimeType()));
-        return addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOriginUrl(),
-                                item.getDestination());
-    }
-
-    /**
-     * Call {@link #addFileReference(AddFileRefFlowItem)} method for each item.
-     * @param items
-     */
-    public void addFileReferences(List<AddFileRefFlowItem> items) {
+    public void storeFiles(List<FileStorageFlowItem> items) {
         int flushCount = 0;
         // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
-        Set<FileReference> existingOnes = fileRefRepo
-                .findByMetaInfoChecksumIn(items.stream().map(f -> f.getChecksum()).collect(Collectors.toSet()));
-        for (AddFileRefFlowItem item : items) {
-            FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(item.getChecksum(), item.getAlgorithm(),
-                    item.getFileName(), item.getFileSize(), MediaType.valueOf(item.getMimeType()));
+        Set<String> checksums = Sets.newHashSet();
+        items.forEach(i -> {
+            i.getFiles().stream().forEach(f -> checksums.add(f.getChecksum()));
+        });
+        Set<FileReference> existingOnes = fileRefRepo.findByMetaInfoChecksumIn(checksums);
+        for (FileStorageFlowItem item : items) {
+            for (FileStorageRequestDTO request : item.getFiles()) {
+                // Check if the file already exists for the storage destination
+                Optional<FileReference> oFileRef = existingOnes.stream()
+                        .filter(f -> f.getMetaInfo().getChecksum().equals(request.getChecksum())
+                                && f.getLocation().getStorage().contentEquals(request.getStorage()))
+                        .findFirst();
+                storeFile(request, oFileRef);
+                // Performance optimization.
+                flushCount++;
+                if (flushCount > 100) {
+                    em.flush();
+                    em.clear();
+                    flushCount = 0;
+                }
+            }
+        }
+    }
 
-            // Check if the file already exists for the storage destination
-            Optional<FileReference> oFileRef = existingOnes.stream()
-                    .filter(f -> f.getMetaInfo().getChecksum().equals(item.getChecksum())
-                            && f.getLocation().getStorage().contentEquals(item.getDestination().getStorage()))
-                    .findFirst();
+    /**
+     * Call {@link #addFileReference(FileReferenceFlowItem)} method for each item.
+     * @param items
+     */
+    public void referenceFiles(List<FileReferenceFlowItem> items) {
+        int flushCount = 0;
+        // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
+        Set<String> checksums = Sets.newHashSet();
+        items.forEach(i -> {
+            i.getFiles().stream().forEach(f -> checksums.add(f.getChecksum()));
+        });
+        Set<FileReference> existingOnes = fileRefRepo.findByMetaInfoChecksumIn(checksums);
+        for (FileReferenceFlowItem item : items) {
+            for (FileReferenceRequestDTO file : item.getFiles()) {
+                // Check if the file already exists for the storage destination
+                Optional<FileReference> oFileRef = existingOnes.stream()
+                        .filter(f -> f.getMetaInfo().getChecksum().equals(file.getChecksum())
+                                && f.getLocation().getStorage().contentEquals(file.getStorage()))
+                        .findFirst();
+                referenceFile(file, oFileRef);
+                // Performance optimization.
+                flushCount++;
+                if (flushCount > 100) {
+                    em.flush();
+                    em.clear();
+                    flushCount = 0;
+                }
+            }
+        }
+    }
 
-            addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOriginUrl(), item.getDestination(),
+    public Optional<FileReference> referenceFile(String owner, FileReferenceMetaInfo metaInfo, FileLocation location) {
+        Optional<FileReference> oFileRef = fileRefRepo.findByLocationStorageAndMetaInfoChecksum(location.getStorage(),
+                                                                                                metaInfo.getChecksum());
+        return referenceFile(FileReferenceRequestDTO
+                .build(metaInfo.getFileName(), metaInfo.getChecksum(), metaInfo.getAlgorithm(),
+                       metaInfo.getMimeType().toString(), metaInfo.getFileSize(), owner, location.getStorage(),
+                       location.getUrl())
+                .withHeight(metaInfo.getHeight()).withWidth(metaInfo.getWidth()).withType(metaInfo.getType()),
                              oFileRef);
-
-            // Performance optimization.
-            flushCount++;
-            if (flushCount > 100) {
-                em.flush();
-                em.clear();
-                flushCount = 0;
-            }
-        }
     }
 
-    /**
-     * <b>Method to reference a given file</b> <br/><br />
-     * If the file is <b>already referenced</b> in the destination storage,
-     * this method only add the requesting owner to the file reference owner list.
-     * <br/>
-     * If the <b>origin destination equals the destination origin</b>, so reference the file as already stored.
-     *
-     * @return FileReference if already exists or does not need a new storage job
-     */
-    public Optional<FileReference> addFileReference(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
-            Optional<URL> origin, FileLocation destination) {
-        return addFileReference(owners, fileMetaInfo, origin, destination, fileRefRepo
-                .findByLocationStorageAndMetaInfoChecksum(destination.getStorage(), fileMetaInfo.getChecksum()));
-    }
-
-    /**
-     * <b>Method to reference a given file</b> <br/><br />
-     * If the file is <b>already referenced</b> in the destination storage,
-     * this method only add the requesting owner to the file reference owner list.
-     * <br/>
-     * If the <b>origin destination equals the destination origin</b>, so reference the file as already stored.
-     *
-     * @param fileRefRequest file to reference
-     * @return FileReference if already exists or does not need a new storage job
-     */
-    private Optional<FileReference> addFileReference(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
-            Optional<URL> originUrl, FileLocation destination, Optional<FileReference> fileRef) {
-        Assert.notNull(owners, "File must have a owner to be referenced");
-        Assert.isTrue(!owners.isEmpty(), "File must have a owner to be referenced");
-        Assert.notNull(fileMetaInfo, "File must have an origin location to be referenced");
-        Assert.notNull(fileMetaInfo.getChecksum(), "File checksum is mandatory");
-        Assert.notNull(fileMetaInfo.getAlgorithm(), "File checksum algorithm is mandatory");
-        Assert.notNull(fileMetaInfo.getFileName(), "File name is mandatory");
-        Assert.notNull(fileMetaInfo.getMimeType(), "File mime type is mandatory");
-        Assert.notNull(destination, "File must have an origin location to be referenced");
-
+    private Optional<FileReference> referenceFile(FileReferenceRequestDTO request, Optional<FileReference> fileRef) {
         if (fileRef.isPresent()) {
-            handleFileReferenceAlreadyExists(fileRef.get(), fileMetaInfo, originUrl, destination, owners);
+            return handleAlreadyExists(fileRef.get(), request);
         } else {
-            if (originUrl.isPresent()) {
-                // A new file storage request is needed
-                fileStorageRequestService.create(owners, fileMetaInfo, originUrl.get(), destination.getStorage(),
-                                                 Optional.ofNullable(destination.getUrl()));
-            } else {
-                // A new file reference is needed
-                return Optional.of(create(owners, fileMetaInfo, destination));
-            }
+            return Optional.of(create(Lists.newArrayList(request.getOwner()), request.buildMetaInfo(),
+                                      new FileLocation(request.getStorage(), request.getUrl())));
         }
-        return fileRef;
+    }
+
+    public Optional<FileReference> storeFile(String owner, FileReferenceMetaInfo metaInfo, URL originUrl,
+            String storage, Optional<String> subDirectory) {
+        Optional<FileReference> oFileRef = fileRefRepo.findByLocationStorageAndMetaInfoChecksum(storage,
+                                                                                                metaInfo.getChecksum());
+        return storeFile(FileStorageRequestDTO.build(metaInfo.getFileName(), metaInfo.getChecksum(),
+                                                     metaInfo.getAlgorithm(), metaInfo.getMimeType().toString(), owner,
+                                                     originUrl, storage, subDirectory),
+                         oFileRef);
+    }
+
+    private Optional<FileReference> storeFile(FileStorageRequestDTO request, Optional<FileReference> fileRef) {
+        if (fileRef.isPresent()) {
+            return handleAlreadyExists(fileRef.get(), request);
+        } else {
+            fileStorageRequestService.create(request.getOwner(), request.buildMetaInfo(), request.getOriginUrl(),
+                                             request.getStorage(), request.getSubDirectory());
+            return Optional.empty();
+        }
     }
 
     /**
@@ -269,13 +280,18 @@ public class FileReferenceService {
      */
     public void delete(Collection<DeleteFileRefFlowItem> items) {
         long start = System.currentTimeMillis();
-        Set<FileReference> existingOnes = fileRefRepo
-                .findByMetaInfoChecksumIn(items.stream().map(f -> f.getChecksum()).collect(Collectors.toSet()));
+        Set<String> checksums = Sets.newHashSet();
+        items.forEach(i -> {
+            i.getFiles().stream().forEach(f -> checksums.add(f.getChecksum()));
+        });
+        Set<FileReference> existingOnes = fileRefRepo.findByMetaInfoChecksumIn(checksums);
         for (DeleteFileRefFlowItem item : items) {
-            Optional<FileReference> oFileRef = existingOnes.stream()
-                    .filter(f -> f.getLocation().getStorage().contentEquals(item.getStorage())).findFirst();
-            if (oFileRef.isPresent()) {
-                removeOwner(oFileRef.get(), item.getOwner(), item.isForceDelete());
+            for (FileDeletionRequestDTO request : item.getFiles()) {
+                Optional<FileReference> oFileRef = existingOnes.stream()
+                        .filter(f -> f.getLocation().getStorage().contentEquals(request.getStorage())).findFirst();
+                if (oFileRef.isPresent()) {
+                    removeOwner(oFileRef.get(), request.getOwner(), request.isForceDelete());
+                }
             }
         }
         LOGGER.debug("...deletion of {} refs handled in {} ms", items.size(), System.currentTimeMillis() - start);
@@ -519,60 +535,81 @@ public class FileReferenceService {
      *
      * @return {@link FileReference} if the file reference is updated. Null if a new store request is created.
      */
-    private Optional<FileReference> handleFileReferenceAlreadyExists(FileReference fileReference,
-            FileReferenceMetaInfo newMetaInfo, Optional<URL> originUrl, FileLocation destination,
-            Collection<String> owners) {
-        Set<String> newOwners = Sets.newHashSet();
+    private Optional<FileReference> handleAlreadyExists(FileReference fileReference, FileReferenceRequestDTO request) {
         FileReference updatedFileRef = null;
-
         Optional<FileDeletionRequest> deletionRequest = fileDeletionRequestService.search(fileReference);
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
-            if (originUrl.isPresent()) {
-                // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
-                fileStorageRequestService.create(owners, newMetaInfo, originUrl.get(), destination.getStorage(),
-                                                 Optional.of(destination.getUrl()), FileRequestStatus.DELAYED);
-            } else {
-                // A deletion is pending on the existing file reference but the new reference request does not indicates the new file location
-                String message = String.format("File is being deleted. Please try later.");
-                fileRefPublisher.publishFileRefStoreError(newMetaInfo.getChecksum(), owners, destination.getStorage(),
-                                                          message);
-            }
+            // A deletion is pending on the existing file reference but the new reference request does not indicates the new file location
+            String message = String.format("File is being deleted. Please try later.");
+            // TODO publish request denied
         } else {
             if (deletionRequest.isPresent()) {
                 // Delete not running deletion request to add the new owner
                 fileDeletionRequestService.delete(deletionRequest.get());
             }
-            for (String owner : owners) {
-                if (!fileReference.getOwners().contains(owner)) {
-                    newOwners.add(owner);
-                    fileReference.getOwners().add(owner);
-                    String message = String
-                            .format("New owner <%s> added to existing referenced file <%s> at <%s> (checksum: %s) ",
-                                    owner, fileReference.getMetaInfo().getFileName(),
-                                    fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
-                    LOGGER.debug(message);
-                    if (!fileReference.getMetaInfo().equals(newMetaInfo)) {
-                        LOGGER.warn("Existing referenced file meta information differs "
-                                + "from new reference meta information. Previous ones are maintained");
-                    }
+            if (!fileReference.getOwners().contains(request.getOwner())) {
+                fileReference.getOwners().add(request.getOwner());
+                String message = String
+                        .format("New owner <%s> added to existing referenced file <%s> at <%s> (checksum: %s) ",
+                                request.getOwner(), fileReference.getMetaInfo().getFileName(),
+                                fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
+                if (!fileReference.getMetaInfo().equals(request.buildMetaInfo())) {
+                    LOGGER.warn("Existing referenced file meta information differs "
+                            + "from new reference meta information. Previous ones are maintained");
                 }
-            }
-            String message = null;
-            if (!newOwners.isEmpty()) {
                 updatedFileRef = fileRefRepo.save(fileReference);
-                message = String.format("New owners %s added to existing referenced file %s at %s (checksum: %s)",
-                                        Arrays.toString(newOwners.toArray()), fileReference.getMetaInfo().getFileName(),
-                                        fileReference.getLocation().toString(),
-                                        fileReference.getMetaInfo().getChecksum());
+                fileRefPublisher.publishFileRefStored(updatedFileRef, message);
+                LOGGER.debug(message);
             } else {
-                message = String.format("File %s already referenced at %s (checksum: %s) for owners %s",
-                                        fileReference.getMetaInfo().getFileName(),
-                                        fileReference.getLocation().toString(),
-                                        fileReference.getMetaInfo().getChecksum(),
-                                        Arrays.toString(fileReference.getOwners().toArray()));
+                String message = String.format("File %s already referenced at %s (checksum: %s) for owners %s",
+                                               fileReference.getMetaInfo().getFileName(),
+                                               fileReference.getLocation().toString(),
+                                               fileReference.getMetaInfo().getChecksum(),
+                                               Arrays.toString(fileReference.getOwners().toArray()));
                 updatedFileRef = fileReference;
+                fileRefPublisher.publishFileRefStored(fileReference, message);
+                LOGGER.debug(message);
             }
-            fileRefPublisher.publishFileRefStored(fileReference, message);
+        }
+        return Optional.ofNullable(updatedFileRef);
+    }
+
+    private Optional<FileReference> handleAlreadyExists(FileReference fileReference, FileStorageRequestDTO request) {
+        FileReference updatedFileRef = null;
+        FileReferenceMetaInfo newMetaInfo = request.buildMetaInfo();
+        Optional<FileDeletionRequest> deletionRequest = fileDeletionRequestService.search(fileReference);
+        if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
+            // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
+            fileStorageRequestService.create(request.getOwner(), newMetaInfo, request.getOriginUrl(),
+                                             request.getStorage(), request.getSubDirectory(),
+                                             FileRequestStatus.DELAYED);
+        } else {
+            if (deletionRequest.isPresent()) {
+                // Delete not running deletion request to add the new owner
+                fileDeletionRequestService.delete(deletionRequest.get());
+            }
+            if (!fileReference.getOwners().contains(request.getOwner())) {
+                fileReference.getOwners().add(request.getOwner());
+                String message = String
+                        .format("New owner <%s> added to existing referenced file <%s> at <%s> (checksum: %s) ",
+                                request.getOwner(), fileReference.getMetaInfo().getFileName(),
+                                fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
+                LOGGER.debug(message);
+                if (!fileReference.getMetaInfo().equals(newMetaInfo)) {
+                    LOGGER.warn("Existing referenced file meta information differs "
+                            + "from new reference meta information. Previous ones are maintained");
+                }
+                updatedFileRef = fileRefRepo.save(fileReference);
+                fileRefPublisher.publishFileRefStored(fileReference, message);
+            } else {
+                String message = String.format("File %s already referenced at %s (checksum: %s) for owners %s",
+                                               fileReference.getMetaInfo().getFileName(),
+                                               fileReference.getLocation().toString(),
+                                               fileReference.getMetaInfo().getChecksum(),
+                                               Arrays.toString(fileReference.getOwners().toArray()));
+                updatedFileRef = fileReference;
+                fileRefPublisher.publishFileRefStored(fileReference, message);
+            }
         }
         return Optional.ofNullable(updatedFileRef);
     }

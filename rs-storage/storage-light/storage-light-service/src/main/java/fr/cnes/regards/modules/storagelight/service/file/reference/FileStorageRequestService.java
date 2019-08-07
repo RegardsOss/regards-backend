@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
-import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -234,20 +234,20 @@ public class FileStorageRequestService {
      * @param storage storage destination location
      * @param storageSubDirectory Optioanl subdirectory where to store file in the storage destination location
      */
-    public void create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo, URL originUrl, String storage,
+    public void create(String owner, FileReferenceMetaInfo fileMetaInfo, URL originUrl, String storage,
             Optional<String> storageSubDirectory) {
-        create(owners, fileMetaInfo, originUrl, storage, storageSubDirectory, FileRequestStatus.TODO);
+        create(owner, fileMetaInfo, originUrl, storage, storageSubDirectory, FileRequestStatus.TODO);
     }
 
-    public void create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo, URL originUrl, String storage,
+    public void create(String owner, FileReferenceMetaInfo fileMetaInfo, URL originUrl, String storage,
             Optional<String> storageSubDirectory, FileRequestStatus status) {
         // Check if file reference request already exists
         Optional<FileStorageRequest> oFileRefRequest = search(storage, fileMetaInfo.getChecksum());
         if (oFileRefRequest.isPresent()) {
-            handleAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owners);
+            handleAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owner);
         } else {
-            FileStorageRequest fileStorageRequest = new FileStorageRequest(owners, fileMetaInfo, originUrl, storage,
-                    storageSubDirectory);
+            FileStorageRequest fileStorageRequest = new FileStorageRequest(Lists.newArrayList(owner), fileMetaInfo,
+                    originUrl, storage, storageSubDirectory);
             fileStorageRequest.setStatus(status);
             if (!storageHandler.getConfiguredStorages().contains(storage)) {
                 // The storage destination is unknown, we can already set the request in error status
@@ -258,7 +258,8 @@ public class FileStorageRequestService {
                 fileStorageRequest.setStatus(FileRequestStatus.ERROR);
                 fileStorageRequest.setErrorCause(message);
                 LOGGER.error(message);
-                fileRefEventPublisher.publishFileRefStoreError(fileMetaInfo.getChecksum(), owners, storage, message);
+                fileRefEventPublisher.publishFileRefStoreError(fileMetaInfo.getChecksum(), Lists.newArrayList(owner),
+                                                               storage, message);
             } else {
                 LOGGER.debug("New file reference request created for file <{}> to store to {} with status {}",
                              fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage(),
@@ -277,16 +278,15 @@ public class FileStorageRequestService {
      * @param owners
      */
     private void handleAlreadyExists(FileStorageRequest fileStorageRequest, FileReferenceMetaInfo newMetaInfo,
-            Collection<String> owners) {
-        for (String owner : owners) {
-            if (!fileStorageRequest.getOwners().contains(owner)) {
-                fileStorageRequest.getOwners().add(owner);
-                if (newMetaInfo.equals(fileStorageRequest.getMetaInfo())) {
-                    LOGGER.warn("Existing referenced file meta information differs "
-                            + "from new reference meta information. Previous ones are maintained");
-                }
+            String owner) {
+        if (!fileStorageRequest.getOwners().contains(owner)) {
+            fileStorageRequest.getOwners().add(owner);
+            if (newMetaInfo.equals(fileStorageRequest.getMetaInfo())) {
+                LOGGER.warn("Existing referenced file meta information differs "
+                        + "from new reference meta information. Previous ones are maintained");
             }
         }
+
         switch (fileStorageRequest.getStatus()) {
             case ERROR:
                 // Allows storage retry.

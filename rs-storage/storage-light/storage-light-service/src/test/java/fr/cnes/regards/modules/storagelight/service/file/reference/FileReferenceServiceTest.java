@@ -28,7 +28,6 @@ import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -92,13 +91,13 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
 
     @Test
     public void storeWithUnknownStorageLocation() throws MalformedURLException {
-        List<String> owners = Lists.newArrayList();
-        owners.add("someone");
+        String owner = "someone";
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo("invalid_checksum", "MD5", "file.test", 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
         URL originUrl = new URL("file://in/this/directory/file.test");
         FileLocation destination = new FileLocation("elsewhere", "elsewhere://in/this/directory/file.test");
-        fileRefService.addFileReference(owners, fileMetaInfo, Optional.of(originUrl), destination);
+        fileRefService.storeFile(owner, fileMetaInfo, originUrl, "elsewhere",
+                                 Optional.of("elsewhere://in/this/directory/file.test"));
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
         Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(),
                                                                                     fileMetaInfo.getChecksum());
@@ -111,9 +110,8 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
 
     @Test
     public void referenceFileWithoutStorage() {
-        List<String> owners = Lists.newArrayList();
-        owners.add("someone");
-        Optional<FileReference> oFileRef = referenceRandomFile(owners, null, "file.test", "anywhere");
+        String owner = "someone";
+        Optional<FileReference> oFileRef = referenceRandomFile(owner, null, "file.test", "anywhere");
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
         Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService
                 .search(oFileRef.get().getLocation().getStorage(), oFileRef.get().getMetaInfo().getChecksum());
@@ -124,17 +122,15 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     @Test
     public void search() throws InterruptedException {
         // 1. Add reference for search tests
-        List<String> owners = Lists.newArrayList("someone");
+        String owner = "someone";
         OffsetDateTime beforeDate = OffsetDateTime.now().minusSeconds(1);
-        FileReference fileRef = referenceRandomFile(owners, null, "file1.test", "anywhere").get();
+        FileReference fileRef = referenceRandomFile(owner, null, "file1.test", "anywhere").get();
         OffsetDateTime afterFirstDate = OffsetDateTime.now();
         Thread.sleep(1);
-        owners.add("someone-else");
-        referenceRandomFile(owners, "Type1", "file2.test", "somewhere-else");
-        owners.add("someone-else-again");
-        referenceRandomFile(owners, "Type2", "file3.test", "somewhere-else");
-        referenceRandomFile(owners, "Test", "data_4.nc", "somewhere-else");
-        referenceRandomFile(owners, "Test", "data_5.nc", "void");
+        referenceRandomFile("someone-else", "Type1", "file2.test", "somewhere-else");
+        referenceRandomFile("someone-else", "Type2", "file3.test", "somewhere-else");
+        referenceRandomFile("someone-else", "Test", "data_4.nc", "somewhere-else");
+        referenceRandomFile("someone-else", "Test", "data_5.nc", "void");
         OffsetDateTime afterEndDate = OffsetDateTime.now().plusSeconds(1);
 
         // Search all
@@ -173,7 +169,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
                                                           null),
                         PageRequest.of(0, 100, Direction.ASC, "id"))
                 .getTotalElements());
-        Assert.assertEquals("There should be 3 file references for given type", 1, fileRefService
+        Assert.assertEquals("There should be 1 file references for given type", 1, fileRefService
                 .search(FileReferenceSpecification.search(null, null, Sets.newHashSet("Type2"), null, null, null, null),
                         PageRequest.of(0, 100, Direction.ASC, "id"))
                 .getTotalElements());
@@ -278,14 +274,13 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         InputStream stream = com.google.common.io.Files.asByteSource(inputImage).openStream();
         String checksum = ChecksumUtils.computeHexChecksum(stream, "MD5");
         stream.close();
-        List<String> owners = Lists.newArrayList();
-        owners.add("test");
+        String owner = "someone";
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", inputImage.getName(),
                 inputImage.getTotalSpace(), MediaType.IMAGE_PNG);
         URL origin = new URL("file", "localhost", inputImage.getAbsolutePath());
         FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.addFileReference(owners, fileMetaInfo, Optional.of(origin), destination);
+        fileRefService.storeFile(owner, fileMetaInfo, origin, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"));
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
         Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
@@ -313,22 +308,19 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     @Test
     public void storeWithNotHandledFiles() throws InterruptedException, ExecutionException {
 
-        List<String> owners = Lists.newArrayList();
-        owners.add("owner");
+        String owner = "someone";
         // Add a file reference request for a file that will not be handled by the storage plugin (ignored by his name in the test plugin)
         String checksumNotHandled = UUID.randomUUID().toString();
         String fileNameNotHandled = "doNotHandle.file.test";
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksumNotHandled, "MD5", fileNameNotHandled,
                 132L, MediaType.APPLICATION_OCTET_STREAM);
-        FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
-        fileRefService.addFileReference(owners, fileMetaInfo, Optional.of(originUrl), destination);
+        fileRefService.storeFile(owner, fileMetaInfo, originUrl, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"));
         // Add a valid one for storage
         String fileNameHandled = "file.test";
         String checksumHandled = UUID.randomUUID().toString();
         fileMetaInfo = new FileReferenceMetaInfo(checksumHandled, "MD5", fileNameHandled, 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
-        destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
-        fileRefService.addFileReference(owners, fileMetaInfo, Optional.of(originUrl), destination);
+        fileRefService.storeFile(owner, fileMetaInfo, originUrl, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"));
 
         Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
@@ -459,8 +451,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     @Test
     public void downloadFileReferenceOffLine() throws ModuleException, InterruptedException, ExecutionException {
         FileReference fileRef = this
-                .referenceFile(UUID.randomUUID().toString(), Sets.newHashSet("owner"), null, "file.test", "somewhere")
-                .get();
+                .referenceFile(UUID.randomUUID().toString(), "owner", null, "file.test", "somewhere").get();
         try {
             fileRefService.downloadFile(fileRef.getMetaInfo().getChecksum());
             Assert.fail("File should not be available for download as it is not handled by a known storage location plugin");

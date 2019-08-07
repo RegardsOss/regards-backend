@@ -18,72 +18,51 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.flow;
 
-import org.springframework.util.Assert;
+import java.util.Collection;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 
 /**
- * @author sbinda
+ * @author Sébastien Binda
  *
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class DeleteFileRefFlowItem implements ISubscribable {
 
-    private String checksum;
+    private final Set<FileDeletionRequestDTO> files = Sets.newHashSet();
 
-    private String storage;
+    private String requestId;
 
-    private String owner;
-
-    private boolean forceDelete = false;
-
-    public DeleteFileRefFlowItem(String checksum, String storage, String owner) {
-        super();
-        Assert.notNull(checksum, "Checksum is mandatory for file deletion");
-        Assert.notNull(storage, "Storage is mandatory for file deletion");
-        Assert.notNull(owner, "Owner is mandatory for file deletion");
-        this.checksum = checksum;
-        this.storage = storage;
-        this.owner = owner;
+    public String getRequestId() {
+        return requestId;
     }
 
-    public DeleteFileRefFlowItem withForceDelete() {
-        this.setForceDelete(true);
-        return this;
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
-    public String getChecksum() {
-        return checksum;
+    public Set<FileDeletionRequestDTO> getFiles() {
+        return files;
     }
 
-    public void setChecksum(String checksum) {
-        this.checksum = checksum;
+    public static DeleteFileRefFlowItem build(FileDeletionRequestDTO file, String requestId) {
+        DeleteFileRefFlowItem item = new DeleteFileRefFlowItem();
+        item.files.add(file);
+        item.requestId = requestId;
+        return item;
     }
 
-    public String getStorage() {
-        return storage;
-    }
-
-    public void setStorage(String storage) {
-        this.storage = storage;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
-    public boolean isForceDelete() {
-        return forceDelete;
-    }
-
-    public void setForceDelete(boolean forceDelete) {
-        this.forceDelete = forceDelete;
+    public static DeleteFileRefFlowItem build(Collection<FileDeletionRequestDTO> files, String requestId) {
+        DeleteFileRefFlowItem item = new DeleteFileRefFlowItem();
+        item.files.addAll(files);
+        item.requestId = requestId;
+        return item;
     }
 
 }

@@ -35,7 +35,6 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -61,7 +60,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRe
 public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReferenceTest {
 
     @Autowired
-    private AvailabilityFileReferenceFlowItemHandler handler;
+    private AvailabilityFileFlowItemHandler handler;
 
     @Autowired
     FileReferenceService fileRefService;
@@ -92,11 +91,8 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
         FileReference file4 = this.generateRandomStoredOnlineFileReference("file.online.1.test");
         FileReference file5 = this.generateRandomStoredOnlineFileReference("file.online.2.test");
         // Simulate reference of 2 files offline
-        FileReference file6 = this
-                .referenceRandomFile(Lists.newArrayList("owner"), "file", "file.offline.1.test", "somewhere").get();
-        FileReference file7 = this
-                .referenceRandomFile(Lists.newArrayList("owner"), "file", "file.offline.2.test", "somewhere-else")
-                .get();
+        FileReference file6 = this.referenceRandomFile("owner", "file", "file.offline.1.test", "somewhere").get();
+        FileReference file7 = this.referenceRandomFile("owner", "file", "file.offline.2.test", "somewhere-else").get();
         // Simulate storage of a file in two locations near line and online
         String checksum = UUID.randomUUID().toString();
         this.generateStoredFileReference(checksum, "owner", "file.online.nealine.test", ONLINE_CONF_LABEL);
@@ -108,7 +104,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
                                                 file7.getMetaInfo().getChecksum(), checksum);
         Mockito.clearInvocations(publisher);
         AvailabilityFileRefFlowItem request = new AvailabilityFileRefFlowItem(checksums,
-                OffsetDateTime.now().plusDays(1));
+                OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
         handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
@@ -162,7 +158,8 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
         // Simulate availability request on this file
         Mockito.clearInvocations(publisher);
         AvailabilityFileRefFlowItem request = new AvailabilityFileRefFlowItem(
-                Sets.newHashSet(file1.getMetaInfo().getChecksum()), OffsetDateTime.now().plusDays(2));
+                Sets.newHashSet(file1.getMetaInfo().getChecksum()), OffsetDateTime.now().plusDays(2),
+                UUID.randomUUID().toString());
         handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
