@@ -18,22 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -41,14 +26,28 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
-import fr.cnes.regards.modules.ingest.dao.ISIPSessionRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
+import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -60,6 +59,8 @@ public class SIPService implements ISIPService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPService.class);
 
+    public static final String SESSION_NOTIF_STEP = "SIP";
+
     @Autowired
     private IPublisher publisher;
 
@@ -69,14 +70,11 @@ public class SIPService implements ISIPService {
     @Autowired
     private IAIPRepository aipRepository;
 
-    @Autowired
-    private ISIPSessionRepository sipSessionRepository;
-
     @Override
-    public Page<SIPEntity> search(String providerId, String sessionId, String owner, OffsetDateTime from,
+    public Page<SIPEntity> search(String providerId, String sessionSource, String sessionName, String owner, OffsetDateTime from,
             List<SIPState> state, String processing, Pageable page) {
         return sipRepository
-                .loadAll(SIPEntitySpecifications.search(providerId, sessionId, owner, from, state, processing), page);
+                .loadAll(SIPEntitySpecifications.search(providerId, sessionSource, sessionName, owner, from, state, processing), page);
     }
 
     @Override
@@ -105,8 +103,8 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public Collection<RejectedSip> deleteSIPEntitiesForSessionId(String sessionId) throws ModuleException {
-        return this.deleteSIPEntities(sipRepository.findBySessionId(sessionId));
+    public Collection<RejectedSip> deleteSIPEntitiesForSession(String sessionSource, String sessionName) throws ModuleException {
+        return this.deleteSIPEntities(sipRepository.findByIngestMetadataSessionSourceAndIngestMetadataSessionName(sessionSource, sessionName));
     }
 
     @Override
@@ -121,8 +119,10 @@ public class SIPService implements ISIPService {
                     if (!aips.isEmpty()) {
                         aipRepository.deleteAll(aips);
                     }
+                    notifySipChangedState(sip.getIngestMetadata(), sip.getState(), SIPState.DELETED);
                     sipRepository.updateSIPEntityState(SIPState.DELETED, sip.getId());
                 } else {
+                    notifySipChangedState(sip.getIngestMetadata(), sip.getState(), SIPState.TO_BE_DELETED);
                     sipRepository.updateSIPEntityState(SIPState.TO_BE_DELETED, sip.getId());
                 }
             } else if (sip.getState() != SIPState.TO_BE_DELETED && sip.getState() != SIPState.DELETED) {
@@ -165,13 +165,39 @@ public class SIPService implements ISIPService {
     public SIPEntity saveSIPEntity(SIPEntity sip) {
         // do save SIP
         SIPEntity savedSip = sipRepository.save(sip);
-        // Update associated session
-        SIPSession session = savedSip.getSession();
-        session.setLastActivationDate(OffsetDateTime.now());
-        session = sipSessionRepository.save(session);
-        savedSip.setSession(session);
         publisher.publish(new SIPEvent(savedSip));
         return savedSip;
+    }
+
+    @Override
+    public void notifySipChangedState(IngestMetadata metadata, SIPState previousState, SIPState nextState) {
+        notifySipsChangedState(metadata, previousState, nextState, 1);
+    }
+
+    @Override
+    public void notifySipsChangedState(IngestMetadata metadata, SIPState previousState, SIPState nextState, int nbSip) {
+
+        // Decrement the previous state by one
+        publisher.publish(SessionMonitoringEvent.build(
+                metadata.getSessionSource(),
+                metadata.getSessionName(),
+                SessionNotificationState.OK,
+                SESSION_NOTIF_STEP,
+                SessionNotificationOperator.DEC,
+                previousState.toString(),
+                nbSip
+        ));
+
+        // Increment the next state by one
+        publisher.publish(SessionMonitoringEvent.build(
+                metadata.getSessionSource(),
+                metadata.getSessionName(),
+                SessionNotificationState.OK,
+                SESSION_NOTIF_STEP,
+                SessionNotificationOperator.INC,
+                nextState.toString(),
+                nbSip
+        ));
     }
 
     /**

@@ -46,12 +46,15 @@ public final class SIPEntitySpecifications {
      * Filter on the given attributes (sessionId, owner, ingestDate and state) and return result ordered by descending
      * ingestDate
      */
-    public static Specification<SIPEntity> search(String providerId, String sesssionId, String owner,
+    public static Specification<SIPEntity> search(String providerId, String sesssionSource, String sesssionName, String owner,
             OffsetDateTime from, List<SIPState> states, String processing) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            if (sesssionId != null) {
-                predicates.add(cb.equal(root.get("session").get("id"), sesssionId));
+            if (sesssionSource != null) {
+                predicates.add(cb.equal(root.get("ingestMetadata").get("sessionSource"), sesssionSource));
+            }
+            if (sesssionName != null) {
+                predicates.add(cb.equal(root.get("ingestMetadata").get("sessionName"), sesssionName));
             }
             if (owner != null) {
                 predicates.add(cb.equal(root.get("owner"), owner));
@@ -74,7 +77,7 @@ public final class SIPEntitySpecifications {
                 }
             }
             if (processing != null) {
-                predicates.add(cb.equal(root.get("processing"), processing));
+                predicates.add(cb.equal(root.get("ingestMetadata").get("processing"), processing));
             }
             query.orderBy(cb.desc(root.get("ingestDate")));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));

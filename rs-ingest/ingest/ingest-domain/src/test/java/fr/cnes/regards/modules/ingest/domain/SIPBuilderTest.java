@@ -69,7 +69,7 @@ public class SIPBuilderTest {
         String algorithm = "checksumAlgorithm";
 
         // Initialize a SIP Collection builder
-        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(processingChain, sessionId);
+        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(processingChain, sessionId, sessionId);
 
         // Create a SIP builder
         String providerId = "SIP_001";

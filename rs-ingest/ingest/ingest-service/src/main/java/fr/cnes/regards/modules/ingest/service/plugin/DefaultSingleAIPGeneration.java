@@ -44,7 +44,7 @@ public class DefaultSingleAIPGeneration implements IAipGeneration {
     public List<AIP> generate(SIP sip, UniformResourceName aipId, UniformResourceName sipId, String providerId) {
 
         AIPBuilder builder = new AIPBuilder(aipId, Optional.of(sipId), providerId, EntityType.DATA,
-                sip.getProperties().getPdi().getProvenanceInformation().getSession());
+                sip.getProperties().getPdi().getProvenanceInformation().getSessionSource());
         // Propagate BBOX
         if (sip.getBbox().isPresent()) {
             builder.setBbox(sip.getBbox().get(), sip.getCrs().orElse(null));

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.flow;
 
 import java.nio.file.Paths;
 
+import java.time.OffsetDateTime;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -76,7 +77,7 @@ public class SIPFlowHandlerIT extends AbstractMultitenantServiceTest {
         for (long i = 0; i < maxloops; i++) {
             SIP sip = create("provider" + i);
             // Create event
-            SipFlowItem flowItem = SipFlowItem.build(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "default", sip,
+            SipFlowItem flowItem = SipFlowItem.build(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "source", OffsetDateTime.now().toString(), sip,
                                                      "TEST");
             publisher.publish(flowItem);
         }

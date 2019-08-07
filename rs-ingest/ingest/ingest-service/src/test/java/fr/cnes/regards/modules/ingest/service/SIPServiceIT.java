@@ -18,6 +18,25 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
+import fr.cnes.regards.modules.ingest.service.store.IAIPService;
+import fr.cnes.regards.modules.storage.client.IAipClient;
+import fr.cnes.regards.modules.storage.client.IAipEntityClient;
+import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.RejectedSip;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
+import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -27,7 +46,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -43,29 +61,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.ingest.dao.ISIPSessionRepository;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
-import fr.cnes.regards.modules.ingest.service.store.IAIPService;
-import fr.cnes.regards.modules.storage.client.IAipClient;
-import fr.cnes.regards.modules.storage.client.IAipEntityClient;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.RejectedSip;
-import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
-import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
-
 /**
  * @author Sébastien Binda
  */
@@ -73,7 +68,9 @@ public class SIPServiceIT extends AbstractSipIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPServiceIT.class);
 
-    private final static String COMPLEX_SESSION_ID = "SESSION_100";
+    private final static String COMPLEX_SESSION_SOURCE = "SESSION_100";
+
+    private final static String COMPLEX_SESSION_NAME = "NAME_101";
 
     private static SIPEventTestHandler handler = new SIPEventTestHandler();
 
@@ -82,9 +79,6 @@ public class SIPServiceIT extends AbstractSipIT {
     private final List<AIP> simulatedStorageAips = new ArrayList<>();
 
     private final Set<SIPEntity> complexSessionSips = Sets.newHashSet();
-
-    @Autowired
-    private ISIPSessionRepository sipSessionRepository;
 
     @Autowired
     private ISIPService sipService;
@@ -112,31 +106,30 @@ public class SIPServiceIT extends AbstractSipIT {
     public void doInit() throws NoSuchAlgorithmException, IOException, InterruptedException, ModuleException {
         handler.clearEvents();
         subscriber.subscribeTo(SIPEvent.class, handler);
-        sipSessionRepository.deleteAll();
         Mockito.reset(aipClient);
 
         // Initiate first sip session
-        sipWithManyAIPs = createSIP("SIP_SERVICE_TEST_001", "SESSION_001", "PROCESSING_001", "OWNER_001", 1);
-        sipWithOneAIP = createSIP("SIP_SERVICE_TEST_002", "SESSION_001", "PROCESSING_001", "OWNER_001", 1);
-        sipWithManyVersions.add(createSIP("SIP_SERVICE_TEST_003", "SESSION_001", "PROCESSING_001", "OWNER_001", 1));
+        sipWithManyAIPs = createSIP("SIP_SERVICE_TEST_001", "SESSION_001", "SESSION_001", "PROCESSING_001", "OWNER_001", 1);
+        sipWithOneAIP = createSIP("SIP_SERVICE_TEST_002", "SESSION_001", "SESSION_001", "PROCESSING_001", "OWNER_001", 1);
+        sipWithManyVersions.add(createSIP("SIP_SERVICE_TEST_003", "SESSION_001", "SESSION_001", "PROCESSING_001", "OWNER_001", 1));
 
         // Initiate third session with a new SIPs
-        createSIP("SIP_SERVICE_TEST_004", "SESSION_003", "PROCESSING_002", "OWNER_002", 1);
-        createSIP("SIP_SERVICE_TEST_005", "SESSION_003", "PROCESSING_002", "OWNER_002", 1);
+        createSIP("SIP_SERVICE_TEST_004", "SESSION_003", "SESSION_003", "PROCESSING_002", "OWNER_002", 1);
+        createSIP("SIP_SERVICE_TEST_005", "SESSION_003", "SESSION_003", "PROCESSING_002", "OWNER_002", 1);
 
         // Initiate sip without session
-        createSIP("SIP_SERVICE_TEST_006", null, "PROCESSING_003", "OWNER_001", 1);
+        createSIP("SIP_SERVICE_TEST_006", null, null, "PROCESSING_003", "OWNER_001", 1);
 
         // Initiate second sip session with sip new version
-        sipWithManyVersions.add(createSIP("SIP_SERVICE_TEST_003", "SESSION_002", "PROCESSING_001", "OWNER_001", 2));
+        sipWithManyVersions.add(createSIP("SIP_SERVICE_TEST_003", "SESSION_002", "SESSION_002", "PROCESSING_001", "OWNER_001", 2));
 
         // Initiate a complex session with 2 SIP in all states
         int id = 100;
         for (SIPState state : SIPState.values()) {
-            complexSessionSips.add(createSIP("SIP_SERVICE_TEST_" + id, COMPLEX_SESSION_ID, "PROCESSING_001",
+            complexSessionSips.add(createSIP("SIP_SERVICE_TEST_" + id, COMPLEX_SESSION_SOURCE, COMPLEX_SESSION_NAME, "PROCESSING_001",
                                              "OWNER_003", 1, state));
             id++;
-            complexSessionSips.add(createSIP("SIP_SERVICE_TEST_" + id, COMPLEX_SESSION_ID, "PROCESSING_001",
+            complexSessionSips.add(createSIP("SIP_SERVICE_TEST_" + id, COMPLEX_SESSION_SOURCE, COMPLEX_SESSION_NAME, "PROCESSING_001",
                                              "OWNER_003", 1, state));
             id++;
         }
@@ -319,7 +312,7 @@ public class SIPServiceIT extends AbstractSipIT {
     @Test
     public void searchSip() {
         // Check search by state
-        Page<SIPEntity> results = sipService.search(null, null, null, null, Lists.newArrayList(SIPState.AIP_GEN_ERROR),
+        Page<SIPEntity> results = sipService.search(null, null, null, null, null, Lists.newArrayList(SIPState.AIP_GEN_ERROR),
                                                     null, PageRequest.of(0, 100));
         Assert.assertTrue("There should be only two AIPs with AIP_GEN_ERROR state", results.getTotalElements() == 2);
     }
@@ -331,38 +324,6 @@ public class SIPServiceIT extends AbstractSipIT {
         // TODO : Check that if all AIPs are indexed then the SIP is in INDEXED state
     }
 
-    @Requirement("REGARDS_DSL_ING_PRO_710")
-    @Requirement("REGARDS_DSL_ING_PRO_720")
-    @Requirement("REGARDS_DSL_ING_PRO_740")
-    @Requirement("REGARDS_DSL_ING_PRO_750")
-    @Requirement("REGARDS_DSL_ING_PRO_760")
-    @Purpose("Manage sessions informations")
-    @Test
-    public void checkSessions() {
-        // Check retrieve sessions
-        Page<SIPSession> result = sipSessionService.search(null, null, null, PageRequest.of(0, 100));
-        Assert.assertTrue(result.getTotalElements() == 5);
-        SIPSession prevSession = null;
-        // Check order by last activation date.
-        for (SIPSession session : result.getContent()) {
-            if (prevSession != null) {
-                Assert.assertTrue(session.getLastActivationDate().compareTo(prevSession.getLastActivationDate()) <= 0);
-            }
-            prevSession = session;
-        }
-        // Check session progress for complex simulated session
-        SIPSession session = result.getContent().stream().filter(s -> COMPLEX_SESSION_ID.equals(s.getId())).findFirst()
-                .get();
-        Assert.assertNotNull(session);
-        // There is 2 SIPS for each state in this simulated session
-        Assert.assertTrue(session.getSipsCount() == SIPState.values().length * 2);
-        Assert.assertTrue(session.getIndexedSipsCount() == 2);
-        Assert.assertTrue(session.getStoredSipsCount() == 6);
-        Assert.assertTrue(session.getGeneratedSipsCount() == 14);
-        Assert.assertTrue(session.getErrorSipsCount() == 10);
-        Assert.assertTrue(session.getDeletedSipsCount() == 2);
-
-    }
 
     @SuppressWarnings("unchecked")
     @Requirement("REGARDS_DSL_ING_PRO_830")
@@ -371,9 +332,9 @@ public class SIPServiceIT extends AbstractSipIT {
     @Test
     public void deleteSession() throws ModuleException {
         // Delete by session id
-        Collection<RejectedSip> rejectedSips = sipService.deleteSIPEntitiesForSessionId(COMPLEX_SESSION_ID);
+        Collection<RejectedSip> rejectedSips = sipService.deleteSIPEntitiesForSession(COMPLEX_SESSION_SOURCE, COMPLEX_SESSION_NAME);
         aipService.askForAipsDeletion();
-        // 2 SIP per state in COMPLEX_SESSION_ID.
+        // 2 SIP per state in COMPLEX_SESSION_SOURCE.
         // Undeletable are QUEUED, VALID. TO_BE_DELETED and DELETED are now considered deletable but do nothing
         Assert.assertEquals(4, rejectedSips.size());
         // Check call to storage client for deletion
@@ -385,7 +346,7 @@ public class SIPServiceIT extends AbstractSipIT {
         Assert.assertEquals(14, argument.getValue().size());
         // Check that not stored SIP are already in DELETED state
         // Not stored state are CREATED, AIP_CREATED, INVALID, AIP_GEN_ERROR, REJECTED, DELETED
-        Page<SIPEntity> results = sipService.search(null, COMPLEX_SESSION_ID, null, null,
+        Page<SIPEntity> results = sipService.search(null, COMPLEX_SESSION_SOURCE, null, null, null,
                                                     Lists.newArrayList(SIPState.DELETED), null, PageRequest.of(0, 100));
         Assert.assertEquals(26, results.getTotalElements());
 

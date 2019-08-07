@@ -61,7 +61,7 @@ public class AIPServiceIT extends AbstractSipIT {
     @Override
     public void doInit() throws Exception {
         // generate one SIP
-        sip = createSIP("AIP_SERVICE_TEST_001", null, "PROCESSING_001", "OWNER_001", 1, SIPState.CREATED);
+        sip = createSIP("AIP_SERVICE_TEST_001", null, null, "PROCESSING_001", "OWNER_001", 1, SIPState.CREATED);
 
         // Create two associated AIPs
         aips.add(createAIP(UniformResourceName

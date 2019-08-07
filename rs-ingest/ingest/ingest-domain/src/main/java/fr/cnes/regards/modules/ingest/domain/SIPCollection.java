@@ -36,13 +36,13 @@ public class SIPCollection extends AbstractFeatureCollection<SIP> {
 
     @Valid
     @NotNull
-    private final IngestMetadata metadata;
+    private final IngestMetadataDto metadata;
 
     public SIPCollection() {
-        metadata = new IngestMetadata();
+        metadata = new IngestMetadataDto();
     }
 
-    public IngestMetadata getMetadata() {
+    public IngestMetadataDto getMetadata() {
         return metadata;
     }
 }

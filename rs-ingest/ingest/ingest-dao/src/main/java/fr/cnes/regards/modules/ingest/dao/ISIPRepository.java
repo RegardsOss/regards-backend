@@ -18,13 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPIdNProcessing;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -37,12 +39,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPIdNProcessing;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * {@link SIPEntity} repository
@@ -112,12 +108,13 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     Collection<SIPEntity> findBySipIdIn(Collection<String> sipIds);
 
     /**
-     * Retrieve all {@link SIPEntity} associated to the given session id.
-     * @param sessionId {@link String}
+     * Retrieve all {@link SIPEntity} associated to the given session source/name.
+     * @param sessionSource {@link String}
+     * @param sessionName {@link String}
      * @return {@link SIPEntity}s
      */
     @EntityGraph("graph.sip.entity.complete")
-    Collection<SIPEntity> findBySessionId(String sessionId);
+    Collection<SIPEntity> findByIngestMetadataSessionSourceAndIngestMetadataSessionName(String sessionSource, String sessionName);
 
     /**
      * Find all {@link SIPEntity}s by given {@link SIPState}.
@@ -125,7 +122,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @param state {@link SIPState}
      * @return {@link SIPEntity}s
      */
-    List<SIPIdNProcessing> findIdAndProcessingByState(SIPState state);
+    List<SIPIdNProcessing> findIdAndIngestMetadataByState(SIPState state);
 
     /**
      * Update state of a {@link SIPEntity}
@@ -146,24 +143,27 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     /**
      * Switch state for a given session
      */
+    //TODO add sessionName
     @Modifying
-    @Query("UPDATE SIPEntity s set s.state = :newState where s.state = :state AND s.session = :session")
+    @Query("UPDATE SIPEntity s set s.state = :newState where s.state = :state AND s.ingestMetadata.sessionSource = :session")
     void updateSIPEntityStateByStateAndSession(@Param("newState") SIPState state, @Param("state") SIPState filterState,
-            @Param("session") SIPSession session);
+            @Param("session") String session);
 
     /**
      * Count number of {@link SIPEntity} associated to a given session
-     * @param sessionId
+     * @param sessionSource
      * @return number of {@link SIPEntity}
      */
-    long countBySessionId(String sessionId);
+    //TODO
+    long countByIngestMetadataSessionSource(String sessionSource);
 
     /**
      * Count number of {@link SIPEntity} associated to a given session and in a specific given {@link SIPState}
      * @param sessionId
      * @return number of {@link SIPEntity}
      */
-    long countBySessionIdAndStateIn(String sessionId, Collection<SIPState> states);
+    //TODO add session name
+    long countByIngestMetadataSessionSourceAndStateIn(String sessionId, Collection<SIPState> states);
 
     /**
      * Check if SIP already ingested

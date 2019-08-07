@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -65,8 +66,12 @@ import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
  */
 @Entity
 @Table(name = "t_sip",
-        indexes = { @Index(name = "idx_sip_id", columnList = "providerId,sipId,checksum"),
-                @Index(name = "idx_sip_processing", columnList = "processing") },
+        indexes = {
+                @Index(name = "idx_sip_id", columnList = "providerId,sipId,checksum"),
+                @Index(name = "idx_sip_processing", columnList = "processing"),
+                @Index(name = "idx_sip_session_source", columnList = "session_source"),
+                @Index(name = "idx_sip_session_name", columnList = "session_name")
+        },
         // PostgreSQL manage both single indexes and multiple ones
         uniqueConstraints = { @UniqueConstraint(name = "uk_sip_sipId", columnNames = "sipId"),
                 @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
@@ -149,19 +154,10 @@ public class SIPEntity {
     private OffsetDateTime lastUpdateDate;
 
     /**
-     * {@link IngestProcessingChain} name from {@link IngestMetadata}
+     * {@link IngestMetadata} stores session and processing chain informations
      */
-    @NotBlank(message = "Processing chain name is required")
-    @Column(length = 100)
-    private String processing;
-
-    /**
-     * Session identifier from {@link IngestMetadata}
-     */
-    @NotNull(message = "Session is required")
-    @ManyToOne
-    @JoinColumn(name = "session", foreignKey = @ForeignKey(name = "fk_sip_session"))
-    private SIPSession session;
+    @Embedded
+    private IngestMetadata ingestMetadata;
 
     public String getSipId() {
         return sipId;
@@ -211,14 +207,6 @@ public class SIPEntity {
         this.ingestDate = ingestDate;
     }
 
-    public String getProcessing() {
-        return processing;
-    }
-
-    public void setProcessing(String processing) {
-        this.processing = processing;
-    }
-
     public String getProviderId() {
         return providerId;
     }
@@ -262,12 +250,12 @@ public class SIPEntity {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public SIPSession getSession() {
-        return session;
+    public IngestMetadata getIngestMetadata() {
+        return ingestMetadata;
     }
 
-    public void setSession(SIPSession session) {
-        this.session = session;
+    public void setIngestMetadata(IngestMetadata ingestMetadata) {
+        this.ingestMetadata = ingestMetadata;
     }
 
     /**

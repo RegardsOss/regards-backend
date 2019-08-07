@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.domain.flow;
 
+import fr.cnes.regards.modules.ingest.domain.IngestMetadataDto;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -40,7 +41,7 @@ public class SipFlowItem implements ISubscribable {
 
     @Valid
     @NotNull
-    private IngestMetadata metadata;
+    private IngestMetadataDto metadata;
 
     @NotNull
     private SIP sip;
@@ -48,7 +49,7 @@ public class SipFlowItem implements ISubscribable {
     @NotNull
     private String owner;
 
-    public IngestMetadata getMetadata() {
+    public IngestMetadataDto getMetadata() {
         return metadata;
     }
 
@@ -56,7 +57,7 @@ public class SipFlowItem implements ISubscribable {
         return sip;
     }
 
-    public void setMetadata(IngestMetadata metadata) {
+    public void setMetadata(IngestMetadataDto metadata) {
         this.metadata = metadata;
     }
 
@@ -72,13 +73,14 @@ public class SipFlowItem implements ISubscribable {
         this.owner = owner;
     }
 
-    public static SipFlowItem build(String ingestProcessingChain, String session, SIP sip, String owner) {
+    public static SipFlowItem build(String ingestProcessingChain, String sessionSource, String sessionName, SIP sip, String owner) {
         Assert.hasText(ingestProcessingChain, "INGEST processing chain is required");
-        Assert.hasText(session, "Session is required");
+        Assert.hasText(sessionSource, "Session source is required");
+        Assert.hasText(sessionName, "Session name is required");
         Assert.notNull(sip, "SIP is required");
         Assert.hasText(owner, "Owner is required");
         SipFlowItem item = new SipFlowItem();
-        item.setMetadata(IngestMetadata.build(ingestProcessingChain, session));
+        item.setMetadata(IngestMetadataDto.build(ingestProcessingChain, sessionSource, sessionName));
         item.setSip(sip);
         item.setOwner(owner);
         return item;

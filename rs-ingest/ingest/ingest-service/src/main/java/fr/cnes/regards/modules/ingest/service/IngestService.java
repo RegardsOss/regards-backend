@@ -18,28 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import javax.persistence.EntityManager;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
-import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -55,15 +33,38 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Optional;
+import javax.persistence.EntityManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
 
 /**
  * Ingest management service
@@ -92,9 +93,6 @@ public class IngestService implements IIngestService {
 
     @Autowired
     private ISIPService sipService;
-
-    @Autowired
-    private ISIPSessionService sipSessionService;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -128,7 +126,7 @@ public class IngestService implements IIngestService {
      * @param metadata {@link IngestMetadata}
      * @throws EntityInvalidException if invalid!
      */
-    private void validateIngestMetadata(IngestMetadata metadata) throws EntityInvalidException {
+    private void validateIngestMetadata(IngestMetadataDto metadata) throws EntityInvalidException {
         // Check metadata not null
         if (metadata == null) {
             String message = "Ingest metadata is required in SIP submission request.";
@@ -175,6 +173,8 @@ public class IngestService implements IIngestService {
                 case AIP_GEN_ERROR:
                 case INVALID:
                 case DELETED:
+                    // Notify the SIP status changes
+                    sipService.notifySipChangedState(sip.getIngestMetadata(), sip.getState(), SIPState.CREATED);
                     sipRepository.updateSIPEntityState(SIPState.CREATED, sip.getId());
                     break;
                 case AIP_SUBMITTED:
@@ -225,35 +225,27 @@ public class IngestService implements IIngestService {
      * Store a SIP for further processing
      * @param sip {@link SIP} to store
      * @param metadata bulk ingest metadata
+     * @parma publishSIPEvents should publish an {@link SIPEvent} when something went wrong?
      * @return a {@link SIPEntity} ready to be processed saved in database or a rejected one not saved in database
      */
     @Override
-    public SIPDto store(SIP sip, IngestMetadata metadata, String owner, boolean publishRejected) {
+    public SIPDto store(SIP sip, IngestMetadataDto metadata, String owner, boolean publishSIPEvents) {
 
         LOGGER.info("Handling new SIP {}", sip.getId());
         // Manage version
         Integer version = sipRepository.getNextVersion(sip.getId());
 
-        // Manage session
-        SIPSession session = sipSessionService.getSession(metadata.getSession().orElse(null), true);
-
-        SIPEntity entity = SIPEntityBuilder.build(runtimeTenantResolver.getTenant(), session, sip,
-                                                  metadata.getProcessing(), owner, version, SIPState.CREATED,
-                                                  EntityType.DATA);
-
+        SIPEntity entity = SIPEntityBuilder.build(runtimeTenantResolver.getTenant(), metadata.getSessionSource(), metadata.getSessionName(),
+                sip, metadata.getProcessing(), owner, version, SIPState.CREATED, EntityType.DATA);
         // Validate metadata
         try {
             validateIngestMetadata(metadata);
         } catch (EntityInvalidException e) {
             // Invalid SIP
-            entity.setState(SIPState.REJECTED);
             String errorMessage = String.format("Ingest processing chain \"%s\" not found!", metadata.getProcessing());
             LOGGER.warn("SIP rejected because : {}", errorMessage);
             entity.getRejectionCauses().add(errorMessage);
-            if (publishRejected) {
-                publisher.publish(new SIPEvent(entity));
-            }
-            return entity.toDto();
+            return handleStoreRejected(publishSIPEvents, entity);
         }
 
         // Validate SIP
@@ -261,7 +253,6 @@ public class IngestService implements IIngestService {
         validator.validate(sip, errors);
         if (errors.hasErrors()) {
             // Invalid SIP
-            entity.setState(SIPState.REJECTED);
             errors.getAllErrors().forEach(error -> {
                 if (error instanceof FieldError) {
                     FieldError fieldError = (FieldError) error;
@@ -274,11 +265,8 @@ public class IngestService implements IIngestService {
                 }
                 LOGGER.warn("SIP {} error : {}", entity.getProviderId(), error.toString());
             });
-            LOGGER.warn("SIP {} rejected because invalid", entity.getProviderId());
-            if (publishRejected) {
-                publisher.publish(new SIPEvent(entity));
-            }
-            return entity.toDto();
+            LOGGER.warn("Invalid SIP {} rejected", entity.getProviderId());
+            return handleStoreRejected(publishSIPEvents, entity);
         }
 
         try {
@@ -288,33 +276,61 @@ public class IngestService implements IIngestService {
 
             // Prevent SIP from being ingested twice
             if (sipRepository.isAlreadyIngested(checksum)) {
-                entity.setState(SIPState.REJECTED);
                 entity.getRejectionCauses().add("SIP already submitted");
-                if (publishRejected) {
-                    publisher.publish(new SIPEvent(entity));
-                }
                 LOGGER.warn("SIP {} rejected cause already submitted", entity.getProviderId());
-            } else {
-                // Entity is persisted only if all properties properly set
-                // And SIP not already stored with a same checksum
-                sipService.saveSIPEntity(entity);
-                publisher.publish(new SIPEvent(entity));
-                LOGGER.debug("SIP {} saved, ready for asynchronous processing", entity.getProviderId());
+                return handleStoreRejected(publishSIPEvents, entity);
             }
 
         } catch (NoSuchAlgorithmException | IOException e) {
             LOGGER.error("Cannot compute checksum for SIP identified by {}", sip.getId());
             LOGGER.error("Exception occurs!", e);
-            entity.setState(SIPState.REJECTED);
             entity.getRejectionCauses().add("Not able to generate internal SIP checksum");
-            if (publishRejected) {
-                publisher.publish(new SIPEvent(entity));
-            }
+            return handleStoreRejected(publishSIPEvents, entity);
         }
+
+        // Entity is persisted only if all properties properly set
+        // And SIP not already stored with a same checksum
+        sipService.saveSIPEntity(entity);
+        if (publishSIPEvents) {
+            publisher.publish(new SIPEvent(entity));
+        }
+        LOGGER.debug("SIP {} saved, ready for asynchronous processing", entity.getProviderId());
+
+        publisher.publish(SessionMonitoringEvent.build(
+                metadata.getSessionSource(),
+                metadata.getSessionName(),
+                SessionNotificationState.OK,
+                SIPService.SESSION_NOTIF_STEP,
+                SessionNotificationOperator.INC,
+                SIPState.CREATED.toString(),
+                1
+        ));
 
         // Ensure performance by flushing transaction cache
         em.flush();
         em.clear();
+
+        return entity.toDto();
+    }
+
+    private SIPDto handleStoreRejected(boolean publishSIPEvents, SIPEntity entity) {
+        entity.setState(SIPState.REJECTED);
+
+        if (publishSIPEvents) {
+            // Notify the error using the SIP id
+            publisher.publish(new SIPEvent(entity));
+        }
+
+        // Notify an error occurred for current SIP session
+        publisher.publish(SessionMonitoringEvent.build(
+                entity.getIngestMetadata().getSessionSource(),
+                entity.getIngestMetadata().getSessionName(),
+                SessionNotificationState.ERROR,
+                SIPService.SESSION_NOTIF_STEP,
+                SessionNotificationOperator.INC,
+                SIPState.REJECTED.toString(),
+                1
+        ));
 
         return entity.toDto();
     }

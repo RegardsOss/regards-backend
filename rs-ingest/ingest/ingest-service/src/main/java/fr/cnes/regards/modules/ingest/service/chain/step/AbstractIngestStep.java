@@ -50,6 +50,9 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
     }
 
     protected SIPEntity updateSIPEntityState(SIPState newEntitySIPState) {
+        // Send a notification about this SIP state change
+        job.getSipService().notifySipChangedState(job.getCurrentEntity().getIngestMetadata(), job.getCurrentEntity().getState(), newEntitySIPState);
+        // Update the SIP
         job.getCurrentEntity().setState(newEntitySIPState);
         job.getCurrentEntity().setProcessingErrors(processingErrors);
         return job.getIngestProcessingService().updateSIPEntity(job.getCurrentEntity());

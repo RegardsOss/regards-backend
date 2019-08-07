@@ -48,6 +48,10 @@
 			<artifactId>dam-domain</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.session-manager</groupId>
+			<artifactId>session-manager-domain</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>module-regards</artifactId>
 		</dependency>

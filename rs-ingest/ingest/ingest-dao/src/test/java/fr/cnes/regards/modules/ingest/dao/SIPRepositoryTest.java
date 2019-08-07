@@ -24,8 +24,6 @@ import java.util.List;
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPIdNProcessing;
@@ -41,62 +39,62 @@ public class SIPRepositoryTest extends AbstractSIPRepositoryTest {
     public void searchSipEntities() {
 
         List<SIPEntity> res = sipRepository
-                .findAll(SIPEntitySpecifications.search(null, "sessionId", "admin", OffsetDateTime.now().minusHours(12),
+                .findAll(SIPEntitySpecifications.search(null, "sessionId", "sessionId", "admin", OffsetDateTime.now().minusHours(12),
                                                         Lists.newArrayList(SIPState.CREATED), PROCESSING_CHAIN));
-        Assert.assertTrue(res.size() == 2);
+        Assert.assertEquals(2, res.size());
 
         res = sipRepository
-                .findAll(SIPEntitySpecifications.search(null, "sessionId", "admin", OffsetDateTime.now().minusHours(1),
+                .findAll(SIPEntitySpecifications.search(null, "sessionId","sessionId",  "admin", OffsetDateTime.now().minusHours(1),
                                                         Lists.newArrayList(SIPState.CREATED), PROCESSING_CHAIN));
-        Assert.assertTrue(res.size() == 1);
+        Assert.assertEquals(1, res.size());
 
-        res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", null, null, null, null));
-        Assert.assertTrue(res.size() == 2);
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId","sessionId",  null, null, null, null));
+        Assert.assertEquals(2, res.size());
 
-        res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, "admin", null, null, null));
-        Assert.assertTrue(res.size() == 2);
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, "sessionId", "admin", null, null, null));
+        Assert.assertEquals(2, res.size());
 
-        res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, null, null,
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, "sessionId", null, null,
                                                                    Lists.newArrayList(SIPState.CREATED), null));
-        Assert.assertTrue(res.size() == 2);
+        Assert.assertEquals(2, res.size());
 
-        res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, null, null, null, PROCESSING_CHAIN));
-        Assert.assertTrue(res.size() == 3);
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, null, null, null, null, PROCESSING_CHAIN));
+        Assert.assertEquals(3, res.size());
 
         res = sipRepository
-                .findAll(SIPEntitySpecifications.search(null, "invalid", "admin", OffsetDateTime.now().minusHours(12),
+                .findAll(SIPEntitySpecifications.search(null, "invalid", "invalid", "admin", OffsetDateTime.now().minusHours(12),
                                                         Lists.newArrayList(SIPState.CREATED), null));
-        Assert.assertTrue(res.size() == 0);
+        Assert.assertEquals(0, res.size());
 
-        res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", "unvalid",
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId","sessionId",  "unvalid",
                                                                    OffsetDateTime.now().minusHours(12),
                                                                    Lists.newArrayList(SIPState.CREATED), null));
-        Assert.assertTrue(res.size() == 0);
+        Assert.assertEquals(0, res.size());
 
-        res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", "admin", OffsetDateTime.now(),
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", "sessionId", "admin", OffsetDateTime.now(),
                                                                    Lists.newArrayList(SIPState.CREATED), null));
-        Assert.assertTrue(res.size() == 0);
+        Assert.assertEquals(0, res.size());
 
         res = sipRepository
-                .findAll(SIPEntitySpecifications.search(null, "sessionId", "admin", OffsetDateTime.now().minusHours(12),
+                .findAll(SIPEntitySpecifications.search(null, "sessionId", "sessionId", "admin", OffsetDateTime.now().minusHours(12),
                                                         Lists.newArrayList(SIPState.AIP_CREATED), null));
-        Assert.assertTrue(res.size() == 0);
+        Assert.assertEquals(0, res.size());
 
-        res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, null, null, null, null));
-        Assert.assertTrue(res.size() == 4);
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, null, null, null, null, null));
+        Assert.assertEquals(4, res.size());
 
         // Check order by attribute on ingestDate
         Assert.assertTrue(res.get(0).getIngestDate().compareTo(res.get(1).getIngestDate()) >= 0);
         Assert.assertTrue(res.get(1).getIngestDate().compareTo(res.get(2).getIngestDate()) >= 0);
 
-        res = sipRepository.findAll(SIPEntitySpecifications.search("SIP_003", null, null, null, null, null));
-        Assert.assertTrue(res.size() == 2);
+        res = sipRepository.findAll(SIPEntitySpecifications.search("SIP_003", null, null, null, null, null, null));
+        Assert.assertEquals(2, res.size());
 
     }
 
     @Test
     public void testFindIdAndProcessingByState() {
-        List<SIPIdNProcessing> res = sipRepository.findIdAndProcessingByState(SIPState.CREATED);
+        List<SIPIdNProcessing> res = sipRepository.findIdAndIngestMetadataByState(SIPState.CREATED);
         Assert.assertEquals("There should be 2 sipIdNProcessing", 2, res.size());
     }
 

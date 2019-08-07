@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
 import org.junit.Ignore;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractFlywayInitialization;
 
 /**
  * Init database public schema with Flyway
@@ -28,6 +27,6 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractFlywayInitializati
  *
  */
 @Ignore
-public class IngestFlywayInitialization extends AbstractFlywayInitialization {
+public class IngestFlywayInitialization extends AbstractScriptGeneratorTest {
 
 }

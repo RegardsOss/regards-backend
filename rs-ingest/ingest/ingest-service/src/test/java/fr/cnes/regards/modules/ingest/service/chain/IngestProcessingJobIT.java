@@ -97,7 +97,9 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
 
     public static final String PROCESSING_CHAIN_TEST = "fullProcessingChain";
 
-    public static final String SESSION_ID = "sessionId";
+    public static final String SESSION_SOURCE = "sessionSource";
+
+    public static final String SESSION_NAME = "sessionName";
 
     /**
      * Class logger.
@@ -148,7 +150,7 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
         initDefaultProcessingChain();
 
         // Init a SIP in database with state CREATED and managed with default chain
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(DEFAULT_PROCESSING_CHAIN_TEST, SESSION_ID);
+        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(DEFAULT_PROCESSING_CHAIN_TEST, SESSION_SOURCE, SESSION_NAME);
         SIPCollection collection = colBuilder.build();
 
         SIPBuilder builder = new SIPBuilder(SIP_DEFAULT_CHAIN_ID_TEST);
@@ -165,7 +167,7 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
         entityDefaultChainTest = resultSip.get().getId();
 
         // Init a SIP in database with state CREATED
-        colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, SESSION_ID);
+        colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, SESSION_SOURCE, SESSION_NAME);
         collection = colBuilder.build();
 
         builder = new SIPBuilder(SIP_ID_TEST);
@@ -182,7 +184,7 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
         entityIdTest = resultSip.get().getId();
 
         // Init a SIP with reference in database with state CREATED
-        colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, SESSION_ID);
+        colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, SESSION_SOURCE, SESSION_NAME);
         collection = colBuilder.build();
 
         builder = new SIPBuilder(SIP_REF_ID_TEST);
@@ -347,9 +349,8 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
         Assert.assertTrue("The AIP generated should be in CREATED state",
                           SipAIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
         Assert.assertEquals("AIP should contain the session ID",
-                            aips.stream().findFirst().get().getAip().getProperties().getPdi().getProvenanceInformation()
-                                    .getSession(),
-                            SESSION_ID);
+                            aips.stream().findFirst().get().getAip().getProperties().getPdi().getProvenanceInformation().getSessionSource(),
+                SESSION_SOURCE);
 
     }
 
@@ -377,8 +378,8 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
                           SipAIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
         Assert.assertEquals("AIP should contain the session ID",
                             aips.stream().findFirst().get().getAip().getProperties().getPdi().getProvenanceInformation()
-                                    .getSession(),
-                            SESSION_ID);
+                                    .getSessionSource(),
+                SESSION_SOURCE);
 
     }
 

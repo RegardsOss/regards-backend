@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import fr.cnes.regards.modules.ingest.domain.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import java.io.InputStream;
 import java.util.Collection;
 
@@ -69,5 +71,5 @@ public interface IIngestService {
     /**
      * Store SIP received by HTTP bulk request or data flow
      */
-    SIPDto store(SIP sip, IngestMetadata metadata, String owner, boolean publishRejected);
+    SIPDto store(SIP sip, IngestMetadataDto metadata, String owner, boolean publishRejected);
 }
