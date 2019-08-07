@@ -28,7 +28,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
@@ -104,7 +103,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip3.setOwner("admin2");
         sip3.setProcessing(PROCESSING_CHAIN);
         sip3.setSession(session2);
-        sip3.setState(SIPState.STORED);
+        sip3.setState(SIPState.INGESTED);
         sip3.setVersion(1);
         sip3.setChecksum("12345678903");
 
@@ -122,7 +121,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip4.setOwner("admin2");
         sip4.setProcessing(PROCESSING_CHAIN2);
         sip4.setSession(session2);
-        sip4.setState(SIPState.STORED);
+        sip4.setState(SIPState.INGESTED);
         sip4.setVersion(2);
         sip4.setChecksum("123456789032");
 

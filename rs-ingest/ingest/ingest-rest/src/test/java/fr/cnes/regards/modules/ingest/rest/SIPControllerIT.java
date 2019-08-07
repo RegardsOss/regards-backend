@@ -380,7 +380,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
         SIPEntity sipEntity = SIPEntityBuilder.build(getDefaultTenant(), session, sip,
                                                      IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "me", 1,
-                                                     SIPState.INVALID, EntityType.DATA);
+                                                     SIPState.ERROR, EntityType.DATA);
         sipEntity.setChecksum("12332323f2ds3d6g6df");
         sipEntity.setProcessingErrors(Arrays.asList("error1", "error2"));
         sipService.saveSIPEntity(sipEntity);

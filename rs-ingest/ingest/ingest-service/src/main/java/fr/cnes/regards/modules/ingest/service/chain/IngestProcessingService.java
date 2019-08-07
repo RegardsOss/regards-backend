@@ -75,11 +75,11 @@ import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IngestProcessingChainSpecifications;
 import fr.cnes.regards.modules.ingest.domain.builder.AIPEntityBuilder;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPIdNProcessing;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.ingest.service.IngestProperties;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
@@ -214,7 +214,7 @@ public class IngestProcessingService implements IIngestProcessingService {
             publisher.publish(item);
         }
         // Update SIP entity state
-        entity.setState(SIPState.AIP_SUBMITTED);
+        entity.setState(SIPState.INGESTED);
         sipService.saveSIPEntity(entity);
 
         return entity;
@@ -237,7 +237,7 @@ public class IngestProcessingService implements IIngestProcessingService {
     @Override
     public AIPEntity createAIP(Long sipEntityId, AIP aip) throws EntityNotFoundException {
         SIPEntity sip = getSIPEntity(sipEntityId);
-        return aipRepository.save(AIPEntityBuilder.build(sip, SipAIPState.CREATED, aip));
+        return aipRepository.save(AIPEntityBuilder.build(sip, AIPState.CREATED, aip));
     }
 
     /**

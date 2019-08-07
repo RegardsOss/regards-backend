@@ -32,7 +32,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.storage.domain.IAipState;
 
 /**
@@ -65,7 +65,7 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
 
     /**
      * Retrieve an {@link AIPEntity} by is {@link AIPEntity#getState()}
-     * @param state {@link SipAIPState}
+     * @param state {@link AIPState}
      * @return optional {@link AIPEntity}
      */
     @Query("select id from AIPEntity a where a.state= ?1")

@@ -38,7 +38,7 @@ public final class AipStateManager {
                 return state;
             }
         }
-        for (SipAIPState state : SipAIPState.values()) {
+        for (AIPState state : AIPState.values()) {
             if (state.getName().equals(name)) {
                 return state;
             }

@@ -35,16 +35,16 @@ import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgor
  */
 public class SIPReference {
 
-    @NotNull
+    @NotNull(message = "SIP reference URL is required")
     private URL url;
 
-    @NotBlank
+    @NotBlank(message = "SIP reference checksum is required")
     private String checksum;
 
     /**
      * All available {@link MessageDigest} algorithm
      */
-    @NotBlank
+    @NotBlank(message = "SIP reference algorithm is required")
     @HandledMessageDigestAlgorithm
     private String algorithm;
 

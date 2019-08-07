@@ -23,35 +23,25 @@ package fr.cnes.regards.modules.ingest.domain.entity;
  * SIP lifecycle
  *
  * <pre>
- *              o
- *    __________|_______ REJECTED
- *   |          |
- *   |       CREATED
- *   |          |
- *   |       QUEUED
- *   |          |_______ INVALID
- *   |          |
- *   |        VALID
- * DELETED      |_______ AIP_GEN_ERROR
- *   |          |
- *   |      AIP_CREATED <-----|
- *   |__________|________ STORE_ERROR
- *   |          |
- *   |     AIP_SUBMITTED
- *   |          |
- *   |        STORED
- *   |          |
- *   |       INDEXED
- *   |__________|
- *   |          |
- *   |_______INCOMPLETE
- *
+ *           o
+ *           |________REJECTED
+ *           |
+ *        CREATED_______
+ *           |          | retry
+ *        QUEUED        |
+ *           |________ERROR (invalid, generation error, ...)
+ *           |          |
+ *       INGESTED       |
+ *           |          | delete
+ *       TO_BE_DELETED  |
+ *           |          |
+ *        DELETED_______|
  * </pre>
  *
  * @author Marc Sordi
  *
  */
-public enum SIPState implements ISipState {
+public enum SIPState {
 
     /**
      * SIP is stored in database and has to be processed
@@ -66,46 +56,13 @@ public enum SIPState implements ISipState {
      */
     QUEUED,
     /**
-     * SIP has been validated by the ValidationStep successfully
+     * SIP processing fails
      */
-    VALID,
+    ERROR,
     /**
-     * SIP is invalid (ValidationStep error)
+     * SIP processing ends successfully
      */
-    INVALID,
-    /**
-     * Error during AIP generation
-     */
-    AIP_GEN_ERROR,
-    /**
-     * AIP(s) associated to the SIP has been successfully localy stored and are waiting to be handle by storage
-     * microservice.
-     */
-    AIP_CREATED,
-    /**
-     * AIP(s) submission to storage failed
-     */
-    AIP_SUBMITTED,
-    /**
-     * AIP(s) has been successfully stored by storage microservice
-     */
-    STORED,
-    /**
-     * One or many AIP(s) failed to be stored by storage microservice
-     */
-    STORE_ERROR,
-    /**
-     * SIP has been indexed
-     */
-    INDEXED,
-    /**
-     * SIP failed to be indexed
-     */
-    INDEX_ERROR,
-    /**
-     * SIP is partially stored.
-     */
-    INCOMPLETE,
+    INGESTED,
     /**
      * SIP is to be DELETED
      */
@@ -114,9 +71,4 @@ public enum SIPState implements ISipState {
      * SIP deleted
      */
     DELETED;
-
-    @Override
-    public String getName() {
-        return this.name();
-    }
 }

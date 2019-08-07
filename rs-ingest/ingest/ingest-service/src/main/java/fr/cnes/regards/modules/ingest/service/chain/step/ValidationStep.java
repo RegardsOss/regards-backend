@@ -67,13 +67,12 @@ public class ValidationStep extends AbstractIngestStep<SIP, Void> {
         }
 
         // On success
-        updateSIPEntityState(SIPState.VALID);
         return null;
     }
 
     @Override
     protected void doAfterError(SIP sip) {
         LOGGER.error("Error prepocessing SIP \"{}\"", sip.getId());
-        this.updateSIPEntityState(SIPState.INVALID);
+        this.updateSIPEntityState(SIPState.ERROR);
     }
 }

@@ -43,6 +43,7 @@ import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
@@ -61,12 +62,10 @@ import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.ingest.service.IngestTemplateConfiguration;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.client.IAipEntityClient;
-import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.IAipState;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
@@ -128,8 +127,7 @@ public class AIPService implements IAIPService {
             sip.setState(sipState);
             // Save the errorMessage inside SIP rejections errors
             sip.getRejectionCauses().add(String.format("Storage of AIP(%s) failed due to the following error: %s",
-                                                       aipId,
-                                                       errorMessage));
+                                                       aipId, errorMessage));
             sipService.saveSIPEntity(sip);
         }
     }
@@ -143,14 +141,6 @@ public class AIPService implements IAIPService {
             aip.setState(state);
             aip.setErrorMessage(null);
             aipRepository.save(aip);
-            // If all AIP are stored update SIP state to STORED
-            Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
-            if (sipAips.stream()
-                    .allMatch(a -> AIPState.STORED.equals(a.getState()) || SipAIPState.INDEXED.equals(a.getState()))) {
-                SIPEntity sip = aip.getSip();
-                sip.setState(SIPState.STORED);
-                sipService.saveSIPEntity(sip);
-            }
         }
     }
 
@@ -178,7 +168,8 @@ public class AIPService implements IAIPService {
                     sip.setState(SIPState.DELETED);
                 } else {
                     // Else update sip to incomplete
-                    sip.setState(SIPState.INCOMPLETE);
+                    // FIXME
+                    // sip.setState(SIPState.INCOMPLETE);
                 }
                 sip.setLastUpdateDate(OffsetDateTime.now());
                 sipService.saveSIPEntity(sip);
@@ -193,38 +184,40 @@ public class AIPService implements IAIPService {
 
     @Override
     public AIPEntity setAipToIndexed(AIPEntity aip) {
-        aip.setState(SipAIPState.INDEXED);
-        aip.setErrorMessage(null);
-        aipRepository.save(aip);
-        LOGGER.info("AIP \"{}\" is now indexed.", aip.getAipIdUrn().toString());
-        // If all AIPs of current SIP are indexed then update SIP state to INDEXED
-        Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
-        if (sipAips.stream().allMatch(aipEntity -> aipEntity.getState() == SipAIPState.INDEXED)) {
-            SIPEntity sip = aip.getSip();
-            sip.setState(SIPState.INDEXED);
-            sipService.saveSIPEntity(sip);
-            LOGGER.info("SIP \"{}\" is now indexed.", sip.getSipId());
-            // AIPs are no longer useful here we can delete them
-            aipRepository.deleteAll(sipAips);
-        }
+        // FIXME
+        //        aip.setState(AIPState.INDEXED);
+        //        aip.setErrorMessage(null);
+        //        aipRepository.save(aip);
+        //        LOGGER.info("AIP \"{}\" is now indexed.", aip.getAipIdUrn().toString());
+        //        // If all AIPs of current SIP are indexed then update SIP state to INDEXED
+        //        Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
+        //        if (sipAips.stream().allMatch(aipEntity -> aipEntity.getState() == AIPState.INDEXED)) {
+        //            SIPEntity sip = aip.getSip();
+        //            sip.setState(SIPState.INDEXED);
+        //            sipService.saveSIPEntity(sip);
+        //            LOGGER.info("SIP \"{}\" is now indexed.", sip.getSipId());
+        //            // AIPs are no longer useful here we can delete them
+        //            aipRepository.deleteAll(sipAips);
+        //        }
         return aip;
     }
 
     @Override
     public AIPEntity setAipToIndexError(AIPEntity aip) {
-        aip.setState(SipAIPState.INDEX_ERROR);
-        aip.setErrorMessage(null);
-        aipRepository.save(aip);
-
-        LOGGER.info("AIP \"{}\" is now indexed.", aip.getAipIdUrn().toString());
-        // If one AIP of current SIP is at INDEX_ERROR than update SIP state to INDEX_ERROR
-        Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
-        if (sipAips.stream().anyMatch(aipEntity -> aipEntity.getState() == SipAIPState.INDEX_ERROR)) {
-            SIPEntity sip = aip.getSip();
-            sip.setState(SIPState.INDEX_ERROR);
-            sipService.saveSIPEntity(sip);
-            LOGGER.info("SIP \"{}\" cannot be indexed.", sip.getSipId());
-        }
+        // FIXME
+        //        aip.setState(AIPState.INDEX_ERROR);
+        //        aip.setErrorMessage(null);
+        //        aipRepository.save(aip);
+        //
+        //        LOGGER.info("AIP \"{}\" is now indexed.", aip.getAipIdUrn().toString());
+        //        // If one AIP of current SIP is at INDEX_ERROR than update SIP state to INDEX_ERROR
+        //        Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
+        //        if (sipAips.stream().anyMatch(aipEntity -> aipEntity.getState() == AIPState.INDEX_ERROR)) {
+        //            SIPEntity sip = aip.getSip();
+        //            sip.setState(SIPState.INDEX_ERROR);
+        //            sipService.saveSIPEntity(sip);
+        //            LOGGER.info("SIP \"{}\" cannot be indexed.", sip.getSipId());
+        //        }
         return aip;
     }
 
@@ -232,7 +225,8 @@ public class AIPService implements IAIPService {
     public void handleJobEvent(JobEvent jobEvent) {
         if (JobEventType.FAILED.equals(jobEvent.getJobEventType())) {
             // Load job info
-            @SuppressWarnings("unused") JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
+            @SuppressWarnings("unused")
+            JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
             String jobClass = jobInfo.getClassName();
             String title = "Unhandled job error";
             LOGGER.warn(title + String.format(" %s/%s", jobClass, jobInfo.getId().toString()));
@@ -245,13 +239,12 @@ public class AIPService implements IAIPService {
     @Override
     public void handleAipEvent(AIPEvent aipEvent) {
         UniformResourceName aipId = UniformResourceName.fromString(aipEvent.getAipId());
-        LOGGER.info("[AIP Event received] {} - {} - {}",
-                    aipEvent.getAipId(),
-                    aipEvent.getAipState(),
+        LOGGER.info("[AIP Event received] {} - {} - {}", aipEvent.getAipId(), aipEvent.getAipState(),
                     aipEvent.getFailureCause() != null ? aipEvent.getFailureCause() : "ok");
         switch (aipEvent.getAipState()) {
             case STORAGE_ERROR:
-                setAipInError(aipId, aipEvent.getAipState(), aipEvent.getFailureCause(), SIPState.STORE_ERROR);
+                // FIXME
+                // setAipInError(aipId, aipEvent.getAipState(), aipEvent.getFailureCause(), SIPState.STORE_ERROR);
                 break;
             case STORED:
                 setAipToStored(aipId, aipEvent.getAipState());
@@ -282,11 +275,10 @@ public class AIPService implements IAIPService {
             FeignSecurityManager.asSystem();
             try {
                 response = aipClient.deleteAipFromSips(deletableSips.getContent().stream().map(SIPEntity::getSipId)
-                                                               .collect(Collectors.toSet()));
+                        .collect(Collectors.toSet()));
                 long askForAipDeletionEnd = System.currentTimeMillis();
                 LOGGER.trace("Asking SUCCESSFULLY for storage to delete {} sip took {} ms",
-                             deletableSips.getNumberOfElements(),
-                             askForAipDeletionEnd - askForAipDeletionStart);
+                             deletableSips.getNumberOfElements(), askForAipDeletionEnd - askForAipDeletionStart);
                 if (HttpUtils.isSuccess(response.getStatusCode())) {
                     if (response.getBody() != null) {
                         rejectedSips = response.getBody();
@@ -306,8 +298,7 @@ public class AIPService implements IAIPService {
                 rejectedSips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
             } finally {
                 long askForAipDeletionEnd = System.currentTimeMillis();
-                LOGGER.trace("Asking for storage to delete {} sip took {} ms",
-                             deletableSips.getNumberOfElements(),
+                LOGGER.trace("Asking for storage to delete {} sip took {} ms", deletableSips.getNumberOfElements(),
                              askForAipDeletionEnd - askForAipDeletionStart);
                 FeignSecurityManager.reset();
             }

@@ -78,7 +78,8 @@ public class SipFlowItem implements ISubscribable {
         Assert.notNull(sip, "SIP is required");
         Assert.hasText(owner, "Owner is required");
         SipFlowItem item = new SipFlowItem();
-        item.setMetadata(IngestMetadata.build(ingestProcessingChain, session));
+        // FIXME
+        item.setMetadata(IngestMetadata.build(ingestProcessingChain, session, null));
         item.setSip(sip);
         item.setOwner(owner);
         return item;

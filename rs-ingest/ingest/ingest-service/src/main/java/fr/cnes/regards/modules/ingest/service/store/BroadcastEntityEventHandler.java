@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.ingest.service.store;
 
 import java.util.Optional;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,9 +35,6 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
 
 /**
@@ -79,7 +75,7 @@ public class BroadcastEntityEventHandler
     public void handle(TenantWrapper<BroadcastEntityEvent> wrapper) {
         BroadcastEntityEvent event = wrapper.getContent();
         LOGGER.info("BroadcastEntityEvent received");
-        if ((event != null) && (event.getEventType() != null)) {
+        if (event != null && event.getEventType() != null) {
             LOGGER.info("BroadcastEntityEvent received type={}", event.getEventType());
             switch (event.getEventType()) {
                 case INDEXED:
@@ -122,22 +118,23 @@ public class BroadcastEntityEventHandler
     private void handleEntitiesNotIndexed(UniformResourceName[] ipIds, String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
         // Check if AIPs matchs ipIds
-        for (UniformResourceName ipId : ipIds) {
-            Optional<AIPEntity> oAip = aipService.searchAip(ipId);
-            if (oAip.isPresent()) {
-                AIPEntity aip = oAip.get();
-                aipService.setAipToIndexError(aip);
-                LOGGER.info("AIP \"{}\" cannot be indexed.", ipId.toString());
-                // If one AIP of current SIP is at INDEX_ERROR than update SIP state to INDEX_ERROR
-                Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
-                if (sipAips.stream().anyMatch(aipEntity -> aipEntity.getState() == SipAIPState.INDEX_ERROR)) {
-                    SIPEntity sip = aip.getSip();
-                    sip.setState(SIPState.INDEX_ERROR);
-                    sipService.saveSIPEntity(sip);
-                    LOGGER.info("SIP \"{}\" cannot be indexed.", sip.getSipId());
-                }
-            }
-        }
+        // FIXME
+        //        for (UniformResourceName ipId : ipIds) {
+        //            Optional<AIPEntity> oAip = aipService.searchAip(ipId);
+        //            if (oAip.isPresent()) {
+        //                AIPEntity aip = oAip.get();
+        //                aipService.setAipToIndexError(aip);
+        //                LOGGER.info("AIP \"{}\" cannot be indexed.", ipId.toString());
+        //                // If one AIP of current SIP is at INDEX_ERROR than update SIP state to INDEX_ERROR
+        //                Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
+        //                if (sipAips.stream().anyMatch(aipEntity -> aipEntity.getState() == AIPState.INDEX_ERROR)) {
+        //                    SIPEntity sip = aip.getSip();
+        //                    sip.setState(SIPState.INDEX_ERROR);
+        //                    sipService.saveSIPEntity(sip);
+        //                    LOGGER.info("SIP \"{}\" cannot be indexed.", sip.getSipId());
+        //                }
+        //            }
+        //        }
         runtimeTenantResolver.clearTenant();
     }
 

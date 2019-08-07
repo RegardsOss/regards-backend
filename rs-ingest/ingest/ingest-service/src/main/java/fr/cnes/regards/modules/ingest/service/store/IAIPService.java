@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.storage.domain.IAipState;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 
@@ -60,13 +60,13 @@ public interface IAIPService {
     void setAipToStored(UniformResourceName aipId, IAipState state);
 
     /**
-     * Set {@link AIPEntity} state to {@link SipAIPState#INDEXED}
+     * Set {@link AIPEntity} state to {@link AIPState#INDEXED}
      * @return {@link AIPEntity} updated
      */
     AIPEntity setAipToIndexed(AIPEntity aip);
 
     /**
-     * Set {@link AIPEntity} state to {@link SipAIPState#INDEX_ERROR}
+     * Set {@link AIPEntity} state to {@link AIPState#INDEX_ERROR}
      * @return {@link AIPEntity} updated
      */
     AIPEntity setAipToIndexError(AIPEntity aip);

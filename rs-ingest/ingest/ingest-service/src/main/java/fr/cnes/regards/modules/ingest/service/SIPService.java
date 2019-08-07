@@ -146,9 +146,7 @@ public class SIPService implements ISIPService {
 
     @Override
     public boolean validatedVersionExists(String providerId) {
-        return sipRepository.countByProviderIdAndStateIn(providerId, SIPState.VALID, SIPState.AIP_CREATED,
-                                                         SIPState.AIP_SUBMITTED, SIPState.STORE_ERROR, SIPState.STORED,
-                                                         SIPState.INDEXED, SIPState.INCOMPLETE) > 0;
+        return sipRepository.countByProviderIdAndStateIn(providerId) > 0;
     }
 
     @Override
@@ -184,16 +182,9 @@ public class SIPService implements ISIPService {
     private boolean isDeletableWithAIPs(SIPEntity sip) {
         switch (sip.getState()) {
             case CREATED:
-            case AIP_CREATED:
-            case INVALID:
-            case AIP_GEN_ERROR:
+            case ERROR:
             case REJECTED:
-            case STORED:
-            case AIP_SUBMITTED:
-            case STORE_ERROR:
-            case INCOMPLETE:
-            case INDEXED:
-            case INDEX_ERROR:
+            case INGESTED:
                 return true;
             default:
                 return false;
@@ -209,9 +200,7 @@ public class SIPService implements ISIPService {
     private boolean isDeletableWithoutAips(SIPEntity sip) {
         switch (sip.getState()) {
             case CREATED:
-            case AIP_CREATED:
-            case INVALID:
-            case AIP_GEN_ERROR:
+            case ERROR:
             case REJECTED:
                 return true;
             default:

@@ -138,8 +138,7 @@ public class IngestServiceIT extends AbstractSipIT {
         Assert.assertTrue(one.getVersion() == 1);
         Assert.assertTrue(SIPState.CREATED.equals(one.getState()));
 
-        Page<SIPEntity> page = sipService.search(null, SIPSessionService.DEFAULT_SESSION_ID, null, null, null, null,
-                                                 PageRequest.of(0, 10));
+        Page<SIPEntity> page = sipService.search(null, "default", null, null, null, null, PageRequest.of(0, 10));
         Assert.assertTrue(page.getNumberOfElements() == 1);
 
     }
@@ -177,71 +176,39 @@ public class IngestServiceIT extends AbstractSipIT {
     public void retryIngest() throws NoSuchAlgorithmException, IOException, ModuleException {
         // Simulate a SIP in CREATED state
         SIPEntity sip = createSIP("RETY_SIP_001", SESSION_ID, PROCESSING, "admin", 1);
+
+        sip.setState(SIPState.CREATED);
+        sip = sipRepository.save(sip);
         try {
             ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
+            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a created SIP");
         } catch (ModuleException e) {
             // Tothing to do
         }
+
+        sip.setState(SIPState.DELETED);
+        sip = sipRepository.save(sip);
+        try {
+            ingestService.retryIngest(sip.getSipIdUrn());
+            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a deleted SIP");
+        } catch (ModuleException e) {
+            // Tothing to do
+        }
+
         sip.setState(SIPState.QUEUED);
         sip = sipRepository.save(sip);
         try {
             ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
+            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a queued SIP");
         } catch (ModuleException e) {
             // Tothing to do
         }
 
-        sip.setState(SIPState.INCOMPLETE);
+        sip.setState(SIPState.INGESTED);
         sip = sipRepository.save(sip);
         try {
             ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a incompletly stored ingest");
-        } catch (ModuleException e) {
-            // Tothing to do
-        }
-
-        sip.setState(SIPState.INDEXED);
-        sip = sipRepository.save(sip);
-        try {
-            ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a indexed ingest");
-        } catch (ModuleException e) {
-            // Tothing to do
-        }
-
-        sip.setState(SIPState.AIP_CREATED);
-        sip = sipRepository.save(sip);
-        try {
-            ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
-        } catch (ModuleException e) {
-            // Tothing to do
-        }
-
-        sip.setState(SIPState.STORED);
-        sip = sipRepository.save(sip);
-        try {
-            ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a stored ingest");
-        } catch (ModuleException e) {
-            // Tothing to do
-        }
-
-        sip.setState(SIPState.VALID);
-        sip = sipRepository.save(sip);
-        try {
-            ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
-        } catch (ModuleException e) {
-            // Tothing to do
-        }
-
-        sip.setState(SIPState.STORE_ERROR);
-        sip = sipRepository.save(sip);
-        try {
-            ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a store error ingest");
+            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry an ingested SIP");
         } catch (ModuleException e) {
             // Tothing to do
         }
@@ -250,25 +217,17 @@ public class IngestServiceIT extends AbstractSipIT {
         sip = sipRepository.save(sip);
         try {
             ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a rejected ingest");
+            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a rejected SIP");
         } catch (ModuleException e) {
             // Tothing to do
         }
 
         // Simulate a SIP in AIP_GEN_ERROR error
-        sip.setState(SIPState.AIP_GEN_ERROR);
+        sip.setState(SIPState.ERROR);
         sip = sipRepository.save(sip);
         ingestService.retryIngest(sip.getSipIdUrn());
         sip = sipRepository.findById(sip.getId()).get();
         Assert.assertEquals(SIPState.CREATED, sip.getState());
-
-        // Simulate a SIP in AIP_GEN_ERROR error
-        sip.setState(SIPState.INVALID);
-        sip = sipRepository.save(sip);
-        ingestService.retryIngest(sip.getSipIdUrn());
-        sip = sipRepository.findById(sip.getId()).get();
-        Assert.assertEquals(SIPState.CREATED, sip.getState());
-
     }
 
     private void ingestNextVersion(String providerId, Integer version)

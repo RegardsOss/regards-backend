@@ -24,8 +24,6 @@ import java.util.List;
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPIdNProcessing;
@@ -79,7 +77,7 @@ public class SIPRepositoryTest extends AbstractSIPRepositoryTest {
 
         res = sipRepository
                 .findAll(SIPEntitySpecifications.search(null, "sessionId", "admin", OffsetDateTime.now().minusHours(12),
-                                                        Lists.newArrayList(SIPState.AIP_CREATED), null));
+                                                        Lists.newArrayList(SIPState.INGESTED), null));
         Assert.assertTrue(res.size() == 0);
 
         res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, null, null, null, null));

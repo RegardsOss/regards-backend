@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
+
+import javax.persistence.EntityManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,7 @@ import org.springframework.validation.Validator;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -137,14 +139,14 @@ public class IngestService implements IIngestService {
             throw new EntityInvalidException(message);
         }
         // Check metadata processing chain name not null
-        if (metadata.getProcessing() == null) {
+        if (metadata.getIngestChain() == null) {
             String message = "Ingest processing chain name is required in SIP submission request.";
             LOGGER.error(message);
             // HTTP 422 in GlobalControllerAdvice
             throw new EntityInvalidException(message);
         }
         // Check metadata processing chain name exists
-        Optional<IngestProcessingChain> ipc = ingestChainRepository.findOneByName(metadata.getProcessing());
+        Optional<IngestProcessingChain> ipc = ingestChainRepository.findOneByName(metadata.getIngestChain());
         if (!ipc.isPresent()) {
             String message = "Ingest processing chain must exists. Please, configure the chain before SIP submission.";
             LOGGER.error(message);
@@ -172,32 +174,24 @@ public class IngestService implements IIngestService {
         if (oSip.isPresent()) {
             SIPEntity sip = oSip.get();
             switch (sip.getState()) {
-                case AIP_GEN_ERROR:
-                case INVALID:
-                case DELETED:
+                case ERROR:
                     sipRepository.updateSIPEntityState(SIPState.CREATED, sip.getId());
                     break;
-                case AIP_SUBMITTED:
-                case STORE_ERROR:
-                case STORED:
-                    throw new EntityOperationForbiddenException(sipId.toString(),
-                                                                SIPEntity.class,
-                                                                "SIP ingest process is already successully done");
+                case INGESTED:
+                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
+                            "SIP ingest process is already successully done");
                 case REJECTED:
-                    throw new EntityOperationForbiddenException(sipId.toString(),
-                                                                SIPEntity.class,
-                                                                "SIP format is not valid");
-                case VALID:
-                case QUEUED:
+                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
+                            "SIP format is not valid");
                 case CREATED:
-                case AIP_CREATED:
-                    throw new EntityOperationForbiddenException(sipId.toString(),
-                                                                SIPEntity.class,
-                                                                "SIP ingest is already running");
+                case QUEUED:
+                case TO_BE_DELETED:
+                case DELETED:
+                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
+                            "SIP ingest is already running");
                 default:
-                    throw new EntityOperationForbiddenException(sipId.toString(),
-                                                                SIPEntity.class,
-                                                                "SIP is in undefined state for ingest retry");
+                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
+                            "SIP is in undefined state for ingest retry");
             }
             return sip.toDto();
         } else {
@@ -210,8 +204,7 @@ public class IngestService implements IIngestService {
         Optional<SIPEntity> os = sipRepository.findOneBySipId(sipId.toString());
         if (os.isPresent()) {
             switch (os.get().getState()) {
-                case INVALID:
-                case AIP_GEN_ERROR:
+                case ERROR:
                     return true;
                 default:
                     return false;
@@ -235,19 +228,20 @@ public class IngestService implements IIngestService {
         Integer version = sipRepository.getNextVersion(sip.getId());
 
         // Manage session
-        SIPSession session = sipSessionService.getSession(metadata.getSession().orElse(null), true);
+        SIPSession session = sipSessionService.getSession(metadata.getSession(), true);
 
         SIPEntity entity = SIPEntityBuilder.build(runtimeTenantResolver.getTenant(), session, sip,
-                                                  metadata.getProcessing(), owner, version, SIPState.CREATED,
+                                                  metadata.getIngestChain(), owner, version, SIPState.CREATED,
                                                   EntityType.DATA);
 
         // Validate metadata
+        // FIXME do not make validation after metadata be used above
         try {
             validateIngestMetadata(metadata);
         } catch (EntityInvalidException e) {
             // Invalid SIP
             entity.setState(SIPState.REJECTED);
-            String errorMessage = String.format("Ingest processing chain \"%s\" not found!", metadata.getProcessing());
+            String errorMessage = String.format("Ingest processing chain \"%s\" not found!", metadata.getIngestChain());
             LOGGER.warn("SIP rejected because : {}", errorMessage);
             entity.getRejectionCauses().add(errorMessage);
             if (publishRejected) {

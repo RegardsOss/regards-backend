@@ -63,6 +63,6 @@ public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
 
     @Override
     protected void doAfterError(List<AIP> pIn) {
-        updateSIPEntityState(SIPState.AIP_GEN_ERROR);
+        updateSIPEntityState(SIPState.ERROR);
     }
 }

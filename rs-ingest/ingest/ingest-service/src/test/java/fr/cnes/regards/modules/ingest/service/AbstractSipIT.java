@@ -45,9 +45,9 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 
 /**
@@ -102,7 +102,8 @@ public abstract class AbstractSipIT extends AbstractRegardsServiceTransactionalI
         ippb.addDescriptiveInformation("version", version.toString());
         SIP sip = b.build(ippb.build());
         SIPEntity sipEntity = SIPEntityBuilder.build(getDefaultTenant(), sipSessionService.getSession(sessionId, true),
-                                                     sip, processing, owner, version, SIPState.STORED, EntityType.DATA);
+                                                     sip, processing, owner, version, SIPState.INGESTED,
+                                                     EntityType.DATA);
         sipEntity.setChecksum(SIPEntityBuilder.calculateChecksum(gson, sip, IngestService.MD5_ALGORITHM));
         return sipRepository.save(sipEntity);
     }
@@ -114,7 +115,7 @@ public abstract class AbstractSipIT extends AbstractRegardsServiceTransactionalI
         return sipRepository.save(sipEntity);
     }
 
-    protected AIPEntity createAIP(UniformResourceName aipId, SIPEntity sip, SipAIPState state) {
+    protected AIPEntity createAIP(UniformResourceName aipId, SIPEntity sip, AIPState state) {
         AIPEntity aip = new AIPEntity();
         aip.setAip(new AIPBuilder(aipId, Optional.of(sip.getSipIdUrn()), sip.getProviderId(), EntityType.DATA,
                 sip.getSession().toString()).build());

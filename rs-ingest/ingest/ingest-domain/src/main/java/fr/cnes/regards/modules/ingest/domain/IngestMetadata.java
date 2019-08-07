@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
-import java.util.Optional;
-
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.util.Assert;
 
 /**
- * Extra information useful for bulk SIP submission.<br/>
- * The processing chain name is required and is linked to an existing processing chain.<br/>
+ * Extra information for SIP submission.<br/>
+ *
+ * The ingest processing chain name is required and is linked to an existing processing chain.<br/>
  * The session identifier allows to make consistent group of SIP.
  *
  * @author Marc Sordi
@@ -34,38 +34,56 @@ import org.springframework.util.Assert;
  */
 public class IngestMetadata {
 
+    private static final String INGEST_CHAIN_REQUIRED = "Ingest processing chain name is required";
+
+    private static final String SESSION_CHAIN_REQUIRED = "Session is required";
+
+    private static final String STORAGE_CHAIN_REQUIRED = "Storage metadata is required";
+
     /**
      * {@link fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain} name
      */
-    @NotBlank
-    private String processing;
+    @NotBlank(message = INGEST_CHAIN_REQUIRED)
+    private String ingestChain;
 
-    /**
-     * Session name
-     */
+    @NotBlank(message = SESSION_CHAIN_REQUIRED)
     private String session;
 
-    public String getProcessing() {
-        return processing;
+    @NotNull(message = STORAGE_CHAIN_REQUIRED)
+    private StorageMetadata storages;
+
+    public static IngestMetadata build(String ingestChain, String session, StorageMetadata storages) {
+        Assert.hasLength(ingestChain, INGEST_CHAIN_REQUIRED);
+        Assert.hasLength(session, SESSION_CHAIN_REQUIRED);
+        Assert.notNull(storages, STORAGE_CHAIN_REQUIRED);
+        IngestMetadata m = new IngestMetadata();
+        m.setIngestChain(ingestChain);
+        m.setSession(session);
+        m.setStorages(storages);
+        return m;
     }
 
-    public void setProcessing(String processing) {
-        this.processing = processing;
+    public String getIngestChain() {
+        return ingestChain;
     }
 
-    public Optional<String> getSession() {
-        return Optional.ofNullable(session);
+    public void setIngestChain(String ingestChain) {
+        this.ingestChain = ingestChain;
+    }
+
+    public String getSession() {
+        return session;
     }
 
     public void setSession(String session) {
         this.session = session;
     }
 
-    public static IngestMetadata build(String ingestProcessingChain, String session) {
-        Assert.notNull(ingestProcessingChain, "Ingest processing chain is required");
-        IngestMetadata m = new IngestMetadata();
-        m.setProcessing(ingestProcessingChain);
-        m.setSession(session);
-        return m;
+    public StorageMetadata getStorages() {
+        return storages;
+    }
+
+    public void setStorages(StorageMetadata storages) {
+        this.storages = storages;
     }
 }

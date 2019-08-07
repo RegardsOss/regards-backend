@@ -65,6 +65,6 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
     @Override
     protected void doAfterError(SIP sip) {
         LOGGER.error("Error generating AIP(s) for SIP \"{}\"", sip.getId());
-        updateSIPEntityState(SIPState.AIP_GEN_ERROR);
+        updateSIPEntityState(SIPState.ERROR);
     }
 }

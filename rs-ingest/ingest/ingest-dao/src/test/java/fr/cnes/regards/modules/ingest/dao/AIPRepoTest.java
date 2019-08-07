@@ -28,7 +28,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 
 /**
  * @author Marc Sordi
@@ -43,7 +43,7 @@ public class AIPRepoTest extends AbstractDaoTransactionalTest {
 
     @Test
     public void test2() {
-        Set<AIPEntity> aips = aipRepo.findBySipProcessingAndState("DefaultProcessingChain", SipAIPState.CREATED);
+        Set<AIPEntity> aips = aipRepo.findBySipProcessingAndState("DefaultProcessingChain", AIPState.CREATED);
         Assert.assertNotNull(aips);
     }
 }
