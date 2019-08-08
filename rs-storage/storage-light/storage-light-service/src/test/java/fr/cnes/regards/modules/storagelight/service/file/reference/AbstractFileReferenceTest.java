@@ -286,7 +286,12 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                 MediaType.APPLICATION_OCTET_STREAM);
         fileMetaInfo.setType(type);
         FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/file.test");
-        fileRefService.referenceFile(owner, fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
+        try {
+            fileRefService.referenceFile(owner, fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
+        } catch (ModuleException e) {
+            LOGGER.error(e.getMessage(), e);
+            Assert.fail(e.getMessage());
+        }
         return fileRefService.search(location.getStorage(), fileMetaInfo.getChecksum());
     }
 

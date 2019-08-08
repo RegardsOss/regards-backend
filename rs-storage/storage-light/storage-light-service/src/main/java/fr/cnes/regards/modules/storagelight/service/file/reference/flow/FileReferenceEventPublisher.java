@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorFile;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEventState;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 
 /**
  * Publisher to send AMQP message notification when there is any change on a File Reference.
@@ -109,7 +110,7 @@ public class FileReferenceEventPublisher {
                 fileRef.getOwners(), message, fileRef.getLocation(), requestIds));
         for (String requestId : requestIds) {
             if (!storageReqRepo.existsByRequestIds(requestId)) {
-                requestDone(requestId);
+                requestDone(requestId, FileRequestType.STORAGE);
             } else {
                 checkForStorageRequestError(requestId);
             }
@@ -152,7 +153,7 @@ public class FileReferenceEventPublisher {
             Set<ErrorFile> errors = requests.stream()
                     .map(req -> ErrorFile.build(req.getMetaInfo().getChecksum(), req.getStorage(), req.getErrorCause()))
                     .collect(Collectors.toSet());
-            requestError(requestId, errors);
+            requestError(requestId, FileRequestType.STORAGE, errors);
         }
     }
 
@@ -163,7 +164,7 @@ public class FileReferenceEventPublisher {
 
         // Check if cache request exists for the same requestId
         if (!cacheReqRepo.existsByRequestId(requestId)) {
-            requestDone(requestId);
+            requestDone(requestId, FileRequestType.AVAILABILITY);
         } else {
             checkForAvailabilityRequestError(requestId);
         }
@@ -183,24 +184,24 @@ public class FileReferenceEventPublisher {
             Set<ErrorFile> errors = requests.stream()
                     .map(req -> ErrorFile.build(req.getChecksum(), req.getStorage(), req.getErrorCause()))
                     .collect(Collectors.toSet());
-            requestError(requestId, errors);
+            requestError(requestId, FileRequestType.AVAILABILITY, errors);
         }
     }
 
-    public void requestDenied(String requestId) {
-        publisher.publish(FileRequestEvent.build(requestId, FileRequestEventState.DENIED));
+    public void requestDenied(String requestId, FileRequestType type) {
+        publisher.publish(FileRequestEvent.build(requestId, type, FileRequestEventState.DENIED));
     }
 
-    public void requestGranted(String requestId) {
-        publisher.publish(FileRequestEvent.build(requestId, FileRequestEventState.GRANTED));
+    public void requestGranted(String requestId, FileRequestType type) {
+        publisher.publish(FileRequestEvent.build(requestId, type, FileRequestEventState.GRANTED));
     }
 
-    public void requestDone(String requestId) {
-        publisher.publish(FileRequestEvent.build(requestId, FileRequestEventState.DONE));
+    public void requestDone(String requestId, FileRequestType type) {
+        publisher.publish(FileRequestEvent.build(requestId, type, FileRequestEventState.DONE));
     }
 
-    public void requestError(String requestId, Collection<ErrorFile> errors) {
-        publisher.publish(FileRequestEvent.buildError(requestId, errors));
+    public void requestError(String requestId, FileRequestType type, Collection<ErrorFile> errors) {
+        publisher.publish(FileRequestEvent.buildError(requestId, type, errors));
     }
 
 }

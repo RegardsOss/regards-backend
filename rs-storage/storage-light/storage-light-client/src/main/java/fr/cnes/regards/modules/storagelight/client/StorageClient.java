@@ -21,8 +21,6 @@ package fr.cnes.regards.modules.storagelight.client;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -43,8 +41,6 @@ import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
  */
 @Component
 public class StorageClient implements IStorageClient {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(StorageClient.class);
 
     @Autowired
     private IPublisher publisher;

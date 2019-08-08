@@ -67,6 +67,8 @@ import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorFile;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
@@ -201,13 +203,18 @@ public class FileReferenceService {
         });
         Set<FileReference> existingOnes = fileRefRepo.findByMetaInfoChecksumIn(checksums);
         for (FileReferenceFlowItem item : items) {
+            Set<ErrorFile> errors = Sets.newHashSet();
             for (FileReferenceRequestDTO file : item.getFiles()) {
                 // Check if the file already exists for the storage destination
                 Optional<FileReference> oFileRef = existingOnes.stream()
                         .filter(f -> f.getMetaInfo().getChecksum().equals(file.getChecksum())
                                 && f.getLocation().getStorage().contentEquals(file.getStorage()))
                         .findFirst();
-                referenceFile(file, oFileRef, Sets.newHashSet(item.getRequestId()));
+                try {
+                    referenceFile(file, oFileRef, Sets.newHashSet(item.getRequestId()));
+                } catch (ModuleException e) {
+                    errors.add(ErrorFile.build(file.getChecksum(), file.getStorage(), e.getMessage()));
+                }
                 // Performance optimization.
                 flushCount++;
                 if (flushCount > 100) {
@@ -216,11 +223,16 @@ public class FileReferenceService {
                     flushCount = 0;
                 }
             }
+            if (errors.isEmpty()) {
+                eventPublisher.requestDone(item.getRequestId(), FileRequestType.REFERENCE);
+            } else {
+                eventPublisher.requestError(item.getRequestId(), FileRequestType.REFERENCE, errors);
+            }
         }
     }
 
-    public Optional<FileReference> referenceFile(String owner, FileReferenceMetaInfo metaInfo, FileLocation location,
-            Collection<String> requestIds) {
+    public FileReference referenceFile(String owner, FileReferenceMetaInfo metaInfo, FileLocation location,
+            Collection<String> requestIds) throws ModuleException {
         Optional<FileReference> oFileRef = fileRefRepo.findByLocationStorageAndMetaInfoChecksum(location.getStorage(),
                                                                                                 metaInfo.getChecksum());
         return referenceFile(FileReferenceRequestDTO
@@ -231,13 +243,13 @@ public class FileReferenceService {
                              requestIds);
     }
 
-    private Optional<FileReference> referenceFile(FileReferenceRequestDTO request, Optional<FileReference> fileRef,
-            Collection<String> requestIds) {
+    private FileReference referenceFile(FileReferenceRequestDTO request, Optional<FileReference> fileRef,
+            Collection<String> requestIds) throws ModuleException {
         if (fileRef.isPresent()) {
             return handleAlreadyExists(fileRef.get(), request, requestIds);
         } else {
-            return Optional.of(create(Lists.newArrayList(request.getOwner()), request.buildMetaInfo(),
-                                      new FileLocation(request.getStorage(), request.getUrl()), requestIds));
+            return create(Lists.newArrayList(request.getOwner()), request.buildMetaInfo(),
+                          new FileLocation(request.getStorage(), request.getUrl()), requestIds);
         }
     }
 
@@ -438,7 +450,7 @@ public class FileReferenceService {
         }
         // Sessions are always successful as files are only deleted from database. Error during physical deletion are handled
         // by file in deletion requests.
-        eventPublisher.requestDone(requestId);
+        eventPublisher.requestDone(requestId, FileRequestType.DELETION);
     }
 
     /**
@@ -548,15 +560,18 @@ public class FileReferenceService {
      * </ul>
      *
      * @return {@link FileReference} if the file reference is updated. Null if a new store request is created.
+     * @throws ModuleException If file reference can not be created
      */
-    private Optional<FileReference> handleAlreadyExists(FileReference fileReference, FileReferenceRequestDTO request,
-            Collection<String> requestIds) {
-        FileReference updatedFileRef = null;
+    private FileReference handleAlreadyExists(FileReference fileReference, FileReferenceRequestDTO request,
+            Collection<String> requestIds) throws ModuleException {
         Optional<FileDeletionRequest> deletionRequest = fileDeletionRequestService.search(fileReference);
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
             // A deletion is pending on the existing file reference but the new reference request does not indicates the new file location
-            String message = String.format("File is being deleted. Please try later.");
-            // TODO publish request denied
+            String message = String.format("File %s is being deleted. Please try later.", request.getChecksum());
+            requestIds
+                    .forEach(id -> eventPublisher.storeError(request.getChecksum(), Sets.newHashSet(request.getOwner()),
+                                                             request.getStorage(), message, id));
+            throw new ModuleException(message);
         } else {
             if (deletionRequest.isPresent()) {
                 // Delete not running deletion request to add the new owner
@@ -572,21 +587,21 @@ public class FileReferenceService {
                     LOGGER.warn("Existing referenced file meta information differs "
                             + "from new reference meta information. Previous ones are maintained");
                 }
-                updatedFileRef = fileRefRepo.save(fileReference);
+                FileReference updatedFileRef = fileRefRepo.save(fileReference);
                 eventPublisher.storeSuccess(updatedFileRef, message, requestIds);
                 LOGGER.debug(message);
+                return updatedFileRef;
             } else {
                 String message = String.format("File %s already referenced at %s (checksum: %s) for owners %s",
                                                fileReference.getMetaInfo().getFileName(),
                                                fileReference.getLocation().toString(),
                                                fileReference.getMetaInfo().getChecksum(),
                                                Arrays.toString(fileReference.getOwners().toArray()));
-                updatedFileRef = fileReference;
                 eventPublisher.storeSuccess(fileReference, message, requestIds);
                 LOGGER.debug(message);
+                return fileReference;
             }
         }
-        return Optional.ofNullable(updatedFileRef);
     }
 
     private Optional<FileReference> handleAlreadyExists(FileReference fileReference, FileStorageRequestDTO request,

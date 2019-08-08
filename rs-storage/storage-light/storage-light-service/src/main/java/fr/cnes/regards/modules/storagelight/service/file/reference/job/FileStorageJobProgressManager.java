@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.reference.job;
 
-import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -27,10 +26,10 @@ import org.springframework.dao.EmptyResultDataAccessException;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
@@ -67,7 +66,6 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
 
     @Override
     public void storageSucceed(FileStorageRequest request, String storedUrl, Long fileSize) {
-
         if (storedUrl == null) {
             this.storageFailed(request, String
                     .format("File {} has been successully stored, nevertheless plugin <%> does not provide the new file location",
@@ -78,33 +76,31 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
                      request.getMetaInfo().getFileName(), request.getId(), newLocation,
                      request.getMetaInfo().getChecksum());
             job.advanceCompletion();
-            // Create FileReference resulting of the success of FileReferenceRequest
-            Optional<FileReference> oFileRef = Optional.empty();
             request.getMetaInfo().setFileSize(fileSize);
             for (String owner : request.getOwners()) {
-                oFileRef = referenceService.referenceFile(owner, request.getMetaInfo(), newLocation,
-                                                          request.getRequestIds());
-            }
-            if (oFileRef.isPresent()) {
-                // Delete the FileRefRequest as it has been handled
                 try {
-                    storageRequestService.delete(request);
-                } catch (EmptyResultDataAccessException e) {
-                    LOG.warn(String.format("Unable to delete storage request with id %s. Cause : %s", request.getId(),
-                                           e.getMessage()),
-                             e);
+                    referenceService.referenceFile(owner, request.getMetaInfo(), newLocation, request.getRequestIds());
+                    // Delete the FileRefRequest as it has been handled
+                    try {
+                        storageRequestService.delete(request);
+                    } catch (EmptyResultDataAccessException e) {
+                        LOG.warn(String.format("Unable to delete storage request with id %s. Cause : %s",
+                                               request.getId(), e.getMessage()),
+                                 e);
+                    }
+                } catch (ModuleException e) {
+                    String errorCause = String.format("Unable to save new file reference for file %s",
+                                                      request.getStorage());
+                    // The file is not really referenced so handle reference error by modifying request to be retry later
+                    request.setOriginUrl(null);
+                    request.setStatus(FileRequestStatus.ERROR);
+                    request.setErrorCause(errorCause);
+                    storageRequestService.update(request);
+                    publisher.storeError(request.getMetaInfo().getChecksum(), request.getOwners(), request.getStorage(),
+                                         errorCause, request.getRequestIds());
                 }
-            } else {
-                String errorCause = String.format("Unable to save new file reference for file %s",
-                                                  request.getStorage());
-                // The file is not really referenced so handle reference error by modifying request to be retry later
-                request.setOriginUrl(null);
-                request.setStatus(FileRequestStatus.ERROR);
-                request.setErrorCause(errorCause);
-                storageRequestService.update(request);
-                publisher.storeError(request.getMetaInfo().getChecksum(), request.getOwners(), request.getStorage(),
-                                     errorCause, request.getRequestIds());
             }
+
             handledRequest.add(request);
         }
     }

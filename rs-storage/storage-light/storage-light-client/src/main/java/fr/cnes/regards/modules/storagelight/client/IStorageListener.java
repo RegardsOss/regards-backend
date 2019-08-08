@@ -20,9 +20,7 @@ package fr.cnes.regards.modules.storagelight.client;
 
 import java.util.Collection;
 
-import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorFile;
 
 /**
  * @author sbinda
@@ -32,15 +30,15 @@ public interface IStorageListener {
 
     void onAvailable(RequestInfo request);
 
-    void onAvailabilityError(RequestInfo request, String checksum);
+    void onAvailabilityError(RequestInfo request, Collection<ErrorFile> errors);
 
     void onDeletionSuccess(RequestInfo request);
 
-    void onDeletionError(RequestInfo request, Collection<FileDeletionRequestDTO> errors);
+    void onDeletionError(RequestInfo request, Collection<ErrorFile> errors);
 
     void onReferenceSuccess(RequestInfo request);
 
-    void onReferenceError(RequestInfo request, Collection<FileReferenceRequestDTO> errors);
+    void onReferenceError(RequestInfo request, Collection<ErrorFile> errors);
 
     void onRequestGranted(RequestInfo request);
 
@@ -57,6 +55,6 @@ public interface IStorageListener {
      * List of error files are returned in the requestInfo.
      * @param requestInfo
      */
-    void onStoreError(RequestInfo requestInfo, Collection<FileStorageRequestDTO> errors);
+    void onStoreError(RequestInfo requestInfo, Collection<ErrorFile> errors);
 
 }

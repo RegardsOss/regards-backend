@@ -66,16 +66,54 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
         RequestInfo info = RequestInfo.build(event.getRequestId());
         switch (event.getState()) {
             case DONE:
-                // TODO
+                handleDone(event, info);
                 break;
             case ERROR:
-                // TODO
+                handleError(event, info);
                 break;
             case GRANTED:
                 listener.onRequestGranted(info);
                 break;
             case DENIED:
                 listener.onRequestDenied(info);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void handleDone(FileRequestEvent event, RequestInfo info) {
+        switch (event.getType()) {
+            case AVAILABILITY:
+                listener.onAvailable(info);
+                break;
+            case DELETION:
+                listener.onDeletionSuccess(info);
+                break;
+            case REFERENCE:
+                listener.onReferenceSuccess(info);
+                break;
+            case STORAGE:
+                listener.onStoreSuccess(info);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void handleError(FileRequestEvent event, RequestInfo info) {
+        switch (event.getType()) {
+            case AVAILABILITY:
+                listener.onAvailabilityError(info, event.getErrors());
+                break;
+            case DELETION:
+                listener.onDeletionError(info, event.getErrors());
+                break;
+            case REFERENCE:
+                listener.onReferenceError(info, event.getErrors());
+                break;
+            case STORAGE:
+                listener.onStoreError(info, event.getErrors());
                 break;
             default:
                 break;

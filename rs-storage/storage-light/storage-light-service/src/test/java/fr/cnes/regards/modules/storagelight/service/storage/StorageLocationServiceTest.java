@@ -75,7 +75,12 @@ public class StorageLocationServiceTest extends AbstractMultitenantServiceTest {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", "file.test", fileSize,
                 MediaType.APPLICATION_OCTET_STREAM);
         FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/" + checksum);
-        fileRefService.referenceFile("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
+        try {
+            fileRefService.referenceFile("someone", fileMetaInfo, location,
+                                         Sets.newHashSet(UUID.randomUUID().toString()));
+        } catch (ModuleException e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     @Test

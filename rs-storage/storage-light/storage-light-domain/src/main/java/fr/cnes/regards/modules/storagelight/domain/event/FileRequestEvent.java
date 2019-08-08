@@ -38,6 +38,8 @@ public class FileRequestEvent implements ISubscribable {
 
     private FileRequestEventState state;
 
+    private FileRequestType type;
+
     private final Set<ErrorFile> errors = Sets.newHashSet();
 
     public String getRequestId() {
@@ -48,14 +50,15 @@ public class FileRequestEvent implements ISubscribable {
         return state;
     }
 
-    public static FileRequestEvent build(String requestId, FileRequestEventState state) {
+    public static FileRequestEvent build(String requestId, FileRequestType type, FileRequestEventState state) {
         FileRequestEvent event = new FileRequestEvent();
         event.requestId = requestId;
         event.state = state;
+        event.type = type;
         return event;
     }
 
-    public static FileRequestEvent buildError(String requestId, Collection<ErrorFile> errors) {
+    public static FileRequestEvent buildError(String requestId, FileRequestType type, Collection<ErrorFile> errors) {
         FileRequestEvent event = new FileRequestEvent();
         event.requestId = requestId;
         event.state = FileRequestEventState.ERROR;
@@ -65,6 +68,10 @@ public class FileRequestEvent implements ISubscribable {
 
     public Set<ErrorFile> getErrors() {
         return errors;
+    }
+
+    public FileRequestType getType() {
+        return type;
     }
 
     public static class ErrorFile {
