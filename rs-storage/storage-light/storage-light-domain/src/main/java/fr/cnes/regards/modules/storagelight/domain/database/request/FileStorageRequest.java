@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.storagelight.domain.database.request;
 
 import java.net.URL;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -42,7 +42,7 @@ import javax.persistence.UniqueConstraint;
 
 import org.springframework.util.Assert;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
@@ -67,11 +67,17 @@ public class FileStorageRequest {
     @GeneratedValue(generator = "fileStorageRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    @Column(name = "request_id", nullable = false, length = 128)
+    @ElementCollection
+    @CollectionTable(name = "ta_file_storage_request_ids", joinColumns = @JoinColumn(name = "file_ref_id",
+            foreignKey = @ForeignKey(name = "fk_ta_file_storage_request_ids_t_file_storage_request")))
+    private final Set<String> requestIds = Sets.newHashSet();
+
     @Column(name = "owner")
     @ElementCollection
     @CollectionTable(name = "ta_file_storage_request_owners", joinColumns = @JoinColumn(name = "file_ref_id",
             foreignKey = @ForeignKey(name = "fk_ta_file_storage_request_owners_t_file_storage_request")))
-    private final List<String> owners = Lists.newArrayList();
+    private final Set<String> owners = Sets.newHashSet();
 
     @Column(name = "origin_url", length = FileLocation.URL_MAX_LENGTH)
     private String originUrl;
@@ -97,23 +103,25 @@ public class FileStorageRequest {
     }
 
     public FileStorageRequest(String owner, FileReferenceMetaInfo metaInfos, URL originUrl, String storage,
-            Optional<String> storageSubDirectory) {
+            Optional<String> storageSubDirectory, String requestId) {
         super();
         Assert.notNull(owner, "File storage request need a owner !");
         Assert.notNull(originUrl, "File storage request need an origin location !");
         Assert.notNull(storage, "File storage request need a destination location !");
         Assert.notNull(metaInfos, "File storage request need file meta information !");
         Assert.notNull(metaInfos.getChecksum(), "File storage request need file checkusm !");
+        Assert.notNull(requestId, "Request id is mandatory");
 
         this.owners.add(owner);
         this.originUrl = originUrl.toString();
         this.storage = storage;
         this.storageSubDirectory = storageSubDirectory.orElse(null);
         this.metaInfo = metaInfos;
+        this.requestIds.add(requestId);
     }
 
     public FileStorageRequest(Collection<String> owners, FileReferenceMetaInfo metaInfos, URL originUrl, String storage,
-            Optional<String> storageSubDirectory) {
+            Optional<String> storageSubDirectory, String requestId) {
         super();
         Assert.notNull(owners, "File storage request need a owner !");
         Assert.isTrue(!owners.isEmpty(), "File storage request need a owner !");
@@ -121,17 +129,16 @@ public class FileStorageRequest {
         Assert.notNull(storage, "File storage request need a destination location !");
         Assert.notNull(metaInfos, "File storage request need file meta information !");
         Assert.notNull(metaInfos.getChecksum(), "File storage request need file checkusm !");
+        Assert.notNull(requestId, "Request id is mandatory");
 
         this.owners.addAll(owners);
         this.originUrl = originUrl.toString();
         this.storage = storage;
         this.storageSubDirectory = storageSubDirectory.orElse(null);
         this.metaInfo = metaInfos;
+        this.requestIds.add(requestId);
     }
 
-    /**
-     * @return the id
-     */
     public Long getId() {
         return id;
     }
@@ -140,7 +147,7 @@ public class FileStorageRequest {
         this.id = id;
     }
 
-    public List<String> getOwners() {
+    public Set<String> getOwners() {
         return owners;
     }
 
@@ -184,18 +191,16 @@ public class FileStorageRequest {
         this.storageSubDirectory = storageSubDirectory;
     }
 
-    /**
-     * @return the storage
-     */
     public String getStorage() {
         return storage;
     }
 
-    /**
-     * @param storage the storage to set
-     */
     public void setStorage(String storage) {
         this.storage = storage;
+    }
+
+    public Set<String> getRequestIds() {
+        return requestIds;
     }
 
     @Override

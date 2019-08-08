@@ -93,10 +93,11 @@ public class FileDeletionRequestService {
      * Create a new {@link FileDeletionRequest}.
      * @param fileReferenceToDelete {@link FileReference} to delete
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
+     * @param requestId Business identifier of the deletion request
      */
-    public void create(FileReference fileReferenceToDelete, boolean forceDelete) {
+    public void create(FileReference fileReferenceToDelete, boolean forceDelete, String requestId) {
         if (!fileDeletionRequestRepo.findByFileReferenceId(fileReferenceToDelete.getId()).isPresent()) {
-            fileDeletionRequestRepo.save(new FileDeletionRequest(fileReferenceToDelete, forceDelete));
+            fileDeletionRequestRepo.save(new FileDeletionRequest(fileReferenceToDelete, forceDelete, requestId));
         }
     }
 

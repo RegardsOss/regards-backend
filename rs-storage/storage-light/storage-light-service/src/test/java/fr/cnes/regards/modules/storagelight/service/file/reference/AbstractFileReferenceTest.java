@@ -242,7 +242,8 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         Optional<FileReference> oFilef = fileRefService.search(storage, checksum);
         Assert.assertTrue("File reference should already exists", oFilef.isPresent());
         return fileRefService.storeFile(newOwner, oFilef.get().getMetaInfo(), originUrl,
-                                        oFilef.get().getLocation().getStorage(), Optional.empty());
+                                        oFilef.get().getLocation().getStorage(), Optional.empty(),
+                                        UUID.randomUUID().toString());
 
     }
 
@@ -252,7 +253,8 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                 MediaType.APPLICATION_OCTET_STREAM);
         FileLocation destination = new FileLocation(storage, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.storeFile(owner, fileMetaInfo, originUrl, storage, Optional.empty());
+        fileRefService.storeFile(owner, fileMetaInfo, originUrl, storage, Optional.empty(),
+                                 UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), checksum);
         Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(), checksum);
@@ -293,7 +295,8 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                 "error.file.test", 132L, MediaType.APPLICATION_OCTET_STREAM);
         FileLocation destination = new FileLocation(storageDestination, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.storeFile(owner, fileMetaInfo, originUrl, storageDestination, Optional.of("/in/this/directory"));
+        fileRefService.storeFile(owner, fileMetaInfo, originUrl, storageDestination, Optional.of("/in/this/directory"),
+                                 UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
         Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(),

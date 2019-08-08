@@ -46,7 +46,8 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
  */
 @Entity
 @Table(name = "t_file_deletion_request",
-        indexes = { @Index(name = "idx_file_deletion_request", columnList = "storage") },
+        indexes = { @Index(name = "idx_file_deletion_request", columnList = "storage"),
+                @Index(name = "idx_file_deletion_request_id", columnList = "request_id") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_t_file_deletion_request_file_reference",
                 columnNames = { "file_reference" }) })
 public class FileDeletionRequest {
@@ -55,6 +56,9 @@ public class FileDeletionRequest {
     @SequenceGenerator(name = "fileDeletioneSequence", initialValue = 1, sequenceName = "seq_file_deletion")
     @GeneratedValue(generator = "fileDeletioneSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
+
+    @Column(name = "request_id", nullable = false, length = 128)
+    private String requestId;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -78,7 +82,7 @@ public class FileDeletionRequest {
         super();
     }
 
-    public FileDeletionRequest(FileReference fileReference) {
+    public FileDeletionRequest(FileReference fileReference, String requestId) {
         super();
 
         Assert.notNull(fileReference, "File reference to delete cannot be null");
@@ -87,10 +91,11 @@ public class FileDeletionRequest {
         Assert.notNull(fileReference.getLocation().getStorage(), "Unable to delete a file with no location storage.");
         this.fileReference = fileReference;
         this.storage = fileReference.getLocation().getStorage();
+        this.requestId = requestId;
     }
 
-    public FileDeletionRequest(FileReference fileReference, boolean forceDelete) {
-        this(fileReference);
+    public FileDeletionRequest(FileReference fileReference, boolean forceDelete, String requestId) {
+        this(fileReference, requestId);
         this.forceDelete = forceDelete;
     }
 
@@ -140,6 +145,10 @@ public class FileDeletionRequest {
 
     public void setForceDelete(boolean forceDelete) {
         this.forceDelete = forceDelete;
+    }
+
+    public String getRequestId() {
+        return requestId;
     }
 
     @Override

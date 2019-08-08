@@ -176,7 +176,7 @@ public class FileReferenceService {
                         .filter(f -> f.getMetaInfo().getChecksum().equals(request.getChecksum())
                                 && f.getLocation().getStorage().contentEquals(request.getStorage()))
                         .findFirst();
-                storeFile(request, oFileRef);
+                storeFile(request, oFileRef, item.getRequestId());
                 // Performance optimization.
                 flushCount++;
                 if (flushCount > 100) {
@@ -240,21 +240,22 @@ public class FileReferenceService {
     }
 
     public Optional<FileReference> storeFile(String owner, FileReferenceMetaInfo metaInfo, URL originUrl,
-            String storage, Optional<String> subDirectory) {
+            String storage, Optional<String> subDirectory, String requestId) {
         Optional<FileReference> oFileRef = fileRefRepo.findByLocationStorageAndMetaInfoChecksum(storage,
                                                                                                 metaInfo.getChecksum());
         return storeFile(FileStorageRequestDTO.build(metaInfo.getFileName(), metaInfo.getChecksum(),
                                                      metaInfo.getAlgorithm(), metaInfo.getMimeType().toString(), owner,
                                                      originUrl, storage, subDirectory),
-                         oFileRef);
+                         oFileRef, requestId);
     }
 
-    private Optional<FileReference> storeFile(FileStorageRequestDTO request, Optional<FileReference> fileRef) {
+    private Optional<FileReference> storeFile(FileStorageRequestDTO request, Optional<FileReference> fileRef,
+            String requestId) {
         if (fileRef.isPresent()) {
-            return handleAlreadyExists(fileRef.get(), request);
+            return handleAlreadyExists(fileRef.get(), request, requestId);
         } else {
             fileStorageRequestService.create(request.getOwner(), request.buildMetaInfo(), request.getOriginUrl(),
-                                             request.getStorage(), request.getSubDirectory());
+                                             request.getStorage(), request.getSubDirectory(), requestId);
             return Optional.empty();
         }
     }
@@ -290,7 +291,7 @@ public class FileReferenceService {
                 Optional<FileReference> oFileRef = existingOnes.stream()
                         .filter(f -> f.getLocation().getStorage().contentEquals(request.getStorage())).findFirst();
                 if (oFileRef.isPresent()) {
-                    removeOwner(oFileRef.get(), request.getOwner(), request.isForceDelete());
+                    removeOwner(oFileRef.get(), request.getOwner(), request.isForceDelete(), item.getRequestId());
                 }
             }
         }
@@ -381,16 +382,17 @@ public class FileReferenceService {
      * Remove the given owner of the to the {@link FileReference} matching the given checksum and storage location.
      * If the owner is the last one this method tries to delete file physically if the storage location is a configured {@link IStorageLocation}.
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
+     * @param requestId Business identifier of the deletion request
      * @throws EntityNotFoundException
      */
-    public void removeOwner(String checksum, String storage, String owner, boolean forceDelete)
+    public void removeOwner(String checksum, String storage, String owner, boolean forceDelete, String requestId)
             throws EntityNotFoundException {
         Assert.notNull(checksum, "Checksum is mandatory to delete a file reference");
         Assert.notNull(storage, "Storage is mandatory to delete a file reference");
         Assert.notNull(owner, "Owner is mandatory to delete a file reference");
         Optional<FileReference> oFileRef = fileRefRepo.findByLocationStorageAndMetaInfoChecksum(storage, checksum);
         if (oFileRef.isPresent()) {
-            removeOwner(oFileRef.get(), owner, forceDelete);
+            removeOwner(oFileRef.get(), owner, forceDelete, requestId);
         } else {
             throw new EntityNotFoundException(String
                     .format("File reference with ckesum: <%s> and storage: <%s> doest not exists", checksum, storage));
@@ -401,8 +403,9 @@ public class FileReferenceService {
      * Remove the given owner of the to the given {@link FileReference}.
      * If the owner is the last one this method tries to delete file physically if the storage location is a configured {@link IStorageLocation}.
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
+     * @param requestId Business identifier of the deletion request
      */
-    private void removeOwner(FileReference fileReference, String owner, boolean forceDelete) {
+    private void removeOwner(FileReference fileReference, String owner, boolean forceDelete, String requestId) {
         String message;
         if (!fileReference.getOwners().contains(owner)) {
             message = String.format("File <%s (checksum: %s)> at %s does not to belongs to %s",
@@ -424,7 +427,7 @@ public class FileReferenceService {
         if (fileReference.getOwners().isEmpty()) {
             if (storageHandler.getConfiguredStorages().contains(fileReference.getLocation().getStorage())) {
                 // If the file is stored on an accessible storage, create a new deletion request
-                fileDeletionRequestService.create(fileReference, forceDelete);
+                fileDeletionRequestService.create(fileReference, forceDelete, requestId);
             } else {
                 // Else, directly delete the file reference
                 delete(fileReference);
@@ -454,7 +457,7 @@ public class FileReferenceService {
      * @param checksums
      * @param expirationDate availability expiration date.
      */
-    public void makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
+    public void makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate, String requestId) {
 
         Set<FileReference> onlines = Sets.newHashSet();
         Set<FileReference> nearlines = Sets.newHashSet();
@@ -508,7 +511,7 @@ public class FileReferenceService {
         }
         notifyAvailables(onlines);
         notifyNotAvailables(offlines);
-        nearlineFileService.makeAvailable(nearlines, expirationDate);
+        nearlineFileService.makeAvailable(nearlines, expirationDate, requestId);
     }
 
     /**
@@ -574,15 +577,16 @@ public class FileReferenceService {
         return Optional.ofNullable(updatedFileRef);
     }
 
-    private Optional<FileReference> handleAlreadyExists(FileReference fileReference, FileStorageRequestDTO request) {
+    private Optional<FileReference> handleAlreadyExists(FileReference fileReference, FileStorageRequestDTO request,
+            String requestId) {
         FileReference updatedFileRef = null;
         FileReferenceMetaInfo newMetaInfo = request.buildMetaInfo();
         Optional<FileDeletionRequest> deletionRequest = fileDeletionRequestService.search(fileReference);
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
             // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
             fileStorageRequestService.create(request.getOwner(), newMetaInfo, request.getOriginUrl(),
-                                             request.getStorage(), request.getSubDirectory(),
-                                             FileRequestStatus.DELAYED);
+                                             request.getStorage(), request.getSubDirectory(), FileRequestStatus.DELAYED,
+                                             requestId);
         } else {
             if (deletionRequest.isPresent()) {
                 // Delete not running deletion request to add the new owner

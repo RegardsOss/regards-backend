@@ -97,7 +97,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         URL originUrl = new URL("file://in/this/directory/file.test");
         FileLocation destination = new FileLocation("elsewhere", "elsewhere://in/this/directory/file.test");
         fileRefService.storeFile(owner, fileMetaInfo, originUrl, "elsewhere",
-                                 Optional.of("elsewhere://in/this/directory/file.test"));
+                                 Optional.of("elsewhere://in/this/directory/file.test"), UUID.randomUUID().toString());
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
         Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(),
                                                                                     fileMetaInfo.getChecksum());
@@ -197,7 +197,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         String fileRefStorage = fileRef.getLocation().getStorage();
 
         // Remove all his owners
-        fileRefService.removeOwner(fileRefChecksum, fileRefStorage, fileRefOwner, false);
+        fileRefService.removeOwner(fileRefChecksum, fileRefStorage, fileRefOwner, false, UUID.randomUUID().toString());
 
         Optional<FileReference> oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
         Assert.assertTrue("File reference should no have any owners anymore", oFileRef.get().getOwners().isEmpty());
@@ -280,7 +280,8 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         URL origin = new URL("file", "localhost", inputImage.getAbsolutePath());
         FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.storeFile(owner, fileMetaInfo, origin, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"));
+        fileRefService.storeFile(owner, fileMetaInfo, origin, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"),
+                                 UUID.randomUUID().toString());
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
         Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
@@ -314,13 +315,15 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         String fileNameNotHandled = "doNotHandle.file.test";
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksumNotHandled, "MD5", fileNameNotHandled,
                 132L, MediaType.APPLICATION_OCTET_STREAM);
-        fileRefService.storeFile(owner, fileMetaInfo, originUrl, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"));
+        fileRefService.storeFile(owner, fileMetaInfo, originUrl, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"),
+                                 UUID.randomUUID().toString());
         // Add a valid one for storage
         String fileNameHandled = "file.test";
         String checksumHandled = UUID.randomUUID().toString();
         fileMetaInfo = new FileReferenceMetaInfo(checksumHandled, "MD5", fileNameHandled, 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
-        fileRefService.storeFile(owner, fileMetaInfo, originUrl, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"));
+        fileRefService.storeFile(owner, fileMetaInfo, originUrl, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"),
+                                 UUID.randomUUID().toString());
 
         Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
@@ -500,7 +503,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     public void restore() throws InterruptedException, ExecutionException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test");
         fileRefService.makeAvailable(Sets.newHashSet(fileRef.getMetaInfo().getChecksum()),
-                                     OffsetDateTime.now().plusDays(1));
+                                     OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
         Assert.assertTrue("A cache request should be created",
                           fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
 

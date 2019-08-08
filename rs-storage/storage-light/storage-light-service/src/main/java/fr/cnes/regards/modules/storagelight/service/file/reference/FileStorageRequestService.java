@@ -233,21 +233,22 @@ public class FileStorageRequestService {
      * @param originUrl file origin location
      * @param storage storage destination location
      * @param storageSubDirectory Optioanl subdirectory where to store file in the storage destination location
+     * @param requestId Business identifier of the deletion request
      */
     public void create(String owner, FileReferenceMetaInfo fileMetaInfo, URL originUrl, String storage,
-            Optional<String> storageSubDirectory) {
-        create(owner, fileMetaInfo, originUrl, storage, storageSubDirectory, FileRequestStatus.TODO);
+            Optional<String> storageSubDirectory, String requestId) {
+        create(owner, fileMetaInfo, originUrl, storage, storageSubDirectory, FileRequestStatus.TODO, requestId);
     }
 
     public void create(String owner, FileReferenceMetaInfo fileMetaInfo, URL originUrl, String storage,
-            Optional<String> storageSubDirectory, FileRequestStatus status) {
+            Optional<String> storageSubDirectory, FileRequestStatus status, String requestId) {
         // Check if file reference request already exists
         Optional<FileStorageRequest> oFileRefRequest = search(storage, fileMetaInfo.getChecksum());
         if (oFileRefRequest.isPresent()) {
-            handleAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owner);
+            handleAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owner, requestId);
         } else {
             FileStorageRequest fileStorageRequest = new FileStorageRequest(Lists.newArrayList(owner), fileMetaInfo,
-                    originUrl, storage, storageSubDirectory);
+                    originUrl, storage, storageSubDirectory, requestId);
             fileStorageRequest.setStatus(status);
             if (!storageHandler.getConfiguredStorages().contains(storage)) {
                 // The storage destination is unknown, we can already set the request in error status
@@ -278,9 +279,10 @@ public class FileStorageRequestService {
      * @param owners
      */
     private void handleAlreadyExists(FileStorageRequest fileStorageRequest, FileReferenceMetaInfo newMetaInfo,
-            String owner) {
+            String owner, String newRequestId) {
         if (!fileStorageRequest.getOwners().contains(owner)) {
             fileStorageRequest.getOwners().add(owner);
+            fileStorageRequest.getRequestIds().add(newRequestId);
             if (newMetaInfo.equals(fileStorageRequest.getMetaInfo())) {
                 LOGGER.warn("Existing referenced file meta information differs "
                         + "from new reference meta information. Previous ones are maintained");

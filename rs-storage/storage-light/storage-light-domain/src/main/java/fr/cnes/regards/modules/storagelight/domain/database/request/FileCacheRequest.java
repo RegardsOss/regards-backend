@@ -28,6 +28,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
@@ -45,14 +46,18 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
  *
  */
 @Entity
-@Table(name = "t_file_cache_request", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_t_file_cache_request_checksum", columnNames = { "checksum" }) })
+@Table(name = "t_file_cache_request", indexes = { @Index(name = "idx_file_cache_request", columnList = "request_id") },
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_t_file_cache_request_checksum", columnNames = { "checksum" }) })
 public class FileCacheRequest {
 
     @Id
     @SequenceGenerator(name = "fileCacheRequestSequence", initialValue = 1, sequenceName = "seq_file_cache_request")
     @GeneratedValue(generator = "fileCacheRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
+
+    @Column(name = "request_id", nullable = false, length = 128)
+    private String requestId;
 
     @ManyToOne
     @JoinColumn(name = "file_ref_id", nullable = false)
@@ -81,7 +86,8 @@ public class FileCacheRequest {
     @Column(name = "error_cause", length = 512)
     private String errorCause;
 
-    public FileCacheRequest(FileReference fileReference, String destinationPath, OffsetDateTime expirationDate) {
+    public FileCacheRequest(FileReference fileReference, String destinationPath, OffsetDateTime expirationDate,
+            String requestId) {
         super();
         this.fileReference = fileReference;
         this.storage = fileReference.getLocation().getStorage();
@@ -89,6 +95,7 @@ public class FileCacheRequest {
         this.checksum = fileReference.getMetaInfo().getChecksum();
         this.destinationPath = destinationPath;
         this.expirationDate = expirationDate;
+        this.requestId = requestId;
     }
 
     public FileCacheRequest() {
@@ -141,6 +148,10 @@ public class FileCacheRequest {
 
     public void setExpirationDate(OffsetDateTime expirationDate) {
         this.expirationDate = expirationDate;
+    }
+
+    public String getRequestId() {
+        return requestId;
     }
 
 }

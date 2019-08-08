@@ -28,6 +28,7 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -76,7 +77,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.flow.StoreFil
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_perf_tests",
         "regards.storage.cache.path=target/cache" })
-//@Ignore("Performances tests")
+@Ignore("Performances tests")
 public class FlowPerformanceTest extends AbstractFileReferenceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceTest.class);
@@ -189,7 +190,7 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         int loops = 0;
         Page<FileReference> page;
         do {
-            Thread.sleep(5000);
+            Thread.sleep(5_000);
             page = fileRefRepo.findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
         } while ((loops < 10) && ((page.getTotalElements()) != 5000));
@@ -222,7 +223,7 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         int loops = 0;
         Page<FileStorageRequest> page;
         do {
-            Thread.sleep(5000);
+            Thread.sleep(5_000);
             page = fileStorageRequestService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
         } while ((loops < 10) && ((page.getTotalElements()) != 5000));
@@ -239,7 +240,7 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         Collection<JobInfo> jobs = fileStorageRequestService
                 .scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList());
         LOGGER.info("...{} jobs scheduled in {} ms", jobs.size(), System.currentTimeMillis() - start);
-        Thread.sleep(3000);
+        Thread.sleep(10_000);
         start = System.currentTimeMillis();
         runAndWaitJob(jobs);
         LOGGER.info("...{} jobs handled in {} ms", jobs.size(), System.currentTimeMillis() - start);
@@ -276,7 +277,7 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         LOGGER.info("Waiting ....");
         int loops = 0;
         do {
-            Thread.sleep(5000);
+            Thread.sleep(5_000);
             page = fileRefService.search(PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
         } while ((loops < 10) && (nbToDelete != (total - page.getTotalElements())));

@@ -110,14 +110,17 @@ public class FileCacheRequestService {
      * Creates a new {@link FileCacheRequest} if does not exists already.
      * @param fileRefToRestore
      * @param expirationDate
+     * @param requestId Business identifier of the deletion request
      * @return {@link FileCacheRequest} created.
      */
-    public Optional<FileCacheRequest> create(FileReference fileRefToRestore, OffsetDateTime expirationDate) {
+    public Optional<FileCacheRequest> create(FileReference fileRefToRestore, OffsetDateTime expirationDate,
+            String requestId) {
         String checksum = fileRefToRestore.getMetaInfo().getChecksum();
         Optional<FileCacheRequest> oFcr = repository.findByChecksum(checksum);
         FileCacheRequest request = null;
         if (!oFcr.isPresent()) {
-            request = new FileCacheRequest(fileRefToRestore, cacheService.getFilePath(checksum), expirationDate);
+            request = new FileCacheRequest(fileRefToRestore, cacheService.getFilePath(checksum), expirationDate,
+                    requestId);
             request = repository.save(request);
             LOGGER.debug("File {} (checksum {}) is requested for cache.", fileRefToRestore.getMetaInfo().getFileName(),
                          fileRefToRestore.getMetaInfo().getChecksum());

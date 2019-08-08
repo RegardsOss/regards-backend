@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Sets;
@@ -83,7 +84,7 @@ public class NLFileReferenceService {
             }
         }
         // ask for file availability and return a not available yet response
-        makeAvailable(Sets.newHashSet(fileToDownload), OffsetDateTime.now().plusHours(1));
+        makeAvailable(Sets.newHashSet(fileToDownload), OffsetDateTime.now().plusHours(1), UUID.randomUUID().toString());
         throw new EntityNotFoundException(String.format("File %s is not available yet. Please try later.",
                                                         fileToDownload.getMetaInfo().getFileName()));
     }
@@ -94,7 +95,7 @@ public class NLFileReferenceService {
      * @param fileReferences
      * @param expirationDate
      */
-    public void makeAvailable(Set<FileReference> fileReferences, OffsetDateTime expirationDate) {
+    public void makeAvailable(Set<FileReference> fileReferences, OffsetDateTime expirationDate, String requestId) {
         // Check files already available in cache
         Set<FileReference> availables = cachedFileService.getFilesAvailableInCache(fileReferences);
         Set<FileReference> toRestore = fileReferences.stream().filter(f -> !availables.contains(f))
@@ -103,7 +104,7 @@ public class NLFileReferenceService {
         notifyAvailables(availables);
         // Create a restoration request for all to restore
         for (FileReference f : toRestore) {
-            fileCacheReqService.create(f, expirationDate);
+            fileCacheReqService.create(f, expirationDate, requestId);
         }
     }
 
