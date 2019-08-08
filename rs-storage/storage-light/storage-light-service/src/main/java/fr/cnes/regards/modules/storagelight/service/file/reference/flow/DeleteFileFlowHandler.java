@@ -32,12 +32,12 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
@@ -90,23 +90,8 @@ public class DeleteFileFlowHandler
     }
 
     public void handleSync(TenantWrapper<DeleteFileRefFlowItem> wrapper) {
-        String tenant = wrapper.getTenant();
-        runtimeTenantResolver.forceTenant(tenant);
         DeleteFileRefFlowItem item = wrapper.getContent();
-
-        try {
-            for (FileDeletionRequestDTO request : item.getFiles()) {
-                try {
-                    fileRefService.removeOwner(request.getChecksum(), request.getStorage(), request.getOwner(),
-                                               request.isForceDelete());
-                } catch (EntityNotFoundException e) {
-                    LOGGER.error("Unable to delete file with checksum : <{}> at <{}> cause file does not exsts ({}).",
-                                 request.getChecksum(), request.getStorage());
-                }
-            }
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+        fileRefService.delete(Lists.newArrayList(item));
     }
 
     /**
@@ -134,11 +119,11 @@ public class DeleteFileFlowHandler
                             list.add(doc);
                         }
                     }
-                    LOGGER.debug("Bulk saving {} DeleteFileRefFlowItem...", list.size());
+                    LOGGER.info("Bulk saving {} DeleteFileRefFlowItem...", list.size());
                     long start = System.currentTimeMillis();
                     fileRefService.delete(list);
-                    LOGGER.debug("...{} DeleteFileRefFlowItem handled in {} ms", list.size(),
-                                 System.currentTimeMillis() - start);
+                    LOGGER.info("...{} DeleteFileRefFlowItem handled in {} ms", list.size(),
+                                System.currentTimeMillis() - start);
                     list.clear();
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
             } finally {

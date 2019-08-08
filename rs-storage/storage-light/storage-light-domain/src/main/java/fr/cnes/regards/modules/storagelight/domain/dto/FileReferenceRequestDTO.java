@@ -39,9 +39,9 @@ public class FileReferenceRequestDTO {
 
     private Long fileSize;
 
-    private int height;
+    private Integer height;
 
-    private int width;
+    private Integer width;
 
     private String owner;
 
@@ -87,11 +87,11 @@ public class FileReferenceRequestDTO {
         return type;
     }
 
-    public int getHeight() {
+    public Integer getHeight() {
         return height;
     }
 
-    public int getWidth() {
+    public Integer getWidth() {
         return width;
     }
 
@@ -124,12 +124,12 @@ public class FileReferenceRequestDTO {
         return this;
     }
 
-    public FileReferenceRequestDTO withHeight(int height) {
+    public FileReferenceRequestDTO withHeight(Integer height) {
         this.height = height;
         return this;
     }
 
-    public FileReferenceRequestDTO withWidth(int width) {
+    public FileReferenceRequestDTO withWidth(Integer width) {
         this.width = width;
         return this;
     }

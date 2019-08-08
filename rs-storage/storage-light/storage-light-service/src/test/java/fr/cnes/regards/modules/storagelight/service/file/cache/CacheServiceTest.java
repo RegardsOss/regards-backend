@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
  * @author Sébastien Binda
  */
 @ActiveProfiles({ "noscheduler" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=cache_tests",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_cache_tests",
         "regards.storage.cache.path=target/cache" })
 public class CacheServiceTest extends AbstractMultitenantServiceTest {
 

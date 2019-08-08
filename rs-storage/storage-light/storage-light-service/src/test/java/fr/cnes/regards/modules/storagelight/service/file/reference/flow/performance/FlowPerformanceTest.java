@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.reference.flow.performance;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
@@ -26,7 +28,6 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -52,6 +53,7 @@ import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
@@ -72,9 +74,9 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.flow.StoreFil
  * @author Sébastien Binda
  */
 @ActiveProfiles({ "noscheduler" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_perf_tests",
         "regards.storage.cache.path=target/cache" })
-@Ignore("Performances tests")
+//@Ignore("Performances tests")
 public class FlowPerformanceTest extends AbstractFileReferenceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceTest.class);
@@ -154,10 +156,16 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         long start = System.currentTimeMillis();
         fileRefRepo.saveAll(toSave);
         LOGGER.info("Saves {} NearLines done in {}ms", toSave.size(), System.currentTimeMillis() - start);
+
+        try {
+            originUrl = new URL("file://in/this/directory/file.test");
+        } catch (MalformedURLException e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     @Test
-    public void addFileRefFlowItems_withoutStorage() throws InterruptedException {
+    public void referenceFiles() throws InterruptedException {
         LOGGER.info(" ----------------------------------- ");
         LOGGER.info(" ----------------------------------- ");
         LOGGER.info(" ----------------------------------- ");
@@ -177,13 +185,21 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
             // Publish request
             referenceFlowHandler.handle(wrapper);
         }
-        Thread.sleep(30000);
+
+        int loops = 0;
+        Page<FileReference> page;
+        do {
+            Thread.sleep(5000);
+            page = fileRefRepo.findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id"));
+            loops++;
+        } while ((loops < 10) && ((page.getTotalElements()) != 5000));
+
         Assert.assertEquals("There should be 5000 file ref created", fileRefRepo
                 .findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements(), 5000);
     }
 
     @Test
-    public void addFileRefFlowItems_withStorage() throws InterruptedException {
+    public void storeFiles() throws InterruptedException {
         LOGGER.info(" ----------------------------------- ");
         LOGGER.info(" ----------------------------------- ");
         LOGGER.info(" ----------------------------------- ");
@@ -195,16 +211,21 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         for (int i = 0; i < 5000; i++) {
             String checksum = UUID.randomUUID().toString();
             // Create a new bus message File reference request
-            ;
             FileStorageFlowItem item = FileStorageFlowItem
-                    .build(FileStorageRequestDTO.build("error.file.name", checksum, "MD5", "application/octet-stream",
+                    .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream",
                                                        "owner-test", originUrl, ONLINE_CONF_LABEL, Optional.empty()),
                            UUID.randomUUID().toString());
             TenantWrapper<FileStorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
             // Publish request
             storeFlowHandler.handle(wrapper);
         }
-        Thread.sleep(30000);
+        int loops = 0;
+        Page<FileStorageRequest> page;
+        do {
+            Thread.sleep(5000);
+            page = fileStorageRequestService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"));
+            loops++;
+        } while ((loops < 10) && ((page.getTotalElements()) != 5000));
 
         Assert.assertEquals("There should be 5000 file storage request created", 5000, fileStorageRequestService
                 .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
@@ -232,7 +253,7 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
     }
 
     @Test
-    public void deleteFileReFlowItems_withoutStorage() throws InterruptedException {
+    public void deleteReferencedFiles() throws InterruptedException {
         LOGGER.info(" ----------------------------------- ");
         LOGGER.info(" ----------------------------------- ");
         LOGGER.info(" ----------------------------------- ");
@@ -253,8 +274,13 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
             deleteHandler.handle(wrapper);
         }
         LOGGER.info("Waiting ....");
-        Thread.sleep(30000);
-        page = fileRefService.search(PageRequest.of(0, 1, Direction.ASC, "id"));
+        int loops = 0;
+        do {
+            Thread.sleep(5000);
+            page = fileRefService.search(PageRequest.of(0, 1, Direction.ASC, "id"));
+            loops++;
+        } while ((loops < 10) && (nbToDelete != (total - page.getTotalElements())));
+
         Assert.assertEquals("500 ref should be deleted", nbToDelete, total - page.getTotalElements());
     }
 
