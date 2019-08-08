@@ -70,8 +70,12 @@ import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 @Table(name = "t_sip",
         indexes = { @Index(name = "idx_sip_id", columnList = "providerId,sipId,checksum"),
                 @Index(name = "idx_sip_ingest_chain", columnList = "ingest_chain"),
-                @Index(name = "idx_sip_client_id", columnList = "client_id"),
-                @Index(name = "idx_sip_client_session", columnList = "client_session") },
+                @Index(name = "idx_sip_state", columnList = "state"),
+                @Index(name = "idx_sip_providerId", columnList = "providerId"),
+                @Index(name = "idx_sip_ingest_date", columnList = "ingestDate"),
+                @Index(name = "idx_sip_version", columnList = "version"),
+                @Index(name = "idx_sip_session_owner", columnList = "session_owner"),
+                @Index(name = "idx_sip_session", columnList = "session") },
         // PostgreSQL manage both single indexes and multiple ones
         uniqueConstraints = { @UniqueConstraint(name = "uk_sip_sipId", columnNames = "sipId"),
                 @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })

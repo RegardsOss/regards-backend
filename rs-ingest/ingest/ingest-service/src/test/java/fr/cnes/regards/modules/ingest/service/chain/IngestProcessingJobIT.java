@@ -98,9 +98,9 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
 
     public static final String PROCESSING_CHAIN_TEST = "fullProcessingChain";
 
-    public static final String SESSION_SOURCE = "sessionSource";
+    public static final String SESSION_OWNER = "sessionOwner";
 
-    public static final String SESSION_NAME = "sessionName";
+    public static final String SESSION = "session";
 
     /**
      * Class logger.
@@ -152,7 +152,7 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
 
         // Init a SIP in database with state CREATED and managed with default chain
         SIPCollection collection = SIPCollection
-                .build(IngestMetadata.build(SESSION_SOURCE, SESSION_NAME, DEFAULT_PROCESSING_CHAIN_TEST));
+                .build(IngestMetadata.build(SESSION_OWNER, SESSION, DEFAULT_PROCESSING_CHAIN_TEST));
 
         SIPBuilder builder = new SIPBuilder(SIP_DEFAULT_CHAIN_ID_TEST);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "sdsdfm1211vd");
@@ -168,7 +168,7 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
         entityDefaultChainTest = resultSip.get().getId();
 
         // Init a SIP in database with state CREATED
-        collection = SIPCollection.build(IngestMetadata.build(SESSION_SOURCE, SESSION_NAME, PROCESSING_CHAIN_TEST));
+        collection = SIPCollection.build(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST));
 
         builder = new SIPBuilder(SIP_ID_TEST);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
@@ -184,7 +184,7 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
         entityIdTest = resultSip.get().getId();
 
         // Init a SIP with reference in database with state CREATED
-        collection = SIPCollection.build(IngestMetadata.build(SESSION_SOURCE, SESSION_NAME, PROCESSING_CHAIN_TEST));
+        collection = SIPCollection.build(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST));
 
         builder = new SIPBuilder(SIP_REF_ID_TEST);
         collection.add(builder.buildReference(Paths.get("src/test/resources/file_ref.xml"),

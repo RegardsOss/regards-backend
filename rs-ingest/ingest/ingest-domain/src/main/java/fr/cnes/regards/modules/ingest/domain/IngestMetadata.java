@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
 /**
  * Extra information useful for SIP submission.<br/>
  * The processing chain name is required and is linked to an existing processing chain.<br/>
- * The sessionSource and sessionName allows to make consistent group of SIP.
+ * The sessionOwner and session allows to make consistent group of SIP.
  *
  * @author Marc Sordi
  * @author Léo Mieulet
@@ -52,19 +52,19 @@ public class IngestMetadata {
 
     private static final String MISSING_INGEST_CHAIN_ERROR = "Ingest processing chain name is required";
 
-    private static final String MISSING_CLIENT_ID_ERROR = "Identifier of the client who operates the SIP submission is required";
+    private static final String MISSING_SESSION_OWNER_ERROR = "Identifier of the session owner that submitted the SIP is required";
 
-    private static final String MISSING_CLIENT_SESSION_ERROR = "Client session is required";
+    private static final String MISSING_SESSION_ERROR = "Session is required";
 
     private static final String MISSING_STORAGE_METADATA_ERROR = "Storage metadata is required";
 
-    @NotBlank(message = MISSING_CLIENT_ID_ERROR)
-    @Column(length = 128, name = "client_id", nullable = false)
-    private String clientId;
+    @NotBlank(message = MISSING_SESSION_OWNER_ERROR)
+    @Column(length = 128, name = "session_owner", nullable = false)
+    private String sessionOwner;
 
-    @NotBlank(message = MISSING_CLIENT_SESSION_ERROR)
-    @Column(length = 128, name = "client_session", nullable = false)
-    private String clientSession;
+    @NotBlank(message = MISSING_SESSION_ERROR)
+    @Column(length = 128, name = "session", nullable = false)
+    private String session;
 
     /**
      * {@link fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain} name
@@ -77,7 +77,7 @@ public class IngestMetadata {
     @NotNull(message = MISSING_STORAGE_METADATA_ERROR)
     @Column(columnDefinition = "jsonb")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-            value = "fr.cnes.regards.modules.ingest.domain.StorageMetadata") })
+            value = "fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata") })
     private List<StorageMetadata> storages;
 
     public String getIngestChain() {
@@ -88,20 +88,20 @@ public class IngestMetadata {
         this.ingestChain = ingestChain;
     }
 
-    public String getClientId() {
-        return clientId;
+    public String getSessionOwner() {
+        return sessionOwner;
     }
 
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
+    public void setSessionOwner(String sessionOwner) {
+        this.sessionOwner = sessionOwner;
     }
 
-    public String getClientSession() {
-        return clientSession;
+    public String getSession() {
+        return session;
     }
 
-    public void setClientSession(String clientSession) {
-        this.clientSession = clientSession;
+    public void setSession(String session) {
+        this.session = session;
     }
 
     public List<StorageMetadata> getStorages() {
@@ -114,21 +114,21 @@ public class IngestMetadata {
 
     /**
      * Build ingest metadata
-     * @param clientId client identifier
-     * @param clientSession client session
+     * @param sessionOwner Owner of the session
+     * @param session session
      * @param ingestChain ingest processing chain name
      * @param storages storage metadata
      */
-    public static IngestMetadata build(String clientId, String clientSession, String ingestChain,
+    public static IngestMetadata build(String sessionOwner, String session, String ingestChain,
             StorageMetadata... storages) {
         Assert.hasLength(ingestChain, MISSING_INGEST_CHAIN_ERROR);
-        Assert.hasLength(clientId, MISSING_CLIENT_ID_ERROR);
-        Assert.hasLength(clientSession, MISSING_CLIENT_SESSION_ERROR);
+        Assert.hasLength(sessionOwner, MISSING_SESSION_OWNER_ERROR);
+        Assert.hasLength(session, MISSING_SESSION_ERROR);
         Assert.notEmpty(storages, MISSING_STORAGE_METADATA_ERROR);
         IngestMetadata m = new IngestMetadata();
         m.setIngestChain(ingestChain);
-        m.setClientId(clientId);
-        m.setClientSession(clientSession);
+        m.setSessionOwner(sessionOwner);
+        m.setSession(session);
         m.setStorages(Arrays.asList(storages));
         return m;
     }

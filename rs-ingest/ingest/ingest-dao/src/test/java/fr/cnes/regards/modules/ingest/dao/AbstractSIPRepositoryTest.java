@@ -53,8 +53,8 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
 
     @Before
     public void init() {
-        String clientId = "clientId";
-        String clientSession = "session";
+        String sessionOwner = "sessionOwner";
+        String session = "session";
 
         SIPEntity sip1 = new SIPEntity();
         SIPBuilder b = new SIPBuilder("SIP_001");
@@ -64,7 +64,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip1.setProviderId("SIP_001");
         sip1.setIngestDate(OffsetDateTime.now());
         sip1.setOwner("admin");
-        sip1.setIngestMetadata(IngestMetadata.build(clientId, clientSession, PROCESSING_CHAIN,
+        sip1.setIngestMetadata(IngestMetadata.build(sessionOwner, session, PROCESSING_CHAIN,
                                                     StorageMetadata.build("store", null)));
         sip1.setState(SIPState.CREATED);
         sip1.setVersion(1);
@@ -80,7 +80,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip2.setProviderId("SIP_002");
         sip2.setIngestDate(OffsetDateTime.now().minusHours(6));
         sip2.setOwner("admin");
-        sip1.setIngestMetadata(IngestMetadata.build(clientId, clientSession, PROCESSING_CHAIN,
+        sip1.setIngestMetadata(IngestMetadata.build(sessionOwner, session, PROCESSING_CHAIN,
                                                     StorageMetadata.build("store", null)));
         sip2.setState(SIPState.CREATED);
         sip2.setVersion(1);
@@ -96,7 +96,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip3.setProviderId("SIP_003");
         sip3.setIngestDate(OffsetDateTime.now().minusHours(6));
         sip3.setOwner("admin2");
-        sip1.setIngestMetadata(IngestMetadata.build(clientId, clientSession, PROCESSING_CHAIN,
+        sip1.setIngestMetadata(IngestMetadata.build(sessionOwner, session, PROCESSING_CHAIN,
                                                     StorageMetadata.build("store", null)));
         sip3.setState(SIPState.INGESTED);
         sip3.setVersion(1);
@@ -114,7 +114,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip4.setProviderId("SIP_003");
         sip4.setIngestDate(OffsetDateTime.now().minusHours(6));
         sip4.setOwner("admin2");
-        sip1.setIngestMetadata(IngestMetadata.build(clientId, clientSession, PROCESSING_CHAIN2,
+        sip1.setIngestMetadata(IngestMetadata.build(sessionOwner, session, PROCESSING_CHAIN2,
                                                     StorageMetadata.build("store", null)));
         sip4.setState(SIPState.INGESTED);
         sip4.setVersion(2);

@@ -59,8 +59,8 @@ public class SIPBuilderTest {
     public void createSIPByValue() {
 
         // Ingestion metadata
-        String clientId = "clientId";
-        String clientSession = "firstSession";
+        String sessionOwner = "sessionOwner";
+        String session = "firstSession";
         String ingestChain = "chain";
 
         String fileName = "test.xml";
@@ -70,7 +70,7 @@ public class SIPBuilderTest {
 
         // Initialize a SIP Collection builder
         SIPCollection collection = SIPCollection
-                .build(IngestMetadata.build(clientId, clientSession, ingestChain, StorageMetadata.build("test", null)));
+                .build(IngestMetadata.build(sessionOwner, session, ingestChain, StorageMetadata.build("test", null)));
 
         // Create a SIP builder
         String providerId = "SIP_001";

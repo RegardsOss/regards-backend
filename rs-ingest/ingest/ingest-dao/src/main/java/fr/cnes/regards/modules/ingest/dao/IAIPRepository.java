@@ -65,8 +65,6 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     @Query("select id from AIPEntity a where a.state= ?1")
     Set<Long> findIdByState(AIPState state);
 
-    Set<AIPEntity> findBySipIngestMetadataProcessingAndState(String processingChain, AIPState state);
-
     /**
      * Update state of the given {@link AIPEntity}
      * @param state New state

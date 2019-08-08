@@ -78,9 +78,9 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPControllerIT.class);
 
-    public static final String SESSION_SOURCE = "sessionSource";
+    public static final String SESSION_OWNER = "sessionOwner";
 
-    public static final String SESSION_NAME = "sessionName";
+    public static final String SESSION = "session";
 
     @Autowired
     private ISIPService sipService;
@@ -96,7 +96,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void ingestSips() {
 
         SIPCollection collection = SIPCollection.build(IngestMetadata
-                .build(SESSION_SOURCE, SESSION_NAME, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
+                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
         SIP firstSIPwithGeometry = buildSipOne("SIP_001", "data1.fits").build();
         firstSIPwithGeometry
@@ -124,8 +124,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
         List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
         lfd.add(fields.withPath("metadata.processing", "The ingest processing chain to used"));
-        lfd.add(fields.withPath("metadata.sessionName", "The ingestion session name"));
-        lfd.add(fields.withPath("metadata.sessionSource", "The ingestion session source"));
+        lfd.add(fields.withPath("metadata.session", "The ingestion session name"));
+        lfd.add(fields.withPath("metadata.sessionOwner", "The ingestion session source"));
         lfd.add(fields.withPath("type", "Feature collection"));
 
         GeoJsonFieldDescriptors geoJsonDescriptors = new GeoJsonFieldDescriptors("features[].");
@@ -145,7 +145,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void getSips() {
 
         SIPCollection collection = SIPCollection.build(IngestMetadata
-                .build(SESSION_SOURCE, SESSION_NAME, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
+                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
         collection.add(buildSipOne("SIP_001", "data1.fits").build());
         collection.add(buildSipOne("SIP_002", "data2.fits").build());
@@ -190,11 +190,11 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                 .description("Ingest processing name filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
-        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_SESSION_SOURCE).optional()
+        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_SESSION_OWNER).optional()
                 .description("Session source filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
-        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_SESSION_NAME).optional()
+        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_SESSION).optional()
                 .description("Session name filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
@@ -209,7 +209,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void ingestInvalidSips() {
 
         SIPCollection collection = SIPCollection.build(IngestMetadata
-                .build(SESSION_SOURCE, SESSION_NAME, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
+                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
         // SIP 1
         SIPBuilder sipBuilder = new SIPBuilder("SIP_001");
@@ -304,9 +304,9 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         SIP sip = sipBuilder.build();
 
         // Store SIP entity
-        String sessionSource = "session";
-        String sessionName = OffsetDateTime.now().toString();
-        IngestMetadata metadata = IngestMetadata.build(sessionSource, sessionName,
+        String sessionOwner = "session";
+        String session = OffsetDateTime.now().toString();
+        IngestMetadata metadata = IngestMetadata.build(sessionOwner, session,
                                                        IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
         SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(), metadata, sip, "me", 1, SIPState.ERROR,
                                               EntityType.DATA);

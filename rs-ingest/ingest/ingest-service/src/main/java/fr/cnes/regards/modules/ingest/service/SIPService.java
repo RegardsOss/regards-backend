@@ -74,9 +74,9 @@ public class SIPService implements ISIPService {
     private IAIPRepository aipRepository;
 
     @Override
-    public Page<SIPEntity> search(String providerId, String clientId, String clientSession, String owner,
+    public Page<SIPEntity> search(String providerId, String sessionOwner, String session, String owner,
             OffsetDateTime from, List<SIPState> state, String ingestChain, Pageable page) {
-        return sipRepository.loadAll(SIPEntitySpecifications.search(providerId, clientId, clientSession, owner, from,
+        return sipRepository.loadAll(SIPEntitySpecifications.search(providerId, sessionOwner, session, owner, from,
                                                                     state, ingestChain),
                                      page);
     }
@@ -107,10 +107,10 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public Collection<RejectedSip> deleteSIPEntitiesForSession(String clientId, String clientSession)
+    public Collection<RejectedSip> deleteSIPEntitiesForSession(String sessionOwner, String session)
             throws ModuleException {
         return this.deleteSIPEntities(sipRepository
-                .findByIngestMetadataClientIdAndIngestMetadataClientSession(clientId, clientSession));
+                .findByIngestMetadataSessionOwnerAndIngestMetadataSession(sessionOwner, session));
     }
 
     @Override

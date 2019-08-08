@@ -95,9 +95,9 @@ public class SIPController implements IResourceController<SIPEntity> {
 
     public static final String REQUEST_PARAM_PROCESSING = "processing";
 
-    public static final String REQUEST_PARAM_SESSION_SOURCE = "sessionSource";
+    public static final String REQUEST_PARAM_SESSION_OWNER = "sessionOwner";
 
-    public static final String REQUEST_PARAM_SESSION_NAME = "sessionName";
+    public static final String REQUEST_PARAM_SESSION = "session";
 
     public static final String REQUEST_PARAM_FILE = "file";
 
@@ -161,11 +161,11 @@ public class SIPController implements IResourceController<SIPEntity> {
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
             @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<SIPState> state,
             @RequestParam(name = REQUEST_PARAM_PROCESSING, required = false) String processing,
-            @RequestParam(name = REQUEST_PARAM_SESSION_SOURCE, required = false) String sessionSource,
-            @RequestParam(name = REQUEST_PARAM_SESSION_NAME, required = false) String sessionName,
+            @RequestParam(name = REQUEST_PARAM_SESSION_OWNER, required = false) String sessionOwner,
+            @RequestParam(name = REQUEST_PARAM_SESSION, required = false) String session,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<SIPEntity> pAssembler) {
-        Page<SIPEntity> sipEntities = sipService.search(providerId, sessionSource, sessionName, owner, from, state,
+        Page<SIPEntity> sipEntities = sipService.search(providerId, sessionOwner, session, owner, from, state,
                                                         processing, pageable);
         PagedResources<Resource<SIPEntity>> resources = toPagedResources(sipEntities, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);

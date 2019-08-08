@@ -57,9 +57,9 @@ public class SIPServiceIT extends AbstractSipIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPServiceIT.class);
 
-    private final static String COMPLEX_SESSION_SOURCE = "SESSION_100";
+    private final static String COMPLEX_SESSION_OWNER = "SESSION_100";
 
-    private final static String COMPLEX_SESSION_NAME = "NAME_101";
+    private final static String COMPLEX_SESSION = "NAME_101";
 
     private static SIPEventTestHandler handler = new SIPEventTestHandler();
 
@@ -119,10 +119,10 @@ public class SIPServiceIT extends AbstractSipIT {
     //        // Initiate a complex session with 2 SIP in all states
     //        int id = 100;
     //        for (SIPState state : SIPState.values()) {
-    //            complexSessionSips.add(createSIP("SIP_SERVICE_TEST_" + id, COMPLEX_SESSION_SOURCE, COMPLEX_SESSION_NAME,
+    //            complexSessionSips.add(createSIP("SIP_SERVICE_TEST_" + id, COMPLEX_SESSION_OWNER, COMPLEX_SESSION,
     //                                             "PROCESSING_001", "OWNER_003", 1, state));
     //            id++;
-    //            complexSessionSips.add(createSIP("SIP_SERVICE_TEST_" + id, COMPLEX_SESSION_SOURCE, COMPLEX_SESSION_NAME,
+    //            complexSessionSips.add(createSIP("SIP_SERVICE_TEST_" + id, COMPLEX_SESSION_OWNER, COMPLEX_SESSION,
     //                                             "PROCESSING_001", "OWNER_003", 1, state));
     //            id++;
     //        }
@@ -326,10 +326,10 @@ public class SIPServiceIT extends AbstractSipIT {
     @Test
     public void deleteSession() throws ModuleException {
         // Delete by session id
-        Collection<RejectedSip> rejectedSips = sipService.deleteSIPEntitiesForSession(COMPLEX_SESSION_SOURCE,
-                                                                                      COMPLEX_SESSION_NAME);
+        Collection<RejectedSip> rejectedSips = sipService.deleteSIPEntitiesForSession(COMPLEX_SESSION_OWNER,
+                                                                                      COMPLEX_SESSION);
         aipService.askForAipsDeletion();
-        // 2 SIP per state in COMPLEX_SESSION_SOURCE.
+        // 2 SIP per state in COMPLEX_SESSION_OWNER.
         // Undeletable are QUEUED, VALID. TO_BE_DELETED and DELETED are now considered deletable but do nothing
         Assert.assertEquals(4, rejectedSips.size());
         // Check call to storage client for deletion
@@ -341,7 +341,7 @@ public class SIPServiceIT extends AbstractSipIT {
         Assert.assertEquals(14, argument.getValue().size());
         // Check that not stored SIP are already in DELETED state
         // Not stored state are CREATED, AIP_CREATED, INVALID, AIP_GEN_ERROR, REJECTED, DELETED
-        Page<SIPEntity> results = sipService.search(null, COMPLEX_SESSION_SOURCE, null, null, null,
+        Page<SIPEntity> results = sipService.search(null, COMPLEX_SESSION_OWNER, null, null, null,
                                                     Lists.newArrayList(SIPState.DELETED), null, PageRequest.of(0, 100));
         Assert.assertEquals(26, results.getTotalElements());
 

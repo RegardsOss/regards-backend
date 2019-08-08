@@ -111,13 +111,13 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
 
     /**
      * Retrieve all {@link SIPEntity} associated to the given session source/name.
-     * @param sessionSource {@link String}
-     * @param sessionName {@link String}
+     * @param sessionOwner {@link String}
+     * @param session {@link String}
      * @return {@link SIPEntity}s
      */
     @EntityGraph("graph.sip.entity.complete")
-    Collection<SIPEntity> findByIngestMetadataClientIdAndIngestMetadataClientSession(String clientId,
-            String clientSession);
+    Collection<SIPEntity> findByIngestMetadataSessionOwnerAndIngestMetadataSession(String sessionOwner,
+            String session);
 
     /**
      * Find all {@link SIPEntity}s by given {@link SIPState}.
@@ -146,9 +146,9 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     /**
      * Switch state for a given session
      */
-    //TODO add sessionName
+    //TODO add session
     @Modifying
-    @Query("UPDATE SIPEntity s set s.state = :newState where s.state = :state AND s.ingestMetadata.sessionSource = :session")
+    @Query("UPDATE SIPEntity s set s.state = :newState where s.state = :state AND s.ingestMetadata.sessionOwner = :session")
     void updateSIPEntityStateByStateAndSession(@Param("newState") SIPState state, @Param("state") SIPState filterState,
             @Param("session") String session);
 
@@ -159,7 +159,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     //     * @return number of {@link SIPEntity}
     //     */
     //    //TODO
-    //    long countByIngestMetadataSessionSource(String sessionSource);
+    //    long countByIngestMetadataSessionSource(String sessionOwner);
     //
     //    /**
     //     * Count number of {@link SIPEntity} associated to a given session and in a specific given {@link SIPState}

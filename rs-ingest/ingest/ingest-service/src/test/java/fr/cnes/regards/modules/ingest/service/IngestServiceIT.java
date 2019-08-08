@@ -62,9 +62,9 @@ public class IngestServiceIT extends AbstractSipIT {
     @Autowired
     private ISIPService sipService;
 
-    private final static String CLIENT_ID = "sessionSource";
+    private final static String SESSION_OWNER = "sessionOwner";
 
-    private final static String CLIENT_SESSION = "sessionName";
+    private final static String SESSION = "session";
 
     private final static String INGEST_CHAIN = "processingChain";
 
@@ -87,7 +87,7 @@ public class IngestServiceIT extends AbstractSipIT {
         LOGGER.debug("Starting test ingestWithCollision");
 
         SIPCollection collection = SIPCollection.build(IngestMetadata
-                .build(CLIENT_ID, CLIENT_SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
+                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
         SIPBuilder builder = new SIPBuilder("SIP_001");
         collection.add(builder.buildReference(Paths.get("sip1.xml"), "zaasfsdfsdlfkmsldgfml12df"));
 
@@ -107,7 +107,7 @@ public class IngestServiceIT extends AbstractSipIT {
         Assert.assertTrue(two.getVersion() == 2);
         Assert.assertTrue(SIPState.REJECTED.equals(two.getState()));
 
-        Page<SIPEntity> page = sipService.search(null, CLIENT_ID, null, null, null, null, null, PageRequest.of(0, 10));
+        Page<SIPEntity> page = sipService.search(null, SESSION_OWNER, null, null, null, null, null, PageRequest.of(0, 10));
         Assert.assertTrue(page.getNumberOfElements() == 1);
     }
 
@@ -143,7 +143,7 @@ public class IngestServiceIT extends AbstractSipIT {
     @Test
     public void retryIngest() throws NoSuchAlgorithmException, IOException, ModuleException {
         // Simulate a SIP in CREATED state
-        SIPEntity sip = createSIP("RETY_SIP_001", CLIENT_ID, CLIENT_SESSION, INGEST_CHAIN, "admin", 1);
+        SIPEntity sip = createSIP("RETY_SIP_001", SESSION_OWNER, SESSION, INGEST_CHAIN, "admin", 1);
 
         sip.setState(SIPState.CREATED);
         sip = sipRepository.save(sip);
@@ -204,7 +204,7 @@ public class IngestServiceIT extends AbstractSipIT {
         String sipFilename = "sip" + version + ".xml";
 
         SIPCollection collection = SIPCollection.build(IngestMetadata
-                .build(CLIENT_ID, CLIENT_SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
+                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
         SIPBuilder builder = new SIPBuilder(providerId);
         collection.add(builder.buildReference(Paths.get(sipFilename), ChecksumUtils

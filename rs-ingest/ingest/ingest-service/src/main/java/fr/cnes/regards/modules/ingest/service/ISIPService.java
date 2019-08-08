@@ -54,7 +54,7 @@ public interface ISIPService {
     /**
      * Retrieve all {@link SIPEntity}s matching the parameters. SIPs are ordered by {@link SIPEntity#getIngestDate()}
      */
-    Page<SIPEntity> search(String providerId, String clientId, String clientSession, String owner, OffsetDateTime from,
+    Page<SIPEntity> search(String providerId, String sessionOwner, String session, String owner, OffsetDateTime from,
             List<SIPState> state, String ingestChain, Pageable page);
 
     /**
@@ -84,7 +84,7 @@ public interface ISIPService {
      * @return rejected or undeletable {@link SIPEntity}s
      * @throws ModuleException
      */
-    Collection<RejectedSip> deleteSIPEntitiesForSession(String clientId, String clientSession) throws ModuleException;
+    Collection<RejectedSip> deleteSIPEntitiesForSession(String sessionOwner, String session) throws ModuleException;
 
     /**
      * Delete all {@link SIPEntity}s.

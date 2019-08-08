@@ -219,7 +219,7 @@ public class SIPValidationTest {
     @Test
     public void validateSIPCollection() {
 
-        SIPCollection collection = SIPCollection.build(IngestMetadata.build("clientId", "clientSession", "ingestChain",
+        SIPCollection collection = SIPCollection.build(IngestMetadata.build("sessionOwner", "session", "ingestChain",
                                                                             StorageMetadata.build("test", null)));
 
         validator.validate(collection, errors);

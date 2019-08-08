@@ -92,23 +92,23 @@ public abstract class AbstractSipIT extends AbstractRegardsServiceTransactionalI
     /**
      * Create a SIP for test initialization
      */
-    protected SIPEntity createSIP(String providerId, String clientId, String clientSession, String ingestChain,
+    protected SIPEntity createSIP(String providerId, String sessionOwner, String session, String ingestChain,
             String owner, Integer version) throws NoSuchAlgorithmException, IOException, ModuleException {
         SIPBuilder b = new SIPBuilder(providerId);
         InformationPackagePropertiesBuilder ippb = new InformationPackagePropertiesBuilder();
         ippb.addDescriptiveInformation("version", version.toString());
         SIP sip = b.build(ippb.build());
         SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(),
-                                              IngestMetadata.build(clientId, clientSession, ingestChain), sip, owner,
+                                              IngestMetadata.build(sessionOwner, session, ingestChain), sip, owner,
                                               version, SIPState.INGESTED, EntityType.DATA);
         sipEntity.setChecksum(IngestService.calculateChecksum(gson, sip, IngestService.MD5_ALGORITHM));
         return sipRepository.save(sipEntity);
     }
 
-    protected SIPEntity createSIP(String providerId, String sessionSource, String sessionName, String processing,
+    protected SIPEntity createSIP(String providerId, String sessionOwner, String session, String processing,
             String owner, Integer version, SIPState state)
             throws NoSuchAlgorithmException, IOException, ModuleException {
-        SIPEntity sipEntity = createSIP(providerId, sessionSource, sessionName, processing, owner, version);
+        SIPEntity sipEntity = createSIP(providerId, sessionOwner, session, processing, owner, version);
         sipEntity.setState(state);
         return sipRepository.save(sipEntity);
     }

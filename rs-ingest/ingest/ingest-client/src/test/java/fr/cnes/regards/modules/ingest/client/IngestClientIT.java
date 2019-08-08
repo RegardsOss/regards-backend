@@ -87,7 +87,7 @@ public class IngestClientIT extends AbstractRegardsWebIT {
     @Test
     public void ingestSIP() {
         SIPCollection collection = SIPCollection.build(IngestMetadata
-                .build("clientId", "clientSession", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
+                .build("sessionOwner", "session", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
         SIPBuilder sipBuilder = new SIPBuilder("CLIENT_SIP_001");
         String filename = OffsetDateTime.now().toString();
