@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,17 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dao;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
-import org.junit.Ignore;
+package fr.cnes.regards.modules.ingest.domain.entity;
 
 /**
- * Init database public schema with Flyway
+ * Interface representing a SIP state (for state extension)
+ *
  * @author Marc Sordi
  *
  */
-@Ignore
-public class IngestFlywayInitialization extends AbstractScriptGeneratorTest {
+public interface ISipState {
 
+    String getName();
 }

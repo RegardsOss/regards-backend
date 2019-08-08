@@ -28,10 +28,10 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.aip.AIP;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
-import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
  * Generation step is used to generate AIP(s) from specified SIP calling {@link IAipGeneration#generate(SIP, UniformResourceName, UniformResourceName, String)}.

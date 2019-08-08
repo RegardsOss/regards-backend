@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.store;
 
-import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +32,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
 
 /**
@@ -79,10 +76,12 @@ public class BroadcastEntityEventHandler
             LOGGER.info("BroadcastEntityEvent received type={}", event.getEventType());
             switch (event.getEventType()) {
                 case INDEXED:
-                    handleEntitiesIndexed(event.getAipIds(), wrapper.getTenant());
+                    // FIXME mark as indexed?
+                    // handleEntitiesIndexed(event.getAipIds(), wrapper.getTenant());
                     break;
                 case INDEX_ERROR:
-                    handleEntitiesNotIndexed(event.getAipIds(), wrapper.getTenant());
+                    // FIXME mark as indexed?
+                    // handleEntitiesNotIndexed(event.getAipIds(), wrapper.getTenant());
                     break;
                 case DELETE:
                 case CREATE:
@@ -94,22 +93,22 @@ public class BroadcastEntityEventHandler
         }
     }
 
-    /**
-     * Handle the case of entities indexed
-     * @param ipIds of all new indexed entities
-     */
-    private void handleEntitiesIndexed(UniformResourceName[] ipIds, String tenant) {
-        runtimeTenantResolver.forceTenant(tenant);
-        // Check if AIPs matchs ipIds
-        for (UniformResourceName ipId : ipIds) {
-            Optional<AIPEntity> oAip = aipService.searchAip(ipId);
-            if (oAip.isPresent()) {
-                AIPEntity aip = oAip.get();
-                aipService.setAipToIndexed(aip);
-            }
-        }
-        runtimeTenantResolver.clearTenant();
-    }
+    //    /**
+    //     * Handle the case of entities indexed
+    //     * @param ipIds of all new indexed entities
+    //     */
+    //    private void handleEntitiesIndexed(UniformResourceName[] ipIds, String tenant) {
+    //        runtimeTenantResolver.forceTenant(tenant);
+    //        // Check if AIPs matchs ipIds
+    //        for (UniformResourceName ipId : ipIds) {
+    //            Optional<AIPEntity> oAip = aipService.searchAip(ipId);
+    //            if (oAip.isPresent()) {
+    //                AIPEntity aip = oAip.get();
+    //                aipService.setAipToIndexed(aip);
+    //            }
+    //        }
+    //        runtimeTenantResolver.clearTenant();
+    //    }
 
     /**
      * Handle the case of entities not indexed (due to error of course)

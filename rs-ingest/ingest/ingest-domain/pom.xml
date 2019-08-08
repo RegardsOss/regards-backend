@@ -44,10 +44,6 @@
 			<artifactId>plugins-domain</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.storage</groupId>
-			<artifactId>storage-domain</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
 			<artifactId>jobs-domain</artifactId>
 		</dependency>

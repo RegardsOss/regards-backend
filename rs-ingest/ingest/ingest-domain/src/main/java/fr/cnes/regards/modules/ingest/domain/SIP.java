@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.ingest.domain;
 import javax.validation.Valid;
 
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.validator.CheckSIP;
 import fr.cnes.regards.modules.ingest.domain.validator.CheckSIPId;
 

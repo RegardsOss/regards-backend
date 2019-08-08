@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPIdNProcessing;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -39,6 +37,10 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPIdNProcessing;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * {@link SIPEntity} repository
@@ -114,7 +116,8 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @return {@link SIPEntity}s
      */
     @EntityGraph("graph.sip.entity.complete")
-    Collection<SIPEntity> findByIngestMetadataSessionSourceAndIngestMetadataSessionName(String sessionSource, String sessionName);
+    Collection<SIPEntity> findByIngestMetadataClientIdAndIngestMetadataClientSession(String clientId,
+            String clientSession);
 
     /**
      * Find all {@link SIPEntity}s by given {@link SIPState}.
@@ -149,21 +152,22 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     void updateSIPEntityStateByStateAndSession(@Param("newState") SIPState state, @Param("state") SIPState filterState,
             @Param("session") String session);
 
-    /**
-     * Count number of {@link SIPEntity} associated to a given session
-     * @param sessionSource
-     * @return number of {@link SIPEntity}
-     */
-    //TODO
-    long countByIngestMetadataSessionSource(String sessionSource);
-
-    /**
-     * Count number of {@link SIPEntity} associated to a given session and in a specific given {@link SIPState}
-     * @param sessionId
-     * @return number of {@link SIPEntity}
-     */
-    //TODO add session name
-    long countByIngestMetadataSessionSourceAndStateIn(String sessionId, Collection<SIPState> states);
+    // FIXME
+    //    /**
+    //     * Count number of {@link SIPEntity} associated to a given session
+    //     * @param Cl
+    //     * @return number of {@link SIPEntity}
+    //     */
+    //    //TODO
+    //    long countByIngestMetadataSessionSource(String sessionSource);
+    //
+    //    /**
+    //     * Count number of {@link SIPEntity} associated to a given session and in a specific given {@link SIPState}
+    //     * @param sessionId
+    //     * @return number of {@link SIPEntity}
+    //     */
+    //    //TODO add session name
+    //    long countByIngestMetadataSessionSourceAndStateIn(String sessionId, Collection<SIPState> states);
 
     /**
      * Check if SIP already ingested
@@ -204,15 +208,11 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
         // as a Specification is used to constrain the page, we cannot simply ask for ids with a query
         // to mimic that, we are querying without any entity graph to extract ids
         Page<SIPEntity> sips = findAll(search, pageable);
-        List<Long> sipIds = sips.stream().map(p -> p.getId())
-                .collect(Collectors.toList());
+        List<Long> sipIds = sips.stream().map(p -> p.getId()).collect(Collectors.toList());
         // now that we have the ids, lets load the products and keep the same sort
         List<SIPEntity> loaded = findAllByIdIn(sipIds, pageable.getSort());
-        return new PageImpl<>(loaded,
-                              PageRequest.of(sips.getNumber(),
-                                             sips.getSize(),
-                                             sips.getSort()),
-                              sips.getTotalElements());
+        return new PageImpl<>(loaded, PageRequest.of(sips.getNumber(), sips.getSize(), sips.getSort()),
+                sips.getTotalElements());
     }
 
     @EntityGraph("graph.sip.entity.complete")

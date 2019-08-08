@@ -22,12 +22,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
 
 /**
  * SIP collection representation based on GeoJson standard structure.
- *
- * To build a {@link SIPCollection}, you have to use a {@link SIPCollectionBuilder}.
  *
  * @author Marc Sordi
  *
@@ -35,14 +33,25 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 public class SIPCollection extends AbstractFeatureCollection<SIP> {
 
     @Valid
-    @NotNull
-    private final IngestMetadataDto metadata;
+    @NotNull(message = "Ingest metadata is required")
+    private IngestMetadata metadata;
 
-    public SIPCollection() {
-        metadata = new IngestMetadataDto();
+    public IngestMetadata getMetadata() {
+        return metadata;
     }
 
-    public IngestMetadataDto getMetadata() {
-        return metadata;
+    public void setMetadata(IngestMetadata metadata) {
+        this.metadata = metadata;
+    }
+
+    /**
+     * Create a new {@link SIPCollection}.
+     * @param metadata metadata built with {@link IngestMetadata#build(String, String, String, StorageMetadata...)}
+     * @return a {@link SIPCollection}
+     */
+    public static SIPCollection build(IngestMetadata metadata) {
+        SIPCollection collection = new SIPCollection();
+        collection.setMetadata(metadata);
+        return collection;
     }
 }

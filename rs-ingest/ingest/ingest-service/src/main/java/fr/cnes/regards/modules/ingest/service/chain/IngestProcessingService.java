@@ -18,13 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
-<<<<<<< HEAD
-=======
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
-import javax.annotation.PostConstruct;
->>>>>>> PM-040-session
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -54,8 +47,10 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
@@ -80,7 +75,8 @@ import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IngestProcessingChainSpecifications;
-import fr.cnes.regards.modules.ingest.domain.builder.AIPEntityBuilder;
+import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.aip.AIP;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
@@ -93,8 +89,6 @@ import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSingleAIPGeneration;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSipValidation;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.flow.AipFlowItem;
 
 /**
  * Ingest processing service
@@ -144,6 +138,7 @@ public class IngestProcessingService implements IIngestProcessingService {
     @Autowired
     private Validator validator;
 
+    @SuppressWarnings("unused")
     @Autowired
     private IPublisher publisher;
 
@@ -197,10 +192,10 @@ public class IngestProcessingService implements IIngestProcessingService {
 
         sips.forEach(idNProc -> {
             // Add to the list of sipId by chain
-            sipByChain.put(idNProc.getIngestMetadata().getProcessing(), idNProc.getId());
+            sipByChain.put(idNProc.getIngestMetadata().getIngestChain(), idNProc.getId());
             // Compute how many SIP by session have been modified
-            String sessionSource = idNProc.getIngestMetadata().getSessionSource();
-            String sessionName = idNProc.getIngestMetadata().getSessionName();
+            String sessionSource = idNProc.getIngestMetadata().getClientId();
+            String sessionName = idNProc.getIngestMetadata().getClientSession();
             Integer value = 0;
             if (nbSipBySession.contains(sessionSource, sessionName)) {
                 value = nbSipBySession.get(sessionSource, sessionName);
@@ -222,10 +217,8 @@ public class IngestProcessingService implements IIngestProcessingService {
 
         // Now send notification
         for (Table.Cell<String, String, Integer> entry : nbSipBySession.cellSet()) {
-            sipService.notifySipsChangedState(
-                    IngestMetadata.build(null, entry.getRowKey(), entry.getColumnKey()),
-                    SIPState.CREATED, SIPState.QUEUED, entry.getValue()
-            );
+            sipService.notifySipsChangedState(IngestMetadata.build(null, entry.getRowKey(), entry.getColumnKey()),
+                                              SIPState.CREATED, SIPState.QUEUED, entry.getValue());
         }
     }
 
@@ -234,23 +227,24 @@ public class IngestProcessingService implements IIngestProcessingService {
         return sipService.saveSIPEntity(sip);
     }
 
+    // FIXME gérer les demandes de stockage : refactoring
     @Override
     public SIPEntity saveAndSubmitAIP(SIPEntity entity, List<AIP> aips) throws EntityNotFoundException {
         // Store generated AIP(s) in with raw json object.
         for (AIP aip : aips) {
             createAIP(entity.getId(), aip);
             // Submit AIP(s) to AIP data flow in same transaction
-            AipFlowItem item = AipFlowItem.build(aip);
-            publisher.publish(item);
+            // FIXME
+            // AipFlowItem item = AipFlowItem.build(aip);
+            // publisher.publish(item);
         }
 
         // Notify SIP session state change
-        sipService.notifySipChangedState(entity.getIngestMetadata(), entity.getState(), SIPState.AIP_SUBMITTED);
+        sipService.notifySipChangedState(entity.getIngestMetadata(), entity.getState(), SIPState.INGESTED);
 
         // Update SIP entity state
         entity.setState(SIPState.INGESTED);
         sipService.saveSIPEntity(entity);
-
 
         return entity;
     }
@@ -272,7 +266,7 @@ public class IngestProcessingService implements IIngestProcessingService {
     @Override
     public AIPEntity createAIP(Long sipEntityId, AIP aip) throws EntityNotFoundException {
         SIPEntity sip = getSIPEntity(sipEntityId);
-        return aipRepository.save(AIPEntityBuilder.build(sip, AIPState.CREATED, aip));
+        return aipRepository.save(AIPEntity.build(sip, AIPState.CREATED, aip));
     }
 
     /**

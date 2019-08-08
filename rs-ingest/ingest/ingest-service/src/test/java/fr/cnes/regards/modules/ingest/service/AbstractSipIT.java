@@ -18,7 +18,20 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+
+import org.junit.After;
+import org.junit.Before;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -28,24 +41,14 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
+import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.storage.domain.AIPBuilder;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import org.junit.After;
-import org.junit.Before;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * Abstract test class to provide SIP Creation tool.
@@ -89,20 +92,22 @@ public abstract class AbstractSipIT extends AbstractRegardsServiceTransactionalI
     /**
      * Create a SIP for test initialization
      */
-    protected SIPEntity createSIP(String providerId, String sessionSource, String sessionName, String processing, String owner, Integer version)
-            throws NoSuchAlgorithmException, IOException, ModuleException {
+    protected SIPEntity createSIP(String providerId, String clientId, String clientSession, String ingestChain,
+            String owner, Integer version) throws NoSuchAlgorithmException, IOException, ModuleException {
         SIPBuilder b = new SIPBuilder(providerId);
         InformationPackagePropertiesBuilder ippb = new InformationPackagePropertiesBuilder();
         ippb.addDescriptiveInformation("version", version.toString());
         SIP sip = b.build(ippb.build());
-        SIPEntity sipEntity = SIPEntityBuilder.build(getDefaultTenant(), sessionSource, sessionName,
-                                                     sip, processing, owner, version, SIPState.STORED, EntityType.DATA);
-        sipEntity.setChecksum(SIPEntityBuilder.calculateChecksum(gson, sip, IngestService.MD5_ALGORITHM));
+        SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(),
+                                              IngestMetadata.build(clientId, clientSession, ingestChain), sip, owner,
+                                              version, SIPState.INGESTED, EntityType.DATA);
+        sipEntity.setChecksum(IngestService.calculateChecksum(gson, sip, IngestService.MD5_ALGORITHM));
         return sipRepository.save(sipEntity);
     }
 
-    protected SIPEntity createSIP(String providerId, String sessionSource, String sessionName, String processing, String owner, Integer version,
-            SIPState state) throws NoSuchAlgorithmException, IOException, ModuleException {
+    protected SIPEntity createSIP(String providerId, String sessionSource, String sessionName, String processing,
+            String owner, Integer version, SIPState state)
+            throws NoSuchAlgorithmException, IOException, ModuleException {
         SIPEntity sipEntity = createSIP(providerId, sessionSource, sessionName, processing, owner, version);
         sipEntity.setState(state);
         return sipRepository.save(sipEntity);
@@ -110,8 +115,7 @@ public abstract class AbstractSipIT extends AbstractRegardsServiceTransactionalI
 
     protected AIPEntity createAIP(UniformResourceName aipId, SIPEntity sip, AIPState state) {
         AIPEntity aip = new AIPEntity();
-        aip.setAip(new AIPBuilder(aipId, Optional.of(sip.getSipIdUrn()), sip.getProviderId(), EntityType.DATA,
-                sip.getIngestMetadata().getSessionName()).build());
+        aip.setAip(new AIPBuilder(aipId, Optional.of(sip.getSipIdUrn()), sip.getProviderId(), EntityType.DATA).build());
         aip.setCreationDate(OffsetDateTime.now());
         aip.setAipId(aipId);
         aip.setSip(sip);

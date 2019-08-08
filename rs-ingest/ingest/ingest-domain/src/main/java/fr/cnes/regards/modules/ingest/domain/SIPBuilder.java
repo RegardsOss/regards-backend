@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.builder;
+package fr.cnes.regards.modules.ingest.domain;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,8 +29,6 @@ import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.oais.builder.IPBuilder;
 import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.SIPReference;
 
 /**
  *

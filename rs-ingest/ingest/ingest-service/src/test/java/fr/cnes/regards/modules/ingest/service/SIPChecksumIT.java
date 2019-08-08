@@ -33,7 +33,6 @@ import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
 
 /**
  *
@@ -59,7 +58,7 @@ public class SIPChecksumIT extends AbstractMultitenantServiceTest {
         try (Reader json = new InputStreamReader(this.getClass().getResourceAsStream(filename),
                 Charset.forName("UTF-8"))) {
             SIP sip = gson.fromJson(json, SIP.class);
-            checksum = SIPEntityBuilder.calculateChecksum(gson, sip, IngestService.MD5_ALGORITHM);
+            checksum = IngestService.calculateChecksum(gson, sip, IngestService.MD5_ALGORITHM);
         }
         return checksum;
     }

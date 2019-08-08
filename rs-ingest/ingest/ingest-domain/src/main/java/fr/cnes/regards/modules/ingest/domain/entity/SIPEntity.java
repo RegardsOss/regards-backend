@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.domain.entity;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -35,7 +36,6 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
-import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedEntityGraphs;
@@ -53,6 +53,8 @@ import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIP;
@@ -66,12 +68,10 @@ import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
  */
 @Entity
 @Table(name = "t_sip",
-        indexes = {
-                @Index(name = "idx_sip_id", columnList = "providerId,sipId,checksum"),
-                @Index(name = "idx_sip_processing", columnList = "processing"),
-                @Index(name = "idx_sip_session_source", columnList = "session_source"),
-                @Index(name = "idx_sip_session_name", columnList = "session_name")
-        },
+        indexes = { @Index(name = "idx_sip_id", columnList = "providerId,sipId,checksum"),
+                @Index(name = "idx_sip_ingest_chain", columnList = "ingest_chain"),
+                @Index(name = "idx_sip_client_id", columnList = "client_id"),
+                @Index(name = "idx_sip_client_session", columnList = "client_session") },
         // PostgreSQL manage both single indexes and multiple ones
         uniqueConstraints = { @UniqueConstraint(name = "uk_sip_sipId", columnNames = "sipId"),
                 @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
@@ -113,6 +113,12 @@ public class SIPEntity {
     private String owner;
 
     /**
+     * Look at {@link IngestMetadata}
+     */
+    @Embedded
+    private IngestMetadata ingestMetadata;
+
+    /**
      * SIP version : this value is also reported in {@link #sipId} and must be the same
      */
     @NotNull(message = "Version is required")
@@ -152,12 +158,6 @@ public class SIPEntity {
     private OffsetDateTime ingestDate;
 
     private OffsetDateTime lastUpdateDate;
-
-    /**
-     * {@link IngestMetadata} stores session and processing chain informations
-     */
-    @Embedded
-    private IngestMetadata ingestMetadata;
 
     public String getSipId() {
         return sipId;
@@ -309,4 +309,25 @@ public class SIPEntity {
         }
         return true;
     }
+
+    public static SIPEntity build(String tenant, IngestMetadata metadata, SIP sip, String owner, Integer version,
+            SIPState state, EntityType entityType) {
+
+        SIPEntity sipEntity = new SIPEntity();
+
+        UUID uuid = UUID.nameUUIDFromBytes(sip.getId().getBytes());
+        UniformResourceName urn = new UniformResourceName(OAISIdentifier.SIP, entityType, tenant, uuid, version);
+
+        sipEntity.setProviderId(sip.getId());
+        sipEntity.setSipId(urn);
+        sipEntity.setOwner(owner);
+        sipEntity.setIngestDate(OffsetDateTime.now());
+        sipEntity.setState(state);
+        sipEntity.setSip(sip);
+        sipEntity.setIngestMetadata(metadata);
+        sipEntity.setVersion(version);
+
+        return sipEntity;
+    }
+
 }

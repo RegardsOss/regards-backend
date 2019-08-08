@@ -26,9 +26,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.aip.AIP;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 
 /**
  * Default AIP generation plugin. The plugin automatically build a single AIP based on SIP information.
@@ -43,8 +43,7 @@ public class DefaultSingleAIPGeneration implements IAipGeneration {
     @Override
     public List<AIP> generate(SIP sip, UniformResourceName aipId, UniformResourceName sipId, String providerId) {
 
-        AIPBuilder builder = new AIPBuilder(aipId, Optional.of(sipId), providerId, EntityType.DATA,
-                sip.getProperties().getPdi().getProvenanceInformation().getSessionSource());
+        AIPBuilder builder = new AIPBuilder(aipId, Optional.of(sipId), providerId, EntityType.DATA);
         // Propagate BBOX
         if (sip.getBbox().isPresent()) {
             builder.setBbox(sip.getBbox().get(), sip.getCrs().orElse(null));

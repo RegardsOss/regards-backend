@@ -68,7 +68,7 @@ public class IngestProcessingChain {
     /**
      * Name of the processing chain
      */
-    @NotBlank
+    @NotBlank(message = "Ingest processing chain name is required")
     @Size(min = 3, max = 50, message = "Processing chain name must be between 3 and 50 characters long")
     @Pattern(regexp = "[0-9a-zA-Z_]*",
             message = "Processing chain name must only contain alphanumerical characters or underscore.")
@@ -103,13 +103,13 @@ public class IngestProcessingChain {
     @JoinColumn(name = "postprocessing_conf_id", foreignKey = @ForeignKey(name = "fk_postprocessing_conf_id"))
     private PluginConfiguration postProcessingPlugin;
 
-    public IngestProcessingChain(String pName, String pDescription, PluginConfiguration pValidationPlugin,
-            PluginConfiguration pGenerationPlugin) {
+    public IngestProcessingChain(String name, String description, PluginConfiguration validationPlugin,
+            PluginConfiguration generationPlugin) {
         super();
-        name = pName;
-        description = pDescription;
-        validationPlugin = pValidationPlugin;
-        generationPlugin = pGenerationPlugin;
+        this.name = name;
+        this.description = description;
+        this.validationPlugin = validationPlugin;
+        this.generationPlugin = generationPlugin;
     }
 
     public IngestProcessingChain() {

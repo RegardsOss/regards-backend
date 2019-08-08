@@ -41,7 +41,7 @@ package fr.cnes.regards.modules.ingest.domain.entity;
  * @author Marc Sordi
  *
  */
-public enum SIPState {
+public enum SIPState implements ISipState {
 
     /**
      * SIP is stored in database and has to be processed
@@ -56,7 +56,7 @@ public enum SIPState {
      */
     QUEUED,
     /**
-     * SIP processing fails
+     * SIP processing fails (invalid SIP, AIP generation error, etc.)
      */
     ERROR,
     /**
@@ -71,4 +71,9 @@ public enum SIPState {
      * SIP deleted
      */
     DELETED;
+
+    @Override
+    public String getName() {
+        return this.name();
+    }
 }

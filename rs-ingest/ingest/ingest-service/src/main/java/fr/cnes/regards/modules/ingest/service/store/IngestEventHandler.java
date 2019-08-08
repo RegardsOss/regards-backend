@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 
 /**
  * Handler to update AIPEntity state when a AIPEvent is received from archiva storage.
@@ -59,29 +58,7 @@ public class IngestEventHandler implements ApplicationListener<ApplicationReadyE
      */
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
-        subscriber.subscribeTo(AIPEvent.class, new AIPEventHandler());
         subscriber.subscribeTo(JobEvent.class, new JobHandler());
-    }
-
-    /**
-     * Job handler
-     *
-     * @author Marc Sordi
-     */
-    private class AIPEventHandler implements IHandler<AIPEvent> {
-
-        @Override
-        public void handle(TenantWrapper<AIPEvent> wrapper) {
-            try {
-                runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                aipService.handleAipEvent(wrapper.getContent());
-            } catch (Exception e) {
-                LOGGER.error("Error occurs during AIP event handling", e);
-                // FIXME add notification
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-        }
     }
 
     /**

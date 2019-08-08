@@ -18,23 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.ingest.domain.SIPCollection;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
-import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -42,6 +31,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
+import fr.cnes.regards.modules.ingest.domain.SIPCollection;
+import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
 
 /**
  * @author Marc Sordi
@@ -60,11 +62,11 @@ public class IngestServiceIT extends AbstractSipIT {
     @Autowired
     private ISIPService sipService;
 
-    private final static String SESSION_SOURCE = "sessionSource";
+    private final static String CLIENT_ID = "sessionSource";
 
-    private final static String SESSION_NAME = "sessionName";
+    private final static String CLIENT_SESSION = "sessionName";
 
-    private final static String PROCESSING = "processingChain";
+    private final static String INGEST_CHAIN = "processingChain";
 
     @Override
     public void doInit() throws ModuleException {
@@ -84,10 +86,8 @@ public class IngestServiceIT extends AbstractSipIT {
 
         LOGGER.debug("Starting test ingestWithCollision");
 
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                SESSION_SOURCE, SESSION_NAME);
-        SIPCollection collection = colBuilder.build();
-
+        SIPCollection collection = SIPCollection.build(IngestMetadata
+                .build(CLIENT_ID, CLIENT_SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
         SIPBuilder builder = new SIPBuilder("SIP_001");
         collection.add(builder.buildReference(Paths.get("sip1.xml"), "zaasfsdfsdlfkmsldgfml12df"));
 
@@ -107,7 +107,7 @@ public class IngestServiceIT extends AbstractSipIT {
         Assert.assertTrue(two.getVersion() == 2);
         Assert.assertTrue(SIPState.REJECTED.equals(two.getState()));
 
-        Page<SIPEntity> page = sipService.search(null, SESSION_SOURCE, null,null, null, null, null, PageRequest.of(0, 10));
+        Page<SIPEntity> page = sipService.search(null, CLIENT_ID, null, null, null, null, null, PageRequest.of(0, 10));
         Assert.assertTrue(page.getNumberOfElements() == 1);
     }
 
@@ -143,7 +143,7 @@ public class IngestServiceIT extends AbstractSipIT {
     @Test
     public void retryIngest() throws NoSuchAlgorithmException, IOException, ModuleException {
         // Simulate a SIP in CREATED state
-        SIPEntity sip = createSIP("RETY_SIP_001", SESSION_ID, PROCESSING, "admin", 1);
+        SIPEntity sip = createSIP("RETY_SIP_001", CLIENT_ID, CLIENT_SESSION, INGEST_CHAIN, "admin", 1);
 
         sip.setState(SIPState.CREATED);
         sip = sipRepository.save(sip);
@@ -203,9 +203,8 @@ public class IngestServiceIT extends AbstractSipIT {
 
         String sipFilename = "sip" + version + ".xml";
 
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                SESSION_SOURCE, SESSION_NAME);
-        SIPCollection collection = colBuilder.build();
+        SIPCollection collection = SIPCollection.build(IngestMetadata
+                .build(CLIENT_ID, CLIENT_SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
         SIPBuilder builder = new SIPBuilder(providerId);
         collection.add(builder.buildReference(Paths.get(sipFilename), ChecksumUtils

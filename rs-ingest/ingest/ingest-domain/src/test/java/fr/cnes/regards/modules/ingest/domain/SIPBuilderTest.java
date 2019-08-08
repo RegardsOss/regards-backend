@@ -37,8 +37,7 @@ import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
 
 /**
  * Test building, serializing and deserializing SIP feature.
@@ -60,8 +59,9 @@ public class SIPBuilderTest {
     public void createSIPByValue() {
 
         // Ingestion metadata
-        String processingChain = "chain";
-        String sessionId = "firstSession";
+        String clientId = "clientId";
+        String clientSession = "firstSession";
+        String ingestChain = "chain";
 
         String fileName = "test.xml";
         DataType dataType = DataType.RAWDATA;
@@ -69,7 +69,8 @@ public class SIPBuilderTest {
         String algorithm = "checksumAlgorithm";
 
         // Initialize a SIP Collection builder
-        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(processingChain, sessionId, sessionId);
+        SIPCollection collection = SIPCollection
+                .build(IngestMetadata.build(clientId, clientSession, ingestChain, StorageMetadata.build("test", null)));
 
         // Create a SIP builder
         String providerId = "SIP_001";
@@ -80,9 +81,8 @@ public class SIPBuilderTest {
         sipBuilder.addContentInformation();
 
         // Add SIP to its collection
-        collectionBuilder.add(sipBuilder.build());
+        collection.add(sipBuilder.build());
 
-        SIPCollection collection = collectionBuilder.build();
         String collectionString = gson.toJson(collection);
         LOGGER.debug(collectionString);
 

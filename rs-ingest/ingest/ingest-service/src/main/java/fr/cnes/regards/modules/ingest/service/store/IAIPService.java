@@ -23,10 +23,8 @@ import java.util.Optional;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
-import fr.cnes.regards.modules.storage.domain.IAipState;
-import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * AIP Service interface. Service to handle business around {@link AIPEntity}s
@@ -40,36 +38,19 @@ public interface IAIPService {
     void handleJobEvent(JobEvent jobEvent);
 
     /**
-     * Handle AIP event from STORAGE
-     */
-    void handleAipEvent(AIPEvent aipEvent);
-
-    /**
      * Set the status of the given AIP to given one
      */
-    void setAipInError(UniformResourceName aipId, IAipState storeError, String failureCause, SIPState sipState);
+    void setAipInError(UniformResourceName aipId, AIPState storeError, String failureCause, SIPState sipState);
 
     /**
      * Delete the {@link AIPEntity} by his ipId
      */
-    void deleteAip(UniformResourceName aipId, UniformResourceName sipId, IAipState state);
+    void deleteAip(UniformResourceName aipId, UniformResourceName sipId, AIPState state);
 
     /**
      * Set {@link AIPEntity} state to give none
      */
-    void setAipToStored(UniformResourceName aipId, IAipState state);
-
-    /**
-     * Set {@link AIPEntity} state to {@link AIPState#INDEXED}
-     * @return {@link AIPEntity} updated
-     */
-    AIPEntity setAipToIndexed(AIPEntity aip);
-
-    /**
-     * Set {@link AIPEntity} state to {@link AIPState#INDEX_ERROR}
-     * @return {@link AIPEntity} updated
-     */
-    AIPEntity setAipToIndexError(AIPEntity aip);
+    void setAipToStored(UniformResourceName aipId, AIPState state);
 
     /**
      * Search for a {@link AIPEntity} by its ipId

@@ -3,8 +3,9 @@ package fr.cnes.regards.modules.ingest.domain.entity;
 import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -23,9 +24,7 @@ import org.hibernate.annotations.TypeDefs;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.entity.converters.AipStateConverter;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.IAipState;
+import fr.cnes.regards.modules.ingest.domain.aip.AIP;
 
 @Entity
 @Table(name = "t_aip", indexes = { @Index(name = "idx_aip_id", columnList = "id,aipId,sip_id"),
@@ -42,30 +41,30 @@ public class AIPEntity {
      * The AIP Internal identifier (generated URN)
      * versions
      */
-    @NotBlank
+    @NotBlank(message = "AIP URN is required")
     @Column(name = "aipId", length = SIPEntity.MAX_URN_SIZE)
     private String aipId;
 
     /**
      * The SIP identifier which generate the current AIP
      */
-    @NotNull
+    @NotNull(message = "Related SIP entity is required")
     @ManyToOne
     @JoinColumn(name = "sip_id", foreignKey = @ForeignKey(name = "fk_sip"))
     private SIPEntity sip;
 
-    @NotNull
-    @Convert(converter = AipStateConverter.class)
-    private IAipState state;
+    @NotNull(message = "AIP state is required")
+    @Enumerated(EnumType.STRING)
+    private AIPState state;
 
-    @NotNull
+    @NotNull(message = "Creation date is required")
     @Column(name = "creation_date")
     private OffsetDateTime creationDate;
 
     @Column(name = "error_message", length = 256)
     private String errorMessage;
 
-    @NotNull
+    @NotNull(message = "RAW JSON AIP is required")
     @Column(columnDefinition = "jsonb", name = "rawaip")
     @Type(type = "jsonb")
     private AIP aip;
@@ -82,11 +81,11 @@ public class AIPEntity {
         this.sip = sip;
     }
 
-    public IAipState getState() {
+    public AIPState getState() {
         return state;
     }
 
-    public void setState(IAipState state) {
+    public void setState(AIPState state) {
         this.state = state;
     }
 
@@ -130,4 +129,13 @@ public class AIPEntity {
         this.aipId = aipId.toString();
     }
 
+    public static AIPEntity build(SIPEntity sip, AIPState state, AIP aip) {
+        AIPEntity aipEntity = new AIPEntity();
+        aipEntity.setAip(aip);
+        aipEntity.setState(state);
+        aipEntity.setSip(sip);
+        aipEntity.setAipId(aip.getId());
+        aipEntity.setCreationDate(OffsetDateTime.now());
+        return aipEntity;
+    }
 }

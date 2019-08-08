@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -29,9 +28,10 @@ import org.springframework.data.domain.Pageable;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.RejectedSip;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.storage.domain.RejectedSip;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -47,15 +47,15 @@ public interface ISIPService {
     Collection<SIPEntity> getAllVersions(String providerId);
 
     /**
-     * Does a version of asked SIP into "after valid" state alreaty exist ? (see {@link SIPState} for accepted states
+     * Does a version of asked SIP into "after valid" state already exist ? (see {@link SIPState} for accepted states
      */
     boolean validatedVersionExists(String providerId);
 
     /**
      * Retrieve all {@link SIPEntity}s matching the parameters. SIPs are ordered by {@link SIPEntity#getIngestDate()}
      */
-    Page<SIPEntity> search(String providerId, String sessionSource, String sessionName, String owner, OffsetDateTime from, List<SIPState> state,
-            String processing, Pageable page);
+    Page<SIPEntity> search(String providerId, String clientId, String clientSession, String owner, OffsetDateTime from,
+            List<SIPState> state, String ingestChain, Pageable page);
 
     /**
      * Retrieve one {@link SIPEntity} for the given sipId
@@ -80,12 +80,11 @@ public interface ISIPService {
 
     /**
      * Delete all {@link SIPEntity}s associated to the given session.
-     * @param sessionSource
-     * @param sessionName
+     * @param sessionId
      * @return rejected or undeletable {@link SIPEntity}s
      * @throws ModuleException
      */
-    Collection<RejectedSip> deleteSIPEntitiesForSession(String sessionSource, String sessionName) throws ModuleException;
+    Collection<RejectedSip> deleteSIPEntitiesForSession(String clientId, String clientSession) throws ModuleException;
 
     /**
      * Delete all {@link SIPEntity}s.
@@ -107,21 +106,21 @@ public interface ISIPService {
      */
     SIPEntity saveSIPEntity(SIPEntity sip);
 
-
     /**
-     * Notify a SIP state changed from previousStep to the nextStep
-     * @param metadata
-     * @param previousState
-     * @param nextState
+     * Notify single SIP state change
+     * @param metadata ingest metadata
+     * @param previousState previous state
+     * @param nextState next state
      */
     void notifySipChangedState(IngestMetadata metadata, SIPState previousState, SIPState nextState);
 
-
     /**
-     * Notify several SIPs state changed from previousStep to the nextStep
-     * @param metadata
-     * @param previousState
-     * @param nextState
+     * Notify multiple SIP state change
+     * @param metadata ingest metadata
+     * @param previousState previous state
+     * @param nextState next state
+     * @param nbSip SIP count
      */
     void notifySipsChangedState(IngestMetadata metadata, SIPState previousState, SIPState nextState, int nbSip);
+
 }

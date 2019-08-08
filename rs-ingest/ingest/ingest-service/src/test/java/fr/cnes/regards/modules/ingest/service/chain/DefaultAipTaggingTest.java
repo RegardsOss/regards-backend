@@ -38,11 +38,11 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.ingest.domain.aip.AIP;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultAIPTagging;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 
 /**
  * Test {@link DefaultAIPTagging} plugin
@@ -111,9 +111,8 @@ public class DefaultAipTaggingTest {
         String providerId = "providerId1";
         String filename = "test.netcdf";
         String md5 = "plifplafplouf";
-        String session = "session 1";
         AIPBuilder builder = new AIPBuilder(UniformResourceName.fromString(aipUrn),
-                Optional.of(UniformResourceName.fromString(sipUrn)), providerId, EntityType.DATA, session);
+                Optional.of(UniformResourceName.fromString(sipUrn)), providerId, EntityType.DATA);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("target", filename), md5);
         builder.addContentInformation();
         AIP single = builder.build();

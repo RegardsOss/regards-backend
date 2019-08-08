@@ -60,9 +60,9 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
@@ -151,8 +151,8 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
         initDefaultProcessingChain();
 
         // Init a SIP in database with state CREATED and managed with default chain
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(DEFAULT_PROCESSING_CHAIN_TEST, SESSION_SOURCE, SESSION_NAME);
-        SIPCollection collection = colBuilder.build();
+        SIPCollection collection = SIPCollection
+                .build(IngestMetadata.build(SESSION_SOURCE, SESSION_NAME, DEFAULT_PROCESSING_CHAIN_TEST));
 
         SIPBuilder builder = new SIPBuilder(SIP_DEFAULT_CHAIN_ID_TEST);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "sdsdfm1211vd");
@@ -168,8 +168,7 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
         entityDefaultChainTest = resultSip.get().getId();
 
         // Init a SIP in database with state CREATED
-        colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, SESSION_SOURCE, SESSION_NAME);
-        collection = colBuilder.build();
+        collection = SIPCollection.build(IngestMetadata.build(SESSION_SOURCE, SESSION_NAME, PROCESSING_CHAIN_TEST));
 
         builder = new SIPBuilder(SIP_ID_TEST);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
@@ -185,8 +184,7 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
         entityIdTest = resultSip.get().getId();
 
         // Init a SIP with reference in database with state CREATED
-        colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, SESSION_SOURCE, SESSION_NAME);
-        collection = colBuilder.build();
+        collection = SIPCollection.build(IngestMetadata.build(SESSION_SOURCE, SESSION_NAME, PROCESSING_CHAIN_TEST));
 
         builder = new SIPBuilder(SIP_REF_ID_TEST);
         collection.add(builder.buildReference(Paths.get("src/test/resources/file_ref.xml"),
@@ -340,11 +338,7 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
         aips = aipRepository.findBySip(resultSip);
         Assert.assertTrue("There should be one AIP generated associated to the entry sip", aips.size() == 1);
         Assert.assertTrue("The AIP generated should be in CREATED state",
-                          SipAIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
-        Assert.assertEquals("AIP should contain the session ID",
-                            aips.stream().findFirst().get().getAip().getProperties().getPdi().getProvenanceInformation().getSessionSource(),
-                SESSION_SOURCE);
-
+                          AIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
     }
 
     @Purpose("Test fully configured process chain to ingest a new SIP provided by reference")
@@ -366,12 +360,7 @@ public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT
         Set<AIPEntity> aips = aipRepository.findBySip(resultSip);
         Assert.assertTrue("There should be one AIP generated associated to the entry sip", aips.size() == 1);
         Assert.assertTrue("The AIP generated should be in CREATED state",
-                          SipAIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
-        Assert.assertEquals("AIP should contain the session ID",
-                            aips.stream().findFirst().get().getAip().getProperties().getPdi().getProvenanceInformation()
-                                    .getSessionSource(),
-                SESSION_SOURCE);
-
+                          AIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
     }
 
     protected IJob<?> runJob(JobInfo jobInfo) {

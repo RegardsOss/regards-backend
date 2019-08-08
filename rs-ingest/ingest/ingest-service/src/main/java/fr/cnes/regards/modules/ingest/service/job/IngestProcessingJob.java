@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import fr.cnes.regards.modules.ingest.service.ISIPService;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +28,7 @@ import java.util.StringJoiner;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.reflect.TypeToken;
+
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -41,8 +41,10 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.aip.AIP;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
 import fr.cnes.regards.modules.ingest.service.chain.step.GenerationStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.PostprocessingStep;
@@ -50,7 +52,6 @@ import fr.cnes.regards.modules.ingest.service.chain.step.PreprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.StoreStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
-import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
  * This job manages processing chain for AIP generation from a SIP
@@ -135,25 +136,22 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         for (SIPEntity entity : entities) {
             currentEntity = entity;
             try {
-                // Step 1 : optional preprocessing
+                // First step : optional preprocessing
                 SIP sip = preStep.execute(entity.getSip());
-                // Step 2 : required validation
+                // Next step : required validation
                 validationStep.execute(sip);
-                // Step 3 : required AIP generation
+                // Next step : required AIP generation
                 List<AIP> aips = generationStep.execute(sip);
-                // Step 4 : Save the session inside the AIP - no plugin involved
-                aips = setSessionOnAips(entity, aips);
-                // Step 5 : optional AIP tagging
+                // Next step : optional AIP tagging
                 taggingStep.execute(aips);
-                // Step 6
+                // Next step : store AIP (no plugin involved)
                 storeStep.execute(aips);
                 // Step 7 : optional postprocessing
                 postprocessingStep.execute(sip);
             } catch (ProcessingStepException e) {
                 errorOccured = true;
                 String msg = String.format("Error while ingesting SIP \"%s\" with provider id \"%s\"",
-                                           currentEntity.getSipId(),
-                                           currentEntity.getProviderId());
+                                           currentEntity.getSipId(), currentEntity.getProviderId());
                 notifMsg.add(msg);
                 super.logger.error(msg);
                 super.logger.error("Ingestion step error", e);
@@ -162,24 +160,9 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         }
         // notify if errors occured
         if (errorOccured) {
-            notificationClient.notify(notifMsg.toString(),
-                                      "Error occurred during SIPs Ingestion.",
-                                      NotificationLevel.INFO,
-                                      DefaultRole.ADMIN);
+            notificationClient.notify(notifMsg.toString(), "Error occurred during SIPs Ingestion.",
+                                      NotificationLevel.INFO, DefaultRole.ADMIN);
         }
-    }
-
-    /**
-     * Save the current session inside AIPs provenance info
-     * @param aips list of aips
-     * @return the updated list
-     */
-    private List<AIP> setSessionOnAips(SIPEntity entity, List<AIP> aips) {
-        for (AIP aip : aips) {
-            aip.getProperties().getPdi().getProvenanceInformation().setSessionSource(entity.getIngestMetadata().getSessionSource());
-            aip.getProperties().getPdi().getProvenanceInformation().setSessionName(entity.getIngestMetadata().getSessionName());
-        }
-        return aips;
     }
 
     @Override

@@ -21,19 +21,13 @@ package fr.cnes.regards.modules.ingest.dao;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.persistence.LockModeType;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
-import fr.cnes.regards.modules.storage.domain.IAipState;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 
 /**
  * JPA Repository to access {@link AIPEntity}
@@ -69,9 +63,9 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
      * @return optional {@link AIPEntity}
      */
     @Query("select id from AIPEntity a where a.state= ?1")
-    Set<Long> findIdByState(IAipState state);
+    Set<Long> findIdByState(AIPState state);
 
-    Set<AIPEntity> findBySipIngestMetadataProcessingAndState(String processingChain, IAipState state);
+    Set<AIPEntity> findBySipIngestMetadataProcessingAndState(String processingChain, AIPState state);
 
     /**
      * Update state of the given {@link AIPEntity}
@@ -80,5 +74,5 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
      */
     @Modifying
     @Query("UPDATE AIPEntity a set a.state = ?1, a.errorMessage = ?3 where a.aipId = ?2")
-    void updateAIPEntityStateAndErrorMessage(IAipState state, String aipId, String errorMessage);
+    void updateAIPEntityStateAndErrorMessage(AIPState state, String aipId, String errorMessage);
 }

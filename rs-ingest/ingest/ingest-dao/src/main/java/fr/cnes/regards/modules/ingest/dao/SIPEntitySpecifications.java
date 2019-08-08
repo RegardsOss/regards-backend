@@ -46,15 +46,15 @@ public final class SIPEntitySpecifications {
      * Filter on the given attributes (sessionId, owner, ingestDate and state) and return result ordered by descending
      * ingestDate
      */
-    public static Specification<SIPEntity> search(String providerId, String sesssionSource, String sesssionName, String owner,
-            OffsetDateTime from, List<SIPState> states, String processing) {
+    public static Specification<SIPEntity> search(String providerId, String clientId, String clientSession,
+            String owner, OffsetDateTime from, List<SIPState> states, String ingestChain) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            if (sesssionSource != null) {
-                predicates.add(cb.equal(root.get("ingestMetadata").get("sessionSource"), sesssionSource));
+            if (clientId != null) {
+                predicates.add(cb.equal(root.get("ingestMetadata").get("clientId"), clientId));
             }
-            if (sesssionName != null) {
-                predicates.add(cb.equal(root.get("ingestMetadata").get("sessionName"), sesssionName));
+            if (clientId != null) {
+                predicates.add(cb.equal(root.get("ingestMetadata").get("clientId"), clientId));
             }
             if (owner != null) {
                 predicates.add(cb.equal(root.get("owner"), owner));
@@ -62,7 +62,7 @@ public final class SIPEntitySpecifications {
             if (from != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("ingestDate"), from));
             }
-            if ((states != null) && !states.isEmpty()) {
+            if (states != null && !states.isEmpty()) {
                 Set<Predicate> statePredicates = Sets.newHashSet();
                 for (SIPState state : states) {
                     statePredicates.add(cb.equal(root.get("state"), state));
@@ -76,8 +76,8 @@ public final class SIPEntitySpecifications {
                     predicates.add(cb.equal(root.get("providerId"), providerId));
                 }
             }
-            if (processing != null) {
-                predicates.add(cb.equal(root.get("ingestMetadata").get("processing"), processing));
+            if (ingestChain != null) {
+                predicates.add(cb.equal(root.get("ingestMetadata").get("ingestChain"), ingestChain));
             }
             query.orderBy(cb.desc(root.get("ingestDate")));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));

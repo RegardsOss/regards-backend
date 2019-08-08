@@ -47,8 +47,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
 
 /**
  *
@@ -220,9 +219,10 @@ public class SIPValidationTest {
     @Test
     public void validateSIPCollection() {
 
-        SIPCollectionBuilder builder = new SIPCollectionBuilder("processingChain");
+        SIPCollection collection = SIPCollection.build(IngestMetadata.build("clientId", "clientSession", "ingestChain",
+                                                                            StorageMetadata.build("test", null)));
 
-        validator.validate(builder.build(), errors);
+        validator.validate(collection, errors);
         if (errors.hasErrors()) {
             Assert.fail("Builder should properly build SIP collection ");
         }

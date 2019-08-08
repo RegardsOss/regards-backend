@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.flow;
 
-import fr.cnes.regards.modules.ingest.domain.IngestMetadataDto;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.util.Assert;
@@ -39,17 +39,23 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class SipFlowItem implements ISubscribable {
 
-    @Valid
-    @NotNull
-    private IngestMetadataDto metadata;
+    private static final String MISSING_METADATA_ERROR = "Ingest metadata is required";
 
-    @NotNull
+    private static final String MISSING_SIP_ERROR = "SIP is required";
+
+    private static final String MISSING_OWNER_ERROR = "Owner is required";
+
+    @Valid
+    @NotNull(message = MISSING_METADATA_ERROR)
+    private IngestMetadata metadata;
+
+    @NotNull(message = MISSING_SIP_ERROR)
     private SIP sip;
 
-    @NotNull
+    @NotBlank(message = MISSING_OWNER_ERROR)
     private String owner;
 
-    public IngestMetadataDto getMetadata() {
+    public IngestMetadata getMetadata() {
         return metadata;
     }
 
@@ -57,7 +63,7 @@ public class SipFlowItem implements ISubscribable {
         return sip;
     }
 
-    public void setMetadata(IngestMetadataDto metadata) {
+    public void setMetadata(IngestMetadata metadata) {
         this.metadata = metadata;
     }
 
@@ -73,14 +79,12 @@ public class SipFlowItem implements ISubscribable {
         this.owner = owner;
     }
 
-    public static SipFlowItem build(String ingestProcessingChain, String sessionSource, String sessionName, SIP sip, String owner) {
-        Assert.hasText(ingestProcessingChain, "INGEST processing chain is required");
-        Assert.hasText(sessionSource, "Session source is required");
-        Assert.hasText(sessionName, "Session name is required");
-        Assert.notNull(sip, "SIP is required");
-        Assert.hasText(owner, "Owner is required");
+    public static SipFlowItem build(IngestMetadata metadata, SIP sip, String owner) {
+        Assert.notNull(metadata, MISSING_METADATA_ERROR);
+        Assert.notNull(sip, MISSING_SIP_ERROR);
+        Assert.hasText(owner, MISSING_OWNER_ERROR);
         SipFlowItem item = new SipFlowItem();
-        item.setMetadata(IngestMetadataDto.build(ingestProcessingChain, sessionSource, sessionName));
+        item.setMetadata(metadata);
         item.setSip(sip);
         item.setOwner(owner);
         return item;

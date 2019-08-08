@@ -25,10 +25,10 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.modules.ingest.domain.aip.AIP;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 
 /**
  * Default AIP tagging plugin that can manage either tags or links or both.<br/>
@@ -70,7 +70,7 @@ public class DefaultAIPTagging implements IAipTagging {
     @PluginInit
     public void init() {
         // At least, one tag or link is required
-        if (((tags == null) || tags.isEmpty()) && ((links == null) || links.isEmpty())) {
+        if ((tags == null || tags.isEmpty()) && (links == null || links.isEmpty())) {
             throw new PluginUtilsRuntimeException(
                     String.format("Tags or links is required in default tag plugin : %s", this.getClass().getName()));
         }
@@ -89,7 +89,7 @@ public class DefaultAIPTagging implements IAipTagging {
     }
 
     private void addTags(AIPBuilder builder, List<String> tags) {
-        if ((tags != null) && !tags.isEmpty()) {
+        if (tags != null && !tags.isEmpty()) {
             builder.addTags(tags.toArray(new String[tags.size()]));
         }
     }

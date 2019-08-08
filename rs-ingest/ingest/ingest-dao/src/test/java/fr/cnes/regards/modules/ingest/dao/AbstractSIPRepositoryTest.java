@@ -18,20 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
-import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+
 import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
+
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
+import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
+import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:ingest_dao" })
 public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
@@ -50,8 +53,8 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
 
     @Before
     public void init() {
-        String sessionName = "sessionId";
-        String sessionName2 = "sessionId2";
+        String clientId = "clientId";
+        String clientSession = "session";
 
         SIPEntity sip1 = new SIPEntity();
         SIPBuilder b = new SIPBuilder("SIP_001");
@@ -61,7 +64,8 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip1.setProviderId("SIP_001");
         sip1.setIngestDate(OffsetDateTime.now());
         sip1.setOwner("admin");
-        sip1.setIngestMetadata(IngestMetadata.build(PROCESSING_CHAIN, sessionName, sessionName));
+        sip1.setIngestMetadata(IngestMetadata.build(clientId, clientSession, PROCESSING_CHAIN,
+                                                    StorageMetadata.build("store", null)));
         sip1.setState(SIPState.CREATED);
         sip1.setVersion(1);
         sip1.setChecksum("1234567890");
@@ -76,7 +80,8 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip2.setProviderId("SIP_002");
         sip2.setIngestDate(OffsetDateTime.now().minusHours(6));
         sip2.setOwner("admin");
-        sip2.setIngestMetadata(IngestMetadata.build(PROCESSING_CHAIN, sessionName, sessionName));
+        sip1.setIngestMetadata(IngestMetadata.build(clientId, clientSession, PROCESSING_CHAIN,
+                                                    StorageMetadata.build("store", null)));
         sip2.setState(SIPState.CREATED);
         sip2.setVersion(1);
         sip2.setChecksum("12345678902");
@@ -91,8 +96,9 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip3.setProviderId("SIP_003");
         sip3.setIngestDate(OffsetDateTime.now().minusHours(6));
         sip3.setOwner("admin2");
-        sip3.setIngestMetadata(IngestMetadata.build(PROCESSING_CHAIN, sessionName2, sessionName2));
-        sip3.setState(SIPState.STORED);
+        sip1.setIngestMetadata(IngestMetadata.build(clientId, clientSession, PROCESSING_CHAIN,
+                                                    StorageMetadata.build("store", null)));
+        sip3.setState(SIPState.INGESTED);
         sip3.setVersion(1);
         sip3.setChecksum("12345678903");
 
@@ -108,8 +114,9 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip4.setProviderId("SIP_003");
         sip4.setIngestDate(OffsetDateTime.now().minusHours(6));
         sip4.setOwner("admin2");
-        sip4.setIngestMetadata(IngestMetadata.build(PROCESSING_CHAIN2, sessionName2, sessionName2));
-        sip4.setState(SIPState.STORED);
+        sip1.setIngestMetadata(IngestMetadata.build(clientId, clientSession, PROCESSING_CHAIN2,
+                                                    StorageMetadata.build("store", null)));
+        sip4.setState(SIPState.INGESTED);
         sip4.setVersion(2);
         sip4.setChecksum("123456789032");
 

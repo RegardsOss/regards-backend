@@ -18,7 +18,22 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -28,6 +43,7 @@ import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
 import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.RejectedSip;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
@@ -35,19 +51,6 @@ import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
-import fr.cnes.regards.modules.storage.domain.RejectedSip;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -71,10 +74,11 @@ public class SIPService implements ISIPService {
     private IAIPRepository aipRepository;
 
     @Override
-    public Page<SIPEntity> search(String providerId, String sessionSource, String sessionName, String owner, OffsetDateTime from,
-            List<SIPState> state, String processing, Pageable page) {
-        return sipRepository
-                .loadAll(SIPEntitySpecifications.search(providerId, sessionSource, sessionName, owner, from, state, processing), page);
+    public Page<SIPEntity> search(String providerId, String clientId, String clientSession, String owner,
+            OffsetDateTime from, List<SIPState> state, String ingestChain, Pageable page) {
+        return sipRepository.loadAll(SIPEntitySpecifications.search(providerId, clientId, clientSession, owner, from,
+                                                                    state, ingestChain),
+                                     page);
     }
 
     @Override
@@ -103,8 +107,10 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public Collection<RejectedSip> deleteSIPEntitiesForSession(String sessionSource, String sessionName) throws ModuleException {
-        return this.deleteSIPEntities(sipRepository.findByIngestMetadataSessionSourceAndIngestMetadataSessionName(sessionSource, sessionName));
+    public Collection<RejectedSip> deleteSIPEntitiesForSession(String clientId, String clientSession)
+            throws ModuleException {
+        return this.deleteSIPEntities(sipRepository
+                .findByIngestMetadataClientIdAndIngestMetadataClientSession(clientId, clientSession));
     }
 
     @Override
@@ -176,26 +182,14 @@ public class SIPService implements ISIPService {
     public void notifySipsChangedState(IngestMetadata metadata, SIPState previousState, SIPState nextState, int nbSip) {
 
         // Decrement the previous state by one
-        publisher.publish(SessionMonitoringEvent.build(
-                metadata.getSessionSource(),
-                metadata.getSessionName(),
-                SessionNotificationState.OK,
-                SESSION_NOTIF_STEP,
-                SessionNotificationOperator.DEC,
-                previousState.toString(),
-                nbSip
-        ));
+        publisher.publish(SessionMonitoringEvent
+                .build(metadata.getClientId(), metadata.getClientSession(), SessionNotificationState.OK,
+                       SESSION_NOTIF_STEP, SessionNotificationOperator.DEC, previousState.toString(), nbSip));
 
         // Increment the next state by one
-        publisher.publish(SessionMonitoringEvent.build(
-                metadata.getSessionSource(),
-                metadata.getSessionName(),
-                SessionNotificationState.OK,
-                SESSION_NOTIF_STEP,
-                SessionNotificationOperator.INC,
-                nextState.toString(),
-                nbSip
-        ));
+        publisher.publish(SessionMonitoringEvent.build(metadata.getClientId(), metadata.getClientSession(),
+                                                       SessionNotificationState.OK, SESSION_NOTIF_STEP,
+                                                       SessionNotificationOperator.INC, nextState.toString(), nbSip));
     }
 
     /**

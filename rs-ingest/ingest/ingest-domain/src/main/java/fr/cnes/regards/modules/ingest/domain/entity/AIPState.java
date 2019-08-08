@@ -19,8 +19,6 @@
 
 package fr.cnes.regards.modules.ingest.domain.entity;
 
-import fr.cnes.regards.modules.storage.domain.IAipState;
-
 /**
  *
  * AIP lifecycle
@@ -57,7 +55,7 @@ import fr.cnes.regards.modules.storage.domain.IAipState;
  * @author Marc Sordi
  *
  */
-public enum AIPState implements IAipState {
+public enum AIPState {
     /**
      * AIP has been created by ingest processing chain and is ready to be stored
      */
@@ -97,9 +95,4 @@ public enum AIPState implements IAipState {
      * AIP files are deleted
      */
     DELETED;
-
-    @Override
-    public String getName() {
-        return this.name();
-    }
 }
