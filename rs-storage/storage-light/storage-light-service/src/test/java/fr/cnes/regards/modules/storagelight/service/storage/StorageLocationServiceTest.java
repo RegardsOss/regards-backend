@@ -28,6 +28,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
@@ -73,7 +75,7 @@ public class StorageLocationServiceTest extends AbstractMultitenantServiceTest {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", "file.test", fileSize,
                 MediaType.APPLICATION_OCTET_STREAM);
         FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/" + checksum);
-        fileRefService.referenceFile("someone", fileMetaInfo, location);
+        fileRefService.referenceFile("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
     }
 
     @Test

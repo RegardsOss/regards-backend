@@ -101,7 +101,7 @@ public class NLFileReferenceService {
         Set<FileReference> toRestore = fileReferences.stream().filter(f -> !availables.contains(f))
                 .collect(Collectors.toSet());
         // Notify available
-        notifyAvailables(availables);
+        notifyAvailables(availables, requestId);
         // Create a restoration request for all to restore
         for (FileReference f : toRestore) {
             fileCacheReqService.create(f, expirationDate, requestId);
@@ -112,11 +112,13 @@ public class NLFileReferenceService {
      * Notify all files as AVAILABLE.
      * @param availables
      */
-    private void notifyAvailables(Set<FileReference> availables) {
-        availables.forEach(f -> publisher
-                .publishFileRefAvailable(f.getMetaInfo().getChecksum(),
-                                         String.format("file %s (checksum %s) is available for download.",
-                                                       f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum())));
+    private void notifyAvailables(Set<FileReference> availables, String requestId) {
+        availables
+                .forEach(f -> publisher
+                        .available(f.getMetaInfo().getChecksum(),
+                                   String.format("file %s (checksum %s) is available for download.",
+                                                 f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum()),
+                                   requestId));
     }
 
 }

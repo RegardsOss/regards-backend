@@ -33,11 +33,14 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.FileUtils;
-import org.assertj.core.util.Sets;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
@@ -74,6 +77,8 @@ import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginCo
  *
  */
 public abstract class AbstractFileReferenceTest extends AbstractMultitenantServiceTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractFileReferenceTest.class);
 
     protected static final String ONLINE_CONF_LABEL = "target";
 
@@ -281,7 +286,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                 MediaType.APPLICATION_OCTET_STREAM);
         fileMetaInfo.setType(type);
         FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/file.test");
-        fileRefService.referenceFile(owner, fileMetaInfo, location);
+        fileRefService.referenceFile(owner, fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
         return fileRefService.search(location.getStorage(), fileMetaInfo.getChecksum());
     }
 
@@ -346,6 +351,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                 jobService.runJob(it.next(), tenant).get();
             }
         } catch (InterruptedException | ExecutionException e) {
+            LOGGER.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
         } finally {
             runtimeTenantResolver.forceTenant(tenant);

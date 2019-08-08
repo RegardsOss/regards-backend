@@ -51,18 +51,18 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
 
     private final IJob<?> job;
 
-    private final FileReferenceService fileReferenceService;
+    private final FileReferenceService referenceService;
 
-    private final FileStorageRequestService fileRefRequestService;
+    private final FileStorageRequestService storageRequestService;
 
     private final Set<FileStorageRequest> handledRequest = Sets.newHashSet();
 
-    public FileStorageJobProgressManager(FileReferenceService fileReferenceService,
-            FileStorageRequestService fileRefRequestService, FileRefEventPublisher publisher, IJob<?> job) {
+    public FileStorageJobProgressManager(FileReferenceService referenceService,
+            FileStorageRequestService storageRequestService, FileRefEventPublisher publisher, IJob<?> job) {
         this.publisher = publisher;
         this.job = job;
-        this.fileReferenceService = fileReferenceService;
-        this.fileRefRequestService = fileRefRequestService;
+        this.referenceService = referenceService;
+        this.storageRequestService = storageRequestService;
     }
 
     @Override
@@ -82,12 +82,13 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
             Optional<FileReference> oFileRef = Optional.empty();
             request.getMetaInfo().setFileSize(fileSize);
             for (String owner : request.getOwners()) {
-                oFileRef = fileReferenceService.referenceFile(owner, request.getMetaInfo(), newLocation);
+                oFileRef = referenceService.referenceFile(owner, request.getMetaInfo(), newLocation,
+                                                          request.getRequestIds());
             }
             if (oFileRef.isPresent()) {
                 // Delete the FileRefRequest as it has been handled
                 try {
-                    fileRefRequestService.delete(request);
+                    storageRequestService.delete(request);
                 } catch (EmptyResultDataAccessException e) {
                     LOG.warn(String.format("Unable to delete storage request with id %s. Cause : %s", request.getId(),
                                            e.getMessage()),
@@ -100,26 +101,26 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
                 request.setOriginUrl(null);
                 request.setStatus(FileRequestStatus.ERROR);
                 request.setErrorCause(errorCause);
-                fileRefRequestService.update(request);
-                publisher.publishFileRefStoreError(request.getMetaInfo().getChecksum(), request.getOwners(),
-                                                   request.getStorage(), errorCause);
+                storageRequestService.update(request);
+                publisher.storeError(request.getMetaInfo().getChecksum(), request.getOwners(), request.getStorage(),
+                                     errorCause, request.getRequestIds());
             }
             handledRequest.add(request);
         }
     }
 
     @Override
-    public void storageFailed(FileStorageRequest fileRefRequest, String cause) {
+    public void storageFailed(FileStorageRequest request, String cause) {
         LOG.error("[STORAGE ERROR] - Store error for file {} (id={})in {} (checksum: {}). Cause : {}",
-                  fileRefRequest.getMetaInfo().getFileName(), fileRefRequest.getId(), fileRefRequest.getStorage(),
-                  fileRefRequest.getMetaInfo().getChecksum(), cause);
+                  request.getMetaInfo().getFileName(), request.getId(), request.getStorage(),
+                  request.getMetaInfo().getChecksum(), cause);
         job.advanceCompletion();
-        fileRefRequest.setStatus(FileRequestStatus.ERROR);
-        fileRefRequest.setErrorCause(cause);
-        fileRefRequestService.update(fileRefRequest);
-        publisher.publishFileRefStoreError(fileRefRequest.getMetaInfo().getChecksum(), fileRefRequest.getOwners(),
-                                           fileRefRequest.getStorage(), cause);
-        handledRequest.add(fileRefRequest);
+        request.setStatus(FileRequestStatus.ERROR);
+        request.setErrorCause(cause);
+        storageRequestService.update(request);
+        publisher.storeError(request.getMetaInfo().getChecksum(), request.getOwners(), request.getStorage(), cause,
+                             request.getRequestIds());
+        handledRequest.add(request);
     }
 
     public boolean isHandled(FileStorageRequest req) {

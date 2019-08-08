@@ -30,6 +30,7 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -68,13 +69,13 @@ public class FileStorageRequest {
     private Long id;
 
     @Column(name = "request_id", nullable = false, length = 128)
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "ta_file_storage_request_ids", joinColumns = @JoinColumn(name = "file_ref_id",
             foreignKey = @ForeignKey(name = "fk_ta_file_storage_request_ids_t_file_storage_request")))
     private final Set<String> requestIds = Sets.newHashSet();
 
     @Column(name = "owner")
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "ta_file_storage_request_owners", joinColumns = @JoinColumn(name = "file_ref_id",
             foreignKey = @ForeignKey(name = "fk_ta_file_storage_request_owners_t_file_storage_request")))
     private final Set<String> owners = Sets.newHashSet();

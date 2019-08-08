@@ -81,7 +81,7 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
                 LOGGER.debug("[RESTORATION SUCCESS] - {}", successMessage);
                 job.advanceCompletion();
                 fileCacheRequestService.handleSuccess(fileReq, cacheFileLocation, cacheFilePath.toFile().length());
-                publisher.publishFileRefAvailable(fileRef.getMetaInfo().getChecksum(), successMessage);
+                publisher.available(fileRef.getMetaInfo().getChecksum(), successMessage, fileReq.getRequestId());
                 handled.add(fileReq);
             } catch (MalformedURLException e) {
                 LOGGER.error(e.getMessage(), e);
@@ -109,7 +109,7 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
                      fileRef.getMetaInfo().getChecksum(), cause);
         job.advanceCompletion();
         fileCacheRequestService.handleError(fileReq, cause);
-        publisher.publishFileRefNotAvailable(fileRef.getMetaInfo().getChecksum(), cause);
+        publisher.notAvailable(fileRef.getMetaInfo().getChecksum(), cause, fileReq.getRequestId());
         handled.add(fileReq);
     }
 

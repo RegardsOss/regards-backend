@@ -207,7 +207,7 @@ public class FileReferenceService {
                         .filter(f -> f.getMetaInfo().getChecksum().equals(file.getChecksum())
                                 && f.getLocation().getStorage().contentEquals(file.getStorage()))
                         .findFirst();
-                referenceFile(file, oFileRef);
+                referenceFile(file, oFileRef, Sets.newHashSet(item.getRequestId()));
                 // Performance optimization.
                 flushCount++;
                 if (flushCount > 100) {
@@ -219,23 +219,25 @@ public class FileReferenceService {
         }
     }
 
-    public Optional<FileReference> referenceFile(String owner, FileReferenceMetaInfo metaInfo, FileLocation location) {
+    public Optional<FileReference> referenceFile(String owner, FileReferenceMetaInfo metaInfo, FileLocation location,
+            Collection<String> requestIds) {
         Optional<FileReference> oFileRef = fileRefRepo.findByLocationStorageAndMetaInfoChecksum(location.getStorage(),
                                                                                                 metaInfo.getChecksum());
         return referenceFile(FileReferenceRequestDTO
                 .build(metaInfo.getFileName(), metaInfo.getChecksum(), metaInfo.getAlgorithm(),
                        metaInfo.getMimeType().toString(), metaInfo.getFileSize(), owner, location.getStorage(),
                        location.getUrl())
-                .withHeight(metaInfo.getHeight()).withWidth(metaInfo.getWidth()).withType(metaInfo.getType()),
-                             oFileRef);
+                .withHeight(metaInfo.getHeight()).withWidth(metaInfo.getWidth()).withType(metaInfo.getType()), oFileRef,
+                             requestIds);
     }
 
-    private Optional<FileReference> referenceFile(FileReferenceRequestDTO request, Optional<FileReference> fileRef) {
+    private Optional<FileReference> referenceFile(FileReferenceRequestDTO request, Optional<FileReference> fileRef,
+            Collection<String> requestIds) {
         if (fileRef.isPresent()) {
-            return handleAlreadyExists(fileRef.get(), request);
+            return handleAlreadyExists(fileRef.get(), request, requestIds);
         } else {
             return Optional.of(create(Lists.newArrayList(request.getOwner()), request.buildMetaInfo(),
-                                      new FileLocation(request.getStorage(), request.getUrl())));
+                                      new FileLocation(request.getStorage(), request.getUrl()), requestIds));
         }
     }
 
@@ -265,14 +267,15 @@ public class FileReferenceService {
      * This method does not delete file physically.
      *
      * @param fileRef {@link FileReference} to delete.
+     * @param deletion request businness identifier
      */
-    public void delete(FileReference fileRef) {
+    public void delete(FileReference fileRef, String requestId) {
         Assert.notNull(fileRef, "File reference to delete cannot be null");
         Assert.notNull(fileRef.getId(), "File reference identifier to delete cannot be null");
         fileRefRepo.deleteById(fileRef.getId());
         String message = String.format("File reference %s (checksum: %s) as been completly deleted for all owners.",
                                        fileRef.getMetaInfo().getFileName(), fileRef.getMetaInfo().getChecksum());
-        fileRefPublisher.publishFileRefDeleted(fileRef, message);
+        fileRefPublisher.deletionSuccess(fileRef, message, requestId);
     }
 
     /**
@@ -422,7 +425,7 @@ public class FileReferenceService {
         }
         LOGGER.debug(message);
         // Inform owners that the file reference is considered has delete for him.
-        fileRefPublisher.publishFileRefDeletedForOwner(fileReference, owner, message);
+        fileRefPublisher.deletionForOwnerSuccess(fileReference, owner, message, requestId);
         // If file reference does not belongs to anyone anymore, delete file reference
         if (fileReference.getOwners().isEmpty()) {
             if (storageHandler.getConfiguredStorages().contains(fileReference.getLocation().getStorage())) {
@@ -430,7 +433,7 @@ public class FileReferenceService {
                 fileDeletionRequestService.create(fileReference, forceDelete, requestId);
             } else {
                 // Else, directly delete the file reference
-                delete(fileReference);
+                delete(fileReference, requestId);
             }
         }
     }
@@ -439,16 +442,21 @@ public class FileReferenceService {
      * Creates a new {@link FileReference} with given parameters. this method does not handle physical files.
      * After success, an AMQP message {@link FileReferenceEvent} is sent with STORED state.
      *
+     * @param owners new file owners
+     * @param fileMetaInfo file information
+     * @param location file location
+     * @param requestIds business request identifiers
      * @return {@link FileReference} created.
      */
-    private FileReference create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo, FileLocation location) {
+    private FileReference create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo, FileLocation location,
+            Collection<String> requestIds) {
         FileReference fileRef = new FileReference(owners, fileMetaInfo, location);
         fileRef = fileRefRepo.save(fileRef);
         String message = String.format("New file <%s> referenced at <%s> (checksum: %s)",
                                        fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
                                        fileRef.getMetaInfo().getChecksum());
         LOGGER.debug(message);
-        fileRefPublisher.publishFileRefStored(fileRef, message);
+        fileRefPublisher.storeSuccess(fileRef, message, requestIds);
         return fileRef;
     }
 
@@ -509,8 +517,8 @@ public class FileReferenceService {
             offlines.addAll(refs.stream().filter(ref -> remainingChecksums.contains(ref.getMetaInfo().getChecksum()))
                     .collect(Collectors.toSet()));
         }
-        notifyAvailables(onlines);
-        notifyNotAvailables(offlines);
+        notifyAvailables(onlines, requestId);
+        notifyNotAvailables(offlines, requestId);
         nearlineFileService.makeAvailable(nearlines, expirationDate, requestId);
     }
 
@@ -538,7 +546,8 @@ public class FileReferenceService {
      *
      * @return {@link FileReference} if the file reference is updated. Null if a new store request is created.
      */
-    private Optional<FileReference> handleAlreadyExists(FileReference fileReference, FileReferenceRequestDTO request) {
+    private Optional<FileReference> handleAlreadyExists(FileReference fileReference, FileReferenceRequestDTO request,
+            Collection<String> requestIds) {
         FileReference updatedFileRef = null;
         Optional<FileDeletionRequest> deletionRequest = fileDeletionRequestService.search(fileReference);
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
@@ -561,7 +570,7 @@ public class FileReferenceService {
                             + "from new reference meta information. Previous ones are maintained");
                 }
                 updatedFileRef = fileRefRepo.save(fileReference);
-                fileRefPublisher.publishFileRefStored(updatedFileRef, message);
+                fileRefPublisher.storeSuccess(updatedFileRef, message, requestIds);
                 LOGGER.debug(message);
             } else {
                 String message = String.format("File %s already referenced at %s (checksum: %s) for owners %s",
@@ -570,7 +579,7 @@ public class FileReferenceService {
                                                fileReference.getMetaInfo().getChecksum(),
                                                Arrays.toString(fileReference.getOwners().toArray()));
                 updatedFileRef = fileReference;
-                fileRefPublisher.publishFileRefStored(fileReference, message);
+                fileRefPublisher.storeSuccess(fileReference, message, requestIds);
                 LOGGER.debug(message);
             }
         }
@@ -604,7 +613,7 @@ public class FileReferenceService {
                             + "from new reference meta information. Previous ones are maintained");
                 }
                 updatedFileRef = fileRefRepo.save(fileReference);
-                fileRefPublisher.publishFileRefStored(fileReference, message);
+                fileRefPublisher.storeSuccess(fileReference, message, requestId);
             } else {
                 String message = String.format("File %s already referenced at %s (checksum: %s) for owners %s",
                                                fileReference.getMetaInfo().getFileName(),
@@ -612,24 +621,27 @@ public class FileReferenceService {
                                                fileReference.getMetaInfo().getChecksum(),
                                                Arrays.toString(fileReference.getOwners().toArray()));
                 updatedFileRef = fileReference;
-                fileRefPublisher.publishFileRefStored(fileReference, message);
+                fileRefPublisher.storeSuccess(fileReference, message, requestId);
             }
         }
         return Optional.ofNullable(updatedFileRef);
     }
 
-    private void notifyAvailables(Set<FileReference> availables) {
-        availables.forEach(f -> fileRefPublisher
-                .publishFileRefAvailable(f.getMetaInfo().getChecksum(),
-                                         String.format("file %s (checksum %s) is available for download.",
-                                                       f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum())));
+    private void notifyAvailables(Set<FileReference> availables, String requestId) {
+        availables
+                .forEach(f -> fileRefPublisher
+                        .available(f.getMetaInfo().getChecksum(),
+                                   String.format("file %s (checksum %s) is available for download.",
+                                                 f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum()),
+                                   requestId));
     }
 
-    private void notifyNotAvailables(Set<FileReference> notAvailable) {
-        notAvailable.forEach(f -> fileRefPublisher
-                .publishFileRefNotAvailable(f.getMetaInfo().getChecksum(),
-                                            String.format("file %s (checksum %s) is not available for download.",
-                                                          f.getMetaInfo().getFileName(),
-                                                          f.getMetaInfo().getChecksum())));
+    private void notifyNotAvailables(Set<FileReference> notAvailable, String requestId) {
+        notAvailable
+                .forEach(f -> fileRefPublisher
+                        .notAvailable(f.getMetaInfo().getChecksum(),
+                                      String.format("file %s (checksum %s) is not available for download.",
+                                                    f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum()),
+                                      requestId));
     }
 }

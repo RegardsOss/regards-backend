@@ -259,8 +259,8 @@ public class FileStorageRequestService {
                 fileStorageRequest.setStatus(FileRequestStatus.ERROR);
                 fileStorageRequest.setErrorCause(message);
                 LOGGER.error(message);
-                fileRefEventPublisher.publishFileRefStoreError(fileMetaInfo.getChecksum(), Lists.newArrayList(owner),
-                                                               storage, message);
+                fileRefEventPublisher.storeError(fileMetaInfo.getChecksum(), Lists.newArrayList(owner), storage,
+                                                 message, requestId);
             } else {
                 LOGGER.debug("New file reference request created for file <{}> to store to {} with status {}",
                              fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage(),

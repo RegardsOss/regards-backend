@@ -1,7 +1,9 @@
 package fr.cnes.regards.modules.storagelight.domain.event;
 
 import java.util.Collection;
+import java.util.Set;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.google.common.collect.Sets;
@@ -30,23 +32,28 @@ public class FileReferenceEvent implements ISubscribable {
 
     private FileLocation location;
 
+    private final Set<String> requestIds = Sets.newHashSet();
+
     public FileReferenceEvent(@NotNull String checksum, @NotNull FileReferenceEventState state,
-            Collection<String> owners, String message, FileLocation location) {
+            Collection<String> owners, String message, FileLocation location,
+            @NotNull @NotEmpty Collection<String> requestIds) {
         super();
         this.checksum = checksum;
         this.state = state;
         this.message = message;
         this.location = location;
         this.owners = owners;
+        this.requestIds.addAll(requestIds);
     }
 
     public FileReferenceEvent(@NotNull String checksum, @NotNull FileReferenceEventState state,
-            Collection<String> owners, String message) {
+            Collection<String> owners, String message, @NotNull @NotEmpty Collection<String> requestIds) {
         super();
         this.checksum = checksum;
         this.state = state;
         this.message = message;
         this.owners = owners;
+        this.requestIds.addAll(requestIds);
     }
 
     /**

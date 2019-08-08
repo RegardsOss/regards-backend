@@ -50,10 +50,11 @@ public class FileRefEventPublisher {
      * @param fileRef {@link FileReference} deleted
      * @param message Optional message
      */
-    public void publishFileRefDeleted(FileReference fileRef, String message) {
+    public void deletionSuccess(FileReference fileRef, String message, String requestId) {
         LOGGER.debug("Publish FileReferenceEvent Deleted. {}", message);
         publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.FULLY_DELETED, null, message, fileRef.getLocation()));
+                FileReferenceEventState.FULLY_DELETED, null, message, fileRef.getLocation(),
+                Sets.newHashSet(requestId)));
     }
 
     /**
@@ -61,10 +62,11 @@ public class FileRefEventPublisher {
      * @param fileRef {@link FileReference} not deleted
      * @param message Optional error cause message
      */
-    public void publishFileRefDeletionError(FileReference fileRef, String message) {
+    public void deletionError(FileReference fileRef, String message, String requestId) {
         LOGGER.debug("Publish FileReferenceEvent Delete error. {}", message);
         publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.DELETION_ERROR, null, message, fileRef.getLocation()));
+                FileReferenceEventState.DELETION_ERROR, null, message, fileRef.getLocation(),
+                Sets.newHashSet(requestId)));
     }
 
     /**
@@ -73,10 +75,11 @@ public class FileRefEventPublisher {
      * @param owner
      * @param message Optional message
      */
-    public void publishFileRefDeletedForOwner(FileReference fileRef, String owner, String message) {
+    public void deletionForOwnerSuccess(FileReference fileRef, String owner, String message, String requestId) {
         LOGGER.debug("Publish FileReferenceEvent Deleted for owner. {}", message);
         publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.DELETED_FOR_OWNER, Sets.newHashSet(owner), message, fileRef.getLocation()));
+                FileReferenceEventState.DELETED_FOR_OWNER, Sets.newHashSet(owner), message, fileRef.getLocation(),
+                Sets.newHashSet(requestId)));
     }
 
     /**
@@ -84,10 +87,19 @@ public class FileRefEventPublisher {
      * @param fileRef {@link FileReference} deleted for the given owner
      * @param message Optional message
      */
-    public void publishFileRefStored(FileReference fileRef, String message) {
+    public void storeSuccess(FileReference fileRef, String message, Collection<String> requestIds) {
         LOGGER.debug("Publish FileReferenceEvent stored. {}", message);
         publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(), FileReferenceEventState.STORED,
-                fileRef.getOwners(), message, fileRef.getLocation()));
+                fileRef.getOwners(), message, fileRef.getLocation(), requestIds));
+    }
+
+    /**
+     * Notify listeners for a {@link FileReference} successfully referenced.
+     * @param fileRef {@link FileReference} deleted for the given owner
+     * @param message Optional message
+     */
+    public void storeSuccess(FileReference fileRef, String message, String requestId) {
+        storeSuccess(fileRef, message, Sets.newHashSet(requestId));
     }
 
     /**
@@ -97,21 +109,28 @@ public class FileRefEventPublisher {
      * @param destinationLocation
      * @param message Optional message
      */
-    public void publishFileRefStoreError(String checksum, Collection<String> owners, String storage, String message) {
+    public void storeError(String checksum, Collection<String> owners, String storage, String message,
+            Collection<String> requestIds) {
         LOGGER.debug("Publish FileReferenceEvent store error. {}", message);
         publisher.publish(new FileReferenceEvent(checksum, FileReferenceEventState.STORE_ERROR, owners, message,
-                new FileLocation(storage, null)));
+                new FileLocation(storage, null), requestIds));
     }
 
-    public void publishFileRefAvailable(String checksum, String message) {
+    public void storeError(String checksum, Collection<String> owners, String storage, String message,
+            String requestId) {
+        storeError(checksum, owners, storage, message, Sets.newHashSet(requestId));
+    }
+
+    public void available(String checksum, String message, String requestId) {
         LOGGER.debug("Publish FileReferenceEvent available for download. {}", message);
-        publisher.publish(new FileReferenceEvent(checksum, FileReferenceEventState.AVAILABLE, null, message, null));
+        publisher.publish(new FileReferenceEvent(checksum, FileReferenceEventState.AVAILABLE, null, message, null,
+                Sets.newHashSet(requestId)));
     }
 
-    public void publishFileRefNotAvailable(String checksum, String message) {
+    public void notAvailable(String checksum, String message, String requestId) {
         LOGGER.debug("Publish FileReferenceEvent not available for download. {}", message);
         publisher.publish(new FileReferenceEvent(checksum, FileReferenceEventState.AVAILABILITY_ERROR, null, message,
-                null));
+                null, Sets.newHashSet(requestId)));
     }
 
 }
