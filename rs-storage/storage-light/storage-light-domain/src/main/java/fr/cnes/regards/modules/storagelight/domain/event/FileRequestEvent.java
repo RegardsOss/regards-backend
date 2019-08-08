@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.storagelight.domain.event;
 import java.util.Collection;
 import java.util.Set;
 
+import org.springframework.util.Assert;
+
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.event.Event;
@@ -51,6 +53,9 @@ public class FileRequestEvent implements ISubscribable {
     }
 
     public static FileRequestEvent build(String requestId, FileRequestType type, FileRequestEventState state) {
+        Assert.notNull(requestId, "Request Id is mandatory");
+        Assert.notNull(type, "Request type is mandatory");
+        Assert.notNull(state, "Request state is mandatory");
         FileRequestEvent event = new FileRequestEvent();
         event.requestId = requestId;
         event.state = state;
@@ -59,10 +64,13 @@ public class FileRequestEvent implements ISubscribable {
     }
 
     public static FileRequestEvent buildError(String requestId, FileRequestType type, Collection<ErrorFile> errors) {
+        Assert.notNull(requestId, "Request Id is mandatory");
+        Assert.notNull(type, "Request type is mandatory");
         FileRequestEvent event = new FileRequestEvent();
         event.requestId = requestId;
         event.state = FileRequestEventState.ERROR;
         event.errors.addAll(errors);
+        event.type = type;
         return event;
     }
 
@@ -72,6 +80,16 @@ public class FileRequestEvent implements ISubscribable {
 
     public FileRequestType getType() {
         return type;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "FileRequestEvent [" + (requestId != null ? "requestId=" + requestId + ", " : "")
+                + (state != null ? "state=" + state + ", " : "") + (type != null ? "type=" + type + ", " : "")
+                + (errors != null ? "errors=" + errors : "") + "]";
     }
 
     public static class ErrorFile {

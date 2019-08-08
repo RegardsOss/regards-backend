@@ -187,6 +187,7 @@ public class FileReferenceService {
                     flushCount = 0;
                 }
             }
+            eventPublisher.requestGranted(item.getRequestId(), FileRequestType.STORAGE);
         }
     }
 
@@ -211,8 +212,16 @@ public class FileReferenceService {
                                 && f.getLocation().getStorage().contentEquals(file.getStorage()))
                         .findFirst();
                 try {
-                    referenceFile(file, oFileRef, Sets.newHashSet(item.getRequestId()));
+                    FileReference fileRef = referenceFile(file, oFileRef, Sets.newHashSet(item.getRequestId()));
+                    String message = String.format("New file <%s> referenced at <%s> (checksum: %s)",
+                                                   fileRef.getMetaInfo().getFileName(),
+                                                   fileRef.getLocation().toString(),
+                                                   fileRef.getMetaInfo().getChecksum());
+                    LOGGER.debug(message);
+                    eventPublisher.storeSuccess(fileRef, message, item.getRequestId());
                 } catch (ModuleException e) {
+                    eventPublisher.storeError(file.getChecksum(), Sets.newHashSet(file.getOwner()), file.getStorage(),
+                                              e.getMessage(), item.getRequestId());
                     errors.add(ErrorFile.build(file.getChecksum(), file.getStorage(), e.getMessage()));
                 }
                 // Performance optimization.
@@ -223,6 +232,7 @@ public class FileReferenceService {
                     flushCount = 0;
                 }
             }
+            eventPublisher.requestGranted(item.getRequestId(), FileRequestType.REFERENCE);
             if (errors.isEmpty()) {
                 eventPublisher.requestDone(item.getRequestId(), FileRequestType.REFERENCE);
             } else {
@@ -309,6 +319,7 @@ public class FileReferenceService {
                     removeOwner(oFileRef.get(), request.getOwner(), request.isForceDelete(), item.getRequestId());
                 }
             }
+            eventPublisher.requestGranted(item.getRequestId(), FileRequestType.DELETION);
         }
         LOGGER.debug("...deletion of {} refs handled in {} ms", items.size(), System.currentTimeMillis() - start);
     }
@@ -467,11 +478,6 @@ public class FileReferenceService {
             Collection<String> requestIds) {
         FileReference fileRef = new FileReference(owners, fileMetaInfo, location);
         fileRef = fileRefRepo.save(fileRef);
-        String message = String.format("New file <%s> referenced at <%s> (checksum: %s)",
-                                       fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
-                                       fileRef.getMetaInfo().getChecksum());
-        LOGGER.debug(message);
-        eventPublisher.storeSuccess(fileRef, message, requestIds);
         return fileRef;
     }
 
@@ -535,6 +541,7 @@ public class FileReferenceService {
         notifyAvailables(onlines, requestId);
         notifyNotAvailables(offlines, requestId);
         nearlineFileService.makeAvailable(nearlines, expirationDate, requestId);
+        eventPublisher.requestGranted(requestId, FileRequestType.AVAILABILITY);
     }
 
     /**
@@ -588,7 +595,6 @@ public class FileReferenceService {
                             + "from new reference meta information. Previous ones are maintained");
                 }
                 FileReference updatedFileRef = fileRefRepo.save(fileReference);
-                eventPublisher.storeSuccess(updatedFileRef, message, requestIds);
                 LOGGER.debug(message);
                 return updatedFileRef;
             } else {

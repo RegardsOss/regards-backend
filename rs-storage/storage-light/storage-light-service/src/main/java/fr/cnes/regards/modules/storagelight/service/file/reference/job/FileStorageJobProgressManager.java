@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
@@ -72,14 +73,16 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
                             request.getStorage(), request.getMetaInfo().getFileName()));
         } else {
             FileLocation newLocation = new FileLocation(request.getStorage(), storedUrl);
-            LOG.info("[STORAGE SUCCESS] - Store success for file {} (id={})in {} (checksum: {}).",
-                     request.getMetaInfo().getFileName(), request.getId(), newLocation,
-                     request.getMetaInfo().getChecksum());
+            String message = String.format("Store success for file %s (id=%s)in %s (checksum: %s).",
+                                           request.getMetaInfo().getFileName(), request.getId(), newLocation,
+                                           request.getMetaInfo().getChecksum());
+            LOG.info("[STORAGE SUCCESS] - {}.", message);
             job.advanceCompletion();
             request.getMetaInfo().setFileSize(fileSize);
             for (String owner : request.getOwners()) {
                 try {
-                    referenceService.referenceFile(owner, request.getMetaInfo(), newLocation, request.getRequestIds());
+                    FileReference fileRef = referenceService.referenceFile(owner, request.getMetaInfo(), newLocation,
+                                                                           request.getRequestIds());
                     // Delete the FileRefRequest as it has been handled
                     try {
                         storageRequestService.delete(request);
@@ -88,6 +91,7 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
                                                request.getId(), e.getMessage()),
                                  e);
                     }
+                    publisher.storeSuccess(fileRef, message, request.getRequestIds());
                 } catch (ModuleException e) {
                     String errorCause = String.format("Unable to save new file reference for file %s",
                                                       request.getStorage());

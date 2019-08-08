@@ -111,7 +111,8 @@ public class StoragePluginConfigurationHandler implements IHandler<PluginConfEve
      * Return all the configured {@link PluginConfiguration} labels.
      */
     public Set<String> getConfiguredStorages() {
-        if (this.storages.get(runtimeTenantResolver.getTenant()) == null) {
+        if ((this.storages.get(runtimeTenantResolver.getTenant()) == null)
+                || this.storages.get(runtimeTenantResolver.getTenant()).isEmpty()) {
             this.refresh(runtimeTenantResolver.getTenant());
         }
         return this.storages.get(runtimeTenantResolver.getTenant());
@@ -121,7 +122,8 @@ public class StoragePluginConfigurationHandler implements IHandler<PluginConfEve
      * Return all the online storage location configured {@link PluginConfiguration} labels.
      */
     public Set<String> getConfiguredOnlineStorages() {
-        if (this.onlineStorages.get(runtimeTenantResolver.getTenant()) == null) {
+        if ((this.onlineStorages.get(runtimeTenantResolver.getTenant()) == null)
+                || this.onlineStorages.get(runtimeTenantResolver.getTenant()).isEmpty()) {
             this.refresh(runtimeTenantResolver.getTenant());
         }
         return this.onlineStorages.get(runtimeTenantResolver.getTenant());

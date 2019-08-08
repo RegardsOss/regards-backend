@@ -64,6 +64,7 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
         FileRequestEvent event = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
         try {
+            LOGGER.info("Handling request event : {}", event.toString());
             handle(event);
         } finally {
             runtimeTenantResolver.clearTenant();
