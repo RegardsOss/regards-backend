@@ -18,9 +18,12 @@
  */
 package fr.cnes.regards.modules.storagelight.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -32,7 +35,10 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
  * @author sbinda
  *
  */
+@Component
 public class FileRequestEventHandler implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileRequestEvent> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileRequestEventHandler.class);
 
     @Autowired(required = false)
     private IStorageListener listener;
@@ -47,6 +53,8 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
     public void onApplicationEvent(ApplicationReadyEvent event) {
         if (listener != null) {
             subscriber.subscribeTo(FileRequestEvent.class, this);
+        } else {
+            LOGGER.warn("No listener configured to collect storage client AMQP responses !!");
         }
     }
 

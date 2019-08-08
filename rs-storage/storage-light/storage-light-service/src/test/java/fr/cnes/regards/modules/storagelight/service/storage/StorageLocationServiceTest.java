@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileReference
  */
 @ActiveProfiles("noscheduler")
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
-        "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=12" })
+        "regards.storage.cache.path=target/cache" })
 public class StorageLocationServiceTest extends AbstractMultitenantServiceTest {
 
     @Autowired
