@@ -18,28 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import com.google.gson.JsonObject;
-import fr.cnes.regards.framework.geojson.GeoJsonFieldDescriptors;
-import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
-import fr.cnes.regards.framework.geojson.OaisFieldDescriptors;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.ConstrainedFields;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.SIPCollection;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.service.ISIPService;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -47,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -63,6 +42,29 @@ import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import com.google.gson.JsonObject;
+
+import fr.cnes.regards.framework.geojson.GeoJsonFieldDescriptors;
+import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
+import fr.cnes.regards.framework.geojson.OaisFieldDescriptors;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.ConstrainedFields;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
+import fr.cnes.regards.modules.ingest.domain.SIPCollection;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.service.ISIPService;
+
 /**
  *
  * Test SIP submission. Just test the REST layer with bean validation.
@@ -75,7 +77,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPControllerIT.class);
-
 
     public static final String SESSION_SOURCE = "sessionSource";
 
@@ -94,8 +95,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Ingest valid SIPs")
     public void ingestSips() {
 
-        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, SESSION_SOURCE, SESSION_NAME);
+        SIPCollection collection = SIPCollection.build(IngestMetadata
+                .build(SESSION_SOURCE, SESSION_NAME, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
         SIP firstSIPwithGeometry = buildSipOne("SIP_001", "data1.fits").build();
         firstSIPwithGeometry
@@ -107,14 +108,14 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         Double[] dd = ld.toArray(new Double[ld.size()]);
         firstSIPwithGeometry.setBbox(dd);
 
-        collectionBuilder.add(firstSIPwithGeometry);
+        collection.add(firstSIPwithGeometry);
 
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         documentSipRequestBody(requestBuilderCustomizer);
 
-        performDefaultPost(SIPController.TYPE_MAPPING, collectionBuilder.build(), requestBuilderCustomizer,
+        performDefaultPost(SIPController.TYPE_MAPPING, collection, requestBuilderCustomizer,
                            "SIP collection should be submitted.");
     }
 
@@ -143,17 +144,17 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Get SIPs")
     public void getSips() {
 
-        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, SESSION_SOURCE, SESSION_NAME);
+        SIPCollection collection = SIPCollection.build(IngestMetadata
+                .build(SESSION_SOURCE, SESSION_NAME, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
-        collectionBuilder.add(buildSipOne("SIP_001", "data1.fits").build());
-        collectionBuilder.add(buildSipOne("SIP_002", "data2.fits").build());
+        collection.add(buildSipOne("SIP_001", "data1.fits").build());
+        collection.add(buildSipOne("SIP_002", "data2.fits").build());
 
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
 
-        performDefaultPost(SIPController.TYPE_MAPPING, collectionBuilder.build(), requestBuilderCustomizer,
+        performDefaultPost(SIPController.TYPE_MAPPING, collection, requestBuilderCustomizer,
                            "SIP collection should be submitted.");
 
         // Retrieve SIPs
@@ -202,14 +203,13 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramDescrList));
     }
 
-
     @Test
     @Requirement("REGARDS_DSL_ING_PRO_110")
     @Purpose("Ingest valid and invalid SIPs")
     public void ingestInvalidSips() {
 
-        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, SESSION_SOURCE, SESSION_NAME);
+        SIPCollection collection = SIPCollection.build(IngestMetadata
+                .build(SESSION_SOURCE, SESSION_NAME, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
         // SIP 1
         SIPBuilder sipBuilder = new SIPBuilder("SIP_001");
@@ -219,7 +219,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                              "http://www.iana.org/assignments/media-types/application/fits",
                              MediaType.valueOf("application/fits"));
         sipBuilder.addContentInformation();
-        collectionBuilder.add(sipBuilder.build());
+        collection.add(sipBuilder.build());
 
         // SIP 2
         sipBuilder = new SIPBuilder("SIP_002");
@@ -229,12 +229,12 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                              "http://www.iana.org/assignments/media-types/application/fits",
                              MediaType.valueOf("application/fits"));
         sipBuilder.addContentInformation();
-        collectionBuilder.add(sipBuilder.build());
+        collection.add(sipBuilder.build());
 
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.PARTIAL_CONTENT)
                 .addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
-        performDefaultPost(SIPController.TYPE_MAPPING, collectionBuilder.build(), requestBuilderCustomizer,
+        performDefaultPost(SIPController.TYPE_MAPPING, collection, requestBuilderCustomizer,
                            "Partial valid collection should be submitted.");
     }
 
@@ -306,9 +306,10 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         // Store SIP entity
         String sessionSource = "session";
         String sessionName = OffsetDateTime.now().toString();
-        SIPEntity sipEntity = SIPEntityBuilder.build(getDefaultTenant(), sessionSource, sessionName, sip,
-                                                     IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "me", 1,
-                                                     SIPState.ERROR, EntityType.DATA);
+        IngestMetadata metadata = IngestMetadata.build(sessionSource, sessionName,
+                                                       IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
+        SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(), metadata, sip, "me", 1, SIPState.ERROR,
+                                              EntityType.DATA);
         sipEntity.setChecksum("12332323f2ds3d6g6df");
         sipEntity.setProcessingErrors(Arrays.asList("error1", "error2"));
         sipService.saveSIPEntity(sipEntity);

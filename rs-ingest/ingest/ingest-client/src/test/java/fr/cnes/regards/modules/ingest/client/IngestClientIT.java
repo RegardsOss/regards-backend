@@ -40,8 +40,9 @@ import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
+import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
@@ -85,15 +86,15 @@ public class IngestClientIT extends AbstractRegardsWebIT {
 
     @Test
     public void ingestSIP() {
-        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
+        SIPCollection collection = SIPCollection.build(IngestMetadata
+                .build("clientId", "clientSession", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
         SIPBuilder sipBuilder = new SIPBuilder("CLIENT_SIP_001");
         String filename = OffsetDateTime.now().toString();
 
-        collectionBuilder.add(sipBuilder.buildReference(Paths.get(filename), "sdflksdlkfjlsd45fg46sdfgdf"));
+        collection.add(sipBuilder.buildReference(Paths.get(filename), "sdflksdlkfjlsd45fg46sdfgdf"));
 
-        ResponseEntity<Collection<SIPDto>> entities = client.ingest(collectionBuilder.build());
+        ResponseEntity<Collection<SIPDto>> entities = client.ingest(collection);
         Assert.assertEquals(HttpStatus.CREATED, entities.getStatusCode());
     }
 }

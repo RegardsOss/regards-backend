@@ -55,13 +55,13 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.ingest.domain.RejectedSip;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
-import fr.cnes.regards.modules.storage.domain.RejectedSip;
 
 /**
  * This controller manages SIP submission API.
@@ -165,8 +165,8 @@ public class SIPController implements IResourceController<SIPEntity> {
             @RequestParam(name = REQUEST_PARAM_SESSION_NAME, required = false) String sessionName,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<SIPEntity> pAssembler) {
-        Page<SIPEntity> sipEntities = sipService.search(providerId, sessionSource, sessionName, owner, from, state, processing,
-                                                        pageable);
+        Page<SIPEntity> sipEntities = sipService.search(providerId, sessionSource, sessionName, owner, from, state,
+                                                        processing, pageable);
         PagedResources<Resource<SIPEntity>> resources = toPagedResources(sipEntities, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
