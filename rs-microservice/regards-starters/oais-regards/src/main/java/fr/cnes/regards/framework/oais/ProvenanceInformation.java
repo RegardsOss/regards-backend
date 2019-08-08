@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
 /**
  * OAIS Preservation Description Information object
@@ -63,16 +64,6 @@ public class ProvenanceInformation {
      * The proposal
      */
     private String proposal;
-
-    /**
-     * The Regards session source
-     */
-    private String sessionSource;
-
-    /**
-     * The Regards session name
-     */
-    private String sessionName;
 
     private Map<String, Object> additional;
 
@@ -151,34 +142,6 @@ public class ProvenanceInformation {
         this.proposal = proposal;
     }
 
-    /**
-     * @return the Regards session source
-     */
-    public String getSessionSource() {
-        return sessionSource;
-    }
-
-    /**
-     * Set the Regards session source linked to this IP
-     */
-    public void setSessionSource(String sessionSource) {
-        this.sessionSource = sessionSource;
-    }
-
-    /**
-     * @return the Regards session name
-     */
-    public String getSessionName() {
-        return sessionName;
-    }
-
-    /**
-     * Set the Regards session name linked to this IP
-     */
-    public void setSessionName(String sessionName) {
-        this.sessionName = sessionName;
-    }
-
     public void addEvent(@Nullable String type, String comment, OffsetDateTime date) {
         Event event = new Event();
         event.setType(type);
@@ -198,9 +161,9 @@ public class ProvenanceInformation {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + ((additional == null) ? 0 : additional.hashCode());
-        result = (prime * result) + ((facility == null) ? 0 : facility.hashCode());
-        result = (prime * result) + history.hashCode();
+        result = prime * result + (additional == null ? 0 : additional.hashCode());
+        result = prime * result + (facility == null ? 0 : facility.hashCode());
+        result = prime * result + history.hashCode();
         return result;
     }
 

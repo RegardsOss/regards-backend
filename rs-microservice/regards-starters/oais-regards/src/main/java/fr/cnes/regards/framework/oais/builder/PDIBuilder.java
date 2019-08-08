@@ -18,13 +18,15 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+
+import javax.annotation.Nullable;
 
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 
@@ -115,8 +117,9 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      */
     public void addTags(String... tags) {
         Assert.notEmpty(tags, "Tag is required");
-        @SuppressWarnings("unchecked") Collection<String> existingTags = (Collection<String>) pdi
-                .getContextInformation().get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
+        @SuppressWarnings("unchecked")
+        Collection<String> existingTags = (Collection<String>) pdi.getContextInformation()
+                .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
         if (existingTags == null) {
             existingTags = Sets.newHashSet(tags);
             pdi.getContextInformation().put(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY, existingTags);
@@ -209,24 +212,6 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      */
     public void setProposal(String proposal) {
         pdi.getProvenanceInformation().setProposal(proposal);
-    }
-
-    /**
-     * Set Regards session identifier
-     */
-    @Deprecated
-    public void setSession(String sessionSource, String sessionName) {
-        pdi.getProvenanceInformation().setSessionSource(sessionSource);
-        pdi.getProvenanceInformation().setSessionName(sessionName);
-    }
-
-    /**
-     * Set Regards session identifier
-     */
-    @Deprecated
-    public void setSession(String sessionId) {
-        pdi.getProvenanceInformation().setSessionSource(sessionId);
-        pdi.getProvenanceInformation().setSessionName(sessionId);
     }
 
     /**
