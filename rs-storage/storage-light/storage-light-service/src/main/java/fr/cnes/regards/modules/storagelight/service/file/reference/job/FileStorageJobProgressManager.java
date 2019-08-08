@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
 
 /**
  * Progress manager class to handle {@link FileStorageRequestJob} advancement.
@@ -47,7 +47,7 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileStorageJobProgressManager.class);
 
-    private final FileRefEventPublisher publisher;
+    private final FileReferenceEventPublisher publisher;
 
     private final IJob<?> job;
 
@@ -58,7 +58,7 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
     private final Set<FileStorageRequest> handledRequest = Sets.newHashSet();
 
     public FileStorageJobProgressManager(FileReferenceService referenceService,
-            FileStorageRequestService storageRequestService, FileRefEventPublisher publisher, IJob<?> job) {
+            FileStorageRequestService storageRequestService, FileReferenceEventPublisher publisher, IJob<?> job) {
         this.publisher = publisher;
         this.job = job;
         this.referenceService = referenceService;

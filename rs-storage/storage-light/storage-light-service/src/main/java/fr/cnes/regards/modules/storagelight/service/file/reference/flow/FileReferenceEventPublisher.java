@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.storagelight.service.file.reference.flow;
 
 import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
@@ -27,10 +29,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.modules.storagelight.dao.IFileCacheRequestRepository;
+import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
+import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorFile;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEventState;
 
 /**
  * Publisher to send AMQP message notification when there is any change on a File Reference.
@@ -38,12 +48,18 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState
  * @author Sébastien Binda
  */
 @Component
-public class FileRefEventPublisher {
+public class FileReferenceEventPublisher {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileRefEventPublisher.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceEventPublisher.class);
 
     @Autowired
     private IPublisher publisher;
+
+    @Autowired
+    private IFileStorageRequestRepository storageReqRepo;
+
+    @Autowired
+    private IFileCacheRequestRepository cacheReqRepo;
 
     /**
      * Notify listeners for a {@link FileReference} deleted successfully for all owners.
@@ -91,6 +107,13 @@ public class FileRefEventPublisher {
         LOGGER.debug("Publish FileReferenceEvent stored. {}", message);
         publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(), FileReferenceEventState.STORED,
                 fileRef.getOwners(), message, fileRef.getLocation(), requestIds));
+        for (String requestId : requestIds) {
+            if (!storageReqRepo.existsByRequestIds(requestId)) {
+                requestDone(requestId);
+            } else {
+                checkForStorageRequestError(requestId);
+            }
+        }
     }
 
     /**
@@ -114,6 +137,7 @@ public class FileRefEventPublisher {
         LOGGER.debug("Publish FileReferenceEvent store error. {}", message);
         publisher.publish(new FileReferenceEvent(checksum, FileReferenceEventState.STORE_ERROR, owners, message,
                 new FileLocation(storage, null), requestIds));
+        requestIds.forEach(r -> checkForStorageRequestError(r));
     }
 
     public void storeError(String checksum, Collection<String> owners, String storage, String message,
@@ -121,16 +145,62 @@ public class FileRefEventPublisher {
         storeError(checksum, owners, storage, message, Sets.newHashSet(requestId));
     }
 
+    private void checkForStorageRequestError(String requestId) {
+        Set<FileStorageRequest> requests = storageReqRepo.findByRequestIds(requestId);
+        // If all remaining requests are in error state, publish request in error
+        if (!requests.stream().anyMatch(req -> !(req.getStatus() == FileRequestStatus.ERROR))) {
+            Set<ErrorFile> errors = requests.stream()
+                    .map(req -> ErrorFile.build(req.getMetaInfo().getChecksum(), req.getStorage(), req.getErrorCause()))
+                    .collect(Collectors.toSet());
+            requestError(requestId, errors);
+        }
+    }
+
     public void available(String checksum, String message, String requestId) {
         LOGGER.debug("Publish FileReferenceEvent available for download. {}", message);
         publisher.publish(new FileReferenceEvent(checksum, FileReferenceEventState.AVAILABLE, null, message, null,
                 Sets.newHashSet(requestId)));
+
+        // Check if cache request exists for the same requestId
+        if (!cacheReqRepo.existsByRequestId(requestId)) {
+            requestDone(requestId);
+        } else {
+            checkForAvailabilityRequestError(requestId);
+        }
     }
 
     public void notAvailable(String checksum, String message, String requestId) {
         LOGGER.debug("Publish FileReferenceEvent not available for download. {}", message);
         publisher.publish(new FileReferenceEvent(checksum, FileReferenceEventState.AVAILABILITY_ERROR, null, message,
                 null, Sets.newHashSet(requestId)));
+        checkForAvailabilityRequestError(requestId);
+    }
+
+    private void checkForAvailabilityRequestError(String requestId) {
+        Set<FileCacheRequest> requests = cacheReqRepo.findByRequestId(requestId);
+        // If all remaining requests are in error state, publish request in error
+        if (!requests.stream().anyMatch(req -> !(req.getStatus() == FileRequestStatus.ERROR))) {
+            Set<ErrorFile> errors = requests.stream()
+                    .map(req -> ErrorFile.build(req.getChecksum(), req.getStorage(), req.getErrorCause()))
+                    .collect(Collectors.toSet());
+            requestError(requestId, errors);
+        }
+    }
+
+    public void requestDenied(String requestId) {
+        publisher.publish(FileRequestEvent.build(requestId, FileRequestEventState.DENIED));
+    }
+
+    public void requestGranted(String requestId) {
+        publisher.publish(FileRequestEvent.build(requestId, FileRequestEventState.GRANTED));
+    }
+
+    public void requestDone(String requestId) {
+        publisher.publish(FileRequestEvent.build(requestId, FileRequestEventState.DONE));
+    }
+
+    public void requestError(String requestId, Collection<ErrorFile> errors) {
+        publisher.publish(FileRequestEvent.buildError(requestId, errors));
     }
 
 }

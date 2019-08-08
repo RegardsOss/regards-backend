@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletion
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDeletionProgressManager;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileDeletionRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
 
 /**
  * Progress manager class to handle {@link FileDeletionRequestJob} advancement.
@@ -44,7 +44,7 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDeletionJobProgressManager.class);
 
-    private final FileRefEventPublisher publisher;
+    private final FileReferenceEventPublisher publisher;
 
     private final IJob<?> job;
 
@@ -55,7 +55,7 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
     private final Set<FileDeletionRequest> handled = Sets.newHashSet();
 
     public FileDeletionJobProgressManager(FileReferenceService fileReferenceService,
-            FileDeletionRequestService fileDeletionRequestService, FileRefEventPublisher publisher, IJob<?> job) {
+            FileDeletionRequestService fileDeletionRequestService, FileReferenceEventPublisher publisher, IJob<?> job) {
         super();
         this.publisher = publisher;
         this.job = job;

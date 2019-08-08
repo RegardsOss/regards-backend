@@ -58,7 +58,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileStorageRequestJob;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
@@ -89,7 +89,7 @@ public class FileStorageRequestService {
     private IAuthenticationResolver authResolver;
 
     @Autowired
-    private FileRefEventPublisher fileRefEventPublisher;
+    private FileReferenceEventPublisher eventPublisher;
 
     @Autowired
     private StoragePluginConfigurationHandler storageHandler;
@@ -258,15 +258,16 @@ public class FileStorageRequestService {
                                 Arrays.toString(storageHandler.getConfiguredStorages().toArray()));
                 fileStorageRequest.setStatus(FileRequestStatus.ERROR);
                 fileStorageRequest.setErrorCause(message);
+                fileStorageRequestRepo.save(fileStorageRequest);
                 LOGGER.error(message);
-                fileRefEventPublisher.storeError(fileMetaInfo.getChecksum(), Lists.newArrayList(owner), storage,
-                                                 message, requestId);
+                eventPublisher.storeError(fileMetaInfo.getChecksum(), Lists.newArrayList(owner), storage, message,
+                                          requestId);
             } else {
+                fileStorageRequestRepo.save(fileStorageRequest);
                 LOGGER.debug("New file reference request created for file <{}> to store to {} with status {}",
                              fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage(),
                              fileStorageRequest.getStatus());
             }
-            fileStorageRequestRepo.save(fileStorageRequest);
         }
     }
 

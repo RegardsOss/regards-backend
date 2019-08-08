@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.IRestorationProgressMa
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileCacheRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
 
 /**
  * Implementation of {@link IStorageProgressManager} used by {@link IStorageLocation} plugins.<br/>
@@ -50,7 +50,7 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileCacheJobProgressManager.class);
 
-    private final FileRefEventPublisher publisher;
+    private final FileReferenceEventPublisher publisher;
 
     private final IJob<?> job;
 
@@ -58,7 +58,7 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
 
     private final FileCacheRequestService fileCacheRequestService;
 
-    public FileCacheJobProgressManager(FileCacheRequestService fileCacheRequestService, FileRefEventPublisher publisher,
+    public FileCacheJobProgressManager(FileCacheRequestService fileCacheRequestService, FileReferenceEventPublisher publisher,
             IJob<?> job) {
         super();
         this.publisher = publisher;

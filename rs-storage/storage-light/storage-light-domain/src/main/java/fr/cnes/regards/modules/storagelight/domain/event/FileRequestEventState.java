@@ -16,36 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.client;
-
-import java.util.UUID;
+package fr.cnes.regards.modules.storagelight.domain.event;
 
 /**
  * @author sbinda
  *
  */
-public class RequestInfo {
+public enum FileRequestEventState {
 
-    private String requestId;
+    GRANTED,
 
-    public String getRequestId() {
-        return requestId;
-    }
+    DENIED,
 
-    private void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
+    DONE,
 
-    public static RequestInfo build() {
-        RequestInfo ri = new RequestInfo();
-        ri.setRequestId(UUID.randomUUID().toString());
-        return ri;
-    }
-
-    public static RequestInfo build(String requestId) {
-        RequestInfo ri = new RequestInfo();
-        ri.setRequestId(requestId);
-        return ri;
-    }
+    ERROR;
 
 }

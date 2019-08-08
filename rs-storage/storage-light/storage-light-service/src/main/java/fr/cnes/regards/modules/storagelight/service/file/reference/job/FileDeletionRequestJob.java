@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.FileDeletionWorkingSub
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileDeletionRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
 
 /**
  * Deletion of file references job. This jobs his scheduled to delete a bundle of file reference,
@@ -66,7 +66,7 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
     private IPluginService pluginService;
 
     @Autowired
-    protected FileRefEventPublisher publisher;
+    protected FileReferenceEventPublisher publisher;
 
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;

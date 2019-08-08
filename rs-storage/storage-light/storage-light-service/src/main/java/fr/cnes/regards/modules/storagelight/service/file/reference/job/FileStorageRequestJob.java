@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubs
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
 
 /**
  * Storage of file references job. This jobs is scheduled to store a bundle of file reference,
@@ -78,7 +78,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
     private IPluginService pluginService;
 
     @Autowired
-    private FileRefEventPublisher publisher;
+    private FileReferenceEventPublisher publisher;
 
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;

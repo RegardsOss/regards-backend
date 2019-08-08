@@ -17,16 +17,16 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
  *
  * @author Sébastien Binda
  */
-@Event(target = Target.ALL)
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class FileReferenceEvent implements ISubscribable {
 
     @NotNull
-    private String checksum;
+    private final String checksum;
 
     @NotNull
-    private FileReferenceEventState state;
+    private final FileReferenceEventState state;
 
-    private String message;
+    private final String message;
 
     private Collection<String> owners = Sets.newHashSet();
 
@@ -56,67 +56,28 @@ public class FileReferenceEvent implements ISubscribable {
         this.requestIds.addAll(requestIds);
     }
 
-    /**
-     * @return the checksum
-     */
     public String getChecksum() {
         return checksum;
     }
 
-    /**
-     * @param checksum the checksum to set
-     */
-    public void setChecksum(String checksum) {
-        this.checksum = checksum;
-    }
-
-    /**
-     * @return the state
-     */
     public FileReferenceEventState getState() {
         return state;
     }
 
-    /**
-     * @param state the state to set
-     */
-    public void setState(FileReferenceEventState state) {
-        this.state = state;
-    }
-
-    /**
-     * @return the message
-     */
     public String getMessage() {
         return message;
     }
 
-    /**
-     * @param message the message to set
-     */
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    /**
-     * @return the location
-     */
     public FileLocation getLocation() {
         return location;
     }
 
-    /**
-     * @param location the location to set
-     */
-    public void setLocation(FileLocation location) {
-        this.location = location;
-    }
-
-    /**
-     * @return the owners
-     */
     public Collection<String> getOwners() {
         return owners;
+    }
+
+    public Set<String> getRequestIds() {
+        return requestIds;
     }
 
 }

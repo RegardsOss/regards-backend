@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storagelight.service.file.cache.CacheService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
 
 /**
  * <b>N</b>ear<b>L</b>lineFileReferenceService. Handle file reference stored on a storage location of type NEARLINE.
@@ -55,7 +55,7 @@ public class NLFileReferenceService {
     private static final Logger LOGGER = LoggerFactory.getLogger(NLFileReferenceService.class);
 
     @Autowired
-    private FileRefEventPublisher publisher;
+    private FileReferenceEventPublisher publisher;
 
     @Autowired
     private CacheService cachedFileService;

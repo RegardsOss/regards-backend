@@ -66,7 +66,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.file.cache.CacheService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedStorageService;
@@ -85,7 +85,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected static final String NEARLINE_CONF_LABEL = "NL_target";
 
     @SpyBean
-    protected FileRefEventPublisher publisher;
+    protected FileReferenceEventPublisher publisher;
 
     @Autowired
     protected FileReferenceService fileRefService;

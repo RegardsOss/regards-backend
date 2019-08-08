@@ -36,4 +36,8 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
     @Query("update FileStorageRequest fsr set fsr.status = :status where fsr.id = :id")
     int updateStatus(@Param("status") FileRequestStatus status, @Param("id") Long id);
 
+    boolean existsByRequestIds(String requestId);
+
+    Set<FileStorageRequest> findByRequestIds(String requestId);
+
 }

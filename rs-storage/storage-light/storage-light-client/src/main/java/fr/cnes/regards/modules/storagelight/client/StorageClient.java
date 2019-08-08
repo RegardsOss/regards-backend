@@ -42,15 +42,12 @@ import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
  *
  */
 @Component
-public class StorageClient implements IStorageClient, IStorageListener {
+public class StorageClient implements IStorageClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageClient.class);
 
     @Autowired
     private IPublisher publisher;
-
-    @Autowired(required = false)
-    private IStorageListener listener;
 
     @Override
     public RequestInfo delete(FileDeletionRequestDTO file) {
@@ -105,95 +102,4 @@ public class StorageClient implements IStorageClient, IStorageListener {
         publisher.publish(FileStorageFlowItem.build(files, requestInfo.getRequestId()));
         return requestInfo;
     }
-
-    @Override
-    public void onAvailable(RequestInfo request) {
-        if (listener != null) {
-            listener.onAvailable(request);
-        } else {
-            LOGGER.trace("No custom listener defined for StorageClient");
-        }
-    }
-
-    @Override
-    public void onAvailabilityError(RequestInfo request, String checksum) {
-        if (listener != null) {
-            listener.onAvailabilityError(request, checksum);
-        } else {
-            LOGGER.trace("No custom listener defined for StorageClient");
-        }
-    }
-
-    @Override
-    public void onDeletionSuccess(RequestInfo request) {
-        if (listener != null) {
-            listener.onDeletionSuccess(request);
-        } else {
-            LOGGER.trace("No custom listener defined for StorageClient");
-        }
-    }
-
-    @Override
-    public void onDeletionError(RequestInfo request, Collection<FileDeletionRequestDTO> errors) {
-        if (listener != null) {
-            listener.onDeletionError(request, errors);
-        } else {
-            LOGGER.trace("No custom listener defined for StorageClient");
-        }
-    }
-
-    @Override
-    public void onReferenceSuccess(RequestInfo request) {
-        if (listener != null) {
-            listener.onReferenceSuccess(request);
-        } else {
-            LOGGER.trace("No custom listener defined for StorageClient");
-        }
-    }
-
-    @Override
-    public void onReferenceError(RequestInfo request, Collection<FileReferenceRequestDTO> errors) {
-        if (listener != null) {
-            listener.onReferenceError(request, errors);
-        } else {
-            LOGGER.trace("No custom listener defined for StorageClient");
-        }
-    }
-
-    @Override
-    public void onRequestGranted(RequestInfo request) {
-        if (listener != null) {
-            listener.onRequestGranted(request);
-        } else {
-            LOGGER.trace("No custom listener defined for StorageClient");
-        }
-    }
-
-    @Override
-    public void onRequestDenied(RequestInfo request) {
-        if (listener != null) {
-            listener.onRequestDenied(request);
-        } else {
-            LOGGER.trace("No custom listener defined for StorageClient");
-        }
-    }
-
-    @Override
-    public void onStoreSuccess(RequestInfo requestInfo) {
-        if (listener != null) {
-            listener.onStoreSuccess(requestInfo);
-        } else {
-            LOGGER.trace("No custom listener defined for StorageClient");
-        }
-    }
-
-    @Override
-    public void onStoreError(RequestInfo requestInfo, Collection<FileStorageRequestDTO> errors) {
-        if (listener != null) {
-            listener.onStoreError(requestInfo, errors);
-        } else {
-            LOGGER.trace("No custom listener defined for StorageClient");
-        }
-    }
-
 }
