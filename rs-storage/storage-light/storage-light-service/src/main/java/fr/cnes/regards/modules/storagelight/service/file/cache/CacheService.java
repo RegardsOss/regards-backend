@@ -35,8 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
@@ -53,7 +51,6 @@ import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionRe
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -81,15 +78,12 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocati
  */
 @Service
 @MultitenantTransactional
-public class CacheService implements ApplicationListener<ApplicationReadyEvent> {
+public class CacheService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CacheService.class);
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
-    private ITenantResolver tenantResolver;
 
     @Autowired
     private INotificationClient notificationClient;
@@ -121,14 +115,6 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
      */
     @Value("${regards.storage.cache.files.iteration.limit:100}")
     private Integer filesIterationLimit;
-
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void onApplicationEvent(ApplicationReadyEvent event) {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            initCacheFileSystem(tenant);
-        }
-    }
 
     /**
      * Creates a new cache file if the checksum does not match an existing file.

@@ -58,6 +58,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.storagelight.service.JobsPriority;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileStorageRequestJob;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
@@ -254,8 +255,8 @@ public class FileStorageRequestService {
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
         workingSubset.getFileReferenceRequests().forEach(fileStorageRequest -> fileStorageRequestRepo
                 .updateStatus(FileRequestStatus.PENDING, fileStorageRequest.getId()));
-        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
-                FileStorageRequestJob.class.getName()));
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_STORAGE_JOB.getPriority(),
+                parameters, authResolver.getUser(), FileStorageRequestJob.class.getName()));
         em.flush();
         em.clear();
         return jobInfo;

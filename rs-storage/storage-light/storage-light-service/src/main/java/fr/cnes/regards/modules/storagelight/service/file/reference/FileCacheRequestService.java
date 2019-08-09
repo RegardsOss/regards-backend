@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheReq
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileRestorationWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.storagelight.service.JobsPriority;
 import fr.cnes.regards.modules.storagelight.service.file.cache.CacheService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileCacheRequestJob;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
@@ -268,8 +269,8 @@ public class FileCacheRequestService {
         parameters.add(new JobParameter(FileCacheRequestJob.WORKING_SUB_SET, workingSubset));
         workingSubset.getFileRestorationRequests()
                 .forEach(r -> repository.updateStatus(FileRequestStatus.PENDING, r.getId()));
-        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
-                FileCacheRequestJob.class.getName()));
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_CACHE_JOB.getPriority(),
+                parameters, authResolver.getUser(), FileCacheRequestJob.class.getName()));
         em.flush();
         em.clear();
         return jobInfo;

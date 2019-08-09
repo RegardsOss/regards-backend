@@ -54,6 +54,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileDeletionWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.storagelight.service.JobsPriority;
 import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileDeletionRequestJob;
 import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileStorageRequestJob;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
@@ -189,8 +190,8 @@ public class FileDeletionRequestService {
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
         workingSubset.getFileDeletionRequests().forEach(fileRefReq -> fileDeletionRequestRepo
                 .updateStatus(FileRequestStatus.PENDING, fileRefReq.getId()));
-        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
-                FileDeletionRequestJob.class.getName()));
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_DELETION_JOB.getPriority(),
+                parameters, authResolver.getUser(), FileDeletionRequestJob.class.getName()));
         em.flush();
         em.clear();
         return jobInfo;
