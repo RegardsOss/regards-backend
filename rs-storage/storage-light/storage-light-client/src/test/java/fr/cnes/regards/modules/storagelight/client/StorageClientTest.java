@@ -103,7 +103,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
                 .build("file.test", cs1, "UUID", "application/octet-stream", "owner",
                        new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
 
-        Thread.sleep(5_000);
+        Thread.sleep(15_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue("Request should be successful", listener.getSuccess().contains(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));

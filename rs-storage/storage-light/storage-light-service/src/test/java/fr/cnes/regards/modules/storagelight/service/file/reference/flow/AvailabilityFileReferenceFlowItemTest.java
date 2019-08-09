@@ -110,8 +110,8 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
                                                 file5.getMetaInfo().getChecksum(), file6.getMetaInfo().getChecksum(),
                                                 file7.getMetaInfo().getChecksum(), checksum);
         Mockito.clearInvocations(publisher);
-        AvailabilityFileRefFlowItem request = new AvailabilityFileRefFlowItem(checksums,
-                OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
+        AvailabilityFileRefFlowItem request = AvailabilityFileRefFlowItem
+                .build(checksums, OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
         handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
@@ -164,9 +164,9 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
                              OffsetDateTime.now().plusDays(1));
         // Simulate availability request on this file
         Mockito.clearInvocations(publisher);
-        AvailabilityFileRefFlowItem request = new AvailabilityFileRefFlowItem(
-                Sets.newHashSet(file1.getMetaInfo().getChecksum()), OffsetDateTime.now().plusDays(2),
-                UUID.randomUUID().toString());
+        AvailabilityFileRefFlowItem request = AvailabilityFileRefFlowItem
+                .build(Sets.newHashSet(file1.getMetaInfo().getChecksum()), OffsetDateTime.now().plusDays(2),
+                       UUID.randomUUID().toString());
         handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
@@ -196,8 +196,8 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
                                                 file3.getMetaInfo().getChecksum(), file4.getMetaInfo().getChecksum());
 
         String requestId = UUID.randomUUID().toString();
-        AvailabilityFileRefFlowItem request = new AvailabilityFileRefFlowItem(checksums,
-                OffsetDateTime.now().plusDays(1), requestId);
+        AvailabilityFileRefFlowItem request = AvailabilityFileRefFlowItem
+                .build(checksums, OffsetDateTime.now().plusDays(1), requestId);
         handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 

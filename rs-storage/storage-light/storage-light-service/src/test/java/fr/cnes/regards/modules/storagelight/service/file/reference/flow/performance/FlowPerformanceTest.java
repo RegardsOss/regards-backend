@@ -296,8 +296,8 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         LOGGER.info(" ----------------------------------- ");
         Assert.assertEquals("Invalid count of cached files", 0, cacheFileRepo.count());
         // Create a new bus message File reference request
-        AvailabilityFileRefFlowItem item = new AvailabilityFileRefFlowItem(nlChecksums,
-                OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
+        AvailabilityFileRefFlowItem item = AvailabilityFileRefFlowItem
+                .build(nlChecksums, OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
         TenantWrapper<AvailabilityFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         availabilityHandler.handle(wrapper);

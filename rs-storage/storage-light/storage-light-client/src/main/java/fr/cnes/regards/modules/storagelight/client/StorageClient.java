@@ -66,7 +66,7 @@ public class StorageClient implements IStorageClient {
     @Override
     public RequestInfo makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(new AvailabilityFileRefFlowItem(checksums, expirationDate, requestInfo.getRequestId()));
+        publisher.publish(AvailabilityFileRefFlowItem.build(checksums, expirationDate, requestInfo.getRequestId()));
         return requestInfo;
     }
 

@@ -28,30 +28,33 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
  * @author sbinda
  *
  */
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class AvailabilityFileRefFlowItem implements ISubscribable {
 
     private final Set<String> checksums = Sets.newHashSet();
 
-    private final OffsetDateTime expirationDate;
+    private OffsetDateTime expirationDate;
 
-    private final String requestId;
+    private String requestId;
 
-    public AvailabilityFileRefFlowItem(Collection<String> checksums, OffsetDateTime expirationDate, String requestId) {
-        super();
+    public static AvailabilityFileRefFlowItem build(Collection<String> checksums, OffsetDateTime expirationDate,
+            String requestId) {
+        AvailabilityFileRefFlowItem item = new AvailabilityFileRefFlowItem();
         Assert.notNull(checksums, "Checksums is mandatory");
         Assert.notEmpty(checksums, "Checksums is mandatory");
         Assert.notNull(expirationDate, "Expiration date is mandatory");
         Assert.notNull(requestId, "Request id is mandatory");
-        this.checksums.addAll(checksums);
-        this.expirationDate = expirationDate;
-        this.requestId = requestId;
+        item.checksums.addAll(checksums);
+        item.expirationDate = expirationDate;
+        item.requestId = requestId;
+        return item;
     }
 
     public Set<String> getChecksums() {
