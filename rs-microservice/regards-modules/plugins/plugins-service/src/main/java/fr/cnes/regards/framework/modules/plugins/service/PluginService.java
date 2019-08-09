@@ -92,7 +92,7 @@ public class PluginService implements IPluginService {
     /**
      * {@link PluginConfiguration} JPA Repository
      */
-    private IPluginConfigurationRepository repos;
+    private final IPluginConfigurationRepository repos;
 
     /**
      * {@link IRuntimeTenantResolver}
@@ -154,7 +154,7 @@ public class PluginService implements IPluginService {
 
         PluginUtils.getPlugins().forEach((pluginId, metaData) -> {
             try {
-                if (interfacePluginType == null
+                if ((interfacePluginType == null)
                         || interfacePluginType.isAssignableFrom(Class.forName(metaData.getPluginClassName()))) {
                     availablePlugins.add(metaData);
                 }
@@ -178,7 +178,7 @@ public class PluginService implements IPluginService {
 
         StringBuilder msg = new StringBuilder("Cannot save plugin configuration");
         PluginConfiguration pluginConfInDb = repos.findOneByLabel(plgConf.getLabel());
-        if (pluginConfInDb != null && !Objects.equals(pluginConfInDb.getId(), plgConf.getId())
+        if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), plgConf.getId())
                 && pluginConfInDb.getLabel().equals(plgConf.getLabel())) {
             msg.append(String.format(". A plugin configuration with same label (%s) already exists.",
                                      plgConf.getLabel()));
@@ -214,7 +214,7 @@ public class PluginService implements IPluginService {
     }
 
     private void manageSensibleParameter(IPluginParam param) throws EncryptionException {
-        if (param != null && param.hasValue()) {
+        if ((param != null) && param.hasValue()) {
             if (param.getType().equals(PluginParamType.STRING)) {
                 StringPluginParam sensibleParam = (StringPluginParam) param;
                 sensibleParam.setValue(encryptionService.encrypt(sensibleParam.getValue()));
@@ -254,7 +254,7 @@ public class PluginService implements IPluginService {
                 PluginInterface pi;
                 try {
                     pi = Class.forName(interfaceName).getAnnotation(PluginInterface.class);
-                    if (pi != null && !pi.allowMultipleActiveConfigurations()) {
+                    if ((pi != null) && !pi.allowMultipleActiveConfigurations()) {
                         uniqueActiveConfInterfaces.add(interfaceName);
                     }
                 } catch (ClassNotFoundException e) {
@@ -296,6 +296,7 @@ public class PluginService implements IPluginService {
             LOGGER.error(String.format("Error while getting the plugin configuration <%s>.", businessId));
             throw new EntityNotFoundException(businessId, PluginConfiguration.class);
         }
+        plgConf.setMetaData(PluginUtils.getPlugins().get(plgConf.getPluginId()));
         return plgConf;
     }
 
@@ -338,7 +339,7 @@ public class PluginService implements IPluginService {
         for (PluginParamDescriptor paramMeta : pluginMeta.getParameters()) {
             IPluginParam newParam = pluginConf.getParameter(paramMeta.getName());
             IPluginParam oldParam = oldConf.getParameter(paramMeta.getName());
-            if (newParam != null && newParam.hasValue()) {
+            if ((newParam != null) && newParam.hasValue()) {
                 // Check if parameter is sensitive and value changed. If it does, encrypt the new value
                 if (paramMeta.isSensible() && !Objects.equals(newParam.getValue(), oldParam.getValue())) {
                     manageSensibleParameter(newParam);
@@ -375,7 +376,7 @@ public class PluginService implements IPluginService {
             // First desable all other active configurations
             List<PluginConfiguration> confs = repos.findAll();
             for (PluginConfiguration conf : confs) {
-                if (conf.getId().longValue() != plugin.getId().longValue()
+                if ((conf.getId().longValue() != plugin.getId().longValue())
                         && conf.getInterfaceNames().contains(pluginType.getName()) && conf.isActive()) {
                     conf.setIsActive(false);
                     updatePluginConfiguration(conf);
@@ -478,7 +479,7 @@ public class PluginService implements IPluginService {
         PluginConfiguration configuration = null;
 
         for (final PluginConfiguration conf : confs) {
-            if (configuration == null || conf.getPriorityOrder() < configuration.getPriorityOrder()) {
+            if ((configuration == null) || (conf.getPriorityOrder() < configuration.getPriorityOrder())) {
                 configuration = conf;
             }
         }
@@ -532,7 +533,7 @@ public class PluginService implements IPluginService {
     public <T> T getPlugin(String businessId, IPluginParam... dynamicParameters)
             throws ModuleException, NotAvailablePluginConfigurationException {
 
-        if (!isPluginCached(businessId) || dynamicParameters.length > 0) {
+        if (!isPluginCached(businessId) || (dynamicParameters.length > 0)) {
             return instanciatePluginAndCache(businessId, dynamicParameters);
         }
         return (T) getCachedPlugin(businessId);
@@ -583,7 +584,7 @@ public class PluginService implements IPluginService {
         for (PluginParamDescriptor paramType : pluginMetadata.getParameters()) {
             if (paramType.getType() == PluginParamType.PLUGIN) {
                 NestedPluginParam pluginParam = (NestedPluginParam) pluginConf.getParameter(paramType.getName());
-                if (pluginParam != null && pluginParam.hasValue()) {
+                if ((pluginParam != null) && pluginParam.hasValue()) {
                     // LOAD embedded plugin from its business identifier
                     this.getPlugin(pluginParam.getValue());
                 }
