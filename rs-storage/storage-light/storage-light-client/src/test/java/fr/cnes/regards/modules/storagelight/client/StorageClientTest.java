@@ -24,6 +24,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -44,8 +45,10 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineTestClient;
 import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedStorageService;
 
 /**
@@ -73,6 +76,10 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
 
     private final String ONLINE_CONF = "ONLINE_CONF";
 
+    private final Set<String> storedFileChecksums = Sets.newHashSet();
+
+    private final Set<String> referencedFileChecksums = Sets.newHashSet();
+
     @Before
     public void init() throws IOException, ModuleException {
         simulateApplicationReadyEvent();
@@ -91,22 +98,17 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
     @Test
     public void storeFile() throws InterruptedException, MalformedURLException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        RequestInfo info = client.reference(FileReferenceRequestDTO
-                .build("file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", 10L, "owner",
-                       "somewhere", "somewhere://in/here/file.test"));
-        Thread.sleep(2_000);
-        Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
-        Assert.assertTrue("Request should be successful", listener.getSuccess().contains(info));
-        Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
-
-        info = client.store(FileStorageRequestDTO
-                .build("file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
+        String cs1 = UUID.randomUUID().toString();
+        RequestInfo info = client.store(FileStorageRequestDTO
+                .build("file.test", cs1, "UUID", "application/octet-stream", "owner",
                        new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
 
         Thread.sleep(5_000);
-        Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
+        Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue("Request should be successful", listener.getSuccess().contains(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
+
+        storedFileChecksums.add(cs1);
     }
 
     @Test
@@ -147,22 +149,114 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
                        new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         RequestInfo info = client.store(files);
-        Thread.sleep(10_000);
+        Thread.sleep(5_000);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
         Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
     }
 
+    @Test
+    public void storeRetry() throws MalformedURLException, InterruptedException {
+        Set<FileStorageRequestDTO> files = Sets.newHashSet();
+        files.add(FileStorageRequestDTO
+                .build("error.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
+                       new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
+        files.add(FileStorageRequestDTO
+                .build("ok.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
+                       new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        RequestInfo info = client.store(files);
+        Thread.sleep(5_000);
+        Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
+        Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
+        Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
+
+        listener.reset();
+
+        client.storeRetry(info);
+
+        Thread.sleep(5_000);
+        Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
+        Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
+
+    }
+
+    @Test
+    public void referenceFile() throws InterruptedException {
+        String owner = "refe-test";
+        String storage = "somewhere";
+        String baseURl = "file://here/it/is/";
+        Set<FileReferenceRequestDTO> files = Sets.newHashSet();
+        files.add(FileReferenceRequestDTO.build("file1.test", UUID.randomUUID().toString(), "UUID",
+                                                "application/octet-stream", 10L, owner, storage,
+                                                baseURl + "file1.test"));
+        files.add(FileReferenceRequestDTO.build("file2.test", UUID.randomUUID().toString(), "UUID",
+                                                "application/octet-stream", 10L, owner, storage,
+                                                baseURl + "file2.test"));
+        files.add(FileReferenceRequestDTO.build("file3.test", UUID.randomUUID().toString(), "UUID",
+                                                "application/octet-stream", 10L, owner, storage,
+                                                baseURl + "file3.test"));
+
+        RequestInfo info = client.reference(files);
+        Thread.sleep(5_000);
+        Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        Assert.assertTrue("Request should be successful", listener.getSuccess().contains(info));
+        Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
+    }
+
+    @Test
+    public void deleteFile() throws MalformedURLException, InterruptedException {
+
+        // Store file
+        String checksum = UUID.randomUUID().toString();
+        String owner = "delete-test";
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        RequestInfo info = client.store(FileStorageRequestDTO
+                .build("ok.file.test", checksum, "UUID", "application/octet-stream", owner,
+                       new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
+        Thread.sleep(5_000);
+
+        Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        Assert.assertTrue("Request should be successful", listener.getSuccess().contains(info));
+        Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
+
+        listener.reset();
+
+        // Delete it
+        RequestInfo deleteInfo = client.delete(FileDeletionRequestDTO.build(checksum, ONLINE_CONF, owner, false));
+
+        Thread.sleep(5_000);
+        Assert.assertTrue("Request should be granted", listener.getGranted().contains(deleteInfo));
+        Assert.assertTrue("Request should be successful", listener.getSuccess().contains(deleteInfo));
+        Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(deleteInfo));
+
+    }
+
+    @Test
+    public void availability() throws MalformedURLException, InterruptedException {
+
+        this.storeFile();
+
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        RequestInfo info = client.makeAvailable(storedFileChecksums, OffsetDateTime.now().plusDays(1));
+
+        Thread.sleep(5_000);
+        Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        Assert.assertTrue("Request should be successful", listener.getSuccess().contains(info));
+        Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
+
+    }
+
     private PrioritizedStorage initDataStoragePluginConfiguration() {
         try {
-            PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
+            PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineTestClient.class);
             Files.createDirectories(Paths.get("target/online-storage/"));
 
             Set<IPluginParam> parameters = IPluginParam
-                    .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                    .set(IPluginParam.build(SimpleOnlineTestClient.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                                             "target/online-storage/"),
-                         IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
-                         IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
+                         IPluginParam.build(SimpleOnlineTestClient.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
+                         IPluginParam.build(SimpleOnlineTestClient.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, ONLINE_CONF, parameters, 0);
             dataStorageConf.setIsActive(true);
             return prioritizedDataStorageService.create(dataStorageConf);

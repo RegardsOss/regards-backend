@@ -260,8 +260,8 @@ public class FileStorageRequestService {
 
     /**
      * Create a new {@link FileStorageRequest}
-     * @param owners owners of the file to reference
-     * @param fileMetaInfo meta information of the file to reference
+     * @param owners owners of the file to store
+     * @param fileMetaInfo meta information of the file to store
      * @param originUrl file origin location
      * @param storage storage destination location
      * @param storageSubDirectory Optioanl subdirectory where to store file in the storage destination location
@@ -274,7 +274,7 @@ public class FileStorageRequestService {
 
     public void create(String owner, FileReferenceMetaInfo fileMetaInfo, URL originUrl, String storage,
             Optional<String> storageSubDirectory, FileRequestStatus status, String requestId) {
-        // Check if file reference request already exists
+        // Check if file storage request already exists
         Optional<FileStorageRequest> oFileRefRequest = search(storage, fileMetaInfo.getChecksum());
         if (oFileRefRequest.isPresent()) {
             handleAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owner, requestId);
@@ -287,7 +287,7 @@ public class FileStorageRequestService {
                 handleStorageNotAvailable(fileStorageRequest);
             } else {
                 fileStorageRequestRepo.save(fileStorageRequest);
-                LOGGER.debug("New file reference request created for file <{}> to store to {} with status {}",
+                LOGGER.debug("New file storage request created for file <{}> to store to {} with status {}",
                              fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage(),
                              fileStorageRequest.getStatus());
             }
@@ -308,8 +308,7 @@ public class FileStorageRequestService {
             fileStorageRequest.getOwners().add(owner);
             fileStorageRequest.getRequestIds().add(newRequestId);
             if (newMetaInfo.equals(fileStorageRequest.getMetaInfo())) {
-                LOGGER.warn("Existing referenced file meta information differs "
-                        + "from new reference meta information. Previous ones are maintained");
+                LOGGER.warn("Existing file meta information differs from new meta information. Previous ones are maintained");
             }
         }
 

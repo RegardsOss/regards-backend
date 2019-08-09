@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.client;
+package fr.cnes.regards.modules.storagelight.service.plugin;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,9 +59,9 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.PluginConfUpdatable;
 @Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system",
         id = "SimpleOnlineTestClient", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
-public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
+public class SimpleOnlineTestClient implements IOnlineStorageLocation {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleOnlineDataStorage.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleOnlineTestClient.class);
 
     /**
      * Plugin parameter name of the storage base location as a string

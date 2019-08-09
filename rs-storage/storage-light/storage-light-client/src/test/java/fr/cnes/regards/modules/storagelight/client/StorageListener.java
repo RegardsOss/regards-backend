@@ -43,6 +43,13 @@ public class StorageListener implements IStorageListener {
 
     private final ArrayListMultimap<RequestInfo, ErrorFile> errors = ArrayListMultimap.create();
 
+    public void reset() {
+        denied.clear();
+        granted.clear();
+        success.clear();
+        errors.clear();
+    }
+
     @Override
     public void onAvailable(RequestInfo request) {
         success.add(request);
