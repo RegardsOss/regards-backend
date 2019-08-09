@@ -137,6 +137,18 @@ public class FileCacheRequestService {
     }
 
     /**
+     * Update all {@link FileCacheRequest} in error status to change status to todo.
+     * @param requestId request business identifier to retry
+     */
+    public void retryRequest(String requestId) {
+        for (FileCacheRequest request : repository.findByRequestIdAndStatus(requestId, FileRequestStatus.ERROR)) {
+            request.setStatus(FileRequestStatus.TODO);
+            request.setErrorCause(null);
+            repository.save(request);
+        }
+    }
+
+    /**
      * Schedule all {@link FileCacheRequest}s with given status to be handled in {@link JobInfo}s
      * @param status
      * @return scheduled {@link JobInfo}s

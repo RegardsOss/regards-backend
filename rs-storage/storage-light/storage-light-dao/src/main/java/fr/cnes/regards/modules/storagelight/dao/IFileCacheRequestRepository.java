@@ -57,4 +57,6 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
 
     Set<FileCacheRequest> findByRequestId(String requestId);
 
+    Set<FileCacheRequest> findByRequestIdAndStatus(String requestId, FileRequestStatus error);
+
 }

@@ -40,4 +40,8 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     Set<FileStorageRequest> findByRequestIds(String requestId);
 
+    Set<FileStorageRequest> findByRequestIdsAndStatus(String requestId, FileRequestStatus error);
+
+    Page<FileStorageRequest> findByOwnersInAndStatus(Collection<String> owners, FileRequestStatus error, Pageable page);
+
 }

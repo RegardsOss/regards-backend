@@ -40,40 +40,60 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 public interface IStorageClient {
 
     /**
-     * Requests storage of a file from an localy accessible URL to a destination storage defined
+     * Requests storage of a file from a local accessible URL to a destination storage defined
      * by {@link PluginConfiguration#getBusinessId()} of {@link IStorageLocation} plugin.
      * <br/>
-     *
-     * @param fileName
-     * @param checksum
-     * @param algorithm
-     * @param mimeType
-     * @param owner
-     * @param originUrl Accessible file URL.
-     * @param storage Plugin configuration business id for destination storage
-     * @param subDirectory Optional sub directory into destination storage
+     * @param file {@link FileStorageRequestDTO} information about file to store
+     * @return {@link RequestInfo} containing a unique request id. This request id can
+     * be used to identify responses in {@link IStorageListener} implementation.
      */
     RequestInfo store(FileStorageRequestDTO file);
 
+    /**
+     * Request storage of a collection of files from a local accessible URL to a destination storage defined
+     * by {@link PluginConfiguration#getBusinessId()} of {@link IStorageLocation} plugin.
+     * @param files {@link FileStorageRequestDTO} information about files to store
+     * @return {@link RequestInfo} containing a unique request id. This request id can
+     * be used to identify responses in {@link IStorageListener} implementation.
+     */
     RequestInfo store(Collection<FileStorageRequestDTO> files);
 
-    void retry(RequestInfo requestInfo);
+    /**
+     * Retry all registered request in error associated to the given {@link RequestInfo}
+     * @param requestInfo containing a unique request id.
+     */
+    void storeRetry(RequestInfo requestInfo);
 
     /**
-     * Requests to reference a file at a given storage location. With this request, file is not moved but referenced.
-     * <br/>.
+     * Retry all registered request in error associated to the given owners.
+     * @param requestInfo containing a unique request id.
+     */
+    void storeRetry(Collection<String> owners);
+
+    /**
+     * Retry all registered request in error associated to the given {@link RequestInfo}
+     * @param requestInfo containing a unique request id.
+     */
+    void availabilityRetry(RequestInfo requestInfo);
+
+    /**
+     * Requests to reference a file at a given storage location. With this request, file is not moved, there are only referenced.
+     * <br/>
      *
-     * @param fileName
-     * @param checksum
-     * @param algorithm
-     * @param mimeType
-     * @param fileSize
-     * @param owner
-     * @param storage file storage location
-     * @param url file url expected by associated storage location
+     * @param file {@link FileReferenceRequestDTO} information about files to reference
+     * @return {@link RequestInfo} containing a unique request id. This request id can
+     * be used to identify responses in {@link IStorageListener} implementation.
      */
     RequestInfo reference(FileReferenceRequestDTO file);
 
+    /**
+     * Request to reference a collection of files at given storage locations. With this request, files is not moved,
+     * there are only referenced.
+     * <br/>
+     * @param files {@link FileReferenceRequestDTO} information about files to reference
+     * @return {@link RequestInfo} containing a unique request id. This request id can
+     * be used to identify responses in {@link IStorageListener} implementation.
+     */
     RequestInfo reference(Collection<FileReferenceRequestDTO> files);
 
     /**
@@ -81,12 +101,21 @@ public interface IStorageClient {
      * It is necessary to specify the owner as the file can be owned by several owners (multiple references).<br/>
      * As a result, the file will be really deleted if and only if no other owner remains!
      *
-     * @param checksum file checksum
-     * @param storage storage on which to delete the file
-     * @param owner file owner
+     * @param file {@link FileDeletionRequestDTO} information about file to delete
+     * @return {@link RequestInfo} containing a unique request id. This request id can
+     * be used to identify responses in {@link IStorageListener} implementation.
      */
     RequestInfo delete(FileDeletionRequestDTO file);
 
+    /**
+     * Requests the deletion of a collection of  files identified by there checksum on the specified storage.<br/>
+     * It is necessary to specify the owner as the file can be owned by several owners (multiple references).<br/>
+     * As a result, the file will be really deleted if and only if no other owner remains!
+     *
+     * @param files {@link FileDeletionRequestDTO} information about files to delete
+     * @return {@link RequestInfo} containing a unique request id. This request id can
+     * be used to identify responses in {@link IStorageListener} implementation.
+     */
     RequestInfo delete(Collection<FileDeletionRequestDTO> files);
 
     /**
@@ -95,6 +124,8 @@ public interface IStorageClient {
      * @param checksums list of file checksums
      * @param expirationDate date until which the file must be available
      * (after this date, the system could proceed to a possible cleaning of its cache, only offline files are concerned!)
+     * @return {@link RequestInfo} containing a unique request id. This request id can
+     * be used to identify responses in {@link IStorageListener} implementation.
      */
     RequestInfo makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate);
 }

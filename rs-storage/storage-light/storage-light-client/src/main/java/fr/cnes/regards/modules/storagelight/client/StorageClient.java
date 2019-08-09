@@ -32,11 +32,15 @@ import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFileRefFlowI
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.RetryFlowItem;
 
 /**
- * Asynchronous client implementation based on the message broker for requesting the file storage service
+ * Asynchronous client implementation based on the message broker for requesting the file storage service.<br />
+ * As this client use message broker to communicate with the storage service, responses are synchronous. NEvertheless,
+ * you can easily listen for response by implementing your own {@link IStorageListener}.
  *
  * @author Marc SORDI
+ * @author Sébastien Binda
  *
  */
 @Component
@@ -81,8 +85,18 @@ public class StorageClient implements IStorageClient {
     }
 
     @Override
-    public void retry(RequestInfo requestInfo) {
-        // TODO Auto-generated method stub
+    public void storeRetry(RequestInfo requestInfo) {
+        publisher.publish(RetryFlowItem.buildStorageRetry(requestInfo.getRequestId()));
+    }
+
+    @Override
+    public void storeRetry(Collection<String> owners) {
+        publisher.publish(RetryFlowItem.buildStorageRetry(owners));
+    }
+
+    @Override
+    public void availabilityRetry(RequestInfo requestInfo) {
+        publisher.publish(RetryFlowItem.buildAvailabilityRetry(requestInfo.getRequestId()));
     }
 
     @Override

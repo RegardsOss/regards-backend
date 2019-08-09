@@ -30,6 +30,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -47,6 +49,7 @@ import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.RetryFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
@@ -62,6 +65,9 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
 
     @Autowired
     private StoreFileFlowItemHandler storeHandler;
+
+    @Autowired
+    private RetryFlowItemHandler retryHandler;
 
     @Autowired
     FileReferenceService fileRefService;
@@ -252,6 +258,51 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
                           fileStorageRequestService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         Assert.assertEquals("File request in TODO state", FileRequestStatus.TODO,
                             fileStorageRequestService.search(ONLINE_CONF_LABEL, checksum).get().getStatus());
+    }
+
+    @Test
+    public void retry_byRequestId() {
+        String storageDestination = "somewheere";
+        String owner = "retry-test";
+        Set<FileStorageRequestDTO> files = Sets.newHashSet();
+        // Create a new bus message File reference request
+        files.add(FileStorageRequestDTO.build("file1.test", UUID.randomUUID().toString(), "MD5",
+                                              "application/octet-stream", owner, originUrl, storageDestination,
+                                              Optional.empty()));
+        files.add(FileStorageRequestDTO.build("file2.test", UUID.randomUUID().toString(), "MD5",
+                                              "application/octet-stream", owner, originUrl, storageDestination,
+                                              Optional.empty()));
+        files.add(FileStorageRequestDTO.build("file3.test", UUID.randomUUID().toString(), "MD5",
+                                              "application/octet-stream", owner, originUrl, storageDestination,
+                                              Optional.empty()));
+        FileStorageFlowItem item = FileStorageFlowItem.build(files, UUID.randomUUID().toString());
+        TenantWrapper<FileStorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        // Publish request
+        storeHandler.handleSync(wrapper);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        // Check request in error
+        Page<FileStorageRequest> requests = fileStorageRequestRepo
+                .findByOwnersInAndStatus(Lists.newArrayList(owner), FileRequestStatus.ERROR, PageRequest.of(0, 1_000));
+        Assert.assertEquals("The 3 requests should be in error", 3, requests.getTotalElements());
+
+        RetryFlowItem retry = RetryFlowItem.buildStorageRetry(Lists.newArrayList(owner));
+        TenantWrapper<RetryFlowItem> retryWrapper = new TenantWrapper<>(retry, getDefaultTenant());
+        retryHandler.handle(retryWrapper);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+
+        // Check request in todo
+        requests = fileStorageRequestRepo.findByOwnersInAndStatus(Lists.newArrayList(owner), FileRequestStatus.TODO,
+                                                                  PageRequest.of(0, 1_000));
+        Assert.assertEquals("The 3 requests should be in TODO", 3, requests.getTotalElements());
+
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(),
+                                                                          Lists.newArrayList());
+        runAndWaitJob(jobs);
+
+        requests = fileStorageRequestRepo.findByOwnersInAndStatus(Lists.newArrayList(owner), FileRequestStatus.ERROR,
+                                                                  PageRequest.of(0, 1_000));
+        Assert.assertEquals("The 3 requests should be in error again", 3, requests.getTotalElements());
+
     }
 
 }

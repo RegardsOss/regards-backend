@@ -80,6 +80,7 @@ public class FileDeletionRequest {
 
     public FileDeletionRequest() {
         super();
+
     }
 
     public FileDeletionRequest(FileReference fileReference, String requestId) {

@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.storagelight.service.file.reference;
 
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +34,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -137,6 +137,38 @@ public class FileStorageRequestService {
      */
     public void delete(FileStorageRequest fileStorageRequest) {
         fileStorageRequestRepo.deleteById(fileStorageRequest.getId());
+    }
+
+    /**
+     * Update all {@link FileStorageRequest} in error status to change status to todo.
+     * @param requestId request business identifier to retry
+     */
+    public void retryRequest(String requestId) {
+        for (FileStorageRequest request : fileStorageRequestRepo.findByRequestIdsAndStatus(requestId,
+                                                                                           FileRequestStatus.ERROR)) {
+            request.setStatus(FileRequestStatus.TODO);
+            request.setErrorCause(null);
+            update(request);
+        }
+    }
+
+    /**
+     * Update all {@link FileStorageRequest} in error status to change status to todo.
+     * @param requestId
+     */
+    public void retry(Collection<String> owners) {
+        Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by(Direction.ASC, "id"));
+        Page<FileStorageRequest> results;
+        do {
+            results = fileStorageRequestRepo.findByOwnersInAndStatus(owners, FileRequestStatus.ERROR, page);
+            for (FileStorageRequest request : results) {
+                request.setStatus(FileRequestStatus.TODO);
+                request.setErrorCause(null);
+                update(request);
+            }
+            // Always retrieve the first page has we modify each element of the results.
+            // All element are handled when result is empty.
+        } while (results.hasNext());
     }
 
     /**
@@ -252,16 +284,7 @@ public class FileStorageRequestService {
             fileStorageRequest.setStatus(status);
             if (!storageHandler.getConfiguredStorages().contains(storage)) {
                 // The storage destination is unknown, we can already set the request in error status
-                String message = String
-                        .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown. Known storages are %s",
-                                fileMetaInfo.getFileName(), storage,
-                                Arrays.toString(storageHandler.getConfiguredStorages().toArray()));
-                fileStorageRequest.setStatus(FileRequestStatus.ERROR);
-                fileStorageRequest.setErrorCause(message);
-                fileStorageRequestRepo.save(fileStorageRequest);
-                LOGGER.error(message);
-                eventPublisher.storeError(fileMetaInfo.getChecksum(), Lists.newArrayList(owner), storage, message,
-                                          requestId);
+                handleStorageNotAvailable(fileStorageRequest);
             } else {
                 fileStorageRequestRepo.save(fileStorageRequest);
                 LOGGER.debug("New file reference request created for file <{}> to store to {} with status {}",
@@ -333,6 +356,10 @@ public class FileStorageRequestService {
                 .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown or disabled.",
                         fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage()));
         update(fileStorageRequest);
+        LOGGER.error(fileStorageRequest.getErrorCause());
+        eventPublisher.storeError(fileStorageRequest.getMetaInfo().getChecksum(), fileStorageRequest.getOwners(),
+                                  fileStorageRequest.getStorage(), fileStorageRequest.getErrorCause(),
+                                  fileStorageRequest.getRequestIds());
     }
 
 }

@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -99,6 +100,25 @@ public class FileDeletionRequestService {
         if (!fileDeletionRequestRepo.findByFileReferenceId(fileReferenceToDelete.getId()).isPresent()) {
             fileDeletionRequestRepo.save(new FileDeletionRequest(fileReferenceToDelete, forceDelete, requestId));
         }
+    }
+
+    /**
+     * Update all {@link FileDeletionRequest} in error status to change status to todo.
+     * @param requestId
+     */
+    public void retry() {
+        Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by(Direction.ASC, "id"));
+        Page<FileDeletionRequest> results;
+        do {
+            results = fileDeletionRequestRepo.findByStatus(FileRequestStatus.ERROR, page);
+            for (FileDeletionRequest request : results) {
+                request.setStatus(FileRequestStatus.TODO);
+                request.setErrorCause(null);
+                fileDeletionRequestRepo.save(request);
+            }
+            // Always retrieve the first page has we modify each element of the results.
+            // All element are handled when result is empty.
+        } while (results.hasNext());
     }
 
     /**
