@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
 import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
-import fr.cnes.regards.modules.ingest.domain.RejectedSip;
+import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
@@ -92,7 +92,7 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public Collection<RejectedSip> deleteSIPEntitiesBySipIds(Collection<UniformResourceName> sipIds)
+    public Collection<RejectedSipDto> deleteSIPEntitiesBySipIds(Collection<UniformResourceName> sipIds)
             throws ModuleException {
         List<String> sipIdsStr = new ArrayList<>();
         if (sipIds != null) {
@@ -102,20 +102,20 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public Collection<RejectedSip> deleteSIPEntitiesForProviderId(String providerId) throws ModuleException {
+    public Collection<RejectedSipDto> deleteSIPEntitiesForProviderId(String providerId) throws ModuleException {
         return this.deleteSIPEntities(sipRepository.findAllByProviderIdOrderByVersionAsc(providerId));
     }
 
     @Override
-    public Collection<RejectedSip> deleteSIPEntitiesForSession(String sessionOwner, String session)
+    public Collection<RejectedSipDto> deleteSIPEntitiesForSession(String sessionOwner, String session)
             throws ModuleException {
         return this.deleteSIPEntities(sipRepository
                 .findByIngestMetadataSessionOwnerAndIngestMetadataSession(sessionOwner, session));
     }
 
     @Override
-    public Collection<RejectedSip> deleteSIPEntities(Collection<SIPEntity> sips) throws ModuleException {
-        Set<RejectedSip> undeletableSips = Sets.newHashSet();
+    public Collection<RejectedSipDto> deleteSIPEntities(Collection<SIPEntity> sips) throws ModuleException {
+        Set<RejectedSipDto> undeletableSips = Sets.newHashSet();
         long sipDeletionCheckStart = System.currentTimeMillis();
         for (SIPEntity sip : sips) {
             if (isDeletableWithAIPs(sip)) {
@@ -135,7 +135,7 @@ public class SIPService implements ISIPService {
                 // We had this condition on those state here and not into #isDeletableWithAIPs because we just want to be silent.
                 // Indeed, if we ask for deletion of an already deleted or being deleted SIP that just mean there is less work to do this time.
                 String errorMsg = String.format("SIPEntity with state %s is not deletable", sip.getState());
-                undeletableSips.add(new RejectedSip(sip.getSipId().toString(), errorMsg));
+                undeletableSips.add(new RejectedSipDto(sip.getSipId().toString(), errorMsg));
                 LOGGER.error(errorMsg);
             }
         }

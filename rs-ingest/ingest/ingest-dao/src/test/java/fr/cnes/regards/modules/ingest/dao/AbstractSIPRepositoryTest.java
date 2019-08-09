@@ -30,9 +30,9 @@ import org.springframework.test.context.transaction.BeforeTransaction;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
@@ -63,7 +63,6 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip1.setProviderId("SIP_001");
         sip1.setIngestDate(OffsetDateTime.now());
-        sip1.setOwner("admin");
         sip1.setIngestMetadata(IngestMetadata.build(sessionOwner, session, PROCESSING_CHAIN,
                                                     StorageMetadata.build("store", null)));
         sip1.setState(SIPState.CREATED);
@@ -79,7 +78,6 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip2.setProviderId("SIP_002");
         sip2.setIngestDate(OffsetDateTime.now().minusHours(6));
-        sip2.setOwner("admin");
         sip1.setIngestMetadata(IngestMetadata.build(sessionOwner, session, PROCESSING_CHAIN,
                                                     StorageMetadata.build("store", null)));
         sip2.setState(SIPState.CREATED);
@@ -95,7 +93,6 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip3.setProviderId("SIP_003");
         sip3.setIngestDate(OffsetDateTime.now().minusHours(6));
-        sip3.setOwner("admin2");
         sip1.setIngestMetadata(IngestMetadata.build(sessionOwner, session, PROCESSING_CHAIN,
                                                     StorageMetadata.build("store", null)));
         sip3.setState(SIPState.INGESTED);
@@ -113,7 +110,6 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip4.setProviderId("SIP_003");
         sip4.setIngestDate(OffsetDateTime.now().minusHours(6));
-        sip4.setOwner("admin2");
         sip1.setIngestMetadata(IngestMetadata.build(sessionOwner, session, PROCESSING_CHAIN2,
                                                     StorageMetadata.build("store", null)));
         sip4.setState(SIPState.INGESTED);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,19 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import org.junit.Ignore;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
+import fr.cnes.regards.modules.ingest.domain.entity.request.DeletionRequest;
 
 /**
- * Generate DDL with HBM2DDL
- * @author Marc Sordi
- *
+ * {@link DeletionRequest} repository
+ * @author Marc SORDI
  */
-// Uncomment following line to launch FLYWAY on public schema
-//@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=public",
-//        "regards.jpa.multitenant.migrationTool=FLYWAYDB" })
-@Ignore
-public class IngestSQLGenerator extends AbstractScriptGeneratorTest {
+@Repository
+public interface IDeletionRequestRepository extends JpaRepository<DeletionRequest, Long> {
 
 }

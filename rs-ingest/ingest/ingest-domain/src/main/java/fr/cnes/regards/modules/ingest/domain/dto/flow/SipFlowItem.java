@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.flow;
+package fr.cnes.regards.modules.ingest.domain.dto.flow;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.util.Assert;
@@ -28,8 +27,9 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
 
 /**
  * Data flow item to ingest SIP using event driven mechanism.
@@ -39,23 +39,14 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class SipFlowItem implements ISubscribable {
 
-    private static final String MISSING_METADATA_ERROR = "Ingest metadata is required";
-
-    private static final String MISSING_SIP_ERROR = "SIP is required";
-
-    private static final String MISSING_OWNER_ERROR = "Owner is required";
-
     @Valid
-    @NotNull(message = MISSING_METADATA_ERROR)
-    private IngestMetadata metadata;
+    @NotNull(message = IngestValidationMessages.MISSING_METADATA_ERROR)
+    private IngestMetadataDto metadata;
 
-    @NotNull(message = MISSING_SIP_ERROR)
+    @NotNull(message = IngestValidationMessages.MISSING_SIP_ERROR)
     private SIP sip;
 
-    @NotBlank(message = MISSING_OWNER_ERROR)
-    private String owner;
-
-    public IngestMetadata getMetadata() {
+    public IngestMetadataDto getMetadata() {
         return metadata;
     }
 
@@ -63,7 +54,7 @@ public class SipFlowItem implements ISubscribable {
         return sip;
     }
 
-    public void setMetadata(IngestMetadata metadata) {
+    public void setMetadata(IngestMetadataDto metadata) {
         this.metadata = metadata;
     }
 
@@ -71,22 +62,12 @@ public class SipFlowItem implements ISubscribable {
         this.sip = sip;
     }
 
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
-    public static SipFlowItem build(IngestMetadata metadata, SIP sip, String owner) {
-        Assert.notNull(metadata, MISSING_METADATA_ERROR);
-        Assert.notNull(sip, MISSING_SIP_ERROR);
-        Assert.hasText(owner, MISSING_OWNER_ERROR);
+    public static SipFlowItem build(IngestMetadataDto metadata, SIP sip) {
+        Assert.notNull(metadata, IngestValidationMessages.MISSING_METADATA_ERROR);
+        Assert.notNull(sip, IngestValidationMessages.MISSING_SIP_ERROR);
         SipFlowItem item = new SipFlowItem();
         item.setMetadata(metadata);
         item.setSip(sip);
-        item.setOwner(owner);
         return item;
     }
 }

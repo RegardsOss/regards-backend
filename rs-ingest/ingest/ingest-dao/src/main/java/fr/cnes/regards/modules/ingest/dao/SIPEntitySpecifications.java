@@ -47,7 +47,7 @@ public final class SIPEntitySpecifications {
      * ingestDate
      */
     public static Specification<SIPEntity> search(String providerId, String sessionOwner, String session,
-            String owner, OffsetDateTime from, List<SIPState> states, String ingestChain) {
+            OffsetDateTime from, List<SIPState> states, String ingestChain) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (sessionOwner != null) {
@@ -55,9 +55,6 @@ public final class SIPEntitySpecifications {
             }
             if (session != null) {
                 predicates.add(cb.equal(root.get("ingestMetadata").get("session"), session));
-            }
-            if (owner != null) {
-                predicates.add(cb.equal(root.get("owner"), owner));
             }
             if (from != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("ingestDate"), from));

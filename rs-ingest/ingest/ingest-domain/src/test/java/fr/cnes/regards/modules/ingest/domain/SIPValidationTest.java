@@ -48,6 +48,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
 
 /**
  *
@@ -214,13 +215,13 @@ public class SIPValidationTest {
     }
 
     /**
-     * Check that {@link IngestMetadata} is properly validated. Empty collection is accepted!
+     * Check that {@link IngestMetadataDto} is properly validated. Empty collection is accepted!
      */
     @Test
     public void validateSIPCollection() {
 
-        SIPCollection collection = SIPCollection.build(IngestMetadata.build("sessionOwner", "session", "ingestChain",
-                                                                            StorageMetadata.build("test", null)));
+        SIPCollection collection = SIPCollection.build(IngestMetadataDto.build("sessionOwner", "session", "ingestChain",
+                                                                               StorageMetadata.build("test", null)));
 
         validator.validate(collection, errors);
         if (errors.hasErrors()) {

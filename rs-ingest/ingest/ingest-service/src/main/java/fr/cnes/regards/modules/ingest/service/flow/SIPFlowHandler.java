@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.ingest.domain.flow.SipFlowItem;
+import fr.cnes.regards.modules.ingest.domain.dto.flow.SipFlowItem;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 
 /**

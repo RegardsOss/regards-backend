@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.ingest.domain;
+package fr.cnes.regards.modules.ingest.domain.dto;
 
 /**
  * POJO allowing to known why a sip has been rejected
@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.ingest.domain;
  *
  * FIXME revoir la suppression des SIP/AIP
  */
-public class RejectedSip {
+public class RejectedSipDto {
 
     /**
      * Sip id
@@ -21,7 +21,7 @@ public class RejectedSip {
     /**
      * Constructor setting the parameters as attributes
      */
-    public RejectedSip(String sipId, String reason) {
+    public RejectedSipDto(String sipId, String reason) {
         this.sipId = sipId;
         this.reason = reason;
     }
@@ -65,7 +65,7 @@ public class RejectedSip {
             return false;
         }
 
-        RejectedSip that = (RejectedSip) o;
+        RejectedSipDto that = (RejectedSipDto) o;
 
         return sipId != null ? sipId.equals(that.sipId) : that.sipId == null;
     }

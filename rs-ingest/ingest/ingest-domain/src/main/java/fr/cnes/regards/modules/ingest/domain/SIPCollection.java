@@ -23,6 +23,7 @@ import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
 import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
 
 /**
  * SIP collection representation based on GeoJson standard structure.
@@ -34,22 +35,22 @@ public class SIPCollection extends AbstractFeatureCollection<SIP> {
 
     @Valid
     @NotNull(message = "Ingest metadata is required")
-    private IngestMetadata metadata;
+    private IngestMetadataDto metadata;
 
-    public IngestMetadata getMetadata() {
+    public IngestMetadataDto getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(IngestMetadata metadata) {
+    public void setMetadata(IngestMetadataDto metadata) {
         this.metadata = metadata;
     }
 
     /**
      * Create a new {@link SIPCollection}.
-     * @param metadata metadata built with {@link IngestMetadata#build(String, String, String, StorageMetadata...)}
+     * @param metadata metadata built with {@link IngestMetadataDto#build(String, String, String, StorageMetadata...)}
      * @return a {@link SIPCollection}
      */
-    public static SIPCollection build(IngestMetadata metadata) {
+    public static SIPCollection build(IngestMetadataDto metadata) {
         SIPCollection collection = new SIPCollection();
         collection.setMetadata(metadata);
         return collection;

@@ -43,8 +43,8 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.ingest.domain.RejectedSip;
 import fr.cnes.regards.modules.ingest.domain.aip.AIP;
+import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.service.store.IAIPService;
@@ -326,7 +326,7 @@ public class SIPServiceIT extends AbstractSipIT {
     @Test
     public void deleteSession() throws ModuleException {
         // Delete by session id
-        Collection<RejectedSip> rejectedSips = sipService.deleteSIPEntitiesForSession(COMPLEX_SESSION_OWNER,
+        Collection<RejectedSipDto> rejectedSips = sipService.deleteSIPEntitiesForSession(COMPLEX_SESSION_OWNER,
                                                                                       COMPLEX_SESSION);
         aipService.askForAipsDeletion();
         // 2 SIP per state in COMPLEX_SESSION_OWNER.
@@ -370,8 +370,8 @@ public class SIPServiceIT extends AbstractSipIT {
      * Simulate response from {@link IAipClient#deleteAipFromSips(Set)}
      * @return
      */
-    private ResponseEntity<List<RejectedSip>> simulateDeleteSIPAIPsREsponseFromStorage() {
-        List<RejectedSip> rejectedSips = Lists.newArrayList();
+    private ResponseEntity<List<RejectedSipDto>> simulateDeleteSIPAIPsREsponseFromStorage() {
+        List<RejectedSipDto> rejectedSips = Lists.newArrayList();
         return new ResponseEntity<>(rejectedSips, HttpStatus.OK);
     }
 

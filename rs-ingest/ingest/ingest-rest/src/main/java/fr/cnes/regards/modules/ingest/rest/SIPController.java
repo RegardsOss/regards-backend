@@ -55,8 +55,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.ingest.domain.RejectedSip;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
+import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
@@ -181,14 +181,14 @@ public class SIPController implements IResourceController<SIPEntity> {
 
     @ResourceAccess(description = "Delete one SIP by its providerId.")
     @RequestMapping(method = RequestMethod.DELETE)
-    public ResponseEntity<Collection<RejectedSip>> deleteSipEntityByProviderId(
+    public ResponseEntity<Collection<RejectedSipDto>> deleteSipEntityByProviderId(
             @RequestParam("providerId") String providerId) throws ModuleException {
         return new ResponseEntity<>(sipService.deleteSIPEntitiesForProviderId(providerId), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Delete one SIP by its sipId.")
     @RequestMapping(value = SIPID_PATH, method = RequestMethod.DELETE)
-    public ResponseEntity<Collection<RejectedSip>> deleteSipEntity(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
+    public ResponseEntity<Collection<RejectedSipDto>> deleteSipEntity(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
             throws ModuleException {
         return new ResponseEntity<>(
                 sipService.deleteSIPEntitiesBySipIds(Sets.newHashSet(UniformResourceName.fromString(sipId))),

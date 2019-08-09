@@ -40,9 +40,9 @@ import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
+import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
@@ -86,7 +86,7 @@ public class IngestClientIT extends AbstractRegardsWebIT {
 
     @Test
     public void ingestSIP() {
-        SIPCollection collection = SIPCollection.build(IngestMetadata
+        SIPCollection collection = SIPCollection.build(IngestMetadataDto
                 .build("sessionOwner", "session", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
         SIPBuilder sipBuilder = new SIPBuilder("CLIENT_SIP_001");

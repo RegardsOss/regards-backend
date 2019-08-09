@@ -56,7 +56,7 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 
@@ -75,7 +75,7 @@ import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
                 @Index(name = "idx_sip_ingest_date", columnList = "ingestDate"),
                 @Index(name = "idx_sip_version", columnList = "version"),
                 @Index(name = "idx_sip_session_owner", columnList = "session_owner"),
-                @Index(name = "idx_sip_session", columnList = "session") },
+                @Index(name = "idx_sip_session", columnList = "session_name") },
         // PostgreSQL manage both single indexes and multiple ones
         uniqueConstraints = { @UniqueConstraint(name = "uk_sip_sipId", columnNames = "sipId"),
                 @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
@@ -111,10 +111,6 @@ public class SIPEntity {
     @NotBlank(message = "SIP ID is required")
     @Column(name = "sipId", length = MAX_URN_SIZE)
     private String sipId;
-
-    @NotBlank(message = "Owner is required")
-    @Column(name = "owner", length = 128)
-    private String owner;
 
     /**
      * Look at {@link IngestMetadata}
@@ -153,7 +149,7 @@ public class SIPEntity {
     @Column(length = CHECKSUM_MAX_LENGTH)
     private String checksum;
 
-    @NotNull(message = "SIP as JSON is required")
+    @NotNull(message = IngestValidationMessages.MISSING_SIP_ERROR)
     @Column(columnDefinition = "jsonb", name = "rawsip")
     @Type(type = "jsonb")
     private SIP sip;
@@ -238,14 +234,6 @@ public class SIPEntity {
         return rejectionCauses;
     }
 
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
     public OffsetDateTime getLastUpdateDate() {
         return lastUpdateDate;
     }
@@ -314,8 +302,8 @@ public class SIPEntity {
         return true;
     }
 
-    public static SIPEntity build(String tenant, IngestMetadata metadata, SIP sip, String owner, Integer version,
-            SIPState state, EntityType entityType) {
+    public static SIPEntity build(String tenant, IngestMetadata metadata, SIP sip, Integer version, SIPState state,
+            EntityType entityType) {
 
         SIPEntity sipEntity = new SIPEntity();
 
@@ -324,7 +312,6 @@ public class SIPEntity {
 
         sipEntity.setProviderId(sip.getId());
         sipEntity.setSipId(urn);
-        sipEntity.setOwner(owner);
         sipEntity.setIngestDate(OffsetDateTime.now());
         sipEntity.setState(state);
         sipEntity.setSip(sip);
