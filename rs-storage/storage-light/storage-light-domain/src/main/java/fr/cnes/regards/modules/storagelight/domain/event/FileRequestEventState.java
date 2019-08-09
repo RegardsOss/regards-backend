@@ -19,17 +19,30 @@
 package fr.cnes.regards.modules.storagelight.domain.event;
 
 /**
- * @author sbinda
+ * State of a {@link FileRequestEvent}
  *
+ * @author Sébastien Binda
  */
 public enum FileRequestEventState {
 
+    /**
+     * Request is handled.
+     */
     GRANTED,
 
+    /**
+     * Request is refused.
+     */
     DENIED,
 
+    /**
+     * Request is done successfully
+     */
     DONE,
 
+    /**
+     * Request is finished in error
+     */
     ERROR;
 
 }

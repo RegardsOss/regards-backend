@@ -69,20 +69,19 @@ public class FileReferenceScheduler {
     @Value("${regards.storage.aips.iteration.limit:100}")
     private Integer aipIterationLimit;
 
-    @Scheduled(fixedDelayString = "${regards.storage.store.delay:5000}", initialDelay = 10000)
+    @Scheduled(fixedDelayString = "${regards.storage.store.delay:3000}", initialDelay = 1_000)
     public void handleFileStorageRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(),
-                                                            Sets.newHashSet());
+                fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(), Sets.newHashSet());
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
         }
     }
 
-    @Scheduled(fixedDelayString = "${regards.storage.store.delay:5000}", initialDelay = 10000)
+    @Scheduled(fixedDelayString = "${regards.storage.store.delay:3000}", initialDelay = 1_000)
     public void handleFileCacheRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
@@ -94,7 +93,7 @@ public class FileReferenceScheduler {
         }
     }
 
-    @Scheduled(fixedDelayString = "${regards.storage.store.delay:5000}", initialDelay = 10000)
+    @Scheduled(fixedDelayString = "${regards.storage.store.delay:3000}", initialDelay = 1_000)
     public void handleFileDeletionRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

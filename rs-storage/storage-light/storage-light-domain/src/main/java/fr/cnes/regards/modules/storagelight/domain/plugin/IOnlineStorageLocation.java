@@ -25,6 +25,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 
 /**
+ * Plugin to handle ONLINE storage location. <br/>
+ * An online storage location is a location where file can be access synchronously and can be directly download.<br/>
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @PluginInterface(description = "Contract to respect by any ONLINE data storage plugin")

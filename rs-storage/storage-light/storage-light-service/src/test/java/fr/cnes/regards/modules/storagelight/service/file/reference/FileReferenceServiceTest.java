@@ -65,7 +65,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheReq
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventHandler;
 import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileDeletionJobProgressManager;
 import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileDeletionRequestJob;
@@ -233,10 +233,12 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         FileDeletionJobProgressManager manager = new FileDeletionJobProgressManager(fileRefService,
                 fileDeletionRequestService, publisher, new FileDeletionRequestJob());
         manager.deletionSucceed(fdr);
-        fileRefHandler.handle(new TenantWrapper<>(
-                new FileReferenceEvent(fileRefChecksum, FileReferenceEventState.FULLY_DELETED, null, "Deletion succeed",
-                        oFileRef.get().getLocation(), Sets.newHashSet(deletionReqId)),
-                runtimeTenantResolver.getTenant()));
+        fileRefHandler.handle(
+                              new TenantWrapper<>(
+                                      FileReferenceEvent.build(fileRefChecksum, FileReferenceEventType.FULLY_DELETED,
+                                                               null, "Deletion succeed", oFileRef.get().getLocation(),
+                                                               Sets.newHashSet(deletionReqId)),
+                                      runtimeTenantResolver.getTenant()));
         // Has the handler clear the tenant we have to force it here for tests.
         runtimeTenantResolver.forceTenant(tenant);
         frr = fileStorageRequestService.search(fileRefStorage, fileRefChecksum);

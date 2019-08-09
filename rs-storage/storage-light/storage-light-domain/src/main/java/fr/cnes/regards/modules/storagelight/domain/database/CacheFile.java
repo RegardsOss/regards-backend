@@ -18,9 +18,9 @@ import javax.validation.constraints.NotNull;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
 /**
- * Representation of a StorageDataFile which is in the cache
+ * Database definition of the table containing the files currently in cache.
  *
- * @author Sylvain VISSIERE-GUERINET
+ * @author Sébastien Binda
  */
 @Entity
 @Table(name = "t_cache_file", indexes = { @Index(name = "idx_cache_file_checksum", columnList = "checksum") },

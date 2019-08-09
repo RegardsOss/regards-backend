@@ -23,19 +23,33 @@ import java.util.Collection;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 
 /**
- * @author sbinda
+ * Flow message to to retry error requests.<br/>
+ * See {@link FileRequestEvent} for asynchronous responses when request is finished.<br/>
+ * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
  *
+ * @author Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class RetryFlowItem implements ISubscribable {
 
+    /**
+     * Request business identifier to retry
+     */
     private String requestId;
 
+    /**
+     * Owners to retry errors requests
+     */
     private Collection<String> owners;
 
+    /**
+     * Request type to retry
+     */
     private FileRequestType type;
 
     public String getRequestId() {
@@ -50,6 +64,11 @@ public class RetryFlowItem implements ISubscribable {
         return owners;
     }
 
+    /**
+     * Build a storage retry request for the request business identifier provided
+     * @param requestId
+     * @return {@link RetryFlowItem}
+     */
     public static RetryFlowItem buildStorageRetry(String requestId) {
         RetryFlowItem request = new RetryFlowItem();
         request.requestId = requestId;
@@ -57,6 +76,11 @@ public class RetryFlowItem implements ISubscribable {
         return request;
     }
 
+    /**
+     * Build a storage retry request for all requests in error of provided owners.
+     * @param owners
+     * @return {@link RetryFlowItem}
+     */
     public static RetryFlowItem buildStorageRetry(Collection<String> owners) {
         RetryFlowItem request = new RetryFlowItem();
         request.owners = owners;
@@ -64,6 +88,11 @@ public class RetryFlowItem implements ISubscribable {
         return request;
     }
 
+    /**
+     * Build an availability retry request for the given request business identifier
+     * @param requestId
+     * @return {@link RetryFlowItem}
+     */
     public static RetryFlowItem buildAvailabilityRetry(String requestId) {
         RetryFlowItem request = new RetryFlowItem();
         request.requestId = requestId;

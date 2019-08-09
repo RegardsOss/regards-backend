@@ -27,8 +27,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.MimeType;
 
 /**
- * POJO to represent a file inline or in the cache system that is ready to be downloaded.
- * @author sbinda
+ * POJO to represent a file inline or in the cache system that is ready to be downloaded.<br/>
+ *
+ * @author Sébastien Binda
  */
 public class DownloadableFile implements Closeable {
 

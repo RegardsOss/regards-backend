@@ -27,16 +27,27 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
 
 /**
- * @author Sébastien Binda
+ * Flow message to request a new file storage.<br/>
+ * See {@link FileRequestEvent} for asynchronous responses when request is finished.<br/>
+ * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
  *
+ * @author Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class FileStorageFlowItem implements ISubscribable {
 
+    /**
+     * Information about files to store
+     */
     private final Set<FileStorageRequestDTO> files = Sets.newHashSet();
 
+    /**
+     * Request business identifier
+     */
     private String requestId;
 
     public String getRequestId() {
@@ -51,6 +62,12 @@ public class FileStorageFlowItem implements ISubscribable {
         return files;
     }
 
+    /**
+     * Build a storage request message for one file
+     * @param file
+     * @param requestId
+     * @return {@link FileStorageFlowItem}
+     */
     public static FileStorageFlowItem build(FileStorageRequestDTO file, String requestId) {
         FileStorageFlowItem item = new FileStorageFlowItem();
         item.files.add(file);
@@ -58,11 +75,23 @@ public class FileStorageFlowItem implements ISubscribable {
         return item;
     }
 
+    /**
+     * Build a storage request message fr many files
+     * @param files
+     * @param requestId
+     * @return {@link FileStorageFlowItem}
+     */
     public static FileStorageFlowItem build(Collection<FileStorageRequestDTO> files, String requestId) {
         FileStorageFlowItem item = new FileStorageFlowItem();
         item.files.addAll(files);
         item.requestId = requestId;
         return item;
+    }
+
+    @Override
+    public String toString() {
+        return "FileStorageFlowItem [" + (files != null ? "files=" + files + ", " : "")
+                + (requestId != null ? "requestId=" + requestId : "") + "]";
     }
 
 }

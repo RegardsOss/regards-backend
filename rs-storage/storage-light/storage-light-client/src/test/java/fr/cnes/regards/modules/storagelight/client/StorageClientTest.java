@@ -67,7 +67,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
     private StorageClient client;
 
     @Autowired
-    IRuntimeTenantResolver runtimeTenantResolver;
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private PrioritizedStorageService prioritizedDataStorageService;

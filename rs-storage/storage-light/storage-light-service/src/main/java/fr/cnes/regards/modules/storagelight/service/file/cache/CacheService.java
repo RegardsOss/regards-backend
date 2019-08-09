@@ -60,7 +60,6 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storagelight.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.exception.StorageException;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
 
 /**
@@ -226,12 +225,12 @@ public class CacheService implements ApplicationListener<ApplicationReadyEvent> 
             try {
                 Files.createDirectories(tenantCachePath);
             } catch (IOException e) {
-                throw new StorageException(e.getMessage(), e);
+                throw new RuntimeException(e.getMessage(), e);
             }
         }
         if (!cachedPathFile.exists() || !cachedPathFile.isDirectory() || !cachedPathFile.canRead()
                 || !cachedPathFile.canWrite()) {
-            throw new StorageException(
+            throw new RuntimeException(
                     String.format("Error initializing storage cache directory. %s is not a valid directory",
                                   tenantCachePath));
         }

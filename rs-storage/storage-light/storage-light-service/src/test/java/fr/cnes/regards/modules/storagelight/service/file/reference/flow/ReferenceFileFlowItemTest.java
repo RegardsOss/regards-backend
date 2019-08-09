@@ -40,7 +40,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
@@ -102,8 +102,8 @@ public class ReferenceFileFlowItemTest extends AbstractFileReferenceTest {
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventState.STORED,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
+        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventType.STORED,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
     }
 
     /**
@@ -133,8 +133,8 @@ public class ReferenceFileFlowItemTest extends AbstractFileReferenceTest {
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventState.STORED,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
+        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventType.STORED,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
     }
 
     /**
@@ -164,7 +164,7 @@ public class ReferenceFileFlowItemTest extends AbstractFileReferenceTest {
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventState.STORED,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
+        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventType.STORED,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
     }
 }

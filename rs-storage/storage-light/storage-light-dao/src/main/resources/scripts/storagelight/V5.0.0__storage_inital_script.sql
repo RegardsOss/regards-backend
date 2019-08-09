@@ -5,7 +5,7 @@ create table t_file_reference (id int8 not null, storage varchar(128), url varch
 create table t_file_storage_request (id int8 not null, error_cause varchar(512), algorithm varchar(16) not null, checksum varchar(128) not null, fileName varchar(256) not null, fileSize int8, height int4, mime_type varchar(255) not null, type varchar(256), width int4, origin_url varchar(2048), status varchar(255) not null, storage varchar(128), storage_subdirectory varchar(2048), primary key (id));
 create table t_prioritized_storage (storage_conf_id int8 not null, priority int8, storage_type varchar(255), primary key (storage_conf_id));
 create table t_storage_location (id int8 not null, allowed_size int8, last_update_date timestamp, name varchar(128), nb_ref_files int8, total_size int8, primary key (id));
-create table t_storage_monitoring (id int8 not null, last_file_reference_id int8, last_monitoring_date timestamp, last_monitoring_duration int8, running boolean not null, primary key (id));
+create table t_storage_monitoring_process (id int8 not null, last_file_reference_id int8, last_monitoring_date timestamp, last_monitoring_duration int8, running boolean not null, primary key (id));
 create table ta_file_ref_owners (file_ref_id int8 not null, owner varchar(255));
 create table ta_file_storage_request_ids (file_ref_id int8 not null, request_id varchar(128) not null, primary key (file_ref_id, request_id));
 create table ta_file_storage_request_owners (file_ref_id int8 not null, owner varchar(255));

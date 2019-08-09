@@ -27,8 +27,9 @@ import org.springframework.util.MimeType;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 
 /**
- * @author sbinda
+ * Database definition of meta information on a file.
  *
+ * @author Sébastien Binda
  */
 @Embeddable
 public class FileReferenceMetaInfo {

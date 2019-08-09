@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
@@ -120,9 +120,9 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Collection<FileReferenceEvent> events = getFileReferenceEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("There should be two events. One DELETED_FOR_WONER and one FULLY_DELETED",
-                            Sets.newHashSet(FileReferenceEventState.DELETED_FOR_OWNER,
-                                            FileReferenceEventState.FULLY_DELETED),
-                            events.stream().map(r -> r.getState()).collect(Collectors.toSet()));
+                            Sets.newHashSet(FileReferenceEventType.DELETED_FOR_OWNER,
+                                            FileReferenceEventType.FULLY_DELETED),
+                            events.stream().map(r -> r.getType()).collect(Collectors.toSet()));
     }
 
     /**
@@ -149,8 +149,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference should be deleted for the given owner",
-                            FileReferenceEventState.DELETED_FOR_OWNER,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
+                            FileReferenceEventType.DELETED_FOR_OWNER,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
     }
 
     /**
@@ -176,8 +176,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference should not belongs to owner anymore",
-                            FileReferenceEventState.DELETED_FOR_OWNER,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
+                            FileReferenceEventType.DELETED_FOR_OWNER,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
         // A new File deletion request should be sent
         Assert.assertTrue("A file deletion request should be created",
                           fileDeletionRequestService.search(fileRef).isPresent());
@@ -193,8 +193,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Assert.assertEquals("File reference should not belongs to owner anymore", FileReferenceEventState.FULLY_DELETED,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
+        Assert.assertEquals("File reference should not belongs to owner anymore", FileReferenceEventType.FULLY_DELETED,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
     }
 
     /**
@@ -222,8 +222,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference should not belongs to owner anymore",
-                            FileReferenceEventState.DELETED_FOR_OWNER,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
+                            FileReferenceEventType.DELETED_FOR_OWNER,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
         // A new File deletion request should be sent
         Assert.assertTrue("A file deletion request should be created",
                           fileDeletionRequestService.search(fileRef).isPresent());
@@ -239,9 +239,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Assert.assertEquals("File reference should not belongs to owner anymore",
-                            FileReferenceEventState.DELETION_ERROR,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
+        Assert.assertEquals("File reference should not belongs to owner anymore", FileReferenceEventType.DELETION_ERROR,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
     }
 
     /**
@@ -269,8 +268,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference should not belongs to owner anymore",
-                            FileReferenceEventState.DELETED_FOR_OWNER,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
+                            FileReferenceEventType.DELETED_FOR_OWNER,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
         // A new File deletion request should be sent
         Assert.assertTrue("A file deletion request should be created",
                           fileDeletionRequestService.search(fileRef).isPresent());
@@ -286,8 +285,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Assert.assertEquals("File reference should not belongs to owner anymore", FileReferenceEventState.FULLY_DELETED,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
+        Assert.assertEquals("File reference should not belongs to owner anymore", FileReferenceEventType.FULLY_DELETED,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
     }
 
 }

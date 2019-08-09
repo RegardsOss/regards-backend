@@ -47,7 +47,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.RetryFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
@@ -123,9 +123,9 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
         Set<String> availables = Sets.newHashSet();
         Set<String> notAvailables = Sets.newHashSet();
         for (FileReferenceEvent evt : getFileReferenceEvents(argumentCaptor.getAllValues())) {
-            if (evt.getState() == FileReferenceEventState.AVAILABLE) {
+            if (evt.getType() == FileReferenceEventType.AVAILABLE) {
                 availables.add(evt.getChecksum());
-            } else if (evt.getState() == FileReferenceEventState.AVAILABILITY_ERROR) {
+            } else if (evt.getType() == FileReferenceEventType.AVAILABILITY_ERROR) {
                 notAvailables.add(evt.getChecksum());
             }
         }
@@ -175,7 +175,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
 
         FileReferenceEvent event = this.getFileReferenceEvent(argumentCaptor.getAllValues());
-        Assert.assertEquals("File should be available", FileReferenceEventState.AVAILABLE, event.getState());
+        Assert.assertEquals("File should be available", FileReferenceEventType.AVAILABLE, event.getType());
         Assert.assertEquals("File available is not the requested one", file1.getMetaInfo().getChecksum(),
                             event.getChecksum());
         Assert.assertFalse("No cache request should be created as file is in cache",
@@ -223,9 +223,9 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
         Set<String> availables = Sets.newHashSet();
         Set<String> notAvailables = Sets.newHashSet();
         for (FileReferenceEvent evt : getFileReferenceEvents(argumentCaptor.getAllValues())) {
-            if (evt.getState() == FileReferenceEventState.AVAILABLE) {
+            if (evt.getType() == FileReferenceEventType.AVAILABLE) {
                 availables.add(evt.getChecksum());
-            } else if (evt.getState() == FileReferenceEventState.AVAILABILITY_ERROR) {
+            } else if (evt.getType() == FileReferenceEventType.AVAILABILITY_ERROR) {
                 notAvailables.add(evt.getChecksum());
             }
         }

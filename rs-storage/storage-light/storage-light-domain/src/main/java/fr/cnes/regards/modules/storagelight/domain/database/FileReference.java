@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 
 /**
  * Database POJO definition for referenced files
+ *
  * @author Sébastien Binda
  */
 @Entity

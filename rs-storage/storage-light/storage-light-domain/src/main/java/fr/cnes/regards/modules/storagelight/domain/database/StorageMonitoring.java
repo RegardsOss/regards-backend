@@ -26,11 +26,12 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * @author sbinda
+ * Database definition of the table containing information about storage location monitoring processus.
  *
+ * @author Sébastien Binda
  */
 @Entity
-@Table(name = "t_storage_monitoring")
+@Table(name = "t_storage_monitoring_process")
 public class StorageMonitoring {
 
     /**

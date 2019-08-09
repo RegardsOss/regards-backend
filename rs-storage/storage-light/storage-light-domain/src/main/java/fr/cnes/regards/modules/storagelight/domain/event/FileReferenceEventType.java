@@ -19,10 +19,11 @@
 package fr.cnes.regards.modules.storagelight.domain.event;
 
 /**
- * @author sbinda
+ * Type of {@link FileReferenceEvent}
  *
+ * @author Sébastien Binda
  */
-public enum FileReferenceEventState {
+public enum FileReferenceEventType {
 
     /**
      * File has been successfully stored
@@ -53,6 +54,10 @@ public enum FileReferenceEventState {
      * File reference is available for download
      */
     AVAILABLE,
+
+    /**
+     * File reference is not available for download
+     */
     AVAILABILITY_ERROR;
 
 }

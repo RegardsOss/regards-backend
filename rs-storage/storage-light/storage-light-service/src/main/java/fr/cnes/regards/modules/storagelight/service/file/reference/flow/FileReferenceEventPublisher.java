@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorFile;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEventState;
@@ -69,9 +69,9 @@ public class FileReferenceEventPublisher {
      */
     public void deletionSuccess(FileReference fileRef, String message, String requestId) {
         LOGGER.debug("Publish FileReferenceEvent Deleted. {}", message);
-        publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.FULLY_DELETED, null, message, fileRef.getLocation(),
-                Sets.newHashSet(requestId)));
+        publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
+                                                   FileReferenceEventType.FULLY_DELETED, null, message,
+                                                   fileRef.getLocation(), Sets.newHashSet(requestId)));
     }
 
     /**
@@ -81,9 +81,9 @@ public class FileReferenceEventPublisher {
      */
     public void deletionError(FileReference fileRef, String message, String requestId) {
         LOGGER.debug("Publish FileReferenceEvent Delete error. {}", message);
-        publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.DELETION_ERROR, null, message, fileRef.getLocation(),
-                Sets.newHashSet(requestId)));
+        publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
+                                                   FileReferenceEventType.DELETION_ERROR, null, message,
+                                                   fileRef.getLocation(), Sets.newHashSet(requestId)));
     }
 
     /**
@@ -94,9 +94,9 @@ public class FileReferenceEventPublisher {
      */
     public void deletionForOwnerSuccess(FileReference fileRef, String owner, String message, String requestId) {
         LOGGER.debug("Publish FileReferenceEvent Deleted for owner. {}", message);
-        publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.DELETED_FOR_OWNER, Sets.newHashSet(owner), message, fileRef.getLocation(),
-                Sets.newHashSet(requestId)));
+        publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
+                                                   FileReferenceEventType.DELETED_FOR_OWNER, Sets.newHashSet(owner),
+                                                   message, fileRef.getLocation(), Sets.newHashSet(requestId)));
     }
 
     /**
@@ -106,8 +106,8 @@ public class FileReferenceEventPublisher {
      */
     public void storeSuccess(FileReference fileRef, String message, Collection<String> requestIds) {
         LOGGER.debug("Publish FileReferenceEvent stored. {}", message);
-        publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(), FileReferenceEventState.STORED,
-                fileRef.getOwners(), message, fileRef.getLocation(), requestIds));
+        publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(), FileReferenceEventType.STORED,
+                                                   fileRef.getOwners(), message, fileRef.getLocation(), requestIds));
         for (String requestId : requestIds) {
             if (!storageReqRepo.existsByRequestIds(requestId)) {
                 requestDone(requestId, FileRequestType.STORAGE);
@@ -136,8 +136,8 @@ public class FileReferenceEventPublisher {
     public void storeError(String checksum, Collection<String> owners, String storage, String message,
             Collection<String> requestIds) {
         LOGGER.debug("Publish FileReferenceEvent store error. {}", message);
-        publisher.publish(new FileReferenceEvent(checksum, FileReferenceEventState.STORE_ERROR, owners, message,
-                new FileLocation(storage, null), requestIds));
+        publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.STORE_ERROR, owners, message,
+                                                   new FileLocation(storage, null), requestIds));
         requestIds.forEach(r -> checkForStorageRequestError(r));
     }
 
@@ -159,8 +159,8 @@ public class FileReferenceEventPublisher {
 
     public void available(String checksum, String message, String requestId) {
         LOGGER.debug("Publish FileReferenceEvent available for download. {}", message);
-        publisher.publish(new FileReferenceEvent(checksum, FileReferenceEventState.AVAILABLE, null, message, null,
-                Sets.newHashSet(requestId)));
+        publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABLE, null, message, null,
+                                                   Sets.newHashSet(requestId)));
 
         // Check if cache request exists for the same requestId
         if (!cacheReqRepo.existsByRequestId(requestId)) {
@@ -172,8 +172,8 @@ public class FileReferenceEventPublisher {
 
     public void notAvailable(String checksum, String message, String requestId) {
         LOGGER.debug("Publish FileReferenceEvent not available for download. {}", message);
-        publisher.publish(new FileReferenceEvent(checksum, FileReferenceEventState.AVAILABILITY_ERROR, null, message,
-                null, Sets.newHashSet(requestId)));
+        publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABILITY_ERROR, null, message,
+                                                   null, Sets.newHashSet(requestId)));
         checkForAvailabilityRequestError(requestId);
     }
 

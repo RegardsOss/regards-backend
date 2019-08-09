@@ -41,8 +41,9 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 
 /**
- * @author sbinda
+ * Database definition of the table containing the requests for files deletion.
  *
+ * @author Sébastien Binda
  */
 @Entity
 @Table(name = "t_file_deletion_request",

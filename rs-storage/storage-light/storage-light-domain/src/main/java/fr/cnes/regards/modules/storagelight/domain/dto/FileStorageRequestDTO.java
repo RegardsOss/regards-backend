@@ -25,10 +25,22 @@ import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
 
 /**
- * @author sbinda
+ * Information about a file for a store request.<br/>
+ * Mandatory information are : <ul>
+ *  <li> Filename</li>
+ *  <li> Checksum</li>
+ *  <li> Checksum algorithm </li>
+ *  <li> mimeType </li>
+ *  <li> Storage location where to delete the file</li>
+ *  <li> Owner of the file who ask for deletion </li>
+ *  <li> originUrl where to access file to store. Must be locally accessible (file protocol for example) </li>
+ * </ul>
+ * See {@link FileStorageFlowItem} for more information about storage request process.
  *
+ * @author Sébastien Binda
  */
 public class FileStorageRequestDTO {
 
@@ -77,6 +89,10 @@ public class FileStorageRequestDTO {
         return request;
     }
 
+    /**
+     * Build a {@link FileReferenceMetaInfo} with the current request information.
+     * @return {@link FileReferenceMetaInfo}
+     */
     public FileReferenceMetaInfo buildMetaInfo() {
         return new FileReferenceMetaInfo(checksum, algorithm, fileName, null, MediaType.valueOf(mimeType))
                 .withType(type);
@@ -114,13 +130,30 @@ public class FileStorageRequestDTO {
         return subDirectory;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * Add optional type to current {@link FileStorageRequestDTO}
+     * @param type
+     * @return current {@link FileStorageRequestDTO}
+     */
     public FileStorageRequestDTO withType(String type) {
         this.mimeType = type;
         return this;
     }
 
-    public String getType() {
-        return type;
+    @Override
+    public String toString() {
+        return "FileStorageRequestDTO [" + (fileName != null ? "fileName=" + fileName + ", " : "")
+                + (checksum != null ? "checksum=" + checksum + ", " : "")
+                + (algorithm != null ? "algorithm=" + algorithm + ", " : "")
+                + (mimeType != null ? "mimeType=" + mimeType + ", " : "")
+                + (owner != null ? "owner=" + owner + ", " : "") + (type != null ? "type=" + type + ", " : "")
+                + (originUrl != null ? "originUrl=" + originUrl + ", " : "")
+                + (storage != null ? "storage=" + storage + ", " : "")
+                + (subDirectory != null ? "subDirectory=" + subDirectory : "") + "]";
     }
 
 }

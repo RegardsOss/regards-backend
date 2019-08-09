@@ -28,20 +28,43 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
 
 /**
- * @author sbinda
+ * Bus message response of a request like {@link FileStorageFlowItem},
+ * {@link FileReferenceFlowItem} or {@link DeleteFileRefFlowItem}.<br/>
+ * <br/>
+ * FileRequestEventState :<ul>
+ * <li> GRANTED : sent when the request is handled.</li>
+ * <li> DENIED : sent when the request is refused.</li>
+ * <li> DONE / ERROR : sent when all files in the request are handled.</li>
+ * <li>
  *
+ * @author Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class FileRequestEvent implements ISubscribable {
 
+    /**
+     * Business request identifier
+     */
     private String requestId;
 
+    /**
+     * Request status
+     */
     private FileRequestEventState state;
 
+    /**
+     * Request type
+     */
     private FileRequestType type;
 
+    /**
+     * Files in error status
+     */
     private final Set<ErrorFile> errors = Sets.newHashSet();
 
     public String getRequestId() {
@@ -52,6 +75,13 @@ public class FileRequestEvent implements ISubscribable {
         return state;
     }
 
+    /**
+     * Build a message event with the given state
+     * @param requestId
+     * @param type
+     * @param state
+     * @return {@link FileRequestEvent}
+     */
     public static FileRequestEvent build(String requestId, FileRequestType type, FileRequestEventState state) {
         Assert.notNull(requestId, "Request Id is mandatory");
         Assert.notNull(type, "Request type is mandatory");
@@ -63,6 +93,13 @@ public class FileRequestEvent implements ISubscribable {
         return event;
     }
 
+    /**
+     * Build an error message event with the given {@link ErrorFile}s
+     * @param requestId
+     * @param type
+     * @param errors
+     * @return {@link FileRequestEvent}
+     */
     public static FileRequestEvent buildError(String requestId, FileRequestType type, Collection<ErrorFile> errors) {
         Assert.notNull(requestId, "Request Id is mandatory");
         Assert.notNull(type, "Request type is mandatory");

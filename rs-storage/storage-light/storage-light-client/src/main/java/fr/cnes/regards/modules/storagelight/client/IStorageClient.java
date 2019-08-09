@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 
 /**
@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
  * Client requests are done asynchronously.
  * To listen to the feedback messages, you have to implement your own message handler listening to {@link FileReferenceEvent}.
  * Be sure to check that the message is intended for you by validating the owner.
- * Look at {@link FileReferenceEventState} to adapt your behaviour.
+ * Look at {@link FileReferenceEventType} to adapt your behaviour.
  */
 public interface IStorageClient {
 

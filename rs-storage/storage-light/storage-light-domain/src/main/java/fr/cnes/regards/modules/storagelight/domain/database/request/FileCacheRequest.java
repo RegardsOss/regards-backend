@@ -42,8 +42,9 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 
 /**
- * @author sbinda
+ * Database definition of the table containing the requests for cache files.
  *
+ * @author Sébastien Binda
  */
 @Entity
 @Table(name = "t_file_cache_request", indexes = { @Index(name = "idx_file_cache_request", columnList = "request_id") },

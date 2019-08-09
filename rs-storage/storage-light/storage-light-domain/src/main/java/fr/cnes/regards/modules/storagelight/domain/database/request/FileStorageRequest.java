@@ -50,8 +50,9 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 
 /**
- * @author Sébastien Binda
+ * Database definition of the table containing the requests to store files.
  *
+ * @author Sébastien Binda
  */
 @Entity
 @Table(name = "t_file_storage_request",

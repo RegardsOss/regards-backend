@@ -27,8 +27,14 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
  */
 public enum FileRequestStatus {
 
+    /**
+     * Request can be handled.
+     */
     TODO,
 
+    /**
+     * Request has been handled.
+     */
     PENDING,
 
     /**
@@ -36,6 +42,9 @@ public enum FileRequestStatus {
      */
     DELAYED,
 
+    /**
+     * Request is finished in error.
+     */
     ERROR;
 
 }

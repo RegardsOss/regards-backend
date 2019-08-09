@@ -82,6 +82,8 @@ public class ReferenceFileFlowItemHandler
     public void handle(TenantWrapper<FileReferenceFlowItem> wrapper) {
         String tenant = wrapper.getTenant();
         FileReferenceFlowItem item = wrapper.getContent();
+        runtimeTenantResolver.forceTenant(tenant);
+        LOGGER.info("[EVENT] New FileReferenceFlowItem received -- {}", wrapper.getContent().toString());
         if (!items.containsKey(tenant)) {
             items.put(tenant, new ConcurrentLinkedQueue<>());
         }

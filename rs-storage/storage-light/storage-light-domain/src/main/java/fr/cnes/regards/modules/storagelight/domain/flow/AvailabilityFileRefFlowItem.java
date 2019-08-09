@@ -30,20 +30,46 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 
 /**
- * @author sbinda
+ * Flow message to request file(s) to be available for download.<br/>
+ * Files stored with an ONLINE {@link IStorageLocation} plugin are immediately available <br/>
+ * Files stored with an NEARLINE {@link IStorageLocation} plugin needs to be retrieved in cache before being available<br/>
+ * Files not stored (only reference) or OFFLINE cannot be available <br/>
+ * <br/>
+ * See {@link FileRequestEvent} for asynchronous responses when request is finished.<br/>
+ * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
  *
+ * @author Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class AvailabilityFileRefFlowItem implements ISubscribable {
 
+    /**
+     * Checksums of files to make available for download
+     */
     private final Set<String> checksums = Sets.newHashSet();
 
+    /**
+     * Expiration date for files availability
+     */
     private OffsetDateTime expirationDate;
 
+    /**
+     * Request business identifier
+     */
     private String requestId;
 
+    /**
+     * Build a availability request item.
+     * @param checksums
+     * @param expirationDate
+     * @param requestId
+     * @return {@link AvailabilityFileRefFlowItem}
+     */
     public static AvailabilityFileRefFlowItem build(Collection<String> checksums, OffsetDateTime expirationDate,
             String requestId) {
         AvailabilityFileRefFlowItem item = new AvailabilityFileRefFlowItem();

@@ -19,8 +19,9 @@
 package fr.cnes.regards.modules.storagelight.domain.event;
 
 /**
- * @author sbinda
+ * Type of {@link FileRequestEvent}
  *
+ * @author Sébastien Binda
  */
 public enum FileRequestType {
 

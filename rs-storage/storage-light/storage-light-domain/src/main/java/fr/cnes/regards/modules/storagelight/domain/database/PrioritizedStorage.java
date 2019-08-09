@@ -16,10 +16,11 @@ import javax.validation.constraints.Min;
 
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 
 /**
- * Wrapper used to prioritize {@link fr.cnes.regards.modules.IStorageLocation.domain.plugin.IDataStorage} configurations.
+ * Wrapper used to prioritize {@link IStorageLocation} configurations.
  * As a wrapper, its database identifier is the same than the wrapped {@link PluginConfiguration}.
  * This wrapper is strictly ordered on priority.
  *

@@ -32,8 +32,8 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletion
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileDeletionRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
 
 /**
  * This handler is used internally by the storage service to update file requests in DELAYED state after event on file references.
@@ -61,7 +61,7 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
         String tenant = wrapper.getTenant();
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            switch (wrapper.getContent().getState()) {
+            switch (wrapper.getContent().getType()) {
                 case FULLY_DELETED:
                 case DELETION_ERROR:
                     // When a file reference deletion is over, schedule the delayed reference requests if any

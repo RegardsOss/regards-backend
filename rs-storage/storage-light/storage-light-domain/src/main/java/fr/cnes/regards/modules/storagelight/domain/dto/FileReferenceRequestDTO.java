@@ -22,10 +22,23 @@ import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
 
 /**
- * @author sbinda
+ * Information about a file for a reference request.<br/>
+ * Mandatory information are : <ul>
+ *  <li> Filename</li>
+ *  <li> Checksum</li>
+ *  <li> Checksum algorithm </li>
+ *  <li> mimeType </li>
+ *  <li> FileSize as the file is not accessible </li>
+ *  <li> Storage location where to delete the file</li>
+ *  <li> Owner of the file who ask for deletion </li>
+ *  <li> Url to access file in the storage location </li>
+ * </ul>
+ * See {@link FileReferenceFlowItem} for more information about reference request process.
  *
+ * @author Sébastien Binda
  */
 public class FileReferenceRequestDTO {
 
@@ -141,6 +154,18 @@ public class FileReferenceRequestDTO {
         metaInfo.setWidth(width);
         metaInfo.setType(type);
         return metaInfo;
+    }
+
+    @Override
+    public String toString() {
+        return "FileReferenceRequestDTO [" + (fileName != null ? "fileName=" + fileName + ", " : "")
+                + (checksum != null ? "checksum=" + checksum + ", " : "")
+                + (algorithm != null ? "algorithm=" + algorithm + ", " : "")
+                + (mimeType != null ? "mimeType=" + mimeType + ", " : "")
+                + (fileSize != null ? "fileSize=" + fileSize + ", " : "")
+                + (height != null ? "height=" + height + ", " : "") + (width != null ? "width=" + width + ", " : "")
+                + (owner != null ? "owner=" + owner + ", " : "") + (storage != null ? "storage=" + storage + ", " : "")
+                + (url != null ? "url=" + url + ", " : "") + (type != null ? "type=" + type : "") + "]";
     }
 
 }

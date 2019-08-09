@@ -3,8 +3,7 @@ package fr.cnes.regards.modules.storagelight.domain.event;
 import java.util.Collection;
 import java.util.Set;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
 
@@ -12,56 +11,108 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
 
 /**
+ * Bus message event sent when a {@link FileReference} is created, modified or deleted.
  *
  * @author Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class FileReferenceEvent implements ISubscribable {
 
-    @NotNull
-    private final String checksum;
+    /**
+     * Checksum of the {@link FileReference}
+     */
+    private String checksum;
 
-    @NotNull
-    private final FileReferenceEventState state;
+    /**
+     * Event type
+     */
+    private FileReferenceEventType type;
 
-    private final String message;
+    /**
+     * Event message
+     */
+    private String message;
 
+    /**
+     * Owners of the {@link FileReference}
+     */
     private Collection<String> owners = Sets.newHashSet();
 
+    /**
+     * location of the {@link FileReference}
+     */
     private FileLocation location;
 
+    /**
+     * Business request identifier associated to the {@link FileReference}. Those identifiers are the identifier of file request.
+     * See {@link FileStorageFlowItem}, {@link DeleteFileRefFlowItem} and {@link FileReferenceFlowItem} for more information about
+     * file requests.
+     */
     private final Set<String> requestIds = Sets.newHashSet();
 
-    public FileReferenceEvent(@NotNull String checksum, @NotNull FileReferenceEventState state,
-            Collection<String> owners, String message, FileLocation location,
-            @NotNull @NotEmpty Collection<String> requestIds) {
-        super();
-        this.checksum = checksum;
-        this.state = state;
-        this.message = message;
-        this.location = location;
-        this.owners = owners;
-        this.requestIds.addAll(requestIds);
+    /**
+     * Build a file reference event with a file location.
+     * @param checksum
+     * @param type
+     * @param owners
+     * @param message
+     * @param location
+     * @param requestIds
+     * @return {@link FileReferenceEvent}
+     */
+    public static FileReferenceEvent build(String checksum, FileReferenceEventType type, Collection<String> owners,
+            String message, FileLocation location, Collection<String> requestIds) {
+        Assert.notNull(checksum, "Checksum is mandatory");
+        Assert.notNull(type, "Type is mandatory");
+        Assert.notNull(requestIds, "Type is mandatory");
+
+        FileReferenceEvent event = new FileReferenceEvent();
+        event.checksum = checksum;
+        event.type = type;
+        event.message = message;
+        event.location = location;
+        event.owners = owners;
+        event.requestIds.addAll(requestIds);
+        return event;
     }
 
-    public FileReferenceEvent(@NotNull String checksum, @NotNull FileReferenceEventState state,
-            Collection<String> owners, String message, @NotNull @NotEmpty Collection<String> requestIds) {
-        super();
-        this.checksum = checksum;
-        this.state = state;
-        this.message = message;
-        this.owners = owners;
-        this.requestIds.addAll(requestIds);
+    /**
+     * Build a file reference event without file location
+     * @param checksum
+     * @param type
+     * @param owners
+     * @param message
+     * @param requestIds
+     * @return {@link FileReferenceEvent}
+     */
+    public static FileReferenceEvent build(String checksum, FileReferenceEventType type, Collection<String> owners,
+            String message, Collection<String> requestIds) {
+        Assert.notNull(checksum, "Checksum is mandatory");
+        Assert.notNull(type, "Type is mandatory");
+        Assert.notNull(requestIds, "Type is mandatory");
+
+        FileReferenceEvent event = new FileReferenceEvent();
+        event.checksum = checksum;
+        event.type = type;
+        event.message = message;
+        event.owners = owners;
+        event.requestIds.addAll(requestIds);
+
+        return event;
     }
 
     public String getChecksum() {
         return checksum;
     }
 
-    public FileReferenceEventState getState() {
-        return state;
+    public FileReferenceEventType getType() {
+        return type;
     }
 
     public String getMessage() {

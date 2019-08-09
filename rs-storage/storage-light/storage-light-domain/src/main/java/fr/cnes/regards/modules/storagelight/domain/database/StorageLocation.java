@@ -34,8 +34,9 @@ import javax.persistence.UniqueConstraint;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
 /**
- * @author sbinda
+ * Database definition of the table containing monitoring information about all storage location known.
  *
+ * @author Sébastien Binda
  */
 @Entity
 @Table(name = "t_storage_location", indexes = { @Index(name = "idx_storage_location", columnList = "name") },

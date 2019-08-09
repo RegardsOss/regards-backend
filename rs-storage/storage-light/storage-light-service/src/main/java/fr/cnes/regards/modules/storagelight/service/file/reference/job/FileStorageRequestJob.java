@@ -96,6 +96,8 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        long start = System.currentTimeMillis();
+        LOGGER.info("... runing storage job");
         // Initiate the job progress manager
         FileStorageJobProgressManager progressManager = new FileStorageJobProgressManager(fileReferenceService,
                 fileRefRequestService, publisher, this);
@@ -122,7 +124,9 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
                                                                 req.getMetaInfo().getChecksum(), errorCause));
                 }
             }
+            LOGGER.info("... storage job handled in {}ms", System.currentTimeMillis() - start);
         }
+
     }
 
     private void calculateImageDimension(FileStorageRequest fileRefRequest) {

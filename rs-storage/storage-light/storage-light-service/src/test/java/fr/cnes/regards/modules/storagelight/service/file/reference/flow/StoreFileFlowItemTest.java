@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.RetryFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
@@ -122,8 +122,8 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventState.STORED,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
+        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventType.STORED,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
     }
 
     @Test
@@ -173,8 +173,8 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventState.STORED,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
+        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventType.STORED,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
 
     }
 
@@ -202,8 +202,8 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventState.STORE_ERROR,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
+        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventType.STORE_ERROR,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
     }
 
     /**
@@ -242,8 +242,8 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventState.STORE_ERROR,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getState());
+        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventType.STORE_ERROR,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
 
         Assert.assertTrue("File request still present",
                           fileStorageRequestService.search(ONLINE_CONF_LABEL, checksum).isPresent());

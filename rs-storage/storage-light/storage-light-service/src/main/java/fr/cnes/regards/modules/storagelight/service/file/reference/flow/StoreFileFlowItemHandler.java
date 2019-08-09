@@ -82,6 +82,8 @@ public class StoreFileFlowItemHandler
     @Override
     public void handle(TenantWrapper<FileStorageFlowItem> wrapper) {
         String tenant = wrapper.getTenant();
+        runtimeTenantResolver.forceTenant(tenant);
+        LOGGER.info("[EVENT] New FileStorageFlowItem received -- {}", wrapper.getContent().toString());
         FileStorageFlowItem item = wrapper.getContent();
         if (!items.containsKey(tenant)) {
             items.put(tenant, new ConcurrentLinkedQueue<>());
