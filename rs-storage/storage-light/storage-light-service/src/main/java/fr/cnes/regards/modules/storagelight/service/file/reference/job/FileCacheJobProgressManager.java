@@ -58,8 +58,8 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
 
     private final FileCacheRequestService fileCacheRequestService;
 
-    public FileCacheJobProgressManager(FileCacheRequestService fileCacheRequestService, FileReferenceEventPublisher publisher,
-            IJob<?> job) {
+    public FileCacheJobProgressManager(FileCacheRequestService fileCacheRequestService,
+            FileReferenceEventPublisher publisher, IJob<?> job) {
         super();
         this.publisher = publisher;
         this.job = job;
@@ -78,7 +78,7 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
                                                       fileRef.getMetaInfo().getFileName(),
                                                       fileRef.getMetaInfo().getChecksum(),
                                                       fileRef.getLocation().toString(), fileReq.getDestinationPath());
-                LOGGER.debug("[RESTORATION SUCCESS] - {}", successMessage);
+                LOGGER.info("[RESTORATION SUCCESS] - {}", successMessage);
                 job.advanceCompletion();
                 fileCacheRequestService.handleSuccess(fileReq, cacheFileLocation, cacheFilePath.toFile().length());
                 publisher.available(fileRef.getMetaInfo().getChecksum(), successMessage, fileReq.getRequestId());

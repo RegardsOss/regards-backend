@@ -203,6 +203,8 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                     .set(IPluginParam.build(SimpleNearlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                                             getBaseStorageLocation().toString()),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
+                         IPluginParam.build(SimpleNearlineDataStorage.HANDLE_RESTORATION_ERROR_FILE_PATTERN,
+                                            "restoError.*"),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);

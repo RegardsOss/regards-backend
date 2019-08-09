@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.service.file.reference.flow;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -300,6 +301,51 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
         runAndWaitJob(jobs);
 
         requests = fileStorageRequestRepo.findByOwnersInAndStatus(Lists.newArrayList(owner), FileRequestStatus.ERROR,
+                                                                  PageRequest.of(0, 1_000));
+        Assert.assertEquals("The 3 requests should be in error again", 3, requests.getTotalElements());
+
+    }
+
+    @Test
+    public void retry_byOwners() {
+        String storageDestination = "somewheere";
+        List<String> owners = Lists.newArrayList("retry-test", "retry-test-2", "retry-test-3");
+        Set<FileStorageRequestDTO> files = Sets.newHashSet();
+        // Create a new bus message File reference request
+        files.add(FileStorageRequestDTO.build("file1.test", UUID.randomUUID().toString(), "MD5",
+                                              "application/octet-stream", owners.get(0), originUrl, storageDestination,
+                                              Optional.empty()));
+        files.add(FileStorageRequestDTO.build("file2.test", UUID.randomUUID().toString(), "MD5",
+                                              "application/octet-stream", owners.get(1), originUrl, storageDestination,
+                                              Optional.empty()));
+        files.add(FileStorageRequestDTO.build("file3.test", UUID.randomUUID().toString(), "MD5",
+                                              "application/octet-stream", owners.get(2), originUrl, storageDestination,
+                                              Optional.empty()));
+        FileStorageFlowItem item = FileStorageFlowItem.build(files, UUID.randomUUID().toString());
+        TenantWrapper<FileStorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        // Publish request
+        storeHandler.handleSync(wrapper);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        // Check request in error
+        Page<FileStorageRequest> requests = fileStorageRequestRepo
+                .findByOwnersInAndStatus(owners, FileRequestStatus.ERROR, PageRequest.of(0, 1_000));
+        Assert.assertEquals("The 3 requests should be in error", 3, requests.getTotalElements());
+
+        RetryFlowItem retry = RetryFlowItem.buildStorageRetry(owners);
+        TenantWrapper<RetryFlowItem> retryWrapper = new TenantWrapper<>(retry, getDefaultTenant());
+        retryHandler.handle(retryWrapper);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+
+        // Check request in todo
+        requests = fileStorageRequestRepo.findByOwnersInAndStatus(owners, FileRequestStatus.TODO,
+                                                                  PageRequest.of(0, 1_000));
+        Assert.assertEquals("The 3 requests should be in TODO", 3, requests.getTotalElements());
+
+        Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(),
+                                                                          Lists.newArrayList());
+        runAndWaitJob(jobs);
+
+        requests = fileStorageRequestRepo.findByOwnersInAndStatus(owners, FileRequestStatus.ERROR,
                                                                   PageRequest.of(0, 1_000));
         Assert.assertEquals("The 3 requests should be in error again", 3, requests.getTotalElements());
 

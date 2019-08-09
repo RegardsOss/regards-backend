@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.storagelight.service.file.reference.flow;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -41,11 +42,14 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.RetryFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
@@ -55,12 +59,15 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRe
  *
  */
 @ActiveProfiles({ "noscheduler" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_availability_tests",
         "regards.storage.cache.path=target/cache" })
 public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReferenceTest {
 
     @Autowired
     private AvailabilityFileFlowItemHandler handler;
+
+    @Autowired
+    private RetryFlowItemHandler retryHandler;
 
     @Autowired
     FileReferenceService fileRefService;
@@ -173,6 +180,66 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
                             event.getChecksum());
         Assert.assertFalse("No cache request should be created as file is in cache",
                            fileCacheRequestService.search(file1.getMetaInfo().getChecksum()).isPresent());
+    }
+
+    @Test
+    public void availability() throws InterruptedException, ExecutionException {
+
+        // Simulate storage of 3 files in a near line location with restore error
+        FileReference file1 = this.generateRandomStoredNearlineFileReference("restoError.file1.test");
+        FileReference file2 = this.generateRandomStoredNearlineFileReference("restoError.file1.test");
+        FileReference file3 = this.generateRandomStoredNearlineFileReference("restoError.file1.test");
+        FileReference file4 = this.generateRandomStoredNearlineFileReference("file4.test");
+        Mockito.clearInvocations(publisher);
+
+        Set<String> checksums = Sets.newHashSet(file1.getMetaInfo().getChecksum(), file2.getMetaInfo().getChecksum(),
+                                                file3.getMetaInfo().getChecksum(), file4.getMetaInfo().getChecksum());
+
+        String requestId = UUID.randomUUID().toString();
+        AvailabilityFileRefFlowItem request = new AvailabilityFileRefFlowItem(checksums,
+                OffsetDateTime.now().plusDays(1), requestId);
+        handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
+        runtimeTenantResolver.forceTenant(this.getDefaultTenant());
+
+        Assert.assertEquals("There should be 4 cache requests created", 4,
+                            fileCacheReqRepo.findByRequestIdAndStatus(requestId, FileRequestStatus.TODO).size());
+
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        runAndWaitJob(jobs);
+
+        runtimeTenantResolver.forceTenant(this.getDefaultTenant());
+        Assert.assertEquals("There should be 0 cache requests in TODO", 0,
+                            fileCacheReqRepo.findByRequestIdAndStatus(requestId, FileRequestStatus.TODO).size());
+        Assert.assertEquals("There should be 3 cache requests in ERROR", 3,
+                            fileCacheReqRepo.findByRequestIdAndStatus(requestId, FileRequestStatus.ERROR).size());
+        Assert.assertEquals("There should be 1 file cache requests", 1, cacheFileRepo
+                .findAllByChecksumIn(Sets.newHashSet(file4.getMetaInfo().getChecksum())).size());
+
+        // there should be 3 notification error for availability of offline files
+        // There should be 1 notification for available file
+        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(publisher, Mockito.times(4)).publish(Mockito.any(FileReferenceEvent.class));
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        Set<String> availables = Sets.newHashSet();
+        Set<String> notAvailables = Sets.newHashSet();
+        for (FileReferenceEvent evt : getFileReferenceEvents(argumentCaptor.getAllValues())) {
+            if (evt.getState() == FileReferenceEventState.AVAILABLE) {
+                availables.add(evt.getChecksum());
+            } else if (evt.getState() == FileReferenceEventState.AVAILABILITY_ERROR) {
+                notAvailables.add(evt.getChecksum());
+            }
+        }
+        Assert.assertEquals("There should be 1 files available", 1, availables.size());
+        Assert.assertEquals("There should be 3 files error", 3, notAvailables.size());
+
+        retryHandler.handle(new TenantWrapper<RetryFlowItem>(RetryFlowItem.buildAvailabilityRetry(requestId),
+                getDefaultTenant()));
+
+        runtimeTenantResolver.forceTenant(this.getDefaultTenant());
+        Assert.assertEquals("There should be 3 cache requests in TODO", 3,
+                            fileCacheReqRepo.findByRequestIdAndStatus(requestId, FileRequestStatus.TODO).size());
+        Assert.assertEquals("There should be 0 cache requests in ERROR", 0,
+                            fileCacheReqRepo.findByRequestIdAndStatus(requestId, FileRequestStatus.ERROR).size());
     }
 
 }

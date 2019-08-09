@@ -71,6 +71,8 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
 
     public static final String HANDLE_DELETE_ERROR_FILE_PATTERN = "delete_error_file_pattern";
 
+    public static final String HANDLE_RESTORATION_ERROR_FILE_PATTERN = "resto_error_pattern";;
+
     /**
      * {@link IRuntimeTenantResolver} instance
      */
@@ -91,6 +93,10 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     @PluginParameter(name = HANDLE_DELETE_ERROR_FILE_PATTERN, description = "Delete Error file pattern",
             label = "Delete Error file pattern")
     private String deleteErrorFilePattern;
+
+    @PluginParameter(name = HANDLE_RESTORATION_ERROR_FILE_PATTERN, description = "Restoration Error file pattern",
+            label = "Delete Error file pattern")
+    private String restoErrorFilePattern;
 
     private final String doNotHandlePattern = "doNotHandle.*";
 
@@ -176,7 +182,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
         workingSubset.getFileDeletionRequests().forEach(request -> {
             String fileName = request.getFileReference().getMetaInfo().getFileName();
             if (Pattern.matches(deleteErrorFilePattern, fileName)) {
-                progressManager.deletionFailed(request, "Test deletion failure");
+                progressManager.deletionFailed(request, "Specific error generated for tests");
             } else {
                 progressManager.deletionSucceed(request);
             }
@@ -209,18 +215,22 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     @Override
     public void retrieve(FileRestorationWorkingSubset workingSubset, IRestorationProgressManager progressManager) {
         workingSubset.getFileRestorationRequests().forEach(f -> {
-            // Create file
-            try {
-                if (!Files.exists(Paths.get(f.getDestinationPath()).getParent())) {
-                    Files.createDirectories(Paths.get(f.getDestinationPath()).getParent());
+            if (Pattern.matches(restoErrorFilePattern, f.getFileReference().getMetaInfo().getFileName())) {
+                progressManager.restoreFailed(f, "Specific error generated for tests");
+            } else {
+                // Create file
+                try {
+                    if (!Files.exists(Paths.get(f.getDestinationPath()).getParent())) {
+                        Files.createDirectories(Paths.get(f.getDestinationPath()).getParent());
+                    }
+                    if (!Files.exists(Paths.get(f.getDestinationPath()))) {
+                        Files.createFile(Paths.get(f.getDestinationPath()));
+                    }
+                    progressManager.restoreSucceed(f);
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    progressManager.restoreFailed(f, e.getMessage());
                 }
-                if (!Files.exists(Paths.get(f.getDestinationPath()))) {
-                    Files.createFile(Paths.get(f.getDestinationPath()));
-                }
-                progressManager.restoreSucceed(f);
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
-                progressManager.restoreFailed(f, e.getMessage());
             }
         });
     }
