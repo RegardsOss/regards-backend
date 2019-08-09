@@ -294,7 +294,7 @@ public class IngestService implements IIngestService {
         LOGGER.debug("SIP {} saved, ready for asynchronous processing", entity.getProviderId());
 
         publisher.publish(SessionMonitoringEvent
-                .build(metadata.getClientId(), metadata.getClientSession(), SessionNotificationState.OK,
+                .build(metadata.getSessionOwner(), metadata.getSession(), SessionNotificationState.OK,
                        SIPService.SESSION_NOTIF_STEP, SessionNotificationOperator.INC, SIPState.CREATED.toString(), 1));
 
         // Ensure performance by flushing transaction cache
@@ -321,7 +321,7 @@ public class IngestService implements IIngestService {
 
         // Notify an error occurred for current SIP session
         publisher.publish(SessionMonitoringEvent
-                .build(entity.getIngestMetadata().getClientId(), entity.getIngestMetadata().getClientSession(),
+                .build(entity.getIngestMetadata().getSessionOwner(), entity.getIngestMetadata().getSession(),
                        SessionNotificationState.ERROR, SIPService.SESSION_NOTIF_STEP, SessionNotificationOperator.INC,
                        SIPState.REJECTED.toString(), 1));
 

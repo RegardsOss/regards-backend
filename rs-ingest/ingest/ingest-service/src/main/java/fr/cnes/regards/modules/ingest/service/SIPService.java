@@ -183,11 +183,11 @@ public class SIPService implements ISIPService {
 
         // Decrement the previous state by one
         publisher.publish(SessionMonitoringEvent
-                .build(metadata.getClientId(), metadata.getClientSession(), SessionNotificationState.OK,
+                .build(metadata.getSessionOwner(), metadata.getSession(), SessionNotificationState.OK,
                        SESSION_NOTIF_STEP, SessionNotificationOperator.DEC, previousState.toString(), nbSip));
 
         // Increment the next state by one
-        publisher.publish(SessionMonitoringEvent.build(metadata.getClientId(), metadata.getClientSession(),
+        publisher.publish(SessionMonitoringEvent.build(metadata.getSessionOwner(), metadata.getSession(),
                                                        SessionNotificationState.OK, SESSION_NOTIF_STEP,
                                                        SessionNotificationOperator.INC, nextState.toString(), nbSip));
     }

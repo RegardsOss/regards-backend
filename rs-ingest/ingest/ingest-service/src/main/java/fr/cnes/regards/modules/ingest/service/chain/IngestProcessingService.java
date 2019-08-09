@@ -194,8 +194,8 @@ public class IngestProcessingService implements IIngestProcessingService {
             // Add to the list of sipId by chain
             sipByChain.put(idNProc.getIngestMetadata().getIngestChain(), idNProc.getId());
             // Compute how many SIP by session have been modified
-            String sessionOwner = idNProc.getIngestMetadata().getClientId();
-            String session = idNProc.getIngestMetadata().getClientSession();
+            String sessionOwner = idNProc.getIngestMetadata().getSessionOwner();
+            String session = idNProc.getIngestMetadata().getSession();
             Integer value = 0;
             if (nbSipBySession.contains(sessionOwner, session)) {
                 value = nbSipBySession.get(sessionOwner, session);
