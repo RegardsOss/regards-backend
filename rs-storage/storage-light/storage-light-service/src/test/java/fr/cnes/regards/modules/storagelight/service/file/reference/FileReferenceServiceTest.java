@@ -515,4 +515,56 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         Assert.assertTrue("file should be restored in cache",
                           Files.exists(Paths.get(cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()))));
     }
+
+    @Test
+    public void restoreMultiple() throws InterruptedException, ExecutionException {
+        FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test");
+        FileReference fileRef2 = this.generateRandomStoredNearlineFileReference("file-nl-2.test");
+        FileReference fileRef3 = this.generateRandomStoredNearlineFileReference("file-nl-3.test");
+        FileReference fileRef4 = this.generateRandomStoredNearlineFileReference("file-nl-4.test");
+        fileRefService.makeAvailable(Sets
+                .newHashSet(fileRef.getMetaInfo().getChecksum(), fileRef2.getMetaInfo().getChecksum(),
+                            fileRef3.getMetaInfo().getChecksum(), fileRef4.getMetaInfo().getChecksum()),
+                                     OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
+        Assert.assertTrue("A cache request should be created",
+                          fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
+        Assert.assertTrue("A cache request should be created",
+                          fileCacheRequestService.search(fileRef2.getMetaInfo().getChecksum()).isPresent());
+        Assert.assertTrue("A cache request should be created",
+                          fileCacheRequestService.search(fileRef3.getMetaInfo().getChecksum()).isPresent());
+        Assert.assertTrue("A cache request should be created",
+                          fileCacheRequestService.search(fileRef4.getMetaInfo().getChecksum()).isPresent());
+
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        runAndWaitJob(jobs);
+
+        Assert.assertTrue("file should be restored in cache",
+                          Files.exists(Paths.get(cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()))));
+        Assert.assertTrue("file should be restored in cache",
+                          Files.exists(Paths.get(cacheService.getFilePath(fileRef2.getMetaInfo().getChecksum()))));
+        Assert.assertTrue("file should be restored in cache",
+                          Files.exists(Paths.get(cacheService.getFilePath(fileRef3.getMetaInfo().getChecksum()))));
+        Assert.assertTrue("file should be restored in cache",
+                          Files.exists(Paths.get(cacheService.getFilePath(fileRef4.getMetaInfo().getChecksum()))));
+        Assert.assertTrue("No cache request should remains", fileCacheReqRepo.count() == 0);
+
+    }
+
+    @Test
+    public void restoreError() throws InterruptedException, ExecutionException {
+        FileReference fileRef = this.generateRandomStoredNearlineFileReference("restoError.file1.test");
+        fileRefService.makeAvailable(Sets.newHashSet(fileRef.getMetaInfo().getChecksum()),
+                                     OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
+        Assert.assertTrue("A cache request should be created",
+                          fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
+
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        runAndWaitJob(jobs);
+
+        Assert.assertFalse("file should be restored in cache",
+                           Files.exists(Paths.get(cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()))));
+        Optional<FileCacheRequest> request = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
+        Assert.assertTrue("A cache request should be created", request.isPresent());
+        Assert.assertTrue("A cache request should be created", request.get().getStatus() == FileRequestStatus.ERROR);
+    }
 }

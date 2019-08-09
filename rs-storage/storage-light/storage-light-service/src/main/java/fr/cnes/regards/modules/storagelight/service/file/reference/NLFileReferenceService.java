@@ -94,8 +94,9 @@ public class NLFileReferenceService {
      * After copy in cache, files will be available until the given expiration date.
      * @param fileReferences
      * @param expirationDate
+     * @return number of cache request created.
      */
-    public void makeAvailable(Set<FileReference> fileReferences, OffsetDateTime expirationDate, String requestId) {
+    public int makeAvailable(Set<FileReference> fileReferences, OffsetDateTime expirationDate, String requestId) {
         // Check files already available in cache
         Set<FileReference> availables = cachedFileService.getFilesAvailableInCache(fileReferences);
         Set<FileReference> toRestore = fileReferences.stream().filter(f -> !availables.contains(f))
@@ -106,6 +107,7 @@ public class NLFileReferenceService {
         for (FileReference f : toRestore) {
             fileCacheReqService.create(f, expirationDate, requestId);
         }
+        return toRestore.size();
     }
 
     /**
@@ -113,12 +115,11 @@ public class NLFileReferenceService {
      * @param availables
      */
     private void notifyAvailables(Set<FileReference> availables, String requestId) {
-        availables
-                .forEach(f -> publisher
-                        .available(f.getMetaInfo().getChecksum(),
-                                   String.format("file %s (checksum %s) is available for download.",
-                                                 f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum()),
-                                   requestId));
+        availables.forEach(f -> publisher
+                .available(f.getMetaInfo().getChecksum(),
+                           String.format("file %s (checksum %s) is available for download.",
+                                         f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum()),
+                           requestId, false));
     }
 
 }

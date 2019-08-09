@@ -155,13 +155,15 @@ public class FileCacheRequestService {
      * @return scheduled {@link JobInfo}s
      */
     public Collection<JobInfo> scheduleJobs(FileRequestStatus status) {
+        LOGGER.info("... scheduling cache jobs");
+        long start = System.currentTimeMillis();
         Collection<JobInfo> jobList = Lists.newArrayList();
         Set<String> allStorages = repository.findStoragesByStatus(status);
         for (String storage : allStorages) {
             Page<FileCacheRequest> filesPage;
             Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
             do {
-                filesPage = repository.findAllByStorage(storage, page);
+                filesPage = repository.findAllByStorageAndStatus(storage, status, page);
                 List<FileCacheRequest> requests = filesPage.getContent();
                 if (storageHandler.getConfiguredStorages().contains(storage)) {
                     requests = calculateRestorables(requests);
@@ -172,6 +174,7 @@ public class FileCacheRequestService {
                 page = filesPage.nextPageable();
             } while (filesPage.hasNext());
         }
+        LOGGER.info("...{} cache jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
         return jobList;
     }
 

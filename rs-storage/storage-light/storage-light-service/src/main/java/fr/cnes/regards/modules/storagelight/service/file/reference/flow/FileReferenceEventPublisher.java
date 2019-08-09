@@ -157,24 +157,28 @@ public class FileReferenceEventPublisher {
         }
     }
 
-    public void available(String checksum, String message, String requestId) {
+    public void available(String checksum, String message, String requestId, boolean notifyRequest) {
         LOGGER.debug("Publish FileReferenceEvent available for download. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABLE, null, message, null,
                                                    Sets.newHashSet(requestId)));
 
         // Check if cache request exists for the same requestId
-        if (!cacheReqRepo.existsByRequestId(requestId)) {
-            requestDone(requestId, FileRequestType.AVAILABILITY);
-        } else {
-            checkForAvailabilityRequestError(requestId);
+        if (notifyRequest) {
+            if (!cacheReqRepo.existsByRequestId(requestId)) {
+                requestDone(requestId, FileRequestType.AVAILABILITY);
+            } else {
+                checkForAvailabilityRequestError(requestId);
+            }
         }
     }
 
-    public void notAvailable(String checksum, String message, String requestId) {
+    public void notAvailable(String checksum, String message, String requestId, boolean notifyRequest) {
         LOGGER.debug("Publish FileReferenceEvent not available for download. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABILITY_ERROR, null, message,
                                                    null, Sets.newHashSet(requestId)));
-        checkForAvailabilityRequestError(requestId);
+        if (notifyRequest) {
+            checkForAvailabilityRequestError(requestId);
+        }
     }
 
     private void checkForAvailabilityRequestError(String requestId) {

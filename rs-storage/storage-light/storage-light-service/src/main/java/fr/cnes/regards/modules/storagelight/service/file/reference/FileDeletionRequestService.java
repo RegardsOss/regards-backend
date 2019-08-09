@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 
 import org.apache.commons.compress.utils.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -67,6 +69,8 @@ import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginCo
 @Service
 @MultitenantTransactional
 public class FileDeletionRequestService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileDeletionRequestService.class);
 
     private static final int NB_REFERENCE_BY_PAGE = 1000;
 
@@ -129,7 +133,8 @@ public class FileDeletionRequestService {
      * @return {@link JobInfo}s scheduled
      */
     public Collection<JobInfo> scheduleJobs(FileRequestStatus status, Collection<String> storages) {
-
+        LOGGER.info("... scheduling deletion jobs");
+        long start = System.currentTimeMillis();
         Collection<JobInfo> jobList = Lists.newArrayList();
         Set<String> allStorages = fileDeletionRequestRepo.findStoragesByStatus(status);
         Set<String> deletionToSchedule = (storages != null) && !storages.isEmpty()
@@ -148,6 +153,7 @@ public class FileDeletionRequestService {
                 page = deletionRequestPage.nextPageable();
             } while (deletionRequestPage.hasNext());
         }
+        LOGGER.info("...{} deletion jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
         return jobList;
     }
 

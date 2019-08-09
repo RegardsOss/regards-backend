@@ -44,7 +44,7 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
 
     Optional<FileCacheRequest> findByChecksum(String checksum);
 
-    Page<FileCacheRequest> findAllByStorage(String storage, Pageable page);
+    Page<FileCacheRequest> findAllByStorageAndStatus(String storage, FileRequestStatus status, Pageable page);
 
     @Modifying
     @Query("update FileCacheRequest fcr set fcr.status = :status where fcr.id = :id")

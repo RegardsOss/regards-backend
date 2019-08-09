@@ -540,8 +540,19 @@ public class FileReferenceService {
         }
         notifyAvailables(onlines, requestId);
         notifyNotAvailables(offlines, requestId);
-        nearlineFileService.makeAvailable(nearlines, expirationDate, requestId);
+        int nbRequests = nearlineFileService.makeAvailable(nearlines, expirationDate, requestId);
         eventPublisher.requestGranted(requestId, FileRequestType.AVAILABILITY);
+        // If no cache requests are needed, we have to notify the end of the availability request
+        if (nearlines.isEmpty() || (nbRequests == 0)) {
+            if (offlines.isEmpty()) {
+                eventPublisher.requestDone(requestId, FileRequestType.AVAILABILITY);
+            } else {
+                Set<ErrorFile> errors = offlines.stream().map(e -> ErrorFile
+                        .build(e.getMetaInfo().getChecksum(), e.getLocation().getStorage(), "File is offline"))
+                        .collect(Collectors.toSet());
+                eventPublisher.requestError(requestId, FileRequestType.AVAILABILITY, errors);
+            }
+        }
     }
 
     /**
@@ -652,20 +663,18 @@ public class FileReferenceService {
     }
 
     private void notifyAvailables(Set<FileReference> availables, String requestId) {
-        availables
-                .forEach(f -> eventPublisher
-                        .available(f.getMetaInfo().getChecksum(),
-                                   String.format("file %s (checksum %s) is available for download.",
-                                                 f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum()),
-                                   requestId));
+        availables.forEach(f -> eventPublisher
+                .available(f.getMetaInfo().getChecksum(),
+                           String.format("file %s (checksum %s) is available for download.",
+                                         f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum()),
+                           requestId, false));
     }
 
     private void notifyNotAvailables(Set<FileReference> notAvailable, String requestId) {
-        notAvailable
-                .forEach(f -> eventPublisher
-                        .notAvailable(f.getMetaInfo().getChecksum(),
-                                      String.format("file %s (checksum %s) is not available for download.",
-                                                    f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum()),
-                                      requestId));
+        notAvailable.forEach(f -> eventPublisher
+                .notAvailable(f.getMetaInfo().getChecksum(),
+                              String.format("file %s (checksum %s) is not available for download.",
+                                            f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum()),
+                              requestId, false));
     }
 }

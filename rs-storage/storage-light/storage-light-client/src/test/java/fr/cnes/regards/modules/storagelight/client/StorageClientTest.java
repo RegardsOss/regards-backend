@@ -48,6 +48,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storagelight.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineTestClient;
 import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedStorageService;
 
@@ -74,11 +75,13 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
 
     private Path fileToStore;
 
-    private final String ONLINE_CONF = "ONLINE_CONF";
+    private static final String ONLINE_CONF = "ONLINE_CONF";
+
+    private static final String NEARLINE_CONF = "NEARLINE_CONF";
 
     private final Set<String> storedFileChecksums = Sets.newHashSet();
 
-    private final Set<String> referencedFileChecksums = Sets.newHashSet();
+    private final Set<String> restorableFileChecksums = Sets.newHashSet();
 
     @Before
     public void init() throws IOException, ModuleException {
@@ -91,24 +94,50 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         if (!prioritizedDataStorageService.search(ONLINE_CONF).isPresent()) {
             initDataStoragePluginConfiguration();
         }
+        if (!prioritizedDataStorageService.search(NEARLINE_CONF).isPresent()) {
+            initDataStorageNLPluginConfiguration();
+        }
 
         Assert.assertTrue(prioritizedDataStorageService.search(ONLINE_CONF).isPresent());
+        Assert.assertTrue(prioritizedDataStorageService.search(NEARLINE_CONF).isPresent());
     }
 
     @Test
     public void storeFile() throws InterruptedException, MalformedURLException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         String cs1 = UUID.randomUUID().toString();
-        RequestInfo info = client.store(FileStorageRequestDTO
-                .build("file.test", cs1, "UUID", "application/octet-stream", "owner",
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
+        String cs2 = UUID.randomUUID().toString();
+        String cs3 = UUID.randomUUID().toString();
+        String cs4 = UUID.randomUUID().toString();
+        Set<FileStorageRequestDTO> files = Sets.newHashSet();
+        files.add(FileStorageRequestDTO.build("file.test", cs1, "UUID", "application/octet-stream", "owner",
+                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()),
+                                              ONLINE_CONF, null));
+        files.add(FileStorageRequestDTO.build("file2.test", cs2, "UUID", "application/octet-stream", "owner",
+                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()),
+                                              ONLINE_CONF, null));
+        files.add(FileStorageRequestDTO.build("restoError.file3.test", cs3, "UUID", "application/octet-stream", "owner",
+                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()),
+                                              NEARLINE_CONF, null));
+        files.add(FileStorageRequestDTO.build("file4.test", cs4, "UUID", "application/octet-stream", "owner",
+                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()),
+                                              NEARLINE_CONF, null));
 
-        Thread.sleep(15_000);
+        RequestInfo info = client.store(files);
+
+        Thread.sleep(5_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue("Request should be successful", listener.getSuccess().contains(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
 
         storedFileChecksums.add(cs1);
+        restorableFileChecksums.add(cs1);
+        storedFileChecksums.add(cs2);
+        restorableFileChecksums.add(cs2);
+        storedFileChecksums.add(cs3);
+        storedFileChecksums.add(cs4);
+        restorableFileChecksums.add(cs4);
+
     }
 
     @Test
@@ -238,12 +267,29 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         this.storeFile();
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        RequestInfo info = client.makeAvailable(storedFileChecksums, OffsetDateTime.now().plusDays(1));
+        RequestInfo info = client.makeAvailable(restorableFileChecksums, OffsetDateTime.now().plusDays(1));
 
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue("Request should be successful", listener.getSuccess().contains(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
+
+    }
+
+    @Test
+    public void availability_withError() throws MalformedURLException, InterruptedException {
+
+        this.storeFile();
+
+        listener.reset();
+
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        RequestInfo info = client.makeAvailable(storedFileChecksums, OffsetDateTime.now().plusDays(1));
+
+        Thread.sleep(5_000);
+        Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
+        Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
 
     }
 
@@ -263,6 +309,25 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         } catch (IOException | ModuleException e) {
             Assert.fail(e.getMessage());
             return null;
+        }
+    }
+
+    private PrioritizedStorage initDataStorageNLPluginConfiguration() throws ModuleException {
+        try {
+            PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleNearlineDataStorage.class);
+            Files.createDirectories(Paths.get("target/nearline-storage/"));
+            Set<IPluginParam> parameters = IPluginParam
+                    .set(IPluginParam.build(SimpleNearlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                            "target/nearline-storage/"),
+                         IPluginParam.build(SimpleNearlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
+                         IPluginParam.build(SimpleNearlineDataStorage.HANDLE_RESTORATION_ERROR_FILE_PATTERN,
+                                            "restoError.*"),
+                         IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
+            PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, NEARLINE_CONF, parameters, 0);
+            dataStorageConf.setIsActive(true);
+            return prioritizedDataStorageService.create(dataStorageConf);
+        } catch (IOException e) {
+            throw new ModuleException(e.getMessage(), e);
         }
     }
 

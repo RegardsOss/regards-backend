@@ -215,7 +215,7 @@ public class FileStorageRequestService {
                 page = filesPage.nextPageable();
             } while (filesPage.hasNext());
         }
-        LOGGER.info("...{} jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
+        LOGGER.info("...{} storage jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
         return jobList;
     }
 
