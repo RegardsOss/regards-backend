@@ -19,15 +19,15 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import java.io.InputStream;
-import java.util.Collection;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
+import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.dto.flow.SipFlowItem;
 
 /**
  * Ingest service interface
@@ -38,20 +38,22 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
 public interface IIngestService {
 
     /**
-     * Store SIP for further asynchronous processing
-     * @param sips raw {@link SIPCollection}
-     * @return SIP DTO
-     * @throws ModuleException if error occurs!
+     * Register ingest request from flow item
+     * @param item flow iter to register as an ingest request
      */
-    Collection<SIPDto> ingest(SIPCollection sips) throws ModuleException;
+    void registerIngestRequest(SipFlowItem item);
 
     /**
-     * Store SIP for further asynchronous processing
-     * @param input JSON file containing a SIP collection
-     * @return SIP DTO
-     * @throws ModuleException if error occurs!
+     * Redirect collection of SIP to data flow (REST to messages)
+     * @param sips raw {@link SIPCollection}
      */
-    Collection<SIPDto> ingest(InputStream input) throws ModuleException;
+    void redirectToDataflow(SIPCollection sips);
+
+    /**
+     * Redirect collection of SIP to data flow (REST to messages)
+     * @param input JSON file containing a SIP collection
+     */
+    void redirectToDataflow(InputStream input) throws ModuleException;
 
     /**
      * Retry to store a SIP already submitted previously.
@@ -69,5 +71,5 @@ public interface IIngestService {
     /**
      * Store SIP received by HTTP bulk request or data flow
      */
-    SIPDto store(SIP sip, IngestMetadata metadata, String owner, boolean publishRejected);
+    SIPDto store(SIP sip, IngestMetadataDto metadata, boolean publishRejected);
 }

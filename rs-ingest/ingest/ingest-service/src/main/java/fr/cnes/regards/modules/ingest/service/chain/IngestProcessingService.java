@@ -78,6 +78,7 @@ import fr.cnes.regards.modules.ingest.dao.IngestProcessingChainSpecifications;
 import fr.cnes.regards.modules.ingest.domain.aip.AIP;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPIdNProcessing;

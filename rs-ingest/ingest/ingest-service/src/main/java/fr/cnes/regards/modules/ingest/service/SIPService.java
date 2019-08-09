@@ -42,9 +42,9 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
-import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
@@ -74,11 +74,11 @@ public class SIPService implements ISIPService {
     private IAIPRepository aipRepository;
 
     @Override
-    public Page<SIPEntity> search(String providerId, String sessionOwner, String session, String owner,
-            OffsetDateTime from, List<SIPState> state, String ingestChain, Pageable page) {
-        return sipRepository.loadAll(SIPEntitySpecifications.search(providerId, sessionOwner, session, owner, from,
-                                                                    state, ingestChain),
-                                     page);
+    public Page<SIPEntity> search(String providerId, String sessionOwner, String session, OffsetDateTime from,
+            List<SIPState> state, String ingestChain, Pageable page) {
+        return sipRepository
+                .loadAll(SIPEntitySpecifications.search(providerId, sessionOwner, session, from, state, ingestChain),
+                         page);
     }
 
     @Override

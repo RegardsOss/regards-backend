@@ -36,9 +36,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
+import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
@@ -86,7 +86,7 @@ public class IngestServiceIT extends AbstractSipIT {
 
         LOGGER.debug("Starting test ingestWithCollision");
 
-        SIPCollection collection = SIPCollection.build(IngestMetadata
+        SIPCollection collection = SIPCollection.build(IngestMetadataDto
                 .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
         SIPBuilder builder = new SIPBuilder("SIP_001");
         collection.add(builder.buildReference(Paths.get("sip1.xml"), "zaasfsdfsdlfkmsldgfml12df"));
@@ -107,7 +107,7 @@ public class IngestServiceIT extends AbstractSipIT {
         Assert.assertTrue(two.getVersion() == 2);
         Assert.assertTrue(SIPState.REJECTED.equals(two.getState()));
 
-        Page<SIPEntity> page = sipService.search(null, SESSION_OWNER, null, null, null, null, null, PageRequest.of(0, 10));
+        Page<SIPEntity> page = sipService.search(null, SESSION_OWNER, null, null, null, null, PageRequest.of(0, 10));
         Assert.assertTrue(page.getNumberOfElements() == 1);
     }
 
@@ -135,7 +135,7 @@ public class IngestServiceIT extends AbstractSipIT {
         Assert.assertNotNull(sips);
         Assert.assertTrue(sips.size() == sipNb);
 
-        Page<SIPEntity> page = sipService.search(null, null, null, null, null, null, null, PageRequest.of(0, 10));
+        Page<SIPEntity> page = sipService.search(null, null, null, null, null, null, PageRequest.of(0, 10));
         Assert.assertTrue(page.getNumberOfElements() == sipNb);
     }
 
@@ -143,7 +143,7 @@ public class IngestServiceIT extends AbstractSipIT {
     @Test
     public void retryIngest() throws NoSuchAlgorithmException, IOException, ModuleException {
         // Simulate a SIP in CREATED state
-        SIPEntity sip = createSIP("RETY_SIP_001", SESSION_OWNER, SESSION, INGEST_CHAIN, "admin", 1);
+        SIPEntity sip = createSIP("RETY_SIP_001", SESSION_OWNER, SESSION, INGEST_CHAIN, 1);
 
         sip.setState(SIPState.CREATED);
         sip = sipRepository.save(sip);
@@ -203,7 +203,7 @@ public class IngestServiceIT extends AbstractSipIT {
 
         String sipFilename = "sip" + version + ".xml";
 
-        SIPCollection collection = SIPCollection.build(IngestMetadata
+        SIPCollection collection = SIPCollection.build(IngestMetadataDto
                 .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
         SIPBuilder builder = new SIPBuilder(providerId);

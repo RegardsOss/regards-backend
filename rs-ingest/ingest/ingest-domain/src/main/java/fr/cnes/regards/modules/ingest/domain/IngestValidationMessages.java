@@ -38,6 +38,8 @@ public final class IngestValidationMessages {
 
     // Common validation messages
 
+    public static final String MISSING_REQUEST_ID_ERROR = "Request identifier is required";
+
     public static final String MISSING_METADATA_ERROR = "Ingest metadata is required";
 
     public static final String MISSING_SIP_ERROR = "SIP is required";

@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
  * @author Marc SORDI
  */
 @Mapper(componentModel = "spring")
-public interface IngestMetadataMapper {
+public interface IIngestMetadataMapper {
 
     IngestMetadataDto metadataToDto(IngestMetadata metadata);
 

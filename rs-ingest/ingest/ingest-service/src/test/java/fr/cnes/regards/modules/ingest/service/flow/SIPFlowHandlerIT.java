@@ -36,9 +36,9 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantService
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
-import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
+import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.domain.dto.flow.SipFlowItem;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
@@ -78,9 +78,9 @@ public class SIPFlowHandlerIT extends AbstractMultitenantServiceTest {
         for (long i = 0; i < maxloops; i++) {
             SIP sip = create("provider" + i);
             // Create event
-            IngestMetadata mtd = IngestMetadata.build("source", OffsetDateTime.now().toString(),
-                                                      IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
-            SipFlowItem flowItem = SipFlowItem.build(mtd, sip, "TEST");
+            IngestMetadataDto mtd = IngestMetadataDto.build("source", OffsetDateTime.now().toString(),
+                                                            IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
+            SipFlowItem flowItem = SipFlowItem.build(mtd, sip);
             publisher.publish(flowItem);
         }
 

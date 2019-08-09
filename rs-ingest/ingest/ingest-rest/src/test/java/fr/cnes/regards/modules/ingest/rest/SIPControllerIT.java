@@ -56,10 +56,11 @@ import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
+import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
@@ -95,7 +96,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Ingest valid SIPs")
     public void ingestSips() {
 
-        SIPCollection collection = SIPCollection.build(IngestMetadata
+        SIPCollection collection = SIPCollection.build(IngestMetadataDto
                 .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
         SIP firstSIPwithGeometry = buildSipOne("SIP_001", "data1.fits").build();
@@ -144,7 +145,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Get SIPs")
     public void getSips() {
 
-        SIPCollection collection = SIPCollection.build(IngestMetadata
+        SIPCollection collection = SIPCollection.build(IngestMetadataDto
                 .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
         collection.add(buildSipOne("SIP_001", "data1.fits").build());
@@ -172,10 +173,6 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
         paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_PROVIDER_ID).optional()
                 .description("SIP identifier filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
-        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_OWNER).optional()
-                .description("SIP owner filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
         paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_FROM).optional()
@@ -208,7 +205,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Ingest valid and invalid SIPs")
     public void ingestInvalidSips() {
 
-        SIPCollection collection = SIPCollection.build(IngestMetadata
+        SIPCollection collection = SIPCollection.build(IngestMetadataDto
                 .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
 
         // SIP 1
@@ -308,8 +305,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         String session = OffsetDateTime.now().toString();
         IngestMetadata metadata = IngestMetadata.build(sessionOwner, session,
                                                        IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
-        SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(), metadata, sip, "me", 1, SIPState.ERROR,
-                                              EntityType.DATA);
+        SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(), metadata, sip, 1, SIPState.ERROR, EntityType.DATA);
         sipEntity.setChecksum("12332323f2ds3d6g6df");
         sipEntity.setProcessingErrors(Arrays.asList("error1", "error2"));
         sipService.saveSIPEntity(sipEntity);

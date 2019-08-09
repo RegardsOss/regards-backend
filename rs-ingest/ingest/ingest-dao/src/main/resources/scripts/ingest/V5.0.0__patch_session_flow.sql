@@ -21,9 +21,12 @@ alter table t_sip drop column session RESTRICT;
 alter table t_sip drop column owner;
 drop table t_sip_session;
 
--- Requests
+-- Deletion request
 create table t_deletion_request (id int8 not null, sipId varchar(128), primary key (id));
-create table t_ingest_request (id int8 not null, ingest_chain varchar(100) not null, session_name varchar(128) not null, session_owner varchar(128) not null, storages jsonb, rawsip jsonb, primary key (id));
 create sequence seq_deletion_request start 1 increment 50;
+-- Ingest request
+create table t_ingest_request (id int8 not null, request_id varchar(36) NOT null; ingest_chain varchar(100) not null, session_name varchar(128) not null, session_owner varchar(128) not null, storages jsonb, rawsip jsonb, primary key (id));
+CREATE INDEX idx_ingest_request_id on t_ingest_request (request_id);
+ALTER TABLE t_ingest_request ADD CONSTRAINT uk_ingest_request_id UNIQUE (request_id);
 create sequence seq_ingest_request start 1 increment 50;
 

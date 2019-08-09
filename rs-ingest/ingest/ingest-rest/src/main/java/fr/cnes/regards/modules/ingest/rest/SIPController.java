@@ -87,8 +87,6 @@ public class SIPController implements IResourceController<SIPEntity> {
 
     public static final String REQUEST_PARAM_PROVIDER_ID = "providerId";
 
-    public static final String REQUEST_PARAM_OWNER = "owner";
-
     public static final String REQUEST_PARAM_FROM = "from";
 
     public static final String REQUEST_PARAM_STATE = "state";
@@ -156,7 +154,6 @@ public class SIPController implements IResourceController<SIPEntity> {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<SIPEntity>>> search(
             @RequestParam(name = REQUEST_PARAM_PROVIDER_ID, required = false) String providerId,
-            @RequestParam(name = REQUEST_PARAM_OWNER, required = false) String owner,
             @RequestParam(name = REQUEST_PARAM_FROM,
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
             @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<SIPState> state,
@@ -165,8 +162,8 @@ public class SIPController implements IResourceController<SIPEntity> {
             @RequestParam(name = REQUEST_PARAM_SESSION, required = false) String session,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<SIPEntity> pAssembler) {
-        Page<SIPEntity> sipEntities = sipService.search(providerId, sessionOwner, session, owner, from, state,
-                                                        processing, pageable);
+        Page<SIPEntity> sipEntities = sipService.search(providerId, sessionOwner, session, from, state, processing,
+                                                        pageable);
         PagedResources<Resource<SIPEntity>> resources = toPagedResources(sipEntities, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }

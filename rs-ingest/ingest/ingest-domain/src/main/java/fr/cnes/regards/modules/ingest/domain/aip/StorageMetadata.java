@@ -64,7 +64,7 @@ public class StorageMetadata {
     /**
      * Build storage metadata
      * @param storage storage identifier
-     * @param storePath storage path
+     * @param storePath path to the directory in which files have to be stored
      */
     public static StorageMetadata build(String storage, @Nullable String storePath) {
         Assert.hasLength(storage, MISSING_STORAGE_ERROR);

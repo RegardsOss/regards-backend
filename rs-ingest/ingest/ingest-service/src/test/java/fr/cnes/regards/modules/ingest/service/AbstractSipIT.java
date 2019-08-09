@@ -41,12 +41,12 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
-import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
@@ -93,14 +93,14 @@ public abstract class AbstractSipIT extends AbstractRegardsServiceTransactionalI
      * Create a SIP for test initialization
      */
     protected SIPEntity createSIP(String providerId, String sessionOwner, String session, String ingestChain,
-            String owner, Integer version) throws NoSuchAlgorithmException, IOException, ModuleException {
+            Integer version) throws NoSuchAlgorithmException, IOException, ModuleException {
         SIPBuilder b = new SIPBuilder(providerId);
         InformationPackagePropertiesBuilder ippb = new InformationPackagePropertiesBuilder();
         ippb.addDescriptiveInformation("version", version.toString());
         SIP sip = b.build(ippb.build());
         SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(),
-                                              IngestMetadata.build(sessionOwner, session, ingestChain), sip, owner,
-                                              version, SIPState.INGESTED, EntityType.DATA);
+                                              IngestMetadata.build(sessionOwner, session, ingestChain), sip, version,
+                                              SIPState.INGESTED, EntityType.DATA);
         sipEntity.setChecksum(IngestService.calculateChecksum(gson, sip, IngestService.MD5_ALGORITHM));
         return sipRepository.save(sipEntity);
     }
@@ -108,7 +108,7 @@ public abstract class AbstractSipIT extends AbstractRegardsServiceTransactionalI
     protected SIPEntity createSIP(String providerId, String sessionOwner, String session, String processing,
             String owner, Integer version, SIPState state)
             throws NoSuchAlgorithmException, IOException, ModuleException {
-        SIPEntity sipEntity = createSIP(providerId, sessionOwner, session, processing, owner, version);
+        SIPEntity sipEntity = createSIP(providerId, sessionOwner, session, processing, version);
         sipEntity.setState(state);
         return sipRepository.save(sipEntity);
     }

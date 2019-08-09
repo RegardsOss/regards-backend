@@ -24,17 +24,16 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
 
@@ -46,7 +45,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
  *
  */
 @Entity
-@Table(name = "t_ingest_request")
+@Table(name = "t_ingest_request", indexes = { @Index(name = "idx_ingest_request_id", columnList = "request_id") },
+        uniqueConstraints = { @UniqueConstraint(name = "uk_ingest_request_id", columnNames = { "request_id" }) })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class IngestRequest {
 
@@ -55,12 +55,12 @@ public class IngestRequest {
     @GeneratedValue(generator = "ingestRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @Valid
-    @NotNull(message = IngestValidationMessages.MISSING_METADATA_ERROR)
+    @Column(name = "request_id", length = 36, nullable = false, updatable = false)
+    private String requestId;
+
     @Embedded
     private IngestMetadata metadata;
 
-    @NotNull(message = IngestValidationMessages.MISSING_SIP_ERROR)
     @Column(columnDefinition = "jsonb", name = "rawsip")
     @Type(type = "jsonb")
     private SIP sip;
@@ -87,5 +87,21 @@ public class IngestRequest {
 
     public void setSip(SIP sip) {
         this.sip = sip;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
+    public static IngestRequest build(String requestId, IngestMetadata metadata, SIP sip) {
+        IngestRequest request = new IngestRequest();
+        request.setRequestId(requestId);
+        request.setMetadata(metadata);
+        request.setSip(sip);
+        return request;
     }
 }

@@ -54,7 +54,7 @@ public interface ISIPService {
     /**
      * Retrieve all {@link SIPEntity}s matching the parameters. SIPs are ordered by {@link SIPEntity#getIngestDate()}
      */
-    Page<SIPEntity> search(String providerId, String sessionOwner, String session, String owner, OffsetDateTime from,
+    Page<SIPEntity> search(String providerId, String sessionOwner, String session, OffsetDateTime from,
             List<SIPState> state, String ingestChain, Pageable page);
 
     /**

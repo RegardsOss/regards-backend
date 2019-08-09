@@ -25,10 +25,10 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 
@@ -46,7 +46,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -57,15 +56,21 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
+import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
+import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.dto.flow.SipFlowItem;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.event.IngestRequestEvent;
+import fr.cnes.regards.modules.ingest.domain.event.IngestRequestState;
+import fr.cnes.regards.modules.ingest.domain.event.IngestRequestType;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
+import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
@@ -99,13 +104,13 @@ public class IngestService implements IIngestService {
     private ISIPService sipService;
 
     @Autowired
-    private IAuthenticationResolver authResolver;
-
-    @Autowired
     private IPublisher publisher;
 
     @Autowired
     private IIngestProcessingChainRepository ingestChainRepository;
+
+    @Autowired
+    private IIngestMetadataMapper metadataMapper;
 
     @Autowired
     private Validator validator;
@@ -113,55 +118,66 @@ public class IngestService implements IIngestService {
     @Autowired
     private EntityManager em;
 
-    @Override
-    public Collection<SIPDto> ingest(SIPCollection sips) throws ModuleException {
-        Collection<SIPDto> dtos = new ArrayList<>();
+    @Autowired
+    private IIngestRequestRepository ingestRequestRepository;
 
-        // Process SIPs
-        for (SIP sip : sips.getFeatures()) {
-            dtos.add(store(sip, sips.getMetadata(), authResolver.getUser(), false));
+    @Override
+    public void registerIngestRequest(SipFlowItem item) {
+
+        // Validate all elements of the flow item
+        Errors errors = new MapBindingResult(new HashMap<>(), SIP.class.getName());
+        validator.validate(item, errors);
+        if (errors.hasErrors()) {
+            publisher.publish(IngestRequestEvent
+                    .build(item.getRequestId(), item.getSip() != null ? item.getSip().getId() : null, null,
+                           IngestRequestState.DENIED, IngestRequestType.INGEST, buildErrors(errors)));
         }
 
-        return dtos;
+        // Save valid ingest request
+        IngestRequest request = IngestRequest.build(item.getRequestId(),
+                                                    metadataMapper.dtoToMetadata(item.getMetadata()), item.getSip());
+        ingestRequestRepository.save(request);
+
+        publisher.publish(IngestRequestEvent
+                .build(item.getRequestId(), item.getSip() != null ? item.getSip().getId() : null, null,
+                       IngestRequestState.GRANTED, IngestRequestType.INGEST, buildErrors(errors)));
     }
 
     /**
-     * Validate {@link IngestMetadata}
-     * @param metadata {@link IngestMetadata}
-     * @throws EntityInvalidException if invalid!
+     * Build a set of error string from {@link Errors}
      */
-    private void validateIngestMetadata(IngestMetadata metadata) throws EntityInvalidException {
-        // Check metadata not null
-        if (metadata == null) {
-            String message = "Ingest metadata is required in SIP submission request.";
-            LOGGER.error(message);
-            // HTTP 422 in GlobalControllerAdvice
-            throw new EntityInvalidException(message);
+    private Set<String> buildErrors(Errors errors) {
+        if (errors.hasErrors()) {
+            Set<String> err = new HashSet<>();
+            errors.getAllErrors().forEach(error -> {
+                if (error instanceof FieldError) {
+                    FieldError fieldError = (FieldError) error;
+                    err.add(String.format("%s at %s: rejected value [%s].", fieldError.getDefaultMessage(),
+                                          fieldError.getField(),
+                                          ObjectUtils.nullSafeToString(fieldError.getRejectedValue())));
+                } else {
+                    err.add(error.getDefaultMessage());
+                }
+            });
+            return err;
+        } else {
+            throw new IllegalArgumentException("This method must be called only if at least one error exists");
         }
-        // Check metadata processing chain name not null
-        if (metadata.getIngestChain() == null) {
-            String message = "Ingest processing chain name is required in SIP submission request.";
-            LOGGER.error(message);
-            // HTTP 422 in GlobalControllerAdvice
-            throw new EntityInvalidException(message);
-        }
-        // Check metadata processing chain name exists
-        Optional<IngestProcessingChain> ipc = ingestChainRepository.findOneByName(metadata.getIngestChain());
-        if (!ipc.isPresent()) {
-            String message = "Ingest processing chain must exists. Please, configure the chain before SIP submission.";
-            LOGGER.error(message);
-            // HTTP 422 in GlobalControllerAdvice
-            throw new EntityInvalidException(message);
-        }
-
     }
 
     @Override
-    public Collection<SIPDto> ingest(InputStream input) throws ModuleException {
+    public void redirectToDataflow(SIPCollection sips) {
+        IngestMetadataDto metadata = sips.getMetadata();
+        for (SIP sip : sips.getFeatures()) {
+            publisher.publish(SipFlowItem.build(metadata, sip));
+        }
+    }
 
+    @Override
+    public void redirectToDataflow(InputStream input) throws ModuleException {
         try (Reader json = new InputStreamReader(input, DEFAULT_CHARSET)) {
             SIPCollection sips = gson.fromJson(json, SIPCollection.class);
-            return ingest(sips);
+            redirectToDataflow(sips);
         } catch (JsonIOException | IOException e) {
             LOGGER.error("Cannot read JSON file containing SIP collection", e);
             throw new EntityInvalidException(e.getMessage(), e);
@@ -224,26 +240,26 @@ public class IngestService implements IIngestService {
      * @return a {@link SIPEntity} ready to be processed saved in database or a rejected one not saved in database
      */
     @Override
-    public SIPDto store(SIP sip, IngestMetadata metadata, String owner, boolean publishSIPEvents) {
+    public SIPDto store(SIP sip, IngestMetadataDto metadata, boolean publishSIPEvents) {
 
         LOGGER.info("Handling new SIP {}", sip.getId());
         // Manage version
         Integer version = sipRepository.getNextVersion(sip.getId());
 
-        SIPEntity entity = SIPEntity.build(runtimeTenantResolver.getTenant(), metadata, sip, owner, version,
-                                           SIPState.CREATED, EntityType.DATA);
-        // Validate metadata
-        // FIXME do not make validation after metadata be used above
-        try {
-            validateIngestMetadata(metadata);
-        } catch (EntityInvalidException e) {
-            // Invalid SIP
-            entity.setState(SIPState.REJECTED);
-            String errorMessage = String.format("Ingest processing chain \"%s\" not found!", metadata.getIngestChain());
-            LOGGER.warn("SIP rejected because : {}", errorMessage);
-            entity.getRejectionCauses().add(errorMessage);
-            return handleStoreRejected(publishSIPEvents, entity);
-        }
+        SIPEntity entity = SIPEntity.build(runtimeTenantResolver.getTenant(), metadataMapper.dtoToMetadata(metadata),
+                                           sip, version, SIPState.CREATED, EntityType.DATA);
+        //        // Validate metadata
+        //        // FIXME do not make validation after metadata be used above
+        //        try {
+        //            // validateIngestMetadata(metadata);
+        //        } catch (EntityInvalidException e) {
+        //            // Invalid SIP
+        //            entity.setState(SIPState.REJECTED);
+        //            String errorMessage = String.format("Ingest processing chain \"%s\" not found!", metadata.getIngestChain());
+        //            LOGGER.warn("SIP rejected because : {}", errorMessage);
+        //            entity.getRejectionCauses().add(errorMessage);
+        //            return handleStoreRejected(publishSIPEvents, entity);
+        //        }
 
         // Validate SIP
         Errors errors = new MapBindingResult(new HashMap<>(), "sip");

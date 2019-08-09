@@ -307,8 +307,8 @@ public class SIPServiceIT extends AbstractSipIT {
     @Test
     public void searchSip() {
         // Check search by state
-        Page<SIPEntity> results = sipService.search(null, null, null, null, null, Lists.newArrayList(SIPState.ERROR),
-                                                    null, PageRequest.of(0, 100));
+        Page<SIPEntity> results = sipService.search(null, null, null, null, Lists.newArrayList(SIPState.ERROR), null,
+                                                    PageRequest.of(0, 100));
         Assert.assertTrue("There should be only two AIPs with AIP_GEN_ERROR state", results.getTotalElements() == 2);
     }
 
@@ -327,7 +327,7 @@ public class SIPServiceIT extends AbstractSipIT {
     public void deleteSession() throws ModuleException {
         // Delete by session id
         Collection<RejectedSipDto> rejectedSips = sipService.deleteSIPEntitiesForSession(COMPLEX_SESSION_OWNER,
-                                                                                      COMPLEX_SESSION);
+                                                                                         COMPLEX_SESSION);
         aipService.askForAipsDeletion();
         // 2 SIP per state in COMPLEX_SESSION_OWNER.
         // Undeletable are QUEUED, VALID. TO_BE_DELETED and DELETED are now considered deletable but do nothing
@@ -341,7 +341,7 @@ public class SIPServiceIT extends AbstractSipIT {
         Assert.assertEquals(14, argument.getValue().size());
         // Check that not stored SIP are already in DELETED state
         // Not stored state are CREATED, AIP_CREATED, INVALID, AIP_GEN_ERROR, REJECTED, DELETED
-        Page<SIPEntity> results = sipService.search(null, COMPLEX_SESSION_OWNER, null, null, null,
+        Page<SIPEntity> results = sipService.search(null, COMPLEX_SESSION_OWNER, null, null,
                                                     Lists.newArrayList(SIPState.DELETED), null, PageRequest.of(0, 100));
         Assert.assertEquals(26, results.getTotalElements());
 
