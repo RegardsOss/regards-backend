@@ -61,6 +61,7 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocati
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.JobsPriority;
 import fr.cnes.regards.modules.storagelight.service.file.cache.CacheService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileCacheRequestJob;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
@@ -101,6 +102,9 @@ public class FileCacheRequestService {
 
     @Autowired
     protected FileCacheRequestService self;
+
+    @Autowired
+    private FileReferenceEventPublisher publisher;
 
     @Transactional(readOnly = true)
     public Optional<FileCacheRequest> search(String checksum) {
@@ -187,7 +191,7 @@ public class FileCacheRequestService {
      * @param cacheLocation
      * @param realFileSize
      */
-    public void handleSuccess(FileCacheRequest fileReq, URL cacheLocation, Long realFileSize) {
+    public void handleSuccess(FileCacheRequest fileReq, URL cacheLocation, Long realFileSize, String successMessage) {
         Optional<FileCacheRequest> oRequest = repository.findById(fileReq.getId());
         if (oRequest.isPresent()) {
             // Create the cache file associated
@@ -195,6 +199,7 @@ public class FileCacheRequestService {
                                  oRequest.get().getExpirationDate());
             repository.deleteById(oRequest.get().getId());
         }
+        publisher.available(fileReq.getChecksum(), successMessage, fileReq.getRequestId(), true);
     }
 
     /**
@@ -210,6 +215,7 @@ public class FileCacheRequestService {
             request.setErrorCause(cause);
             repository.save(request);
         }
+        publisher.notAvailable(fileReq.getChecksum(), cause, fileReq.getRequestId(), true);
     }
 
     /**
@@ -306,5 +312,6 @@ public class FileCacheRequestService {
                 .format("File <%s> cannot be handle for restoration as origin storage <%s> is unknown or disabled.",
                         request.getFileReference().getMetaInfo().getFileName(), request.getStorage()));
         repository.save(request);
+        publisher.notAvailable(request.getChecksum(), request.getErrorCause(), request.getRequestId(), true);
     }
 }

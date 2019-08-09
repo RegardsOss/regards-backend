@@ -157,7 +157,7 @@ public class FileReferenceEventPublisher {
         }
     }
 
-    public void available(String checksum, String message, String requestId, boolean notifyRequest) {
+    public void available(String checksum, String message, String requestId, Boolean notifyRequest) {
         LOGGER.debug("Publish FileReferenceEvent available for download. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABLE, null, message, null,
                                                    Sets.newHashSet(requestId)));
@@ -172,7 +172,7 @@ public class FileReferenceEventPublisher {
         }
     }
 
-    public void notAvailable(String checksum, String message, String requestId, boolean notifyRequest) {
+    public void notAvailable(String checksum, String message, String requestId, Boolean notifyRequest) {
         LOGGER.debug("Publish FileReferenceEvent not available for download. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABILITY_ERROR, null, message,
                                                    null, Sets.newHashSet(requestId)));

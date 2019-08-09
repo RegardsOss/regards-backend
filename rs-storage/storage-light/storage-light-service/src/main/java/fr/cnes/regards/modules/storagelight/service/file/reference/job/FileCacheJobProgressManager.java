@@ -38,7 +38,6 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.IRestorationProgressMa
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileCacheRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
 
 /**
  * Implementation of {@link IStorageProgressManager} used by {@link IStorageLocation} plugins.<br/>
@@ -50,18 +49,14 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileCacheJobProgressManager.class);
 
-    private final FileReferenceEventPublisher publisher;
-
     private final IJob<?> job;
 
     private final Set<FileCacheRequest> handled = Sets.newHashSet();
 
     private final FileCacheRequestService fileCacheRequestService;
 
-    public FileCacheJobProgressManager(FileCacheRequestService fileCacheRequestService,
-            FileReferenceEventPublisher publisher, IJob<?> job) {
+    public FileCacheJobProgressManager(FileCacheRequestService fileCacheRequestService, IJob<?> job) {
         super();
-        this.publisher = publisher;
         this.job = job;
         this.fileCacheRequestService = fileCacheRequestService;
     }
@@ -80,8 +75,8 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
                                                       fileRef.getLocation().toString(), fileReq.getDestinationPath());
                 LOGGER.info("[RESTORATION SUCCESS] - {}", successMessage);
                 job.advanceCompletion();
-                fileCacheRequestService.handleSuccess(fileReq, cacheFileLocation, cacheFilePath.toFile().length());
-                publisher.available(fileRef.getMetaInfo().getChecksum(), successMessage, fileReq.getRequestId(), true);
+                fileCacheRequestService.handleSuccess(fileReq, cacheFileLocation, cacheFilePath.toFile().length(),
+                                                      successMessage);
                 handled.add(fileReq);
             } catch (MalformedURLException e) {
                 LOGGER.error(e.getMessage(), e);
@@ -109,7 +104,6 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
                      fileRef.getMetaInfo().getChecksum(), cause);
         job.advanceCompletion();
         fileCacheRequestService.handleError(fileReq, cause);
-        publisher.notAvailable(fileRef.getMetaInfo().getChecksum(), cause, fileReq.getRequestId(), true);
         handled.add(fileReq);
     }
 

@@ -489,8 +489,8 @@ public class FileReferenceService {
     public void makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate, String requestId) {
 
         Set<FileReference> onlines = Sets.newHashSet();
-        Set<FileReference> nearlines = Sets.newHashSet();
         Set<FileReference> offlines = Sets.newHashSet();
+        Set<FileReference> nearlines = Sets.newHashSet();
         Set<FileReference> refs = fileRefRepo.findByMetaInfoChecksumIn(checksums);
         Set<String> remainingChecksums = Sets.newHashSet(checksums);
 
@@ -534,24 +534,19 @@ public class FileReferenceService {
             storage = prioritizedStorageService.searchActiveHigherPriority(remainingStorages);
         }
         if (!remainingChecksums.isEmpty()) {
-            // Notify files not available
+            // add unknown to offline files
             offlines.addAll(refs.stream().filter(ref -> remainingChecksums.contains(ref.getMetaInfo().getChecksum()))
                     .collect(Collectors.toSet()));
         }
         notifyAvailables(onlines, requestId);
         notifyNotAvailables(offlines, requestId);
+        // Hack to handle offline errors as request errors to be notified in request ERROR notification.
+        nearlines.addAll(offlines);
         int nbRequests = nearlineFileService.makeAvailable(nearlines, expirationDate, requestId);
         eventPublisher.requestGranted(requestId, FileRequestType.AVAILABILITY);
         // If no cache requests are needed, we have to notify the end of the availability request
         if (nearlines.isEmpty() || (nbRequests == 0)) {
-            if (offlines.isEmpty()) {
-                eventPublisher.requestDone(requestId, FileRequestType.AVAILABILITY);
-            } else {
-                Set<ErrorFile> errors = offlines.stream().map(e -> ErrorFile
-                        .build(e.getMetaInfo().getChecksum(), e.getLocation().getStorage(), "File is offline"))
-                        .collect(Collectors.toSet());
-                eventPublisher.requestError(requestId, FileRequestType.AVAILABILITY, errors);
-            }
+            eventPublisher.requestDone(requestId, FileRequestType.AVAILABILITY);
         }
     }
 

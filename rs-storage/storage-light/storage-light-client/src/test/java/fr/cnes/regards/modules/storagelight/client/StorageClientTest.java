@@ -83,6 +83,10 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
 
     private final Set<String> restorableFileChecksums = Sets.newHashSet();
 
+    private final Set<String> unrestorableFileChecksums = Sets.newHashSet();
+
+    private final Set<String> referenceFileChecksums = Sets.newHashSet();
+
     @Before
     public void init() throws IOException, ModuleException {
         simulateApplicationReadyEvent();
@@ -135,6 +139,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         storedFileChecksums.add(cs2);
         restorableFileChecksums.add(cs2);
         storedFileChecksums.add(cs3);
+        unrestorableFileChecksums.add(cs3);
         storedFileChecksums.add(cs4);
         restorableFileChecksums.add(cs4);
 
@@ -215,22 +220,26 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         String owner = "refe-test";
         String storage = "somewhere";
         String baseURl = "file://here/it/is/";
+        String cs1 = UUID.randomUUID().toString();
+        String cs2 = UUID.randomUUID().toString();
+        String cs3 = UUID.randomUUID().toString();
         Set<FileReferenceRequestDTO> files = Sets.newHashSet();
-        files.add(FileReferenceRequestDTO.build("file1.test", UUID.randomUUID().toString(), "UUID",
-                                                "application/octet-stream", 10L, owner, storage,
-                                                baseURl + "file1.test"));
-        files.add(FileReferenceRequestDTO.build("file2.test", UUID.randomUUID().toString(), "UUID",
-                                                "application/octet-stream", 10L, owner, storage,
-                                                baseURl + "file2.test"));
-        files.add(FileReferenceRequestDTO.build("file3.test", UUID.randomUUID().toString(), "UUID",
-                                                "application/octet-stream", 10L, owner, storage,
-                                                baseURl + "file3.test"));
+        files.add(FileReferenceRequestDTO.build("file1.test", cs1, "UUID", "application/octet-stream", 10L, owner,
+                                                storage, baseURl + "file1.test"));
+        files.add(FileReferenceRequestDTO.build("file2.test", cs2, "UUID", "application/octet-stream", 10L, owner,
+                                                storage, baseURl + "file2.test"));
+        files.add(FileReferenceRequestDTO.build("file3.test", cs3, "UUID", "application/octet-stream", 10L, owner,
+                                                storage, baseURl + "file3.test"));
 
         RequestInfo info = client.reference(files);
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue("Request should be successful", listener.getSuccess().contains(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
+
+        referenceFileChecksums.add(cs1);
+        referenceFileChecksums.add(cs2);
+        referenceFileChecksums.add(cs3);
     }
 
     @Test
@@ -277,19 +286,87 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void availability_withError() throws MalformedURLException, InterruptedException {
+    public void availability_restorationError() throws MalformedURLException, InterruptedException {
 
         this.storeFile();
 
         listener.reset();
 
+        this.referenceFile();
+
+        listener.reset();
+
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        Set<String> checksums = Sets.newHashSet();
+        checksums.addAll(storedFileChecksums);
+        checksums.addAll(referenceFileChecksums);
         RequestInfo info = client.makeAvailable(storedFileChecksums, OffsetDateTime.now().plusDays(1));
 
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
+
+    }
+
+    @Test
+    public void availability_offlineFiles() throws MalformedURLException, InterruptedException {
+
+        this.referenceFile();
+
+        listener.reset();
+
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        Set<String> checksums = Sets.newHashSet();
+        checksums.addAll(referenceFileChecksums);
+        RequestInfo info = client.makeAvailable(checksums, OffsetDateTime.now().plusDays(1));
+
+        Thread.sleep(5_000);
+        Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
+        Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
+        Assert.assertEquals("Number of error invalid", referenceFileChecksums.size(),
+                            listener.getErrors().get(info).size());
+        for (String checksum : checksums) {
+            Assert.assertTrue("Missing error checksum",
+                              listener.getErrors().get(info).stream().anyMatch(e -> e.getChecksum().equals(checksum)));
+        }
+
+    }
+
+    @Test
+    public void availability_offlineFilesAndRestoError() throws MalformedURLException, InterruptedException {
+
+        this.storeFile();
+
+        listener.reset();
+
+        this.referenceFile();
+
+        listener.reset();
+
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        Set<String> checksums = Sets.newHashSet();
+        checksums.addAll(referenceFileChecksums);
+        checksums.addAll(storedFileChecksums);
+        RequestInfo info = client.makeAvailable(checksums, OffsetDateTime.now().plusDays(1));
+
+        Thread.sleep(5_000);
+        Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
+        Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
+
+        Assert.assertEquals("Number of error invalid", referenceFileChecksums.size() + unrestorableFileChecksums.size(),
+                            listener.getErrors().get(info).size());
+        for (String checksum : referenceFileChecksums) {
+            Assert.assertTrue("Missing error checksum",
+                              listener.getErrors().get(info).stream().anyMatch(e -> e.getChecksum().equals(checksum)));
+        }
+
+        for (String checksum : unrestorableFileChecksums) {
+            Assert.assertTrue("Missing error checksum",
+                              listener.getErrors().get(info).stream().anyMatch(e -> e.getChecksum().equals(checksum)));
+        }
 
     }
 

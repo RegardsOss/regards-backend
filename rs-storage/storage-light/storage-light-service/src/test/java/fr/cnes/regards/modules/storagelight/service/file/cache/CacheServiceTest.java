@@ -56,6 +56,8 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         repository.deleteAll();
         simulateApplicationReadyEvent();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        service.initCacheFileSystem(getDefaultTenant());
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
     }
 
     @Test

@@ -201,7 +201,7 @@ public class CacheService {
      * Initialize the cache file system for the given tenant
      * @param tenant
      */
-    protected void initCacheFileSystem(String tenant) {
+    public void initCacheFileSystem(String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
         Path tenantCachePath = getTenantCachePath();
         LOGGER.debug("Initializing cache file system for tenant {} in repository {}", tenant, tenantCachePath);

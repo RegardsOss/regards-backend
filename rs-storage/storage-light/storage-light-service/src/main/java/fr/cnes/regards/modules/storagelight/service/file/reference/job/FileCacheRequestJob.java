@@ -35,7 +35,6 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileRestorationWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileCacheRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
 
 /**
  * Storage of file references job. This jobs is scheduled to store a bundle of file reference,
@@ -61,9 +60,6 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
     private IPluginService pluginService;
 
     @Autowired
-    private FileReferenceEventPublisher publisher;
-
-    @Autowired
     private FileCacheRequestService fileCacheRequestService;
 
     @Autowired
@@ -83,8 +79,7 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
     @Override
     public void run() {
         // Initiate the job progress manager
-        FileCacheJobProgressManager progressManager = new FileCacheJobProgressManager(fileCacheRequestService,
-                publisher, this);
+        FileCacheJobProgressManager progressManager = new FileCacheJobProgressManager(fileCacheRequestService, this);
         // lets instantiate the plugin to use
         String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         FileRestorationWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
