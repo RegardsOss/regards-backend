@@ -76,7 +76,7 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
                                                       fileRef.getLocation().toString(), fileReq.getDestinationPath());
                 LOGGER.info("[RESTORATION SUCCESS] - {}", successMessage);
                 job.advanceCompletion();
-                fileCacheRequestService.handleSuccess(fileReq, cacheFileLocation, cacheFilePath.toFile().length(),
+                fileCacheRequestService.handleSuccess(fileReq, cacheFileLocation, fileRef.getOwners(), cacheFilePath.toFile().length(),
                                                       successMessage);
                 handled.add(fileReq);
             } catch (MalformedURLException e) {

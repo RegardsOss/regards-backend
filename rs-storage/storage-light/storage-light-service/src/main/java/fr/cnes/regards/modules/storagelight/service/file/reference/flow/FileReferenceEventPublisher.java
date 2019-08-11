@@ -157,9 +157,9 @@ public class FileReferenceEventPublisher {
         }
     }
 
-    public void available(String checksum, String message, String requestId, Boolean notifyRequest) {
+    public void available(String checksum, String storage, String  url, Collection<String> owners, String message, String requestId, Boolean notifyRequest) {
         LOGGER.debug("Publish FileReferenceEvent available for download. {}", message);
-        publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABLE, null, message, null,
+        publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABLE, owners, message, new FileLocation(storage, url),
                                                    Sets.newHashSet(requestId)));
 
         // Check if cache request exists for the same requestId

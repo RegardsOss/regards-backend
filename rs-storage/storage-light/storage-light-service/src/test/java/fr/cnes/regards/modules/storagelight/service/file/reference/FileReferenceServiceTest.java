@@ -36,6 +36,8 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +52,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -62,8 +65,10 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventHandler;
@@ -231,7 +236,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
 
         // Simulate deletion request ends
         FileDeletionJobProgressManager manager = new FileDeletionJobProgressManager(fileRefService,
-                fileDeletionRequestService, publisher, new FileDeletionRequestJob());
+                fileDeletionRequestService, fileEventPublisher, new FileDeletionRequestJob());
         manager.deletionSucceed(fdr);
         fileRefHandler.handle(
                               new TenantWrapper<>(
@@ -621,5 +626,76 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         Optional<FileCacheRequest> request = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
         Assert.assertTrue("A cache request should be created", request.isPresent());
         Assert.assertTrue("A cache request should be created", request.get().getStatus() == FileRequestStatus.ERROR);
+    }
+    
+    @Test
+    public void copyFile() throws InterruptedException, ExecutionException {
+    	FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test");
+    	fileRefService.copyFile(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL),
+    			UUID.randomUUID().toString());
+    	// A new copy request should be created
+    	Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+    	Assert.assertTrue("There should be a copy request created",oReq.isPresent());
+    	
+    	// Now run copy schedule
+    	fileCopyRequestService.scheduleAvailabilityRequests(FileRequestStatus.TODO);
+    	
+    	// There should be one availability request created
+    	Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
+    	oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+    	Assert.assertTrue("There should be a cache request created",oCacheReq.isPresent());
+    	Assert.assertTrue("No storage request should be created yet", fileStorageRequestRepo.count() == 0);
+    	Assert.assertTrue("There should be a copy request",oReq.isPresent());
+    	Assert.assertTrue("There should be a copy request in pending state",oReq.get().getStatus() == FileRequestStatus.PENDING);
+    	
+    	Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        runAndWaitJob(jobs);
+        
+        // Cache file should be restored
+        oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
+        Optional<CacheFile> oCachedFile = cacheService.search(fileRef.getMetaInfo().getChecksum());
+        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+        Assert.assertFalse("There should not be a cache request anymore",oCacheReq.isPresent());
+    	Assert.assertTrue("The file should be restored in  cache",oCachedFile.isPresent());
+    	Assert.assertTrue("There should be a copy request",oReq.isPresent());
+    	Assert.assertTrue("There should be a copy request in pending state",oReq.get().getStatus() == FileRequestStatus.PENDING);
+    	
+    	ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        FileReferenceEvent event = getFileReferenceEvent(argumentCaptor.getAllValues());
+        
+        fileRefEventHandler.handle(new TenantWrapper<>(event, getDefaultTenant()));
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        
+        // A new storage request should be created
+        Optional<FileStorageRequest> oStorageReq = fileStorageRequestService.search(ONLINE_CONF_LABEL, fileRef.getMetaInfo().getChecksum());
+        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+        Assert.assertTrue("There should be a storage request created",oStorageReq.isPresent());
+        Assert.assertTrue("There should be a copy request",oReq.isPresent());
+    	Assert.assertTrue("There should be a copy request in pending state",oReq.get().getStatus() == FileRequestStatus.PENDING);
+        
+        // Run storage job
+    	Mockito.reset(publisher);
+    	jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(), Lists.newArrayList());
+    	runAndWaitJob(jobs);
+    	Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(ONLINE_CONF_LABEL, fileRef.getMetaInfo().getChecksum());
+        Optional<FileReference> oFileRef = fileRefService.search(ONLINE_CONF_LABEL, fileRef.getMetaInfo().getChecksum());
+        Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
+        Assert.assertFalse("File reference request should not exists anymore", oFileRefReq.isPresent());
+        Assert.assertTrue("There should be a copy request",oReq.isPresent());
+    	Assert.assertTrue("There should be a copy request in pending state",oReq.get().getStatus() == FileRequestStatus.PENDING);
+    	
+    	// Simulate file  stored event
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        event = getFileReferenceEvent(argumentCaptor.getAllValues());
+        fileRefEventHandler.handle(new TenantWrapper<>(event, getDefaultTenant()));
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        
+        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+        Assert.assertFalse("There should not be a copy request anymore",oReq.isPresent());
+        
+        // File should not be in cache anymore
+        oCachedFile = cacheService.search(fileRef.getMetaInfo().getChecksum());
+        Assert.assertFalse("The cache file should be deleted after copy",oCachedFile.isPresent());
     }
 }

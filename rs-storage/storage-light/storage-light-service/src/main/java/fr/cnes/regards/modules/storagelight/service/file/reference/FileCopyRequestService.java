@@ -14,13 +14,16 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.storagelight.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCopyRequest;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
 
@@ -43,6 +46,36 @@ public class FileCopyRequestService {
 
     @Autowired
     private FileReferenceService fileRefService;
+    
+    
+    public Optional<FileCopyRequest> create(FileCopyRequestDTO requestDto, String requestId) {
+    	// Check a same request already exists
+    	Optional<FileCopyRequest> request = copyRepository.findOneByMetaInfoChecksumAndStorage(requestDto.getChecksum(), requestDto.getStorage());
+    	if (request.isPresent()) {
+    		return Optional.of(handleAlreadyExists(requestDto, request.get(), requestId));
+    	} else {
+    		// get file meta info to copy
+    		Set<FileReference> refs = fileRefService.search(requestDto.getChecksum());
+    		if (refs.isEmpty()) {
+    			LOGGER.warn("File to copy {} does not exists in any known storage location.", requestDto.getChecksum());
+    			// TODO notification admin ?
+    		} else {
+    			FileCopyRequest newRequest = copyRepository.save(new FileCopyRequest(requestId, refs.stream().findFirst().get().getMetaInfo(),
+    					requestDto.getSubDirectory(), requestDto.getStorage()));
+    			request = Optional.of(newRequest);
+    		}
+    	}
+    	return request;
+    }
+    
+    private FileCopyRequest handleAlreadyExists(FileCopyRequestDTO requestDto, FileCopyRequest request, String newRequestId) {
+    	if (request.getStatus() == FileRequestStatus.ERROR) {
+    		request.setStatus(FileRequestStatus.TODO);
+    		return update(request);
+    	}
+    	// TODO handle newRequestId
+    	return request;
+    }
 	
     public void scheduleAvailabilityRequests(FileRequestStatus status) {
     	Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
@@ -65,7 +98,9 @@ public class FileCopyRequestService {
     }
     
     public void handleSuccess(FileCopyRequest request) {
-    	LOGGER.info("[COPY SUCCESS] File {} successfully copied in {} storage location");
+    	LOGGER.info("[COPY SUCCESS] File {} (checksum: {}) successfully copied in {} storage location",
+    			request.getMetaInfo().getFileName(), request.getMetaInfo().getChecksum(),
+    			request.getStorage());
     	// Delete the copy request
     	copyRepository.delete(request);
     }
@@ -75,6 +110,11 @@ public class FileCopyRequestService {
     	request.setStatus(FileRequestStatus.ERROR);
     	request.setErrorCause(errorCause);
     	update(request);
+    }
+    
+    @Transactional(readOnly = true)
+    public Optional<FileCopyRequest> search(String checksum, String storage) {
+    	return copyRepository.findOneByMetaInfoChecksumAndStorage(checksum, storage);
     }
     
     public Optional<FileCopyRequest> search(FileReferenceEvent event) {

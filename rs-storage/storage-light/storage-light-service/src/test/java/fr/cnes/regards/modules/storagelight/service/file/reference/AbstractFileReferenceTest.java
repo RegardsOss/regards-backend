@@ -42,6 +42,7 @@ import org.springframework.http.MediaType;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -54,6 +55,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileCacheRequestRepository;
+import fr.cnes.regards.modules.storagelight.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
@@ -66,6 +68,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.file.cache.CacheService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventHandler;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
@@ -85,7 +88,13 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected static final String NEARLINE_CONF_LABEL = "NL_target";
 
     @SpyBean
-    protected FileReferenceEventPublisher publisher;
+    protected FileReferenceEventPublisher fileEventPublisher;
+    
+    @SpyBean
+    protected IPublisher publisher;
+    
+    @Autowired
+    protected FileReferenceEventHandler fileRefEventHandler;
 
     @Autowired
     protected FileReferenceService fileRefService;
@@ -98,6 +107,9 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
 
     @Autowired
     protected FileCacheRequestService fileCacheRequestService;
+    
+    @Autowired
+    protected  FileCopyRequestService fileCopyRequestService;
 
     @Autowired
     protected CacheService cacheService;
@@ -125,6 +137,9 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
 
     @Autowired
     protected IFileDeletetionRequestRepository fileDeletionRequestRepo;
+    
+    @Autowired
+    protected IFileCopyRequestRepository copyRequestRepository;
 
     @Autowired
     protected IJobInfoRepository jobInfoRepo;
@@ -145,6 +160,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         } catch (IOException e) {
             Assert.fail(e.getMessage());
         }
+        copyRequestRepository.deleteAll();
         fileDeletionRequestRepo.deleteAll();
         fileStorageRequestRepo.deleteAll();
         fileCacheReqRepo.deleteAll();

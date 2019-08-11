@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.storagelight.dao;
 
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,5 +19,7 @@ public interface IFileCopyRequestRepository extends JpaRepository<FileCopyReques
 	Optional<FileCopyRequest> findByFileCacheRequestId(String fileCacheRequestId);
 	
 	Optional<FileCopyRequest> findByFileStorageRequestId(String storageRequestId);
+	
+	Optional<FileCopyRequest> findOneByMetaInfoChecksumAndStorage(String checksum, String storage);
 
 }

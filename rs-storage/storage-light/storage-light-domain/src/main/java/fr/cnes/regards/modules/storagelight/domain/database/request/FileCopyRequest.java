@@ -61,6 +61,18 @@ public class FileCopyRequest {
         super();
     }
 
+	public FileCopyRequest(String requestId, FileReferenceMetaInfo metaInfo, String storageSubDirectory,
+			String storage) {
+		super();
+		this.requestId = requestId;
+		this.metaInfo = metaInfo;
+		this.storageSubDirectory = storageSubDirectory;
+		this.storage = storage;
+		this.status = FileRequestStatus.TODO;
+	}
+
+
+
 	public Long getId() {
 		return id;
 	}

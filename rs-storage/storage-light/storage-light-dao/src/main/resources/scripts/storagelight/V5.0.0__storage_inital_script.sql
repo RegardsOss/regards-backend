@@ -1,5 +1,6 @@
 create table t_cache_file (id int8 not null, checksum varchar(128), expiration_date timestamp, file_size int8, last_request_date timestamp, location varchar(255), primary key (id));
 create table t_file_cache_request (id int8 not null, checksum varchar(128) not null, destination_path varchar(2048) not null, error_cause varchar(512), expiration_date timestamp, file_size int8 not null, request_id varchar(128) not null, status varchar(255) not null, storage varchar(128) not null, file_ref_id int8 not null, primary key (id));
+create table t_file_copy_request (id int8 not null, error_cause varchar(512), cache_request_id varchar(128), storage_request_id varchar(128), algorithm varchar(16) not null, checksum varchar(128) not null, fileName varchar(256) not null, fileSize int8, height int4, mime_type varchar(255) not null, type varchar(256), width int4, request_id varchar(128) not null, status varchar(255) not null, storage varchar(128), storage_subdirectory varchar(2048), primary key (id));
 create table t_file_deletion_request (file_reference int8 not null, error_cause varchar(512), force_delete boolean, request_id varchar(128) not null, status varchar(255) not null, storage varchar(128) not null, primary key (file_reference));
 create table t_file_reference (id int8 not null, storage varchar(128), url varchar(2048), algorithm varchar(16) not null, checksum varchar(128) not null, fileName varchar(256) not null, fileSize int8, height int4, mime_type varchar(255) not null, type varchar(256), width int4, storageDate timestamp, primary key (id));
 create table t_file_storage_request (id int8 not null, error_cause varchar(512), algorithm varchar(16) not null, checksum varchar(128) not null, fileName varchar(256) not null, fileSize int8, height int4, mime_type varchar(255) not null, type varchar(256), width int4, origin_url varchar(2048), status varchar(255) not null, storage varchar(128), storage_subdirectory varchar(2048), primary key (id));
@@ -13,6 +14,8 @@ create index idx_cache_file_checksum on t_cache_file (checksum);
 alter table t_cache_file add constraint uk_cache_file_checksum unique (checksum);
 create index idx_file_cache_request on t_file_cache_request (request_id);
 alter table t_file_cache_request add constraint uk_t_file_cache_request_checksum unique (checksum);
+create index idx_file_copy_request on t_file_copy_request (storage, checksum);
+alter table t_file_copy_request add constraint t_file_copy_request_checksum_storage unique (checksum, storage);
 create index idx_file_deletion_request on t_file_deletion_request (storage);
 create index idx_file_deletion_request_id on t_file_deletion_request (request_id);
 create index idx_file_reference on t_file_reference (storage, checksum);

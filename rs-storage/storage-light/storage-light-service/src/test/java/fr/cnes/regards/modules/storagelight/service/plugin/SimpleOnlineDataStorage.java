@@ -94,6 +94,8 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     private String deleteErrorFilePattern;
 
     private final String doNotHandlePattern = "doNotHandle.*";
+    
+    private final  static String BASE_URL = "target/storage-online";
 
     /**
      * Plugin init method
@@ -102,7 +104,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     @PluginInit
     public void init() throws IOException {
         // Clear directory
-        FileUtils.deleteDirectory(Paths.get("target/storage").toFile());
+        FileUtils.deleteDirectory(Paths.get(BASE_URL).toFile());
     }
 
     @Override
@@ -148,7 +150,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
                 directory = fileRefRequest.getStorageSubDirectory();
             }
             String storedUrl = String
-                    .format("%s%s", "target/storage",
+                    .format("%s%s", BASE_URL,
                             Paths.get("/", directory, fileRefRequest.getMetaInfo().getChecksum()).toString());
             try {
                 if (!Files.exists(Paths.get(storedUrl).getParent())) {

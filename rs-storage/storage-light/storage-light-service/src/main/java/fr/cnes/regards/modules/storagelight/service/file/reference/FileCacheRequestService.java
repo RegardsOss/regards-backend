@@ -191,7 +191,7 @@ public class FileCacheRequestService {
      * @param cacheLocation
      * @param realFileSize
      */
-    public void handleSuccess(FileCacheRequest fileReq, URL cacheLocation, Long realFileSize, String successMessage) {
+    public void handleSuccess(FileCacheRequest fileReq, URL cacheLocation, Collection<String> owners, Long realFileSize, String successMessage) {
         Optional<FileCacheRequest> oRequest = repository.findById(fileReq.getId());
         if (oRequest.isPresent()) {
             // Create the cache file associated
@@ -199,7 +199,7 @@ public class FileCacheRequestService {
                                  oRequest.get().getExpirationDate());
             repository.deleteById(oRequest.get().getId());
         }
-        publisher.available(fileReq.getChecksum(), successMessage, fileReq.getRequestId(), true);
+        publisher.available(fileReq.getChecksum(), "cache", cacheLocation.toString(), owners, successMessage, fileReq.getRequestId(), true);
     }
 
     /**

@@ -69,9 +69,6 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
     @Autowired
     FileStorageRequestService fileRefRequestService;
 
-    @SpyBean
-    public IPublisher publisher;
-
     @Before
     public void initialize() throws ModuleException {
         Mockito.clearInvocations(publisher);

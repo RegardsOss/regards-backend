@@ -63,6 +63,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
@@ -122,6 +123,9 @@ public class FileReferenceService {
 
     @Autowired
     private FileDeletionRequestService fileDeletionRequestService;
+    
+    @Autowired
+    private FileCopyRequestService fileCopyRequestService;
 
     @Autowired
     private NLFileReferenceService nearlineFileService;
@@ -163,8 +167,8 @@ public class FileReferenceService {
         return fileRefRepo.findAll(spec, page);
     }
     
-    public void copyFile() {
-    	
+    public void copyFile(FileCopyRequestDTO request, String requestId) {
+    	fileCopyRequestService.create(request, requestId);  	
     }
 
     public void storeFiles(List<FileStorageFlowItem> items) {
@@ -192,6 +196,27 @@ public class FileReferenceService {
                 }
             }
             eventPublisher.requestGranted(item.getRequestId(), FileRequestType.STORAGE);
+        }
+    }
+    
+    public Optional<FileReference> storeFile(String owner, FileReferenceMetaInfo metaInfo, URL originUrl,
+            String storage, Optional<String> subDirectory, String requestId) {
+        Optional<FileReference> oFileRef = fileRefRepo.findByLocationStorageAndMetaInfoChecksum(storage,
+                                                                                                metaInfo.getChecksum());
+        return storeFile(FileStorageRequestDTO.build(metaInfo.getFileName(), metaInfo.getChecksum(),
+                                                     metaInfo.getAlgorithm(), metaInfo.getMimeType().toString(), owner,
+                                                     originUrl, storage, subDirectory),
+                         oFileRef, requestId);
+    }
+
+    private Optional<FileReference> storeFile(FileStorageRequestDTO request, Optional<FileReference> fileRef,
+            String requestId) {
+        if (fileRef.isPresent()) {
+            return handleAlreadyExists(fileRef.get(), request, requestId);
+        } else {
+            fileStorageRequestService.create(Sets.newHashSet(request.getOwner()), request.buildMetaInfo(), request.getOriginUrl(),
+                                             request.getStorage(), request.getSubDirectory(), requestId);
+            return Optional.empty();
         }
     }
 
@@ -264,27 +289,6 @@ public class FileReferenceService {
         } else {
             return create(Lists.newArrayList(request.getOwner()), request.buildMetaInfo(),
                           new FileLocation(request.getStorage(), request.getUrl()), requestIds);
-        }
-    }
-
-    public Optional<FileReference> storeFile(String owner, FileReferenceMetaInfo metaInfo, URL originUrl,
-            String storage, Optional<String> subDirectory, String requestId) {
-        Optional<FileReference> oFileRef = fileRefRepo.findByLocationStorageAndMetaInfoChecksum(storage,
-                                                                                                metaInfo.getChecksum());
-        return storeFile(FileStorageRequestDTO.build(metaInfo.getFileName(), metaInfo.getChecksum(),
-                                                     metaInfo.getAlgorithm(), metaInfo.getMimeType().toString(), owner,
-                                                     originUrl, storage, subDirectory),
-                         oFileRef, requestId);
-    }
-
-    private Optional<FileReference> storeFile(FileStorageRequestDTO request, Optional<FileReference> fileRef,
-            String requestId) {
-        if (fileRef.isPresent()) {
-            return handleAlreadyExists(fileRef.get(), request, requestId);
-        } else {
-            fileStorageRequestService.create(Sets.newHashSet(request.getOwner()), request.buildMetaInfo(), request.getOriginUrl(),
-                                             request.getStorage(), request.getSubDirectory(), requestId);
-            return Optional.empty();
         }
     }
 
@@ -663,8 +667,8 @@ public class FileReferenceService {
 
     private void notifyAvailables(Set<FileReference> availables, String requestId) {
         availables.forEach(f -> eventPublisher
-                .available(f.getMetaInfo().getChecksum(),
-                           String.format("file %s (checksum %s) is available for download.",
+                .available(f.getMetaInfo().getChecksum(), f.getLocation().getStorage(), f.getLocation().getUrl(),
+                           f.getOwners(), String.format("file %s (checksum %s) is available for download.",
                                          f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum()),
                            requestId, false));
     }
