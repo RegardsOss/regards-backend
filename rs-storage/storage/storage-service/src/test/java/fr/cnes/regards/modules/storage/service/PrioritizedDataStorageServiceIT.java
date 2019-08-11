@@ -29,10 +29,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
@@ -45,11 +42,10 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
@@ -109,14 +105,13 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsTransactiona
     public void testUpdateForbidden() throws ModuleException, IOException, URISyntaxException {
         String label = "updateConf label";
 
-        URL newbaseStorageLocation = new URL("file",
-                                             "",
-                                             Paths.get(targetPath, "/update/conf").toFile().getAbsolutePath());
+        URL newbaseStorageLocation = new URL("file", "",
+                Paths.get(targetPath, "/update/conf").toFile().getAbsolutePath());
 
         PrioritizedDataStorage pds = createPrioritizedDataStorage(label);
         PluginConfiguration updatedConf = getPluginConf(label);
         updatedConf.getParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME)
-                .setValue(newbaseStorageLocation.toString());
+                .value(newbaseStorageLocation.toString());
         updatedConf.setId(pds.getDataStorageConfiguration().getId());
         PrioritizedDataStorage upds = new PrioritizedDataStorage(updatedConf, 0L, DataStorageType.ONLINE);
         upds.setId(pds.getId());
@@ -128,10 +123,10 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsTransactiona
 
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SimpleOnlineDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000000L).addParameter(
-                        SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                        baseStorageLocation.toString()).getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(SimpleOnlineDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000000L),
+                     IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                        baseStorageLocation.toString()));
         return new PluginConfiguration(dataStoMeta, label, parameters, 0);
     }
 

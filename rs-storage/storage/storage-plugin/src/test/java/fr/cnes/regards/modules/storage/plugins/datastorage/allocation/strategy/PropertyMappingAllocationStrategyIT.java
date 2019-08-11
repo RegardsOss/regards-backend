@@ -47,7 +47,7 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -55,7 +55,6 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -160,9 +159,10 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
 
         URL baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/LocalDataStorageIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L).getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                        baseStorageLocation.toString()),
+                     IPluginParam.build(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L));
         PluginMetaData localDataStorageMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         PluginConfiguration localStorageConf = new PluginConfiguration(localDataStorageMeta, LOCAL_STORAGE_LABEL,
                 parameters);
@@ -175,12 +175,12 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
         // before getting the alloc strat plg params, lets make some mapping
         Set<PropertyDataStorageMapping> mappings = Sets.newHashSet();
         mappings.add(new PropertyDataStorageMapping(PROPERTY_VALUE, mappedDataStorageConfId));
-        Set<PluginParameter> propertyMappingAllocStratParam = PluginParametersFactory.build()
-                .addParameter(PropertyMappingAllocationStrategy.PROPERTY_PATH, JSON_PATH)
-                .addParameter(PropertyMappingAllocationStrategy.PROPERTY_VALUE_DATA_STORAGE_MAPPING, mappings)
-                .addParameter(PropertyMappingAllocationStrategy.QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID,
-                              mappedDataStorageConfId)
-                .getParameters();
+        Set<IPluginParam> propertyMappingAllocStratParam = IPluginParam
+                .set(IPluginParam.build(PropertyMappingAllocationStrategy.PROPERTY_PATH, JSON_PATH),
+                     IPluginParam.build(PropertyMappingAllocationStrategy.PROPERTY_VALUE_DATA_STORAGE_MAPPING,
+                                        mappings),
+                     IPluginParam.build(PropertyMappingAllocationStrategy.QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID,
+                                        mappedDataStorageConfId));
         propertyMappingAllocStratConf = new PluginConfiguration(propertyMappingAllocStratMeta,
                 PROPERTY_MAPPING_ALLOC_STRAT_LABEL, propertyMappingAllocStratParam);
         propertyMappingAllocStratConf = pluginService.savePluginConfiguration(propertyMappingAllocStratConf);
@@ -188,7 +188,8 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
 
     @Test
     public void testOk() throws ModuleException, NotAvailablePluginConfigurationException {
-        PropertyMappingAllocationStrategy allocStrat = pluginService.getPlugin(propertyMappingAllocStratConf.getId());
+        PropertyMappingAllocationStrategy allocStrat = pluginService
+                .getPlugin(propertyMappingAllocStratConf.getBusinessId());
         Multimap<Long, StorageDataFile> result = allocStrat.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue("dispatch should have mapped propertyDataFile to the data storage conf id",
                           result.containsEntry(mappedDataStorageConfId, propertyDataFile));
