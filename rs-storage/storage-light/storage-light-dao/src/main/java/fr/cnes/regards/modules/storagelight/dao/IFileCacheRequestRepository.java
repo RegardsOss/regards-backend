@@ -53,10 +53,10 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
     @Query("select coalesce(sum(fcr.fileSize),0) from FileCacheRequest fcr where fcr.status = 'PENDING'")
     Long getPendingFileSize();
 
-    boolean existsByRequestId(String requestId);
+    boolean existsByGroupId(String groupId);
 
-    Set<FileCacheRequest> findByRequestId(String requestId);
+    Set<FileCacheRequest> findByGroupId(String groupId);
 
-    Set<FileCacheRequest> findByRequestIdAndStatus(String requestId, FileRequestStatus error);
+    Set<FileCacheRequest> findByGroupIdAndStatus(String groupId, FileRequestStatus error);
 
 }

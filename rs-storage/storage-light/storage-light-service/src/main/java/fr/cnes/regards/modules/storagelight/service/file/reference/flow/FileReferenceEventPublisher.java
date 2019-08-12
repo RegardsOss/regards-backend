@@ -74,20 +74,19 @@ public class FileReferenceEventPublisher {
      *
      * @param fileRef newly stored file
      * @param message success message
-     * @param requestId Business request identifier
+     * @param groupId Business request identifier
      */
-    public void copySuccess(FileReference fileRef, String message, String requestId) {
+    public void copySuccess(FileReference fileRef, String message, String groupId) {
         LOGGER.debug("Publishing FileReferenceEvent COPIED. {}", message);
         publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(), FileReferenceEventType.COPIED,
                                                    fileRef.getOwners(), message, fileRef.getLocation(),
-                                                   Sets.newHashSet(requestId)));
-        if (!copyRepo.existsByRequestId(requestId)) {
+                                                   Sets.newHashSet(groupId)));
+        if (!copyRepo.existsByGroupId(groupId)) {
             // No copy request left, request is successfully done
-            LOGGER.info("[COPY REQUEST] No copy request left, request is successfully done for request id {}",
-                        requestId);
-            requestDone(requestId, FileRequestType.COPY);
+            LOGGER.info("[COPY REQUEST] No copy request left, request is successfully done for request id {}", groupId);
+            requestDone(groupId, FileRequestType.COPY);
         } else {
-            checkForCopyRequestError(requestId);
+            checkForCopyRequestError(groupId);
         }
     }
 
@@ -96,17 +95,16 @@ public class FileReferenceEventPublisher {
      * If there is no more {@link FileCopyRequest} associated to the Business request identifier, so a request notification
      * is sent too.<br/>
      *
-     * @param fileRef newly stored file
-     * @param message success message
-     * @param requestId Business request identifier
+     * @param errorRequest copy request in error
+     * @param errorCause error message
      */
     public void copyError(FileCopyRequest errorRequest, String errorCause) {
         LOGGER.debug("Publishing FileReferenceEvent COPY_ERROR. {}", errorCause);
         publisher.publish(FileReferenceEvent
                 .build(errorRequest.getMetaInfo().getChecksum(), FileReferenceEventType.COPY_ERROR, null, errorCause,
                        new FileLocation(errorRequest.getStorage(), errorRequest.getStorageSubDirectory()),
-                       Sets.newHashSet(errorRequest.getRequestId())));
-        checkForCopyRequestError(errorRequest.getRequestId());
+                       Sets.newHashSet(errorRequest.getGroupId())));
+        checkForCopyRequestError(errorRequest.getGroupId());
     }
 
     /**
@@ -114,12 +112,13 @@ public class FileReferenceEventPublisher {
      *
      * @param fileRef {@link FileReference} deleted
      * @param message Optional message
+     * @param groupId
      */
-    public void deletionSuccess(FileReference fileRef, String message, String requestId) {
+    public void deletionSuccess(FileReference fileRef, String message, String groupId) {
         LOGGER.debug("Publishing FileReferenceEvent FULLY_DELETED. {}", message);
         publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
                                                    FileReferenceEventType.FULLY_DELETED, null, message,
-                                                   fileRef.getLocation(), Sets.newHashSet(requestId)));
+                                                   fileRef.getLocation(), Sets.newHashSet(groupId)));
     }
 
     /**
@@ -127,12 +126,13 @@ public class FileReferenceEventPublisher {
      *
      * @param fileRef {@link FileReference} not deleted
      * @param message Optional error cause message
+     * @param groupId
      */
-    public void deletionError(FileReference fileRef, String message, String requestId) {
+    public void deletionError(FileReference fileRef, String message, String groupId) {
         LOGGER.debug("Publishing FileReferenceEvent DELETION_ERROR. {}", message);
         publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
                                                    FileReferenceEventType.DELETION_ERROR, null, message,
-                                                   fileRef.getLocation(), Sets.newHashSet(requestId)));
+                                                   fileRef.getLocation(), Sets.newHashSet(groupId)));
     }
 
     /**
@@ -140,12 +140,13 @@ public class FileReferenceEventPublisher {
      * @param fileRef {@link FileReference} deleted for the given owner
      * @param owner
      * @param message Optional message
+     * @param groupId
      */
-    public void deletionForOwnerSuccess(FileReference fileRef, String owner, String message, String requestId) {
+    public void deletionForOwnerSuccess(FileReference fileRef, String owner, String message, String groupId) {
         LOGGER.debug("Publishing FileReferenceEvent DELETED_FOR_OWNER. {}", message);
         publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
                                                    FileReferenceEventType.DELETED_FOR_OWNER, Sets.newHashSet(owner),
-                                                   message, fileRef.getLocation(), Sets.newHashSet(requestId)));
+                                                   message, fileRef.getLocation(), Sets.newHashSet(groupId)));
     }
 
     /**
@@ -155,16 +156,17 @@ public class FileReferenceEventPublisher {
      *
      * @param fileRef {@link FileReference} deleted for the given owner
      * @param message Optional message
+     * @param groupIds
      */
-    public void storeSuccess(FileReference fileRef, String message, Collection<String> requestIds) {
+    public void storeSuccess(FileReference fileRef, String message, Collection<String> groupIds) {
         LOGGER.debug("Publishing FileReferenceEvent STORED. {}", message);
         publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(), FileReferenceEventType.STORED,
-                                                   fileRef.getOwners(), message, fileRef.getLocation(), requestIds));
-        for (String requestId : requestIds) {
-            if (!storageReqRepo.existsByRequestIds(requestId)) {
-                requestDone(requestId, FileRequestType.STORAGE);
+                                                   fileRef.getOwners(), message, fileRef.getLocation(), groupIds));
+        for (String groupId : groupIds) {
+            if (!storageReqRepo.existsByGroupIds(groupId)) {
+                requestDone(groupId, FileRequestType.STORAGE);
             } else {
-                checkForStorageRequestError(requestId);
+                checkForStorageRequestError(groupId);
             }
         }
     }
@@ -176,9 +178,10 @@ public class FileReferenceEventPublisher {
      *
      * @param fileRef {@link FileReference} deleted for the given owner
      * @param message Optional message
+     * @param groupId
      */
-    public void storeSuccess(FileReference fileRef, String message, String requestId) {
-        storeSuccess(fileRef, message, Sets.newHashSet(requestId));
+    public void storeSuccess(FileReference fileRef, String message, String groupId) {
+        storeSuccess(fileRef, message, Sets.newHashSet(groupId));
     }
 
     /**
@@ -190,14 +193,14 @@ public class FileReferenceEventPublisher {
      * @param owners owners of the file in error
      * @param destinationLocation
      * @param message Optional message
-     * @param requestIds
+     * @param groupIds
      */
     public void storeError(String checksum, Collection<String> owners, String storage, String message,
-            Collection<String> requestIds) {
+            Collection<String> groupIds) {
         LOGGER.debug("Publishing FileReferenceEvent STORE_ERROR. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.STORE_ERROR, owners, message,
-                                                   new FileLocation(storage, null), requestIds));
-        requestIds.forEach(r -> checkForStorageRequestError(r));
+                                                   new FileLocation(storage, null), groupIds));
+        groupIds.forEach(r -> checkForStorageRequestError(r));
     }
 
     /**
@@ -209,21 +212,20 @@ public class FileReferenceEventPublisher {
      * @param owners owners of the file in error
      * @param destinationLocation
      * @param message Optional message
-     * @param requestId
+     * @param groupId
      */
-    public void storeError(String checksum, Collection<String> owners, String storage, String message,
-            String requestId) {
-        storeError(checksum, owners, storage, message, Sets.newHashSet(requestId));
+    public void storeError(String checksum, Collection<String> owners, String storage, String message, String groupId) {
+        storeError(checksum, owners, storage, message, Sets.newHashSet(groupId));
     }
 
-    private void checkForStorageRequestError(String requestId) {
-        Set<FileStorageRequest> requests = storageReqRepo.findByRequestIds(requestId);
+    private void checkForStorageRequestError(String groupId) {
+        Set<FileStorageRequest> requests = storageReqRepo.findByGroupIds(groupId);
         // If all remaining requests are in error state, publish request in error
         if (!requests.stream().anyMatch(req -> !(req.getStatus() == FileRequestStatus.ERROR))) {
             Set<ErrorFile> errors = requests.stream()
                     .map(req -> ErrorFile.build(req.getMetaInfo().getChecksum(), req.getStorage(), req.getErrorCause()))
                     .collect(Collectors.toSet());
-            requestError(requestId, FileRequestType.STORAGE, errors);
+            requestError(groupId, FileRequestType.STORAGE, errors);
         }
     }
 
@@ -236,21 +238,21 @@ public class FileReferenceEventPublisher {
      * @param url
      * @param owners
      * @param message
-     * @param requestId
+     * @param groupId
      * @param notifyRequest
      */
     public void available(String checksum, String storage, String url, Collection<String> owners, String message,
-            String requestId, Boolean notifyRequest) {
+            String groupId, Boolean notifyRequest) {
         LOGGER.debug("Publishing FileReferenceEvent AVAILABLE. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABLE, owners, message,
-                                                   new FileLocation(storage, url), Sets.newHashSet(requestId)));
+                                                   new FileLocation(storage, url), Sets.newHashSet(groupId)));
 
-        // Check if cache request exists for the same requestId
+        // Check if cache request exists for the same groupId
         if (notifyRequest) {
-            if (!cacheReqRepo.existsByRequestId(requestId)) {
-                requestDone(requestId, FileRequestType.AVAILABILITY);
+            if (!cacheReqRepo.existsByGroupId(groupId)) {
+                requestDone(groupId, FileRequestType.AVAILABILITY);
             } else {
-                checkForAvailabilityRequestError(requestId);
+                checkForAvailabilityRequestError(groupId);
             }
         }
     }
@@ -261,58 +263,55 @@ public class FileReferenceEventPublisher {
      * is sent too.<br/>
      *
      * @param checksum
-     * @param storage
-     * @param url
-     * @param owners
      * @param message
-     * @param requestId
+     * @param groupId
      * @param notifyRequest
      */
-    public void notAvailable(String checksum, String message, String requestId, Boolean notifyRequest) {
+    public void notAvailable(String checksum, String message, String groupId, Boolean notifyRequest) {
         LOGGER.debug("Publishing FileReferenceEvent AVAILABILITY_ERROR. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABILITY_ERROR, null, message,
-                                                   null, Sets.newHashSet(requestId)));
+                                                   null, Sets.newHashSet(groupId)));
         if (notifyRequest) {
-            checkForAvailabilityRequestError(requestId);
+            checkForAvailabilityRequestError(groupId);
         }
     }
 
-    private void checkForAvailabilityRequestError(String requestId) {
-        Set<FileCacheRequest> requests = cacheReqRepo.findByRequestId(requestId);
+    private void checkForAvailabilityRequestError(String groupId) {
+        Set<FileCacheRequest> requests = cacheReqRepo.findByGroupId(groupId);
         // If all remaining requests are in error state, publish request in error
         if (!requests.stream().anyMatch(req -> !(req.getStatus() == FileRequestStatus.ERROR))) {
             Set<ErrorFile> errors = requests.stream()
                     .map(req -> ErrorFile.build(req.getChecksum(), req.getStorage(), req.getErrorCause()))
                     .collect(Collectors.toSet());
-            requestError(requestId, FileRequestType.AVAILABILITY, errors);
+            requestError(groupId, FileRequestType.AVAILABILITY, errors);
         }
     }
 
-    private void checkForCopyRequestError(String requestId) {
-        Set<FileCopyRequest> requests = copyRepo.findByRequestId(requestId);
+    private void checkForCopyRequestError(String groupId) {
+        Set<FileCopyRequest> requests = copyRepo.findByGroupId(groupId);
         // If all remaining requests are in error state, publish request in error
         if (!requests.stream().anyMatch(req -> !(req.getStatus() == FileRequestStatus.ERROR))) {
             Set<ErrorFile> errors = requests.stream()
                     .map(req -> ErrorFile.build(req.getMetaInfo().getChecksum(), req.getStorage(), req.getErrorCause()))
                     .collect(Collectors.toSet());
-            requestError(requestId, FileRequestType.COPY, errors);
+            requestError(groupId, FileRequestType.COPY, errors);
         }
     }
 
-    public void requestDenied(String requestId, FileRequestType type) {
-        publisher.publish(FileRequestEvent.build(requestId, type, FlowItemStatus.DENIED));
+    public void requestDenied(String groupId, FileRequestType type) {
+        publisher.publish(FileRequestEvent.build(groupId, type, FlowItemStatus.DENIED));
     }
 
-    public void requestGranted(String requestId, FileRequestType type) {
-        publisher.publish(FileRequestEvent.build(requestId, type, FlowItemStatus.GRANTED));
+    public void requestGranted(String groupId, FileRequestType type) {
+        publisher.publish(FileRequestEvent.build(groupId, type, FlowItemStatus.GRANTED));
     }
 
-    public void requestDone(String requestId, FileRequestType type) {
-        publisher.publish(FileRequestEvent.build(requestId, type, FlowItemStatus.DONE));
+    public void requestDone(String groupId, FileRequestType type) {
+        publisher.publish(FileRequestEvent.build(groupId, type, FlowItemStatus.DONE));
     }
 
-    public void requestError(String requestId, FileRequestType type, Collection<ErrorFile> errors) {
-        publisher.publish(FileRequestEvent.buildError(requestId, type, errors));
+    public void requestError(String groupId, FileRequestType type, Collection<ErrorFile> errors) {
+        publisher.publish(FileRequestEvent.buildError(groupId, type, errors));
     }
 
 }

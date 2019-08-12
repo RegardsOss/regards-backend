@@ -51,14 +51,14 @@ public class DeletionFlowItem implements ISubscribable {
     /**
      * Business request identifier
      */
-    private String requestId;
+    private String groupId;
 
-    public String getRequestId() {
-        return requestId;
+    public String getGroupId() {
+        return groupId;
     }
 
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
     public Set<FileDeletionRequestDTO> getFiles() {
@@ -68,33 +68,33 @@ public class DeletionFlowItem implements ISubscribable {
     /**
      * Build a deletion request for one {@link FileDeletionRequestDTO} file.
      * @param file {@link FileDeletionRequestDTO} to remove information
-     * @param requestId business request identifier
+     * @param groupId business request identifier
      * @return {@link DeletionFlowItem}
      */
-    public static DeletionFlowItem build(FileDeletionRequestDTO file, String requestId) {
+    public static DeletionFlowItem build(FileDeletionRequestDTO file, String groupId) {
         DeletionFlowItem item = new DeletionFlowItem();
         item.files.add(file);
-        item.requestId = requestId;
+        item.groupId = groupId;
         return item;
     }
 
     /**
      * Build a deletion request for many {@link FileDeletionRequestDTO} files.
      * @param files {@link FileDeletionRequestDTO}s to remove information
-     * @param requestId business request identifier
+     * @param groupId business request identifier
      * @return {@link DeletionFlowItem}
      */
-    public static DeletionFlowItem build(Collection<FileDeletionRequestDTO> files, String requestId) {
+    public static DeletionFlowItem build(Collection<FileDeletionRequestDTO> files, String groupId) {
         DeletionFlowItem item = new DeletionFlowItem();
         item.files.addAll(files);
-        item.requestId = requestId;
+        item.groupId = groupId;
         return item;
     }
 
     @Override
     public String toString() {
         return "DeleteFileRefFlowItem [" + (files != null ? "files=" + files + ", " : "")
-                + (requestId != null ? "requestId=" + requestId : "") + "]";
+                + (groupId != null ? "groupId=" + groupId : "") + "]";
     }
 
 }

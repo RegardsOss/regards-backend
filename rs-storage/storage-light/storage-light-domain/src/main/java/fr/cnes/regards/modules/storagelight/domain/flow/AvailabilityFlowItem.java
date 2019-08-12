@@ -61,25 +61,25 @@ public class AvailabilityFlowItem implements ISubscribable {
     /**
      * Request business identifier
      */
-    private String requestId;
+    private String groupId;
 
     /**
      * Build a availability request item.
      * @param checksums
      * @param expirationDate
-     * @param requestId
+     * @param groupId
      * @return {@link AvailabilityFlowItem}
      */
     public static AvailabilityFlowItem build(Collection<String> checksums, OffsetDateTime expirationDate,
-            String requestId) {
+            String groupId) {
         AvailabilityFlowItem item = new AvailabilityFlowItem();
         Assert.notNull(checksums, "Checksums is mandatory");
         Assert.notEmpty(checksums, "Checksums is mandatory");
         Assert.notNull(expirationDate, "Expiration date is mandatory");
-        Assert.notNull(requestId, "Request id is mandatory");
+        Assert.notNull(groupId, "groupId is mandatory");
         item.checksums.addAll(checksums);
         item.expirationDate = expirationDate;
-        item.requestId = requestId;
+        item.groupId = groupId;
         return item;
     }
 
@@ -91,8 +91,8 @@ public class AvailabilityFlowItem implements ISubscribable {
         return expirationDate;
     }
 
-    public String getRequestId() {
-        return requestId;
+    public String getGroupId() {
+        return groupId;
     }
 
 }

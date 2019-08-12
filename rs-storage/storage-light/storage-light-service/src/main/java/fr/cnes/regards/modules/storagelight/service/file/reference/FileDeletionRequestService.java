@@ -99,17 +99,16 @@ public class FileDeletionRequestService {
      * Create a new {@link FileDeletionRequest}.
      * @param fileReferenceToDelete {@link FileReference} to delete
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
-     * @param requestId Business identifier of the deletion request
+     * @param groupId Business identifier of the deletion request
      */
-    public void create(FileReference fileReferenceToDelete, boolean forceDelete, String requestId) {
+    public void create(FileReference fileReferenceToDelete, boolean forceDelete, String groupId) {
         if (!fileDeletionRequestRepo.findByFileReferenceId(fileReferenceToDelete.getId()).isPresent()) {
-            fileDeletionRequestRepo.save(new FileDeletionRequest(fileReferenceToDelete, forceDelete, requestId));
+            fileDeletionRequestRepo.save(new FileDeletionRequest(fileReferenceToDelete, forceDelete, groupId));
         }
     }
 
     /**
      * Update all {@link FileDeletionRequest} in error status to change status to todo.
-     * @param requestId
      */
     public void retry() {
         Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by(Direction.ASC, "id"));

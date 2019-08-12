@@ -28,13 +28,11 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
@@ -45,7 +43,6 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -77,7 +74,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.flow.StorageF
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_perf_tests",
         "regards.storage.cache.path=target/cache" })
-@Ignore("Performances tests")
+// @Ignore("Performances tests")
 public class FlowPerformanceTest extends AbstractFileReferenceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceTest.class);
@@ -99,9 +96,6 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
 
     @Autowired
     FileStorageRequestService fileStorageRequestService;
-
-    @SpyBean
-    public IPublisher publisher;
 
     private final Set<String> nlChecksums = Sets.newHashSet();
 
@@ -296,8 +290,8 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         LOGGER.info(" ----------------------------------- ");
         Assert.assertEquals("Invalid count of cached files", 0, cacheFileRepo.count());
         // Create a new bus message File reference request
-        AvailabilityFlowItem item = AvailabilityFlowItem
-                .build(nlChecksums, OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
+        AvailabilityFlowItem item = AvailabilityFlowItem.build(nlChecksums, OffsetDateTime.now().plusDays(1),
+                                                               UUID.randomUUID().toString());
         TenantWrapper<AvailabilityFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         availabilityHandler.handle(wrapper);

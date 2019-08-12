@@ -51,14 +51,14 @@ public class CopyFlowItem implements ISubscribable {
     /**
      * Business request identifier
      */
-    private String requestId;
+    private String groupId;
 
-    public String getRequestId() {
-        return requestId;
+    public String getGroupId() {
+        return groupId;
     }
 
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
     public Set<FileCopyRequestDTO> getFiles() {
@@ -68,33 +68,33 @@ public class CopyFlowItem implements ISubscribable {
     /**
      * Build a copy request for one {@link FileCopyRequestDTO} file.
      * @param file {@link FileCopyRequestDTO} to remove information
-     * @param requestId business request identifier
+     * @param groupId business request identifier
      * @return {@link CopyFlowItem}
      */
-    public static CopyFlowItem build(FileCopyRequestDTO file, String requestId) {
+    public static CopyFlowItem build(FileCopyRequestDTO file, String groupId) {
         CopyFlowItem item = new CopyFlowItem();
         item.files.add(file);
-        item.requestId = requestId;
+        item.groupId = groupId;
         return item;
     }
 
     /**
      * Build a copy request for many {@link FileCopyRequestDTO} files.
      * @param files {@link FileCopyRequestDTO}s to remove information
-     * @param requestId business request identifier
+     * @param groupId business request identifier
      * @return {@link CopyFlowItem}
      */
-    public static CopyFlowItem build(Collection<FileCopyRequestDTO> files, String requestId) {
+    public static CopyFlowItem build(Collection<FileCopyRequestDTO> files, String groupId) {
         CopyFlowItem item = new CopyFlowItem();
         item.files.addAll(files);
-        item.requestId = requestId;
+        item.groupId = groupId;
         return item;
     }
 
     @Override
     public String toString() {
         return "DeleteFileRefFlowItem [" + (files != null ? "files=" + files + ", " : "")
-                + (requestId != null ? "requestId=" + requestId : "") + "]";
+                + (groupId != null ? "groupId=" + groupId : "") + "]";
     }
 
 }

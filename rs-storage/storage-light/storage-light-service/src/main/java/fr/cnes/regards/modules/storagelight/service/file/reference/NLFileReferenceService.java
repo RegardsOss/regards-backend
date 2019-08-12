@@ -94,18 +94,19 @@ public class NLFileReferenceService {
      * After copy in cache, files will be available until the given expiration date.
      * @param fileReferences
      * @param expirationDate
+     * @param groupId
      * @return number of cache request created.
      */
-    public int makeAvailable(Set<FileReference> fileReferences, OffsetDateTime expirationDate, String requestId) {
+    public int makeAvailable(Set<FileReference> fileReferences, OffsetDateTime expirationDate, String groupId) {
         // Check files already available in cache
-        Set<FileReference> availables = cachedFileService.getFilesAvailableInCache(fileReferences, requestId);
+        Set<FileReference> availables = cachedFileService.getFilesAvailableInCache(fileReferences, groupId);
         Set<FileReference> toRestore = fileReferences.stream().filter(f -> !availables.contains(f))
                 .collect(Collectors.toSet());
         // Notify available
-        notifyAlreadyAvailablesInCache(availables, requestId);
+        notifyAlreadyAvailablesInCache(availables, groupId);
         // Create a restoration request for all to restore
         for (FileReference f : toRestore) {
-            fileCacheReqService.create(f, expirationDate, requestId);
+            fileCacheReqService.create(f, expirationDate, groupId);
         }
         return toRestore.size();
     }
@@ -113,14 +114,15 @@ public class NLFileReferenceService {
     /**
      * Notify all files as AVAILABLE.
      * @param availables
+     * @param groupId
      */
-    private void notifyAlreadyAvailablesInCache(Set<FileReference> availables, String requestId) {
+    private void notifyAlreadyAvailablesInCache(Set<FileReference> availables, String groupId) {
         availables.forEach(f -> publisher
                 .available(f.getMetaInfo().getChecksum(), "cache",
                            cachedFileService.getFilePath(f.getMetaInfo().getChecksum()), f.getOwners(),
                            String.format("file %s (checksum %s) is available for download.",
                                          f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum()),
-                           requestId, false));
+                           groupId, false));
     }
 
 }

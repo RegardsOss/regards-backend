@@ -18,21 +18,27 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
 
 @Entity
 @Table(name = "t_file_copy_request",
-        indexes = { @Index(name = "idx_file_copy_request", columnList = "storage, checksum") },
+        indexes = { @Index(name = "idx_file_copy_request", columnList = "storage, checksum"),
+                @Index(name = "idx_file_copy_request_grp", columnList = "group_id"),
+                @Index(name = "idx_file_copy_request_cache_grp", columnList = "cache_group_id"),
+                @Index(name = "idx_file_copy_request_storage_grp", columnList = "storage_group_id") },
         uniqueConstraints = { @UniqueConstraint(name = "t_file_copy_request_checksum_storage",
                 columnNames = { "checksum", "storage" }) })
 public class FileCopyRequest {
 
-	 /**
-     * Internal database unique identifier
-     */
+    /**
+    * Internal database unique identifier
+    */
     @Id
     @SequenceGenerator(name = "fileStorageRequestSequence", initialValue = 1, sequenceName = "seq_file_storage_request")
     @GeneratedValue(generator = "fileStorageRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
-    
-    @Column(name = "request_id", nullable = false, length = 128)
-    private String requestId;
+
+    /**
+     * Business identifier to regroup file requests.
+     */
+    @Column(name = "group_id", nullable = false, length = 128)
+    private String groupId;
 
     @Embedded
     private FileReferenceMetaInfo metaInfo;
@@ -42,12 +48,12 @@ public class FileCopyRequest {
 
     @Column(name = "storage", length = FileLocation.STORAGE_MAX_LENGTH)
     private String storage;
-    
-    @Column(name = "cache_request_id", length = 128)
-    private String fileCacheRequestId;
-    
-    @Column(name = "storage_request_id", length = 128)
-    private String fileStorageRequestId;
+
+    @Column(name = "cache_group_id", length = 128)
+    private String fileCacheGroupId;
+
+    @Column(name = "storage_group_id", length = 128)
+    private String fileStorageGroupId;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -60,67 +66,65 @@ public class FileCopyRequest {
         super();
     }
 
-	public FileCopyRequest(String requestId, FileReferenceMetaInfo metaInfo, String storageSubDirectory,
-			String storage) {
-		super();
-		this.requestId = requestId;
-		this.metaInfo = metaInfo;
-		this.storageSubDirectory = storageSubDirectory;
-		this.storage = storage;
-		this.status = FileRequestStatus.TODO;
-	}
+    public FileCopyRequest(String groupId, FileReferenceMetaInfo metaInfo, String storageSubDirectory, String storage) {
+        super();
+        this.groupId = groupId;
+        this.metaInfo = metaInfo;
+        this.storageSubDirectory = storageSubDirectory;
+        this.storage = storage;
+        this.status = FileRequestStatus.TODO;
+    }
 
+    public Long getId() {
+        return id;
+    }
 
+    public String getGroupId() {
+        return groupId;
+    }
 
-	public Long getId() {
-		return id;
-	}
+    public String getStorageSubDirectory() {
+        return storageSubDirectory;
+    }
 
-	public String getRequestId() {
-		return requestId;
-	}
+    public String getStorage() {
+        return storage;
+    }
 
-	public String getStorageSubDirectory() {
-		return storageSubDirectory;
-	}
+    public FileReferenceMetaInfo getMetaInfo() {
+        return metaInfo;
+    }
 
-	public String getStorage() {
-		return storage;
-	}
-	public FileReferenceMetaInfo getMetaInfo() {
-		return metaInfo;
-	}
+    public FileRequestStatus getStatus() {
+        return status;
+    }
 
-	public FileRequestStatus getStatus() {
-		return status;
-	}
+    public String getErrorCause() {
+        return errorCause;
+    }
 
-	public String getErrorCause() {
-		return errorCause;
-	}
+    public String getFileCacheGroupId() {
+        return fileCacheGroupId;
+    }
 
-	public String getFileCacheRequestId() {
-		return fileCacheRequestId;
-	}
+    public void setFileCacheGroupId(String fileCacheGroupId) {
+        this.fileCacheGroupId = fileCacheGroupId;
+    }
 
-	public void setFileCacheRequestId(String fileCacheRequestId) {
-		this.fileCacheRequestId = fileCacheRequestId;
-	}
+    public void setStatus(FileRequestStatus status) {
+        this.status = status;
+    }
 
-	public void setStatus(FileRequestStatus status) {
-		this.status = status;
-	}
+    public void setErrorCause(String errorCause) {
+        this.errorCause = errorCause;
+    }
 
-	public void setErrorCause(String errorCause) {
-		this.errorCause = errorCause;
-	}
+    public String getFileStorageGroupId() {
+        return fileStorageGroupId;
+    }
 
-	public String getFileStorageRequestId() {
-		return fileStorageRequestId;
-	}
+    public void setFileStorageGroupId(String fileCacheGroupId) {
+        this.fileStorageGroupId = fileCacheGroupId;
+    }
 
-	public void setFileStorageRequestId(String fileStorageRequestId) {
-		this.fileStorageRequestId = fileStorageRequestId;
-	}
-    
 }

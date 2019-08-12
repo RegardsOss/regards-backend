@@ -30,7 +30,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
@@ -39,7 +38,6 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -49,8 +47,8 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
-import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.RetryFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
@@ -150,8 +148,8 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
         Optional<FileStorageRequest> req2 = fileStorageRequestService.search(ONLINE_CONF_LABEL, cs2);
         Assert.assertTrue("File request should be created", req1.isPresent());
         Assert.assertTrue("File request should be created", req2.isPresent());
-        Assert.assertEquals("", req1.get().getRequestIds().stream().findFirst().get(),
-                            req2.get().getRequestIds().stream().findFirst().get());
+        Assert.assertEquals("", req1.get().getGroupIds().stream().findFirst().get(),
+                            req2.get().getGroupIds().stream().findFirst().get());
 
         // Now check for event published
         Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
@@ -259,7 +257,7 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
     }
 
     @Test
-    public void retry_byRequestId() {
+    public void retry_byGroupId() {
         String storageDestination = "somewheere";
         String owner = "retry-test";
         Set<FileStorageRequestDTO> files = Sets.newHashSet();

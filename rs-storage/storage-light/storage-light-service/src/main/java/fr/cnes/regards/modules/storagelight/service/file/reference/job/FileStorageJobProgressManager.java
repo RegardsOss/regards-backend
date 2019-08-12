@@ -83,7 +83,7 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
             for (String owner : request.getOwners()) {
                 try {
                     FileReference fileRef = referenceService.referenceFile(owner, request.getMetaInfo(), newLocation,
-                                                                           request.getRequestIds());
+                                                                           request.getGroupIds());
                     // Delete the FileRefRequest as it has been handled
                     try {
                         storageRequestService.delete(request);
@@ -92,7 +92,7 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
                                                request.getId(), e.getMessage()),
                                  e);
                     }
-                    publisher.storeSuccess(fileRef, message, request.getRequestIds());
+                    publisher.storeSuccess(fileRef, message, request.getGroupIds());
                 } catch (ModuleException e) {
                     String errorCause = String.format("Unable to save new file reference for file %s",
                                                       request.getStorage());
@@ -102,7 +102,7 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
                     request.setErrorCause(errorCause);
                     storageRequestService.update(request);
                     publisher.storeError(request.getMetaInfo().getChecksum(), request.getOwners(), request.getStorage(),
-                                         errorCause, request.getRequestIds());
+                                         errorCause, request.getGroupIds());
                 }
             }
 
@@ -120,7 +120,7 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
         request.setErrorCause(cause);
         storageRequestService.update(request);
         publisher.storeError(request.getMetaInfo().getChecksum(), request.getOwners(), request.getStorage(), cause,
-                             request.getRequestIds());
+                             request.getGroupIds());
         handledRequest.add(request);
     }
 

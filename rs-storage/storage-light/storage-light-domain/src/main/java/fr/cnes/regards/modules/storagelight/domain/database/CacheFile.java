@@ -69,11 +69,15 @@ public class CacheFile {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime expirationDate;
 
-    @Column(name = "request_id", nullable = false, length = 128)
+    /**
+     * Business identifier to regroup file cache requests.
+     * It is used to know who asked for this file availability in cache.
+     */
+    @Column(name = "group_id", nullable = false, length = 128)
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "ta_cache_file_request_ids", joinColumns = @JoinColumn(name = "cache_file_id",
+    @CollectionTable(name = "ta_cache_file_group_ids", joinColumns = @JoinColumn(name = "cache_file_id",
             foreignKey = @ForeignKey(name = "fk_ta_cache_file_request_ids_t_file_cache")))
-    private final Set<String> requestIds = Sets.newHashSet();
+    private final Set<String> groupIds = Sets.newHashSet();
 
     /**
      * Default constructor
@@ -87,12 +91,12 @@ public class CacheFile {
      * @param df
      * @param expirationDate
      */
-    public CacheFile(String checksum, Long fileSize, URL location, OffsetDateTime expirationDate, String requestId) {
+    public CacheFile(String checksum, Long fileSize, URL location, OffsetDateTime expirationDate, String groupId) {
         this.checksum = checksum;
         this.fileSize = fileSize;
         this.location = location;
         this.expirationDate = expirationDate;
-        this.requestIds.add(requestId);
+        this.groupIds.add(groupId);
     }
 
     public Long getId() {
@@ -131,15 +135,12 @@ public class CacheFile {
         this.checksum = checksum;
     }
 
-    public void addRequestId(String requestId) {
-        this.requestIds.add(requestId);
+    public void addGroupId(String groupId) {
+        this.groupIds.add(groupId);
     }
 
-    /**
-     * @return the requestIds
-     */
-    public Set<String> getRequestIds() {
-        return requestIds;
+    public Set<String> getGroupIds() {
+        return groupIds;
     }
 
     @Override

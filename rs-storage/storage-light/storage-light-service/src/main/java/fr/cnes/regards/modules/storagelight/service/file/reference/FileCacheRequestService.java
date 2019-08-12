@@ -115,17 +115,17 @@ public class FileCacheRequestService {
      * Creates a new {@link FileCacheRequest} if does not exists already.
      * @param fileRefToRestore
      * @param expirationDate
-     * @param requestId Business identifier of the deletion request
+     * @param groupId Business identifier of the deletion request
      * @return {@link FileCacheRequest} created.
      */
     public Optional<FileCacheRequest> create(FileReference fileRefToRestore, OffsetDateTime expirationDate,
-            String requestId) {
+            String groupId) {
         String checksum = fileRefToRestore.getMetaInfo().getChecksum();
         Optional<FileCacheRequest> oFcr = repository.findByChecksum(checksum);
         FileCacheRequest request = null;
         if (!oFcr.isPresent()) {
             request = new FileCacheRequest(fileRefToRestore, cacheService.getFilePath(checksum), expirationDate,
-                    requestId);
+                    groupId);
             request = repository.save(request);
             LOGGER.debug("File {} (checksum {}) is requested for cache.", fileRefToRestore.getMetaInfo().getFileName(),
                          fileRefToRestore.getMetaInfo().getChecksum());
@@ -143,10 +143,10 @@ public class FileCacheRequestService {
 
     /**
      * Update all {@link FileCacheRequest} in error status to change status to todo.
-     * @param requestId request business identifier to retry
+     * @param groupId request business identifier to retry
      */
-    public void retryRequest(String requestId) {
-        for (FileCacheRequest request : repository.findByRequestIdAndStatus(requestId, FileRequestStatus.ERROR)) {
+    public void retryRequest(String groupId) {
+        for (FileCacheRequest request : repository.findByGroupIdAndStatus(groupId, FileRequestStatus.ERROR)) {
             request.setStatus(FileRequestStatus.TODO);
             request.setErrorCause(null);
             repository.save(request);
@@ -197,11 +197,11 @@ public class FileCacheRequestService {
         if (oRequest.isPresent()) {
             // Create the cache file associated
             cacheService.addFile(oRequest.get().getChecksum(), realFileSize, cacheLocation,
-                                 oRequest.get().getExpirationDate(), fileReq.getRequestId());
+                                 oRequest.get().getExpirationDate(), fileReq.getGroupId());
             repository.deleteById(oRequest.get().getId());
         }
         publisher.available(fileReq.getChecksum(), "cache", cacheLocation.toString(), owners, successMessage,
-                            fileReq.getRequestId(), true);
+                            fileReq.getGroupId(), true);
     }
 
     /**
@@ -217,7 +217,7 @@ public class FileCacheRequestService {
             request.setErrorCause(cause);
             repository.save(request);
         }
-        publisher.notAvailable(fileReq.getChecksum(), cause, fileReq.getRequestId(), true);
+        publisher.notAvailable(fileReq.getChecksum(), cause, fileReq.getGroupId(), true);
     }
 
     /**
@@ -314,6 +314,6 @@ public class FileCacheRequestService {
                 .format("File <%s> cannot be handle for restoration as origin storage <%s> is unknown or disabled.",
                         request.getFileReference().getMetaInfo().getFileName(), request.getStorage()));
         repository.save(request);
-        publisher.notAvailable(request.getChecksum(), request.getErrorCause(), request.getRequestId(), true);
+        publisher.notAvailable(request.getChecksum(), request.getErrorCause(), request.getGroupId(), true);
     }
 }

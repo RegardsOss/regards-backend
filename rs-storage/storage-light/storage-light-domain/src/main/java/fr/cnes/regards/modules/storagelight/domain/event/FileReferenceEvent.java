@@ -54,7 +54,7 @@ public class FileReferenceEvent implements ISubscribable {
      * See {@link StorageFlowItem}, {@link DeletionFlowItem} and {@link ReferenceFlowItem} for more information about
      * file requests.
      */
-    private final Set<String> requestIds = Sets.newHashSet();
+    private final Set<String> groupIds = Sets.newHashSet();
 
     /**
      * Build a file reference event with a file location.
@@ -63,14 +63,14 @@ public class FileReferenceEvent implements ISubscribable {
      * @param owners
      * @param message
      * @param location
-     * @param requestIds
+     * @param groupIds
      * @return {@link FileReferenceEvent}
      */
     public static FileReferenceEvent build(String checksum, FileReferenceEventType type, Collection<String> owners,
-            String message, FileLocation location, Collection<String> requestIds) {
+            String message, FileLocation location, Collection<String> groupIds) {
         Assert.notNull(checksum, "Checksum is mandatory");
         Assert.notNull(type, "Type is mandatory");
-        Assert.notNull(requestIds, "Type is mandatory");
+        Assert.notNull(groupIds, "GroupIds is mandatory");
 
         FileReferenceEvent event = new FileReferenceEvent();
         event.checksum = checksum;
@@ -78,7 +78,7 @@ public class FileReferenceEvent implements ISubscribable {
         event.message = message;
         event.location = location;
         event.owners = owners;
-        event.requestIds.addAll(requestIds);
+        event.groupIds.addAll(groupIds);
         return event;
     }
 
@@ -88,21 +88,21 @@ public class FileReferenceEvent implements ISubscribable {
      * @param type
      * @param owners
      * @param message
-     * @param requestIds
+     * @param groupIds
      * @return {@link FileReferenceEvent}
      */
     public static FileReferenceEvent build(String checksum, FileReferenceEventType type, Collection<String> owners,
-            String message, Collection<String> requestIds) {
+            String message, Collection<String> groupIds) {
         Assert.notNull(checksum, "Checksum is mandatory");
         Assert.notNull(type, "Type is mandatory");
-        Assert.notNull(requestIds, "Type is mandatory");
+        Assert.notNull(groupIds, "groupIds is mandatory");
 
         FileReferenceEvent event = new FileReferenceEvent();
         event.checksum = checksum;
         event.type = type;
         event.message = message;
         event.owners = owners;
-        event.requestIds.addAll(requestIds);
+        event.groupIds.addAll(groupIds);
 
         return event;
     }
@@ -127,8 +127,8 @@ public class FileReferenceEvent implements ISubscribable {
         return owners;
     }
 
-    public Set<String> getRequestIds() {
-        return requestIds;
+    public Set<String> getGroupIds() {
+        return groupIds;
     }
 
     @Override
@@ -137,7 +137,7 @@ public class FileReferenceEvent implements ISubscribable {
                 + (type != null ? "type=" + type + ", " : "") + (message != null ? "message=" + message + ", " : "")
                 + (owners != null ? "owners=" + owners + ", " : "")
                 + (location != null ? "location=" + location + ", " : "")
-                + (requestIds != null ? "requestIds=" + requestIds : "") + "]";
+                + (groupIds != null ? "groupIds=" + groupIds : "") + "]";
     }
 
 }

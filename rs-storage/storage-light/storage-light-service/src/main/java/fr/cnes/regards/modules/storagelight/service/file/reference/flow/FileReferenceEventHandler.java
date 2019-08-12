@@ -149,7 +149,7 @@ public class FileReferenceEventHandler
             if (oFileRef.isPresent()) {
                 fileCopyRequestService.handleSuccess(request.get(), oFileRef.get());
                 LOGGER.info("[COPY REQUEST] New stored file {} is associated to copy request {}", event.getChecksum(),
-                            request.get().getRequestId());
+                            request.get().getGroupId());
             } else {
                 String errorCause = String
                         .format("Error no file reference found for newly stored file %s at %s storage location",
@@ -172,7 +172,7 @@ public class FileReferenceEventHandler
         if (request.isPresent()) {
             createNewStorageRequest(request.get(), event);
             LOGGER.info("[COPY REQUEST] Available file {} is associated to copy request {}", event.getChecksum(),
-                        request.get().getRequestId());
+                        request.get().getGroupId());
         }
     }
 
@@ -184,19 +184,19 @@ public class FileReferenceEventHandler
             copyRequest.setErrorCause(event.getMessage());
             fileCopyRequestService.update(copyRequest);
             LOGGER.info("[COPY REQUEST] Not Available file {} is associated to copy request {}", event.getChecksum(),
-                        request.get().getRequestId());
+                        request.get().getGroupId());
         }
     }
 
     private void createNewStorageRequest(FileCopyRequest copyRequest, FileReferenceEvent fileAvailableEvent) {
-        String storageRequestId = UUID.randomUUID().toString();
+        String storageGroupId = UUID.randomUUID().toString();
         try {
             Optional<FileStorageRequest> request = fileStorageRequestService
                     .create(fileAvailableEvent.getOwners(), copyRequest.getMetaInfo(),
                             new URL(fileAvailableEvent.getLocation().getUrl()), copyRequest.getStorage(),
-                            Optional.ofNullable(copyRequest.getStorageSubDirectory()), storageRequestId);
+                            Optional.ofNullable(copyRequest.getStorageSubDirectory()), storageGroupId);
             if (request.isPresent()) {
-                copyRequest.setFileStorageRequestId(storageRequestId);
+                copyRequest.setFileStorageGroupId(storageGroupId);
                 fileCopyRequestService.update(copyRequest);
             }
         } catch (MalformedURLException e) {

@@ -72,7 +72,7 @@ public class FileReferenceEventHandler
     }
 
     private void handle(FileReferenceEvent event) {
-        Set<RequestInfo> requestInfos = event.getRequestIds().stream().map(RequestInfo::build)
+        Set<RequestInfo> requestInfos = event.getGroupIds().stream().map(RequestInfo::build)
                 .collect(Collectors.toSet());
         switch (event.getType()) {
             case AVAILABILITY_ERROR:

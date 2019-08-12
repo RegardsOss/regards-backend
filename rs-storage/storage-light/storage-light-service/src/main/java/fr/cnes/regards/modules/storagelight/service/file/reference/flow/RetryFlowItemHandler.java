@@ -65,15 +65,15 @@ public class RetryFlowItemHandler implements ApplicationListener<ApplicationRead
         try {
             switch (request.getType()) {
                 case STORAGE:
-                    if (request.getRequestId() != null) {
-                        storageService.retryRequest(request.getRequestId());
+                    if (request.getGroupId() != null) {
+                        storageService.retryRequest(request.getGroupId());
                     } else {
                         storageService.retry(request.getOwners());
                     }
                     break;
                 case AVAILABILITY:
-                    if (request.getRequestId() != null) {
-                        cacheService.retryRequest(request.getRequestId());
+                    if (request.getGroupId() != null) {
+                        cacheService.retryRequest(request.getGroupId());
                     } else {
                         LOGGER.warn("Retry action is not available for availability requests with no request id.");
                     }

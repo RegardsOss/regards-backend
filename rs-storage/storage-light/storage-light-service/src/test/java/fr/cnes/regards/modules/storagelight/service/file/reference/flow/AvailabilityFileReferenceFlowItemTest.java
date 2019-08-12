@@ -105,8 +105,8 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
                                                 file5.getMetaInfo().getChecksum(), file6.getMetaInfo().getChecksum(),
                                                 file7.getMetaInfo().getChecksum(), checksum);
         Mockito.clearInvocations(publisher);
-        AvailabilityFlowItem request = AvailabilityFlowItem
-                .build(checksums, OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
+        AvailabilityFlowItem request = AvailabilityFlowItem.build(checksums, OffsetDateTime.now().plusDays(1),
+                                                                  UUID.randomUUID().toString());
         handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
@@ -159,9 +159,9 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
                              OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
         // Simulate availability request on this file
         Mockito.clearInvocations(publisher);
-        AvailabilityFlowItem request = AvailabilityFlowItem
-                .build(Sets.newHashSet(file1.getMetaInfo().getChecksum()), OffsetDateTime.now().plusDays(2),
-                       UUID.randomUUID().toString());
+        AvailabilityFlowItem request = AvailabilityFlowItem.build(Sets.newHashSet(file1.getMetaInfo().getChecksum()),
+                                                                  OffsetDateTime.now().plusDays(2),
+                                                                  UUID.randomUUID().toString());
         handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
@@ -190,23 +190,22 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
         Set<String> checksums = Sets.newHashSet(file1.getMetaInfo().getChecksum(), file2.getMetaInfo().getChecksum(),
                                                 file3.getMetaInfo().getChecksum(), file4.getMetaInfo().getChecksum());
 
-        String requestId = UUID.randomUUID().toString();
-        AvailabilityFlowItem request = AvailabilityFlowItem
-                .build(checksums, OffsetDateTime.now().plusDays(1), requestId);
+        String groupId = UUID.randomUUID().toString();
+        AvailabilityFlowItem request = AvailabilityFlowItem.build(checksums, OffsetDateTime.now().plusDays(1), groupId);
         handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
         Assert.assertEquals("There should be 4 cache requests created", 4,
-                            fileCacheReqRepo.findByRequestIdAndStatus(requestId, FileRequestStatus.TODO).size());
+                            fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TODO).size());
 
         Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
         runAndWaitJob(jobs);
 
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
         Assert.assertEquals("There should be 0 cache requests in TODO", 0,
-                            fileCacheReqRepo.findByRequestIdAndStatus(requestId, FileRequestStatus.TODO).size());
+                            fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TODO).size());
         Assert.assertEquals("There should be 3 cache requests in ERROR", 3,
-                            fileCacheReqRepo.findByRequestIdAndStatus(requestId, FileRequestStatus.ERROR).size());
+                            fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.ERROR).size());
         Assert.assertEquals("There should be 1 file cache requests", 1, cacheFileRepo
                 .findAllByChecksumIn(Sets.newHashSet(file4.getMetaInfo().getChecksum())).size());
 
@@ -227,14 +226,14 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
         Assert.assertEquals("There should be 1 files available", 1, availables.size());
         Assert.assertEquals("There should be 3 files error", 3, notAvailables.size());
 
-        retryHandler.handle(new TenantWrapper<RetryFlowItem>(RetryFlowItem.buildAvailabilityRetry(requestId),
+        retryHandler.handle(new TenantWrapper<RetryFlowItem>(RetryFlowItem.buildAvailabilityRetry(groupId),
                 getDefaultTenant()));
 
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
         Assert.assertEquals("There should be 3 cache requests in TODO", 3,
-                            fileCacheReqRepo.findByRequestIdAndStatus(requestId, FileRequestStatus.TODO).size());
+                            fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TODO).size());
         Assert.assertEquals("There should be 0 cache requests in ERROR", 0,
-                            fileCacheReqRepo.findByRequestIdAndStatus(requestId, FileRequestStatus.ERROR).size());
+                            fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.ERROR).size());
     }
 
 }

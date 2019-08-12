@@ -51,7 +51,7 @@ public class FileRequestEvent implements ISubscribable {
     /**
      * Business request identifier
      */
-    private String requestId;
+    private String groupId;
 
     /**
      * Request status
@@ -68,8 +68,8 @@ public class FileRequestEvent implements ISubscribable {
      */
     private final Set<ErrorFile> errors = Sets.newHashSet();
 
-    public String getRequestId() {
-        return requestId;
+    public String getGroupId() {
+        return groupId;
     }
 
     public FlowItemStatus getState() {
@@ -78,17 +78,17 @@ public class FileRequestEvent implements ISubscribable {
 
     /**
      * Build a message event with the given state
-     * @param requestId
+     * @param groupId
      * @param type
      * @param state
      * @return {@link FileRequestEvent}
      */
-    public static FileRequestEvent build(String requestId, FileRequestType type, FlowItemStatus state) {
-        Assert.notNull(requestId, "Request Id is mandatory");
+    public static FileRequestEvent build(String groupId, FileRequestType type, FlowItemStatus state) {
+        Assert.notNull(groupId, "Request Id is mandatory");
         Assert.notNull(type, "Request type is mandatory");
         Assert.notNull(state, "Request state is mandatory");
         FileRequestEvent event = new FileRequestEvent();
-        event.requestId = requestId;
+        event.groupId = groupId;
         event.state = state;
         event.type = type;
         return event;
@@ -96,16 +96,16 @@ public class FileRequestEvent implements ISubscribable {
 
     /**
      * Build an error message event with the given {@link ErrorFile}s
-     * @param requestId
+     * @param groupId
      * @param type
      * @param errors
      * @return {@link FileRequestEvent}
      */
-    public static FileRequestEvent buildError(String requestId, FileRequestType type, Collection<ErrorFile> errors) {
-        Assert.notNull(requestId, "Request Id is mandatory");
+    public static FileRequestEvent buildError(String groupId, FileRequestType type, Collection<ErrorFile> errors) {
+        Assert.notNull(groupId, "Request Id is mandatory");
         Assert.notNull(type, "Request type is mandatory");
         FileRequestEvent event = new FileRequestEvent();
-        event.requestId = requestId;
+        event.groupId = groupId;
         event.state = FlowItemStatus.ERROR;
         event.errors.addAll(errors);
         event.type = type;
@@ -125,7 +125,7 @@ public class FileRequestEvent implements ISubscribable {
      */
     @Override
     public String toString() {
-        return "FileRequestEvent [" + (requestId != null ? "requestId=" + requestId + ", " : "")
+        return "FileRequestEvent [" + (groupId != null ? "groupId=" + groupId + ", " : "")
                 + (state != null ? "state=" + state + ", " : "") + (type != null ? "type=" + type + ", " : "")
                 + (errors != null ? "errors=" + errors : "") + "]";
     }

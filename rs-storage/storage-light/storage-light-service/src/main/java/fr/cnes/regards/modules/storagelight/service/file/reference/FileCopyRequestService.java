@@ -62,12 +62,12 @@ public class FileCopyRequestService {
     @Autowired
     private FileReferenceEventPublisher publisher;
 
-    public Optional<FileCopyRequest> create(FileCopyRequestDTO requestDto, String requestId) {
+    public Optional<FileCopyRequest> create(FileCopyRequestDTO requestDto, String groupId) {
         // Check a same request already exists
         Optional<FileCopyRequest> request = copyRepository.findOneByMetaInfoChecksumAndStorage(requestDto.getChecksum(),
                                                                                                requestDto.getStorage());
         if (request.isPresent()) {
-            return Optional.of(handleAlreadyExists(requestDto, request.get(), requestId));
+            return Optional.of(handleAlreadyExists(requestDto, request.get(), groupId));
         } else {
             // get file meta info to copy
             Set<FileReference> refs = fileRefService.search(requestDto.getChecksum());
@@ -80,7 +80,7 @@ public class FileCopyRequestService {
                                           DefaultRole.PROJECT_ADMIN);
             } else {
                 FileCopyRequest newRequest = copyRepository
-                        .save(new FileCopyRequest(requestId, refs.stream().findFirst().get().getMetaInfo(),
+                        .save(new FileCopyRequest(groupId, refs.stream().findFirst().get().getMetaInfo(),
                                 requestDto.getSubDirectory(), requestDto.getStorage()));
                 request = Optional.of(newRequest);
             }
@@ -89,10 +89,10 @@ public class FileCopyRequestService {
     }
 
     private FileCopyRequest handleAlreadyExists(FileCopyRequestDTO requestDto, FileCopyRequest request,
-            String newRequestId) {
+            String newGroupId) {
         if (request.getStatus() == FileRequestStatus.ERROR) {
             request.setStatus(FileRequestStatus.TODO);
-            request.setFileCacheRequestId(newRequestId);
+            request.setFileCacheGroupId(newGroupId);
             return update(request);
         }
         return request;
@@ -103,16 +103,16 @@ public class FileCopyRequestService {
         Page<FileCopyRequest> pageResp = null;
         OffsetDateTime expDate = OffsetDateTime.now().plusDays(1);
         do {
-            String fileCacheRequestId = UUID.randomUUID().toString();
+            String fileCacheGroupId = UUID.randomUUID().toString();
             Set<String> checksums = Sets.newHashSet();
             pageResp = copyRepository.findByStatus(status, page);
             for (FileCopyRequest request : pageResp.getContent()) {
                 checksums.add(request.getMetaInfo().getChecksum());
-                request.setFileCacheRequestId(fileCacheRequestId);
+                request.setFileCacheGroupId(fileCacheGroupId);
                 request.setStatus(FileRequestStatus.PENDING);
             }
             if (!checksums.isEmpty()) {
-                fileRefService.makeAvailable(checksums, expDate, fileCacheRequestId);
+                fileRefService.makeAvailable(checksums, expDate, fileCacheGroupId);
             }
             page = page.next();
         } while (pageResp.hasNext());
@@ -130,13 +130,13 @@ public class FileCopyRequestService {
         Optional<CacheFile> oCf = cacheService.getCacheFile(request.getMetaInfo().getChecksum());
         if (oCf.isPresent()) {
             // If it is present, check if an other availability request was used for this
-            if (!oCf.get().getRequestIds().stream().anyMatch(id -> !id.equals(request.getFileCacheRequestId()))) {
+            if (!oCf.get().getGroupIds().stream().anyMatch(id -> !id.equals(request.getFileCacheGroupId()))) {
                 // If not, delete the cache file
                 cacheService.delete(oCf.get());
             }
         }
 
-        publisher.copySuccess(newFileRef, successMessage, request.getRequestId());
+        publisher.copySuccess(newFileRef, successMessage, request.getGroupId());
     }
 
     public void handleError(FileCopyRequest request, String errorCause) {
@@ -162,16 +162,16 @@ public class FileCopyRequestService {
         switch (event.getType()) {
             case AVAILABLE:
             case AVAILABILITY_ERROR:
-                it = event.getRequestIds().iterator();
+                it = event.getGroupIds().iterator();
                 while (it.hasNext() && !req.isPresent()) {
-                    req = copyRepository.findByMetaInfoChecksumAndFileCacheRequestId(event.getChecksum(), it.next());
+                    req = copyRepository.findByMetaInfoChecksumAndFileCacheGroupId(event.getChecksum(), it.next());
                 }
                 break;
             case STORED:
             case STORE_ERROR:
-                it = event.getRequestIds().iterator();
+                it = event.getGroupIds().iterator();
                 while (it.hasNext() && !req.isPresent()) {
-                    req = copyRepository.findByMetaInfoChecksumAndFileStorageRequestId(event.getChecksum(), it.next());
+                    req = copyRepository.findByMetaInfoChecksumAndFileStorageGroupId(event.getChecksum(), it.next());
                 }
                 break;
             case DELETED_FOR_OWNER:

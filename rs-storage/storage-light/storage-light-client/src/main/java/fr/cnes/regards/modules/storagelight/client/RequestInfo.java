@@ -26,42 +26,32 @@ import java.util.UUID;
  */
 public class RequestInfo {
 
-    private String requestId;
+    private String groupId;
 
-    public String getRequestId() {
-        return requestId;
-    }
-
-    private void setRequestId(String requestId) {
-        this.requestId = requestId;
+    public String getGroupId() {
+        return groupId;
     }
 
     public static RequestInfo build() {
         RequestInfo ri = new RequestInfo();
-        ri.setRequestId(UUID.randomUUID().toString());
+        ri.groupId = UUID.randomUUID().toString();
         return ri;
     }
 
-    public static RequestInfo build(String requestId) {
+    public static RequestInfo build(String groupId) {
         RequestInfo ri = new RequestInfo();
-        ri.setRequestId(requestId);
+        ri.groupId = groupId;
         return ri;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + ((requestId == null) ? 0 : requestId.hashCode());
+        result = (prime * result) + ((groupId == null) ? 0 : groupId.hashCode());
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -74,11 +64,11 @@ public class RequestInfo {
             return false;
         }
         RequestInfo other = (RequestInfo) obj;
-        if (requestId == null) {
-            if (other.requestId != null) {
+        if (groupId == null) {
+            if (other.groupId != null) {
                 return false;
             }
-        } else if (!requestId.equals(other.requestId)) {
+        } else if (!groupId.equals(other.groupId)) {
             return false;
         }
         return true;

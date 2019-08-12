@@ -40,7 +40,7 @@ public class RetryFlowItem implements ISubscribable {
     /**
      * Request business identifier to retry
      */
-    private String requestId;
+    private String groupId;
 
     /**
      * Owners to retry errors requests
@@ -52,8 +52,8 @@ public class RetryFlowItem implements ISubscribable {
      */
     private FileRequestType type;
 
-    public String getRequestId() {
-        return requestId;
+    public String getGroupId() {
+        return groupId;
     }
 
     public FileRequestType getType() {
@@ -66,12 +66,12 @@ public class RetryFlowItem implements ISubscribable {
 
     /**
      * Build a storage retry request for the request business identifier provided
-     * @param requestId
+     * @param groupId
      * @return {@link RetryFlowItem}
      */
-    public static RetryFlowItem buildStorageRetry(String requestId) {
+    public static RetryFlowItem buildStorageRetry(String groupId) {
         RetryFlowItem request = new RetryFlowItem();
-        request.requestId = requestId;
+        request.groupId = groupId;
         request.type = FileRequestType.STORAGE;
         return request;
     }
@@ -90,12 +90,12 @@ public class RetryFlowItem implements ISubscribable {
 
     /**
      * Build an availability retry request for the given request business identifier
-     * @param requestId
+     * @param groupId
      * @return {@link RetryFlowItem}
      */
-    public static RetryFlowItem buildAvailabilityRetry(String requestId) {
+    public static RetryFlowItem buildAvailabilityRetry(String groupId) {
         RetryFlowItem request = new RetryFlowItem();
-        request.requestId = requestId;
+        request.groupId = groupId;
         request.type = FileRequestType.AVAILABILITY;
         return request;
     }

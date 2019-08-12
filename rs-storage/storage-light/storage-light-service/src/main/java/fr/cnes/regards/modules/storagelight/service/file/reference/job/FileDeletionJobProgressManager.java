@@ -74,12 +74,12 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
             fileDeletionRequest.setStatus(FileRequestStatus.ERROR);
             fileDeletionRequest.setErrorCause(cause);
             fileDeletionRequestService.updateFileDeletionRequest(fileDeletionRequest);
-            publisher.deletionError(fileRef, cause, fileDeletionRequest.getRequestId());
+            publisher.deletionError(fileRef, cause, fileDeletionRequest.getGroupId());
         } else {
             // Delete file deletion request
             fileDeletionRequestService.delete(fileDeletionRequest);
             // Delete file reference
-            fileReferenceService.delete(fileRef, fileDeletionRequest.getRequestId());
+            fileReferenceService.delete(fileRef, fileDeletionRequest.getGroupId());
             // NOTE : The file reference event is published by the fileReferenceService
             LOGGER.warn(String
                     .format("File %s from %s (checksum: %s) has been removed by force from referenced files. (File may still exists on storage).",
@@ -99,7 +99,7 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
         job.advanceCompletion();
         // Delete file deletion request
         fileDeletionRequestService.delete(fileDeletionRequest);
-        fileReferenceService.delete(fileRef, fileDeletionRequest.getRequestId());
+        fileReferenceService.delete(fileRef, fileDeletionRequest.getGroupId());
         // NOTE : the FileReferenceEvent is published by the fileReferenceService when the file is completely deleted
         handled.add(fileDeletionRequest);
     }

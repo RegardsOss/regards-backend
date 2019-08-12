@@ -48,14 +48,14 @@ public class ReferenceFlowItem implements ISubscribable {
     /**
      * Request business identifier
      */
-    private String requestId;
+    private String groupId;
 
-    public String getRequestId() {
-        return requestId;
+    public String getGroupId() {
+        return groupId;
     }
 
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
     public Set<FileReferenceRequestDTO> getFiles() {
@@ -65,33 +65,33 @@ public class ReferenceFlowItem implements ISubscribable {
     /**
      * Build a file reference request event for one file
      * @param file {@link FileReferenceRequestDTO} file to reference information
-     * @param requestId business request identifier to identify request in asynchronous response messages {@link FileRequestEvent}
+     * @param groupId business request identifier to identify request in asynchronous response messages {@link FileRequestEvent}
      * @return {@link ReferenceFlowItem}
      */
-    public static ReferenceFlowItem build(FileReferenceRequestDTO file, String requestId) {
+    public static ReferenceFlowItem build(FileReferenceRequestDTO file, String groupId) {
         ReferenceFlowItem item = new ReferenceFlowItem();
         item.files.add(file);
-        item.requestId = requestId;
+        item.groupId = groupId;
         return item;
     }
 
     /**
      * Build a file reference request event for a collection of files
      * @param files  {@link FileReferenceRequestDTO} files to reference information
-     * @param requestId business request identifier to identify request in asynchronous response messages {@link FileRequestEvent}
+     * @param groupId business request identifier to identify request in asynchronous response messages {@link FileRequestEvent}
      * @return {@link ReferenceFlowItem}
      */
-    public static ReferenceFlowItem build(Collection<FileReferenceRequestDTO> files, String requestId) {
+    public static ReferenceFlowItem build(Collection<FileReferenceRequestDTO> files, String groupId) {
         ReferenceFlowItem item = new ReferenceFlowItem();
         item.files.addAll(files);
-        item.requestId = requestId;
+        item.groupId = groupId;
         return item;
     }
 
     @Override
     public String toString() {
         return "FileReferenceFlowItem [" + (files != null ? "files=" + files + ", " : "")
-                + (requestId != null ? "requestId=" + requestId : "") + "]";
+                + (groupId != null ? "groupId=" + groupId : "") + "]";
     }
 
 }

@@ -16,18 +16,18 @@ public interface IFileCopyRequestRepository
 
     Page<FileCopyRequest> findByStatus(FileRequestStatus status, Pageable page);
 
-    Optional<FileCopyRequest> findByFileCacheRequestId(String fileCacheRequestId);
+    Optional<FileCopyRequest> findByFileCacheGroupId(String groupId);
 
-    Optional<FileCopyRequest> findByFileStorageRequestId(String storageRequestId);
+    Optional<FileCopyRequest> findByFileStorageGroupId(String groupId);
 
     Optional<FileCopyRequest> findOneByMetaInfoChecksumAndStorage(String checksum, String storage);
 
-    Optional<FileCopyRequest> findByMetaInfoChecksumAndFileCacheRequestId(String checksum, String requestId);
+    Optional<FileCopyRequest> findByMetaInfoChecksumAndFileCacheGroupId(String checksum, String groupId);
 
-    Optional<FileCopyRequest> findByMetaInfoChecksumAndFileStorageRequestId(String checksum, String requestId);
+    Optional<FileCopyRequest> findByMetaInfoChecksumAndFileStorageGroupId(String checksum, String groupId);
 
-    boolean existsByRequestId(String requestId);
+    boolean existsByGroupId(String groupId);
 
-    Set<FileCopyRequest> findByRequestId(String requestId);
+    Set<FileCopyRequest> findByGroupId(String groupId);
 
 }

@@ -48,11 +48,11 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
     @Query("update FileDeletionRequest fdr set fdr.status = :status where fdr.id = :id")
     int updateStatus(@Param("status") FileRequestStatus status, @Param("id") Long id);
 
-    boolean existsByRequestId(String requestId);
+    boolean existsByGroupId(String groupId);
 
-    Set<FileDeletionRequest> findByRequestId(String requestId);
+    Set<FileDeletionRequest> findByGroupId(String groupId);
 
-    Set<FileDeletionRequest> findByRequestIdAndStatus(String requestId, FileRequestStatus error);
+    Set<FileDeletionRequest> findByGroupIdAndStatus(String groupId, FileRequestStatus error);
 
     Page<FileDeletionRequest> findByStatus(FileRequestStatus status, Pageable page);
 

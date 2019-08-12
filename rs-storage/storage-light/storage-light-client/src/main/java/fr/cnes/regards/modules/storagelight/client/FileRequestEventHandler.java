@@ -72,7 +72,7 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
     }
 
     private void handle(FileRequestEvent event) {
-        RequestInfo info = RequestInfo.build(event.getRequestId());
+        RequestInfo info = RequestInfo.build(event.getGroupId());
         switch (event.getState()) {
             case DONE:
                 handleDone(event, info);

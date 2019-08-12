@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 @Entity
 @Table(name = "t_file_deletion_request",
         indexes = { @Index(name = "idx_file_deletion_request", columnList = "storage"),
-                @Index(name = "idx_file_deletion_request_id", columnList = "request_id") },
+                @Index(name = "idx_file_deletion_grp", columnList = "group_id") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_t_file_deletion_request_file_reference",
                 columnNames = { "file_reference" }) })
 public class FileDeletionRequest {
@@ -57,8 +57,11 @@ public class FileDeletionRequest {
     @GeneratedValue(generator = "fileDeletioneSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @Column(name = "request_id", nullable = false, length = 128)
-    private String requestId;
+    /**
+     * Business identifier to regroup file requests.
+     */
+    @Column(name = "group_id", nullable = false, length = 128)
+    private String groupId;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -83,7 +86,7 @@ public class FileDeletionRequest {
 
     }
 
-    public FileDeletionRequest(FileReference fileReference, String requestId) {
+    public FileDeletionRequest(FileReference fileReference, String groupId) {
         super();
 
         Assert.notNull(fileReference, "File reference to delete cannot be null");
@@ -92,11 +95,11 @@ public class FileDeletionRequest {
         Assert.notNull(fileReference.getLocation().getStorage(), "Unable to delete a file with no location storage.");
         this.fileReference = fileReference;
         this.storage = fileReference.getLocation().getStorage();
-        this.requestId = requestId;
+        this.groupId = groupId;
     }
 
-    public FileDeletionRequest(FileReference fileReference, boolean forceDelete, String requestId) {
-        this(fileReference, requestId);
+    public FileDeletionRequest(FileReference fileReference, boolean forceDelete, String groupId) {
+        this(fileReference, groupId);
         this.forceDelete = forceDelete;
     }
 
@@ -148,8 +151,8 @@ public class FileDeletionRequest {
         this.forceDelete = forceDelete;
     }
 
-    public String getRequestId() {
-        return requestId;
+    public String getGroupId() {
+        return groupId;
     }
 
     @Override

@@ -57,7 +57,7 @@ public class AvailabilityFlowItemHandler
         runtimeTenantResolver.forceTenant(wrapper.getTenant());
         try {
             AvailabilityFlowItem item = wrapper.getContent();
-            fileRefService.makeAvailable(item.getChecksums(), item.getExpirationDate(), item.getRequestId());
+            fileRefService.makeAvailable(item.getChecksums(), item.getExpirationDate(), item.getGroupId());
         } finally {
             runtimeTenantResolver.clearTenant();
         }

@@ -142,11 +142,11 @@ public class FileStorageRequestService {
 
     /**
      * Update all {@link FileStorageRequest} in error status to change status to todo.
-     * @param requestId request business identifier to retry
+     * @param groupId request business identifier to retry
      */
-    public void retryRequest(String requestId) {
-        for (FileStorageRequest request : fileStorageRequestRepo.findByRequestIdsAndStatus(requestId,
-                                                                                           FileRequestStatus.ERROR)) {
+    public void retryRequest(String groupId) {
+        for (FileStorageRequest request : fileStorageRequestRepo.findByGroupIdsAndStatus(groupId,
+                                                                                         FileRequestStatus.ERROR)) {
             request.setStatus(FileRequestStatus.TODO);
             request.setErrorCause(null);
             update(request);
@@ -154,8 +154,7 @@ public class FileStorageRequestService {
     }
 
     /**
-     * Update all {@link FileStorageRequest} in error status to change status to todo.
-     * @param requestId
+     * Update all {@link FileStorageRequest} in error status to change status to todo for the given owners.
      */
     public void retry(Collection<String> owners) {
         Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by(Direction.ASC, "id"));
@@ -269,23 +268,23 @@ public class FileStorageRequestService {
      * @param originUrl file origin location
      * @param storage storage destination location
      * @param storageSubDirectory Optioanl subdirectory where to store file in the storage destination location
-     * @param requestId Business identifier of the deletion request
+     * @param groupId Business identifier of the deletion request
      */
     public Optional<FileStorageRequest> create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
-            URL originUrl, String storage, Optional<String> storageSubDirectory, String requestId) {
-        return create(owners, fileMetaInfo, originUrl, storage, storageSubDirectory, FileRequestStatus.TODO, requestId);
+            URL originUrl, String storage, Optional<String> storageSubDirectory, String groupId) {
+        return create(owners, fileMetaInfo, originUrl, storage, storageSubDirectory, FileRequestStatus.TODO, groupId);
     }
 
     public Optional<FileStorageRequest> create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             URL originUrl, String storage, Optional<String> storageSubDirectory, FileRequestStatus status,
-            String requestId) {
+            String groupId) {
         // Check if file storage request already exists
         Optional<FileStorageRequest> oFileRefRequest = search(storage, fileMetaInfo.getChecksum());
         if (oFileRefRequest.isPresent()) {
-            handleAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owners, requestId);
+            handleAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owners, groupId);
         } else {
             FileStorageRequest fileStorageRequest = new FileStorageRequest(owners, fileMetaInfo, originUrl, storage,
-                    storageSubDirectory, requestId);
+                    storageSubDirectory, groupId);
             fileStorageRequest.setStatus(status);
             if (!storageHandler.getConfiguredStorages().contains(storage)) {
                 // The storage destination is unknown, we can already set the request in error status
@@ -308,11 +307,12 @@ public class FileStorageRequestService {
      * @param fileStorageRequest
      * @param newMetaInfo
      * @param owners
+     * @param newGroupId business requests group identifier
      */
     private void handleAlreadyExists(FileStorageRequest fileStorageRequest, FileReferenceMetaInfo newMetaInfo,
-            Collection<String> owners, String newRequestId) {
+            Collection<String> owners, String newGroupId) {
         fileStorageRequest.getOwners().addAll(owners);
-        fileStorageRequest.getRequestIds().add(newRequestId);
+        fileStorageRequest.getGroupIds().add(newGroupId);
         if (newMetaInfo.equals(fileStorageRequest.getMetaInfo())) {
             LOGGER.warn("Existing file meta information differs from new meta information. Previous ones are maintained");
         }
@@ -365,7 +365,7 @@ public class FileStorageRequestService {
         LOGGER.error(fileStorageRequest.getErrorCause());
         eventPublisher.storeError(fileStorageRequest.getMetaInfo().getChecksum(), fileStorageRequest.getOwners(),
                                   fileStorageRequest.getStorage(), fileStorageRequest.getErrorCause(),
-                                  fileStorageRequest.getRequestIds());
+                                  fileStorageRequest.getGroupIds());
     }
 
 }

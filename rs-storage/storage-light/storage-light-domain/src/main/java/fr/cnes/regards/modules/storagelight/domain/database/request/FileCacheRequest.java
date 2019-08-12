@@ -46,7 +46,10 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
  * @author Sébastien Binda
  */
 @Entity
-@Table(name = "t_file_cache_request", indexes = { @Index(name = "idx_file_cache_request", columnList = "request_id") },
+@Table(name = "t_file_cache_request",
+        indexes = { @Index(name = "idx_file_cache_request_grp", columnList = "group_id"),
+                @Index(name = "idx_file_cache_request_cs", columnList = "checksum"),
+                @Index(name = "idx_file_cache_request_storage", columnList = "storage") },
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_t_file_cache_request_checksum", columnNames = { "checksum" }) })
 public class FileCacheRequest {
@@ -56,8 +59,11 @@ public class FileCacheRequest {
     @GeneratedValue(generator = "fileCacheRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @Column(name = "request_id", nullable = false, length = 128)
-    private String requestId;
+    /**
+     * Business identifier to regroup file requests.
+     */
+    @Column(name = "group_id", nullable = false, length = 128)
+    private String groupId;
 
     @ManyToOne
     @JoinColumn(name = "file_ref_id", nullable = false)
@@ -87,7 +93,7 @@ public class FileCacheRequest {
     private String errorCause;
 
     public FileCacheRequest(FileReference fileReference, String destinationPath, OffsetDateTime expirationDate,
-            String requestId) {
+            String groupId) {
         super();
         this.fileReference = fileReference;
         this.storage = fileReference.getLocation().getStorage();
@@ -95,7 +101,7 @@ public class FileCacheRequest {
         this.checksum = fileReference.getMetaInfo().getChecksum();
         this.destinationPath = destinationPath;
         this.expirationDate = expirationDate;
-        this.requestId = requestId;
+        this.groupId = groupId;
     }
 
     public FileCacheRequest() {
@@ -150,8 +156,8 @@ public class FileCacheRequest {
         this.expirationDate = expirationDate;
     }
 
-    public String getRequestId() {
-        return requestId;
+    public String getGroupId() {
+        return groupId;
     }
 
 }

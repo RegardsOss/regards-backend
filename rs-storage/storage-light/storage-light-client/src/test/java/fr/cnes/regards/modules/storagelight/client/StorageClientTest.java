@@ -393,7 +393,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         Thread.sleep(15_000);
 
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
-        Assert.assertTrue(String.format("Request should be successful for request id %s", info.getRequestId()),
+        Assert.assertTrue(String.format("Request should be successful for request id %s", info.getGroupId()),
                           listener.getSuccess().contains(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
     }

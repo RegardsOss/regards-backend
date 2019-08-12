@@ -48,14 +48,14 @@ public class StorageFlowItem implements ISubscribable {
     /**
      * Request business identifier
      */
-    private String requestId;
+    private String groupId;
 
-    public String getRequestId() {
-        return requestId;
+    public String getGroupId() {
+        return groupId;
     }
 
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
     public Set<FileStorageRequestDTO> getFiles() {
@@ -65,33 +65,33 @@ public class StorageFlowItem implements ISubscribable {
     /**
      * Build a storage request message for one file
      * @param file
-     * @param requestId
+     * @param groupId
      * @return {@link StorageFlowItem}
      */
-    public static StorageFlowItem build(FileStorageRequestDTO file, String requestId) {
+    public static StorageFlowItem build(FileStorageRequestDTO file, String groupId) {
         StorageFlowItem item = new StorageFlowItem();
         item.files.add(file);
-        item.requestId = requestId;
+        item.groupId = groupId;
         return item;
     }
 
     /**
      * Build a storage request message fr many files
      * @param files
-     * @param requestId
+     * @param groupId
      * @return {@link StorageFlowItem}
      */
-    public static StorageFlowItem build(Collection<FileStorageRequestDTO> files, String requestId) {
+    public static StorageFlowItem build(Collection<FileStorageRequestDTO> files, String groupId) {
         StorageFlowItem item = new StorageFlowItem();
         item.files.addAll(files);
-        item.requestId = requestId;
+        item.groupId = groupId;
         return item;
     }
 
     @Override
     public String toString() {
         return "FileStorageFlowItem [" + (files != null ? "files=" + files + ", " : "")
-                + (requestId != null ? "requestId=" + requestId : "") + "]";
+                + (groupId != null ? "groupId=" + groupId : "") + "]";
     }
 
 }

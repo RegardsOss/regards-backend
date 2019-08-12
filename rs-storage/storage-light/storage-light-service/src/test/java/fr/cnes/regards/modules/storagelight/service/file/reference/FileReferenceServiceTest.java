@@ -524,23 +524,23 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     @Test
     public void restore_cacheFull() throws Exception {
         // Simulate cache full 80% 8 file * 1ko (cache size limit 10ko)
-        String cacheRequestId = UUID.randomUUID().toString();
+        String cacheRequestsGroupId = UUID.randomUUID().toString();
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1), cacheRequestId);
+                             OffsetDateTime.now().plusDays(1), cacheRequestsGroupId);
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1), cacheRequestId);
+                             OffsetDateTime.now().plusDays(1), cacheRequestsGroupId);
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1), cacheRequestId);
+                             OffsetDateTime.now().plusDays(1), cacheRequestsGroupId);
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1), cacheRequestId);
+                             OffsetDateTime.now().plusDays(1), cacheRequestsGroupId);
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1), cacheRequestId);
+                             OffsetDateTime.now().plusDays(1), cacheRequestsGroupId);
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1), cacheRequestId);
+                             OffsetDateTime.now().plusDays(1), cacheRequestsGroupId);
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1), cacheRequestId);
+                             OffsetDateTime.now().plusDays(1), cacheRequestsGroupId);
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().minusDays(1), cacheRequestId);
+                             OffsetDateTime.now().minusDays(1), cacheRequestsGroupId);
 
         // Reference 5 files of 1ko each
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test");

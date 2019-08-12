@@ -88,7 +88,7 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
 
     public void handleSync(TenantWrapper<CopyFlowItem> wrapper) {
         CopyFlowItem item = wrapper.getContent();
-        fileRefService.copy(item.getFiles(), item.getRequestId());
+        fileRefService.copy(item.getFiles(), item.getGroupId());
     }
 
     /**

@@ -54,55 +54,55 @@ public class StorageClient implements IStorageClient {
     @Override
     public RequestInfo copy(FileCopyRequestDTO file) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(CopyFlowItem.build(file, requestInfo.getRequestId()));
+        publisher.publish(CopyFlowItem.build(file, requestInfo.getGroupId()));
         return requestInfo;
     }
 
     @Override
     public RequestInfo copy(Collection<FileCopyRequestDTO> files) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(CopyFlowItem.build(files, requestInfo.getRequestId()));
+        publisher.publish(CopyFlowItem.build(files, requestInfo.getGroupId()));
         return requestInfo;
     }
 
     @Override
     public RequestInfo delete(FileDeletionRequestDTO file) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(DeletionFlowItem.build(file, requestInfo.getRequestId()));
+        publisher.publish(DeletionFlowItem.build(file, requestInfo.getGroupId()));
         return requestInfo;
     }
 
     @Override
     public RequestInfo delete(Collection<FileDeletionRequestDTO> files) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(DeletionFlowItem.build(files, requestInfo.getRequestId()));
+        publisher.publish(DeletionFlowItem.build(files, requestInfo.getGroupId()));
         return requestInfo;
     }
 
     @Override
     public RequestInfo makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(AvailabilityFlowItem.build(checksums, expirationDate, requestInfo.getRequestId()));
+        publisher.publish(AvailabilityFlowItem.build(checksums, expirationDate, requestInfo.getGroupId()));
         return requestInfo;
     }
 
     @Override
     public RequestInfo reference(FileReferenceRequestDTO file) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(ReferenceFlowItem.build(file, requestInfo.getRequestId()));
+        publisher.publish(ReferenceFlowItem.build(file, requestInfo.getGroupId()));
         return requestInfo;
     }
 
     @Override
     public RequestInfo reference(Collection<FileReferenceRequestDTO> files) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(ReferenceFlowItem.build(files, requestInfo.getRequestId()));
+        publisher.publish(ReferenceFlowItem.build(files, requestInfo.getGroupId()));
         return requestInfo;
     }
 
     @Override
     public void storeRetry(RequestInfo requestInfo) {
-        publisher.publish(RetryFlowItem.buildStorageRetry(requestInfo.getRequestId()));
+        publisher.publish(RetryFlowItem.buildStorageRetry(requestInfo.getGroupId()));
     }
 
     @Override
@@ -112,20 +112,20 @@ public class StorageClient implements IStorageClient {
 
     @Override
     public void availabilityRetry(RequestInfo requestInfo) {
-        publisher.publish(RetryFlowItem.buildAvailabilityRetry(requestInfo.getRequestId()));
+        publisher.publish(RetryFlowItem.buildAvailabilityRetry(requestInfo.getGroupId()));
     }
 
     @Override
     public RequestInfo store(FileStorageRequestDTO file) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(StorageFlowItem.build(file, requestInfo.getRequestId()));
+        publisher.publish(StorageFlowItem.build(file, requestInfo.getGroupId()));
         return requestInfo;
     }
 
     @Override
     public RequestInfo store(Collection<FileStorageRequestDTO> files) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(StorageFlowItem.build(files, requestInfo.getRequestId()));
+        publisher.publish(StorageFlowItem.build(files, requestInfo.getGroupId()));
         return requestInfo;
     }
 }

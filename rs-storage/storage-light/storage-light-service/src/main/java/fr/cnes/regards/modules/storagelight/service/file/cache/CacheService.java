@@ -121,11 +121,11 @@ public class CacheService {
      * @param expirationDate
      * @throws EntityAlreadyExistsException
      */
-    public void addFile(String checksum, Long fileSize, URL location, OffsetDateTime expirationDate, String requestId) {
+    public void addFile(String checksum, Long fileSize, URL location, OffsetDateTime expirationDate, String groupId) {
         Optional<CacheFile> oCf = search(checksum);
         CacheFile cachedFile;
         if (!oCf.isPresent()) {
-            cachedFile = new CacheFile(checksum, fileSize, location, expirationDate, requestId);
+            cachedFile = new CacheFile(checksum, fileSize, location, expirationDate, groupId);
         } else {
             cachedFile = oCf.get();
             if (expirationDate.isAfter(cachedFile.getExpirationDate())) {
@@ -236,17 +236,17 @@ public class CacheService {
     /**
      * Retrieve all {@link FileReference}s available in cache.
      * @param fileReferences
-     * @param requestId new availability request businness identifier. This id is added to the already existing cache files.
+     * @param groupId new availability request business identifier. This id is added to the already existing cache files.
      * @return {@link FileReference}s available
      */
-    public Set<FileReference> getFilesAvailableInCache(Set<FileReference> fileReferences, String requestId) {
+    public Set<FileReference> getFilesAvailableInCache(Set<FileReference> fileReferences, String groupId) {
         Set<FileReference> availables = Sets.newHashSet();
         Set<String> checksums = fileReferences.stream().map(f -> f.getMetaInfo().getChecksum())
                 .collect(Collectors.toSet());
         Set<CacheFile> cacheFiles = cachedFileRepository.findAllByChecksumIn(checksums);
         Set<String> cacheFileChecksums = cacheFiles.stream().map(cf -> {
             // Add new request id to the cache file
-            cf.addRequestId(requestId);
+            cf.addGroupId(groupId);
             cachedFileRepository.save(cf);
             return cf.getChecksum();
         }).collect(Collectors.toSet());
