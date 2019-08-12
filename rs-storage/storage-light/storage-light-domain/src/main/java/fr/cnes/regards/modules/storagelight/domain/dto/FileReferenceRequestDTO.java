@@ -22,7 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
 
 /**
  * Information about a file for a reference request.<br/>
@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
  *  <li> Owner of the file who ask for deletion </li>
  *  <li> Url to access file in the storage location </li>
  * </ul>
- * See {@link FileReferenceFlowItem} for more information about reference request process.
+ * See {@link ReferenceFlowItem} for more information about reference request process.
  *
  * @author Sébastien Binda
  */

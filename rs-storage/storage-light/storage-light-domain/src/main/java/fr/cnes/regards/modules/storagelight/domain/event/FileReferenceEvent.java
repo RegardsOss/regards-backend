@@ -12,9 +12,9 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
-import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
-import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 
 /**
  * Bus message event sent when a {@link FileReference} is created, modified or deleted.
@@ -51,7 +51,7 @@ public class FileReferenceEvent implements ISubscribable {
 
     /**
      * Business request identifier associated to the {@link FileReference}. Those identifiers are the identifier of file request.
-     * See {@link FileStorageFlowItem}, {@link DeleteFileRefFlowItem} and {@link FileReferenceFlowItem} for more information about
+     * See {@link StorageFlowItem}, {@link DeletionFlowItem} and {@link ReferenceFlowItem} for more information about
      * file requests.
      */
     private final Set<String> requestIds = Sets.newHashSet();

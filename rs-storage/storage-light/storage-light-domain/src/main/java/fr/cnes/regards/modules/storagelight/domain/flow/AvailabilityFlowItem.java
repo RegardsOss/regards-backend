@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
  * @author Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class AvailabilityFileRefFlowItem implements ISubscribable {
+public class AvailabilityFlowItem implements ISubscribable {
 
     /**
      * Checksums of files to make available for download
@@ -68,11 +68,11 @@ public class AvailabilityFileRefFlowItem implements ISubscribable {
      * @param checksums
      * @param expirationDate
      * @param requestId
-     * @return {@link AvailabilityFileRefFlowItem}
+     * @return {@link AvailabilityFlowItem}
      */
-    public static AvailabilityFileRefFlowItem build(Collection<String> checksums, OffsetDateTime expirationDate,
+    public static AvailabilityFlowItem build(Collection<String> checksums, OffsetDateTime expirationDate,
             String requestId) {
-        AvailabilityFileRefFlowItem item = new AvailabilityFileRefFlowItem();
+        AvailabilityFlowItem item = new AvailabilityFlowItem();
         Assert.notNull(checksums, "Checksums is mandatory");
         Assert.notEmpty(checksums, "Checksums is mandatory");
         Assert.notNull(expirationDate, "Expiration date is mandatory");

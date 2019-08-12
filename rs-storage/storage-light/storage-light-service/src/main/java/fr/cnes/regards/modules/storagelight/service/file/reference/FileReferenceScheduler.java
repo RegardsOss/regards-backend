@@ -63,6 +63,9 @@ public class FileReferenceScheduler {
     @Autowired
     private FileCacheRequestService fileCacheRequestService;
 
+    @Autowired
+    private FileCopyRequestService FileCopyRequestService;
+
     /**
      * Number of created AIPs processed on each iteration by project
      */
@@ -104,13 +107,13 @@ public class FileReferenceScheduler {
             }
         }
     }
-    
+
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
     public void handleFileCopyRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet());
+                FileCopyRequestService.scheduleAvailabilityRequests(FileRequestStatus.TODO);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

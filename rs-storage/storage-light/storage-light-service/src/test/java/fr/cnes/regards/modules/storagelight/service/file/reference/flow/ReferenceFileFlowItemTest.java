@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
-import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
@@ -58,7 +58,7 @@ public class ReferenceFileFlowItemTest extends AbstractFileReferenceTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceFileFlowItemTest.class);
 
     @Autowired
-    private ReferenceFileFlowItemHandler handler;
+    private ReferenceFlowItemHandler handler;
 
     @Autowired
     FileReferenceService fileRefService;
@@ -82,11 +82,11 @@ public class ReferenceFileFlowItemTest extends AbstractFileReferenceTest {
         String checksum = UUID.randomUUID().toString();
         String storage = "storage";
         // Create a new bus message File reference request
-        FileReferenceFlowItem item = FileReferenceFlowItem
+        ReferenceFlowItem item = ReferenceFlowItem
                 .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
                                                      "owner-test", storage, "file://storage/location/file.name"),
                        UUID.randomUUID().toString());
-        TenantWrapper<FileReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<ReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         long start = System.currentTimeMillis();
         // Publish request
         handler.handleSync(wrapper);
@@ -116,11 +116,11 @@ public class ReferenceFileFlowItemTest extends AbstractFileReferenceTest {
         FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL);
         String storage = fileRef.getLocation().getStorage();
         // Create a new bus message File reference request
-        FileReferenceFlowItem item = FileReferenceFlowItem
+        ReferenceFlowItem item = ReferenceFlowItem
                 .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
                                                      "owner-test", storage, "file://storage/location/file.name"),
                        UUID.randomUUID().toString());
-        TenantWrapper<FileReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<ReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -147,11 +147,11 @@ public class ReferenceFileFlowItemTest extends AbstractFileReferenceTest {
         String storage = "aStorage";
         this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL);
         // Create a new bus message File reference request
-        FileReferenceFlowItem item = FileReferenceFlowItem
+        ReferenceFlowItem item = ReferenceFlowItem
                 .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
                                                      "owner-test", storage, "file://storage/location/file.name"),
                        UUID.randomUUID().toString());
-        TenantWrapper<FileReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<ReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());

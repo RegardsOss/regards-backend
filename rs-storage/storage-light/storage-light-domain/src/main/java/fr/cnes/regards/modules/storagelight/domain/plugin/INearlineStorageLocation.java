@@ -19,13 +19,13 @@
 package fr.cnes.regards.modules.storagelight.domain.plugin;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
 
 /**
  * Plugin to handle NEARLINE storage location. <br/>
  * A nearline storage location is a lcoation where files cannot be accessed synchronously.<br/>
  * Files need to be restored in cache before they can be access for download.<br/>
- * See {@link AvailabilityFileRefFlowItem} for more information.
+ * See {@link AvailabilityFlowItem} for more information.
  *
  * @author Sébastien Binda
  */

@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
@@ -35,8 +35,8 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileReference
  *
  */
 @Component
-public class AvailabilityFileFlowItemHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<AvailabilityFileRefFlowItem> {
+public class AvailabilityFlowItemHandler
+        implements ApplicationListener<ApplicationReadyEvent>, IHandler<AvailabilityFlowItem> {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -49,14 +49,14 @@ public class AvailabilityFileFlowItemHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(AvailabilityFileRefFlowItem.class, this);
+        subscriber.subscribeTo(AvailabilityFlowItem.class, this);
     }
 
     @Override
-    public void handle(TenantWrapper<AvailabilityFileRefFlowItem> wrapper) {
+    public void handle(TenantWrapper<AvailabilityFlowItem> wrapper) {
         runtimeTenantResolver.forceTenant(wrapper.getTenant());
         try {
-            AvailabilityFileRefFlowItem item = wrapper.getContent();
+            AvailabilityFlowItem item = wrapper.getContent();
             fileRefService.makeAvailable(item.getChecksums(), item.getExpirationDate(), item.getRequestId());
         } finally {
             runtimeTenantResolver.clearTenant();

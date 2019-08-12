@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storagelight.domain.dto;
 
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 
 /**
  * Information about a file for a deletion request.<br/>
@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
  *  <li> Storage location where to copy the file</li>
  *  <li> Owner of the file who ask for deletion </li>
  * </ul>
- * See {@link DeleteFileRefFlowItem} for more information about deletion request process.
+ * See {@link DeletionFlowItem} for more information about deletion request process.
  *
  * @author Sébastien Binda
  */

@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
-import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.RetryFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
@@ -62,7 +62,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRe
 public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReferenceTest {
 
     @Autowired
-    private AvailabilityFileFlowItemHandler handler;
+    private AvailabilityFlowItemHandler handler;
 
     @Autowired
     private RetryFlowItemHandler retryHandler;
@@ -105,7 +105,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
                                                 file5.getMetaInfo().getChecksum(), file6.getMetaInfo().getChecksum(),
                                                 file7.getMetaInfo().getChecksum(), checksum);
         Mockito.clearInvocations(publisher);
-        AvailabilityFileRefFlowItem request = AvailabilityFileRefFlowItem
+        AvailabilityFlowItem request = AvailabilityFlowItem
                 .build(checksums, OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
         handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
@@ -159,7 +159,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
                              OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
         // Simulate availability request on this file
         Mockito.clearInvocations(publisher);
-        AvailabilityFileRefFlowItem request = AvailabilityFileRefFlowItem
+        AvailabilityFlowItem request = AvailabilityFlowItem
                 .build(Sets.newHashSet(file1.getMetaInfo().getChecksum()), OffsetDateTime.now().plusDays(2),
                        UUID.randomUUID().toString());
         handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
@@ -191,7 +191,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
                                                 file3.getMetaInfo().getChecksum(), file4.getMetaInfo().getChecksum());
 
         String requestId = UUID.randomUUID().toString();
-        AvailabilityFileRefFlowItem request = AvailabilityFileRefFlowItem
+        AvailabilityFlowItem request = AvailabilityFlowItem
                 .build(checksums, OffsetDateTime.now().plusDays(1), requestId);
         handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());

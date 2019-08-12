@@ -26,30 +26,27 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
 
 /**
- * Flow message to request file(s) reference deletion.<br/>
- * A deletion request is always a success as the only action is to remove the requesting owner to the file(s)<br/>
- * When a file does not belongs to any owner anymore, then a deletion request is made for stored files (ONLINE and NEARLINE).<br/>
- * <br/>
+ * Flow message to request a new file reference.<br/>
  * See {@link FileRequestEvent} for asynchronous responses when request is finished.<br/>
  * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
  *
  * @author Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
-public class DeleteFileRefFlowItem implements ISubscribable {
+public class ReferenceFlowItem implements ISubscribable {
 
     /**
-     * Files to delete information
+     * Information about files to reference.
      */
-    private final Set<FileDeletionRequestDTO> files = Sets.newHashSet();
+    private final Set<FileReferenceRequestDTO> files = Sets.newHashSet();
 
     /**
-     * Business request identifier
+     * Request business identifier
      */
     private String requestId;
 
@@ -61,31 +58,31 @@ public class DeleteFileRefFlowItem implements ISubscribable {
         this.requestId = requestId;
     }
 
-    public Set<FileDeletionRequestDTO> getFiles() {
+    public Set<FileReferenceRequestDTO> getFiles() {
         return files;
     }
 
     /**
-     * Build a deletion request for one {@link FileDeletionRequestDTO} file.
-     * @param file {@link FileDeletionRequestDTO} to remove information
-     * @param requestId business request identifier
-     * @return {@link DeleteFileRefFlowItem}
+     * Build a file reference request event for one file
+     * @param file {@link FileReferenceRequestDTO} file to reference information
+     * @param requestId business request identifier to identify request in asynchronous response messages {@link FileRequestEvent}
+     * @return {@link ReferenceFlowItem}
      */
-    public static DeleteFileRefFlowItem build(FileDeletionRequestDTO file, String requestId) {
-        DeleteFileRefFlowItem item = new DeleteFileRefFlowItem();
+    public static ReferenceFlowItem build(FileReferenceRequestDTO file, String requestId) {
+        ReferenceFlowItem item = new ReferenceFlowItem();
         item.files.add(file);
         item.requestId = requestId;
         return item;
     }
 
     /**
-     * Build a deletion request for many {@link FileDeletionRequestDTO} files.
-     * @param files {@link FileDeletionRequestDTO}s to remove information
-     * @param requestId business request identifier
-     * @return {@link DeleteFileRefFlowItem}
+     * Build a file reference request event for a collection of files
+     * @param files  {@link FileReferenceRequestDTO} files to reference information
+     * @param requestId business request identifier to identify request in asynchronous response messages {@link FileRequestEvent}
+     * @return {@link ReferenceFlowItem}
      */
-    public static DeleteFileRefFlowItem build(Collection<FileDeletionRequestDTO> files, String requestId) {
-        DeleteFileRefFlowItem item = new DeleteFileRefFlowItem();
+    public static ReferenceFlowItem build(Collection<FileReferenceRequestDTO> files, String requestId) {
+        ReferenceFlowItem item = new ReferenceFlowItem();
         item.files.addAll(files);
         item.requestId = requestId;
         return item;
@@ -93,7 +90,7 @@ public class DeleteFileRefFlowItem implements ISubscribable {
 
     @Override
     public String toString() {
-        return "DeleteFileRefFlowItem [" + (files != null ? "files=" + files + ", " : "")
+        return "FileReferenceFlowItem [" + (files != null ? "files=" + files + ", " : "")
                 + (requestId != null ? "requestId=" + requestId : "") + "]";
     }
 

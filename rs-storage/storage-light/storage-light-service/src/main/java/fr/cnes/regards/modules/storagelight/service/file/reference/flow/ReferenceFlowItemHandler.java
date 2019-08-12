@@ -38,26 +38,25 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
-import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
- * Handler to handle {@link DeleteFileRefFlowItem} AMQP messages.<br/>
- * Those messages are sent to delete a file reference for one owner.
+ * Handler to handle {@link ReferenceFlowItem} AMQP messages.<br/>
+ * Those messages are sent to create new file reference.
  *
  * @author Sébastien Binda
  */
 @Component
-public class DeleteFileFlowHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<DeleteFileRefFlowItem> {
+public class ReferenceFlowItemHandler
+        implements ApplicationListener<ApplicationReadyEvent>, IHandler<ReferenceFlowItem> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeleteFileFlowHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceFlowItemHandler.class);
 
     /**
      * Bulk size limit to handle messages
      */
-    private static final int BULK_SIZE = 100;
+    private static final int BULK_SIZE = 1_000;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -68,30 +67,42 @@ public class DeleteFileFlowHandler
     @Autowired
     private FileReferenceService fileRefService;
 
-    private final Map<String, ConcurrentLinkedQueue<DeleteFileRefFlowItem>> items = new ConcurrentHashMap<>();
+    private final Map<String, ConcurrentLinkedQueue<ReferenceFlowItem>> items = new ConcurrentHashMap<>();
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(DeleteFileRefFlowItem.class, this);
+        subscriber.subscribeTo(ReferenceFlowItem.class, this);
     }
 
     /**
      * Only add the message in the list of messages handled by bulk in the scheduled method
-     * @param wrapper containing {@link FileReferenceFlowItem} to handle
+     * @param wrapper containing {@link ReferenceFlowItem} to handle
      */
     @Override
-    public void handle(TenantWrapper<DeleteFileRefFlowItem> wrapper) {
+    public void handle(TenantWrapper<ReferenceFlowItem> wrapper) {
         String tenant = wrapper.getTenant();
-        DeleteFileRefFlowItem item = wrapper.getContent();
+        ReferenceFlowItem item = wrapper.getContent();
+        runtimeTenantResolver.forceTenant(tenant);
+        LOGGER.info("[EVENT] New FileReferenceFlowItem received -- {}", wrapper.getContent().toString());
         if (!items.containsKey(tenant)) {
             items.put(tenant, new ConcurrentLinkedQueue<>());
         }
         items.get(tenant).add(item);
     }
 
-    public void handleSync(TenantWrapper<DeleteFileRefFlowItem> wrapper) {
-        DeleteFileRefFlowItem item = wrapper.getContent();
-        fileRefService.delete(Lists.newArrayList(item));
+    /**
+     * Method for tests to handle synchronously one message
+     * @param wrapper containing {@link ReferenceFlowItem} to handle
+     */
+    public void handleSync(TenantWrapper<ReferenceFlowItem> wrapper) {
+        String tenant = wrapper.getTenant();
+        ReferenceFlowItem item = wrapper.getContent();
+        runtimeTenantResolver.forceTenant(tenant);
+        try {
+            fileRefService.referenceFiles(Lists.newArrayList(item));
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
     }
 
     /**
@@ -99,15 +110,15 @@ public class DeleteFileFlowHandler
      */
     @Scheduled(fixedDelay = 1_000)
     public void handleQueue() {
-        for (Map.Entry<String, ConcurrentLinkedQueue<DeleteFileRefFlowItem>> entry : items.entrySet()) {
+        for (Map.Entry<String, ConcurrentLinkedQueue<ReferenceFlowItem>> entry : items.entrySet()) {
             try {
                 runtimeTenantResolver.forceTenant(entry.getKey());
-                ConcurrentLinkedQueue<DeleteFileRefFlowItem> tenantItems = entry.getValue();
-                List<DeleteFileRefFlowItem> list = new ArrayList<>();
+                ConcurrentLinkedQueue<ReferenceFlowItem> tenantItems = entry.getValue();
+                List<ReferenceFlowItem> list = new ArrayList<>();
                 do {
                     // Build a 10_000 (at most) documents bulk request
                     for (int i = 0; i < BULK_SIZE; i++) {
-                        DeleteFileRefFlowItem doc = tenantItems.poll();
+                        ReferenceFlowItem doc = tenantItems.poll();
                         if (doc == null) {
                             if (list.isEmpty()) {
                                 // nothing to do
@@ -119,10 +130,10 @@ public class DeleteFileFlowHandler
                             list.add(doc);
                         }
                     }
-                    LOGGER.info("Bulk saving {} DeleteFileRefFlowItem...", list.size());
+                    LOGGER.info("Bulk saving {} AddFileRefFlowItem...", list.size());
                     long start = System.currentTimeMillis();
-                    fileRefService.delete(list);
-                    LOGGER.info("...{} DeleteFileRefFlowItem handled in {} ms", list.size(),
+                    fileRefService.referenceFiles(list);
+                    LOGGER.info("...{} AddFileRefFlowItem handled in {} ms", list.size(),
                                 System.currentTimeMillis() - start);
                     list.clear();
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
@@ -131,5 +142,4 @@ public class DeleteFileFlowHandler
             }
         }
     }
-
 }

@@ -32,31 +32,29 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.CopyFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
- * Handler to handle {@link FileReferenceFlowItem} AMQP messages.<br/>
- * Those messages are sent to create new file reference.
+ * Handler to handle {@link CopyFlowItem} AMQP messages.<br/>
+ * Those messages are sent to copy a file reference to a given storage location
  *
  * @author Sébastien Binda
  */
 @Component
-public class ReferenceFileFlowItemHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileReferenceFlowItem> {
+public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEvent>, IHandler<CopyFlowItem> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceFileFlowItemHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CopyFlowHandler.class);
 
     /**
      * Bulk size limit to handle messages
      */
-    private static final int BULK_SIZE = 1_000;
+    private static final int BULK_SIZE = 100;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -67,42 +65,30 @@ public class ReferenceFileFlowItemHandler
     @Autowired
     private FileReferenceService fileRefService;
 
-    private final Map<String, ConcurrentLinkedQueue<FileReferenceFlowItem>> items = new ConcurrentHashMap<>();
+    private final Map<String, ConcurrentLinkedQueue<CopyFlowItem>> items = new ConcurrentHashMap<>();
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(FileReferenceFlowItem.class, this);
+        subscriber.subscribeTo(CopyFlowItem.class, this);
     }
 
     /**
      * Only add the message in the list of messages handled by bulk in the scheduled method
-     * @param wrapper containing {@link FileReferenceFlowItem} to handle
+     * @param wrapper containing {@link ReferenceFlowItem} to handle
      */
     @Override
-    public void handle(TenantWrapper<FileReferenceFlowItem> wrapper) {
+    public void handle(TenantWrapper<CopyFlowItem> wrapper) {
         String tenant = wrapper.getTenant();
-        FileReferenceFlowItem item = wrapper.getContent();
-        runtimeTenantResolver.forceTenant(tenant);
-        LOGGER.info("[EVENT] New FileReferenceFlowItem received -- {}", wrapper.getContent().toString());
+        CopyFlowItem item = wrapper.getContent();
         if (!items.containsKey(tenant)) {
             items.put(tenant, new ConcurrentLinkedQueue<>());
         }
         items.get(tenant).add(item);
     }
 
-    /**
-     * Method for tests to handle synchronously one message
-     * @param wrapper containing {@link FileReferenceFlowItem} to handle
-     */
-    public void handleSync(TenantWrapper<FileReferenceFlowItem> wrapper) {
-        String tenant = wrapper.getTenant();
-        FileReferenceFlowItem item = wrapper.getContent();
-        runtimeTenantResolver.forceTenant(tenant);
-        try {
-            fileRefService.referenceFiles(Lists.newArrayList(item));
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleSync(TenantWrapper<CopyFlowItem> wrapper) {
+        CopyFlowItem item = wrapper.getContent();
+        fileRefService.copy(item.getFiles(), item.getRequestId());
     }
 
     /**
@@ -110,15 +96,15 @@ public class ReferenceFileFlowItemHandler
      */
     @Scheduled(fixedDelay = 1_000)
     public void handleQueue() {
-        for (Map.Entry<String, ConcurrentLinkedQueue<FileReferenceFlowItem>> entry : items.entrySet()) {
+        for (Map.Entry<String, ConcurrentLinkedQueue<CopyFlowItem>> entry : items.entrySet()) {
             try {
                 runtimeTenantResolver.forceTenant(entry.getKey());
-                ConcurrentLinkedQueue<FileReferenceFlowItem> tenantItems = entry.getValue();
-                List<FileReferenceFlowItem> list = new ArrayList<>();
+                ConcurrentLinkedQueue<CopyFlowItem> tenantItems = entry.getValue();
+                List<CopyFlowItem> list = new ArrayList<>();
                 do {
                     // Build a 10_000 (at most) documents bulk request
                     for (int i = 0; i < BULK_SIZE; i++) {
-                        FileReferenceFlowItem doc = tenantItems.poll();
+                        CopyFlowItem doc = tenantItems.poll();
                         if (doc == null) {
                             if (list.isEmpty()) {
                                 // nothing to do
@@ -130,11 +116,10 @@ public class ReferenceFileFlowItemHandler
                             list.add(doc);
                         }
                     }
-                    LOGGER.info("Bulk saving {} AddFileRefFlowItem...", list.size());
+                    LOGGER.info("Bulk saving {} CopyFlowItem...", list.size());
                     long start = System.currentTimeMillis();
-                    fileRefService.referenceFiles(list);
-                    LOGGER.info("...{} AddFileRefFlowItem handled in {} ms", list.size(),
-                                System.currentTimeMillis() - start);
+                    fileRefService.copy(list);
+                    LOGGER.info("...{} CopyFlowItem handled in {} ms", list.size(), System.currentTimeMillis() - start);
                     list.clear();
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
             } finally {
@@ -142,4 +127,5 @@ public class ReferenceFileFlowItemHandler
             }
         }
     }
+
 }

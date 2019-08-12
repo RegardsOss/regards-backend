@@ -26,27 +26,30 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
 
 /**
- * Flow message to request a new file storage.<br/>
+ * Flow message to request file(s) reference deletion.<br/>
+ * A deletion request is always a success as the only action is to remove the requesting owner to the file(s)<br/>
+ * When a file does not belongs to any owner anymore, then a deletion request is made for stored files (ONLINE and NEARLINE).<br/>
+ * <br/>
  * See {@link FileRequestEvent} for asynchronous responses when request is finished.<br/>
  * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
  *
  * @author Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
-public class FileStorageFlowItem implements ISubscribable {
+public class DeletionFlowItem implements ISubscribable {
 
     /**
-     * Information about files to store
+     * Files to delete information
      */
-    private final Set<FileStorageRequestDTO> files = Sets.newHashSet();
+    private final Set<FileDeletionRequestDTO> files = Sets.newHashSet();
 
     /**
-     * Request business identifier
+     * Business request identifier
      */
     private String requestId;
 
@@ -58,31 +61,31 @@ public class FileStorageFlowItem implements ISubscribable {
         this.requestId = requestId;
     }
 
-    public Set<FileStorageRequestDTO> getFiles() {
+    public Set<FileDeletionRequestDTO> getFiles() {
         return files;
     }
 
     /**
-     * Build a storage request message for one file
-     * @param file
-     * @param requestId
-     * @return {@link FileStorageFlowItem}
+     * Build a deletion request for one {@link FileDeletionRequestDTO} file.
+     * @param file {@link FileDeletionRequestDTO} to remove information
+     * @param requestId business request identifier
+     * @return {@link DeletionFlowItem}
      */
-    public static FileStorageFlowItem build(FileStorageRequestDTO file, String requestId) {
-        FileStorageFlowItem item = new FileStorageFlowItem();
+    public static DeletionFlowItem build(FileDeletionRequestDTO file, String requestId) {
+        DeletionFlowItem item = new DeletionFlowItem();
         item.files.add(file);
         item.requestId = requestId;
         return item;
     }
 
     /**
-     * Build a storage request message fr many files
-     * @param files
-     * @param requestId
-     * @return {@link FileStorageFlowItem}
+     * Build a deletion request for many {@link FileDeletionRequestDTO} files.
+     * @param files {@link FileDeletionRequestDTO}s to remove information
+     * @param requestId business request identifier
+     * @return {@link DeletionFlowItem}
      */
-    public static FileStorageFlowItem build(Collection<FileStorageRequestDTO> files, String requestId) {
-        FileStorageFlowItem item = new FileStorageFlowItem();
+    public static DeletionFlowItem build(Collection<FileDeletionRequestDTO> files, String requestId) {
+        DeletionFlowItem item = new DeletionFlowItem();
         item.files.addAll(files);
         item.requestId = requestId;
         return item;
@@ -90,7 +93,7 @@ public class FileStorageFlowItem implements ISubscribable {
 
     @Override
     public String toString() {
-        return "FileStorageFlowItem [" + (files != null ? "files=" + files + ", " : "")
+        return "DeleteFileRefFlowItem [" + (files != null ? "files=" + files + ", " : "")
                 + (requestId != null ? "requestId=" + requestId : "") + "]";
     }
 

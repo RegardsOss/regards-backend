@@ -26,27 +26,30 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
 
 /**
- * Flow message to request a new file reference.<br/>
+ * Flow message to request file(s) reference deletion.<br/>
+ * A deletion request is always a success as the only action is to remove the requesting owner to the file(s)<br/>
+ * When a file does not belongs to any owner anymore, then a deletion request is made for stored files (ONLINE and NEARLINE).<br/>
+ * <br/>
  * See {@link FileRequestEvent} for asynchronous responses when request is finished.<br/>
  * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
  *
  * @author Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
-public class FileReferenceFlowItem implements ISubscribable {
+public class CopyFlowItem implements ISubscribable {
 
     /**
-     * Information about files to reference.
+     * Files to delete information
      */
-    private final Set<FileReferenceRequestDTO> files = Sets.newHashSet();
+    private final Set<FileCopyRequestDTO> files = Sets.newHashSet();
 
     /**
-     * Request business identifier
+     * Business request identifier
      */
     private String requestId;
 
@@ -58,31 +61,31 @@ public class FileReferenceFlowItem implements ISubscribable {
         this.requestId = requestId;
     }
 
-    public Set<FileReferenceRequestDTO> getFiles() {
+    public Set<FileCopyRequestDTO> getFiles() {
         return files;
     }
 
     /**
-     * Build a file reference request event for one file
-     * @param file {@link FileReferenceRequestDTO} file to reference information
-     * @param requestId business request identifier to identify request in asynchronous response messages {@link FileRequestEvent}
-     * @return {@link FileReferenceFlowItem}
+     * Build a copy request for one {@link FileCopyRequestDTO} file.
+     * @param file {@link FileCopyRequestDTO} to remove information
+     * @param requestId business request identifier
+     * @return {@link CopyFlowItem}
      */
-    public static FileReferenceFlowItem build(FileReferenceRequestDTO file, String requestId) {
-        FileReferenceFlowItem item = new FileReferenceFlowItem();
+    public static CopyFlowItem build(FileCopyRequestDTO file, String requestId) {
+        CopyFlowItem item = new CopyFlowItem();
         item.files.add(file);
         item.requestId = requestId;
         return item;
     }
 
     /**
-     * Build a file reference request event for a collection of files
-     * @param files  {@link FileReferenceRequestDTO} files to reference information
-     * @param requestId business request identifier to identify request in asynchronous response messages {@link FileRequestEvent}
-     * @return {@link FileReferenceFlowItem}
+     * Build a copy request for many {@link FileCopyRequestDTO} files.
+     * @param files {@link FileCopyRequestDTO}s to remove information
+     * @param requestId business request identifier
+     * @return {@link CopyFlowItem}
      */
-    public static FileReferenceFlowItem build(Collection<FileReferenceRequestDTO> files, String requestId) {
-        FileReferenceFlowItem item = new FileReferenceFlowItem();
+    public static CopyFlowItem build(Collection<FileCopyRequestDTO> files, String requestId) {
+        CopyFlowItem item = new CopyFlowItem();
         item.files.addAll(files);
         item.requestId = requestId;
         return item;
@@ -90,7 +93,7 @@ public class FileReferenceFlowItem implements ISubscribable {
 
     @Override
     public String toString() {
-        return "FileReferenceFlowItem [" + (files != null ? "files=" + files + ", " : "")
+        return "DeleteFileRefFlowItem [" + (files != null ? "files=" + files + ", " : "")
                 + (requestId != null ? "requestId=" + requestId : "") + "]";
     }
 

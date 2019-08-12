@@ -642,8 +642,9 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     @Test
     public void copyFile() throws InterruptedException, ExecutionException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test");
-        fileRefService.copyFile(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL),
-                                UUID.randomUUID().toString());
+        Set<FileCopyRequestDTO> requests = Sets
+                .newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL));
+        fileRefService.copy(requests, UUID.randomUUID().toString());
         // A new copy request should be created
         Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
                                                                        ONLINE_CONF_LABEL);

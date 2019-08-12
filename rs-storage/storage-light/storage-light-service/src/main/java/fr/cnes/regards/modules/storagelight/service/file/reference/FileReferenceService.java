@@ -63,6 +63,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
@@ -70,9 +71,10 @@ import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorFile;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
-import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
-import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.CopyFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
@@ -99,8 +101,8 @@ import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginCo
  * When a file reference does not have any owner, then it is scheduled for deletion.<br/>
  *
  * <b> Entry points : </b><br/>
- * File references can be created using AMQP messages {@link FileReferenceFlowItem}.<br/>
- * File references can be deleted using AMQP messages {@link DeleteFileRefFlowItem}.<br/>
+ * File references can be created using AMQP messages {@link ReferenceFlowItem}.<br/>
+ * File references can be deleted using AMQP messages {@link DeletionFlowItem}.<br/>
  * File references can be copied in cache system using AMQP messages TODO<br/>
  * File references can be download<br/>
  *
@@ -123,7 +125,7 @@ public class FileReferenceService {
 
     @Autowired
     private FileDeletionRequestService fileDeletionRequestService;
-    
+
     @Autowired
     private FileCopyRequestService fileCopyRequestService;
 
@@ -166,12 +168,29 @@ public class FileReferenceService {
     public Page<FileReference> search(Specification<FileReference> spec, Pageable page) {
         return fileRefRepo.findAll(spec, page);
     }
-    
-    public void copyFile(FileCopyRequestDTO request, String requestId) {
-    	fileCopyRequestService.create(request, requestId);  	
+
+    /**
+     * Handle many {@link FileCopyRequestDTO} to copy files to a given storage location.
+     * @param files copy requests
+     * @param requestId business request identifier
+     */
+    public void copy(Collection<FileCopyRequestDTO> files, String requestId) {
+        files.forEach(f -> fileCopyRequestService.create(f, requestId));
     }
 
-    public void storeFiles(List<FileStorageFlowItem> items) {
+    /**
+     * Handle many {@link CopyFlowItem} to copy files to a given storage location.
+     * @param items copy flow items
+     */
+    public void copy(Collection<CopyFlowItem> items) {
+        items.forEach(i -> copy(i.getFiles(), i.getRequestId()));
+    }
+
+    /**
+     * Handle many {@link StorageFlowItem} to store files to a given storage location.
+     * @param items storage flow items
+     */
+    public void storeFiles(Collection<StorageFlowItem> items) {
         int flushCount = 0;
         // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
         Set<String> checksums = Sets.newHashSet();
@@ -179,7 +198,7 @@ public class FileReferenceService {
             i.getFiles().stream().forEach(f -> checksums.add(f.getChecksum()));
         });
         Set<FileReference> existingOnes = fileRefRepo.findByMetaInfoChecksumIn(checksums);
-        for (FileStorageFlowItem item : items) {
+        for (StorageFlowItem item : items) {
             for (FileStorageRequestDTO request : item.getFiles()) {
                 // Check if the file already exists for the storage destination
                 Optional<FileReference> oFileRef = existingOnes.stream()
@@ -198,7 +217,17 @@ public class FileReferenceService {
             eventPublisher.requestGranted(item.getRequestId(), FileRequestType.STORAGE);
         }
     }
-    
+
+    /**
+     * Store a new file to a given storage destination
+     * @param owner Owner of the new file
+     * @param metaInfo information about file
+     * @param originUrl current location of file. This URL must be locally accessible to be copied.
+     * @param storage name of the storage destination. Must be a existing plugin configuration of a {@link IStorageLocation}
+     * @param subDirectory where to store file in the destination location.
+     * @param requestId business request identifier
+     * @return {@link FileReference} if the file is already referenced.
+     */
     public Optional<FileReference> storeFile(String owner, FileReferenceMetaInfo metaInfo, URL originUrl,
             String storage, Optional<String> subDirectory, String requestId) {
         Optional<FileReference> oFileRef = fileRefRepo.findByLocationStorageAndMetaInfoChecksum(storage,
@@ -209,22 +238,30 @@ public class FileReferenceService {
                          oFileRef, requestId);
     }
 
+    /**
+     * Store a new file to a given storage destination
+     * @param request {@link FileStorageRequestDTO} info about file to store
+     * @param fileRef {@link FileReference} of associated file if already exists
+     * @param requestId business request indentifier
+     * @return {@link FileReference} if the file is already referenced.
+     */
     private Optional<FileReference> storeFile(FileStorageRequestDTO request, Optional<FileReference> fileRef,
             String requestId) {
         if (fileRef.isPresent()) {
             return handleAlreadyExists(fileRef.get(), request, requestId);
         } else {
-            fileStorageRequestService.create(Sets.newHashSet(request.getOwner()), request.buildMetaInfo(), request.getOriginUrl(),
-                                             request.getStorage(), request.getSubDirectory(), requestId);
+            fileStorageRequestService.create(Sets.newHashSet(request.getOwner()), request.buildMetaInfo(),
+                                             request.getOriginUrl(), request.getStorage(), request.getSubDirectory(),
+                                             requestId);
             return Optional.empty();
         }
     }
 
     /**
-     * Call {@link #addFileReference(FileReferenceFlowItem)} method for each item.
+     * Call {@link #addFileReference(ReferenceFlowItem)} method for each item.
      * @param items
      */
-    public void referenceFiles(List<FileReferenceFlowItem> items) {
+    public void referenceFiles(List<ReferenceFlowItem> items) {
         int flushCount = 0;
         // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
         Set<String> checksums = Sets.newHashSet();
@@ -232,7 +269,7 @@ public class FileReferenceService {
             i.getFiles().stream().forEach(f -> checksums.add(f.getChecksum()));
         });
         Set<FileReference> existingOnes = fileRefRepo.findByMetaInfoChecksumIn(checksums);
-        for (FileReferenceFlowItem item : items) {
+        for (ReferenceFlowItem item : items) {
             Set<ErrorFile> errors = Sets.newHashSet();
             for (FileReferenceRequestDTO file : item.getFiles()) {
                 // Check if the file already exists for the storage destination
@@ -270,6 +307,15 @@ public class FileReferenceService {
         }
     }
 
+    /**
+     * Reference a new file. No file movement is made here. File is only referenced.
+     * @param owner Owner of the new {@link FileReference}
+     * @param metaInfo information about file
+     * @param location location of file
+     * @param requestIds Business requests identifiers associated to the new file reference.
+     * @return {@link FileReference}
+     * @throws ModuleException if the file reference can not be created.
+     */
     public FileReference referenceFile(String owner, FileReferenceMetaInfo metaInfo, FileLocation location,
             Collection<String> requestIds) throws ModuleException {
         Optional<FileReference> oFileRef = fileRefRepo.findByLocationStorageAndMetaInfoChecksum(location.getStorage(),
@@ -282,6 +328,14 @@ public class FileReferenceService {
                              requestIds);
     }
 
+    /**
+     * Reference a new file. No file movement is made here. File is only referenced.
+     * @param request {@link FileReferenceRequestDTO}
+     * @param fileRef {@link FileReference} of associated file if already exists
+     * @param requestIds Business requests identifiers associated to the new file reference.
+     * @return {@link FileReference}
+     * @throws ModuleException if the file reference can not be created.
+     */
     private FileReference referenceFile(FileReferenceRequestDTO request, Optional<FileReference> fileRef,
             Collection<String> requestIds) throws ModuleException {
         if (fileRef.isPresent()) {
@@ -309,17 +363,17 @@ public class FileReferenceService {
     }
 
     /**
-     * Handle the given {@link DeleteFileRefFlowItem}s.
+     * Handle the given {@link DeletionFlowItem}s.
      * @param items
      */
-    public void delete(Collection<DeleteFileRefFlowItem> items) {
+    public void delete(Collection<DeletionFlowItem> items) {
         long start = System.currentTimeMillis();
         Set<String> checksums = Sets.newHashSet();
         items.forEach(i -> {
             i.getFiles().stream().forEach(f -> checksums.add(f.getChecksum()));
         });
         Set<FileReference> existingOnes = fileRefRepo.findByMetaInfoChecksumIn(checksums);
-        for (DeleteFileRefFlowItem item : items) {
+        for (DeletionFlowItem item : items) {
             for (FileDeletionRequestDTO request : item.getFiles()) {
                 Optional<FileReference> oFileRef = existingOnes.stream()
                         .filter(f -> f.getLocation().getStorage().contentEquals(request.getStorage())).findFirst();
@@ -502,8 +556,6 @@ public class FileReferenceService {
         Set<FileReference> refs = fileRefRepo.findByMetaInfoChecksumIn(checksums);
         Set<String> remainingChecksums = Sets.newHashSet(checksums);
 
-        // TODO : Check delegated security ??
-
         // Dispatch by storage
         ImmutableListMultimap<String, FileReference> filesByStorage = Multimaps
                 .index(refs, f -> f.getLocation().getStorage());
@@ -624,6 +676,18 @@ public class FileReferenceService {
         }
     }
 
+    /**
+     * Update if needed an already existing {@link FileReference} associated to a
+     * new {@link FileStorageRequestDTO} request received.<br/>
+     * <br/>
+     * If a deletion request is running on the existing {@link FileReference} then a new {@link FileStorageRequest}
+     * request is created as DELAYED.<br/>
+     *
+     * @param fileReference {@link FileReference} to update
+     * @param request associated {@link FileStorageRequestDTO} new request
+     * @param requestId new business request identifier
+     * @return {@link FileReference} updated or null.
+     */
     private Optional<FileReference> handleAlreadyExists(FileReference fileReference, FileStorageRequestDTO request,
             String requestId) {
         FileReference updatedFileRef = null;
@@ -665,14 +729,25 @@ public class FileReferenceService {
         return Optional.ofNullable(updatedFileRef);
     }
 
-    private void notifyAvailables(Set<FileReference> availables, String requestId) {
+    /**
+     * Send {@link FileReferenceEvent} for available given files.
+     * @param availables newly available files
+     * @param availabilityRequestId business request identifier of the availability request associated.
+     */
+    private void notifyAvailables(Set<FileReference> availables, String availabilityRequestId) {
         availables.forEach(f -> eventPublisher
                 .available(f.getMetaInfo().getChecksum(), f.getLocation().getStorage(), f.getLocation().getUrl(),
-                           f.getOwners(), String.format("file %s (checksum %s) is available for download.",
+                           f.getOwners(),
+                           String.format("file %s (checksum %s) is available for download.",
                                          f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum()),
-                           requestId, false));
+                           availabilityRequestId, false));
     }
 
+    /**
+     * Send {@link FileReferenceEvent} for not available given files.
+     * @param availables newly available files
+     * @param availabilityRequestId business request identifier of the availability request associated.
+     */
     private void notifyNotAvailables(Set<FileReference> notAvailable, String requestId) {
         notAvailable.forEach(f -> eventPublisher
                 .notAvailable(f.getMetaInfo().getChecksum(),

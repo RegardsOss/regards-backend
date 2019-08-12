@@ -25,7 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 
 /**
  * Information about a file for a store request.<br/>
@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
  *  <li> Owner of the file who ask for deletion </li>
  *  <li> originUrl where to access file to store. Must be locally accessible (file protocol for example) </li>
  * </ul>
- * See {@link FileStorageFlowItem} for more information about storage request process.
+ * See {@link StorageFlowItem} for more information about storage request process.
  *
  * @author Sébastien Binda
  */

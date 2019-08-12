@@ -28,10 +28,10 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFileRefFlowItem;
-import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
-import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
-import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.RetryFlowItem;
 
 /**
@@ -52,35 +52,35 @@ public class StorageClient implements IStorageClient {
     @Override
     public RequestInfo delete(FileDeletionRequestDTO file) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(DeleteFileRefFlowItem.build(file, requestInfo.getRequestId()));
+        publisher.publish(DeletionFlowItem.build(file, requestInfo.getRequestId()));
         return requestInfo;
     }
 
     @Override
     public RequestInfo delete(Collection<FileDeletionRequestDTO> files) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(DeleteFileRefFlowItem.build(files, requestInfo.getRequestId()));
+        publisher.publish(DeletionFlowItem.build(files, requestInfo.getRequestId()));
         return requestInfo;
     }
 
     @Override
     public RequestInfo makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(AvailabilityFileRefFlowItem.build(checksums, expirationDate, requestInfo.getRequestId()));
+        publisher.publish(AvailabilityFlowItem.build(checksums, expirationDate, requestInfo.getRequestId()));
         return requestInfo;
     }
 
     @Override
     public RequestInfo reference(FileReferenceRequestDTO file) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(FileReferenceFlowItem.build(file, requestInfo.getRequestId()));
+        publisher.publish(ReferenceFlowItem.build(file, requestInfo.getRequestId()));
         return requestInfo;
     }
 
     @Override
     public RequestInfo reference(Collection<FileReferenceRequestDTO> files) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(FileReferenceFlowItem.build(files, requestInfo.getRequestId()));
+        publisher.publish(ReferenceFlowItem.build(files, requestInfo.getRequestId()));
         return requestInfo;
     }
 
@@ -102,14 +102,14 @@ public class StorageClient implements IStorageClient {
     @Override
     public RequestInfo store(FileStorageRequestDTO file) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(FileStorageFlowItem.build(file, requestInfo.getRequestId()));
+        publisher.publish(StorageFlowItem.build(file, requestInfo.getRequestId()));
         return requestInfo;
     }
 
     @Override
     public RequestInfo store(Collection<FileStorageRequestDTO> files) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(FileStorageFlowItem.build(files, requestInfo.getRequestId()));
+        publisher.publish(StorageFlowItem.build(files, requestInfo.getRequestId()));
         return requestInfo;
     }
 }

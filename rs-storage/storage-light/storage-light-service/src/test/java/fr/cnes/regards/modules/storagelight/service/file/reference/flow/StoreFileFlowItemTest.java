@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
-import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.RetryFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
@@ -65,7 +65,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRe
 public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
 
     @Autowired
-    private StoreFileFlowItemHandler storeHandler;
+    private StorageFlowItemHandler storeHandler;
 
     @Autowired
     private RetryFlowItemHandler retryHandler;
@@ -92,11 +92,11 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
         String checksum = UUID.randomUUID().toString();
         String storage = "storage";
         // Create a new bus message File reference request
-        FileStorageFlowItem item = FileStorageFlowItem
+        StorageFlowItem item = StorageFlowItem
                 .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", owner,
                                                    originUrl, ONLINE_CONF_LABEL, Optional.empty()),
                        UUID.randomUUID().toString());
-        TenantWrapper<FileStorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<StorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -133,9 +133,9 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
                                                  originUrl, ONLINE_CONF_LABEL, Optional.empty()));
         requests.add(FileStorageRequestDTO.build("file.name", cs2, "MD5", "application/octet-stream", "owner",
                                                  originUrl, ONLINE_CONF_LABEL, Optional.empty()));
-        FileStorageFlowItem item = FileStorageFlowItem.build(requests, UUID.randomUUID().toString());
+        StorageFlowItem item = StorageFlowItem.build(requests, UUID.randomUUID().toString());
 
-        TenantWrapper<FileStorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<StorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -184,11 +184,11 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
         String checksum = UUID.randomUUID().toString();
         String storageDestination = "somewheere";
         // Create a new bus message File reference request
-        FileStorageFlowItem item = FileStorageFlowItem
+        StorageFlowItem item = StorageFlowItem
                 .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream",
                                                    "owner-test", originUrl, storageDestination, Optional.empty()),
                        UUID.randomUUID().toString());
-        TenantWrapper<FileStorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<StorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -210,11 +210,11 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
     public void storeFileFlowItem_storeError() {
         String checksum = UUID.randomUUID().toString();
         // Create a new bus message File reference request
-        FileStorageFlowItem item = FileStorageFlowItem
+        StorageFlowItem item = StorageFlowItem
                 .build(FileStorageRequestDTO.build("error.file.name", checksum, "MD5", "application/octet-stream",
                                                    "owner-test", originUrl, ONLINE_CONF_LABEL, Optional.empty()),
                        UUID.randomUUID().toString());
-        TenantWrapper<FileStorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<StorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -273,8 +273,8 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
         files.add(FileStorageRequestDTO.build("file3.test", UUID.randomUUID().toString(), "MD5",
                                               "application/octet-stream", owner, originUrl, storageDestination,
                                               Optional.empty()));
-        FileStorageFlowItem item = FileStorageFlowItem.build(files, UUID.randomUUID().toString());
-        TenantWrapper<FileStorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        StorageFlowItem item = StorageFlowItem.build(files, UUID.randomUUID().toString());
+        TenantWrapper<StorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -318,8 +318,8 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
         files.add(FileStorageRequestDTO.build("file3.test", UUID.randomUUID().toString(), "MD5",
                                               "application/octet-stream", owners.get(2), originUrl, storageDestination,
                                               Optional.empty()));
-        FileStorageFlowItem item = FileStorageFlowItem.build(files, UUID.randomUUID().toString());
-        TenantWrapper<FileStorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        StorageFlowItem item = StorageFlowItem.build(files, UUID.randomUUID().toString());
+        TenantWrapper<StorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());

@@ -28,13 +28,13 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
-import fr.cnes.regards.modules.storagelight.domain.flow.FileReferenceFlowItem;
-import fr.cnes.regards.modules.storagelight.domain.flow.FileStorageFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 
 /**
- * Bus message response of a request like {@link FileStorageFlowItem},
- * {@link FileReferenceFlowItem} or {@link DeleteFileRefFlowItem}.<br/>
+ * Bus message response of a request like {@link StorageFlowItem},
+ * {@link ReferenceFlowItem} or {@link DeletionFlowItem}.<br/>
  * <br/>
  * FileRequestEventState :<ul>
  * <li> GRANTED : sent when the request is handled.</li>
