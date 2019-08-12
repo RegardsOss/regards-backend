@@ -75,7 +75,7 @@ public class FileCopyRequestService {
                 String message = String
                         .format("File copy request refused for file %s to %s storage location. Cause file does not exists in any known storage location.",
                                 requestDto.getChecksum(), requestDto.getStorage());
-                LOGGER.warn(message);
+                LOGGER.warn("[COPY REQUEST] {}", message);
                 notificationClient.notify(message, "File copy request refused", NotificationLevel.WARNING,
                                           DefaultRole.PROJECT_ADMIN);
             } else {

@@ -45,7 +45,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.storagelight.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
@@ -75,9 +74,6 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
 
     @Autowired
     private PrioritizedStorageService prioritizedDataStorageService;
-
-    @Autowired
-    private IFileCopyRequestRepository copyRepo;
 
     private Path fileToStore;
 
@@ -396,6 +392,29 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         Assert.assertTrue(String.format("Request should be successful for request id %s", info.getGroupId()),
                           listener.getSuccess().contains(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
+    }
+
+    @Test
+    public void copy_withError() throws MalformedURLException, InterruptedException {
+
+        this.storeFile();
+        listener.reset();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        Set<FileCopyRequestDTO> requests = storedFileChecksums.stream()
+                .map(f -> FileCopyRequestDTO.build(f, NEARLINE_CONF_2)).collect(Collectors.toSet());
+        RequestInfo info = client.copy(requests);
+        Thread.sleep(15_000);
+
+        Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        Assert.assertFalse(String.format("Request should be successful for request id %s", info.getGroupId()),
+                           listener.getSuccess().contains(info));
+        Assert.assertTrue("Request should not be error", listener.getErrors().containsKey(info));
+        Assert.assertEquals("Number of error files invalid", unrestorableFileChecksums.size(),
+                            listener.getErrors().get(info).size());
+        unrestorableFileChecksums.forEach(f -> {
+            Assert.assertTrue("Missing an error file",
+                              listener.getErrors().get(info).stream().anyMatch(e -> e.getChecksum().equals(f)));
+        });
     }
 
     private PrioritizedStorage initDataStoragePluginConfiguration() {

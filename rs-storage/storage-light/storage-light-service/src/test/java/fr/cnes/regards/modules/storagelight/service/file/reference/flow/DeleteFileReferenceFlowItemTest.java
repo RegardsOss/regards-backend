@@ -30,13 +30,11 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -106,8 +104,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         String owner = "owner";
         this.referenceFile(checksum, owner, null, "file.test", storage);
         Mockito.clearInvocations(publisher);
-        DeletionFlowItem item = DeletionFlowItem
-                .build(FileDeletionRequestDTO.build(checksum, storage, owner, false), UUID.randomUUID().toString());
+        DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
+                                                       UUID.randomUUID().toString());
         TenantWrapper<DeletionFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
@@ -136,8 +134,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         this.referenceFile(checksum, owner, null, "file.test", storage);
         this.referenceFile(checksum, "other-owner", null, "file.test", storage);
         Mockito.clearInvocations(publisher);
-        DeletionFlowItem item = DeletionFlowItem
-                .build(FileDeletionRequestDTO.build(checksum, storage, owner, false), UUID.randomUUID().toString());
+        DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
+                                                       UUID.randomUUID().toString());
         TenantWrapper<DeletionFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
@@ -163,8 +161,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
-        DeletionFlowItem item = DeletionFlowItem
-                .build(FileDeletionRequestDTO.build(checksum, storage, owner, false), UUID.randomUUID().toString());
+        DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
+                                                       UUID.randomUUID().toString());
         TenantWrapper<DeletionFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
@@ -209,8 +207,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
                                                                  ONLINE_CONF_LABEL);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
-        DeletionFlowItem item = DeletionFlowItem
-                .build(FileDeletionRequestDTO.build(checksum, storage, owner, false), UUID.randomUUID().toString());
+        DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
+                                                       UUID.randomUUID().toString());
         TenantWrapper<DeletionFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
@@ -255,8 +253,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
                                                                  ONLINE_CONF_LABEL);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
-        DeletionFlowItem item = DeletionFlowItem
-                .build(FileDeletionRequestDTO.build(checksum, storage, owner, true), UUID.randomUUID().toString());
+        DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, true),
+                                                       UUID.randomUUID().toString());
         TenantWrapper<DeletionFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);

@@ -314,6 +314,8 @@ public class FileCacheRequestService {
                 .format("File <%s> cannot be handle for restoration as origin storage <%s> is unknown or disabled.",
                         request.getFileReference().getMetaInfo().getFileName(), request.getStorage()));
         repository.save(request);
+        LOGGER.error("[CACHE ERROR] File {} is not available. Cause : {}",
+                     request.getFileReference().getMetaInfo().getChecksum(), request.getErrorCause());
         publisher.notAvailable(request.getChecksum(), request.getErrorCause(), request.getGroupId(), true);
     }
 }

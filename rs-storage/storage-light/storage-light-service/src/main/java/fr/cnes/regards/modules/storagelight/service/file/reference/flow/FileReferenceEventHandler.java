@@ -23,6 +23,8 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -56,6 +58,8 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRe
 @Component
 public class FileReferenceEventHandler
         implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileReferenceEvent> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceEventHandler.class);
 
     @Autowired
     private FileStorageRequestService fileReferenceRequestService;

@@ -640,6 +640,58 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
     }
 
     @Test
+    public void copyFile_error_offlineFile() {
+        String storage = "somewhere";
+        FileReference fileRef = referenceRandomFile("owner", "type", "file1.test", storage).get();
+        Set<FileCopyRequestDTO> requests = Sets
+                .newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), storage));
+        fileRefService.copy(requests, UUID.randomUUID().toString());
+        Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), storage);
+        Assert.assertTrue("There should be a copy request created", oReq.isPresent());
+
+        // Now run copy schedule
+        fileCopyRequestService.scheduleAvailabilityRequests(FileRequestStatus.TODO);
+
+        // There should be one availability request created
+        Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
+        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), storage);
+        Assert.assertTrue("There should be a cache request created", oCacheReq.isPresent());
+        Assert.assertTrue("No storage request should be created yet", fileStorageRequestRepo.count() == 0);
+        Assert.assertTrue("There should be a copy request", oReq.isPresent());
+        Assert.assertTrue("There should be a copy request in pending state",
+                          oReq.get().getStatus() == FileRequestStatus.PENDING);
+
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        runAndWaitJob(jobs);
+
+        oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
+        Assert.assertTrue("There should be a cache request in error state",
+                          oCacheReq.get().getStatus() == FileRequestStatus.ERROR);
+
+        // Simulate send of the event
+        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        FileReferenceEvent event = getFileReferenceEvent(argumentCaptor.getAllValues());
+        fileRefEventHandler.handle(new TenantWrapper<>(event, getDefaultTenant()));
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+
+        // Copy request should be updated in ERROR
+        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), storage);
+        Assert.assertTrue("There should be a copy request in error state",
+                          oReq.get().getStatus() == FileRequestStatus.ERROR);
+    }
+
+    @Test
+    public void copyFile_error_unknownFile() {
+        String storage = "somewhere";
+        String unknownChecksum = UUID.randomUUID().toString();
+        Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(unknownChecksum, storage));
+        fileRefService.copy(requests, UUID.randomUUID().toString());
+        Optional<FileCopyRequest> oReq = fileCopyRequestService.search(unknownChecksum, storage);
+        Assert.assertFalse("There should not be a copy request created", oReq.isPresent());
+    }
+
+    @Test
     public void copyFile() throws InterruptedException, ExecutionException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test");
         Set<FileCopyRequestDTO> requests = Sets
@@ -675,6 +727,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         Assert.assertTrue("There should be a copy request in pending state",
                           oReq.get().getStatus() == FileRequestStatus.PENDING);
 
+        // Simulate send of the event
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         FileReferenceEvent event = getFileReferenceEvent(argumentCaptor.getAllValues());
