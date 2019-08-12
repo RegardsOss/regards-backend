@@ -24,6 +24,7 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import org.springframework.util.Assert;
 
@@ -42,15 +43,18 @@ import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
 public class IngestMetadataDto {
 
     @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER_ERROR)
+    @Size(max = 128)
     private String sessionOwner;
 
     @NotBlank(message = IngestValidationMessages.MISSING_SESSION_ERROR)
+    @Size(max = 128)
     private String session;
 
     /**
      * {@link fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain} name
      */
     @NotBlank(message = IngestValidationMessages.MISSING_INGEST_CHAIN_ERROR)
+    @Size(max = 100)
     private String ingestChain;
 
     @Valid

@@ -23,6 +23,7 @@ import java.util.UUID;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import org.springframework.util.Assert;
 
@@ -41,9 +42,10 @@ import fr.cnes.regards.modules.ingest.domain.event.IngestRequestEvent;
  * @author Marc SORDI
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class SipFlowItem implements ISubscribable {
+public class IngestRequestFlowItem implements ISubscribable {
 
     @NotBlank(message = IngestValidationMessages.MISSING_REQUEST_ID_ERROR)
+    @Size(max = 36)
     private String requestId;
 
     @Valid
@@ -79,16 +81,33 @@ public class SipFlowItem implements ISubscribable {
     }
 
     /**
-     * Build a new SIP flow item and generates a unique request id.<br/>
+     * Build a new SIP flow item with a custom request id.
+     * You may generate your request id using {@link #generateRequestId()} or pass your own (max 36 alphanumerical characters)<br/>
      * An {@link IngestRequestEvent} including this request id will be sent to monitor the progress of the request.
      */
-    public static SipFlowItem build(IngestMetadataDto metadata, SIP sip) {
+    public static IngestRequestFlowItem build(String requestId, IngestMetadataDto metadata, SIP sip) {
+        Assert.notNull(requestId, IngestValidationMessages.MISSING_REQUEST_ID_ERROR);
         Assert.notNull(metadata, IngestValidationMessages.MISSING_METADATA_ERROR);
         Assert.notNull(sip, IngestValidationMessages.MISSING_SIP_ERROR);
-        SipFlowItem item = new SipFlowItem();
-        item.setRequestId(UUID.randomUUID().toString());
+        IngestRequestFlowItem item = new IngestRequestFlowItem();
+        item.setRequestId(requestId);
         item.setMetadata(metadata);
         item.setSip(sip);
         return item;
+    }
+
+    /**
+     * Build a new SIP flow item with a generated unique request id.<br/>
+     * An {@link IngestRequestEvent} including this request id will be sent to monitor the progress of the request.
+     */
+    public static IngestRequestFlowItem build(IngestMetadataDto metadata, SIP sip) {
+        return build(generateRequestId(), metadata, sip);
+    }
+
+    /**
+     * Generate a request ID
+     */
+    public static String generateRequestId() {
+        return UUID.randomUUID().toString();
     }
 }

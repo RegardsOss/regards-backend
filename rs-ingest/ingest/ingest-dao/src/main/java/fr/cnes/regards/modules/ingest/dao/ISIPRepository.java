@@ -31,7 +31,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -51,7 +50,6 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpecificationExecutor<SIPEntity> {
 
     @Override
-    @EntityGraph("graph.sip.entity.complete")
     Optional<SIPEntity> findById(Long id);
 
     /**
@@ -59,7 +57,6 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @param ids
      * @return {@link SIPEntity}s
      */
-    @EntityGraph("graph.sip.entity.complete")
     Set<SIPEntity> findByIdIn(Collection<Long> ids);
 
     /**
@@ -67,7 +64,6 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @param providerId external SIP identifier
      * @return the latest registered SIP
      */
-    @EntityGraph("graph.sip.entity.complete")
     SIPEntity findTopByProviderIdOrderByIngestDateDesc(String providerId);
 
     /**
@@ -75,7 +71,6 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @param providerId provider id
      * @return all SIP versions of this provider id
      */
-    @EntityGraph("graph.sip.entity.complete")
     Collection<SIPEntity> findAllByProviderIdOrderByVersionAsc(String providerId);
 
     /**
@@ -92,13 +87,11 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @param state {@link SIPState}
      * @return {@link SIPEntity}s
      */
-    @EntityGraph("graph.sip.entity.complete")
     Collection<SIPEntity> findAllByState(SIPState state);
 
     /**
      * Find one {@link SIPEntity} by its unique ipId
      */
-    @EntityGraph("graph.sip.entity.complete")
     Optional<SIPEntity> findOneBySipId(String sipId);
 
     /**
@@ -106,7 +99,6 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @param sipIds
      * @return {@link SIPEntity}s
      */
-    @EntityGraph("graph.sip.entity.complete")
     Collection<SIPEntity> findBySipIdIn(Collection<String> sipIds);
 
     /**
@@ -115,9 +107,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @param session {@link String}
      * @return {@link SIPEntity}s
      */
-    @EntityGraph("graph.sip.entity.complete")
-    Collection<SIPEntity> findByIngestMetadataSessionOwnerAndIngestMetadataSession(String sessionOwner,
-            String session);
+    Collection<SIPEntity> findByIngestMetadataSessionOwnerAndIngestMetadataSession(String sessionOwner, String session);
 
     /**
      * Find all {@link SIPEntity}s by given {@link SIPState}.
@@ -215,6 +205,5 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
                 sips.getTotalElements());
     }
 
-    @EntityGraph("graph.sip.entity.complete")
     List<SIPEntity> findAllByIdIn(List<Long> ingestProcChainIds, Sort sort);
 }

@@ -18,10 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequestState;
 
 /**
  * {@link IngestRequest} repository
@@ -30,4 +39,26 @@ import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequest;
 @Repository
 public interface IIngestRequestRepository extends JpaRepository<IngestRequest, Long> {
 
+    /**
+     * Get ingest request by ingest chain and state
+     * @param ingestChain ingest chain
+     * @param state request state
+     * @param pageable page info
+     */
+    Page<IngestRequest> findPageByMetadataIngestChainAndState(String ingestChain, IngestRequestState state,
+            Pageable pageable);
+
+    /**
+     * Update state for a collection of requests
+     * @param state new state
+     * @param ids request identifiers
+     */
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("UPDATE IngestRequest r set r.state = :state where r.id in (:ids)")
+    void updateIngestRequestState(@Param("state") IngestRequestState state, @Param("ids") Collection<Long> ids);
+
+    /**
+     * Get request by ids
+     */
+    List<IngestRequest> findByIdIn(Collection<Long> ids);
 }

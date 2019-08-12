@@ -18,22 +18,29 @@
  */
 package fr.cnes.regards.modules.ingest.domain.entity.request;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
 
@@ -45,8 +52,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
  *
  */
 @Entity
-@Table(name = "t_ingest_request", indexes = { @Index(name = "idx_ingest_request_id", columnList = "request_id") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_ingest_request_id", columnNames = { "request_id" }) })
+@Table(name = "t_ingest_request", indexes = { @Index(name = "idx_ingest_request_id", columnList = "request_id") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class IngestRequest {
 
@@ -60,6 +66,15 @@ public class IngestRequest {
 
     @Embedded
     private IngestMetadata metadata;
+
+    @NotNull(message = "Ingest request state is required")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "state", length = 20, nullable = false)
+    private IngestRequestState state;
+
+    @Column(columnDefinition = "jsonb", name = "errors")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    private Set<String> errors;
 
     @Column(columnDefinition = "jsonb", name = "rawsip")
     @Type(type = "jsonb")
@@ -97,10 +112,34 @@ public class IngestRequest {
         this.requestId = requestId;
     }
 
-    public static IngestRequest build(String requestId, IngestMetadata metadata, SIP sip) {
+    public IngestRequestState getState() {
+        return state;
+    }
+
+    public void setState(IngestRequestState state) {
+        this.state = state;
+    }
+
+    public Set<String> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(Set<String> errors) {
+        this.errors = errors;
+    }
+
+    public void addError(String error) {
+        if (errors == null) {
+            errors = new HashSet<>();
+        }
+        errors.add(error);
+    }
+
+    public static IngestRequest build(String requestId, IngestMetadata metadata, IngestRequestState state, SIP sip) {
         IngestRequest request = new IngestRequest();
         request.setRequestId(requestId);
         request.setMetadata(metadata);
+        request.setState(state);
         request.setSip(sip);
         return request;
     }

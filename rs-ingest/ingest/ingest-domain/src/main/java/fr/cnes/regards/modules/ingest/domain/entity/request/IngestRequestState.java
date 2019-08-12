@@ -16,9 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.event;
+package fr.cnes.regards.modules.ingest.domain.entity.request;
 
 /**
+ *         o
+ *         |______DENIED
+ *         |
+ *      GRANTED
+ *         |
+ *      PENDING
+ *         |
+ * TODO
+ *
  * Available request states
  * @author Marc SORDI
  */
@@ -32,6 +41,10 @@ public enum IngestRequestState {
      * Request cannot be registered so it's denied
      */
     DENIED,
+    /**
+     * Request has been handled.
+     */
+    PENDING,
     /**
      * Request properly done
      */

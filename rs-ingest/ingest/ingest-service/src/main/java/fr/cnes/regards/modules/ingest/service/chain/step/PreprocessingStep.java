@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPreprocessing;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
@@ -42,18 +42,15 @@ import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
  */
 public class PreprocessingStep extends AbstractIngestStep<SIP, SIP> {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(PreprocessingStep.class);
 
-    public PreprocessingStep(IngestProcessingJob job) {
-        super(job);
+    public PreprocessingStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
+        super(job, ingestChain);
     }
 
     @Override
     public SIP doExecute(SIP sip) throws ProcessingStepException {
-        Optional<PluginConfiguration> conf = processingChain.getPreProcessingPlugin();
+        Optional<PluginConfiguration> conf = ingestChain.getPreProcessingPlugin();
         if (conf.isPresent()) {
             LOGGER.debug("Preprocessing for SIP \"{}\"", sip.getId());
             ISipPreprocessing preprocessing = this.getStepPlugin(conf.get().getBusinessId());
@@ -71,7 +68,6 @@ public class PreprocessingStep extends AbstractIngestStep<SIP, SIP> {
 
     @Override
     protected void doAfterError(SIP sip) {
-        LOGGER.error("Error prepocessing SIP \"{}\"", sip.getId());
-        updateSIPEntityState(SIPState.ERROR);
+        handleRequestError(String.format("Preprocessing fails for SIP \"%s\"", sip.getId()));
     }
 }

@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * AMQP Event to inform system for all {@link SIPEntity} state modification
  * @author Sébastien Binda
  */
+@Deprecated
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class SIPEvent implements ISubscribable {
 
@@ -61,8 +62,6 @@ public class SIPEvent implements ISubscribable {
         sipId = sip.getSipId().toString();
         // SIP state
         state = sip.getState();
-        // SIP errors
-        processingErrors = sip.getProcessingErrors();
     }
 
     public SIPState getState() {

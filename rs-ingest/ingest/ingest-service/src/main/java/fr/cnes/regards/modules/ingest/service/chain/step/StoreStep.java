@@ -23,10 +23,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIP;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
 /**
@@ -34,27 +33,30 @@ import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
+@Deprecated
 public class StoreStep extends AbstractIngestStep<List<AIP>, Void> {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(StoreStep.class);
 
-    public StoreStep(IngestProcessingJob job) {
-        super(job);
+    public StoreStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
+        super(job, ingestChain);
     }
 
     @Override
     protected Void doExecute(List<AIP> aips) throws ProcessingStepException {
-        try {
-            this.job.getIngestProcessingService().saveAndSubmitAIP(this.job.getCurrentEntity(), aips);
-        } catch (EntityNotFoundException e) {
-            throw new ProcessingStepException(e);
-        }
+        //        try {
+        //            this.job.getIngestProcessingService().saveAndSubmitAIP(this.job.getCurrentEntity(), aips);
+        //        } catch (EntityNotFoundException e) {
+        //            throw new ProcessingStepException(e);
+        //        }
         return null;
     }
 
     @Override
     protected void doAfterError(List<AIP> pIn) {
-        updateSIPEntityState(SIPState.ERROR);
+        //        handleRequestError(String.format("Error storing AIP(s) for SIP \"{}\"", job.);
+        //        LOGGER.error(error);
+        //        updateCurrentRequestOnError(IngestRequestState.ERROR, error);
     }
 }

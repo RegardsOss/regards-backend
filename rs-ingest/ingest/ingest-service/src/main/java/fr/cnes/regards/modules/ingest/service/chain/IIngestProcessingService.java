@@ -33,9 +33,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIP;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
-import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
 /**
  * Ingest processing service interface
@@ -45,15 +43,15 @@ import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
  */
 public interface IIngestProcessingService {
 
-    /**
-     * Schedule {@link IngestProcessingJob}s for all {@link SIPEntity} with {@link SIPState#CREATED} Status.
-     */
-    void ingest();
-
-    /**
-     * Really build ingestion job and schedule it in transaction.
-     */
-    void scheduleIngestProcessingJob(Set<Long> entityIdsToProcess, String processingChain);
+    //    /**
+    //     * Schedule {@link IngestProcessingJob}s for all {@link SIPEntity} with {@link SIPState#CREATED} Status.
+    //     */
+    //    void ingest();
+    //
+    //    /**
+    //     * Really build ingestion job and schedule it in transaction.
+    //     */
+    //    void scheduleIngestProcessingJob(Set<Long> entityIdsToProcess, String processingChain);
 
     /**
      *  {@link ISIPService} delegated method, save and publish entity

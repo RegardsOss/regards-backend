@@ -25,6 +25,7 @@ import org.springframework.lang.Nullable;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequestState;
 
 /**
  * Generic event for all service requests

@@ -19,29 +19,19 @@
 package fr.cnes.regards.modules.ingest.domain.entity;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.NamedEntityGraphs;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -80,8 +70,6 @@ import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
         uniqueConstraints = { @UniqueConstraint(name = "uk_sip_sipId", columnNames = "sipId"),
                 @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.sip.entity.complete",
-        attributeNodes = { @NamedAttributeNode(value = "processingErrors") }) })
 public class SIPEntity {
 
     /**
@@ -129,18 +117,6 @@ public class SIPEntity {
     @NotNull(message = "SIP state is required")
     @Enumerated(EnumType.STRING)
     private SIPState state;
-
-    /**
-     * Optional message(s) when SIP is rejected
-     */
-    @Transient
-    private List<String> rejectionCauses;
-
-    @ElementCollection
-    @JoinTable(name = "ta_sip_errors", joinColumns = @JoinColumn(name = "sip_entity_id",
-            foreignKey = @ForeignKey(name = "fk_errors_sip_entity_id")))
-    @Column(name = "error")
-    private List<String> processingErrors;
 
     /**
      * Real SIP content checksum
@@ -227,13 +203,6 @@ public class SIPEntity {
         this.version = version;
     }
 
-    public List<String> getRejectionCauses() {
-        if (rejectionCauses == null) {
-            rejectionCauses = new ArrayList<>();
-        }
-        return rejectionCauses;
-    }
-
     public OffsetDateTime getLastUpdateDate() {
         return lastUpdateDate;
     }
@@ -258,18 +227,9 @@ public class SIPEntity {
         SIPDto dto = new SIPDto();
         dto.setId(providerId);
         dto.setSipId(sipId.toString());
-        dto.setRejectionCauses(rejectionCauses);
         dto.setState(state);
         dto.setVersion(version);
         return dto;
-    }
-
-    public List<String> getProcessingErrors() {
-        return processingErrors;
-    }
-
-    public void setProcessingErrors(List<String> errors) {
-        this.processingErrors = errors;
     }
 
     @Override

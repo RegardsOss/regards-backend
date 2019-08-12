@@ -26,16 +26,17 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import com.google.gson.reflect.TypeToken;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.step.IProcessingStep;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -44,12 +45,15 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.aip.AIP;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.service.ISIPService;
-import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
+import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequestState;
+import fr.cnes.regards.modules.ingest.domain.event.IngestRequestEvent;
+import fr.cnes.regards.modules.ingest.domain.event.IngestRequestType;
+import fr.cnes.regards.modules.ingest.service.chain.IngestRequestService;
 import fr.cnes.regards.modules.ingest.service.chain.step.GenerationStep;
+import fr.cnes.regards.modules.ingest.service.chain.step.InternalInitialStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.PostprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.PreprocessingStep;
-import fr.cnes.regards.modules.ingest.service.chain.step.StoreStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
 
@@ -65,26 +69,31 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     public static final String IDS_PARAMETER = "ids";
 
     @Autowired
+    private AutowireCapableBeanFactory beanFactory;
+
+    @Autowired
     private IIngestProcessingChainRepository processingChainRepository;
 
     @Autowired
-    private IPluginService pluginService;
-
-    @Autowired
-    private IIngestProcessingService ingestProcessingService;
+    private IngestRequestService ingestRequestService;
 
     @Autowired
     private INotificationClient notificationClient;
 
+    @Autowired
+    private IPublisher publisher;
+
     private IngestProcessingChain processingChain;
 
-    @Autowired
-    private ISIPService sipService;
-
-    private Set<SIPEntity> entities;
+    private List<IngestRequest> requests;
 
     /**
-     * Entity at work
+     * The request we are currently processing
+     */
+    private IngestRequest currentRequest;
+
+    /**
+     * The SIP entity we are currently working on
      */
     private SIPEntity currentEntity;
 
@@ -104,12 +113,12 @@ public class IngestProcessingJob extends AbstractJob<Void> {
             processingChain = chain.get();
         }
 
-        // Load entities
+        // Load ingest requests
         Type type = new TypeToken<Set<Long>>() {
 
         }.getType();
         Set<Long> ids = getValue(parameters, IDS_PARAMETER, type);
-        entities = ingestProcessingService.getAllSipEntities(ids);
+        requests = ingestRequestService.getIngestRequests(ids);
     }
 
     @Override
@@ -119,43 +128,65 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         notifMsg.add("Errors occurred during SIPs processing using " + processingChain.getName() + ":");
         boolean errorOccured = false;
 
+        // Internal initial step
+        IProcessingStep<IngestRequest, SIPEntity> initStep = new InternalInitialStep(this, processingChain);
+        beanFactory.autowireBean(initStep);
+
         // Initializing steps
         // Step 1 : optional preprocessing
-        IProcessingStep<SIP, SIP> preStep = new PreprocessingStep(this);
+        IProcessingStep<SIP, SIP> preStep = new PreprocessingStep(this, processingChain);
+        beanFactory.autowireBean(preStep);
         // Step 2 : required validation
-        IProcessingStep<SIP, Void> validationStep = new ValidationStep(this);
+        IProcessingStep<SIP, Void> validationStep = new ValidationStep(this, processingChain);
+        beanFactory.autowireBean(validationStep);
         // Step 3 : required AIP generation
-        IProcessingStep<SIP, List<AIP>> generationStep = new GenerationStep(this);
-        // Step 5 : optional AIP tagging
-        IProcessingStep<List<AIP>, Void> taggingStep = new TaggingStep(this);
-        // Step 6
-        IProcessingStep<List<AIP>, Void> storeStep = new StoreStep(this);
-        // Step 7 : optional postprocessing
-        IProcessingStep<SIP, Void> postprocessingStep = new PostprocessingStep(this);
+        IProcessingStep<SIP, List<AIP>> generationStep = new GenerationStep(this, processingChain);
+        beanFactory.autowireBean(generationStep);
+        // Step 4 : optional AIP tagging
+        IProcessingStep<List<AIP>, Void> taggingStep = new TaggingStep(this, processingChain);
+        beanFactory.autowireBean(taggingStep);
+        // Step 5 : optional postprocessing
+        IProcessingStep<SIP, Void> postprocessingStep = new PostprocessingStep(this, processingChain);
+        beanFactory.autowireBean(postprocessingStep);
 
-        for (SIPEntity entity : entities) {
-            currentEntity = entity;
+        for (IngestRequest request : requests) {
+            currentRequest = request;
             try {
-                // First step : optional preprocessing
-                SIP sip = preStep.execute(entity.getSip());
-                // Next step : required validation
+
+                // Internal preparation step
+                currentEntity = initStep.execute(request);
+
+                // Step 1 : optional preprocessing
+                SIP sip = preStep.execute(request.getSip());
+                // Propagate to entity
+                currentEntity.setSip(sip);
+
+                // Step 2 : required validation
                 validationStep.execute(sip);
-                // Next step : required AIP generation
+                // Step 3 : required AIP generation
                 List<AIP> aips = generationStep.execute(sip);
-                // Next step : optional AIP tagging
+                // Step 4 : optional AIP tagging
                 taggingStep.execute(aips);
-                // Next step : store AIP (no plugin involved)
-                storeStep.execute(aips);
-                // Step 7 : optional postprocessing
+                // Step 5 : optional postprocessing
                 postprocessingStep.execute(sip);
+
+                // Internal finalization step
+                //                SIPEntity entity = prepareStep.execute(sip);
+                // TODO storing SIP and AIP in database
+                // Next step : store AIP (no plugin involved)
+                //                storeStep.execute(aips);
+
+                // Only part of the request is ok!
+                // TODO handleRequestSuccess();
+
             } catch (ProcessingStepException e) {
                 errorOccured = true;
-                String msg = String.format("Error while ingesting SIP \"%s\" with provider id \"%s\"",
-                                           currentEntity.getSipId(), currentEntity.getProviderId());
+                String msg = String.format("Error while ingesting SIP \"%s\" in request \"%s\"",
+                                           currentRequest.getSip().getId(), currentRequest.getRequestId());
                 notifMsg.add(msg);
                 super.logger.error(msg);
                 super.logger.error("Ingestion step error", e);
-                // Continuing with following SIPs
+                // Continue with following SIPs
             }
         }
         // notify if errors occured
@@ -165,28 +196,52 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         }
     }
 
+    /**
+     * Method always called when error occurs during ingest processing
+     */
+    public void handleRequestError(Set<String> errors) {
+        currentRequest.setState(IngestRequestState.ERROR);
+        currentRequest.setErrors(errors);
+        ingestRequestService.updateIngestRequest(currentRequest);
+
+        publisher.publish(IngestRequestEvent.build(currentRequest.getRequestId(),
+                                                   currentRequest.getSip() != null ? currentRequest.getSip().getId()
+                                                           : null,
+                                                   currentEntity != null ? currentEntity.getSipId() : null,
+                                                   currentRequest.getState(), IngestRequestType.INGEST, errors));
+    }
+
+    /**
+     * Method always called after successful processing
+     */
+    private void handleRequestSuccess() {
+        currentRequest.setState(IngestRequestState.DONE);
+        ingestRequestService.deleteIngestRequest(currentRequest);
+
+        publisher.publish(IngestRequestEvent.build(currentRequest.getRequestId(),
+                                                   currentRequest.getSip() != null ? currentRequest.getSip().getId()
+                                                           : null,
+                                                   currentEntity != null ? currentEntity.getSipId() : null,
+                                                   currentRequest.getState(), IngestRequestType.INGEST, null));
+    }
+
+    // TODO
+    //    protected SIPEntity updateSIPEntityState(SIPState newEntitySIPState) {
+    //        // Send a notification about this SIP state change
+    //        job.getSipService().notifySipChangedState(job.getCurrentEntity().getIngestMetadata(),
+    //                                                  job.getCurrentEntity().getState(), newEntitySIPState);
+    //        // Update the SIP
+    //        job.getCurrentEntity().setState(newEntitySIPState);
+    //        job.getCurrentEntity().setProcessingErrors(processingErrors);
+    //        return job.getIngestProcessingService().updateSIPEntity(job.getCurrentEntity());
+    //    }
+
     @Override
     public int getCompletionCount() {
         return 6;
     }
 
-    public IPluginService getPluginService() {
-        return pluginService;
-    }
-
-    public IngestProcessingChain getProcessingChain() {
-        return processingChain;
-    }
-
-    public IIngestProcessingService getIngestProcessingService() {
-        return ingestProcessingService;
-    }
-
     public SIPEntity getCurrentEntity() {
         return currentEntity;
-    }
-
-    public ISIPService getSipService() {
-        return sipService;
     }
 }

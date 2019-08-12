@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.aip.AIP;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
@@ -43,14 +43,14 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerationStep.class);
 
-    public GenerationStep(IngestProcessingJob job) {
-        super(job);
+    public GenerationStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
+        super(job, ingestChain);
     }
 
     @Override
     protected List<AIP> doExecute(SIP sip) throws ProcessingStepException {
         LOGGER.debug("Generating AIP(s) from SIP \"{}\"", sip.getId());
-        PluginConfiguration conf = processingChain.getGenerationPlugin();
+        PluginConfiguration conf = ingestChain.getGenerationPlugin();
         IAipGeneration generation = this.getStepPlugin(conf.getBusinessId());
 
         // Retrieve SIP URN from internal identifier
@@ -64,7 +64,6 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
 
     @Override
     protected void doAfterError(SIP sip) {
-        LOGGER.error("Error generating AIP(s) for SIP \"{}\"", sip.getId());
-        updateSIPEntityState(SIPState.ERROR);
+        handleRequestError(String.format("Error generating AIP(s) for SIP \"{}\"", sip.getId()));
     }
 }

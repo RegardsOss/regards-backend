@@ -93,9 +93,9 @@ public class AIPService implements IAIPService {
             // Update SIP associated State
             SIPEntity sip = aip.getSip();
             sip.setState(sipState);
-            // Save the errorMessage inside SIP rejections errors
-            sip.getRejectionCauses().add(String.format("Storage of AIP(%s) failed due to the following error: %s",
-                                                       aipId, errorMessage));
+            //            // Save the errorMessage inside SIP rejections errors
+            //            sip.getRejectionCauses().add(String.format("Storage of AIP(%s) failed due to the following error: %s",
+            //                                                       aipId, errorMessage));
             sipService.saveSIPEntity(sip);
         }
     }

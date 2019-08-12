@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
+import fr.cnes.regards.modules.ingest.service.chain.IngestRequestService;
 import fr.cnes.regards.modules.ingest.service.store.IAIPService;
 
 /**
@@ -54,7 +54,7 @@ public class ScheduledIngestTasks {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IIngestProcessingService ingestProcessingService;
+    private IngestRequestService requestService;
 
     @Autowired
     private IAIPService aipBulkRequestService;
@@ -63,20 +63,27 @@ public class ScheduledIngestTasks {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processNewSips() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
-            LOGGER.trace("Scheduled task : Process new SIPs ingest for tenant {}", tenant);
-            runtimeTenantResolver.forceTenant(tenant);
-            ingestProcessingService.ingest();
-            runtimeTenantResolver.clearTenant();
+            try {
+                LOGGER.trace("Scheduled task : Process new SIPs ingest for tenant {}", tenant);
+                runtimeTenantResolver.forceTenant(tenant);
+                requestService.scheduleIngestProcessingJob();
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
         }
     }
 
     @Scheduled(fixedRateString = "${regards.ingest.ask.for.aips.deletion.rate:60000}")
     public void askForAipsDeletion() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
-            LOGGER.trace("Scheduled task : Process new AIP bulk request to archival storage for tenant {}", tenant);
-            runtimeTenantResolver.forceTenant(tenant);
-            aipBulkRequestService.askForAipsDeletion();
-            runtimeTenantResolver.clearTenant();
+            try {
+                LOGGER.trace("Scheduled task : Process new AIP bulk request to archival storage for tenant {}", tenant);
+                runtimeTenantResolver.forceTenant(tenant);
+                // FIXME refactor
+                aipBulkRequestService.askForAipsDeletion();
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
         }
     }
 

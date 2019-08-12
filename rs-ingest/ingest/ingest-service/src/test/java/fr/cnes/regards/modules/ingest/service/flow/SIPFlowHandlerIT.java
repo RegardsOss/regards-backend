@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.domain.dto.flow.SipFlowItem;
+import fr.cnes.regards.modules.ingest.domain.dto.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
 /**
@@ -80,7 +80,7 @@ public class SIPFlowHandlerIT extends AbstractMultitenantServiceTest {
             // Create event
             IngestMetadataDto mtd = IngestMetadataDto.build("source", OffsetDateTime.now().toString(),
                                                             IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
-            SipFlowItem flowItem = SipFlowItem.build(mtd, sip);
+            IngestRequestFlowItem flowItem = IngestRequestFlowItem.build(mtd, sip);
             publisher.publish(flowItem);
         }
 

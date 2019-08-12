@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepExceptio
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.aip.AIP;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
@@ -39,18 +40,15 @@ import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
  */
 public class PostprocessingStep extends AbstractIngestStep<SIP, Void> {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(PostprocessingStep.class);
 
-    public PostprocessingStep(IngestProcessingJob job) {
-        super(job);
+    public PostprocessingStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
+        super(job, ingestChain);
     }
 
     @Override
     protected Void doExecute(SIP sip) throws ProcessingStepException {
-        Optional<PluginConfiguration> conf = processingChain.getPostProcessingPlugin();
+        Optional<PluginConfiguration> conf = ingestChain.getPostProcessingPlugin();
         if (conf.isPresent()) {
             LOGGER.debug("Postprocessing for SIP \"{}\"", sip.getId());
             ISipPostprocessing postprocessing = this.getStepPlugin(conf.get().getBusinessId());
@@ -63,6 +61,6 @@ public class PostprocessingStep extends AbstractIngestStep<SIP, Void> {
 
     @Override
     protected void doAfterError(SIP sip) {
-        LOGGER.error("Error during post processing for SIP \"{}\"", sip.getId());
+        handleRequestError(String.format("Error during post processing for SIP \"{}\"", sip.getId()));
     }
 }

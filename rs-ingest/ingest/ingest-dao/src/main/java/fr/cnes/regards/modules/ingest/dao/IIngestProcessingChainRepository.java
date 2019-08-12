@@ -35,6 +35,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChainView;
 
 /**
  * {@link IngestProcessingChain} repository
@@ -44,6 +45,11 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
  */
 public interface IIngestProcessingChainRepository
         extends JpaRepository<IngestProcessingChain, Long>, JpaSpecificationExecutor<IngestProcessingChain> {
+
+    /**
+     * Retrieve all processing chain name
+     */
+    List<IngestProcessingChainView> findAllNames();
 
     /**
      * Retrieve chain with specified name
@@ -82,10 +88,9 @@ public interface IIngestProcessingChainRepository
         // now that we have the ids, lets load the products and keep the same sort
         List<IngestProcessingChain> loaded = findAllByIdIn(ingestProcChainIds, pageable.getSort());
         return new PageImpl<>(loaded,
-                              PageRequest.of(ingestProcessingChains.getNumber(),
-                                             ingestProcessingChains.getSize(),
-                                             ingestProcessingChains.getSort()),
-                              ingestProcessingChains.getTotalElements());
+                PageRequest.of(ingestProcessingChains.getNumber(), ingestProcessingChains.getSize(),
+                               ingestProcessingChains.getSort()),
+                ingestProcessingChains.getTotalElements());
     }
 
     @EntityGraph("graph.ingest.processing.chain.complete")
