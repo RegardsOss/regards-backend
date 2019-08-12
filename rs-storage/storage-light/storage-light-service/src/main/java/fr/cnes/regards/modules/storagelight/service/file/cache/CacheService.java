@@ -81,7 +81,7 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocati
 public class CacheService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CacheService.class);
-    
+
     private static int BULK_SIZE = 100;
 
     @Autowired
@@ -121,11 +121,11 @@ public class CacheService {
      * @param expirationDate
      * @throws EntityAlreadyExistsException
      */
-    public void addFile(String checksum, Long fileSize, URL location, OffsetDateTime expirationDate) {
+    public void addFile(String checksum, Long fileSize, URL location, OffsetDateTime expirationDate, String requestId) {
         Optional<CacheFile> oCf = search(checksum);
         CacheFile cachedFile;
         if (!oCf.isPresent()) {
-            cachedFile = new CacheFile(checksum, fileSize, location, expirationDate);
+            cachedFile = new CacheFile(checksum, fileSize, location, expirationDate, requestId);
         } else {
             cachedFile = oCf.get();
             if (expirationDate.isAfter(cachedFile.getExpirationDate())) {
@@ -236,14 +236,20 @@ public class CacheService {
     /**
      * Retrieve all {@link FileReference}s available in cache.
      * @param fileReferences
+     * @param requestId new availability request businness identifier. This id is added to the already existing cache files.
      * @return {@link FileReference}s available
      */
-    public Set<FileReference> getFilesAvailableInCache(Set<FileReference> fileReferences) {
+    public Set<FileReference> getFilesAvailableInCache(Set<FileReference> fileReferences, String requestId) {
         Set<FileReference> availables = Sets.newHashSet();
         Set<String> checksums = fileReferences.stream().map(f -> f.getMetaInfo().getChecksum())
                 .collect(Collectors.toSet());
         Set<CacheFile> cacheFiles = cachedFileRepository.findAllByChecksumIn(checksums);
-        Set<String> cacheFileChecksums = cacheFiles.stream().map(f -> f.getChecksum()).collect(Collectors.toSet());
+        Set<String> cacheFileChecksums = cacheFiles.stream().map(cf -> {
+            // Add new request id to the cache file
+            cf.addRequestId(requestId);
+            cachedFileRepository.save(cf);
+            return cf.getChecksum();
+        }).collect(Collectors.toSet());
         for (FileReference f : fileReferences) {
             if (cacheFileChecksums.contains(f.getMetaInfo().getChecksum())) {
                 availables.add(f);
@@ -285,40 +291,42 @@ public class CacheService {
      * </ul>
      * @param filesToDelete {@link Set}<{@link CacheFile}> to delete.
      */
-    private void deleteCachedFiles(Collection<CacheFile> filesToDelete) {
+    public void deleteCachedFiles(Collection<CacheFile> filesToDelete) {
         LOGGER.debug("Deleting {} files from cache.", filesToDelete.size());
-        for (CacheFile cachedFile : filesToDelete) {
-            if (cachedFile.getLocation() != null) {
-                Path fileLocation = Paths.get(cachedFile.getLocation().getPath());
-                if (fileLocation.toFile().exists()) {
-                    try {
-                        LOGGER.debug("Deletion of cached file {} (exp date={}). {}", cachedFile.getChecksum(),
-                                     cachedFile.getExpirationDate().toString(), fileLocation);
-                        Files.delete(fileLocation);
-                        cachedFileRepository.delete(cachedFile);
-                        LOGGER.info(" [CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}). {}", cachedFile.getChecksum(),
-                                     cachedFile.getExpirationDate().toString(), fileLocation);
-                    } catch (NoSuchFileException e) {
-                        // File does not exists, just log a warning and do delet file in db.
-                        LOGGER.warn(e.getMessage(), e);
-                        cachedFileRepository.delete(cachedFile);
-                        LOGGER.info("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}).", cachedFile.getChecksum(),
-                                     cachedFile.getExpirationDate().toString(), fileLocation);
-                    } catch (IOException e) {
-                        // File exists but is not deletable.
-                        LOGGER.error(e.getMessage(), e);
-                    }
-                } else {
-                    LOGGER.error("File to delete {} does not exists", fileLocation);
-                    cachedFileRepository.delete(cachedFile);
-                    LOGGER.info("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}). {}", cachedFile.getChecksum(),
+        filesToDelete.forEach(this::delete);
+    }
+
+    public void delete(CacheFile cachedFile) {
+        if (cachedFile.getLocation() != null) {
+            Path fileLocation = Paths.get(cachedFile.getLocation().getPath());
+            if (fileLocation.toFile().exists()) {
+                try {
+                    LOGGER.debug("Deletion of cached file {} (exp date={}). {}", cachedFile.getChecksum(),
                                  cachedFile.getExpirationDate().toString(), fileLocation);
+                    Files.delete(fileLocation);
+                    cachedFileRepository.delete(cachedFile);
+                    LOGGER.info(" [CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}). {}",
+                                cachedFile.getChecksum(), cachedFile.getExpirationDate().toString(), fileLocation);
+                } catch (NoSuchFileException e) {
+                    // File does not exists, just log a warning and do delet file in db.
+                    LOGGER.warn(e.getMessage(), e);
+                    cachedFileRepository.delete(cachedFile);
+                    LOGGER.info("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}).",
+                                cachedFile.getChecksum(), cachedFile.getExpirationDate().toString(), fileLocation);
+                } catch (IOException e) {
+                    // File exists but is not deletable.
+                    LOGGER.error(e.getMessage(), e);
                 }
             } else {
+                LOGGER.error("File to delete {} does not exists", fileLocation);
                 cachedFileRepository.delete(cachedFile);
-                LOGGER.info("Cached file {} deleted (exp date={}).", cachedFile.getChecksum(),
-                             cachedFile.getExpirationDate().toString());
+                LOGGER.info("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}). {}",
+                            cachedFile.getChecksum(), cachedFile.getExpirationDate().toString(), fileLocation);
             }
+        } else {
+            cachedFileRepository.delete(cachedFile);
+            LOGGER.info("Cached file {} deleted (exp date={}).", cachedFile.getChecksum(),
+                        cachedFile.getExpirationDate().toString());
         }
     }
 

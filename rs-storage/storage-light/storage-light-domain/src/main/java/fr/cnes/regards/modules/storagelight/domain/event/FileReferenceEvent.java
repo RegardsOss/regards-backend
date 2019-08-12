@@ -131,4 +131,13 @@ public class FileReferenceEvent implements ISubscribable {
         return requestIds;
     }
 
+    @Override
+    public String toString() {
+        return "FileReferenceEvent [" + (checksum != null ? "checksum=" + checksum + ", " : "")
+                + (type != null ? "type=" + type + ", " : "") + (message != null ? "message=" + message + ", " : "")
+                + (owners != null ? "owners=" + owners + ", " : "")
+                + (location != null ? "location=" + location + ", " : "")
+                + (requestIds != null ? "requestIds=" + requestIds : "") + "]";
+    }
+
 }

@@ -41,7 +41,7 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
     private static final Logger LOGGER = LoggerFactory.getLogger(FileRequestEventHandler.class);
 
     @Autowired(required = false)
-    private IStorageListener listener;
+    private IStorageRequestListener listener;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -54,7 +54,7 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
         if (listener != null) {
             subscriber.subscribeTo(FileRequestEvent.class, this);
         } else {
-            LOGGER.warn("No listener configured to collect storage client AMQP responses !!");
+            LOGGER.warn("No listener configured to collect storage FileRequestEvent bus messages !!");
         }
     }
 
@@ -64,7 +64,7 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
         FileRequestEvent event = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            LOGGER.info("Handling request event : {}", event.toString());
+            LOGGER.info("Handling {}", event.toString());
             handle(event);
         } finally {
             runtimeTenantResolver.clearTenant();

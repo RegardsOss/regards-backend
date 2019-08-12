@@ -81,7 +81,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileDelet
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
-        "regards.storage.cache.path=target/cache","regards.storage.cache.size.limit.ko.per.tenant:10" })
+        "regards.storage.cache.path=target/cache", "regards.storage.cache.size.limit.ko.per.tenant:10" })
 public class FileReferenceServiceTest extends AbstractFileReferenceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceServiceTest.class);
@@ -520,60 +520,71 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         Assert.assertTrue("file should be restored in cache",
                           Files.exists(Paths.get(cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()))));
     }
-    
+
     @Test
     public void restore_cacheFull() throws Exception {
-    	// Simulate cache full 80% 8 file * 1ko (cache size limit 10ko)
-    	cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file",null,"/plop/file"), OffsetDateTime.now().plusDays(1));
-    	cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file",null,"/plop/file"), OffsetDateTime.now().plusDays(1));
-    	cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file",null,"/plop/file"), OffsetDateTime.now().plusDays(1));
-    	cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file",null,"/plop/file"), OffsetDateTime.now().plusDays(1));
-    	cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file",null,"/plop/file"), OffsetDateTime.now().plusDays(1));
-    	cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file",null,"/plop/file"), OffsetDateTime.now().plusDays(1));
-    	cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file",null,"/plop/file"), OffsetDateTime.now().plusDays(1));
-    	cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file",null,"/plop/file"), OffsetDateTime.now().minusDays(1));
-    	
-    	// Reference 5 files of 1ko each
+        // Simulate cache full 80% 8 file * 1ko (cache size limit 10ko)
+        String cacheRequestId = UUID.randomUUID().toString();
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
+                             OffsetDateTime.now().plusDays(1), cacheRequestId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
+                             OffsetDateTime.now().plusDays(1), cacheRequestId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
+                             OffsetDateTime.now().plusDays(1), cacheRequestId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
+                             OffsetDateTime.now().plusDays(1), cacheRequestId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
+                             OffsetDateTime.now().plusDays(1), cacheRequestId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
+                             OffsetDateTime.now().plusDays(1), cacheRequestId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
+                             OffsetDateTime.now().plusDays(1), cacheRequestId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
+                             OffsetDateTime.now().minusDays(1), cacheRequestId);
+
+        // Reference 5 files of 1ko each
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test");
         FileReference fileRef2 = this.generateRandomStoredNearlineFileReference("file-nl-2.test");
         FileReference fileRef3 = this.generateRandomStoredNearlineFileReference("file-nl-3.test");
         FileReference fileRef4 = this.generateRandomStoredNearlineFileReference("file-nl-4.test");
         FileReference fileRef5 = this.generateRandomStoredNearlineFileReference("file-nl-5.test");
-        fileRefService.makeAvailable(Sets.newHashSet(fileRef.getMetaInfo().getChecksum(),fileRef2.getMetaInfo().getChecksum(),
-        		fileRef3.getMetaInfo().getChecksum(),fileRef4.getMetaInfo().getChecksum(),fileRef5.getMetaInfo().getChecksum()),
-                                     OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
+        fileRefService.makeAvailable(Sets
+                .newHashSet(fileRef.getMetaInfo().getChecksum(), fileRef2.getMetaInfo().getChecksum(),
+                            fileRef3.getMetaInfo().getChecksum(), fileRef4.getMetaInfo().getChecksum(),
+                            fileRef5.getMetaInfo().getChecksum()), OffsetDateTime.now().plusDays(1),
+                                     UUID.randomUUID().toString());
         Assert.assertTrue("A cache request should be created",
                           fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
         Assert.assertTrue("A cache request should be created",
-                fileCacheRequestService.search(fileRef2.getMetaInfo().getChecksum()).isPresent());
+                          fileCacheRequestService.search(fileRef2.getMetaInfo().getChecksum()).isPresent());
         Assert.assertTrue("A cache request should be created",
-                fileCacheRequestService.search(fileRef3.getMetaInfo().getChecksum()).isPresent());
+                          fileCacheRequestService.search(fileRef3.getMetaInfo().getChecksum()).isPresent());
         Assert.assertTrue("A cache request should be created",
-                fileCacheRequestService.search(fileRef4.getMetaInfo().getChecksum()).isPresent());
+                          fileCacheRequestService.search(fileRef4.getMetaInfo().getChecksum()).isPresent());
         Assert.assertTrue("A cache request should be created",
-                fileCacheRequestService.search(fileRef5.getMetaInfo().getChecksum()).isPresent());
+                          fileCacheRequestService.search(fileRef5.getMetaInfo().getChecksum()).isPresent());
 
         Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
         runAndWaitJob(jobs);
-        
+
         // Only 2 files can be restored in cache
         // There should remains 3 cache  request in todo state
-        Assert.assertEquals("There should remains 3 cache  request in todo state",3,fileCacheReqRepo.count());
-        
+        Assert.assertEquals("There should remains 3 cache  request in todo state", 3, fileCacheReqRepo.count());
+
         Assert.assertEquals("There should be 10 files in cache", 10, cacheFileRepo.count());
-        
+
         // Simulate cache  purge. One  file is expired so one  file should be  removed from cache
         cacheService.purge();
-        
+
         jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
         runAndWaitJob(jobs);
-        
+
         // One new file can be restored
         // There should remains 2 cache  request in todo state
-        Assert.assertEquals("There should remains 2 cache  request in todo state",2,fileCacheReqRepo.count());
-        
+        Assert.assertEquals("There should remains 2 cache  request in todo state", 2, fileCacheReqRepo.count());
+
         Assert.assertEquals("There should be 10 files in cache", 10, cacheFileRepo.count());
-        
+
     }
 
     @Test
@@ -627,75 +638,84 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         Assert.assertTrue("A cache request should be created", request.isPresent());
         Assert.assertTrue("A cache request should be created", request.get().getStatus() == FileRequestStatus.ERROR);
     }
-    
+
     @Test
     public void copyFile() throws InterruptedException, ExecutionException {
-    	FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test");
-    	fileRefService.copyFile(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL),
-    			UUID.randomUUID().toString());
-    	// A new copy request should be created
-    	Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
-    	Assert.assertTrue("There should be a copy request created",oReq.isPresent());
-    	
-    	// Now run copy schedule
-    	fileCopyRequestService.scheduleAvailabilityRequests(FileRequestStatus.TODO);
-    	
-    	// There should be one availability request created
-    	Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
-    	oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
-    	Assert.assertTrue("There should be a cache request created",oCacheReq.isPresent());
-    	Assert.assertTrue("No storage request should be created yet", fileStorageRequestRepo.count() == 0);
-    	Assert.assertTrue("There should be a copy request",oReq.isPresent());
-    	Assert.assertTrue("There should be a copy request in pending state",oReq.get().getStatus() == FileRequestStatus.PENDING);
-    	
-    	Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test");
+        fileRefService.copyFile(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL),
+                                UUID.randomUUID().toString());
+        // A new copy request should be created
+        Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
+                                                                       ONLINE_CONF_LABEL);
+        Assert.assertTrue("There should be a copy request created", oReq.isPresent());
+
+        // Now run copy schedule
+        fileCopyRequestService.scheduleAvailabilityRequests(FileRequestStatus.TODO);
+
+        // There should be one availability request created
+        Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
+        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+        Assert.assertTrue("There should be a cache request created", oCacheReq.isPresent());
+        Assert.assertTrue("No storage request should be created yet", fileStorageRequestRepo.count() == 0);
+        Assert.assertTrue("There should be a copy request", oReq.isPresent());
+        Assert.assertTrue("There should be a copy request in pending state",
+                          oReq.get().getStatus() == FileRequestStatus.PENDING);
+
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
         runAndWaitJob(jobs);
-        
+
         // Cache file should be restored
         oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
         Optional<CacheFile> oCachedFile = cacheService.search(fileRef.getMetaInfo().getChecksum());
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
-        Assert.assertFalse("There should not be a cache request anymore",oCacheReq.isPresent());
-    	Assert.assertTrue("The file should be restored in  cache",oCachedFile.isPresent());
-    	Assert.assertTrue("There should be a copy request",oReq.isPresent());
-    	Assert.assertTrue("There should be a copy request in pending state",oReq.get().getStatus() == FileRequestStatus.PENDING);
-    	
-    	ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Assert.assertFalse("There should not be a cache request anymore", oCacheReq.isPresent());
+        Assert.assertTrue("The file should be restored in  cache", oCachedFile.isPresent());
+        Assert.assertTrue("There should be a copy request", oReq.isPresent());
+        Assert.assertTrue("There should be a copy request in pending state",
+                          oReq.get().getStatus() == FileRequestStatus.PENDING);
+
+        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         FileReferenceEvent event = getFileReferenceEvent(argumentCaptor.getAllValues());
-        
+
         fileRefEventHandler.handle(new TenantWrapper<>(event, getDefaultTenant()));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        
+
         // A new storage request should be created
-        Optional<FileStorageRequest> oStorageReq = fileStorageRequestService.search(ONLINE_CONF_LABEL, fileRef.getMetaInfo().getChecksum());
+        Optional<FileStorageRequest> oStorageReq = fileStorageRequestService
+                .search(ONLINE_CONF_LABEL, fileRef.getMetaInfo().getChecksum());
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
-        Assert.assertTrue("There should be a storage request created",oStorageReq.isPresent());
-        Assert.assertTrue("There should be a copy request",oReq.isPresent());
-    	Assert.assertTrue("There should be a copy request in pending state",oReq.get().getStatus() == FileRequestStatus.PENDING);
-        
+        Assert.assertTrue("There should be a storage request created", oStorageReq.isPresent());
+        Assert.assertTrue("There should be a copy request", oReq.isPresent());
+        Assert.assertTrue("There should be a copy request in pending state",
+                          oReq.get().getStatus() == FileRequestStatus.PENDING);
+
         // Run storage job
-    	Mockito.reset(publisher);
-    	jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(), Lists.newArrayList());
-    	runAndWaitJob(jobs);
-    	Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(ONLINE_CONF_LABEL, fileRef.getMetaInfo().getChecksum());
-        Optional<FileReference> oFileRef = fileRefService.search(ONLINE_CONF_LABEL, fileRef.getMetaInfo().getChecksum());
+        Mockito.reset(publisher);
+        jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(),
+                                                      Lists.newArrayList());
+        runAndWaitJob(jobs);
+        Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService
+                .search(ONLINE_CONF_LABEL, fileRef.getMetaInfo().getChecksum());
+        Optional<FileReference> oFileRef = fileRefService.search(ONLINE_CONF_LABEL,
+                                                                 fileRef.getMetaInfo().getChecksum());
         Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
         Assert.assertFalse("File reference request should not exists anymore", oFileRefReq.isPresent());
-        Assert.assertTrue("There should be a copy request",oReq.isPresent());
-    	Assert.assertTrue("There should be a copy request in pending state",oReq.get().getStatus() == FileRequestStatus.PENDING);
-    	
-    	// Simulate file  stored event
+        Assert.assertTrue("There should be a copy request", oReq.isPresent());
+        Assert.assertTrue("There should be a copy request in pending state",
+                          oReq.get().getStatus() == FileRequestStatus.PENDING);
+
+        // Simulate file  stored event
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         event = getFileReferenceEvent(argumentCaptor.getAllValues());
         fileRefEventHandler.handle(new TenantWrapper<>(event, getDefaultTenant()));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        
+
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
-        Assert.assertFalse("There should not be a copy request anymore",oReq.isPresent());
-        
+        Assert.assertFalse("There should not be a copy request anymore", oReq.isPresent());
+
         // File should not be in cache anymore
         oCachedFile = cacheService.search(fileRef.getMetaInfo().getChecksum());
-        Assert.assertFalse("The cache file should be deleted after copy",oCachedFile.isPresent());
+        Assert.assertFalse("The cache file should be deleted after copy", oCachedFile.isPresent());
     }
 }

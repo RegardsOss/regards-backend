@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorF
  * @author sbinda
  *
  */
-public interface IStorageListener {
+public interface IStorageRequestListener {
 
     void onAvailable(RequestInfo request);
 

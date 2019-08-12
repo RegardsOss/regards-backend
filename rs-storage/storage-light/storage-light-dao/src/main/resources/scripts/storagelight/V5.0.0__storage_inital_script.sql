@@ -1,4 +1,4 @@
-create table t_cache_file (id int8 not null, checksum varchar(128), expiration_date timestamp, file_size int8, last_request_date timestamp, location varchar(255), primary key (id));
+create table t_cache_file (id int8 not null, checksum varchar(128), expiration_date timestamp, file_size int8, location varchar(255), primary key (id));
 create table t_file_cache_request (id int8 not null, checksum varchar(128) not null, destination_path varchar(2048) not null, error_cause varchar(512), expiration_date timestamp, file_size int8 not null, request_id varchar(128) not null, status varchar(255) not null, storage varchar(128) not null, file_ref_id int8 not null, primary key (id));
 create table t_file_copy_request (id int8 not null, error_cause varchar(512), cache_request_id varchar(128), storage_request_id varchar(128), algorithm varchar(16) not null, checksum varchar(128) not null, fileName varchar(256) not null, fileSize int8, height int4, mime_type varchar(255) not null, type varchar(256), width int4, request_id varchar(128) not null, status varchar(255) not null, storage varchar(128), storage_subdirectory varchar(2048), primary key (id));
 create table t_file_deletion_request (file_reference int8 not null, error_cause varchar(512), force_delete boolean, request_id varchar(128) not null, status varchar(255) not null, storage varchar(128) not null, primary key (file_reference));
@@ -9,6 +9,7 @@ create table t_storage_location (id int8 not null, allowed_size int8, last_updat
 create table t_storage_monitoring_process (id int8 not null, last_file_reference_id int8, last_monitoring_date timestamp, last_monitoring_duration int8, running boolean not null, primary key (id));
 create table ta_file_ref_owners (file_ref_id int8 not null, owner varchar(255));
 create table ta_file_storage_request_ids (file_ref_id int8 not null, request_id varchar(128) not null, primary key (file_ref_id, request_id));
+create table ta_cache_file_request_ids (cache_file_id int8 not null, request_id varchar(128) not null, primary key (cache_file_id, request_id));
 create table ta_file_storage_request_owners (file_ref_id int8 not null, owner varchar(255));
 create index idx_cache_file_checksum on t_cache_file (checksum);
 alter table t_cache_file add constraint uk_cache_file_checksum unique (checksum);
@@ -35,4 +36,5 @@ alter table t_file_deletion_request add constraint FK8iyuxn10e6gx9ybs6i92mxdgq f
 alter table t_prioritized_storage add constraint FKj8h3r7gds36k6uvtequf2d5p foreign key (storage_conf_id) references t_plugin_configuration;
 alter table ta_file_ref_owners add constraint fk_ta_file_ref_owners_t_file_reference foreign key (file_ref_id) references t_file_reference;
 alter table ta_file_storage_request_ids add constraint fk_ta_file_storage_request_ids_t_file_storage_request foreign key (file_ref_id) references t_file_storage_request;
+alter table ta_cache_file_request_ids add constraint fk_ta_cache_file_request_ids_t_cache_file_request foreign key (cache_file_id) references t_cache_file;
 alter table ta_file_storage_request_owners add constraint fk_ta_file_storage_request_owners_t_file_storage_request foreign key (file_ref_id) references t_file_storage_request;

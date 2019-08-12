@@ -45,7 +45,7 @@ public interface IStorageClient {
      * <br/>
      * @param file {@link FileStorageRequestDTO} information about file to store
      * @return {@link RequestInfo} containing a unique request id. This request id can
-     * be used to identify responses in {@link IStorageListener} implementation.
+     * be used to identify responses in {@link IStorageRequestListener} implementation.
      */
     RequestInfo store(FileStorageRequestDTO file);
 
@@ -54,7 +54,7 @@ public interface IStorageClient {
      * by {@link PluginConfiguration#getBusinessId()} of {@link IStorageLocation} plugin.
      * @param files {@link FileStorageRequestDTO} information about files to store
      * @return {@link RequestInfo} containing a unique request id. This request id can
-     * be used to identify responses in {@link IStorageListener} implementation.
+     * be used to identify responses in {@link IStorageRequestListener} implementation.
      */
     RequestInfo store(Collection<FileStorageRequestDTO> files);
 
@@ -82,7 +82,7 @@ public interface IStorageClient {
      *
      * @param file {@link FileReferenceRequestDTO} information about files to reference
      * @return {@link RequestInfo} containing a unique request id. This request id can
-     * be used to identify responses in {@link IStorageListener} implementation.
+     * be used to identify responses in {@link IStorageRequestListener} implementation.
      */
     RequestInfo reference(FileReferenceRequestDTO file);
 
@@ -92,7 +92,7 @@ public interface IStorageClient {
      * <br/>
      * @param files {@link FileReferenceRequestDTO} information about files to reference
      * @return {@link RequestInfo} containing a unique request id. This request id can
-     * be used to identify responses in {@link IStorageListener} implementation.
+     * be used to identify responses in {@link IStorageRequestListener} implementation.
      */
     RequestInfo reference(Collection<FileReferenceRequestDTO> files);
 
@@ -103,7 +103,7 @@ public interface IStorageClient {
      *
      * @param file {@link FileDeletionRequestDTO} information about file to delete
      * @return {@link RequestInfo} containing a unique request id. This request id can
-     * be used to identify responses in {@link IStorageListener} implementation.
+     * be used to identify responses in {@link IStorageRequestListener} implementation.
      */
     RequestInfo delete(FileDeletionRequestDTO file);
 
@@ -114,7 +114,7 @@ public interface IStorageClient {
      *
      * @param files {@link FileDeletionRequestDTO} information about files to delete
      * @return {@link RequestInfo} containing a unique request id. This request id can
-     * be used to identify responses in {@link IStorageListener} implementation.
+     * be used to identify responses in {@link IStorageRequestListener} implementation.
      */
     RequestInfo delete(Collection<FileDeletionRequestDTO> files);
 
@@ -125,7 +125,7 @@ public interface IStorageClient {
      * @param expirationDate date until which the file must be available
      * (after this date, the system could proceed to a possible cleaning of its cache, only offline files are concerned!)
      * @return {@link RequestInfo} containing a unique request id. This request id can
-     * be used to identify responses in {@link IStorageListener} implementation.
+     * be used to identify responses in {@link IStorageRequestListener} implementation.
      */
     RequestInfo makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate);
 }

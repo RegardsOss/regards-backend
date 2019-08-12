@@ -32,13 +32,11 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -74,9 +72,6 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
 
     @Autowired
     FileStorageRequestService fileStorageRequestService;
-
-    @SpyBean
-    public IPublisher publisher;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -161,7 +156,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
         // Simulate file in cache
         cacheService.addFile(file1.getMetaInfo().getChecksum(), 123L,
                              new URL("file", null, "target/cache/test/file.nearline.1.test"),
-                             OffsetDateTime.now().plusDays(1));
+                             OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
         // Simulate availability request on this file
         Mockito.clearInvocations(publisher);
         AvailabilityFileRefFlowItem request = AvailabilityFileRefFlowItem

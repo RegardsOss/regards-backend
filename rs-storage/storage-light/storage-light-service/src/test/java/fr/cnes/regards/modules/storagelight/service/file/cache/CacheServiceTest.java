@@ -66,13 +66,15 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         String checksum = UUID.randomUUID().toString();
         OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1);
         Assert.assertFalse("File should not referenced in cache", service.getCacheFile(checksum).isPresent());
-        service.addFile(checksum, 123L, new URL("file", null, "/plop/test.file.test"), expirationDate);
+        service.addFile(checksum, 123L, new URL("file", null, "/plop/test.file.test"), expirationDate,
+                        UUID.randomUUID().toString());
         Optional<CacheFile> oCf = service.getCacheFile(checksum);
         Assert.assertTrue("File should be referenced in cache", oCf.isPresent());
         Assert.assertEquals("Invalid expiration date", expirationDate, oCf.get().getExpirationDate());
         // Try to reference again the same file in cache
         OffsetDateTime newExpirationDate = OffsetDateTime.now().plusDays(2);
-        service.addFile(checksum, 123L, new URL("file", null, "/plop/test.file.test"), newExpirationDate);
+        service.addFile(checksum, 123L, new URL("file", null, "/plop/test.file.test"), newExpirationDate,
+                        UUID.randomUUID().toString());
         oCf = service.getCacheFile(checksum);
         Assert.assertTrue("File should be referenced in cache", oCf.isPresent());
         Assert.assertEquals("Invalid expiration date", newExpirationDate, oCf.get().getExpirationDate());
@@ -83,7 +85,7 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1);
         for (int i = 0; i < 1_000; i++) {
             service.addFile(UUID.randomUUID().toString(), 10L, new URL("file", null, "/plop/test.file.test"),
-                            expirationDate);
+                            expirationDate, UUID.randomUUID().toString());
         }
         Assert.assertEquals("Total size not valid", 10_000L, service.getCacheSizeUsedBytes().longValue());
     }
@@ -95,7 +97,7 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         for (int i = 0; i < 1_000; i++) {
             expirationDate = expirationDate.plusDays(1);
             service.addFile(UUID.randomUUID().toString(), 10L, new URL("file", null, "/plop/test.file.test"),
-                            expirationDate);
+                            expirationDate, UUID.randomUUID().toString());
         }
         Assert.assertEquals("There should be 1000 files in cache", 1000, repository.findAll().size());
         service.purge();

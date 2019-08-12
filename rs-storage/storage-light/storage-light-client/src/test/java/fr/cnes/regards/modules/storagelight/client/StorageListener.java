@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorF
  *
  */
 @Component
-public class StorageListener implements IStorageListener {
+public class StorageListener implements IStorageRequestListener {
 
     private final Set<RequestInfo> denied = Sets.newHashSet();
 

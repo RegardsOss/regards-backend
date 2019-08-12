@@ -191,15 +191,17 @@ public class FileCacheRequestService {
      * @param cacheLocation
      * @param realFileSize
      */
-    public void handleSuccess(FileCacheRequest fileReq, URL cacheLocation, Collection<String> owners, Long realFileSize, String successMessage) {
+    public void handleSuccess(FileCacheRequest fileReq, URL cacheLocation, Collection<String> owners, Long realFileSize,
+            String successMessage) {
         Optional<FileCacheRequest> oRequest = repository.findById(fileReq.getId());
         if (oRequest.isPresent()) {
             // Create the cache file associated
             cacheService.addFile(oRequest.get().getChecksum(), realFileSize, cacheLocation,
-                                 oRequest.get().getExpirationDate());
+                                 oRequest.get().getExpirationDate(), fileReq.getRequestId());
             repository.deleteById(oRequest.get().getId());
         }
-        publisher.available(fileReq.getChecksum(), "cache", cacheLocation.toString(), owners, successMessage, fileReq.getRequestId(), true);
+        publisher.available(fileReq.getChecksum(), "cache", cacheLocation.toString(), owners, successMessage,
+                            fileReq.getRequestId(), true);
     }
 
     /**

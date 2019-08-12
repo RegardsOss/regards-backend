@@ -89,10 +89,10 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
 
     @SpyBean
     protected FileReferenceEventPublisher fileEventPublisher;
-    
+
     @SpyBean
     protected IPublisher publisher;
-    
+
     @Autowired
     protected FileReferenceEventHandler fileRefEventHandler;
 
@@ -107,9 +107,9 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
 
     @Autowired
     protected FileCacheRequestService fileCacheRequestService;
-    
+
     @Autowired
-    protected  FileCopyRequestService fileCopyRequestService;
+    protected FileCopyRequestService fileCopyRequestService;
 
     @Autowired
     protected CacheService cacheService;
@@ -137,7 +137,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
 
     @Autowired
     protected IFileDeletetionRequestRepository fileDeletionRequestRepo;
-    
+
     @Autowired
     protected IFileCopyRequestRepository copyRequestRepository;
 
@@ -406,7 +406,8 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected void simulateFileInCache(String checksum) {
         try {
             String filePath = cacheService.getFilePath(checksum);
-            cacheService.addFile(checksum, 123L, new URL("file", null, filePath), OffsetDateTime.now().plusDays(1));
+            cacheService.addFile(checksum, 123L, new URL("file", null, filePath), OffsetDateTime.now().plusDays(1),
+                                 UUID.randomUUID().toString());
             // Create file on disk
             if (!Files.exists(Paths.get(filePath).getParent())) {
 

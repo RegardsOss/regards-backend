@@ -98,7 +98,7 @@ public class NLFileReferenceService {
      */
     public int makeAvailable(Set<FileReference> fileReferences, OffsetDateTime expirationDate, String requestId) {
         // Check files already available in cache
-        Set<FileReference> availables = cachedFileService.getFilesAvailableInCache(fileReferences);
+        Set<FileReference> availables = cachedFileService.getFilesAvailableInCache(fileReferences, requestId);
         Set<FileReference> toRestore = fileReferences.stream().filter(f -> !availables.contains(f))
                 .collect(Collectors.toSet());
         // Notify available
@@ -116,8 +116,9 @@ public class NLFileReferenceService {
      */
     private void notifyAlreadyAvailablesInCache(Set<FileReference> availables, String requestId) {
         availables.forEach(f -> publisher
-                .available(f.getMetaInfo().getChecksum(), "cache", cachedFileService.getFilePath(f.getMetaInfo().getChecksum()), 
-                           f.getOwners(), String.format("file %s (checksum %s) is available for download.",
+                .available(f.getMetaInfo().getChecksum(), "cache",
+                           cachedFileService.getFilePath(f.getMetaInfo().getChecksum()), f.getOwners(),
+                           String.format("file %s (checksum %s) is available for download.",
                                          f.getMetaInfo().getFileName(), f.getMetaInfo().getChecksum()),
                            requestId, false));
     }

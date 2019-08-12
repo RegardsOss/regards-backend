@@ -2,18 +2,26 @@ package fr.cnes.regards.modules.storagelight.domain.database;
 
 import java.net.URL;
 import java.time.OffsetDateTime;
+import java.util.Set;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.JoinColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
@@ -61,12 +69,11 @@ public class CacheFile {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime expirationDate;
 
-    /**
-     * Date of the last request to make the file available.
-     */
-    @Column(name = "last_request_date")
-    @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime lastRequestDate;
+    @Column(name = "request_id", nullable = false, length = 128)
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "ta_cache_file_request_ids", joinColumns = @JoinColumn(name = "cache_file_id",
+            foreignKey = @ForeignKey(name = "fk_ta_cache_file_request_ids_t_file_cache")))
+    private final Set<String> requestIds = Sets.newHashSet();
 
     /**
      * Default constructor
@@ -80,12 +87,12 @@ public class CacheFile {
      * @param df
      * @param expirationDate
      */
-    public CacheFile(String checksum, Long fileSize, URL location, OffsetDateTime expirationDate) {
+    public CacheFile(String checksum, Long fileSize, URL location, OffsetDateTime expirationDate, String requestId) {
         this.checksum = checksum;
         this.fileSize = fileSize;
         this.location = location;
         this.expirationDate = expirationDate;
-        this.lastRequestDate = OffsetDateTime.now();
+        this.requestIds.add(requestId);
     }
 
     public Long getId() {
@@ -108,14 +115,6 @@ public class CacheFile {
         this.expirationDate = expiration;
     }
 
-    public OffsetDateTime getLastRequestDate() {
-        return lastRequestDate;
-    }
-
-    public void setLastRequestDate(OffsetDateTime pLastRequestDate) {
-        lastRequestDate = pLastRequestDate;
-    }
-
     public Long getFileSize() {
         return fileSize;
     }
@@ -128,8 +127,19 @@ public class CacheFile {
         return checksum;
     }
 
-    public void setChecksum(String pChecksum) {
-        checksum = pChecksum;
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
+    }
+
+    public void addRequestId(String requestId) {
+        this.requestIds.add(requestId);
+    }
+
+    /**
+     * @return the requestIds
+     */
+    public Set<String> getRequestIds() {
+        return requestIds;
     }
 
     @Override

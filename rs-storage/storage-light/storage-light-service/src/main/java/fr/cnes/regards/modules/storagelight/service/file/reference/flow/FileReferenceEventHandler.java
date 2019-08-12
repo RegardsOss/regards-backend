@@ -41,9 +41,13 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileReference
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
 
 /**
- * This handler is used internally by the storage service to update file requests in DELAYED state after event on file references.
- * A fileReferenceRequest DELAYED is restarted after a file deletion request ends.
- *
+ * This handler is used internally by the storage service to update file requests when a file event is received.
+ * <ul>
+ * <li> Updates DELAYED storage request after event on file references deletion. </li>
+ * <li> Creates storage request after file available event if a copy request is associated </li>
+ * <li> Delete cache file after file stored event if a copy request is associated </li>
+ * <li> Updates copy request status after availability or stored file events </li>
+ * </ul>
  * @author Sébastien Binda
  */
 @Component
@@ -51,13 +55,13 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
 
     @Autowired
     private FileStorageRequestService fileReferenceRequestService;
-    
+
     @Autowired
     private FileStorageRequestService fileStorageRequestService;
 
     @Autowired
     private FileDeletionRequestService fileDeletionRequestService;
-    
+
     @Autowired
     private FileCopyRequestService fileCopyRequestService;
 
@@ -79,22 +83,22 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
                     // Indeed, when a file reference deletion process is running, every file reference request are delayed until
                     // the deletion process is over.
                     scheduleDelayedFileRefRequests(wrapper.getContent().getChecksum(),
-                                                        wrapper.getContent().getLocation().getStorage());
+                                                   wrapper.getContent().getLocation().getStorage());
                     break;
                 case AVAILABLE:
-                	// Check if a copy request is linked to this available file
-                	handleFileAvailable(wrapper.getContent());
-                	break;
+                    // Check if a copy request is linked to this available file
+                    handleFileAvailable(wrapper.getContent());
+                    break;
                 case AVAILABILITY_ERROR:
-                	// Check if a copy request is linked to this available file
-                	handleFileNotAvailable(wrapper.getContent());
-                	break;
+                    // Check if a copy request is linked to this available file
+                    handleFileNotAvailable(wrapper.getContent());
+                    break;
                 case DELETED_FOR_OWNER:
                 case STORED:
-                	handleFileStored(wrapper.getContent());
-                	break;
+                    handleFileStored(wrapper.getContent());
+                    break;
                 case STORE_ERROR:
-                	handleStoreError(wrapper.getContent());
+                    handleStoreError(wrapper.getContent());
                 default:
                     break;
             }
@@ -123,58 +127,55 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
             fileReferenceRequestService.update(request);
         }
     }
-    
+
     private void handleFileStored(FileReferenceEvent event) {
-    	Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
-    	if (request.isPresent()) {
-    		fileCopyRequestService.handleSuccess(request.get());
-    	}
+        Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
+        if (request.isPresent()) {
+            fileCopyRequestService.handleSuccess(request.get());
+        }
     }
-    
+
     private void handleStoreError(FileReferenceEvent event) {
-    	Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
-    	if (request.isPresent()) {
-    		fileCopyRequestService.handleError(request.get(), event.getMessage());
-    	}
+        Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
+        if (request.isPresent()) {
+            fileCopyRequestService.handleError(request.get(), event.getMessage());
+        }
     }
-    
+
     private void handleFileAvailable(FileReferenceEvent event) {
-    	Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
-    	if (request.isPresent()) {
-    		createNewStorageRequest(request.get(),event);
-    	}
+        Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
+        if (request.isPresent()) {
+            createNewStorageRequest(request.get(), event);
+        }
     }
-    
+
     private void handleFileNotAvailable(FileReferenceEvent event) {
-    	Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
-    	if (request.isPresent()) {
-    		FileCopyRequest copyRequest = request.get();
-    		copyRequest.setStatus(FileRequestStatus.ERROR);
-    		copyRequest.setErrorCause(event.getMessage());
-    		fileCopyRequestService.update(copyRequest);
-    	}
+        Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
+        if (request.isPresent()) {
+            FileCopyRequest copyRequest = request.get();
+            copyRequest.setStatus(FileRequestStatus.ERROR);
+            copyRequest.setErrorCause(event.getMessage());
+            fileCopyRequestService.update(copyRequest);
+        }
     }
-    
+
     private void createNewStorageRequest(FileCopyRequest copyRequest, FileReferenceEvent fileAvailableEvent) {
-    	String  storageRequestId = UUID.randomUUID().toString();
-    	try {
-    		Optional<FileStorageRequest> request = fileStorageRequestService.create(
-    			fileAvailableEvent.getOwners(),
-    			copyRequest.getMetaInfo(),
-    			new URL(fileAvailableEvent.getLocation().getUrl()),
-    			copyRequest.getStorage(),
-    			Optional.ofNullable(copyRequest.getStorageSubDirectory()),
-    			storageRequestId);
-    		if (request.isPresent()) {
-    			copyRequest.setFileStorageRequestId(storageRequestId);
-    			fileCopyRequestService.update(copyRequest);
-    		} 
-    	} catch (MalformedURLException e) {
-    		copyRequest.setStatus(FileRequestStatus.ERROR);
-    		copyRequest.setErrorCause(String.format("Restored file is not available at url {}. Cause  : {}",
-    				fileAvailableEvent.getLocation().getUrl(),e.getMessage()));
-    		fileCopyRequestService.update(copyRequest);
-    	}
+        String storageRequestId = UUID.randomUUID().toString();
+        try {
+            Optional<FileStorageRequest> request = fileStorageRequestService
+                    .create(fileAvailableEvent.getOwners(), copyRequest.getMetaInfo(),
+                            new URL(fileAvailableEvent.getLocation().getUrl()), copyRequest.getStorage(),
+                            Optional.ofNullable(copyRequest.getStorageSubDirectory()), storageRequestId);
+            if (request.isPresent()) {
+                copyRequest.setFileStorageRequestId(storageRequestId);
+                fileCopyRequestService.update(copyRequest);
+            }
+        } catch (MalformedURLException e) {
+            copyRequest.setStatus(FileRequestStatus.ERROR);
+            copyRequest.setErrorCause(String.format("Restored file is not available at url {}. Cause  : {}",
+                                                    fileAvailableEvent.getLocation().getUrl(), e.getMessage()));
+            fileCopyRequestService.update(copyRequest);
+        }
     }
 
 }
