@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
  * @author sbinda
  *
  */
-@Component
+@Component("clientRequestEventHandler")
 public class FileRequestEventHandler implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileRequestEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileRequestEventHandler.class);
@@ -105,6 +105,9 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
             case STORAGE:
                 listener.onStoreSuccess(info);
                 break;
+            case COPY:
+                listener.onCopySuccess(info);
+                break;
             default:
                 break;
         }
@@ -123,6 +126,9 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
                 break;
             case STORAGE:
                 listener.onStoreError(info, event.getErrors());
+                break;
+            case COPY:
+                listener.onCopyError(info, event.getErrors());
                 break;
             default:
                 break;

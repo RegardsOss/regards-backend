@@ -25,12 +25,14 @@ package fr.cnes.regards.modules.storagelight.domain.event;
  */
 public enum FileRequestType {
 
-    DELETION,
-
     AVAILABILITY,
 
-    STORAGE,
+    COPY,
 
-    REFERENCE;
+    DELETION,
+
+    REFERENCE,
+
+    STORAGE;
 
 }

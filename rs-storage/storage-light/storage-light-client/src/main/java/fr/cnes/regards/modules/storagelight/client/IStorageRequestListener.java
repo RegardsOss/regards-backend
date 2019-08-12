@@ -28,6 +28,10 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorF
  */
 public interface IStorageRequestListener {
 
+    void onCopySuccess(RequestInfo request);
+
+    void onCopyError(RequestInfo request, Collection<ErrorFile> errors);
+
     void onAvailable(RequestInfo request);
 
     void onAvailabilityError(RequestInfo request, Collection<ErrorFile> errors);
@@ -44,17 +48,8 @@ public interface IStorageRequestListener {
 
     void onRequestDenied(RequestInfo request);
 
-    /**
-     * Called once per request when all files are successfully stored
-     * @param requestInfo
-     */
     void onStoreSuccess(RequestInfo requestInfo);
 
-    /**
-     * Called once per request when all files has been handled and at least one is in error.
-     * List of error files are returned in the requestInfo.
-     * @param requestInfo
-     */
     void onStoreError(RequestInfo requestInfo, Collection<ErrorFile> errors);
 
 }

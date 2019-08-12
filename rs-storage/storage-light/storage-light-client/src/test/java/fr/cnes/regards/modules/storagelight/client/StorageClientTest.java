@@ -27,6 +27,7 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,7 +45,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.storagelight.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
@@ -56,7 +59,7 @@ import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedStorageSe
  * @author sbinda
  *
  */
-@ActiveProfiles("testAmqp")
+@ActiveProfiles({ "testAmqp", "storageTest" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
         "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true" })
 public class StorageClientTest extends AbstractMultitenantServiceTest {
@@ -73,11 +76,16 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
     @Autowired
     private PrioritizedStorageService prioritizedDataStorageService;
 
+    @Autowired
+    private IFileCopyRequestRepository copyRepo;
+
     private Path fileToStore;
 
     private static final String ONLINE_CONF = "ONLINE_CONF";
 
     private static final String NEARLINE_CONF = "NEARLINE_CONF";
+
+    private static final String NEARLINE_CONF_2 = "NEARLINE_CONF_2";
 
     private final Set<String> storedFileChecksums = Sets.newHashSet();
 
@@ -99,11 +107,15 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
             initDataStoragePluginConfiguration();
         }
         if (!prioritizedDataStorageService.search(NEARLINE_CONF).isPresent()) {
-            initDataStorageNLPluginConfiguration();
+            initDataStorageNLPluginConfiguration(NEARLINE_CONF, "target/nearline-storage-1");
+        }
+        if (!prioritizedDataStorageService.search(NEARLINE_CONF_2).isPresent()) {
+            initDataStorageNLPluginConfiguration(NEARLINE_CONF_2, "target/nearline-storage-2");
         }
 
         Assert.assertTrue(prioritizedDataStorageService.search(ONLINE_CONF).isPresent());
         Assert.assertTrue(prioritizedDataStorageService.search(NEARLINE_CONF).isPresent());
+        Assert.assertTrue(prioritizedDataStorageService.search(NEARLINE_CONF_2).isPresent());
     }
 
     @Test
@@ -367,7 +379,23 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
             Assert.assertTrue("Missing error checksum",
                               listener.getErrors().get(info).stream().anyMatch(e -> e.getChecksum().equals(checksum)));
         }
+    }
 
+    @Test
+    public void copy() throws MalformedURLException, InterruptedException {
+
+        this.storeFile();
+        listener.reset();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        Set<FileCopyRequestDTO> requests = restorableFileChecksums.stream()
+                .map(f -> FileCopyRequestDTO.build(f, NEARLINE_CONF_2)).collect(Collectors.toSet());
+        RequestInfo info = client.copy(requests);
+        Thread.sleep(15_000);
+
+        Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        Assert.assertTrue(String.format("Request should be successful for request id %s", info.getRequestId()),
+                          listener.getSuccess().contains(info));
+        Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
     }
 
     private PrioritizedStorage initDataStoragePluginConfiguration() {
@@ -389,18 +417,19 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         }
     }
 
-    private PrioritizedStorage initDataStorageNLPluginConfiguration() throws ModuleException {
+    private PrioritizedStorage initDataStorageNLPluginConfiguration(String label, String storageDirectory)
+            throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleNearlineDataStorage.class);
-            Files.createDirectories(Paths.get("target/nearline-storage/"));
+            Files.createDirectories(Paths.get(storageDirectory));
             Set<IPluginParam> parameters = IPluginParam
                     .set(IPluginParam.build(SimpleNearlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                            "target/nearline-storage/"),
+                                            storageDirectory),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_RESTORATION_ERROR_FILE_PATTERN,
                                             "restoError.*"),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, NEARLINE_CONF, parameters, 0);
+            PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
             return prioritizedDataStorageService.create(dataStorageConf);
         } catch (IOException e) {

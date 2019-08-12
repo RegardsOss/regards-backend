@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.modules.storagelight.service.plugin;
 
-import java.io.IOException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.security.SecureRandom;
 
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.FileUtils;
@@ -101,8 +102,8 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     private String restoErrorFilePattern;
 
     private final String doNotHandlePattern = "doNotHandle.*";
-    
-    private final  static String BASE_URL = "target/storage-nearline";
+
+    private final static String BASE_URL = "target/storage-nearline";
 
     /**
      * Plugin init method
@@ -170,9 +171,9 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                         out.write(bytes);
                         out.flush();
                     }
-                    LOGGER.info("Create file with size {}",Paths.get(storedUrl).toFile().length());
+                    LOGGER.info("Create file with size {}", Paths.get(storedUrl).toFile().length());
                 }
-                progressManager.storageSucceed(fileRefRequest, storedUrl, 1024L);
+                progressManager.storageSucceed(fileRefRequest, new URL("file", null, storedUrl), 1024L);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
                 progressManager.storageFailed(fileRefRequest, e.getMessage());
@@ -235,14 +236,14 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                         Files.createDirectories(Paths.get(f.getDestinationPath()).getParent());
                     }
                     if (!Files.exists(Paths.get(f.getDestinationPath()))) {
-                    	Files.createFile(Paths.get(f.getDestinationPath()));
+                        Files.createFile(Paths.get(f.getDestinationPath()));
                         try (FileOutputStream out = new FileOutputStream(Paths.get(f.getDestinationPath()).toFile())) {
                             byte[] bytes = new byte[1024];
                             new SecureRandom().nextBytes(bytes);
                             out.write(bytes);
                             out.flush();
                         }
-                        LOGGER.info("Retrieve file with size {}",Paths.get(f.getDestinationPath()).toFile().length());
+                        LOGGER.info("Retrieve file with size {}", Paths.get(f.getDestinationPath()).toFile().length());
                     }
                     progressManager.restoreSucceed(f);
                 } catch (IOException e) {

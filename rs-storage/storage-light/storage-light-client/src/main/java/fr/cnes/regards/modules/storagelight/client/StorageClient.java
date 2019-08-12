@@ -25,14 +25,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
-import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.RetryFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 
 /**
  * Asynchronous client implementation based on the message broker for requesting the file storage service.<br />
@@ -48,6 +50,20 @@ public class StorageClient implements IStorageClient {
 
     @Autowired
     private IPublisher publisher;
+
+    @Override
+    public RequestInfo copy(FileCopyRequestDTO file) {
+        RequestInfo requestInfo = RequestInfo.build();
+        publisher.publish(CopyFlowItem.build(file, requestInfo.getRequestId()));
+        return requestInfo;
+    }
+
+    @Override
+    public RequestInfo copy(Collection<FileCopyRequestDTO> files) {
+        RequestInfo requestInfo = RequestInfo.build();
+        publisher.publish(CopyFlowItem.build(files, requestInfo.getRequestId()));
+        return requestInfo;
+    }
 
     @Override
     public RequestInfo delete(FileDeletionRequestDTO file) {

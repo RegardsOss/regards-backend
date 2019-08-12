@@ -30,18 +30,20 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.storagelight.dao.IFileCacheRequestRepository;
+import fr.cnes.regards.modules.storagelight.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
-import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileCopyRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorFile;
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEventState;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storagelight.domain.flow.FlowItemStatus;
 
 /**
  * Publisher to send AMQP message notification when there is any change on a File Reference.
@@ -62,13 +64,59 @@ public class FileReferenceEventPublisher {
     @Autowired
     private IFileCacheRequestRepository cacheReqRepo;
 
+    @Autowired
+    private IFileCopyRequestRepository copyRepo;
+
+    /**
+     * Notify listeners for a {@link FileReference} copied to a new storage location.
+     * If there is no more {@link FileCopyRequest} associated to the Business request identifier, so a request notification
+     * is sent too.<br/>
+     *
+     * @param fileRef newly stored file
+     * @param message success message
+     * @param requestId Business request identifier
+     */
+    public void copySuccess(FileReference fileRef, String message, String requestId) {
+        LOGGER.debug("Publishing FileReferenceEvent COPIED. {}", message);
+        publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(), FileReferenceEventType.COPIED,
+                                                   fileRef.getOwners(), message, fileRef.getLocation(),
+                                                   Sets.newHashSet(requestId)));
+        if (!copyRepo.existsByRequestId(requestId)) {
+            // No copy request left, request is successfully done
+            LOGGER.info("[COPY REQUEST] No copy request left, request is successfully done for request id {}",
+                        requestId);
+            requestDone(requestId, FileRequestType.COPY);
+        } else {
+            checkForCopyRequestError(requestId);
+        }
+    }
+
+    /**
+     * Notify listeners for an error processing a {@link FileCopyRequest}.
+     * If there is no more {@link FileCopyRequest} associated to the Business request identifier, so a request notification
+     * is sent too.<br/>
+     *
+     * @param fileRef newly stored file
+     * @param message success message
+     * @param requestId Business request identifier
+     */
+    public void copyError(FileCopyRequest errorRequest, String errorCause) {
+        LOGGER.debug("Publishing FileReferenceEvent COPY_ERROR. {}", errorCause);
+        publisher.publish(FileReferenceEvent
+                .build(errorRequest.getMetaInfo().getChecksum(), FileReferenceEventType.COPY_ERROR, null, errorCause,
+                       new FileLocation(errorRequest.getStorage(), errorRequest.getStorageSubDirectory()),
+                       Sets.newHashSet(errorRequest.getRequestId())));
+        checkForCopyRequestError(errorRequest.getRequestId());
+    }
+
     /**
      * Notify listeners for a {@link FileReference} deleted successfully for all owners.
+     *
      * @param fileRef {@link FileReference} deleted
      * @param message Optional message
      */
     public void deletionSuccess(FileReference fileRef, String message, String requestId) {
-        LOGGER.debug("Publish FileReferenceEvent Deleted. {}", message);
+        LOGGER.debug("Publishing FileReferenceEvent FULLY_DELETED. {}", message);
         publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
                                                    FileReferenceEventType.FULLY_DELETED, null, message,
                                                    fileRef.getLocation(), Sets.newHashSet(requestId)));
@@ -76,11 +124,12 @@ public class FileReferenceEventPublisher {
 
     /**
      * Notify listeners for a {@link FileReference} deletion error.
+     *
      * @param fileRef {@link FileReference} not deleted
      * @param message Optional error cause message
      */
     public void deletionError(FileReference fileRef, String message, String requestId) {
-        LOGGER.debug("Publish FileReferenceEvent Delete error. {}", message);
+        LOGGER.debug("Publishing FileReferenceEvent DELETION_ERROR. {}", message);
         publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
                                                    FileReferenceEventType.DELETION_ERROR, null, message,
                                                    fileRef.getLocation(), Sets.newHashSet(requestId)));
@@ -93,7 +142,7 @@ public class FileReferenceEventPublisher {
      * @param message Optional message
      */
     public void deletionForOwnerSuccess(FileReference fileRef, String owner, String message, String requestId) {
-        LOGGER.debug("Publish FileReferenceEvent Deleted for owner. {}", message);
+        LOGGER.debug("Publishing FileReferenceEvent DELETED_FOR_OWNER. {}", message);
         publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
                                                    FileReferenceEventType.DELETED_FOR_OWNER, Sets.newHashSet(owner),
                                                    message, fileRef.getLocation(), Sets.newHashSet(requestId)));
@@ -101,11 +150,14 @@ public class FileReferenceEventPublisher {
 
     /**
      * Notify listeners for a {@link FileReference} successfully referenced.
+     * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
+     * is sent too.<br/>
+     *
      * @param fileRef {@link FileReference} deleted for the given owner
      * @param message Optional message
      */
     public void storeSuccess(FileReference fileRef, String message, Collection<String> requestIds) {
-        LOGGER.debug("Publish FileReferenceEvent stored. {}", message);
+        LOGGER.debug("Publishing FileReferenceEvent STORED. {}", message);
         publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(), FileReferenceEventType.STORED,
                                                    fileRef.getOwners(), message, fileRef.getLocation(), requestIds));
         for (String requestId : requestIds) {
@@ -119,6 +171,9 @@ public class FileReferenceEventPublisher {
 
     /**
      * Notify listeners for a {@link FileReference} successfully referenced.
+     * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
+     * is sent too.<br/>
+     *
      * @param fileRef {@link FileReference} deleted for the given owner
      * @param message Optional message
      */
@@ -128,19 +183,34 @@ public class FileReferenceEventPublisher {
 
     /**
      * Notify listeners for an error during a {@link FileReference} referencing.
+     * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
+     * is sent too.<br/>
+     *
      * @param checksum of the file in error
      * @param owners owners of the file in error
      * @param destinationLocation
      * @param message Optional message
+     * @param requestIds
      */
     public void storeError(String checksum, Collection<String> owners, String storage, String message,
             Collection<String> requestIds) {
-        LOGGER.debug("Publish FileReferenceEvent store error. {}", message);
+        LOGGER.debug("Publishing FileReferenceEvent STORE_ERROR. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.STORE_ERROR, owners, message,
                                                    new FileLocation(storage, null), requestIds));
         requestIds.forEach(r -> checkForStorageRequestError(r));
     }
 
+    /**
+     * Notify listeners for an error during a {@link FileReference} referencing.
+     * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
+     * is sent too.<br/>
+     *
+     * @param checksum of the file in error
+     * @param owners owners of the file in error
+     * @param destinationLocation
+     * @param message Optional message
+     * @param requestId
+     */
     public void storeError(String checksum, Collection<String> owners, String storage, String message,
             String requestId) {
         storeError(checksum, owners, storage, message, Sets.newHashSet(requestId));
@@ -157,10 +227,23 @@ public class FileReferenceEventPublisher {
         }
     }
 
-    public void available(String checksum, String storage, String  url, Collection<String> owners, String message, String requestId, Boolean notifyRequest) {
-        LOGGER.debug("Publish FileReferenceEvent available for download. {}", message);
-        publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABLE, owners, message, new FileLocation(storage, url),
-                                                   Sets.newHashSet(requestId)));
+    /**
+     * Notify listeners for a file available for download.
+     * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
+     * is sent too.<br/>
+     * @param checksum
+     * @param storage
+     * @param url
+     * @param owners
+     * @param message
+     * @param requestId
+     * @param notifyRequest
+     */
+    public void available(String checksum, String storage, String url, Collection<String> owners, String message,
+            String requestId, Boolean notifyRequest) {
+        LOGGER.debug("Publishing FileReferenceEvent AVAILABLE. {}", message);
+        publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABLE, owners, message,
+                                                   new FileLocation(storage, url), Sets.newHashSet(requestId)));
 
         // Check if cache request exists for the same requestId
         if (notifyRequest) {
@@ -172,8 +255,21 @@ public class FileReferenceEventPublisher {
         }
     }
 
+    /**
+     * Notify listeners for an restoring a file for download availability.
+     * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
+     * is sent too.<br/>
+     *
+     * @param checksum
+     * @param storage
+     * @param url
+     * @param owners
+     * @param message
+     * @param requestId
+     * @param notifyRequest
+     */
     public void notAvailable(String checksum, String message, String requestId, Boolean notifyRequest) {
-        LOGGER.debug("Publish FileReferenceEvent not available for download. {}", message);
+        LOGGER.debug("Publishing FileReferenceEvent AVAILABILITY_ERROR. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABILITY_ERROR, null, message,
                                                    null, Sets.newHashSet(requestId)));
         if (notifyRequest) {
@@ -192,16 +288,27 @@ public class FileReferenceEventPublisher {
         }
     }
 
+    private void checkForCopyRequestError(String requestId) {
+        Set<FileCopyRequest> requests = copyRepo.findByRequestId(requestId);
+        // If all remaining requests are in error state, publish request in error
+        if (!requests.stream().anyMatch(req -> !(req.getStatus() == FileRequestStatus.ERROR))) {
+            Set<ErrorFile> errors = requests.stream()
+                    .map(req -> ErrorFile.build(req.getMetaInfo().getChecksum(), req.getStorage(), req.getErrorCause()))
+                    .collect(Collectors.toSet());
+            requestError(requestId, FileRequestType.COPY, errors);
+        }
+    }
+
     public void requestDenied(String requestId, FileRequestType type) {
-        publisher.publish(FileRequestEvent.build(requestId, type, FileRequestEventState.DENIED));
+        publisher.publish(FileRequestEvent.build(requestId, type, FlowItemStatus.DENIED));
     }
 
     public void requestGranted(String requestId, FileRequestType type) {
-        publisher.publish(FileRequestEvent.build(requestId, type, FileRequestEventState.GRANTED));
+        publisher.publish(FileRequestEvent.build(requestId, type, FlowItemStatus.GRANTED));
     }
 
     public void requestDone(String requestId, FileRequestType type) {
-        publisher.publish(FileRequestEvent.build(requestId, type, FileRequestEventState.DONE));
+        publisher.publish(FileRequestEvent.build(requestId, type, FlowItemStatus.DONE));
     }
 
     public void requestError(String requestId, FileRequestType type, Collection<ErrorFile> errors) {

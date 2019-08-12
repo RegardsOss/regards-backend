@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FlowItemStatus;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 
@@ -55,7 +56,7 @@ public class FileRequestEvent implements ISubscribable {
     /**
      * Request status
      */
-    private FileRequestEventState state;
+    private FlowItemStatus state;
 
     /**
      * Request type
@@ -71,7 +72,7 @@ public class FileRequestEvent implements ISubscribable {
         return requestId;
     }
 
-    public FileRequestEventState getState() {
+    public FlowItemStatus getState() {
         return state;
     }
 
@@ -82,7 +83,7 @@ public class FileRequestEvent implements ISubscribable {
      * @param state
      * @return {@link FileRequestEvent}
      */
-    public static FileRequestEvent build(String requestId, FileRequestType type, FileRequestEventState state) {
+    public static FileRequestEvent build(String requestId, FileRequestType type, FlowItemStatus state) {
         Assert.notNull(requestId, "Request Id is mandatory");
         Assert.notNull(type, "Request type is mandatory");
         Assert.notNull(state, "Request state is mandatory");
@@ -105,7 +106,7 @@ public class FileRequestEvent implements ISubscribable {
         Assert.notNull(type, "Request type is mandatory");
         FileRequestEvent event = new FileRequestEvent();
         event.requestId = requestId;
-        event.state = FileRequestEventState.ERROR;
+        event.state = FlowItemStatus.ERROR;
         event.errors.addAll(errors);
         event.type = type;
         return event;

@@ -45,7 +45,6 @@ import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 

@@ -26,6 +26,16 @@ package fr.cnes.regards.modules.storagelight.domain.event;
 public enum FileReferenceEventType {
 
     /**
+     * File has been successfully copied from one storage to another
+     */
+    COPIED,
+
+    /**
+     * Error during file copy
+     */
+    COPY_ERROR,
+
+    /**
      * File has been successfully stored
      */
     STORED,

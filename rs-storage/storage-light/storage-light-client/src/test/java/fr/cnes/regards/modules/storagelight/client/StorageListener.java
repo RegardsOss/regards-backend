@@ -51,6 +51,17 @@ public class StorageListener implements IStorageRequestListener {
     }
 
     @Override
+    public void onCopySuccess(RequestInfo request) {
+        success.add(request);
+    }
+
+    @Override
+    public void onCopyError(RequestInfo request, Collection<ErrorFile> errors) {
+        this.errors.putAll(request, errors);
+
+    }
+
+    @Override
     public void onAvailable(RequestInfo request) {
         success.add(request);
     }

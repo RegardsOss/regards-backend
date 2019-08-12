@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.plugin;
 
+import java.net.URL;
+
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 
 /**
@@ -34,7 +36,7 @@ public interface IStorageProgressManager {
      * Notify system that the given {@link FileStorageRequest} is stored.
      * @param fileReferenceRequest {@link FileStorageRequest} stored.
      */
-    public void storageSucceed(FileStorageRequest fileReferenceRequest, String storedUrl, Long fileSize);
+    public void storageSucceed(FileStorageRequest fileReferenceRequest, URL storedUrl, Long fileSize);
 
     /**
      * Notify the system that the given {@link FileStorageRequest} couldn't be stored.

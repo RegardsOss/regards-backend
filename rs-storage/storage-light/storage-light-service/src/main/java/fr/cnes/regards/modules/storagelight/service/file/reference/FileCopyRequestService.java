@@ -23,14 +23,15 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storagelight.dao.IFileCopyRequestRepository;
-import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCopyRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.cache.CacheService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
 
 /**
  * Service to handle {@link FileCopyRequest}s.
@@ -57,6 +58,9 @@ public class FileCopyRequestService {
 
     @Autowired
     private INotificationClient notificationClient;
+
+    @Autowired
+    private FileReferenceEventPublisher publisher;
 
     public Optional<FileCopyRequest> create(FileCopyRequestDTO requestDto, String requestId) {
         // Check a same request already exists
@@ -114,9 +118,11 @@ public class FileCopyRequestService {
         } while (pageResp.hasNext());
     }
 
-    public void handleSuccess(FileCopyRequest request) {
-        LOGGER.info("[COPY SUCCESS] File {} (checksum: {}) successfully copied in {} storage location",
-                    request.getMetaInfo().getFileName(), request.getMetaInfo().getChecksum(), request.getStorage());
+    public void handleSuccess(FileCopyRequest request, FileReference newFileRef) {
+        String successMessage = String.format("File %s (checksum: %s) successfully copied in %s storage location",
+                                              request.getMetaInfo().getFileName(), request.getMetaInfo().getChecksum(),
+                                              request.getStorage());
+        LOGGER.info("[COPY SUCCESS] {}", successMessage);
         // Delete the copy request
         copyRepository.delete(request);
 
@@ -129,6 +135,8 @@ public class FileCopyRequestService {
                 cacheService.delete(oCf.get());
             }
         }
+
+        publisher.copySuccess(newFileRef, successMessage, request.getRequestId());
     }
 
     public void handleError(FileCopyRequest request, String errorCause) {
@@ -139,6 +147,8 @@ public class FileCopyRequestService {
         request.setStatus(FileRequestStatus.ERROR);
         request.setErrorCause(errorCause);
         update(request);
+
+        publisher.copyError(request, errorCause);
     }
 
     @Transactional(readOnly = true)
@@ -154,14 +164,14 @@ public class FileCopyRequestService {
             case AVAILABILITY_ERROR:
                 it = event.getRequestIds().iterator();
                 while (it.hasNext() && !req.isPresent()) {
-                    req = copyRepository.findByFileCacheRequestId(it.next());
+                    req = copyRepository.findByMetaInfoChecksumAndFileCacheRequestId(event.getChecksum(), it.next());
                 }
                 break;
             case STORED:
             case STORE_ERROR:
                 it = event.getRequestIds().iterator();
                 while (it.hasNext() && !req.isPresent()) {
-                    req = copyRepository.findByFileStorageRequestId(it.next());
+                    req = copyRepository.findByMetaInfoChecksumAndFileStorageRequestId(event.getChecksum(), it.next());
                 }
                 break;
             case DELETED_FOR_OWNER:

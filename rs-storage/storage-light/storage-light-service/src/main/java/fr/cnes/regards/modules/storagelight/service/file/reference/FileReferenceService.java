@@ -56,13 +56,13 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.domain.DownloadableFile;
-import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
@@ -175,7 +175,10 @@ public class FileReferenceService {
      * @param requestId business request identifier
      */
     public void copy(Collection<FileCopyRequestDTO> files, String requestId) {
-        files.forEach(f -> fileCopyRequestService.create(f, requestId));
+        files.forEach(f -> {
+            fileCopyRequestService.create(f, requestId);
+            eventPublisher.requestGranted(requestId, FileRequestType.COPY);
+        });
     }
 
     /**
@@ -462,6 +465,7 @@ public class FileReferenceService {
                             fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getChecksum(),
                             fileToDownload.getLocation().toString()));
         } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
             throw new ModuleException(e.getMessage(), e);
         }
     }

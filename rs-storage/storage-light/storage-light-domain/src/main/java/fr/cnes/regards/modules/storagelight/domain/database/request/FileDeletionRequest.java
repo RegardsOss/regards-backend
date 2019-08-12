@@ -36,7 +36,6 @@ import javax.persistence.UniqueConstraint;
 
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storagelight.service.plugin;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -94,8 +95,8 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     private String deleteErrorFilePattern;
 
     private final String doNotHandlePattern = "doNotHandle.*";
-    
-    private final  static String BASE_URL = "target/storage-online";
+
+    private final static String BASE_URL = "target/storage-online";
 
     /**
      * Plugin init method
@@ -159,7 +160,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
                 if (!Files.exists(Paths.get(storedUrl))) {
                     Files.createFile(Paths.get(storedUrl));
                 }
-                progressManager.storageSucceed(fileRefRequest, storedUrl, 1024L);
+                progressManager.storageSucceed(fileRefRequest, new URL("file", null, storedUrl), 1024L);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
                 progressManager.storageFailed(fileRefRequest, e.getMessage());
@@ -189,7 +190,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
 
     @Override
     public InputStream retrieve(FileReference fileRef) throws IOException {
-        return Files.newInputStream(Paths.get(fileRef.getLocation().getUrl()));
+        return (new URL(fileRef.getLocation().getUrl())).openStream();
     }
 
     @Override

@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -36,7 +35,8 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
  * @author sbinda
  *
  */
-@Component
+// @Profile("!storageTest")
+// @Component("clientFileRefEventHandler")
 public class FileReferenceEventHandler
         implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileReferenceEvent> {
 
@@ -72,7 +72,8 @@ public class FileReferenceEventHandler
     }
 
     private void handle(FileReferenceEvent event) {
-        Set<RequestInfo> requestInfos = event.getRequestIds().stream().map(RequestInfo::build).collect(Collectors.toSet());
+        Set<RequestInfo> requestInfos = event.getRequestIds().stream().map(RequestInfo::build)
+                .collect(Collectors.toSet());
         switch (event.getType()) {
             case AVAILABILITY_ERROR:
                 listener.onFileNotAvailable(event.getChecksum(), requestInfos, event.getMessage());
@@ -81,18 +82,19 @@ public class FileReferenceEventHandler
                 listener.onFileAvailable(event.getChecksum(), requestInfos);
                 break;
             case DELETED_FOR_OWNER:
-                event.getOwners().forEach(o -> listener.onFileDeleted(event.getChecksum(),
-                                                                      event.getLocation().getStorage(), o, requestInfos));
+                event.getOwners().forEach(o -> listener
+                        .onFileDeleted(event.getChecksum(), event.getLocation().getStorage(), o, requestInfos));
                 break;
             case DELETION_ERROR:
             case FULLY_DELETED:
                 break;
             case STORED:
-                listener.onFileStored(event.getChecksum(), event.getLocation().getStorage(), event.getOwners(), requestInfos);
+                listener.onFileStored(event.getChecksum(), event.getLocation().getStorage(), event.getOwners(),
+                                      requestInfos);
                 break;
             case STORE_ERROR:
-                listener.onFileStoreError(event.getChecksum(), event.getLocation().getStorage(), event.getOwners(), requestInfos,
-                                          event.getMessage());
+                listener.onFileStoreError(event.getChecksum(), event.getLocation().getStorage(), event.getOwners(),
+                                          requestInfos, event.getMessage());
                 break;
             default:
                 break;

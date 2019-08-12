@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.reference.job;
 
+import java.net.URL;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -28,9 +29,9 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
-import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
@@ -66,13 +67,13 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
     }
 
     @Override
-    public void storageSucceed(FileStorageRequest request, String storedUrl, Long fileSize) {
+    public void storageSucceed(FileStorageRequest request, URL storedUrl, Long fileSize) {
         if (storedUrl == null) {
             this.storageFailed(request, String
                     .format("File {} has been successully stored, nevertheless plugin <%> does not provide the new file location",
                             request.getStorage(), request.getMetaInfo().getFileName()));
         } else {
-            FileLocation newLocation = new FileLocation(request.getStorage(), storedUrl);
+            FileLocation newLocation = new FileLocation(request.getStorage(), storedUrl.toString());
             String message = String.format("Store success for file %s (id=%s)in %s (checksum: %s).",
                                            request.getMetaInfo().getFileName(), request.getId(), newLocation,
                                            request.getMetaInfo().getChecksum());

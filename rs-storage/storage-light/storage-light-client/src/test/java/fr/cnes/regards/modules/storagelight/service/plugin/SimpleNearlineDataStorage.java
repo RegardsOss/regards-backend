@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.service.plugin;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -107,7 +108,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     @PluginInit
     public void init() throws IOException {
         // Clear directory
-        FileUtils.deleteDirectory(Paths.get("target/storage").toFile());
+        FileUtils.deleteDirectory(Paths.get(baseStorageLocationAsString).toFile());
     }
 
     @Override
@@ -152,7 +153,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                 directory = fileRefRequest.getStorageSubDirectory();
             }
             String storedUrl = String
-                    .format("%s%s", "target/storage",
+                    .format("%s%s", baseStorageLocationAsString,
                             Paths.get("/", directory, fileRefRequest.getMetaInfo().getChecksum()).toString());
             try {
                 if (!Files.exists(Paths.get(storedUrl).getParent())) {
@@ -161,7 +162,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                 if (!Files.exists(Paths.get(storedUrl))) {
                     Files.createFile(Paths.get(storedUrl));
                 }
-                progressManager.storageSucceed(fileRefRequest, storedUrl, 10L);
+                progressManager.storageSucceed(fileRefRequest, new URL("file", null, storedUrl), 10L);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
                 progressManager.storageFailed(fileRefRequest, e.getMessage());

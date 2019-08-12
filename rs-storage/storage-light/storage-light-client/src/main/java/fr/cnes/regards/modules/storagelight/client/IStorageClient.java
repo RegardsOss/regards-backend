@@ -22,11 +22,11 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 
 /**
@@ -35,7 +35,8 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
  * Client requests are done asynchronously.
  * To listen to the feedback messages, you have to implement your own message handler listening to {@link FileReferenceEvent}.
  * Be sure to check that the message is intended for you by validating the owner.
- * Look at {@link FileReferenceEventType} to adapt your behaviour.
+ * Look at {@link IStorageRequestListener} to adapt your behavior after global request finished status.
+ * Look at {@link IStorageFileListener} to adapt your behavior after each file modification done.
  */
 public interface IStorageClient {
 
@@ -82,7 +83,7 @@ public interface IStorageClient {
      *
      * @param file {@link FileReferenceRequestDTO} information about files to reference
      * @return {@link RequestInfo} containing a unique request id. This request id can
-     * be used to identify responses in {@link IStorageRequestListener} implementation.
+     * be used to identify responses in {@link IStorageRequestListener} and {@link IStorageFileListener} implementation.
      */
     RequestInfo reference(FileReferenceRequestDTO file);
 
@@ -92,7 +93,7 @@ public interface IStorageClient {
      * <br/>
      * @param files {@link FileReferenceRequestDTO} information about files to reference
      * @return {@link RequestInfo} containing a unique request id. This request id can
-     * be used to identify responses in {@link IStorageRequestListener} implementation.
+     * be used to identify responses in {@link IStorageRequestListener} and {@link IStorageFileListener} implementation.
      */
     RequestInfo reference(Collection<FileReferenceRequestDTO> files);
 
@@ -103,7 +104,7 @@ public interface IStorageClient {
      *
      * @param file {@link FileDeletionRequestDTO} information about file to delete
      * @return {@link RequestInfo} containing a unique request id. This request id can
-     * be used to identify responses in {@link IStorageRequestListener} implementation.
+     * be used to identify responses in {@link IStorageRequestListener} and {@link IStorageFileListener} implementation.
      */
     RequestInfo delete(FileDeletionRequestDTO file);
 
@@ -112,11 +113,31 @@ public interface IStorageClient {
      * It is necessary to specify the owner as the file can be owned by several owners (multiple references).<br/>
      * As a result, the file will be really deleted if and only if no other owner remains!
      *
-     * @param files {@link FileDeletionRequestDTO} information about files to delete
+     * @param files {@link FileDeletionRequestDTO}s information about files to delete
      * @return {@link RequestInfo} containing a unique request id. This request id can
-     * be used to identify responses in {@link IStorageRequestListener} implementation.
+     * be used to identify responses in {@link IStorageRequestListener} and {@link IStorageFileListener} implementation.
      */
     RequestInfo delete(Collection<FileDeletionRequestDTO> files);
+
+    /**
+     * Requests the copy of a file identified is checksum to a specified storage.<br/>
+     * New copied files will be referenced with the same owners as the original files.<br/>
+     *
+     * @param file {@link FileCopyRequestDTO} information about file to copy
+     * @return {@link RequestInfo} containing a unique request id. This request id can
+     * be used to identify responses in {@link IStorageRequestListener} and {@link IStorageFileListener} implementation.
+     */
+    RequestInfo copy(FileCopyRequestDTO file);
+
+    /**
+     * Requests the copy of a collection of files identified by there checksum to a specified storage.<br/>
+     * New copied files will be referenced with the same owners as the original files.<br/>
+     *
+     * @param files {@link FileCopyRequestDTO} information about files to copy
+     * @return {@link RequestInfo} containing a unique request id. This request id can
+     * be used to identify responses in {@link IStorageRequestListener} and {@link IStorageFileListener} implementation.
+     */
+    RequestInfo copy(Collection<FileCopyRequestDTO> files);
 
     /**
      * Requests that files identified by their checksums be put online so that they can be downloaded by a third party component.
@@ -125,7 +146,7 @@ public interface IStorageClient {
      * @param expirationDate date until which the file must be available
      * (after this date, the system could proceed to a possible cleaning of its cache, only offline files are concerned!)
      * @return {@link RequestInfo} containing a unique request id. This request id can
-     * be used to identify responses in {@link IStorageRequestListener} implementation.
+     * be used to identify responses in {@link IStorageRequestListener} and {@link IStorageFileListener} implementation.
      */
     RequestInfo makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate);
 }

@@ -52,9 +52,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
-import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
@@ -271,29 +271,30 @@ public class FileStorageRequestService {
      * @param storageSubDirectory Optioanl subdirectory where to store file in the storage destination location
      * @param requestId Business identifier of the deletion request
      */
-    public Optional<FileStorageRequest> create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo, URL originUrl, String storage,
-            Optional<String> storageSubDirectory, String requestId) {
+    public Optional<FileStorageRequest> create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
+            URL originUrl, String storage, Optional<String> storageSubDirectory, String requestId) {
         return create(owners, fileMetaInfo, originUrl, storage, storageSubDirectory, FileRequestStatus.TODO, requestId);
     }
 
-    public Optional<FileStorageRequest> create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo, URL originUrl, String storage,
-            Optional<String> storageSubDirectory, FileRequestStatus status, String requestId) {
+    public Optional<FileStorageRequest> create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
+            URL originUrl, String storage, Optional<String> storageSubDirectory, FileRequestStatus status,
+            String requestId) {
         // Check if file storage request already exists
         Optional<FileStorageRequest> oFileRefRequest = search(storage, fileMetaInfo.getChecksum());
         if (oFileRefRequest.isPresent()) {
             handleAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owners, requestId);
         } else {
-            FileStorageRequest fileStorageRequest = new FileStorageRequest(owners, fileMetaInfo,
-                    originUrl, storage, storageSubDirectory, requestId);
+            FileStorageRequest fileStorageRequest = new FileStorageRequest(owners, fileMetaInfo, originUrl, storage,
+                    storageSubDirectory, requestId);
             fileStorageRequest.setStatus(status);
             if (!storageHandler.getConfiguredStorages().contains(storage)) {
                 // The storage destination is unknown, we can already set the request in error status
                 handleStorageNotAvailable(fileStorageRequest);
             } else {
                 fileStorageRequestRepo.save(fileStorageRequest);
-                LOGGER.debug("New file storage request created for file <{}> to store to {} with status {}",
-                             fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage(),
-                             fileStorageRequest.getStatus());
+                LOGGER.info("New file storage request created for file <{}> to store to {} with status {}",
+                            fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage(),
+                            fileStorageRequest.getStatus());
             }
             return Optional.of(fileStorageRequest);
         }
@@ -309,12 +310,14 @@ public class FileStorageRequestService {
      * @param owners
      */
     private void handleAlreadyExists(FileStorageRequest fileStorageRequest, FileReferenceMetaInfo newMetaInfo,
-    		Collection<String> owners, String newRequestId) {
-    	fileStorageRequest.getOwners().addAll(owners);
-    	fileStorageRequest.getRequestIds().add(newRequestId);
-    	if (newMetaInfo.equals(fileStorageRequest.getMetaInfo())) {
-    		LOGGER.warn("Existing file meta information differs from new meta information. Previous ones are maintained");
-    	}
+            Collection<String> owners, String newRequestId) {
+        fileStorageRequest.getOwners().addAll(owners);
+        fileStorageRequest.getRequestIds().add(newRequestId);
+        if (newMetaInfo.equals(fileStorageRequest.getMetaInfo())) {
+            LOGGER.warn("Existing file meta information differs from new meta information. Previous ones are maintained");
+        }
+
+        LOGGER.info("Storage request already exists for file {}", newMetaInfo.getFileName());
 
         switch (fileStorageRequest.getStatus()) {
             case ERROR:

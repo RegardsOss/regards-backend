@@ -24,15 +24,18 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileCopyRequestService;
@@ -51,7 +54,8 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRe
  * @author Sébastien Binda
  */
 @Component
-public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
+public class FileReferenceEventHandler
+        implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileReferenceEvent> {
 
     @Autowired
     private FileStorageRequestService fileReferenceRequestService;
@@ -71,9 +75,18 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private ISubscriber subscriber;
+
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        subscriber.subscribeTo(FileReferenceEvent.class, this);
+    }
+
     @Override
     public void handle(TenantWrapper<FileReferenceEvent> wrapper) {
         String tenant = wrapper.getTenant();
+        LOGGER.info("Handling {}", wrapper.getContent().toString());
         runtimeTenantResolver.forceTenant(tenant);
         try {
             switch (wrapper.getContent().getType()) {
@@ -131,7 +144,19 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
     private void handleFileStored(FileReferenceEvent event) {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
         if (request.isPresent()) {
-            fileCopyRequestService.handleSuccess(request.get());
+            Optional<FileReference> oFileRef = fileReferenceService.search(request.get().getStorage(),
+                                                                           request.get().getMetaInfo().getChecksum());
+            if (oFileRef.isPresent()) {
+                fileCopyRequestService.handleSuccess(request.get(), oFileRef.get());
+                LOGGER.info("[COPY REQUEST] New stored file {} is associated to copy request {}", event.getChecksum(),
+                            request.get().getRequestId());
+            } else {
+                String errorCause = String
+                        .format("Error no file reference found for newly stored file %s at %s storage location",
+                                request.get().getStorage(), request.get().getMetaInfo().getChecksum());
+                LOGGER.error(errorCause);
+                fileCopyRequestService.handleError(request.get(), errorCause);
+            }
         }
     }
 
@@ -146,6 +171,8 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
         if (request.isPresent()) {
             createNewStorageRequest(request.get(), event);
+            LOGGER.info("[COPY REQUEST] Available file {} is associated to copy request {}", event.getChecksum(),
+                        request.get().getRequestId());
         }
     }
 
@@ -156,6 +183,8 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
             copyRequest.setStatus(FileRequestStatus.ERROR);
             copyRequest.setErrorCause(event.getMessage());
             fileCopyRequestService.update(copyRequest);
+            LOGGER.info("[COPY REQUEST] Not Available file {} is associated to copy request {}", event.getChecksum(),
+                        request.get().getRequestId());
         }
     }
 
@@ -171,6 +200,7 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
                 fileCopyRequestService.update(copyRequest);
             }
         } catch (MalformedURLException e) {
+            LOGGER.error(e.getMessage(), e);
             copyRequest.setStatus(FileRequestStatus.ERROR);
             copyRequest.setErrorCause(String.format("Restored file is not available at url {}. Cause  : {}",
                                                     fileAvailableEvent.getLocation().getUrl(), e.getMessage()));
