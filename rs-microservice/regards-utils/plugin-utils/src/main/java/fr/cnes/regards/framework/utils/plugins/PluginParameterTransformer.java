@@ -24,9 +24,12 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
 import fr.cnes.regards.framework.gson.GsonCustomizer;
@@ -100,7 +104,8 @@ public class PluginParameterTransformer {
             LOGGER.debug(TRANSFO_MESSAGE, param.getName(), param.getType());
             ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
             // Get first generic type
-            return transformValue((JsonCollectionPluginParam) param, parameterizedType.getActualTypeArguments()[0]);
+            return transformValue((JsonCollectionPluginParam) param, field.getType(),
+                                  parameterizedType.getActualTypeArguments()[0]);
         } else {
             LOGGER.debug(SKIP_TRANSFO_MESSAGE, param.getName());
             return param.getValue();
@@ -137,11 +142,26 @@ public class PluginParameterTransformer {
         }
     }
 
-    public static Collection<Object> transformValue(JsonCollectionPluginParam source, Type type) {
+    public static JsonObject toJson(Object value) {
+        JsonElement el = gsonInstance.toJsonTree(value);
+        if (!el.isJsonObject()) {
+            throw new IllegalArgumentException("POJO is required!");
+        }
+        return (JsonObject) el;
+    }
+
+    public static Collection<Object> transformValue(JsonCollectionPluginParam source, Class<?> rawType, Type type) {
         try {
             Collection<Object> collection = null;
             if (source.getValue() != null && !source.getValue().isEmpty()) {
-                collection = new ArrayList<>();
+                if (rawType.equals(Set.class)) {
+                    collection = new HashSet<>();
+                } else if (rawType.equals(List.class)) {
+                    collection = new ArrayList<>();
+                } else {
+                    throw new IllegalArgumentException(String.format("Unsupported collection type %s", rawType));
+                }
+
                 for (JsonElement el : source.getValue()) {
                     Object o = gsonInstance.fromJson(el, type);
                     collection.add(o);
@@ -151,6 +171,14 @@ public class PluginParameterTransformer {
         } catch (JsonSyntaxException e) {
             throw propagateException(e, source);
         }
+    }
+
+    public static Collection<JsonElement> toJson(Collection<?> value) {
+        Collection<JsonElement> collection = new ArrayList<>();
+        for (Object o : value) {
+            collection.add(gsonInstance.toJsonTree(o));
+        }
+        return collection;
     }
 
     public static Map<String, Object> transformValue(JsonMapPluginParam source, Type type) {
@@ -167,6 +195,14 @@ public class PluginParameterTransformer {
         } catch (JsonSyntaxException e) {
             throw propagateException(e, source);
         }
+    }
+
+    public static Map<String, JsonElement> toJson(Map<String, ?> value) {
+        Map<String, JsonElement> map = new HashMap<>();
+        for (Entry<String, ?> entry : value.entrySet()) {
+            map.put(entry.getKey(), gsonInstance.toJsonTree(entry.getValue()));
+        }
+        return map;
     }
 
     private static PluginUtilsRuntimeException propagateException(Throwable t, IPluginParam source) {

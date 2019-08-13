@@ -23,6 +23,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 /**
  * Plugin parameter interface
  *
@@ -189,37 +192,37 @@ public interface IPluginParam {
         }
     }
 
-    static CollectionPluginParam build(String name, Collection<?> value) {
-        return new CollectionPluginParam().with(name, value);
+    static JsonCollectionPluginParam build(String name, Collection<JsonElement> value) {
+        return new JsonCollectionPluginParam().with(name, value);
     }
 
-    default void value(Collection<?> value) {
+    default void value(Collection<JsonElement> value) {
         if (PluginParamType.COLLECTION.equals(getType())) {
-            ((CollectionPluginParam) this).setValue(value);
+            ((JsonCollectionPluginParam) this).setValue(value);
         } else {
             illegalValueForParameter();
         }
     }
 
-    static MapPluginParam build(String name, Map<String, ?> value) {
-        return new MapPluginParam().with(name, value);
+    static JsonMapPluginParam build(String name, Map<String, JsonElement> value) {
+        return new JsonMapPluginParam().with(name, value);
     }
 
-    default void value(Map<String, ?> value) {
+    default void value(Map<String, JsonElement> value) {
         if (PluginParamType.MAP.equals(getType())) {
-            ((MapPluginParam) this).setValue(value);
+            ((JsonMapPluginParam) this).setValue(value);
         } else {
             illegalValueForParameter();
         }
     }
 
-    static ObjectPluginParam build(String name, Object value) {
-        return new ObjectPluginParam().with(name, value);
+    static JsonObjectPluginParam build(String name, JsonObject value) {
+        return new JsonObjectPluginParam().with(name, value);
     }
 
-    default void value(Object value) {
+    default void value(JsonObject value) {
         if (PluginParamType.POJO.equals(getType())) {
-            ((ObjectPluginParam) this).setValue(value);
+            ((JsonObjectPluginParam) this).setValue(value);
         } else {
             illegalValueForParameter();
         }

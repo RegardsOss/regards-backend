@@ -32,6 +32,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTest;
@@ -67,7 +68,8 @@ public class CycleDetectionTest {
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
                      IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_COEF, 12345),
-                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParam),
+                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO,
+                                        PluginParameterTransformer.toJson(pojoParam)),
                      IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "chris_test_1"));
 
         // instantiate plugin
@@ -125,7 +127,8 @@ public class CycleDetectionTest {
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
                      IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_COEF, 12345),
-                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParent));
+                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO,
+                                        PluginParameterTransformer.toJson(pojoParent)));
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_PACKAGE);
@@ -150,7 +153,8 @@ public class CycleDetectionTest {
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
                      IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_COEF, 12345),
-                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParent),
+                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO,
+                                        PluginParameterTransformer.toJson(pojoParent)),
                      IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "suffix"));
 
         // instantiate plugin
@@ -211,7 +215,8 @@ public class CycleDetectionTest {
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
                      IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_COEF, 12345),
-                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO, pojoGrandParent));
+                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO,
+                                        PluginParameterTransformer.toJson(pojoGrandParent)));
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_PACKAGE);

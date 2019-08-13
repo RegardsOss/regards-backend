@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.cycle.generics.PluginWithCyclicPojoCollection;
 import fr.cnes.regards.framework.utils.cycle.generics.PluginWithCyclicPojoMap;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -64,8 +65,8 @@ public class PluginWithGenericsTest {
     public void stringCollectionTest() throws NotAvailablePluginConfigurationException {
         List<String> infos = Arrays.asList("info 1", "info 2", "info 3");
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(PluginWithStringCollection.FIELD_NAME, infos));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(PluginWithStringCollection.FIELD_NAME,
+                                                                           PluginParameterTransformer.toJson(infos)));
 
         PluginUtils.setup(this.getClass().getPackage().getName());
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithStringCollection.class, null);
@@ -76,6 +77,8 @@ public class PluginWithGenericsTest {
 
     @Test
     public void pojoCollectionTest() throws NotAvailablePluginConfigurationException {
+
+        PluginUtils.setup(this.getClass().getPackage().getName());
         Info info1 = new Info();
         info1.setMessage("info 1");
         Info info2 = new Info();
@@ -85,7 +88,8 @@ public class PluginWithGenericsTest {
 
         Set<Info> infos = new HashSet<>(Arrays.asList(info1, info2, info3));
 
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(PluginWithPojoCollection.FIELD_NAME, infos));
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(PluginWithPojoCollection.FIELD_NAME, PluginParameterTransformer.toJson(infos)));
 
         PluginUtils.setup(this.getClass().getPackage().getName());
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithPojoCollection.class, null);
@@ -101,7 +105,8 @@ public class PluginWithGenericsTest {
         infos.put("info2", "info 2");
         infos.put("info3", "info 3");
 
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(PluginWithStringMap.FIELD_NAME, infos));
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(PluginWithStringMap.FIELD_NAME, PluginParameterTransformer.toJson(infos)));
 
         PluginUtils.setup(this.getClass().getPackage().getName());
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithStringMap.class, null);
@@ -123,7 +128,8 @@ public class PluginWithGenericsTest {
         infos.put("info2", info2);
         infos.put("info3", info3);
 
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(PluginWithPojoMap.PARAMETER_NAME, infos));
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(PluginWithPojoMap.PARAMETER_NAME, PluginParameterTransformer.toJson(infos)));
 
         PluginUtils.setup(this.getClass().getPackage().getName());
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithPojoMap.class, null);
