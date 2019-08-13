@@ -16,16 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service;
+package fr.cnes.regards.modules.ingest.service.sip;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,20 +36,22 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
@@ -94,59 +98,65 @@ public class SIPService implements ISIPService {
         }
     }
 
-    //    @Override
-    //    public Collection<RejectedSipDto> deleteSIPEntitiesBySipIds(Collection<UniformResourceName> sipIds)
-    //            throws ModuleException {
-    //        List<String> sipIdsStr = new ArrayList<>();
-    //        if (sipIds != null) {
-    //            sipIds.forEach(sipId -> sipIdsStr.add(sipId.toString()));
-    //        }
-    //        return this.deleteSIPEntities(sipRepository.findBySipIdIn(sipIdsStr));
-    //    }
-    //
-    //    @Override
-    //    public Collection<RejectedSipDto> deleteSIPEntitiesForProviderId(String providerId) throws ModuleException {
-    //        return this.deleteSIPEntities(sipRepository.findAllByProviderIdOrderByVersionAsc(providerId));
-    //    }
-    //
-    //    @Override
-    //    public Collection<RejectedSipDto> deleteSIPEntitiesForSession(String sessionOwner, String session)
-    //            throws ModuleException {
-    //        return this.deleteSIPEntities(sipRepository
-    //                .findByIngestMetadataSessionOwnerAndIngestMetadataSession(sessionOwner, session));
-    //    }
+    @Override
+    public Collection<RejectedSipDto> deleteSIPEntitiesBySipIds(Collection<UniformResourceName> sipIds)
+            throws ModuleException {
+        List<String> sipIdsStr = new ArrayList<>();
+        if (sipIds != null) {
+            sipIds.forEach(sipId -> sipIdsStr.add(sipId.toString()));
+        }
+        return this.deleteSIPEntities(sipRepository.findBySipIdIn(sipIdsStr));
+    }
 
-    //    @Override
-    //    public Collection<RejectedSipDto> deleteSIPEntities(Collection<SIPEntity> sips) throws ModuleException {
-    //        Set<RejectedSipDto> undeletableSips = Sets.newHashSet();
-    //        long sipDeletionCheckStart = System.currentTimeMillis();
-    //        for (SIPEntity sip : sips) {
-    //            if (isDeletableWithAIPs(sip)) {
-    //                // If SIP is not stored, we can already delete sip and associated AIPs
-    //                if (isDeletableWithoutAips(sip)) {
-    //                    Set<AIPEntity> aips = aipRepository.findBySip(sip);
-    //                    if (!aips.isEmpty()) {
-    //                        aipRepository.deleteAll(aips);
-    //                    }
-    //                    notifySipChangedState(sip.getIngestMetadata(), sip.getState(), SIPState.DELETED);
-    //                    sipRepository.updateSIPEntityState(SIPState.DELETED, sip.getId());
-    //                } else {
-    //                    notifySipChangedState(sip.getIngestMetadata(), sip.getState(), SIPState.TO_BE_DELETED);
-    //                    sipRepository.updateSIPEntityState(SIPState.TO_BE_DELETED, sip.getId());
-    //                }
-    //            } else if (sip.getState() != SIPState.TO_BE_DELETED && sip.getState() != SIPState.DELETED) {
-    //                // We had this condition on those state here and not into #isDeletableWithAIPs because we just want to be silent.
-    //                // Indeed, if we ask for deletion of an already deleted or being deleted SIP that just mean there is less work to do this time.
-    //                String errorMsg = String.format("SIPEntity with state %s is not deletable", sip.getState());
-    //                undeletableSips.add(new RejectedSipDto(sip.getSipId().toString(), errorMsg));
-    //                LOGGER.error(errorMsg);
-    //            }
-    //        }
-    //        long sipDeletionCheckEnd = System.currentTimeMillis();
-    //        LOGGER.debug("Checking {} sips for deletion took {} ms", sips.size(),
-    //                     sipDeletionCheckEnd - sipDeletionCheckStart);
-    //        return undeletableSips;
-    //    }
+    @Override
+    public Collection<RejectedSipDto> deleteSIPEntitiesForProviderId(String providerId) throws ModuleException {
+        return this.deleteSIPEntities(sipRepository.findAllByProviderIdOrderByVersionAsc(providerId));
+    }
+
+    @Override
+    public Collection<SIPEntity> findAllByProviderId(String providerId) {
+        return sipRepository.findAllByProviderIdOrderByVersionAsc(providerId);
+    }
+
+    @Override
+    public Collection<RejectedSipDto> deleteSIPEntitiesForSession(String sessionOwner, String session)
+            throws ModuleException {
+        return this.deleteSIPEntities(sipRepository
+                .findByIngestMetadataSessionOwnerAndIngestMetadataSession(sessionOwner, session));
+    }
+
+    @Override
+    public Collection<RejectedSipDto> deleteSIPEntities(Collection<SIPEntity> sips) throws ModuleException {
+        Set<RejectedSipDto> undeletableSips = Sets.newHashSet();
+        // FIXME
+        //        long sipDeletionCheckStart = System.currentTimeMillis();
+        //        for (SIPEntity sip : sips) {
+        //            if (isDeletableWithAIPs(sip)) {
+        //                // If SIP is not stored, we can already delete sip and associated AIPs
+        //                if (isDeletableWithoutAips(sip)) {
+        //                    Set<AIPEntity> aips = aipRepository.findBySip(sip);
+        //                    if (!aips.isEmpty()) {
+        //                        aipRepository.deleteAll(aips);
+        //                    }
+        //                    notifySipChangedState(sip.getIngestMetadata(), sip.getState(), SIPState.DELETED);
+        //                    sipRepository.updateSIPEntityState(SIPState.DELETED, sip.getId());
+        //                } else {
+        //                    notifySipChangedState(sip.getIngestMetadata(), sip.getState(), SIPState.TO_BE_DELETED);
+        //                    sipRepository.updateSIPEntityState(SIPState.TO_BE_DELETED, sip.getId());
+        //                }
+        //            } else if (sip.getState() != SIPState.TO_BE_DELETED && sip.getState() != SIPState.DELETED) {
+        //                // We had this condition on those state here and not into #isDeletableWithAIPs because we just want to be silent.
+        //                // Indeed, if we ask for deletion of an already deleted or being deleted SIP that just mean there is less work to do this time.
+        //                String errorMsg = String.format("SIPEntity with state %s is not deletable", sip.getState());
+        //                undeletableSips.add(new RejectedSipDto(sip.getSipId().toString(), errorMsg));
+        //                LOGGER.error(errorMsg);
+        //            }
+        //        }
+        //        long sipDeletionCheckEnd = System.currentTimeMillis();
+        //        LOGGER.debug("Checking {} sips for deletion took {} ms", sips.size(),
+        //                     sipDeletionCheckEnd - sipDeletionCheckStart);
+        return undeletableSips;
+    }
 
     @Override
     public Collection<SIPEntity> getAllVersions(String providerId) {
@@ -158,21 +168,22 @@ public class SIPService implements ISIPService {
         return sipRepository.countByProviderIdAndStateIn(providerId) > 0;
     }
 
-    //    @Override
-    //    public Boolean isDeletable(UniformResourceName sipId) throws EntityNotFoundException {
-    //        Optional<SIPEntity> os = sipRepository.findOneBySipId(sipId.toString());
-    //        if (os.isPresent()) {
-    //            return isDeletableWithAIPs(os.get());
-    //        } else {
-    //            throw new EntityNotFoundException(sipId.toString(), SIPEntity.class);
-    //        }
-    //    }
+    @Override
+    public Boolean isDeletable(UniformResourceName sipId) throws EntityNotFoundException {
+        // FIXME
+        return null;
+        //        Optional<SIPEntity> os = sipRepository.findOneBySipId(sipId.toString());
+        //        if (os.isPresent()) {
+        //            return isDeletableWithAIPs(os.get());
+        //        } else {
+        //            throw new EntityNotFoundException(sipId.toString(), SIPEntity.class);
+        //        }
+    }
 
     @Override
     public SIPEntity saveSIPEntity(SIPEntity sip) {
         // do save SIP
         SIPEntity savedSip = sipRepository.save(sip);
-        publisher.publish(new SIPEvent(savedSip));
         return savedSip;
     }
 

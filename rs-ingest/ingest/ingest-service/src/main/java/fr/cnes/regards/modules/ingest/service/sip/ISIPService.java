@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service;
+package fr.cnes.regards.modules.ingest.service.sip;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -28,8 +28,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
@@ -63,43 +65,44 @@ public interface ISIPService {
      */
     SIPEntity getSIPEntity(UniformResourceName sipId) throws EntityNotFoundException;
 
-    // FIXME
-    //    /**
-    //     * Delete one {@link SIPEntity} for the given ipId
-    //     * @param sipIds
-    //     * @return rejected or undeletable {@link SIPEntity}s
-    //     * @throws EntityNotFoundException
-    //     */
-    //    Collection<RejectedSipDto> deleteSIPEntitiesBySipIds(Collection<UniformResourceName> sipIds) throws ModuleException;
-    //
-    //    /**
-    //     * Delete all {@link SIPEntity} for the given provider id
-    //     * @param providerId
-    //     * @return rejected or undeletable {@link SIPEntity}s
-    //     * @throws ModuleException
-    //     */
-    //    Collection<RejectedSipDto> deleteSIPEntitiesForProviderId(String providerId) throws ModuleException;
-    //
-    //    /**
-    //     * Delete all {@link SIPEntity}s associated to the given session.
-    //     * @param sessionId
-    //     * @return rejected or undeletable {@link SIPEntity}s
-    //     * @throws ModuleException
-    //     */
-    //    Collection<RejectedSipDto> deleteSIPEntitiesForSession(String sessionOwner, String session) throws ModuleException;
-    //
-    //    /**
-    //     * Delete all {@link SIPEntity}s.
-    //     * @param sips
-    //     * @return rejected or undeletable {@link SIPEntity}s
-    //     * @throws ModuleException
-    //     */
-    //    Collection<RejectedSipDto> deleteSIPEntities(Collection<SIPEntity> sips) throws ModuleException;
+    /**
+     * Delete one {@link SIPEntity} for the given ipId
+     * @param sipIds
+     * @return rejected or undeletable {@link SIPEntity}s
+     * @throws EntityNotFoundException
+     */
+    Collection<RejectedSipDto> deleteSIPEntitiesBySipIds(Collection<UniformResourceName> sipIds) throws ModuleException;
 
-    //    /**
-    //     * Check if the SIP with the given ipId is deletable
-    //     */
-    //    Boolean isDeletable(UniformResourceName sipId) throws EntityNotFoundException;
+    Collection<SIPEntity> findAllByProviderId(String providerId);
+
+    /**
+     * Delete all {@link SIPEntity} for the given provider id
+     * @param providerId
+     * @return rejected or undeletable {@link SIPEntity}s
+     * @throws ModuleException
+     */
+    Collection<RejectedSipDto> deleteSIPEntitiesForProviderId(String providerId) throws ModuleException;
+
+    /**
+     * Delete all {@link SIPEntity}s associated to the given session.
+     * @param sessionId
+     * @return rejected or undeletable {@link SIPEntity}s
+     * @throws ModuleException
+     */
+    Collection<RejectedSipDto> deleteSIPEntitiesForSession(String sessionOwner, String session) throws ModuleException;
+
+    /**
+     * Delete all {@link SIPEntity}s.
+     * @param sips
+     * @return rejected or undeletable {@link SIPEntity}s
+     * @throws ModuleException
+     */
+    Collection<RejectedSipDto> deleteSIPEntities(Collection<SIPEntity> sips) throws ModuleException;
+
+    /**
+     * Check if the SIP with the given ipId is deletable
+     */
+    Boolean isDeletable(UniformResourceName sipId) throws EntityNotFoundException;
 
     /**
      * Save the given {@link SIPEntity} in DAO, update the associated session and publish a change event

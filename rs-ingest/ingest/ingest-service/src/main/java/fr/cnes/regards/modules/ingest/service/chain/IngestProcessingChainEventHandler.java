@@ -46,7 +46,7 @@ public class IngestProcessingChainEventHandler implements ApplicationListener<Ap
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestProcessingChainEventHandler.class);
 
     @Autowired
-    private IIngestProcessingService ingestProcessingService;
+    private IIngestProcessingChainService ingestProcessingService;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;

@@ -16,14 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.store;
+package fr.cnes.regards.modules.ingest.service.aip;
 
+import java.util.List;
 import java.util.Optional;
 
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.aip.AIP;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
@@ -31,6 +34,14 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * @author Sébastien Binda
  */
 public interface IAIPService {
+
+    /**
+     * Create and save {@link AIPEntity} from list of {@link AIP}
+     * @param sip linked {@link SIPEntity}
+     * @param aips list of {@link AIP}
+     * @return list of related {@link AIPEntity}
+     */
+    List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips);
 
     /**
      * Handle job event

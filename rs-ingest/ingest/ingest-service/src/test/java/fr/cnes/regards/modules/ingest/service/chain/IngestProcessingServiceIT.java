@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 public class IngestProcessingServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired
-    private IIngestProcessingService ingestProcessingService;
+    private IIngestProcessingChainService ingestProcessingService;
 
     @Autowired
     private IPluginService pluginService;

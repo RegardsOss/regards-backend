@@ -30,7 +30,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequestState;
+import fr.cnes.regards.modules.ingest.domain.entity.request.RequestState;
 
 /**
  * {@link IngestRequest} repository
@@ -45,7 +45,7 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      * @param state request state
      * @param pageable page info
      */
-    Page<IngestRequest> findPageByMetadataIngestChainAndState(String ingestChain, IngestRequestState state,
+    Page<IngestRequest> findPageByMetadataIngestChainAndState(String ingestChain, RequestState state,
             Pageable pageable);
 
     /**
@@ -55,10 +55,17 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      */
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("UPDATE IngestRequest r set r.state = :state where r.id in (:ids)")
-    void updateIngestRequestState(@Param("state") IngestRequestState state, @Param("ids") Collection<Long> ids);
+    void updateIngestRequestState(@Param("state") RequestState state, @Param("ids") Collection<Long> ids);
 
     /**
      * Get request by ids
      */
     List<IngestRequest> findByIdIn(Collection<Long> ids);
+
+    /**
+     * Check is a request exists with specified request id
+     * @param requestId request identifier
+     * @return true if at least one request exists
+     */
+    boolean existsByRequestId(String requestId);
 }

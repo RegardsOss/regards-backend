@@ -37,7 +37,6 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
 
 /**
  * Extra information useful for SIP submission.<br/>
@@ -52,23 +51,23 @@ import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
 @Embeddable
 public class IngestMetadata {
 
-    @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER_ERROR)
+    @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER)
     @Column(length = 128, name = "session_owner", nullable = false)
     private String sessionOwner;
 
-    @NotBlank(message = IngestValidationMessages.MISSING_SESSION_ERROR)
+    @NotBlank(message = IngestValidationMessages.MISSING_SESSION)
     @Column(length = 128, name = "session_name", nullable = false)
     private String session;
 
     /**
      * {@link fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain} name
      */
-    @NotBlank(message = IngestValidationMessages.MISSING_INGEST_CHAIN_ERROR)
+    @NotBlank(message = IngestValidationMessages.MISSING_INGEST_CHAIN)
     @Column(length = 100, name = "ingest_chain", nullable = false)
     private String ingestChain;
 
     @Valid
-    @NotNull(message = IngestValidationMessages.MISSING_STORAGE_METADATA_ERROR)
+    @NotNull(message = IngestValidationMessages.MISSING_STORAGE_METADATA)
     @Column(columnDefinition = "jsonb")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
             value = "fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata") })
@@ -115,33 +114,15 @@ public class IngestMetadata {
      */
     public static IngestMetadata build(String sessionOwner, String session, String ingestChain,
             StorageMetadata... storages) {
-        Assert.hasLength(ingestChain, IngestValidationMessages.MISSING_INGEST_CHAIN_ERROR);
-        Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER_ERROR);
-        Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION_ERROR);
-        Assert.notEmpty(storages, IngestValidationMessages.MISSING_STORAGE_METADATA_ERROR);
+        Assert.hasLength(ingestChain, IngestValidationMessages.MISSING_INGEST_CHAIN);
+        Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
+        Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION);
+        Assert.notEmpty(storages, IngestValidationMessages.MISSING_STORAGE_METADATA);
         IngestMetadata m = new IngestMetadata();
         m.setIngestChain(ingestChain);
         m.setSessionOwner(sessionOwner);
         m.setSession(session);
         m.setStorages(Arrays.asList(storages));
         return m;
-    }
-
-    public static IngestMetadata fromDto(IngestMetadataDto dto) {
-        IngestMetadata m = new IngestMetadata();
-        m.setIngestChain(dto.getIngestChain());
-        m.setSession(dto.getSession());
-        m.setSessionOwner(dto.getSessionOwner());
-        m.setStorages(dto.getStorages());
-        return m;
-    }
-
-    public IngestMetadataDto toDto() {
-        IngestMetadataDto dto = new IngestMetadataDto();
-        dto.setIngestChain(ingestChain);
-        dto.setSession(session);
-        dto.setSessionOwner(sessionOwner);
-        dto.setStorages(storages);
-        return dto;
     }
 }

@@ -16,13 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.event;
+package fr.cnes.regards.modules.ingest.domain.dto;
 
 /**
  * Available request types
  * @author Marc SORDI
  */
-public enum IngestRequestType {
+public enum RequestType {
 
     INGEST,
     DELETION;

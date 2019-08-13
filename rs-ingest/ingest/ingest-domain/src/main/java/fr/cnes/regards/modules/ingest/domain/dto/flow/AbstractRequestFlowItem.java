@@ -16,41 +16,37 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.entity.request;
+package fr.cnes.regards.modules.ingest.domain.dto.flow;
+
+import java.util.UUID;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 
 /**
- *         o
- *         |______DENIED
- *         |
- *      GRANTED
- *         |
- *      PENDING
- *         |
- * TODO
- *
- * Available request states
  * @author Marc SORDI
+ *
  */
-public enum IngestRequestState {
+public abstract class AbstractRequestFlowItem {
+
+    @NotBlank(message = IngestValidationMessages.MISSING_REQUEST_ID)
+    @Size(max = 36)
+    protected String requestId;
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
 
     /**
-     * Request is register
+     * Generate a request ID
      */
-    GRANTED,
-    /**
-     * Request cannot be registered so it's denied
-     */
-    DENIED,
-    /**
-     * Request has been handled.
-     */
-    PENDING,
-    /**
-     * Request properly done
-     */
-    DONE,
-    /**
-     * Request error during its processing
-     */
-    ERROR;
+    public static String generateRequestId() {
+        return UUID.randomUUID().toString();
+    }
 }

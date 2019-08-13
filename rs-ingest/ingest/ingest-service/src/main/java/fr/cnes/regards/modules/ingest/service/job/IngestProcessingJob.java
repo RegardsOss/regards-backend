@@ -30,7 +30,6 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import com.google.gson.reflect.TypeToken;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -46,16 +45,16 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIP;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequestState;
-import fr.cnes.regards.modules.ingest.domain.event.IngestRequestEvent;
-import fr.cnes.regards.modules.ingest.domain.event.IngestRequestType;
-import fr.cnes.regards.modules.ingest.service.chain.IngestRequestService;
+import fr.cnes.regards.modules.ingest.domain.entity.request.RequestState;
 import fr.cnes.regards.modules.ingest.service.chain.step.GenerationStep;
+import fr.cnes.regards.modules.ingest.service.chain.step.InternalFinalStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.InternalInitialStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.PostprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.PreprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
+import fr.cnes.regards.modules.ingest.service.request.IngestRequestPublisher;
+import fr.cnes.regards.modules.ingest.service.request.IngestRequestService;
 
 /**
  * This job manages processing chain for AIP generation from a SIP
@@ -81,9 +80,9 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     private INotificationClient notificationClient;
 
     @Autowired
-    private IPublisher publisher;
+    private IngestRequestPublisher publisher;
 
-    private IngestProcessingChain processingChain;
+    private IngestProcessingChain ingestChain;
 
     private List<IngestRequest> requests;
 
@@ -110,7 +109,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
             String message = String.format("No related chain has been found for value \"%s\"", processingChainName);
             handleInvalidParameter(CHAIN_NAME_PARAMETER, message);
         } else {
-            processingChain = chain.get();
+            ingestChain = chain.get();
         }
 
         // Load ingest requests
@@ -125,35 +124,39 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     public void run() {
         // Lets prepare a fex things in case there is errors
         StringJoiner notifMsg = new StringJoiner("\n");
-        notifMsg.add("Errors occurred during SIPs processing using " + processingChain.getName() + ":");
+        notifMsg.add("Errors occurred during SIPs processing using " + ingestChain.getName() + ":");
         boolean errorOccured = false;
 
         // Internal initial step
-        IProcessingStep<IngestRequest, SIPEntity> initStep = new InternalInitialStep(this, processingChain);
+        IProcessingStep<IngestRequest, SIPEntity> initStep = new InternalInitialStep(this, ingestChain);
         beanFactory.autowireBean(initStep);
 
         // Initializing steps
         // Step 1 : optional preprocessing
-        IProcessingStep<SIP, SIP> preStep = new PreprocessingStep(this, processingChain);
+        IProcessingStep<SIP, SIP> preStep = new PreprocessingStep(this, ingestChain);
         beanFactory.autowireBean(preStep);
         // Step 2 : required validation
-        IProcessingStep<SIP, Void> validationStep = new ValidationStep(this, processingChain);
+        IProcessingStep<SIP, Void> validationStep = new ValidationStep(this, ingestChain);
         beanFactory.autowireBean(validationStep);
         // Step 3 : required AIP generation
-        IProcessingStep<SIP, List<AIP>> generationStep = new GenerationStep(this, processingChain);
+        IProcessingStep<SIP, List<AIP>> generationStep = new GenerationStep(this, ingestChain);
         beanFactory.autowireBean(generationStep);
         // Step 4 : optional AIP tagging
-        IProcessingStep<List<AIP>, Void> taggingStep = new TaggingStep(this, processingChain);
+        IProcessingStep<List<AIP>, Void> taggingStep = new TaggingStep(this, ingestChain);
         beanFactory.autowireBean(taggingStep);
         // Step 5 : optional postprocessing
-        IProcessingStep<SIP, Void> postprocessingStep = new PostprocessingStep(this, processingChain);
+        IProcessingStep<SIP, Void> postprocessingStep = new PostprocessingStep(this, ingestChain);
         beanFactory.autowireBean(postprocessingStep);
+
+        // Internal final step
+        IProcessingStep<List<AIP>, Void> finalStep = new InternalFinalStep(this, ingestChain);
+        beanFactory.autowireBean(finalStep);
 
         for (IngestRequest request : requests) {
             currentRequest = request;
             try {
 
-                // Internal preparation step
+                // Internal preparation step (no plugin involved)
                 currentEntity = initStep.execute(request);
 
                 // Step 1 : optional preprocessing
@@ -170,14 +173,11 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                 // Step 5 : optional postprocessing
                 postprocessingStep.execute(sip);
 
-                // Internal finalization step
-                //                SIPEntity entity = prepareStep.execute(sip);
-                // TODO storing SIP and AIP in database
-                // Next step : store AIP (no plugin involved)
-                //                storeStep.execute(aips);
+                // Internal finalization step (no plugin involved)
+                finalStep.execute(aips);
 
-                // Only part of the request is ok!
-                // TODO handleRequestSuccess();
+                // Clean and publish
+                handleRequestSuccess();
 
             } catch (ProcessingStepException e) {
                 errorOccured = true;
@@ -200,45 +200,24 @@ public class IngestProcessingJob extends AbstractJob<Void> {
      * Method always called when error occurs during ingest processing
      */
     public void handleRequestError(Set<String> errors) {
-        currentRequest.setState(IngestRequestState.ERROR);
+        currentRequest.setState(RequestState.ERROR);
         currentRequest.setErrors(errors);
         ingestRequestService.updateIngestRequest(currentRequest);
-
-        publisher.publish(IngestRequestEvent.build(currentRequest.getRequestId(),
-                                                   currentRequest.getSip() != null ? currentRequest.getSip().getId()
-                                                           : null,
-                                                   currentEntity != null ? currentEntity.getSipId() : null,
-                                                   currentRequest.getState(), IngestRequestType.INGEST, errors));
+        publisher.publishIngestRequest(currentRequest, currentEntity);
     }
 
     /**
      * Method always called after successful processing
      */
     private void handleRequestSuccess() {
-        currentRequest.setState(IngestRequestState.DONE);
+        currentRequest.setState(RequestState.DONE);
         ingestRequestService.deleteIngestRequest(currentRequest);
-
-        publisher.publish(IngestRequestEvent.build(currentRequest.getRequestId(),
-                                                   currentRequest.getSip() != null ? currentRequest.getSip().getId()
-                                                           : null,
-                                                   currentEntity != null ? currentEntity.getSipId() : null,
-                                                   currentRequest.getState(), IngestRequestType.INGEST, null));
+        publisher.publishIngestRequest(currentRequest, currentEntity);
     }
-
-    // TODO
-    //    protected SIPEntity updateSIPEntityState(SIPState newEntitySIPState) {
-    //        // Send a notification about this SIP state change
-    //        job.getSipService().notifySipChangedState(job.getCurrentEntity().getIngestMetadata(),
-    //                                                  job.getCurrentEntity().getState(), newEntitySIPState);
-    //        // Update the SIP
-    //        job.getCurrentEntity().setState(newEntitySIPState);
-    //        job.getCurrentEntity().setProcessingErrors(processingErrors);
-    //        return job.getIngestProcessingService().updateSIPEntity(job.getCurrentEntity());
-    //    }
 
     @Override
     public int getCompletionCount() {
-        return 6;
+        return 7;
     }
 
     public SIPEntity getCurrentEntity() {

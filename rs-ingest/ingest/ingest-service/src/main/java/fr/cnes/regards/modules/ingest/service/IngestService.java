@@ -46,17 +46,22 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.ingest.dao.IDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.domain.dto.IngestRequestInfoDto;
+import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
+import fr.cnes.regards.modules.ingest.domain.dto.RequestType;
+import fr.cnes.regards.modules.ingest.domain.dto.flow.DeletionRequestFlowItem;
 import fr.cnes.regards.modules.ingest.domain.dto.flow.IngestRequestFlowItem;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.request.DeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequestState;
-import fr.cnes.regards.modules.ingest.domain.event.IngestRequestEvent;
-import fr.cnes.regards.modules.ingest.domain.event.IngestRequestType;
+import fr.cnes.regards.modules.ingest.domain.entity.request.RequestState;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
+import fr.cnes.regards.modules.ingest.service.request.IngestRequestPublisher;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
  * Ingest management service
@@ -79,6 +84,9 @@ public class IngestService implements IIngestService {
     private IPublisher publisher;
 
     @Autowired
+    private IngestRequestPublisher requestPublisher;
+
+    @Autowired
     private IIngestMetadataMapper metadataMapper;
 
     @Autowired
@@ -86,6 +94,12 @@ public class IngestService implements IIngestService {
 
     @Autowired
     private IIngestRequestRepository ingestRequestRepository;
+
+    @Autowired
+    private IDeletionRequestRepository deletionRequestRepository;
+
+    @Autowired
+    private ISIPService sipService;
 
     @Override
     public void registerIngestRequests(Collection<IngestRequestFlowItem> items) {
@@ -99,9 +113,9 @@ public class IngestService implements IIngestService {
         validator.validate(item, errors);
         if (errors.hasErrors()) {
             Set<String> errs = buildErrors(errors);
-            publisher.publish(IngestRequestEvent.build(item.getRequestId(),
-                                                       item.getSip() != null ? item.getSip().getId() : null, null,
-                                                       IngestRequestState.DENIED, IngestRequestType.INGEST, errs));
+            requestPublisher.publishIngestRequest(IngestRequest.build(item.getRequestId(),
+                                                                      metadataMapper.dtoToMetadata(item.getMetadata()),
+                                                                      RequestState.DENIED, item.getSip(), errs));
             if (LOGGER.isDebugEnabled()) {
                 StringJoiner joiner = new StringJoiner(", ");
                 errs.forEach(err -> joiner.add(err));
@@ -115,12 +129,9 @@ public class IngestService implements IIngestService {
         // Save granted ingest request
         IngestRequest request = IngestRequest.build(item.getRequestId(),
                                                     metadataMapper.dtoToMetadata(item.getMetadata()),
-                                                    IngestRequestState.GRANTED, item.getSip());
+                                                    RequestState.GRANTED, item.getSip());
         ingestRequestRepository.save(request);
-
-        publisher.publish(IngestRequestEvent.build(item.getRequestId(),
-                                                   item.getSip() != null ? item.getSip().getId() : null, null,
-                                                   request.getState(), IngestRequestType.INGEST, null));
+        requestPublisher.publishIngestRequest(request);
     }
 
     /**
@@ -146,17 +157,20 @@ public class IngestService implements IIngestService {
     }
 
     @Override
-    public IngestRequestInfoDto redirectToDataflow(SIPCollection sips) {
-        String requestId = sips.getRequestId();
+    public RequestInfoDto redirectToDataflow(SIPCollection sips) {
         IngestMetadataDto metadata = sips.getMetadata();
+        RequestInfoDto info = RequestInfoDto
+                .build(RequestType.INGEST, "SIP Collection ingestion request redirected to dataflow");
         for (SIP sip : sips.getFeatures()) {
-            publisher.publish(IngestRequestFlowItem.build(requestId, metadata, sip));
+            IngestRequestFlowItem item = IngestRequestFlowItem.build(metadata, sip);
+            info.addRequestMapping(sip.getId(), item.getRequestId());
+            publisher.publish(item);
         }
-        return IngestRequestInfoDto.build(requestId, "SIP Collection ingestion request redirected to dataflow");
+        return info;
     }
 
     @Override
-    public IngestRequestInfoDto redirectToDataflow(InputStream input) throws ModuleException {
+    public RequestInfoDto redirectToDataflow(InputStream input) throws ModuleException {
         try (Reader json = new InputStreamReader(input, DEFAULT_CHARSET)) {
             SIPCollection sips = gson.fromJson(json, SIPCollection.class);
             return redirectToDataflow(sips);
@@ -164,6 +178,60 @@ public class IngestService implements IIngestService {
             LOGGER.error("Cannot read JSON file containing SIP collection", e);
             throw new EntityInvalidException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void registerDeletionRequests(Collection<DeletionRequestFlowItem> items) {
+        items.forEach(i -> registerDeletionRequest(i));
+    }
+
+    private void registerDeletionRequest(DeletionRequestFlowItem item) {
+
+        // Validate all elements of the flow item
+        Errors errors = new MapBindingResult(new HashMap<>(), DeletionRequestFlowItem.class.getName());
+        validator.validate(item, errors);
+        if (errors.hasErrors()) {
+            Set<String> errs = buildErrors(errors);
+            requestPublisher.publishDeletionRequest(DeletionRequest
+                    .build(item.getRequestId(), RequestState.DENIED, item.getSipId(), errs));
+            if (LOGGER.isDebugEnabled()) {
+                StringJoiner joiner = new StringJoiner(", ");
+                errs.forEach(err -> joiner.add(err));
+                LOGGER.debug("Deletion request {} rejected for following reason(s) : {}", item.getRequestId(),
+                             joiner.toString());
+            }
+            // Do not save denied request
+            return;
+        }
+
+        // Save granted deletion request
+        DeletionRequest request = DeletionRequest.build(item.getRequestId(), RequestState.GRANTED,
+                                                        item.getSipId());
+        deletionRequestRepository.save(request);
+        requestPublisher.publishDeletionRequest(request);
+    }
+
+    @Override
+    public RequestInfoDto deleteByProviderId(String providerId) {
+        Collection<SIPEntity> entities = sipService.findAllByProviderId(providerId);
+        RequestInfoDto info = RequestInfoDto
+                .build(RequestType.DELETION, "SIP deletion by provider id request redirected to dataflow");
+        for (SIPEntity entity : entities) {
+            DeletionRequestFlowItem item = DeletionRequestFlowItem.build(entity.getSipId());
+            info.addRequestMapping(entity.getSipId(), item.getRequestId());
+            publisher.publish(item);
+        }
+        return info;
+    }
+
+    @Override
+    public RequestInfoDto deleteBySipId(String sipId) {
+        RequestInfoDto info = RequestInfoDto.build(RequestType.DELETION,
+                                                               "SIP deletion by sip id request redirected to dataflow");
+        DeletionRequestFlowItem item = DeletionRequestFlowItem.build(sipId);
+        info.addRequestMapping(sipId, item.getRequestId());
+        publisher.publish(item);
+        return info;
     }
 
     // FIXME retry with request!

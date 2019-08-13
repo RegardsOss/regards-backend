@@ -56,7 +56,7 @@ public class UpdateProcessingChainIT extends AbstractDaoTest {
     private static final String CHAIN_NAME = "ipst_Chain1";
 
     @Autowired
-    private IIngestProcessingService ingestProcessingService;
+    private IIngestProcessingChainService ingestProcessingService;
 
     @Autowired
     private IPluginService pluginService;

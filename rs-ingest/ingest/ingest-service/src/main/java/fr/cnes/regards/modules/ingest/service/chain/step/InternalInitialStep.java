@@ -31,8 +31,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
  * Initialize {@link SIPEntity} from specified {@link IngestRequest}
@@ -82,7 +82,8 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
 
     @Override
     protected void doAfterError(IngestRequest request) {
-        handleRequestError(String.format("Internal SIP creation from external SIP \"%s\"", request.getSip().getId()));
+        handleRequestError(String.format("Internal SIP creation from external SIP \"%s\" fails",
+                                         request.getSip().getId()));
     }
 
 }

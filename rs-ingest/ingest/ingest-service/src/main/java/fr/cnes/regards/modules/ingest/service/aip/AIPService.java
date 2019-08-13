@@ -16,8 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.store;
+package fr.cnes.regards.modules.ingest.service.aip;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -39,11 +41,12 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIP;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.service.ISIPService;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 
 /**
@@ -82,6 +85,15 @@ public class AIPService implements IAIPService {
 
     @Autowired
     private ITemplateService templateService;
+
+    @Override
+    public List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips) {
+        List<AIPEntity> entities = new ArrayList<>();
+        for (AIP aip : aips) {
+            entities.add(aipRepository.save(AIPEntity.build(sip, AIPState.CREATED, aip)));
+        }
+        return entities;
+    }
 
     @Override
     public void setAipInError(UniformResourceName aipId, AIPState state, String errorMessage, SIPState sipState) {

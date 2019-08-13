@@ -25,13 +25,16 @@ drop table t_sip_session;
 alter table ta_sip_errors drop constraint fk_errors_sip_entity_id;
 drop table ta_sip_errors;
 
-
-
 -- Deletion request
-create table t_deletion_request (id int8 not null, sipId varchar(128), primary key (id));
+create table t_deletion_request (id int8 not null, request_id varchar(36) NOT NULL, sipId varchar(128) NOT null, state varchar(20) NOT NULL, errors jsonb, primary key (id));
+CREATE INDEX idx_deletion_request_id on t_deletion_request (request_id);
+CREATE INDEX idx_deletion_request_state ON t_deletion_request (state);
+ALTER TABLE t_deletion_request ADD CONSTRAINT uk_deletion_request_id UNIQUE (request_id);
 create sequence seq_deletion_request start 1 increment 50;
 -- Ingest request
 create table t_ingest_request (id int8 not null, request_id varchar(36) NOT NULL, ingest_chain varchar(100) not null, session_name varchar(128) not null, session_owner varchar(128) not null, storages jsonb, state varchar(20) NOT NULL, errors jsonb, rawsip jsonb, primary key (id));
 CREATE INDEX idx_ingest_request_id on t_ingest_request (request_id);
+CREATE INDEX idx_ingest_request_state ON t_ingest_request (state);
+ALTER TABLE t_ingest_request ADD CONSTRAINT uk_ingest_request_id UNIQUE (request_id);
 create sequence seq_ingest_request start 1 increment 50;
 

@@ -18,14 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.domain.entity.request;
 
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
+import javax.persistence.UniqueConstraint;
+
+import org.springframework.lang.Nullable;
 
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 
@@ -33,8 +38,11 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
  * @author Marc SORDI
  */
 @Entity
-@Table(name = "t_deletion_request")
-public class DeletionRequest {
+@Table(name = "t_deletion_request",
+        indexes = { @Index(name = "idx_deletion_request_id", columnList = "request_id"),
+                @Index(name = "idx_deletion_request_state", columnList = "state") },
+        uniqueConstraints = { @UniqueConstraint(name = "uk_deletion_request_id", columnNames = { "request_id" }) })
+public class DeletionRequest extends AbstractRequest {
 
     @Id
     @SequenceGenerator(name = "deletionRequestSequence", initialValue = 1, sequenceName = "seq_deletion_request")
@@ -44,8 +52,36 @@ public class DeletionRequest {
     /**
      * The SIP internal identifier (generated URN).
      */
-    @NotBlank(message = "SIP ID is required")
-    @Column(name = "sipId", length = SIPEntity.MAX_URN_SIZE)
+    @Column(name = "sipId", length = SIPEntity.MAX_URN_SIZE, nullable = false)
     private String sipId;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getSipId() {
+        return sipId;
+    }
+
+    public void setSipId(String sipId) {
+        this.sipId = sipId;
+    }
+
+    public static DeletionRequest build(String requestId, RequestState state, String sipId) {
+        return build(requestId, state, sipId, null);
+    }
+
+    public static DeletionRequest build(String requestId, RequestState state, String sipId,
+            @Nullable Set<String> errors) {
+        DeletionRequest request = new DeletionRequest();
+        request.setRequestId(requestId);
+        request.setSipId(sipId);
+        request.setErrors(errors);
+        return request;
+    }
 
 }

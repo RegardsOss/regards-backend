@@ -42,23 +42,23 @@ import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
  */
 public class IngestMetadataDto {
 
-    @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER_ERROR)
+    @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER)
     @Size(max = 128)
     private String sessionOwner;
 
-    @NotBlank(message = IngestValidationMessages.MISSING_SESSION_ERROR)
+    @NotBlank(message = IngestValidationMessages.MISSING_SESSION)
     @Size(max = 128)
     private String session;
 
     /**
      * {@link fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain} name
      */
-    @NotBlank(message = IngestValidationMessages.MISSING_INGEST_CHAIN_ERROR)
+    @NotBlank(message = IngestValidationMessages.MISSING_INGEST_CHAIN)
     @Size(max = 100)
     private String ingestChain;
 
     @Valid
-    @NotNull(message = IngestValidationMessages.MISSING_STORAGE_METADATA_ERROR)
+    @NotNull(message = IngestValidationMessages.MISSING_STORAGE_METADATA)
     private List<StorageMetadata> storages;
 
     public String getSessionOwner() {
@@ -102,10 +102,10 @@ public class IngestMetadataDto {
      */
     public static IngestMetadataDto build(String sessionOwner, String session, String ingestChain,
             StorageMetadata... storages) {
-        Assert.hasLength(ingestChain, IngestValidationMessages.MISSING_INGEST_CHAIN_ERROR);
-        Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER_ERROR);
-        Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION_ERROR);
-        Assert.notEmpty(storages, IngestValidationMessages.MISSING_STORAGE_METADATA_ERROR);
+        Assert.hasLength(ingestChain, IngestValidationMessages.MISSING_INGEST_CHAIN);
+        Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
+        Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION);
+        Assert.notEmpty(storages, IngestValidationMessages.MISSING_STORAGE_METADATA);
         IngestMetadataDto m = new IngestMetadataDto();
         m.setIngestChain(ingestChain);
         m.setSessionOwner(sessionOwner);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,23 +16,43 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service;
+package fr.cnes.regards.modules.ingest.domain.entity.request;
 
 /**
- * Global ingest properties
+ *         o
+ *         |______DENIED
+ *         |
+ *      GRANTED
+ *         |
+ *      PENDING
+ *         |
+ *         |______ERROR
+ *         |
+ *       DONE
  *
+ * Available request states
  * @author Marc SORDI
- *
  */
-public final class IngestProperties {
+public enum RequestState {
 
     /**
-     * All transactions only manage at most {@link #WORKING_UNIT} entities at a time
-     * in order to take care of the memory consumption and potential tenant starvation.
+     * Request is register
      */
-    public static final Integer WORKING_UNIT = 100;
-
-    private IngestProperties() {
-        // Nothing to do
-    }
+    GRANTED,
+    /**
+     * Request cannot be registered so it's denied
+     */
+    DENIED,
+    /**
+     * Request has been handled.
+     */
+    PENDING,
+    /**
+     * Request properly done
+     */
+    DONE,
+    /**
+     * Request error during its processing
+     */
+    ERROR;
 }

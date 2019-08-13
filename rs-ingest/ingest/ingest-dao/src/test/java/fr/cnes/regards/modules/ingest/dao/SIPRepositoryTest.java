@@ -40,12 +40,12 @@ public class SIPRepositoryTest extends AbstractSIPRepositoryTest {
 
         List<SIPEntity> res = sipRepository.findAll(SIPEntitySpecifications
                 .search(null, "sessionId", "sessionId", OffsetDateTime.now().minusHours(12),
-                        Lists.newArrayList(SIPState.CREATED), PROCESSING_CHAIN));
+                        Lists.newArrayList(SIPState.INGESTED), PROCESSING_CHAIN));
         Assert.assertEquals(2, res.size());
 
         res = sipRepository.findAll(SIPEntitySpecifications
                 .search(null, "sessionId", "sessionId", OffsetDateTime.now().minusHours(1),
-                        Lists.newArrayList(SIPState.CREATED), PROCESSING_CHAIN));
+                        Lists.newArrayList(SIPState.INGESTED), PROCESSING_CHAIN));
         Assert.assertEquals(1, res.size());
 
         res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", "sessionId", null, null, null));
@@ -55,7 +55,7 @@ public class SIPRepositoryTest extends AbstractSIPRepositoryTest {
         Assert.assertEquals(2, res.size());
 
         res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, "sessionId", null,
-                                                                   Lists.newArrayList(SIPState.CREATED), null));
+                                                                   Lists.newArrayList(SIPState.INGESTED), null));
         Assert.assertEquals(2, res.size());
 
         res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, null, null, null, PROCESSING_CHAIN));
@@ -63,16 +63,16 @@ public class SIPRepositoryTest extends AbstractSIPRepositoryTest {
 
         res = sipRepository
                 .findAll(SIPEntitySpecifications.search(null, "invalid", "invalid", OffsetDateTime.now().minusHours(12),
-                                                        Lists.newArrayList(SIPState.CREATED), null));
+                                                        Lists.newArrayList(SIPState.INGESTED), null));
         Assert.assertEquals(0, res.size());
 
         res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", "sessionId",
                                                                    OffsetDateTime.now().minusHours(12),
-                                                                   Lists.newArrayList(SIPState.CREATED), null));
+                                                                   Lists.newArrayList(SIPState.INGESTED), null));
         Assert.assertEquals(0, res.size());
 
         res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", "sessionId", OffsetDateTime.now(),
-                                                                   Lists.newArrayList(SIPState.CREATED), null));
+                                                                   Lists.newArrayList(SIPState.INGESTED), null));
         Assert.assertEquals(0, res.size());
 
         res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", "sessionId",
@@ -94,7 +94,7 @@ public class SIPRepositoryTest extends AbstractSIPRepositoryTest {
 
     @Test
     public void testFindIdAndProcessingByState() {
-        List<SIPIdNProcessing> res = sipRepository.findIdAndIngestMetadataByState(SIPState.CREATED);
+        List<SIPIdNProcessing> res = sipRepository.findIdAndIngestMetadataByState(SIPState.INGESTED);
         Assert.assertEquals("There should be 2 sipIdNProcessing", 2, res.size());
     }
 

@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.ingest.service;
+package fr.cnes.regards.modules.ingest.service.conf;
 
 import java.io.IOException;
 

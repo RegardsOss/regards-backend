@@ -28,21 +28,23 @@ public final class IngestValidationMessages {
 
     // Ingest metadata messages
 
-    public static final String MISSING_INGEST_CHAIN_ERROR = "Ingest processing chain name is required";
+    public static final String MISSING_INGEST_CHAIN = "Ingest processing chain name is required";
 
-    public static final String MISSING_SESSION_OWNER_ERROR = "Identifier of the session owner that submitted the SIP is required";
+    public static final String MISSING_SESSION_OWNER = "Identifier of the session owner that submitted the SIP is required";
 
-    public static final String MISSING_SESSION_ERROR = "Session is required";
+    public static final String MISSING_SESSION = "Session is required";
 
-    public static final String MISSING_STORAGE_METADATA_ERROR = "Storage metadata is required";
+    public static final String MISSING_STORAGE_METADATA = "Storage metadata is required";
 
     // Common validation messages
 
-    public static final String MISSING_REQUEST_ID_ERROR = "Request identifier is required";
+    public static final String MISSING_REQUEST_ID = "Request identifier is required";
 
-    public static final String MISSING_METADATA_ERROR = "Ingest metadata is required";
+    public static final String MISSING_METADATA = "Ingest metadata is required";
 
-    public static final String MISSING_SIP_ERROR = "SIP is required";
+    public static final String MISSING_SIP = "SIP is required";
+
+    public static final String MISSING_SIPID = "SIP identifier is required";
 
     private IngestValidationMessages() {
     }

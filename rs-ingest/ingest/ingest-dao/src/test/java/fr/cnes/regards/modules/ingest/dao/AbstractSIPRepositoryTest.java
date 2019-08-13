@@ -65,7 +65,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip1.setIngestDate(OffsetDateTime.now());
         sip1.setIngestMetadata(IngestMetadata.build(sessionOwner, session, PROCESSING_CHAIN,
                                                     StorageMetadata.build("store", null)));
-        sip1.setState(SIPState.CREATED);
+        sip1.setState(SIPState.INGESTED);
         sip1.setVersion(1);
         sip1.setChecksum("1234567890");
 
@@ -80,7 +80,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip2.setIngestDate(OffsetDateTime.now().minusHours(6));
         sip1.setIngestMetadata(IngestMetadata.build(sessionOwner, session, PROCESSING_CHAIN,
                                                     StorageMetadata.build("store", null)));
-        sip2.setState(SIPState.CREATED);
+        sip2.setState(SIPState.INGESTED);
         sip2.setVersion(1);
         sip2.setChecksum("12345678902");
 

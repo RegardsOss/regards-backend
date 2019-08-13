@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.event;
+package fr.cnes.regards.modules.ingest.domain.dto.event;
 
 import java.util.Set;
 
@@ -25,7 +25,8 @@ import org.springframework.lang.Nullable;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequestState;
+import fr.cnes.regards.modules.ingest.domain.dto.RequestType;
+import fr.cnes.regards.modules.ingest.domain.entity.request.RequestState;
 
 /**
  * Generic event for all service requests
@@ -51,25 +52,25 @@ public class IngestRequestEvent implements ISubscribable {
      */
     private String sipId;
 
-    private IngestRequestState state;
+    private RequestState state;
 
-    private IngestRequestType type;
+    private RequestType type;
 
     private Set<String> errors;
 
-    public IngestRequestState getState() {
+    public RequestState getState() {
         return state;
     }
 
-    public void setState(IngestRequestState state) {
+    public void setState(RequestState state) {
         this.state = state;
     }
 
-    public IngestRequestType getType() {
+    public RequestType getType() {
         return type;
     }
 
-    public void setType(IngestRequestType type) {
+    public void setType(RequestType type) {
         this.type = type;
     }
 
@@ -106,12 +107,12 @@ public class IngestRequestEvent implements ISubscribable {
     }
 
     public static IngestRequestEvent build(String requestId, String providerId, @Nullable String sipId,
-            IngestRequestState state, IngestRequestType type) {
+            RequestState state, RequestType type) {
         return build(requestId, providerId, sipId, state, type, null);
     }
 
     public static IngestRequestEvent build(String requestId, String providerId, @Nullable String sipId,
-            IngestRequestState state, IngestRequestType type, Set<String> errors) {
+            RequestState state, RequestType type, Set<String> errors) {
         IngestRequestEvent event = new IngestRequestEvent();
         event.setProviderId(providerId);
         event.setSipId(sipId);

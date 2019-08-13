@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service;
+package fr.cnes.regards.modules.ingest.service.conf;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
+import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
 
 /**
  * Configuration manager for current module
@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
 public class IngestConfigurationManager extends AbstractModuleManager<Void> {
 
     @Autowired
-    private IIngestProcessingService processingService;
+    private IIngestProcessingChainService processingService;
 
     @Autowired
     private IIngestProcessingChainRepository ingestChainRepository;

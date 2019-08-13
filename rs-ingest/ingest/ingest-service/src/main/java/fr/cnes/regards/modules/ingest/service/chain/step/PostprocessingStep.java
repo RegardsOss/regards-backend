@@ -61,6 +61,6 @@ public class PostprocessingStep extends AbstractIngestStep<SIP, Void> {
 
     @Override
     protected void doAfterError(SIP sip) {
-        handleRequestError(String.format("Error during post processing for SIP \"{}\"", sip.getId()));
+        handleRequestError(String.format("Post processing fails for SIP \"{}\"", sip.getId()));
     }
 }

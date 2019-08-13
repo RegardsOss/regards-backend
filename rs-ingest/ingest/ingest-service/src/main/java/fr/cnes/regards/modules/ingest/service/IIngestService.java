@@ -23,7 +23,8 @@ import java.util.Collection;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
-import fr.cnes.regards.modules.ingest.domain.dto.IngestRequestInfoDto;
+import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
+import fr.cnes.regards.modules.ingest.domain.dto.flow.DeletionRequestFlowItem;
 import fr.cnes.regards.modules.ingest.domain.dto.flow.IngestRequestFlowItem;
 
 /**
@@ -44,13 +45,29 @@ public interface IIngestService {
      * Redirect collection of SIP to data flow (REST to messages)
      * @param sips raw {@link SIPCollection}
      */
-    IngestRequestInfoDto redirectToDataflow(SIPCollection sips);
+    RequestInfoDto redirectToDataflow(SIPCollection sips);
 
     /**
      * Redirect collection of SIP to data flow (REST to messages)
      * @param input JSON file containing a SIP collection
      */
-    IngestRequestInfoDto redirectToDataflow(InputStream input) throws ModuleException;
+    RequestInfoDto redirectToDataflow(InputStream input) throws ModuleException;
+
+    /**
+     * Register deletion requests from flow items
+     * @param item flow items to register as deletion requests
+     */
+    void registerDeletionRequests(Collection<DeletionRequestFlowItem> items);
+
+    /**
+     * Delete SIPs by provider id redirected to data flow
+     */
+    RequestInfoDto deleteByProviderId(String providerId);
+
+    /**
+     * Delete SIPs by sip id redirected to data flow
+     */
+    RequestInfoDto deleteBySipId(String sipId);
 
     // FIXME
     //    /**

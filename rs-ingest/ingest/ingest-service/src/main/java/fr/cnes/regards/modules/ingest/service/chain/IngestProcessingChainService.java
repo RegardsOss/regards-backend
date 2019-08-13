@@ -71,9 +71,9 @@ import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSingleAIPGeneration;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSipValidation;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
  * Ingest processing service
@@ -83,13 +83,13 @@ import fr.cnes.regards.modules.ingest.service.plugin.DefaultSipValidation;
  */
 @Service
 @MultitenantTransactional
-public class IngestProcessingService implements IIngestProcessingService {
+public class IngestProcessingChainService implements IIngestProcessingChainService {
 
     public static final String DEFAULT_VALIDATION_PLUGIN_CONF_LABEL = "DefaultSIPValidation";
 
     public static final String DEFAULT_GENERATION_PLUGIN_CONF_LABEL = "DefaultAIPGeneration";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestProcessingService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestProcessingChainService.class);
 
     @Autowired
     private ISIPRepository sipRepository;
@@ -118,7 +118,7 @@ public class IngestProcessingService implements IIngestProcessingService {
     private Gson gsonWithIdExclusionStrategy;
 
     @Autowired
-    private IIngestProcessingService self;
+    private IIngestProcessingChainService self;
 
     @Autowired
     private Validator validator;
@@ -207,11 +207,6 @@ public class IngestProcessingService implements IIngestProcessingService {
     //                                              SIPState.CREATED, SIPState.QUEUED, entry.getValue());
     //        }
     //    }
-
-    @Override
-    public SIPEntity updateSIPEntity(SIPEntity sip) {
-        return sipService.saveSIPEntity(sip);
-    }
 
     // FIXME gérer les demandes de stockage : refactoring
     @Override

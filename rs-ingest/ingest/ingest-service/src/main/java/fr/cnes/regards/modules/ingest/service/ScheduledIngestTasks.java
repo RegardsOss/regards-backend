@@ -30,8 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.service.chain.IngestRequestService;
-import fr.cnes.regards.modules.ingest.service.store.IAIPService;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.request.IngestRequestService;
 
 /**
  * Scheduled actions to process new CREATED SIPS by applying the associated processing chain
@@ -86,5 +86,7 @@ public class ScheduledIngestTasks {
             }
         }
     }
+
+    // TODO scheduleDeletionJob
 
 }

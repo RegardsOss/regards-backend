@@ -20,42 +20,54 @@ package fr.cnes.regards.modules.ingest.service.chain.step;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
+import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.aip.AIP;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
+ *
+ * Persist all generated entities in database : {@link SIPEntity} including {@link SIP} and {@link AIPEntity} including {@link AIP}(s)
+ *
  * @author Marc SORDI
  *
  */
 public class InternalFinalStep extends AbstractIngestStep<List<AIP>, Void> {
 
-    /**
-     * @param job
-     * @param ingestChain
-     */
+    @Autowired
+    private ISIPService sipService;
+
+    @Autowired
+    private IAIPService aipService;
+
     public InternalFinalStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
         super(job, ingestChain);
-        // TODO Auto-generated constructor stub
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.framework.modules.jobs.domain.step.AbstractProcessingStep#doExecute(java.lang.Object)
-     */
     @Override
-    protected Void doExecute(List<AIP> in) throws ProcessingStepException {
-        // TODO Auto-generated method stub
+    protected Void doExecute(List<AIP> aips) throws ProcessingStepException {
+
+        // Get on work SIP entity
+        SIPEntity sipEntity = job.getCurrentEntity();
+        sipService.saveSIPEntity(sipEntity);
+
+        // Build AIP entities and save them
+        aipService.createAndSave(sipEntity, aips);
+
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.framework.modules.jobs.domain.step.AbstractProcessingStep#doAfterError(java.lang.Object)
-     */
     @Override
     protected void doAfterError(List<AIP> in) {
-        // TODO Auto-generated method stub
-
+        handleRequestError(String.format("Persisting SIP and AIP from SIP \"%s\" fails",
+                                         job.getCurrentEntity().getProviderId()));
     }
 
 }

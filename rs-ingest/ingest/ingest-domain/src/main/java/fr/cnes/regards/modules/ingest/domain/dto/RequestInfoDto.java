@@ -19,25 +19,29 @@
 package fr.cnes.regards.modules.ingest.domain.dto;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * REST request response information
+ * REST ingest request response information
  *
  * @author Marc SORDI
  */
-public class IngestRequestInfoDto {
+public class RequestInfoDto {
 
-    private String requestId;
+    private RequestType type;
+
+    private Map<String, String> requestMapping = new HashMap<>();
 
     private List<String> messages;
 
-    public String getRequestId() {
-        return requestId;
+    public RequestType getType() {
+        return type;
     }
 
-    private void setRequestId(String requestId) {
-        this.requestId = requestId;
+    public void setType(RequestType type) {
+        this.type = type;
     }
 
     public List<String> getMessages() {
@@ -48,11 +52,13 @@ public class IngestRequestInfoDto {
         this.messages = messages;
     }
 
-    public static IngestRequestInfoDto build(String requestId, String... messages) {
-        IngestRequestInfoDto ri = new IngestRequestInfoDto();
-        ri.setRequestId(requestId);
+    public void addRequestMapping(String id, String requestId) {
+        requestMapping.put(id, requestId);
+    }
+
+    public static RequestInfoDto build(RequestType type, String... messages) {
+        RequestInfoDto ri = new RequestInfoDto();
         ri.setMessages(Arrays.asList(messages));
         return ri;
     }
-
 }

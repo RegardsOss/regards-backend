@@ -125,7 +125,7 @@ public class SIPEntity {
     @Column(length = CHECKSUM_MAX_LENGTH)
     private String checksum;
 
-    @NotNull(message = IngestValidationMessages.MISSING_SIP_ERROR)
+    @NotNull(message = IngestValidationMessages.MISSING_SIP)
     @Column(columnDefinition = "jsonb", name = "rawsip")
     @Type(type = "jsonb")
     private SIP sip;

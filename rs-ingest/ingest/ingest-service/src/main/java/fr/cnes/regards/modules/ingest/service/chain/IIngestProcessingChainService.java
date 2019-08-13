@@ -33,7 +33,6 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIP;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.service.ISIPService;
 
 /**
  * Ingest processing service interface
@@ -41,7 +40,7 @@ import fr.cnes.regards.modules.ingest.service.ISIPService;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-public interface IIngestProcessingService {
+public interface IIngestProcessingChainService {
 
     //    /**
     //     * Schedule {@link IngestProcessingJob}s for all {@link SIPEntity} with {@link SIPState#CREATED} Status.
@@ -53,10 +52,10 @@ public interface IIngestProcessingService {
     //     */
     //    void scheduleIngestProcessingJob(Set<Long> entityIdsToProcess, String processingChain);
 
-    /**
-     *  {@link ISIPService} delegated method, save and publish entity
-     */
-    SIPEntity updateSIPEntity(SIPEntity sip);
+    //    /**
+    //     *  {@link ISIPService} delegated method, save and publish entity
+    //     */
+    //    SIPEntity updateSIPEntity(SIPEntity sip);
 
     /**
      * After AIP(s) generation, save the context and submit AIP(s) in the AIP data flow (within the same transaction)

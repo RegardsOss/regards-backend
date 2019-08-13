@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.ingest.rest;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -44,24 +43,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
-import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
-import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
+import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
-import fr.cnes.regards.modules.ingest.service.ISIPService;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
  * This controller manages SIP submission API.
@@ -115,15 +110,14 @@ public class SIPController implements IResourceController<SIPEntity> {
      * Manage SIP bulk request
      *
      * @param sips {@link SIPCollection}
-     * @return {@link SIPEntity} collection
+     * @return {@link RequestInfoDto}
      * @throws ModuleException if error occurs!
      */
     @ResourceAccess(description = "SIP collections submission (bulk request)")
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
-    public ResponseEntity<Collection<SIPDto>> ingest(@RequestBody SIPCollection sips) throws ModuleException {
-        Collection<SIPDto> dtos = ingestService.ingest(sips);
-        HttpStatus status = computeStatus(dtos);
-        return ResponseEntity.status(status).body(dtos);
+    public ResponseEntity<RequestInfoDto> ingest(@RequestBody SIPCollection sips) throws ModuleException {
+        RequestInfoDto requestInfo = ingestService.redirectToDataflow(sips);
+        return ResponseEntity.ok(requestInfo);
     }
 
     /**
@@ -137,12 +131,11 @@ public class SIPController implements IResourceController<SIPEntity> {
      */
     @ResourceAccess(description = "SIP collection submission using multipart request")
     @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
-    public ResponseEntity<Collection<SIPDto>> ingestFile(@RequestParam(name = REQUEST_PARAM_FILE) MultipartFile file)
+    public ResponseEntity<RequestInfoDto> ingestFile(@RequestParam(name = REQUEST_PARAM_FILE) MultipartFile file)
             throws ModuleException {
         try {
-            Collection<SIPDto> dtos = ingestService.ingest(file.getInputStream());
-            HttpStatus status = computeStatus(dtos);
-            return ResponseEntity.status(status).body(dtos);
+            RequestInfoDto requestInfo = ingestService.redirectToDataflow(file.getInputStream());
+            return ResponseEntity.ok(requestInfo);
         } catch (IOException e) {
             final String message = "Error with file stream while importing model.";
             LOGGER.error(message, e);
@@ -178,53 +171,25 @@ public class SIPController implements IResourceController<SIPEntity> {
 
     @ResourceAccess(description = "Delete one SIP by its providerId.")
     @RequestMapping(method = RequestMethod.DELETE)
-    public ResponseEntity<Collection<RejectedSipDto>> deleteSipEntityByProviderId(
+    public ResponseEntity<RequestInfoDto> deleteSipEntityByProviderId(
             @RequestParam("providerId") String providerId) throws ModuleException {
-        return new ResponseEntity<>(sipService.deleteSIPEntitiesForProviderId(providerId), HttpStatus.OK);
+        return ResponseEntity.ok(ingestService.deleteByProviderId(providerId));
     }
 
     @ResourceAccess(description = "Delete one SIP by its sipId.")
     @RequestMapping(value = SIPID_PATH, method = RequestMethod.DELETE)
-    public ResponseEntity<Collection<RejectedSipDto>> deleteSipEntity(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
+    public ResponseEntity<RequestInfoDto> deleteSipEntity(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
             throws ModuleException {
-        return new ResponseEntity<>(
-                sipService.deleteSIPEntitiesBySipIds(Sets.newHashSet(UniformResourceName.fromString(sipId))),
-                HttpStatus.OK);
+        return ResponseEntity.ok(ingestService.deleteBySipId(sipId));
     }
 
     @ResourceAccess(description = "Retry SIP ingestion by its sipId.")
     @RequestMapping(value = SIPID_PATH + RETRY_PATH, method = RequestMethod.POST)
     public ResponseEntity<Void> retrySipEntityIngest(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
             throws ModuleException {
-        ingestService.retryIngest(UniformResourceName.fromString(sipId));
+        // TODO
+        // ingestService.retryIngest(UniformResourceName.fromString(sipId));
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    private HttpStatus computeStatus(Collection<SIPDto> dtos) {
-        Boolean hasCreated = Boolean.FALSE;
-        Boolean hasRejected = Boolean.FALSE;
-        for (SIPDto sipEntity : dtos) {
-            switch (sipEntity.getState()) {
-                case CREATED:
-                    hasCreated = Boolean.TRUE;
-                    break;
-                case REJECTED:
-                    hasRejected = Boolean.TRUE;
-                    break;
-                default:
-                    LOGGER.warn("Unexpected SIP state");
-                    break;
-            }
-        }
-        HttpStatus status;
-        if (hasCreated && hasRejected) {
-            status = HttpStatus.PARTIAL_CONTENT; // 206
-        } else if (hasRejected) {
-            status = HttpStatus.UNPROCESSABLE_ENTITY; // 422
-        } else {
-            status = HttpStatus.CREATED; // 201
-        }
-        return status;
     }
 
     @Override
@@ -232,18 +197,19 @@ public class SIPController implements IResourceController<SIPEntity> {
         final Resource<SIPEntity> resource = resourceService.toResource(sipEntity);
         resourceService.addLink(resource, this.getClass(), "getSipEntity", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
-        try {
-            if (sipService.isDeletable(sipEntity.getSipIdUrn())) {
-                resourceService.addLink(resource, this.getClass(), "deleteSipEntity", LinkRels.DELETE,
-                                        MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
-            }
-            if (ingestService.isRetryable(sipEntity.getSipIdUrn())) {
-                resourceService.addLink(resource, this.getClass(), "retrySipEntityIngest", "retry",
-                                        MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
-            }
-        } catch (EntityNotFoundException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
+        // FIXME
+        //        try {
+        //            if (sipService.isDeletable(sipEntity.getSipIdUrn())) {
+        //                resourceService.addLink(resource, this.getClass(), "deleteSipEntity", LinkRels.DELETE,
+        //                                        MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
+        //            }
+        //            if (ingestService.isRetryable(sipEntity.getSipIdUrn())) {
+        //                resourceService.addLink(resource, this.getClass(), "retrySipEntityIngest", "retry",
+        //                                        MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
+        //            }
+        //        } catch (EntityNotFoundException e) {
+        //            LOGGER.error(e.getMessage(), e);
+        //        }
 
         return resource;
     }

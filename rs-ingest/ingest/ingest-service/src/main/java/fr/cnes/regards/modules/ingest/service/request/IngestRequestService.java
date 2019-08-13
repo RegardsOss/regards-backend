@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.chain;
+package fr.cnes.regards.modules.ingest.service.request;
 
 import java.util.List;
 import java.util.Set;
@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -42,8 +43,7 @@ import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChainView;
 import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequestState;
-import fr.cnes.regards.modules.ingest.service.IngestProperties;
+import fr.cnes.regards.modules.ingest.domain.entity.request.RequestState;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
@@ -75,9 +75,12 @@ public class IngestRequestService {
     @Autowired
     private IIngestProcessingChainRepository ingestChainRepository;
 
-    // FIXME manage concurrent access  on ingest request table! lock on schedule!
+    @Value("${regards.ingest.request.job.bulk:100}")
+    private Integer bulkRequestLimit;
+
+    // FIXME manage concurrent access on ingest request table! lock on schedule!
     /**
-     * Schedul ingest processing jobs
+     * Schedule ingest processing jobs
      */
     public void scheduleIngestProcessingJob() {
         ingestChainRepository.findAllNames().forEach(chainView -> scheduleIngestProcessingJobByChain(chainView));
@@ -92,8 +95,8 @@ public class IngestRequestService {
 
         // Get granted request(s) per chain and page
         Page<IngestRequest> requests = ingestRequestRepository
-                .findPageByMetadataIngestChainAndState(chainView.getName(), IngestRequestState.GRANTED,
-                                                       PageRequest.of(0, IngestProperties.WORKING_UNIT));
+                .findPageByMetadataIngestChainAndState(chainView.getName(), RequestState.GRANTED,
+                                                       PageRequest.of(0, bulkRequestLimit));
 
         // Request found
         if (requests.hasContent()) {
@@ -111,7 +114,7 @@ public class IngestRequestService {
             jobInfoService.createAsQueued(jobInfo);
 
             // Switch request status (same transaction)
-            ingestRequestRepository.updateIngestRequestState(IngestRequestState.PENDING, ids);
+            ingestRequestRepository.updateIngestRequestState(RequestState.PENDING, ids);
         }
 
         // At least one request remains!

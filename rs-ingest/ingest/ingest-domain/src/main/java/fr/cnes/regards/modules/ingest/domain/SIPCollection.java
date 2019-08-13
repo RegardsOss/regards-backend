@@ -18,17 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
-import java.util.UUID;
-
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
 import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.domain.event.IngestRequestEvent;
+import fr.cnes.regards.modules.ingest.domain.dto.event.IngestRequestEvent;
 
 /**
  * SIP collection representation based on GeoJson standard structure.
@@ -38,21 +34,9 @@ import fr.cnes.regards.modules.ingest.domain.event.IngestRequestEvent;
  */
 public class SIPCollection extends AbstractFeatureCollection<SIP> {
 
-    @NotBlank(message = IngestValidationMessages.MISSING_REQUEST_ID_ERROR)
-    @Size(max = 36)
-    private String requestId;
-
     @Valid
     @NotNull(message = "Ingest metadata is required")
     private IngestMetadataDto metadata;
-
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
 
     public IngestMetadataDto getMetadata() {
         return metadata;
@@ -70,7 +54,6 @@ public class SIPCollection extends AbstractFeatureCollection<SIP> {
      */
     public static SIPCollection build(IngestMetadataDto metadata) {
         SIPCollection collection = new SIPCollection();
-        collection.setRequestId(UUID.randomUUID().toString());
         collection.setMetadata(metadata);
         return collection;
     }

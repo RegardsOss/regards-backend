@@ -28,7 +28,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.modules.ingest.domain.dto.flow.IngestRequestFlowItem;
+import fr.cnes.regards.modules.ingest.domain.dto.flow.DeletionRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 
 /**
@@ -38,11 +38,11 @@ import fr.cnes.regards.modules.ingest.service.IIngestService;
  *
  */
 @Component
-public class IngestRequestFlowHandler extends AbstractRequestFlowHandler<IngestRequestFlowItem>
+public class DeletionRequestFlowHandler extends AbstractRequestFlowHandler<DeletionRequestFlowItem>
         implements ApplicationListener<ApplicationReadyEvent> {
 
     @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestFlowHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeletionRequestFlowHandler.class);
 
     @Autowired
     private ISubscriber subscriber;
@@ -52,11 +52,11 @@ public class IngestRequestFlowHandler extends AbstractRequestFlowHandler<IngestR
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(IngestRequestFlowItem.class, this);
+        subscriber.subscribeTo(DeletionRequestFlowItem.class, this);
     }
 
     @Override
-    protected void processBulk(List<IngestRequestFlowItem> items) {
-        ingestService.registerIngestRequests(items);
+    protected void processBulk(List<DeletionRequestFlowItem> items) {
+        ingestService.registerDeletionRequests(items);
     }
 }

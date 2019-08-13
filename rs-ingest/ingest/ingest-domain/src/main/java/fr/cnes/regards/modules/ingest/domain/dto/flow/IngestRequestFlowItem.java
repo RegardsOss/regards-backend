@@ -18,12 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.dto.flow;
 
-import java.util.UUID;
-
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 import org.springframework.util.Assert;
 
@@ -34,7 +30,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.domain.event.IngestRequestEvent;
+import fr.cnes.regards.modules.ingest.domain.dto.event.IngestRequestEvent;
 
 /**
  * Data flow item to ingest SIP using event driven mechanism.
@@ -42,18 +38,14 @@ import fr.cnes.regards.modules.ingest.domain.event.IngestRequestEvent;
  * @author Marc SORDI
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class IngestRequestFlowItem implements ISubscribable {
-
-    @NotBlank(message = IngestValidationMessages.MISSING_REQUEST_ID_ERROR)
-    @Size(max = 36)
-    private String requestId;
+public class IngestRequestFlowItem extends AbstractRequestFlowItem implements ISubscribable {
 
     @Valid
-    @NotNull(message = IngestValidationMessages.MISSING_METADATA_ERROR)
+    @NotNull(message = IngestValidationMessages.MISSING_METADATA)
     private IngestMetadataDto metadata;
 
     @Valid
-    @NotNull(message = IngestValidationMessages.MISSING_SIP_ERROR)
+    @NotNull(message = IngestValidationMessages.MISSING_SIP)
     private SIP sip;
 
     public IngestMetadataDto getMetadata() {
@@ -72,23 +64,15 @@ public class IngestRequestFlowItem implements ISubscribable {
         this.sip = sip;
     }
 
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
-
     /**
      * Build a new SIP flow item with a custom request id.
      * You may generate your request id using {@link #generateRequestId()} or pass your own (max 36 alphanumerical characters)<br/>
      * An {@link IngestRequestEvent} including this request id will be sent to monitor the progress of the request.
      */
     public static IngestRequestFlowItem build(String requestId, IngestMetadataDto metadata, SIP sip) {
-        Assert.notNull(requestId, IngestValidationMessages.MISSING_REQUEST_ID_ERROR);
-        Assert.notNull(metadata, IngestValidationMessages.MISSING_METADATA_ERROR);
-        Assert.notNull(sip, IngestValidationMessages.MISSING_SIP_ERROR);
+        Assert.notNull(requestId, IngestValidationMessages.MISSING_REQUEST_ID);
+        Assert.notNull(metadata, IngestValidationMessages.MISSING_METADATA);
+        Assert.notNull(sip, IngestValidationMessages.MISSING_SIP);
         IngestRequestFlowItem item = new IngestRequestFlowItem();
         item.setRequestId(requestId);
         item.setMetadata(metadata);
@@ -102,12 +86,5 @@ public class IngestRequestFlowItem implements ISubscribable {
      */
     public static IngestRequestFlowItem build(IngestMetadataDto metadata, SIP sip) {
         return build(generateRequestId(), metadata, sip);
-    }
-
-    /**
-     * Generate a request ID
-     */
-    public static String generateRequestId() {
-        return UUID.randomUUID().toString();
     }
 }

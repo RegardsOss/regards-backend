@@ -49,6 +49,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
  * Abstract test class to provide SIP Creation tool.
@@ -73,6 +74,9 @@ public abstract class AbstractSipIT extends AbstractRegardsServiceTransactionalI
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
+
+    @Autowired
+    private ISIPService sipService;
 
     @Before
     public void init() throws Exception {
@@ -101,7 +105,7 @@ public abstract class AbstractSipIT extends AbstractRegardsServiceTransactionalI
         SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(),
                                               IngestMetadata.build(sessionOwner, session, ingestChain), sip, version,
                                               SIPState.INGESTED, EntityType.DATA);
-        sipEntity.setChecksum(IngestService.calculateChecksum(gson, sip, IngestService.MD5_ALGORITHM));
+        sipEntity.setChecksum(sipService.calculateChecksum(sip));
         return sipRepository.save(sipEntity);
     }
 
