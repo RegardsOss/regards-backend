@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.plugins.service;
 
+import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
@@ -90,7 +91,7 @@ public class ComplexPluginTest {
         List<PluginConfiguration> pluginConfs = new ArrayList<>();
         PluginConfiguration aPluginConfiguration = new PluginConfiguration(result,
                 "a configuration from PluginServiceUtility",
-                IPluginParam.set(IPluginParam.build(TestPlugin.FIELD_NAME_POJO_PARAM, pojo).dynamic()), 0);
+                IPluginParam.set(IPluginParam.build(TestPlugin.FIELD_NAME_POJO_PARAM, PluginParameterTransformer.toJson(pojo)).dynamic()), 0);
         aPluginConfiguration.setId(pPluginConfigurationId);
 
         pluginConfs.add(aPluginConfiguration);

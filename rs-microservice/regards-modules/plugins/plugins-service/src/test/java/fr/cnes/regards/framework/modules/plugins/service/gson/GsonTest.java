@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -96,7 +97,7 @@ public class GsonTest extends AbstractMultitenantServiceTest {
 
         // Tranform JSON to POJO
         Collection<Object> collection = PluginParameterTransformer
-                .transformValue((JsonCollectionPluginParam) conf.getParameter("simplelist"), SimplePojo.class);
+                .transformValue((JsonCollectionPluginParam) conf.getParameter("simplelist"), List.class, SimplePojo.class);
         Assert.assertNotNull(collection);
         collection.forEach(e -> Assert.assertTrue(SimplePojo.class.isInstance(e)));
     }
