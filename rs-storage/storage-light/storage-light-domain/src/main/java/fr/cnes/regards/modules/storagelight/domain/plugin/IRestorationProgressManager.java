@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.plugin;
 
+import java.nio.file.Path;
+
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 
@@ -35,7 +37,7 @@ public interface IRestorationProgressManager {
      * Notify system that the given {@link FileReference} is restored.
      * @param FileCacheRequest {@link FileCacheRequest} restored.
      */
-    public void restoreSucceed(FileCacheRequest fileRequest);
+    public void restoreSucceed(FileCacheRequest fileRequest, Path restoredFilePath);
 
     /**
      * Notify the system that the given {@link FileReference} couldn't be restored.

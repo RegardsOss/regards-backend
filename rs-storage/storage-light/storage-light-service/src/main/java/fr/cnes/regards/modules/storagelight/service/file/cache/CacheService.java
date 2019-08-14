@@ -348,6 +348,15 @@ public class CacheService {
      * @return file path
      */
     public String getFilePath(String fileChecksum) {
+        return Paths.get(getCacheDirectoryPath(fileChecksum), fileChecksum).toString();
+    }
+
+    /**
+     * Calculate a file path in the cache system by creating a sub folder for each 2 character of its checksum.
+     * @param fileChecksum
+     * @return file path
+     */
+    public String getCacheDirectoryPath(String fileChecksum) {
         String filePath = "";
         int idx = 0;
         int subFolders = 0;
@@ -355,7 +364,7 @@ public class CacheService {
             filePath = Paths.get(filePath, fileChecksum.substring(idx, idx + 2)).toString();
             idx = idx + 2;
         }
-        return Paths.get(getTenantCachePath().toString(), filePath, fileChecksum).toAbsolutePath().toString();
+        return Paths.get(getTenantCachePath().toString(), filePath).toAbsolutePath().toString();
     }
 
     /**

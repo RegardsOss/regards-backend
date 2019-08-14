@@ -23,7 +23,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -62,28 +61,26 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
     }
 
     @Override
-    public void restoreSucceed(FileCacheRequest fileReq) {
+    public void restoreSucceed(FileCacheRequest fileReq, Path resoredFilePath) {
         FileReference fileRef = fileReq.getFileReference();
         // Check file exists in cache
-        Path cacheFilePath = Paths.get(fileReq.getDestinationFilePath());
-        if (Files.exists(cacheFilePath)) {
+        if (Files.exists(resoredFilePath)) {
             try {
-                URL cacheFileLocation = new URL("file", null, cacheFilePath.toString());
+                URL cacheFileLocation = new URL("file", null, resoredFilePath.toString());
                 String successMessage = String
                         .format("File %s (checksum=%s, size=%s) successfully restored from %s to %s.",
                                 fileRef.getMetaInfo().getFileName(), fileRef.getMetaInfo().getChecksum(),
-                                cacheFilePath.toFile().length(), fileRef.getLocation().toString(),
-                                fileReq.getDestinationFilePath());
+                                resoredFilePath.toFile().length(), fileRef.getLocation().toString(), resoredFilePath);
                 LOGGER.info("[RESTORATION SUCCESS] - {}", successMessage);
                 job.advanceCompletion();
                 fileCacheRequestService.handleSuccess(fileReq, cacheFileLocation, fileRef.getOwners(),
-                                                      cacheFilePath.toFile().length(), successMessage);
+                                                      resoredFilePath.toFile().length(), successMessage);
                 handled.add(fileReq);
             } catch (MalformedURLException e) {
                 LOGGER.error(e.getMessage(), e);
                 restoreFailed(fileReq, e.getMessage());
                 try {
-                    Files.delete(cacheFilePath);
+                    Files.delete(resoredFilePath);
                 } catch (IOException e1) {
                     // Nothing to do, only log error.
                     LOGGER.error(e1.getMessage(), e1);
@@ -92,7 +89,7 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
         } else {
             String errorCause = String
                     .format("Unknown error during file %s restoration in cache. Storage location plugin indicates that the file is restored but file does not exists at %s.",
-                            fileReq.getChecksum(), fileReq.getDestinationFilePath());
+                            fileReq.getChecksum(), resoredFilePath);
             restoreFailed(fileReq, errorCause);
         }
     }

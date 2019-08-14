@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.modules.storagelight.service.plugin;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.regex.Pattern;
 
@@ -220,13 +223,21 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
             } else {
                 // Create file
                 try {
-                    if (!Files.exists(Paths.get(f.getDestinationFilePath()).getParent())) {
-                        Files.createDirectories(Paths.get(f.getDestinationFilePath()).getParent());
+                    if (!Files.exists(Paths.get(f.getRestorationDirectory()))) {
+                        Files.createDirectories(Paths.get(f.getRestorationDirectory()));
                     }
-                    if (!Files.exists(Paths.get(f.getDestinationFilePath()))) {
-                        Files.createFile(Paths.get(f.getDestinationFilePath()));
+                    Path filePath = Paths.get(f.getRestorationDirectory(), f.getChecksum());
+                    if (!Files.exists(filePath)) {
+                        Files.createFile(filePath);
+                        try (FileOutputStream out = new FileOutputStream(filePath.toFile())) {
+                            byte[] bytes = new byte[1024];
+                            new SecureRandom().nextBytes(bytes);
+                            out.write(bytes);
+                            out.flush();
+                        }
+                        LOGGER.info("Retrieve file with size {}", filePath.toFile().length());
                     }
-                    progressManager.restoreSucceed(f);
+                    progressManager.restoreSucceed(f, filePath);
                 } catch (IOException e) {
                     LOGGER.error(e.getMessage(), e);
                     progressManager.restoreFailed(f, e.getMessage());

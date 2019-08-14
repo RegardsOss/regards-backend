@@ -124,8 +124,8 @@ public class FileCacheRequestService {
         Optional<FileCacheRequest> oFcr = repository.findByChecksum(checksum);
         FileCacheRequest request = null;
         if (!oFcr.isPresent()) {
-            request = new FileCacheRequest(fileRefToRestore, cacheService.getFilePath(checksum), expirationDate,
-                    groupId);
+            request = new FileCacheRequest(fileRefToRestore, cacheService.getCacheDirectoryPath(checksum),
+                    expirationDate, groupId);
             request = repository.save(request);
             LOGGER.debug("File {} (checksum {}) is requested for cache.", fileRefToRestore.getMetaInfo().getFileName(),
                          fileRefToRestore.getMetaInfo().getChecksum());
