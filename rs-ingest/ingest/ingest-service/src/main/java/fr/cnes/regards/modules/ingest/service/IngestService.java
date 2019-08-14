@@ -40,13 +40,18 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISessionDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
@@ -61,6 +66,8 @@ import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
+import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
+import fr.cnes.regards.modules.ingest.service.job.SessionDeletionJob;
 import fr.cnes.regards.modules.ingest.service.request.IngestRequestPublisher;
 
 /**
@@ -82,6 +89,12 @@ public class IngestService implements IIngestService {
 
     @Autowired
     private Gson gson;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
+
+    @Autowired
+    private IJobInfoService jobInfoService;
 
     @Autowired
     private IPublisher publisher;
@@ -194,7 +207,15 @@ public class IngestService implements IIngestService {
         deletionRequestRepository.save(deletionRequest);
 
         // Schedule deletion job
-        // TODO
+        Set<JobParameter> jobParameters = Sets.newHashSet();
+        jobParameters.add(new JobParameter(SessionDeletionJob.ID, deletionRequest.getId()));
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.SESSION_DELETION_JOB_PRIORITY.getPriority(),
+                jobParameters, authResolver.getUser(), SessionDeletionJob.class.getName());
+        jobInfoService.createAsQueued(jobInfo);
+
+        // Switch request status (same transaction)
+        deletionRequest.setState(RequestState.PENDING);
+        deletionRequestRepository.save(deletionRequest);
 
         return deletionRequestMapper.entityToDto(deletionRequest);
     }
