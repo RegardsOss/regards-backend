@@ -38,13 +38,13 @@ public class LockService implements ILockService {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public boolean obtainLockOrSkip(String name, Class<?> owner, long expiresIn) {
+    public boolean obtainLockOrSkip(String name, Object owner, long expiresIn) {
         Assert.hasText(name, "Lock name is required");
         Assert.notNull(owner, "Class owner is required");
         Assert.notNull(expiresIn, "Expiration time is required");
         Assert.isTrue(expiresIn >= 1, "Expiration time must be at least of 1 second");
 
-        Optional<Lock> currentLock = lockRepository.findByLockingClassNameAndLockName(owner.getName(), name);
+        Optional<Lock> currentLock = lockRepository.findByLockingClassNameAndLockName(owner.getClass().getName(), name);
 
         if (currentLock.isPresent()) {
             // Prevent keeping expirated lock
@@ -58,14 +58,14 @@ public class LockService implements ILockService {
             }
         }
 
-        Lock newLock = new Lock(name, owner);
+        Lock newLock = new Lock(name, owner.getClass());
         newLock.expiresIn(expiresIn);
         lockRepository.save(newLock);
         return true;
     }
 
     @Override
-    public boolean waitForlock(String name, Class<?> owner, long expiresIn, long retry) {
+    public boolean waitForlock(String name, Object owner, long expiresIn, long retry) {
         boolean lockByThisCall = false;
         while (!lockByThisCall) {
             lockByThisCall = self.obtainLockOrSkip(name, owner, expiresIn);
@@ -80,8 +80,8 @@ public class LockService implements ILockService {
     }
 
     @Override
-    public void releaseLock(String name, Class<?> owner) {
-        Optional<Lock> currentLock = lockRepository.findByLockingClassNameAndLockName(owner.getName(), name);
+    public void releaseLock(String name, Object owner) {
+        Optional<Lock> currentLock = lockRepository.findByLockingClassNameAndLockName(owner.getClass().getName(), name);
         if (currentLock.isPresent()) {
             lockRepository.delete(currentLock.get());
         }
