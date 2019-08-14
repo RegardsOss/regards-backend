@@ -1,29 +1,36 @@
 package fr.cnes.regards.framework.modules.locks.service;
 
-import fr.cnes.regards.framework.modules.locks.domain.Lock;
-import fr.cnes.regards.framework.modules.locks.domain.LockException;
-
 /**
  * Because i'm awesome
  *
  * @author Sylvain VISSIERE-GUERINET
+ * @author Marc SORDI
  */
 public interface ILockService {
 
     /**
-     * Synchronous method that will try to acquire a lock. In case a lock is already set, it will loop until it can get one
-     * @param lock lock to be acquired
-     * @param seconds seconds until lock expiration. Negative value or 0 means there is no expiration
-     * @return acquired lock
-     * @throws LockException thrown when we were unable to wait for the lock to be acquired
-     */
-    Lock lock(Lock lock, long seconds) throws LockException;
-
-    boolean tryLock(Lock lock, long seconds);
+    * Try to obtain a lock with specified name for specified class owner. Skip immediatelly if cannot obtain the lock!
+    * @param name name of the lock (unique per owner)
+    * @param owner owner class of the lock
+    * @param expiresIn seconds before lock expiration (at least 1 second)
+    * @return <code>true</code> if lock has been obtained
+    */
+    boolean obtainLockOrSkip(String name, Class<?> owner, long expiresIn);
 
     /**
-     * Release given lock
+     * Synchronous method that will try to acquire a lock. In case a lock is already set, it will loop until it can get one
+     * @param name name of the lock (unique per owner)
+     * @param owner owner class of the lock
+     * @param expiresIn seconds before lock expiration (at least 1 second)
+     * @param retry millisecond between 2 attempts to obtain the lock
+     * @return <code>true</code> if lock has been obtained
      */
-    void release(Lock lock);
+    boolean waitForlock(String name, Class<?> owner, long expiresIn, long retry);
 
+    /**
+     * Try to release the lock with specified name for specified class owner
+     * @param name name of the lock (unique per owner)
+     * @param owner owner class of the lock
+     */
+    void releaseLock(String name, Class<?> owner);
 }

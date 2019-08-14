@@ -1,5 +1,7 @@
 package fr.cnes.regards.framework.modules.locks.domain;
 
+import java.time.OffsetDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -9,7 +11,6 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.Type;
 
@@ -45,7 +46,7 @@ public class Lock {
      * @param lockName method for which lock is being acquired
      * @param callerClazz class for which lock is being acquired
      */
-    public Lock(String lockName, Class callerClazz) {
+    public Lock(String lockName, Class<?> callerClazz) {
         this.lockName = lockName;
         this.lockingClassName = callerClazz.getName();
     }
