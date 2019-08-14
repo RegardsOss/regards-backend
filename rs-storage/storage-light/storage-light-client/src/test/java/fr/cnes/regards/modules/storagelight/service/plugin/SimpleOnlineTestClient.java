@@ -24,7 +24,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.compress.utils.Lists;
@@ -208,10 +207,20 @@ public class SimpleOnlineTestClient implements IOnlineStorageLocation {
     }
 
     @Override
-    public Collection<FileRestorationWorkingSubset> prepareForRestoration(List<FileCacheRequest> requests) {
+    public Collection<FileRestorationWorkingSubset> prepareForRestoration(Collection<FileCacheRequest> requests) {
         Collection<FileRestorationWorkingSubset> workingSubSets = Lists.newArrayList();
         workingSubSets.add(new FileRestorationWorkingSubset(Sets.newHashSet(requests)));
         return workingSubSets;
+    }
+
+    @Override
+    public boolean canDelete() {
+        return true;
+    }
+
+    @Override
+    public Long getTotalSpaceInMo() {
+        return 10_000_000L;
     }
 
 }

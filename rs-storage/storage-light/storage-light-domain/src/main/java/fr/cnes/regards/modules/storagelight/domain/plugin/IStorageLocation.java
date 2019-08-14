@@ -19,12 +19,11 @@
 package fr.cnes.regards.modules.storagelight.domain.plugin;
 
 import java.util.Collection;
-import java.util.List;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 
 /**
@@ -39,11 +38,15 @@ public interface IStorageLocation {
 
     Collection<FileDeletionWorkingSubset> prepareForDeletion(Collection<FileDeletionRequest> fileDeletionRequests);
 
-    Collection<FileRestorationWorkingSubset> prepareForRestoration(List<FileCacheRequest> requests);
+    Collection<FileRestorationWorkingSubset> prepareForRestoration(Collection<FileCacheRequest> requests);
 
     void delete(FileDeletionWorkingSubset workingSet, IDeletionProgressManager progressManager);
 
     void store(FileStorageWorkingSubset workingSet, IStorageProgressManager progressManager);
+
+    boolean canDelete();
+
+    Long getTotalSpaceInMo();
 
     /**
      * Method called before each configuration update of this plugin to know if the modification is allowed or not.

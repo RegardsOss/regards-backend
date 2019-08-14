@@ -122,7 +122,9 @@ public class FileStorageRequest {
         this.owners.add(owner);
         this.originUrl = originUrl.toString();
         this.storage = storage;
-        this.storageSubDirectory = storageSubDirectory.orElse(null);
+        if (storageSubDirectory != null) {
+            this.storageSubDirectory = storageSubDirectory.orElse(null);
+        }
         this.metaInfo = metaInfos;
         this.groupIds.add(groupId);
     }
@@ -141,7 +143,9 @@ public class FileStorageRequest {
         this.owners.addAll(owners);
         this.originUrl = originUrl.toString();
         this.storage = storage;
-        this.storageSubDirectory = storageSubDirectory.orElse(null);
+        if (storageSubDirectory != null) {
+            this.storageSubDirectory = storageSubDirectory.orElse(null);
+        }
         this.metaInfo = metaInfos;
         this.groupIds.add(groupId);
     }

@@ -23,7 +23,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.compress.utils.Lists;
@@ -207,7 +206,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     }
 
     @Override
-    public Collection<FileRestorationWorkingSubset> prepareForRestoration(List<FileCacheRequest> requests) {
+    public Collection<FileRestorationWorkingSubset> prepareForRestoration(Collection<FileCacheRequest> requests) {
         Collection<FileRestorationWorkingSubset> workingSubSets = Lists.newArrayList();
         workingSubSets.add(new FileRestorationWorkingSubset(Sets.newHashSet(requests)));
         return workingSubSets;
@@ -221,11 +220,11 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
             } else {
                 // Create file
                 try {
-                    if (!Files.exists(Paths.get(f.getDestinationPath()).getParent())) {
-                        Files.createDirectories(Paths.get(f.getDestinationPath()).getParent());
+                    if (!Files.exists(Paths.get(f.getDestinationFilePath()).getParent())) {
+                        Files.createDirectories(Paths.get(f.getDestinationFilePath()).getParent());
                     }
-                    if (!Files.exists(Paths.get(f.getDestinationPath()))) {
-                        Files.createFile(Paths.get(f.getDestinationPath()));
+                    if (!Files.exists(Paths.get(f.getDestinationFilePath()))) {
+                        Files.createFile(Paths.get(f.getDestinationFilePath()));
                     }
                     progressManager.restoreSucceed(f);
                 } catch (IOException e) {
@@ -234,6 +233,16 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                 }
             }
         });
+    }
+
+    @Override
+    public boolean canDelete() {
+        return true;
+    }
+
+    @Override
+    public Long getTotalSpaceInMo() {
+        return 10_000_000L;
     }
 
 }

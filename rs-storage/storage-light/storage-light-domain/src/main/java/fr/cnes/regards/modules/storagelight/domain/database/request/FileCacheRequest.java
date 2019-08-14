@@ -79,7 +79,7 @@ public class FileCacheRequest {
     private Long fileSize;
 
     @Column(name = "destination_path", length = FileLocation.URL_MAX_LENGTH, nullable = false)
-    private String destinationPath;
+    private String destinationFilePath;
 
     @Column(name = "expiration_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
@@ -92,14 +92,14 @@ public class FileCacheRequest {
     @Column(name = "error_cause", length = 512)
     private String errorCause;
 
-    public FileCacheRequest(FileReference fileReference, String destinationPath, OffsetDateTime expirationDate,
+    public FileCacheRequest(FileReference fileReference, String destinationFilePath, OffsetDateTime expirationDate,
             String groupId) {
         super();
         this.fileReference = fileReference;
         this.storage = fileReference.getLocation().getStorage();
         this.fileSize = fileReference.getMetaInfo().getFileSize();
         this.checksum = fileReference.getMetaInfo().getChecksum();
-        this.destinationPath = destinationPath;
+        this.destinationFilePath = destinationFilePath;
         this.expirationDate = expirationDate;
         this.groupId = groupId;
     }
@@ -144,8 +144,8 @@ public class FileCacheRequest {
         this.status = status;
     }
 
-    public String getDestinationPath() {
-        return destinationPath;
+    public String getDestinationFilePath() {
+        return destinationFilePath;
     }
 
     public OffsetDateTime getExpirationDate() {
@@ -158,6 +158,10 @@ public class FileCacheRequest {
 
     public String getGroupId() {
         return groupId;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
 }
