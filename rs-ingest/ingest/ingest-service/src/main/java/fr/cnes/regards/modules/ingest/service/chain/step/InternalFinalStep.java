@@ -23,11 +23,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.aip.AIP;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;

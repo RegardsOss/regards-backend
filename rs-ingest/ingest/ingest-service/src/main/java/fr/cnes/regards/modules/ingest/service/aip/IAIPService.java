@@ -23,11 +23,11 @@ import java.util.Optional;
 
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.aip.AIP;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
 /**
  * AIP Service interface. Service to handle business around {@link AIPEntity}s
@@ -74,7 +74,7 @@ public interface IAIPService {
     AIPEntity save(AIPEntity entity);
 
     /**
-     * Look for sips in state {@link fr.cnes.regards.modules.ingest.domain.entity.SIPState#TO_BE_DELETED} and
+     * Look for sips in state {@link fr.cnes.regards.modules.ingest.domain.sip.SIPState#TO_BE_DELETED} and
      * ask to rs-storage to delete them per page of 100.
      */
     void askForAipsDeletion();

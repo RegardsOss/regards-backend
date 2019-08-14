@@ -22,9 +22,9 @@ import java.util.List;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.aip.AIP;
 import fr.cnes.regards.modules.ingest.domain.exception.AIPGenerationException;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * Third <b>required</b> step of the SIP processing chain.

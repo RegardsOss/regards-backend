@@ -38,10 +38,10 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.ingest.domain.aip.AIP;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.AIPBuilder;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultAIPTagging;
 
 /**

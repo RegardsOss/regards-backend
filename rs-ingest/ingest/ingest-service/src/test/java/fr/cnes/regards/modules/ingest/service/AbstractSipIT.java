@@ -41,14 +41,14 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.AIPBuilder;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**

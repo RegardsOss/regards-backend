@@ -30,8 +30,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
-import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 
 /**
  * Ingest client API

@@ -37,7 +37,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.service.TestConfiguration;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;

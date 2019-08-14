@@ -36,11 +36,11 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantService
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.domain.dto.flow.IngestRequestFlowItem;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
+import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 
 /**
  * Test SIP flow handling

@@ -25,10 +25,10 @@ import java.util.Optional;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.aip.AIP;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.AIPBuilder;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * Default AIP generation plugin. The plugin automatically build a single AIP based on SIP information.

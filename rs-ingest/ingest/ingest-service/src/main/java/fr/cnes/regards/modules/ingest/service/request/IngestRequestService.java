@@ -39,11 +39,12 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChainView;
-import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.entity.request.RequestState;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChainView;
+import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
@@ -59,12 +60,17 @@ public class IngestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestService.class);
 
+    private static final String GRANTED_REQUEST_LOCK = "GRANTED_REQUEST_LOCK";
+
     // FIXME is it a proxy to properly handle transaction
     @Autowired
     private IngestRequestService self;
 
     @Autowired
     private IAuthenticationResolver authResolver;
+
+    @Autowired
+    private ILockService lockService;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -83,11 +89,19 @@ public class IngestRequestService {
      * Schedule ingest processing jobs
      */
     public void scheduleIngestProcessingJob() {
-        ingestChainRepository.findAllNames().forEach(chainView -> scheduleIngestProcessingJobByChain(chainView));
+
+        // Prevent concurrent call
+        if (lockService.obtainLockOrSkip(GRANTED_REQUEST_LOCK, this, 600)) {
+            try {
+                ingestChainRepository.findNamesBy().forEach(chainView -> scheduleIngestProcessingJobByChain(chainView));
+            } finally {
+                lockService.releaseLock(GRANTED_REQUEST_LOCK, this);
+            }
+        }
     }
 
     /**
-     * Schedul ingest processing jobs for a specified ingestion chain
+     * Schedule ingest processing jobs for a specified ingestion chain
      * @param chainView chain to consider
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)

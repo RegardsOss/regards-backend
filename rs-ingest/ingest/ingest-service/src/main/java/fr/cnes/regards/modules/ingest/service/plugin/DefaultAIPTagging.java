@@ -25,10 +25,10 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.modules.ingest.domain.aip.AIP;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.AIPBuilder;
 
 /**
  * Default AIP tagging plugin that can manage either tags or links or both.<br/>

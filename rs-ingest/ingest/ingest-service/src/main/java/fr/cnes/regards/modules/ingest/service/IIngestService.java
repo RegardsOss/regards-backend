@@ -22,10 +22,10 @@ import java.io.InputStream;
 import java.util.Collection;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
-import fr.cnes.regards.modules.ingest.domain.dto.flow.DeletionRequestFlowItem;
-import fr.cnes.regards.modules.ingest.domain.dto.flow.IngestRequestFlowItem;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionRequestDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
+import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 
 /**
  * Ingest service interface
@@ -54,33 +54,8 @@ public interface IIngestService {
     RequestInfoDto redirectToDataflow(InputStream input) throws ModuleException;
 
     /**
-     * Register deletion requests from flow items
-     * @param item flow items to register as deletion requests
+     * Register deletion request from flow item
+     * @param item flow item to register as deletion request
      */
-    void registerDeletionRequests(Collection<DeletionRequestFlowItem> items);
-
-    /**
-     * Delete SIPs by provider id redirected to data flow
-     */
-    RequestInfoDto deleteByProviderId(String providerId);
-
-    /**
-     * Delete SIPs by sip id redirected to data flow
-     */
-    RequestInfoDto deleteBySipId(String sipId);
-
-    // FIXME
-    //    /**
-    //     * Retry to store a SIP already submitted previously.
-    //     * @param sipId {@link String} ipId of the SIP to retry
-    //     * @return SIP DTO
-    //     * @throws ModuleException
-    //     */
-    //    SIPDto retryIngest(UniformResourceName sipId) throws ModuleException;
-    //
-    //    /**
-    //     * Check if the SIP with the given ipId is available for new ingestion submission
-    //     */
-    //    Boolean isRetryable(UniformResourceName sipId) throws EntityNotFoundException;
-
+    SessionDeletionRequestDto registerSessionDeletionRequest(SessionDeletionRequestDto request);
 }

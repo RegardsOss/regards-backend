@@ -32,7 +32,7 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  *

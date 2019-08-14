@@ -29,8 +29,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.entity.request.RequestState;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 
 /**
  * {@link IngestRequest} repository
@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.request.RequestState;
 public interface IIngestRequestRepository extends JpaRepository<IngestRequest, Long> {
 
     /**
+     * WARNING : concurrent access here!
      * Get ingest request by ingest chain and state
      * @param ingestChain ingest chain
      * @param state request state

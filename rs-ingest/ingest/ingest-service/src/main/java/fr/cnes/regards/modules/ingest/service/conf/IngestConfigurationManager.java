@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
 
 /**

@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.IngestRequestService;
 
 /**
@@ -56,9 +55,7 @@ public class ScheduledIngestTasks {
     @Autowired
     private IngestRequestService requestService;
 
-    @Autowired
-    private IAIPService aipBulkRequestService;
-
+    // FIXME may manage sched lock here
     @Scheduled(fixedRateString = "${regards.ingest.process.new.sips.delay:60000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processNewSips() {
@@ -72,21 +69,4 @@ public class ScheduledIngestTasks {
             }
         }
     }
-
-    @Scheduled(fixedRateString = "${regards.ingest.ask.for.aips.deletion.rate:60000}")
-    public void askForAipsDeletion() {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            try {
-                LOGGER.trace("Scheduled task : Process new AIP bulk request to archival storage for tenant {}", tenant);
-                runtimeTenantResolver.forceTenant(tenant);
-                // FIXME refactor
-                aipBulkRequestService.askForAipsDeletion();
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-        }
-    }
-
-    // TODO scheduleDeletionJob
-
 }

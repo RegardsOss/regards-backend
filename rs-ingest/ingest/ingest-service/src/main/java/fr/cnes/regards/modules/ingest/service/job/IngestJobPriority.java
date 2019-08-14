@@ -25,9 +25,6 @@ package fr.cnes.regards.modules.ingest.service.job;
  */
 public enum IngestJobPriority {
 
-    /**
-     * One SIP, one job!
-     */
     INGEST_PROCESSING_JOB_PRIORITY {
 
         @Override

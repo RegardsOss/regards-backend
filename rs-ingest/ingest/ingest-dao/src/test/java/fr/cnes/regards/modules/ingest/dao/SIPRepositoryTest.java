@@ -25,9 +25,9 @@ import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Test;
 
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPIdNProcessing;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPIdNProcessing;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
 /**
  * Test class to verify search with criterion of {@link SIPEntity} entities.

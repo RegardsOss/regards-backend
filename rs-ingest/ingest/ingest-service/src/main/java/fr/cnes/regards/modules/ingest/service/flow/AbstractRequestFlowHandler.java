@@ -54,16 +54,12 @@ public abstract class AbstractRequestFlowHandler<T extends ISubscribable> implem
     @Override
     public void handle(TenantWrapper<T> wrapper) {
         LOGGER.trace("New ingest request for tenant {}", wrapper.getTenant());
-        try {
-            String tenant = wrapper.getTenant();
-            T item = wrapper.getContent();
-            if (!items.containsKey(tenant)) {
-                items.put(tenant, new ConcurrentLinkedQueue<>());
-            }
-            items.get(tenant).add(item);
-        } finally {
-            runtimeTenantResolver.clearTenant();
+        String tenant = wrapper.getTenant();
+        T item = wrapper.getContent();
+        if (!items.containsKey(tenant)) {
+            items.put(tenant, new ConcurrentLinkedQueue<>());
         }
+        items.get(tenant).add(item);
     }
 
     /**

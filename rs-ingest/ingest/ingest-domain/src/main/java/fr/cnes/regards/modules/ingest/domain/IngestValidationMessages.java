@@ -46,6 +46,12 @@ public final class IngestValidationMessages {
 
     public static final String MISSING_SIPID = "SIP identifier is required";
 
+    // Deletion message
+
+    public static final String MISSING_SESSION_DELETION_MODE = "Session deletion mode is required";
+
+    public static final String MISSING_SESSION_DELETION_SELECTION_MODE = "Session selection mode is required";
+
     private IngestValidationMessages() {
     }
 }

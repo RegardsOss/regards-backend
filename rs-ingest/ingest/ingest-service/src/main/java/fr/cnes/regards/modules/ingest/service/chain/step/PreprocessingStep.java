@@ -25,9 +25,9 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPreprocessing;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
 /**

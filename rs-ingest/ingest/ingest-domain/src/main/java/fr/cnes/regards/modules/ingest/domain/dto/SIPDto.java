@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.ingest.domain.dto;
 
 import java.util.List;
 
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
 /**
  * Data Transfer Object for synchronous bulk submission request.

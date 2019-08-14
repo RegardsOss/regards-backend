@@ -25,10 +25,9 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestType;
-import fr.cnes.regards.modules.ingest.domain.dto.event.IngestRequestEvent;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.request.DeletionRequest;
-import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 
 /**
  *
@@ -54,10 +53,4 @@ public class IngestRequestPublisher {
                                                    entity != null ? entity.getSipId() : null, request.getState(),
                                                    RequestType.INGEST, request.getErrors()));
     }
-
-    public void publishDeletionRequest(DeletionRequest request) {
-        publisher.publish(IngestRequestEvent.build(request.getRequestId(), request.getSipId(), null, request.getState(),
-                                                   RequestType.DELETION, request.getErrors()));
-    }
-
 }

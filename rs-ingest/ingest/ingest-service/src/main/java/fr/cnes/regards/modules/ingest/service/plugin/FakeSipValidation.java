@@ -25,8 +25,8 @@ import org.springframework.validation.Errors;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * Fake SIP validation for testing purpose. Do not use in production!

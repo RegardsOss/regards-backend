@@ -23,9 +23,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.ingest.domain.aip.AIP;
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
 
 /**

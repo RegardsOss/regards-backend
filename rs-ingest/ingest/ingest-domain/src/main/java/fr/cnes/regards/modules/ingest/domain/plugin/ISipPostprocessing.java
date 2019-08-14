@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.domain.plugin;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * Fifth <b>optional</b> step of the SIP processing chain

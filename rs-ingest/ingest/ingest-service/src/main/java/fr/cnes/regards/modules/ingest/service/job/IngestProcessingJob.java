@@ -40,12 +40,12 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.aip.AIP;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.entity.request.RequestState;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.request.RequestState;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.step.GenerationStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.InternalFinalStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.InternalInitialStep;
@@ -210,7 +210,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
      * Method always called after successful processing
      */
     private void handleRequestSuccess() {
-        currentRequest.setState(RequestState.DONE);
+        currentRequest.setState(RequestState.SUCCESS);
         ingestRequestService.deleteIngestRequest(currentRequest);
         publisher.publishIngestRequest(currentRequest, currentEntity);
     }

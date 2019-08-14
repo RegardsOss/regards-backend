@@ -30,11 +30,11 @@ import org.springframework.test.context.transaction.BeforeTransaction;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:ingest_dao" })
 public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {

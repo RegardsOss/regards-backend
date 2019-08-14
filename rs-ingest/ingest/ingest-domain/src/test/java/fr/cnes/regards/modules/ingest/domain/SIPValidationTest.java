@@ -47,8 +47,12 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPReference;
 
 /**
  *

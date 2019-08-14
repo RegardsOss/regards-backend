@@ -28,8 +28,8 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
 /**
  * JPA {@link Specification} to define {@link Predicate}s for criteria search for {@link SIPEntity} from repository.

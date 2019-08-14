@@ -28,7 +28,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.modules.ingest.domain.dto.flow.IngestRequestFlowItem;
+import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 
 /**

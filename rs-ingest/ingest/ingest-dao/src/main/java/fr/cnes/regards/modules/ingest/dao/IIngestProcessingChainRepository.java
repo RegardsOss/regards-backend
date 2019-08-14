@@ -34,8 +34,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChainView;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChainView;
 
 /**
  * {@link IngestProcessingChain} repository
@@ -49,7 +49,7 @@ public interface IIngestProcessingChainRepository
     /**
      * Retrieve all processing chain name
      */
-    List<IngestProcessingChainView> findAllNames();
+    List<IngestProcessingChainView> findNamesBy();
 
     /**
      * Retrieve chain with specified name

@@ -68,6 +68,10 @@
 			<artifactId>plugins-service</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.locks</groupId>
+			<artifactId>locks-service</artifactId>
+		</dependency>
+		<dependency>
   			<groupId>fr.cnes.regards.framework</groupId>
   			<artifactId>authentication-regards-starter</artifactId>
 		</dependency>

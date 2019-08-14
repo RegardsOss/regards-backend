@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.ingest.domain.mapper;
 
 import org.mapstruct.Mapper;
 
-import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 
 /**
  * @author Marc SORDI

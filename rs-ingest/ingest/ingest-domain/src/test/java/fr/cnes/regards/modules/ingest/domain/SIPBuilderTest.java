@@ -37,8 +37,11 @@ import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.modules.ingest.domain.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.domain.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 
 /**
  * Test building, serializing and deserializing SIP feature.
