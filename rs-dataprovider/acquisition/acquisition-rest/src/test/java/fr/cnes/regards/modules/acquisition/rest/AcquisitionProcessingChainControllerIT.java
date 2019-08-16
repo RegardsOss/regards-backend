@@ -18,13 +18,32 @@
  */
 package fr.cnes.regards.modules.acquisition.rest;
 
+import com.jayway.jsonpath.JsonPath;
+import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.ConstrainedFields;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -37,28 +56,6 @@ import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
-
-import com.jayway.jsonpath.JsonPath;
-import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.ConstrainedFields;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
-import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 
 /**
  * Test acquisition chain workflow. This test cannot be done in a transaction due to transient entity!
@@ -254,8 +251,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         Assert.assertNotNull("Chain must exist", loadedChain);
 
         // Update scan plugin
-        Set<PluginParameter> params = PluginParametersFactory.build()
-                .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
+        Set<IPluginParam> params = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()));
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(params, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
         String label = "Scan plugin update";
@@ -309,8 +305,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         Assert.assertNotNull("Chain must exist", loadedChain);
 
         // Update scan plugin
-        Set<PluginParameter> params = PluginParametersFactory.build()
-                .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
+        Set<IPluginParam> params = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()));
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(params, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
         String label = "Scan plugin update";
@@ -395,7 +390,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
 
         AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("Auto10s");
         chain.setMode(AcquisitionProcessingChainMode.AUTO);
-        chain.setPeriodicity(10L);
+        chain.setPeriodicity("0 30 * * * *");
 
         // Create the chain
         performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH,
@@ -420,6 +415,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
 
     @Test
     public void exportConfiguration() {
+        this.createChain();
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
 

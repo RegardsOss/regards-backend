@@ -83,6 +83,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
         @NamedSubgraph(name = "graph.product.jobs", attributeNodes = { @NamedAttributeNode(value = "parameters") }) })
 public class Product {
 
+    private static final String MISSING_SESSION_ERROR = "Session is required";
+
     /**
      * {@link List} of file include in the {@link Product}
      */
@@ -128,8 +130,9 @@ public class Product {
     private String productName;
 
     /**
-     * The session identifier that create the current product
+     * The session name that create the current product
      */
+    @NotBlank(message = MISSING_SESSION_ERROR)
     @Column(name = "session", length = 128)
     private String session;
 

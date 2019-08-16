@@ -114,6 +114,10 @@
 			<groupId>fr.cnes.regards.framework.modules.workspace</groupId>
 			<artifactId>workspace-service</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.session-manager</groupId>
+			<artifactId>session-manager-domain</artifactId>
+		</dependency>
 		<!-- TEST dependencies -->
 		<dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

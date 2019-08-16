@@ -19,6 +19,7 @@
 
 package fr.cnes.regards.modules.acquisition.service.job;
 
+import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,21 +54,32 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
 
     public static final String CHAIN_PARAMETER_ID = "chain";
 
+    public static final String CHAIN_PARAMETER_SESSION = "session";
+
     @Autowired
     private IAcquisitionProcessingService processingService;
 
     @Autowired
     private IProductService productService;
 
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
     /**
      * The current chain to work with!
      */
     private AcquisitionProcessingChain processingChain;
 
+    /**
+     * The current session
+     */
+    private String session;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
         Long acqProcessingChainId = getValue(parameters, CHAIN_PARAMETER_ID);
+        session = getValue(parameters, CHAIN_PARAMETER_SESSION);
         try {
             processingChain = processingService.getChain(acqProcessingChainId);
         } catch (ModuleException e) {
@@ -79,6 +91,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
     public void run() {
 
         try {
+            sessionNotifier.notifyStartingChain(processingChain.getLabel(), session);
             // Trying to restart products that fail during SIP generation
             if (processingChain.isGenerationRetryEnabled()) {
                 processingService.retrySIPGeneration(processingChain);
@@ -97,6 +110,8 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             // schedule update products only once for SIP generation
             productService.manageUpdatedProducts(processingChain);
         } catch (ModuleException e) {
+            // We stop the chain here, the process may be broken
+            sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
             logger.error("Business error", e);
             throw new JobRuntimeException(e);
         } finally {

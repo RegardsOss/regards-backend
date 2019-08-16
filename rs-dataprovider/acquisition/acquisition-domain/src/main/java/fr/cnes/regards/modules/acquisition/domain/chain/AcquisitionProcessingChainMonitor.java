@@ -25,25 +25,6 @@ public class AcquisitionProcessingChainMonitor {
     @SuppressWarnings("unused")
     private final Long chainId;
 
-    // FILES
-    private Long nbFileErrors = 0L;
-
-    private Long nbFiles = 0L;
-
-    private Long nbFilesInProgress = 0L;
-
-    // PRODUCTS
-    private Long nbProductErrors = 0L;
-
-    private Long nbProducts = 0L;
-
-    private Long nbProductsInProgress = 0L;
-
-    // JOBS
-    private long nbProductAcquisitionJob = 0;
-
-    private long nbSIPGenerationJobs = 0;
-
     private boolean active = false;
 
     // Post processing jobs not managed here ... can be seen in product
@@ -62,72 +43,12 @@ public class AcquisitionProcessingChainMonitor {
         this.chain = chain;
     }
 
-    public Long getNbProductErrors() {
-        return nbProductErrors;
-    }
-
-    public void setNbProductErrors(Long nbProductErrors) {
-        this.nbProductErrors = nbProductErrors;
-    }
-
-    public Long getNbProducts() {
-        return nbProducts;
-    }
-
-    public void setNbProducts(Long nbProducts) {
-        this.nbProducts = nbProducts;
-    }
-
-    public Long getNbFileErrors() {
-        return nbFileErrors;
-    }
-
-    public void setNbFileErrors(Long nbFileErrors) {
-        this.nbFileErrors = nbFileErrors;
-    }
-
-    public Long getNbFiles() {
-        return nbFiles;
-    }
-
-    public void setNbFiles(Long nbFiles) {
-        this.nbFiles = nbFiles;
-    }
-
-    public Long getNbFilesInProgress() {
-        return nbFilesInProgress;
-    }
-
-    public void setNbFilesInProgress(Long nbFilesInProgress) {
-        this.nbFilesInProgress = nbFilesInProgress;
-    }
-
-    public Long getNbProductsInProgress() {
-        return nbProductsInProgress;
-    }
-
-    public void setNbProductsInProgress(Long nbProductsInProgress) {
-        this.nbProductsInProgress = nbProductsInProgress;
-    }
-
-    public long getNbProductAcquisitionJob() {
-        return nbProductAcquisitionJob;
-    }
-
-    public void setNbProductAcquisitionJob(long nbProductAcquisitionJob) {
-        this.nbProductAcquisitionJob = nbProductAcquisitionJob;
-    }
-
-    public long getNbSIPGenerationJobs() {
-        return nbSIPGenerationJobs;
-    }
-
-    public void setNbSIPGenerationJobs(long nbSIPGenerationJobs) {
-        this.nbSIPGenerationJobs = nbSIPGenerationJobs;
+    public void setActive(boolean isProductAcquisitionJobActive, long nbSIPGenerationJobs) {
+        active = isProductAcquisitionJobActive || nbSIPGenerationJobs > 0;
     }
 
     public boolean isActive() {
-        active = nbProductAcquisitionJob > 0 || nbSIPGenerationJobs > 0;
         return active;
     }
+
 }
