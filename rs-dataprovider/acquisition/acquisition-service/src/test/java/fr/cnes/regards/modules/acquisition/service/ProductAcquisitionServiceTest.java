@@ -18,13 +18,44 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
+import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
+import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Set;
-
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,29 +65,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
-import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link Product} workflow
@@ -86,8 +94,26 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
     @Autowired
     private IAcquisitionFileService fileService;
 
-    @After
-    public void cleanAfter() {
+    @Autowired
+    private IAcquisitionFileInfoRepository fileInfoRepository;
+
+    @Autowired
+    private IAcquisitionProcessingChainRepository acquisitionProcessingChainRepository;
+
+    @Autowired
+    private IPluginService pluginService;
+
+    @Autowired
+    private IJobInfoService jobInfoService;
+
+    @Before
+    public void before() throws ModuleException {
+        acqFileRepository.deleteAll();
+        fileInfoRepository.deleteAll();
+        acquisitionProcessingChainRepository.deleteAll();
+        for(PluginConfiguration pc: pluginService.getAllPluginConfigurations()) {
+            pluginService.deletePluginConfiguration(pc.getBusinessId());
+        }
     }
 
     public AcquisitionProcessingChain createProcessingChain(Path searchDir) throws ModuleException {
@@ -106,8 +132,8 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
+                PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))));
 
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
@@ -141,7 +167,21 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         // Not required
 
         // Save processing chain
-        return processingService.createChain(processingChain);
+        processingChain = processingService.createChain(processingChain);
+
+
+        // we need to set up a fake ProductAcquisitionJob to fill its attributes
+        JobInfo jobInfo = new JobInfo(true);
+        jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY.getPriority());
+        jobInfo.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()),
+                new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, "my funky session"));
+        jobInfo.setClassName(ProductAcquisitionJob.class.getName());
+        jobInfo.setOwner("user 1");
+        jobInfoService.createAsQueued(jobInfo);
+
+        processingChain.setLastProductAcquisitionJobInfo(jobInfo);
+
+        return processingService.updateChain(processingChain);
     }
 
     //    @Test
@@ -161,7 +201,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
         AcquisitionProcessingChain processingChain = createProcessingChain(Paths.get("src", "test", "resources", "data",
                                                                                      "plugins", "scan"));
-        AcquisitionFileInfo fileInfo = processingChain.getFileInfos().get(0);
+        AcquisitionFileInfo fileInfo = processingChain.getFileInfos().iterator().next();
 
         processingService.scanAndRegisterFiles(processingChain);
 
@@ -174,7 +214,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
         // Check registered files
         inProgressFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS,
-                                                                               processingChain.getFileInfos().get(0),
+                                                                               processingChain.getFileInfos().iterator().next(),
                                                                                PageRequest.of(0, 1));
         Assert.assertTrue(inProgressFiles.getTotalElements() == 0);
 
@@ -215,12 +255,27 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         Page<AcquisitionProcessingChainMonitor> monitor = processingService
                 .buildAcquisitionProcessingChainSummaries(null, null, null, PageRequest.of(0, 10));
         Assert.assertTrue(!monitor.getContent().isEmpty());
-        Assert.assertTrue(monitor.getContent().get(0).getNbFileErrors() == 0);
-        Assert.assertTrue(monitor.getContent().get(0).getNbFiles() == 4);
-        Assert.assertTrue(monitor.getContent().get(0).getNbFilesInProgress() == 0);
-        Assert.assertTrue(monitor.getContent().get(0).getNbProducts() == 4);
-        Assert.assertTrue(monitor.getContent().get(0).getNbProductErrors() == 0);
-        // Assert.assertTrue(monitor.getContent().get(0).getNbProductsInProgress() == 0);
+        Assert.assertEquals(true, monitor.getContent().get(0).isActive());
+
+
+        // Check product
+        Assert.assertEquals(0, productService.countByProcessingChainAndSipStateIn(processingChain, Arrays
+                .asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.NOT_SCHEDULED_INVALID, SIPState.REJECTED)));
+        Assert.assertEquals(4, productService.countByChain(processingChain));
+        Assert.assertEquals(4, productService
+                .countByProcessingChainAndSipStateIn(processingChain,
+                        Arrays.asList(ProductSIPState.NOT_SCHEDULED,
+                                ProductSIPState.SCHEDULED,
+                                ProductSIPState.SCHEDULED_INTERRUPTED)));
+
+        // Check files
+        Assert.assertEquals(0, fileService
+                .countByChainAndStateIn(processingChain,
+                        Arrays.asList(AcquisitionFileState.ERROR, AcquisitionFileState.INVALID)));
+        Assert.assertEquals(4, fileService.countByChain(processingChain));
+        Assert.assertEquals(0, fileService
+                .countByChainAndStateIn(processingChain,
+                        Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID)));
     }
 
     //    @Test

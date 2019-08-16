@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.rest;
 
+import java.util.Optional;
 import javax.validation.Valid;
 
 /*
@@ -53,6 +54,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import antlr.collections.List;
@@ -158,9 +160,10 @@ public class AcquisitionProcessingChainController implements IResourceController
 
     @RequestMapping(method = RequestMethod.GET, value = START_MANUAL_CHAIN_PATH)
     @ResourceAccess(description = "Start a manual chain", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<AcquisitionProcessingChain>> startManualChain(@PathVariable Long chainId)
+    public ResponseEntity<Resource<AcquisitionProcessingChain>> startManualChain(@PathVariable Long chainId,
+            @RequestParam(name = "session", required = false) Optional<String> session)
             throws ModuleException {
-        return ResponseEntity.ok(toResource(processingService.startManualChain(chainId)));
+        return ResponseEntity.ok(toResource(processingService.startManualChain(chainId, session)));
     }
 
     @RequestMapping(method = RequestMethod.GET, value = STOP_CHAIN_PATH)

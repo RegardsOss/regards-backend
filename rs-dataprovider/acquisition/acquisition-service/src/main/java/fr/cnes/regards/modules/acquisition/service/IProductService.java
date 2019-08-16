@@ -218,4 +218,5 @@ public interface IProductService {
      * @return whether there is a product page remaining to managed
      */
     boolean manageUpdatedProductsByPage(AcquisitionProcessingChain processingChain);
+
 }

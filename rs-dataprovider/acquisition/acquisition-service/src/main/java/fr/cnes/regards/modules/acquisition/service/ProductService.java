@@ -18,27 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.util.Assert;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -65,11 +44,32 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.PostAcquisitionJob;
+import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
+import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 import fr.cnes.regards.modules.ingest.domain.flow.SipFlowItem;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.util.Assert;
 
 /**
  * Manage acquisition {@link Product}
@@ -81,8 +81,6 @@ import fr.cnes.regards.modules.ingest.domain.flow.SipFlowItem;
 public class ProductService implements IProductService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
-
-    private static final String DEFAULT_SESSION = "Default";
 
     @Autowired
     private IPluginService pluginService;
@@ -104,6 +102,9 @@ public class ProductService implements IProductService {
 
     @Autowired
     private IProductService self;
+
+    @Autowired
+    private SessionNotifier sessionNotifier;
 
     @Value("${regards.acquisition.sip.bulk.request.limit:100}")
     private Integer bulkRequestLimit;
@@ -128,9 +129,8 @@ public class ProductService implements IProductService {
                      product.getIpId(),
                      product.getSipState());
         // Build flow item
-        String session = product.getSession() == null ? DEFAULT_SESSION : product.getSession();
         SipFlowItem item = SipFlowItem
-                .build(product.getProcessingChain().getIngestChain(), session, product.getSip(), appName);
+                .build(product.getProcessingChain().getIngestChain(), product.getSession(), product.getSip(), appName);
         publisher.publish(item);
         return save(product);
     }
@@ -145,6 +145,11 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    public Set<Product> retrieve(Collection<String> productNames) throws ModuleException {
+        return productRepository.findByProductNameIn(productNames);
+    }
+
+    @Override
     public Product retrieve(String productName) throws ModuleException {
         Product product = productRepository.findByProductName(productName);
         if (product == null) {
@@ -153,11 +158,6 @@ public class ProductService implements IProductService {
             throw new EntityNotFoundException(message);
         }
         return product;
-    }
-
-    @Override
-    public Set<Product> retrieve(Collection<String> productNames) throws ModuleException {
-        return productRepository.findByProductNameIn(productNames);
     }
 
     @Override
@@ -291,10 +291,14 @@ public class ProductService implements IProductService {
         // Get product plugin
         IProductPlugin productPlugin;
         try {
-            productPlugin = pluginService.getPlugin(processingChain.getProductPluginConf().getId());
+            productPlugin = pluginService.getPlugin(processingChain.getProductPluginConf().getBusinessId());
         } catch (NotAvailablePluginConfigurationException e1) {
             throw new ModuleException("Unable to run product generation for disabled acquisition chain.", e1);
         }
+
+        // Get current session
+        Map<String, JobParameter> jobsParameters = processingChain.getLastProductAcquisitionJobInfo().getParametersAsMap();
+        String session = jobsParameters.get(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION).getValue();
 
         // Compute the  list of products to create or update
         Set<String> productNames = new HashSet<>();
@@ -345,8 +349,15 @@ public class ProductService implements IProductService {
                 currentProduct = new Product();
                 currentProduct.setProductName(productName);
                 currentProduct.setProcessingChain(processingChain);
+                currentProduct.setSession(session);
                 productMap.put(productName, currentProduct);
+            } else if (!currentProduct.getSession().equals(session)) {
+                // The product is now managed by another session
+                sessionNotifier.notifyDecrementSession(currentProduct.getProcessingChain().getLabel(), currentProduct.getSession(), currentProduct.getState());
+                currentProduct.setSession(session);
             }
+            // Keep the current product state if we need to send a notif
+            ProductState oldState = currentProduct.getState();
 
             // Fulfill product with new valid acquired files
             fulfillProduct(validFilesByProductName.get(productName), currentProduct, processingChain);
@@ -358,6 +369,8 @@ public class ProductService implements IProductService {
                 LOGGER.trace("Product {} is candidate for SIP generation", currentProduct.getProductName());
                 productsToSchedule.add(currentProduct);
             }
+            // Notify about the product state change
+            sessionNotifier.notifyProductStateChanges(currentProduct, oldState);
         }
 
         // Schedule SIP generation
@@ -368,6 +381,7 @@ public class ProductService implements IProductService {
 
         return new HashSet<>(productMap.values());
     }
+
 
     /**
      * Fulfill product with new valid acquired files
@@ -395,7 +409,6 @@ public class ProductService implements IProductService {
         }
         // valid product
         currentProduct.setSipState(ProductSIPState.NOT_SCHEDULED); // Required to be re-integrated in SIP workflow
-        currentProduct.setSession(processingChain.getSession().orElse(null));
         currentProduct.addAcquisitionFiles(validFiles);
         computeProductStateWhenNewFile(currentProduct);
 
@@ -600,4 +613,5 @@ public class ProductService implements IProductService {
         productRepository.saveAll(page.getContent());
         return page.hasNext();
     }
+
 }

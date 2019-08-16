@@ -19,6 +19,8 @@
 
 package fr.cnes.regards.modules.acquisition.service.job;
 
+import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -55,6 +57,9 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
     @Autowired
     private IProductService productService;
+
+    @Autowired
+    private SessionNotifier sessionNotifier;
 
     @Autowired
     private IPluginService pluginService;
@@ -102,12 +107,14 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         ISipGenerationPlugin generateSipPlugin;
         try {
             // Get an instance of the plugin
-            generateSipPlugin = pluginService.getPlugin(processingChain.getGenerateSipPluginConf().getId());
+            generateSipPlugin = pluginService.getPlugin(processingChain.getGenerateSipPluginConf().getBusinessId());
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             // Throw a global job error, do not iterate on products
             logger.error(e.getMessage(), e);
             throw new JobRuntimeException(e.getMessage());
         }
+
+        Set<String> sessions = new HashSet<>();
 
         // Launch generation plugin
         for (Product product : products) {
@@ -116,9 +123,10 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 break;
             }
             logger.trace("Generating SIP for product {}", product.getProductName());
-
+            sessions.add(product.getSession());
             try {
                 SIP sip = generateSipPlugin.generate(product);
+                sessionNotifier.notifySipGenerationSucceed(product);
                 // Update product
                 product.setSip(sip);
                 product.setSipState(ProductSIPState.SUBMITTED);
@@ -130,7 +138,16 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 logger.debug(message, e);
                 product.setSipState(ProductSIPState.GENERATION_ERROR);
                 product.setError(e.getMessage());
+                sessionNotifier.notifySipGenerationError(product);
                 productService.save(product);
+            }
+        }
+
+        for (String session : sessions) {
+            if (productService.countSIPGenerationJobInfoByProcessingChainAndSipStateIn(
+                    processingChain, ProductSIPState.SCHEDULED) == 0) {
+                sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
+                break;
             }
         }
 

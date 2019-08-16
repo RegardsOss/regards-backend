@@ -113,10 +113,11 @@ public interface IAcquisitionProcessingService {
     /**
      * Start a chain manually
      * @param processingChainId identifier of the chain to start
+     * @param session optional, replace the name of the acquisition session
      * @return started processing chain
      * @throws ModuleException if error occurs!
      */
-    AcquisitionProcessingChain startManualChain(Long processingChainId) throws ModuleException;
+    AcquisitionProcessingChain startManualChain(Long processingChainId, Optional<String> session) throws ModuleException;
 
     /**
      * Stop a chain regardless of its mode.
@@ -202,4 +203,5 @@ public interface IAcquisitionProcessingService {
      * Handle {@link fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob} errors
      */
     void handleProductAcquisitionError(JobInfo jobInfo);
+
 }
