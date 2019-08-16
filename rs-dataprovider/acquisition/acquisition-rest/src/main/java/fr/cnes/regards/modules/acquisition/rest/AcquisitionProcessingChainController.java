@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.acquisition.rest;
 
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
+import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
 
@@ -57,7 +60,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import antlr.collections.List;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -125,6 +127,13 @@ public class AcquisitionProcessingChainController implements IResourceController
         return new ResponseEntity<>(toResource(processingService.createChain(processingChain)), HttpStatus.CREATED);
     }
 
+    @RequestMapping(method = RequestMethod.PATCH)
+    @ResourceAccess(description = "Patch several acquisition chains with new state and mode", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<List<Resource<AcquisitionProcessingChain>>> updateChainsStateAndMode(
+            @Valid @RequestBody UpdateAcquisitionProcessingChains payload) throws ModuleException {
+        return new ResponseEntity<>(toResources(processingService.patchChainsStateAndMode(payload)), HttpStatus.OK);
+    }
+
     /**
      * Get a {@link AcquisitionProcessingChain}
      * @param chainId the {@link AcquisitionProcessingChain} identifier
@@ -149,6 +158,14 @@ public class AcquisitionProcessingChainController implements IResourceController
     public ResponseEntity<Resource<AcquisitionProcessingChain>> update(@PathVariable Long chainId,
             @Valid @RequestBody AcquisitionProcessingChain processingChain) throws ModuleException {
         return ResponseEntity.ok(toResource(processingService.updateChain(processingChain)));
+    }
+
+
+    @RequestMapping(method = RequestMethod.PATCH, value = CHAIN_PATH)
+    @ResourceAccess(description = "Patch the state and the mode of the chain", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Resource<AcquisitionProcessingChain>> updateStateAndMode(@PathVariable Long chainId,
+            @Valid @RequestBody UpdateAcquisitionProcessingChain payload) throws ModuleException {
+        return ResponseEntity.ok(toResource(processingService.patchStateAndMode(chainId, payload)));
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = CHAIN_PATH)
@@ -195,6 +212,8 @@ public class AcquisitionProcessingChainController implements IResourceController
         }
         resourceService.addLink(resource, this.getClass(), "stopChain", "stop",
                                 MethodParamFactory.build(Long.class, element.getId()));
+        resourceService.addLink(resource, this.getClass(), "updateStateAndMode", "patch",
+                MethodParamFactory.build(Long.class, element.getId()));
         return resource;
     }
 }

@@ -100,6 +100,8 @@ public class MonitoringController implements IResourceController<AcquisitionProc
                 resourceService.addLink(resource, AcquisitionProcessingChainController.class, "delete", LinkRels.DELETE,
                         MethodParamFactory.build(Long.class, element.getChain().getId()));
             }
+            resourceService.addLink(resource, AcquisitionProcessingChainController.class, "updateStateAndMode", "patch",
+                    MethodParamFactory.build(Long.class, element.getChain().getId()));
         }
         return resource;
     }
