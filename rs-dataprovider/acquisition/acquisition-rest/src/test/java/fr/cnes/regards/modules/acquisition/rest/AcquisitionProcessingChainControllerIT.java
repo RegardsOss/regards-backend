@@ -36,11 +36,15 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainReposi
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChainType;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -256,7 +260,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         scanPlugin.setIsActive(true);
         String label = "Scan plugin update";
         scanPlugin.setLabel(label);
-        loadedChain.getFileInfos().get(0).setScanPlugin(scanPlugin);
+        loadedChain.getFileInfos().iterator().next().setScanPlugin(scanPlugin);
 
         customizer = customizer().expectStatusOk();
         // Document path parameter
@@ -276,7 +280,74 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         // Load new scan plugin configuration
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         loadedChain = processingService.getChain(chainId.longValue());
-        Assert.assertEquals(label, loadedChain.getFileInfos().get(0).getScanPlugin().getLabel());
+        Assert.assertEquals(label, loadedChain.getFileInfos().iterator().next().getScanPlugin().getLabel());
+    }
+
+    @Test
+    public void updateStateAndMode() throws ModuleException {
+
+        RequestBuilderCustomizer customizer = customizer().expectStatusCreated();
+
+        AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("update");
+
+        // Create the chain
+        ResultActions result = performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH,
+                chain,
+                customizer,
+                "Chain should be created!");
+
+        // Update chain
+        String resultAsString = payload(result);
+        Integer chainId = JsonPath.read(resultAsString, "$.content.id");
+
+        Assert.assertEquals(AcquisitionProcessingChainMode.MANUAL, chain.getMode());
+        Assert.assertEquals(true, chain.isActive());
+
+        AcquisitionProcessingChainMode mode = AcquisitionProcessingChainMode.AUTO;
+        boolean isActive = false;
+        UpdateAcquisitionProcessingChain updatePayload = UpdateAcquisitionProcessingChain.build(isActive, mode, UpdateAcquisitionProcessingChainType.ALL);
+
+        customizer = customizer().expectStatusOk();
+        // Document path parameter
+        customizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName(
+                AcquisitionProcessingChainController.CHAIN_PATH_PARAM).attributes(Attributes
+                .key(RequestBuilderCustomizer.PARAM_TYPE)
+                .value(JSON_NUMBER_TYPE))
+                .description("Acquisition chain identifier")));
+
+        performDefaultPatch(
+                AcquisitionProcessingChainController.TYPE_PATH + AcquisitionProcessingChainController.CHAIN_PATH,
+                updatePayload,
+                customizer,
+                "Chain should be patched",
+                chainId);
+
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        AcquisitionProcessingChain loadedChain = processingService.getChain(Long.valueOf(chainId));
+        Assert.assertEquals(mode, loadedChain.getMode());
+        Assert.assertEquals(isActive, loadedChain.isActive());
+
+
+        // Test the other endpoint
+        mode = AcquisitionProcessingChainMode.MANUAL;
+        isActive = true;
+        UpdateAcquisitionProcessingChains updatePayload2 = UpdateAcquisitionProcessingChains.build(
+                new ArrayList(Arrays.asList(loadedChain.getId())),
+                UpdateAcquisitionProcessingChain.build(isActive, mode, UpdateAcquisitionProcessingChainType.ALL));
+        customizer = customizer().expectStatusOk();
+
+        performDefaultPatch(
+                AcquisitionProcessingChainController.TYPE_PATH,
+                updatePayload2,
+                customizer,
+                "Chain should be repatched");
+
+
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        loadedChain = processingService.getChain(Long.valueOf(chainId));
+        Assert.assertEquals(mode, loadedChain.getMode());
+        Assert.assertEquals(isActive, loadedChain.isActive());
+
     }
 
     @Test
@@ -310,7 +381,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         scanPlugin.setIsActive(true);
         String label = "Scan plugin update";
         scanPlugin.setLabel(label);
-        loadedChain.getFileInfos().get(0).setScanPlugin(scanPlugin);
+        loadedChain.getFileInfos().iterator().next().setScanPlugin(scanPlugin);
 
         customizer = customizer().expectStatusOk();
         performDefaultPut(
@@ -323,7 +394,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         // Load new scan plugin configuration
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         loadedChain = processingService.getChain(chainId.longValue());
-        Assert.assertEquals(label, loadedChain.getFileInfos().get(0).getScanPlugin().getLabel());
+        Assert.assertEquals(label, loadedChain.getFileInfos().iterator().next().getScanPlugin().getLabel());
 
         // Delete active chain
         customizer = customizer().expectStatusForbidden();
@@ -373,6 +444,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
 
         AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("AutoError");
         chain.setMode(AcquisitionProcessingChainMode.AUTO);
+        chain.setPeriodicity("");
 
         // Create the chain
         performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH,
@@ -415,6 +487,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
 
     @Test
     public void exportConfiguration() {
+
         this.createChain();
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();

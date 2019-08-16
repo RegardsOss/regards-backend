@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -85,6 +88,23 @@ public interface IAcquisitionProcessingService {
      * @throws ModuleException if error occurs!
      */
     AcquisitionProcessingChain updateChain(AcquisitionProcessingChain processingChain) throws ModuleException;
+
+    /**
+     * Patch an existing processing chain with new values for active and state
+     *
+     * @param chainId
+     * @param payload
+     * @return
+     */
+    AcquisitionProcessingChain patchStateAndMode(Long chainId, UpdateAcquisitionProcessingChain payload) throws ModuleException;
+
+
+    /**
+     * Patch several existing processing chain with provided values for active and state
+     * @param payload
+     * @return
+     */
+    List<AcquisitionProcessingChain> patchChainsStateAndMode(UpdateAcquisitionProcessingChains payload) throws ModuleException;
 
     /**
      * Delete an inactive processing chain according to its identifier
@@ -203,5 +223,4 @@ public interface IAcquisitionProcessingService {
      * Handle {@link fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob} errors
      */
     void handleProductAcquisitionError(JobInfo jobInfo);
-
 }

@@ -48,6 +48,8 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
@@ -328,6 +330,40 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         return processingChain;
     }
 
+    @Override
+    public AcquisitionProcessingChain patchStateAndMode(Long chainId, UpdateAcquisitionProcessingChain payload) throws ModuleException {
+
+        // Check already exists
+        if (!acqChainRepository.existsChain(chainId)) {
+            throw new EntityNotFoundException(chainId, IngestProcessingChain.class);
+        }
+
+        AcquisitionProcessingChain chain = getChain(chainId);
+        switch (payload.getUpdateType()) {
+            case ALL:
+                chain.setActive(payload.getActive());
+                chain.setMode(payload.getMode());
+                break;
+            case ONLY_MODE:
+                chain.setMode(payload.getMode());
+                break;
+            case ONLY_ACTIVITY:
+                chain.setActive(payload.getActive());
+        }
+        checkProcessingChainMode(chain);
+        chain = updateChain(chain);
+        return chain;
+    }
+
+    @Override
+    public List<AcquisitionProcessingChain> patchChainsStateAndMode(UpdateAcquisitionProcessingChains payload) throws ModuleException {
+        List<AcquisitionProcessingChain> results = new ArrayList<>();
+        for (Long chainId : payload.getChainIds()) {
+            results.add(patchStateAndMode(chainId, UpdateAcquisitionProcessingChain.build(payload.getActive(), payload.getMode(), payload.getUpdateType())));
+        }
+        return results;
+    }
+
     /**
      * Create or update a plugin configuration cleaning old one if necessary
      * @param pluginConfiguration new plugin configuration or update
@@ -490,7 +526,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         for (AcquisitionProcessingChain processingChain : processingChains) {
             // Check periodicity
-            if ((processingChain.getLastActivationDate() != null) && !CronComparator.shouldRun(processingChain.getPeriodicity())) {
+            if (!CronComparator.shouldRun(processingChain.getPeriodicity())) {
                 LOGGER.debug("Acquisition processing chain \"{}\" won't start due to periodicity",
                              processingChain.getLabel());
             } else if (processingChain.isLocked()) {
@@ -511,13 +547,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         if (!processingChain.isActive()) {
             String message = String.format("Inactive processing chain \"%s\" cannot be started",
-                                           processingChain.getLabel());
-            LOGGER.error(message);
-            throw new EntityInvalidException(message);
-        }
-
-        if (AcquisitionProcessingChainMode.AUTO.equals(processingChain.getMode())) {
-            String message = String.format("Automatic processing chain \"%s\" cannot be started manuallly",
                                            processingChain.getLabel());
             LOGGER.error(message);
             throw new EntityInvalidException(message);
