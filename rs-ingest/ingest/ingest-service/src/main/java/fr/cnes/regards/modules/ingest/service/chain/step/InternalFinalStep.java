@@ -27,10 +27,10 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
-import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
+import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
 /**
  *
@@ -42,10 +42,7 @@ import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 public class InternalFinalStep extends AbstractIngestStep<List<AIP>, Void> {
 
     @Autowired
-    private ISIPService sipService;
-
-    @Autowired
-    private IAIPService aipService;
+    private IIngestRequestService ingestRequestService;
 
     public InternalFinalStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
         super(job, ingestChain);
@@ -54,12 +51,8 @@ public class InternalFinalStep extends AbstractIngestStep<List<AIP>, Void> {
     @Override
     protected Void doExecute(List<AIP> aips) throws ProcessingStepException {
 
-        // Get on work SIP entity
-        SIPEntity sipEntity = job.getCurrentEntity();
-        sipService.saveSIPEntity(sipEntity);
-
-        // Build AIP entities and save them
-        aipService.createAndSave(sipEntity, aips);
+        job.getCurrentRequest().setState(RequestState.SUCCESS);
+        ingestRequestService.handleRequestSuccess(job.getCurrentRequest(), job.getCurrentEntity(), aips);
 
         return null;
     }

@@ -81,7 +81,8 @@ public class SIPFlowHandlerIT extends AbstractMultitenantServiceTest {
     public void generateAndPublish() throws InterruptedException {
 
         long start = System.currentTimeMillis();
-        long maxloops = 5000;
+        long existingItems = 0;
+        long maxloops = 1000;
         for (long i = 0; i < maxloops; i++) {
             SIP sip = create("provider" + i);
             // Create event
@@ -97,13 +98,14 @@ public class SIPFlowHandlerIT extends AbstractMultitenantServiceTest {
         do {
             countSip = sipRepository.count();
             LOGGER.debug("{} SIP(s) created in database", countSip);
-            if (countSip >= maxloops) {
+            if (countSip >= maxloops + existingItems) {
                 break;
             }
             Thread.sleep(1000);
         } while (true);
 
-        LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", maxloops, System.currentTimeMillis() - start);
+        LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", maxloops + existingItems,
+                    System.currentTimeMillis() - start);
     }
 
     private SIP create(String providerId) {

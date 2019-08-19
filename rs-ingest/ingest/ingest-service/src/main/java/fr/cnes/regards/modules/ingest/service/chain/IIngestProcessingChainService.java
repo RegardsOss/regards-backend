@@ -22,17 +22,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
 /**
  * Ingest processing service interface
@@ -41,42 +36,6 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
  * @author Sébastien Binda
  */
 public interface IIngestProcessingChainService {
-
-    //    /**
-    //     * Schedule {@link IngestProcessingJob}s for all {@link SIPEntity} with {@link SIPState#CREATED} Status.
-    //     */
-    //    void ingest();
-    //
-    //    /**
-    //     * Really build ingestion job and schedule it in transaction.
-    //     */
-    //    void scheduleIngestProcessingJob(Set<Long> entityIdsToProcess, String processingChain);
-
-    //    /**
-    //     *  {@link ISIPService} delegated method, save and publish entity
-    //     */
-    //    SIPEntity updateSIPEntity(SIPEntity sip);
-
-    /**
-     * After AIP(s) generation, save the context and submit AIP(s) in the AIP data flow (within the same transaction)
-     */
-    SIPEntity saveAndSubmitAIP(SIPEntity entity, List<AIP> aips) throws EntityNotFoundException;
-
-    /**
-     * Return {@link SIPEntity} for the given id
-     */
-    SIPEntity getSIPEntity(Long id) throws EntityNotFoundException;
-
-    /**
-     *
-     * Return all {@link SIPEntity}s for the given ids
-     */
-    Set<SIPEntity> getAllSipEntities(Set<Long> ids);
-
-    /**
-     * Create AIP
-     */
-    AIPEntity createAIP(Long sipEntityId, AIP aip) throws EntityNotFoundException;
 
     /**
      * Create a new {@link IngestProcessingChain}

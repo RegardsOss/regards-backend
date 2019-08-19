@@ -23,20 +23,16 @@ import java.util.List;
 import java.util.Set;
 
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChainView;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
 /**
+ * Ingest request service
+ *
  * @author Marc SORDI
  *
  */
 public interface IIngestRequestService {
-
-    /**
-     * Schedule ingest processing jobs
-     */
-    void scheduleIngestProcessingJob();
-
-    void scheduleIngestProcessingJobByChain(IngestProcessingChainView chainView);
 
     /**
      * Schedule a job with following passed requests.
@@ -52,14 +48,23 @@ public interface IIngestRequestService {
     List<IngestRequest> loadByIds(Set<Long> ids);
 
     /**
-     * Update a request
+     * Handle request granted during request handling
      */
-    IngestRequest save(IngestRequest request);
+    void handleGrantedRequest(IngestRequest request);
 
     /**
-     * Delete successful request
-     * @param request
+     * Handle request denied during request handling
      */
-    void delete(IngestRequest request);
+    void handleDeniedRequest(IngestRequest request);
+
+    /**
+     * Handle request error during job processing
+     */
+    void handleRequestError(IngestRequest request);
+
+    /**
+     * Handle request success at the end of the job processing
+     */
+    void handleRequestSuccess(IngestRequest request, SIPEntity sipEntity, List<AIP> aips);
 
 }

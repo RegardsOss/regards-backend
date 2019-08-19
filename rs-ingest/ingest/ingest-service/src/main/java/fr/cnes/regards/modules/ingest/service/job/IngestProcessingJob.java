@@ -44,7 +44,6 @@ import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.step.GenerationStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.InternalFinalStep;
@@ -54,7 +53,6 @@ import fr.cnes.regards.modules.ingest.service.chain.step.PreprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
-import fr.cnes.regards.modules.ingest.service.request.IngestRequestPublisher;
 
 /**
  * This job manages processing chain for AIP generation from a SIP
@@ -80,9 +78,6 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     @Autowired
     private INotificationClient notificationClient;
-
-    @Autowired
-    private IngestRequestPublisher publisher;
 
     private IngestProcessingChain ingestChain;
 
@@ -181,10 +176,8 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                 postprocessingStep.execute(sip);
 
                 // Internal finalization step (no plugin involved)
+                // Do all persistence actions in this step
                 finalStep.execute(aips);
-
-                // Clean and publish
-                handleRequestSuccess();
 
                 sipIngested++;
                 LOGGER.debug("{}SIP \"{}\" ingested in {} ms", INFO_TAB, currentRequest.getSip().getId(),
@@ -215,25 +208,6 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         }
     }
 
-    /**
-     * Method always called when error occurs during ingest processing
-     */
-    public void handleRequestError(Set<String> errors) {
-        currentRequest.setState(RequestState.ERROR);
-        currentRequest.setErrors(errors);
-        ingestRequestService.save(currentRequest);
-        publisher.publishIngestRequest(currentRequest, currentEntity);
-    }
-
-    /**
-     * Method always called after successful processing
-     */
-    private void handleRequestSuccess() {
-        currentRequest.setState(RequestState.SUCCESS);
-        ingestRequestService.delete(currentRequest);
-        publisher.publishIngestRequest(currentRequest, currentEntity);
-    }
-
     @Override
     public int getCompletionCount() {
         return 7;
@@ -241,5 +215,9 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     public SIPEntity getCurrentEntity() {
         return currentEntity;
+    }
+
+    public IngestRequest getCurrentRequest() {
+        return currentRequest;
     }
 }

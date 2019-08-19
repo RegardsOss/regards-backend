@@ -23,9 +23,6 @@ package fr.cnes.regards.modules.ingest.dto.request;
  *         |______DENIED
  *         |
  *      GRANTED
- *         |
- *      PENDING
- *         |
  *         |______ERROR
  *         |
  *       DONE
@@ -36,17 +33,13 @@ package fr.cnes.regards.modules.ingest.dto.request;
 public enum RequestState {
 
     /**
-     * Request is register
+     * Request is registered and handled
      */
     GRANTED,
     /**
      * Request cannot be registered so it's denied
      */
     DENIED,
-    /**
-     * Request has been handled.
-     */
-    PENDING,
     /**
      * Request properly done
      */

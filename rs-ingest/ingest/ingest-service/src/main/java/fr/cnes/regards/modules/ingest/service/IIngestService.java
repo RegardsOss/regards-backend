@@ -37,16 +37,10 @@ import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 public interface IIngestService {
 
     /**
-     * Register ingest requests from flow items
-     * @param item flow items to register as ingest requests
-     */
-    Collection<IngestRequest> registerIngestRequests(Collection<IngestRequestFlowItem> items);
-
-    /**
      * Register and schedule ingest requests from flow items
      * @param item flow items to register as ingest requests and to schedule as an ingestion job
      */
-    Collection<IngestRequest> registerAndScheduleIngestRequests(Collection<IngestRequestFlowItem> items);
+    Collection<IngestRequest> handleIngestRequests(Collection<IngestRequestFlowItem> items);
 
     /**
      * Redirect collection of SIP to data flow (REST to messages)

@@ -71,13 +71,11 @@ import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.SessionDeletionJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
-import fr.cnes.regards.modules.ingest.service.request.IngestRequestPublisher;
 
 /**
  * Ingest management service
  *
  * @author Marc Sordi
- *
  *
  * TODO : retry ingestion
  * TODO : retry deletion?
@@ -103,9 +101,6 @@ public class IngestService implements IIngestService {
     private IPublisher publisher;
 
     @Autowired
-    private IngestRequestPublisher requestPublisher;
-
-    @Autowired
     private IIngestMetadataMapper metadataMapper;
 
     @Autowired
@@ -121,7 +116,9 @@ public class IngestService implements IIngestService {
     private ISessionDeletionRequestRepository deletionRequestRepository;
 
     @Override
-    public Collection<IngestRequest> registerIngestRequests(Collection<IngestRequestFlowItem> items) {
+    public Collection<IngestRequest> handleIngestRequests(Collection<IngestRequestFlowItem> items) {
+
+        // Register requests
         Collection<IngestRequest> requests = new ArrayList<>();
         for (IngestRequestFlowItem item : items) {
             IngestRequest request = registerIngestRequest(item);
@@ -129,14 +126,6 @@ public class IngestService implements IIngestService {
                 requests.add(request);
             }
         }
-        return requests;
-    }
-
-    @Override
-    public Collection<IngestRequest> registerAndScheduleIngestRequests(Collection<IngestRequestFlowItem> items) {
-
-        // Register requests
-        Collection<IngestRequest> requests = registerIngestRequests(items);
 
         // Dispatch per chain
         ListMultimap<String, IngestRequest> requestPerChain = ArrayListMultimap.create();
@@ -150,6 +139,11 @@ public class IngestService implements IIngestService {
         return requests;
     }
 
+    /**
+     * Validate, save and publish a new new request
+     * @param item request to manage
+     * @return {@link IngestRequest} or <code>null</code>
+     */
     private IngestRequest registerIngestRequest(IngestRequestFlowItem item) {
 
         // Validate all elements of the flow item
@@ -157,9 +151,10 @@ public class IngestService implements IIngestService {
         validator.validate(item, errors);
         if (errors.hasErrors()) {
             Set<String> errs = buildErrors(errors);
-            requestPublisher.publishIngestRequest(IngestRequest.build(item.getRequestId(),
-                                                                      metadataMapper.dtoToMetadata(item.getMetadata()),
-                                                                      RequestState.DENIED, item.getSip(), errs));
+            // Publish DENIED request (do not persist it in DB)
+            ingestRequestService.handleDeniedRequest(IngestRequest
+                    .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()), RequestState.DENIED,
+                           null, errs));
             if (LOGGER.isDebugEnabled()) {
                 StringJoiner joiner = new StringJoiner(", ");
                 errs.forEach(err -> joiner.add(err));
@@ -174,8 +169,8 @@ public class IngestService implements IIngestService {
         IngestRequest request = IngestRequest.build(item.getRequestId(),
                                                     metadataMapper.dtoToMetadata(item.getMetadata()),
                                                     RequestState.GRANTED, item.getSip());
-        ingestRequestService.save(request);
-        requestPublisher.publishIngestRequest(request);
+        ingestRequestService.handleGrantedRequest(request);
+
         return request;
     }
 
@@ -243,7 +238,7 @@ public class IngestService implements IIngestService {
         jobInfoService.createAsQueued(jobInfo);
 
         // Switch request status (same transaction)
-        deletionRequest.setState(RequestState.PENDING);
+        deletionRequest.setState(RequestState.GRANTED);
         deletionRequestRepository.save(deletionRequest);
 
         return deletionRequestMapper.entityToDto(deletionRequest);

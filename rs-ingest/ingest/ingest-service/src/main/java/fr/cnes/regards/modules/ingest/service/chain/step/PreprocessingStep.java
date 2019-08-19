@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
  * Preprocessing step is used to do something before starting real processing calling
  * {@link ISipPreprocessing#preprocess(SIP)}.<br/>
  * If {@link SIP} is passed as reference, this step then calls the
- * {@link ISipPreprocessing#read(fr.cnes.regards.modules.ingest.domain.SIPReference)} method to fulfill {@link SIP}
+ * {@link ISipPreprocessing#read(fr.cnes.regards.modules.ingest.dto.sip.SIPReference)} method to fulfill {@link SIP}
  * properties.
  *
  * @author Marc Sordi

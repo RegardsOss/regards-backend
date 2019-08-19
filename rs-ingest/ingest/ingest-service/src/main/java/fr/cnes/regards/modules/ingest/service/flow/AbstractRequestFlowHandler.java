@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -59,10 +58,12 @@ public abstract class AbstractRequestFlowHandler<T extends ISubscribable> implem
     }
 
     /**
-     * Bulk save queued items every second.
+     * Bulk save queued items every.
+     * Call this method when you want to process the queue.
+     *
+     * For instance, attach a scheduler on concrete class
      */
-    @Scheduled(fixedDelayString = "${regards.ingest.request.delay:1000}")
-    public void handleQueue() {
+    protected void handleQueue() {
         for (Map.Entry<String, ConcurrentLinkedQueue<T>> entry : items.entrySet()) {
             try {
                 runtimeTenantResolver.forceTenant(entry.getKey());

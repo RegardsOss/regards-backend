@@ -26,28 +26,26 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.locks.service.ILockService;
-import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.dto.RequestType;
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChainView;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
  * Manage ingest requests
@@ -61,16 +59,10 @@ public class IngestRequestService implements IIngestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestService.class);
 
-    private static final String GRANTED_REQUEST_LOCK = "GRANTED_REQUEST_LOCK";
-
-    @Autowired
-    private IIngestRequestService self;
+    private static final RequestType INGEST_REQUEST = RequestType.INGEST;
 
     @Autowired
     private IAuthenticationResolver authResolver;
-
-    @Autowired
-    private ILockService lockService;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -79,50 +71,13 @@ public class IngestRequestService implements IIngestRequestService {
     private IIngestRequestRepository ingestRequestRepository;
 
     @Autowired
-    private IIngestProcessingChainRepository ingestChainRepository;
+    private IPublisher publisher;
 
-    @Value("${regards.ingest.request.job.bulk:100}")
-    private Integer bulkRequestLimit;
+    @Autowired
+    private ISIPService sipService;
 
-    @Override
-    public void scheduleIngestProcessingJob() {
-
-        // FIXME resolve lock issue! do not work!
-        // Prevent concurrent call
-        if (lockService.obtainLockOrSkip(GRANTED_REQUEST_LOCK, this, 600)) {
-            try {
-                ingestChainRepository.findNamesBy()
-                        .forEach(chainView -> self.scheduleIngestProcessingJobByChain(chainView));
-            } finally {
-                lockService.releaseLock(GRANTED_REQUEST_LOCK, this);
-            }
-        }
-
-    }
-
-    /**
-     * Schedule ingest processing jobs for a specified ingestion chain
-     * @param chainView chain to consider
-     */
-    @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void scheduleIngestProcessingJobByChain(IngestProcessingChainView chainView) {
-
-        // Get granted request(s) per chain and page
-        Page<IngestRequest> requests = ingestRequestRepository
-                .findPageByMetadataIngestChainAndState(chainView.getName(), RequestState.GRANTED,
-                                                       PageRequest.of(0, bulkRequestLimit));
-
-        // Request found
-        if (requests.hasContent()) {
-            scheduleIngestProcessingJobByChain(chainView.getName(), requests.getContent());
-        }
-
-        // At least one request remains!
-        if (requests.hasNext()) {
-            // self.scheduleIngestProcessingJobByChain(chainView);
-        }
-    }
+    @Autowired
+    private IAIPService aipService;
 
     @Override
     public void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests) {
@@ -135,12 +90,13 @@ public class IngestRequestService implements IIngestRequestService {
         Set<JobParameter> jobParameters = Sets.newHashSet();
         jobParameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, ids));
         jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, chainName));
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
+        // Lock job info
+        JobInfo jobInfo = new JobInfo(true, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
                 jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
 
-        // Switch request status (same transaction)
-        ingestRequestRepository.updateIngestRequestState(RequestState.PENDING, ids);
+        // Attach job
+        requests.forEach(r -> r.setJobInfo(jobInfo));
     }
 
     @Override
@@ -149,12 +105,57 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public IngestRequest save(IngestRequest request) {
-        return ingestRequestRepository.save(request);
+    public void handleGrantedRequest(IngestRequest request) {
+        ingestRequestRepository.save(request);
+        // Publish GRANTED request
+        publisher.publish(IngestRequestEvent.build(request.getRequestId(),
+                                                   request.getSip() != null ? request.getSip().getId() : null, null,
+                                                   request.getState(), INGEST_REQUEST, request.getErrors()));
     }
 
     @Override
-    public void delete(IngestRequest request) {
-        ingestRequestRepository.deleteById(request.getId());
+    public void handleDeniedRequest(IngestRequest request) {
+        // Do not keep track of the request
+        // Publish DENIED request
+        publisher.publish(IngestRequestEvent.build(request.getRequestId(),
+                                                   request.getSip() != null ? request.getSip().getId() : null, null,
+                                                   request.getState(), INGEST_REQUEST, request.getErrors()));
+    }
+
+    @Override
+    public void handleRequestError(IngestRequest request) {
+
+        // Keep track of the error
+        request.setJobInfo(null);
+        ingestRequestRepository.save(request);
+
+        // Detach job
+        jobInfoService.unlock(request.getJobInfo());
+
+        // Publish ERROR request
+        publisher.publish(IngestRequestEvent.build(request.getRequestId(),
+                                                   request.getSip() != null ? request.getSip().getId() : null, null,
+                                                   request.getState(), INGEST_REQUEST, request.getErrors()));
+    }
+
+    @Override
+    public void handleRequestSuccess(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
+
+        // Save SIP entity
+        sipService.saveSIPEntity(sipEntity);
+
+        // Build AIP entities and save them
+        aipService.createAndSave(sipEntity, aips);
+
+        // Clean
+        ingestRequestRepository.delete(request);
+
+        // Detach job
+        jobInfoService.unlock(request.getJobInfo());
+
+        // Publish SUCCESSFUL request
+        publisher.publish(IngestRequestEvent
+                .build(request.getRequestId(), request.getSip() != null ? request.getSip().getId() : null,
+                       sipEntity.getSipId(), request.getState(), INGEST_REQUEST, request.getErrors()));
     }
 }
