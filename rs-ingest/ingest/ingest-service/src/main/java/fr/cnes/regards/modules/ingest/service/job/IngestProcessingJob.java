@@ -161,6 +161,8 @@ public class IngestProcessingJob extends AbstractJob<Void> {
             currentRequest = request;
             try {
 
+                long start2 = System.currentTimeMillis();
+
                 // Internal preparation step (no plugin involved)
                 currentEntity = initStep.execute(request);
 
@@ -185,11 +187,12 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                 handleRequestSuccess();
 
                 sipIngested++;
-                LOGGER.debug("SIP \"{}\" ingested.", currentRequest.getSip().getId());
+                LOGGER.debug("{}SIP \"{}\" ingested in {} ms", INFO_TAB, currentRequest.getSip().getId(),
+                             System.currentTimeMillis() - start2);
 
             } catch (ProcessingStepException e) {
 
-                LOGGER.error("SIP \"{}\" ingestion error.", currentRequest.getSip().getId());
+                LOGGER.error("SIP \"{}\" ingestion error", currentRequest.getSip().getId());
 
                 sipInError++;
                 String msg = String.format("Error while ingesting SIP \"%s\" in request \"%s\"",
