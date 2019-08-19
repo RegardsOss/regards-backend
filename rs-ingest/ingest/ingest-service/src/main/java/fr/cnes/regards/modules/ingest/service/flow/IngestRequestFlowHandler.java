@@ -23,6 +23,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -44,6 +45,9 @@ public class IngestRequestFlowHandler extends AbstractRequestFlowHandler<IngestR
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestFlowHandler.class);
 
+    @Value("${regards.ingest.request.flow.bulk:1000}")
+    private Integer bulkSize;
+
     @Autowired
     private ISubscriber subscriber;
 
@@ -56,7 +60,14 @@ public class IngestRequestFlowHandler extends AbstractRequestFlowHandler<IngestR
     }
 
     @Override
+    protected Integer getBulkSize() {
+        return bulkSize;
+    }
+
+    @Override
     protected void processBulk(List<IngestRequestFlowItem> items) {
-        ingestService.registerIngestRequests(items);
+        // ingestService.registerIngestRequests(items);
+        // TEST no schedule task!
+        ingestService.registerAndScheduleIngestRequests(items);
     }
 }

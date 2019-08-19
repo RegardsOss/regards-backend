@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -44,9 +43,6 @@ public abstract class AbstractRequestFlowHandler<T extends ISubscribable> implem
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRequestFlowHandler.class);
 
     private final Map<String, ConcurrentLinkedQueue<T>> items = new ConcurrentHashMap<>();
-
-    @Value("${regards.ingest.request.flow.bulk:1000}")
-    private Integer bulkSize;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -74,7 +70,7 @@ public abstract class AbstractRequestFlowHandler<T extends ISubscribable> implem
                 List<T> items = new ArrayList<>();
                 do {
                     // Build a 10_000 (at most) documents bulk request
-                    for (int i = 0; i < bulkSize; i++) {
+                    for (int i = 0; i < getBulkSize(); i++) {
                         T item = tenantItems.poll();
                         if (item == null) {
                             if (items.isEmpty()) {
@@ -92,12 +88,14 @@ public abstract class AbstractRequestFlowHandler<T extends ISubscribable> implem
                     processBulk(items);
                     LOGGER.debug("{} items registered in {} ms", items.size(), System.currentTimeMillis() - start);
                     items.clear();
-                } while (tenantItems.size() >= bulkSize); // continue while more than BULK_SIZE items are to be saved
+                } while (tenantItems.size() >= getBulkSize()); // continue while more than BULK_SIZE items are to be saved
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
         }
     }
+
+    protected abstract Integer getBulkSize();
 
     protected abstract void processBulk(List<T> items);
 }

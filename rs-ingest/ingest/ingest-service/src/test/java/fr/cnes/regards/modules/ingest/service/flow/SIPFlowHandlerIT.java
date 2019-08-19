@@ -50,6 +50,13 @@ import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
         "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.job.delay:5000" })
+//@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
+//        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.job.delay:5000",
+//        "regards.jpa.multitenant.tenants[0].tenant=PROJECT",
+//        "regards.jpa.multitenant.tenants[0].url=jdbc:postgresql://localhost:5432/rs_testdb_msordi",
+//        "regards.jpa.multitenant.tenants[0].userName=azertyuiop123456789",
+//        "regards.jpa.multitenant.tenants[0].password=azertyuiop123456789", "spring.rabbitmq.addresses=localhost:5672",
+//        "regards.amqp.management.host=localhost", "regards.amqp.management.port=16672" })
 @ActiveProfiles("testAmqp")
 public class SIPFlowHandlerIT extends AbstractMultitenantServiceTest {
 
@@ -73,7 +80,8 @@ public class SIPFlowHandlerIT extends AbstractMultitenantServiceTest {
     @Test
     public void generateAndPublish() throws InterruptedException {
 
-        long maxloops = 1000;
+        long start = System.currentTimeMillis();
+        long maxloops = 5000;
         for (long i = 0; i < maxloops; i++) {
             SIP sip = create("provider" + i);
             // Create event
@@ -92,8 +100,10 @@ public class SIPFlowHandlerIT extends AbstractMultitenantServiceTest {
             if (countSip >= maxloops) {
                 break;
             }
-            Thread.sleep(10000);
+            Thread.sleep(1000);
         } while (true);
+
+        LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", maxloops, System.currentTimeMillis() - start);
     }
 
     private SIP create(String providerId) {

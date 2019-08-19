@@ -119,7 +119,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
         }.getType();
         Set<Long> ids = getValue(parameters, IDS_PARAMETER, type);
-        requests = ingestRequestService.getIngestRequests(ids);
+        requests = ingestRequestService.loadByIds(ids);
     }
 
     @Override
@@ -218,7 +218,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     public void handleRequestError(Set<String> errors) {
         currentRequest.setState(RequestState.ERROR);
         currentRequest.setErrors(errors);
-        ingestRequestService.updateIngestRequest(currentRequest);
+        ingestRequestService.save(currentRequest);
         publisher.publishIngestRequest(currentRequest, currentEntity);
     }
 
@@ -227,7 +227,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
      */
     private void handleRequestSuccess() {
         currentRequest.setState(RequestState.SUCCESS);
-        ingestRequestService.deleteIngestRequest(currentRequest);
+        ingestRequestService.delete(currentRequest);
         publisher.publishIngestRequest(currentRequest, currentEntity);
     }
 

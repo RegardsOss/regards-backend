@@ -23,6 +23,7 @@ import java.util.Collection;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionRequestDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
@@ -39,7 +40,13 @@ public interface IIngestService {
      * Register ingest requests from flow items
      * @param item flow items to register as ingest requests
      */
-    void registerIngestRequests(Collection<IngestRequestFlowItem> items);
+    Collection<IngestRequest> registerIngestRequests(Collection<IngestRequestFlowItem> items);
+
+    /**
+     * Register and schedule ingest requests from flow items
+     * @param item flow items to register as ingest requests and to schedule as an ingestion job
+     */
+    Collection<IngestRequest> registerAndScheduleIngestRequests(Collection<IngestRequestFlowItem> items);
 
     /**
      * Redirect collection of SIP to data flow (REST to messages)

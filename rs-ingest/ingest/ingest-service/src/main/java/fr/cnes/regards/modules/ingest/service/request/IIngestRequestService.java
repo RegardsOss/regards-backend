@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -38,19 +39,27 @@ public interface IIngestRequestService {
     void scheduleIngestProcessingJobByChain(IngestProcessingChainView chainView);
 
     /**
+     * Schedule a job with following passed requests.
+     * <b>Ingest requests must be linked to the chain. No additional control is done!</b>
+     * @param chainName related processing chain
+     * @param requests requests to handle
+     */
+    void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests);
+
+    /**
      * Load a collection of requests
      */
-    List<IngestRequest> getIngestRequests(Set<Long> ids);
+    List<IngestRequest> loadByIds(Set<Long> ids);
 
     /**
      * Update a request
      */
-    IngestRequest updateIngestRequest(IngestRequest request);
+    IngestRequest save(IngestRequest request);
 
     /**
      * Delete successful request
      * @param request
      */
-    void deleteIngestRequest(IngestRequest request);
+    void delete(IngestRequest request);
 
 }

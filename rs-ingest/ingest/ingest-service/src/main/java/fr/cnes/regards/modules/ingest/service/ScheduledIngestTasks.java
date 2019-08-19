@@ -63,7 +63,7 @@ public class ScheduledIngestTasks {
             try {
                 LOGGER.trace("Scheduled task : Process new SIPs ingest for tenant {}", tenant);
                 runtimeTenantResolver.forceTenant(tenant);
-                requestService.scheduleIngestProcessingJob();
+                //                requestService.scheduleIngestProcessingJob();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

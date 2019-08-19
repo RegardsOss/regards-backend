@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -114,21 +115,7 @@ public class IngestRequestService implements IIngestRequestService {
 
         // Request found
         if (requests.hasContent()) {
-            // Schedule jobs
-            LOGGER.debug("Scheduling job to handle {} ingest request(s) on chain {}", requests.getNumberOfElements(),
-                         chainView.getName());
-
-            Set<Long> ids = requests.get().map(r -> r.getId()).collect(Collectors.toSet());
-
-            Set<JobParameter> jobParameters = Sets.newHashSet();
-            jobParameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, ids));
-            jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, chainView.getName()));
-            JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
-                    jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
-            jobInfoService.createAsQueued(jobInfo);
-
-            // Switch request status (same transaction)
-            ingestRequestRepository.updateIngestRequestState(RequestState.PENDING, ids);
+            scheduleIngestProcessingJobByChain(chainView.getName(), requests.getContent());
         }
 
         // At least one request remains!
@@ -137,27 +124,37 @@ public class IngestRequestService implements IIngestRequestService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.ingest.service.request.IIngestRequestService#getIngestRequests(java.util.Set)
-     */
     @Override
-    public List<IngestRequest> getIngestRequests(Set<Long> ids) {
+    public void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests) {
+
+        // Schedule jobs
+        LOGGER.debug("Scheduling job to handle {} ingest request(s) on chain {}", requests.size(), chainName);
+
+        Set<Long> ids = requests.stream().map(r -> r.getId()).collect(Collectors.toSet());
+
+        Set<JobParameter> jobParameters = Sets.newHashSet();
+        jobParameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, ids));
+        jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, chainName));
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
+                jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
+        jobInfoService.createAsQueued(jobInfo);
+
+        // Switch request status (same transaction)
+        ingestRequestRepository.updateIngestRequestState(RequestState.PENDING, ids);
+    }
+
+    @Override
+    public List<IngestRequest> loadByIds(Set<Long> ids) {
         return ingestRequestRepository.findByIdIn(ids);
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.ingest.service.request.IIngestRequestService#updateIngestRequest(fr.cnes.regards.modules.ingest.domain.request.IngestRequest)
-     */
     @Override
-    public IngestRequest updateIngestRequest(IngestRequest request) {
+    public IngestRequest save(IngestRequest request) {
         return ingestRequestRepository.save(request);
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.ingest.service.request.IIngestRequestService#deleteIngestRequest(fr.cnes.regards.modules.ingest.domain.request.IngestRequest)
-     */
     @Override
-    public void deleteIngestRequest(IngestRequest request) {
+    public void delete(IngestRequest request) {
         ingestRequestRepository.deleteById(request.getId());
     }
 }

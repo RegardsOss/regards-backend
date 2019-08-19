@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,6 +41,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
@@ -52,7 +55,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISessionDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestType;
@@ -68,6 +70,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.SessionDeletionJob;
+import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IngestRequestPublisher;
 
 /**
@@ -112,17 +115,42 @@ public class IngestService implements IIngestService {
     private Validator validator;
 
     @Autowired
-    private IIngestRequestRepository ingestRequestRepository;
+    private IIngestRequestService ingestRequestService;
 
     @Autowired
     private ISessionDeletionRequestRepository deletionRequestRepository;
 
     @Override
-    public void registerIngestRequests(Collection<IngestRequestFlowItem> items) {
-        items.forEach(i -> registerIngestRequest(i));
+    public Collection<IngestRequest> registerIngestRequests(Collection<IngestRequestFlowItem> items) {
+        Collection<IngestRequest> requests = new ArrayList<>();
+        for (IngestRequestFlowItem item : items) {
+            IngestRequest request = registerIngestRequest(item);
+            if (request != null) {
+                requests.add(request);
+            }
+        }
+        return requests;
     }
 
-    private void registerIngestRequest(IngestRequestFlowItem item) {
+    @Override
+    public Collection<IngestRequest> registerAndScheduleIngestRequests(Collection<IngestRequestFlowItem> items) {
+
+        // Register requests
+        Collection<IngestRequest> requests = registerIngestRequests(items);
+
+        // Dispatch per chain
+        ListMultimap<String, IngestRequest> requestPerChain = ArrayListMultimap.create();
+        requests.stream().forEach(r -> requestPerChain.put(r.getMetadata().getIngestChain(), r));
+
+        // Schedule job per chain
+        for (String chainName : requestPerChain.keySet()) {
+            ingestRequestService.scheduleIngestProcessingJobByChain(chainName, requestPerChain.get(chainName));
+        }
+
+        return requests;
+    }
+
+    private IngestRequest registerIngestRequest(IngestRequestFlowItem item) {
 
         // Validate all elements of the flow item
         Errors errors = new MapBindingResult(new HashMap<>(), IngestRequestFlowItem.class.getName());
@@ -139,15 +167,16 @@ public class IngestService implements IIngestService {
                              joiner.toString());
             }
             // Do not save denied request
-            return;
+            return null;
         }
 
         // Save granted ingest request
         IngestRequest request = IngestRequest.build(item.getRequestId(),
                                                     metadataMapper.dtoToMetadata(item.getMetadata()),
                                                     RequestState.GRANTED, item.getSip());
-        ingestRequestRepository.save(request);
+        ingestRequestService.save(request);
         requestPublisher.publishIngestRequest(request);
+        return request;
     }
 
     /**
