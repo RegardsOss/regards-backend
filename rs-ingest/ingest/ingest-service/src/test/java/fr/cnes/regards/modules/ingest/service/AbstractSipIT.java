@@ -30,8 +30,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -59,9 +57,6 @@ import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { TestConfiguration.class })
 public abstract class AbstractSipIT extends AbstractRegardsServiceTransactionalIT {
-
-    @Autowired
-    private Gson gson;
 
     @Autowired
     protected ISIPRepository sipRepository;

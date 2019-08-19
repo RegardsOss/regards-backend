@@ -22,7 +22,6 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +36,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
@@ -48,9 +48,8 @@ import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
  * @author Marc SORDI
  *
  */
-@Ignore
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=sipflow", "regards.amqp.enabled=true" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
+        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.job.delay:5000" })
 @ActiveProfiles("testAmqp")
 public class SIPFlowHandlerIT extends AbstractMultitenantServiceTest {
 
@@ -74,12 +73,13 @@ public class SIPFlowHandlerIT extends AbstractMultitenantServiceTest {
     @Test
     public void generateAndPublish() throws InterruptedException {
 
-        long maxloops = 10000;
+        long maxloops = 1000;
         for (long i = 0; i < maxloops; i++) {
             SIP sip = create("provider" + i);
             // Create event
             IngestMetadataDto mtd = IngestMetadataDto.build("source", OffsetDateTime.now().toString(),
-                                                            IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
+                                                            IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                            StorageMetadata.build("fake", null));
             IngestRequestFlowItem flowItem = IngestRequestFlowItem.build(mtd, sip);
             publisher.publish(flowItem);
         }

@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -68,7 +69,8 @@ public class DefaultAipTaggingTest {
     @Test
     public void addOnlyTags() throws TagAIPException, NotAvailablePluginConfigurationException {
 
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS));
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_TAGS, PluginParameterTransformer.toJson(TAGS)));
 
         DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);
@@ -78,7 +80,8 @@ public class DefaultAipTaggingTest {
     @Test
     public void addOnlyLinks() throws TagAIPException, NotAvailablePluginConfigurationException {
 
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS));
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_LINKS, PluginParameterTransformer.toJson(LINKS)));
 
         DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);
@@ -88,8 +91,9 @@ public class DefaultAipTaggingTest {
     @Test
     public void addTagsAndLinks() throws TagAIPException, NotAvailablePluginConfigurationException {
 
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS),
-                                                        IPluginParam.build(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS));
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_TAGS, PluginParameterTransformer.toJson(TAGS)),
+                     IPluginParam.build(DefaultAIPTagging.FIELD_NAME_LINKS, PluginParameterTransformer.toJson(LINKS)));
         DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);
         tag(plugin, TAGS, LINKS);

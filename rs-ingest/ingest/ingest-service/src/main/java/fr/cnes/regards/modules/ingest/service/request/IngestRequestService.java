@@ -56,15 +56,14 @@ import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
  */
 @Service
 @MultitenantTransactional
-public class IngestRequestService {
+public class IngestRequestService implements IIngestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestService.class);
 
     private static final String GRANTED_REQUEST_LOCK = "GRANTED_REQUEST_LOCK";
 
-    // FIXME is it a proxy to properly handle transaction
     @Autowired
-    private IngestRequestService self;
+    private IIngestRequestService self;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -84,28 +83,29 @@ public class IngestRequestService {
     @Value("${regards.ingest.request.job.bulk:100}")
     private Integer bulkRequestLimit;
 
-    // FIXME manage concurrent access on ingest request table! lock on schedule!
-    /**
-     * Schedule ingest processing jobs
-     */
+    @Override
     public void scheduleIngestProcessingJob() {
 
+        // FIXME resolve lock issue! do not work!
         // Prevent concurrent call
         if (lockService.obtainLockOrSkip(GRANTED_REQUEST_LOCK, this, 600)) {
             try {
-                ingestChainRepository.findNamesBy().forEach(chainView -> scheduleIngestProcessingJobByChain(chainView));
+                ingestChainRepository.findNamesBy()
+                        .forEach(chainView -> self.scheduleIngestProcessingJobByChain(chainView));
             } finally {
                 lockService.releaseLock(GRANTED_REQUEST_LOCK, this);
             }
         }
+
     }
 
     /**
      * Schedule ingest processing jobs for a specified ingestion chain
      * @param chainView chain to consider
      */
+    @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    private void scheduleIngestProcessingJobByChain(IngestProcessingChainView chainView) {
+    public void scheduleIngestProcessingJobByChain(IngestProcessingChainView chainView) {
 
         // Get granted request(s) per chain and page
         Page<IngestRequest> requests = ingestRequestRepository
@@ -133,28 +133,30 @@ public class IngestRequestService {
 
         // At least one request remains!
         if (requests.hasNext()) {
-            self.scheduleIngestProcessingJobByChain(chainView);
+            // self.scheduleIngestProcessingJobByChain(chainView);
         }
     }
 
-    /**
-     * Load a collection of requests
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.ingest.service.request.IIngestRequestService#getIngestRequests(java.util.Set)
      */
+    @Override
     public List<IngestRequest> getIngestRequests(Set<Long> ids) {
         return ingestRequestRepository.findByIdIn(ids);
     }
 
-    /**
-     * Update a request
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.ingest.service.request.IIngestRequestService#updateIngestRequest(fr.cnes.regards.modules.ingest.domain.request.IngestRequest)
      */
+    @Override
     public IngestRequest updateIngestRequest(IngestRequest request) {
         return ingestRequestRepository.save(request);
     }
 
-    /**
-     * Delete successful request
-     * @param request
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.ingest.service.request.IIngestRequestService#deleteIngestRequest(fr.cnes.regards.modules.ingest.domain.request.IngestRequest)
      */
+    @Override
     public void deleteIngestRequest(IngestRequest request) {
         ingestRequestRepository.deleteById(request.getId());
     }

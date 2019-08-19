@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.service.request.IngestRequestService;
+import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
 /**
  * Scheduled actions to process new CREATED SIPS by applying the associated processing chain
@@ -53,10 +53,10 @@ public class ScheduledIngestTasks {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IngestRequestService requestService;
+    private IIngestRequestService requestService;
 
     // FIXME may manage sched lock here
-    @Scheduled(fixedRateString = "${regards.ingest.process.new.sips.delay:60000}")
+    @Scheduled(fixedDelayString = "${regards.ingest.job.delay:60000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processNewSips() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {

@@ -76,8 +76,10 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
 
         // Manage version
         Integer version = sipService.getNextVersion(sip);
-        return SIPEntity.build(runtimeTenantResolver.getTenant(), request.getMetadata(), sip, version,
-                               SIPState.INGESTED, EntityType.DATA);
+        SIPEntity entity = SIPEntity.build(runtimeTenantResolver.getTenant(), request.getMetadata(), sip, version,
+                                           SIPState.INGESTED, EntityType.DATA);
+        entity.setChecksum(checksum);
+        return entity;
     }
 
     @Override

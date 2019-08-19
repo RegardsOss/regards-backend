@@ -53,8 +53,8 @@ import fr.cnes.regards.modules.ingest.service.chain.step.PostprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.PreprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
+import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IngestRequestPublisher;
-import fr.cnes.regards.modules.ingest.service.request.IngestRequestService;
 
 /**
  * This job manages processing chain for AIP generation from a SIP
@@ -67,6 +67,8 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     public static final String IDS_PARAMETER = "ids";
 
+    private static final String INFO_TAB = "     >>>>>     ";
+
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
@@ -74,7 +76,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     private IIngestProcessingChainRepository processingChainRepository;
 
     @Autowired
-    private IngestRequestService ingestRequestService;
+    private IIngestRequestService ingestRequestService;
 
     @Autowired
     private INotificationClient notificationClient;
@@ -125,7 +127,6 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         // Lets prepare a fex things in case there is errors
         StringJoiner notifMsg = new StringJoiner("\n");
         notifMsg.add("Errors occurred during SIPs processing using " + ingestChain.getName() + ":");
-        boolean errorOccured = false;
 
         // Internal initial step
         IProcessingStep<IngestRequest, SIPEntity> initStep = new InternalInitialStep(this, ingestChain);
@@ -151,6 +152,10 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         // Internal final step
         IProcessingStep<List<AIP>, Void> finalStep = new InternalFinalStep(this, ingestChain);
         beanFactory.autowireBean(finalStep);
+
+        long start = System.currentTimeMillis();
+        int sipIngested = 0;
+        int sipInError = 0;
 
         for (IngestRequest request : requests) {
             currentRequest = request;
@@ -179,20 +184,31 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                 // Clean and publish
                 handleRequestSuccess();
 
+                sipIngested++;
+                LOGGER.debug("SIP \"{}\" ingested.", currentRequest.getSip().getId());
+
             } catch (ProcessingStepException e) {
-                errorOccured = true;
+
+                LOGGER.error("SIP \"{}\" ingestion error.", currentRequest.getSip().getId());
+
+                sipInError++;
                 String msg = String.format("Error while ingesting SIP \"%s\" in request \"%s\"",
                                            currentRequest.getSip().getId(), currentRequest.getRequestId());
                 notifMsg.add(msg);
-                super.logger.error(msg);
-                super.logger.error("Ingestion step error", e);
+                LOGGER.error(msg);
+                LOGGER.error("Ingestion step error", e);
                 // Continue with following SIPs
             }
         }
+
         // notify if errors occured
-        if (errorOccured) {
+        if (sipInError > 0) {
             notificationClient.notify(notifMsg.toString(), "Error occurred during SIPs Ingestion.",
                                       NotificationLevel.INFO, DefaultRole.ADMIN);
+            LOGGER.info("{}{} SIP(s) INGESTED and {} in ERROR in {} ms", INFO_TAB, sipIngested, sipInError,
+                        System.currentTimeMillis() - start);
+        } else {
+            LOGGER.info("{}{} SIP(s) INGESTED in {} ms", INFO_TAB, sipIngested, System.currentTimeMillis() - start);
         }
     }
 
