@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.service;
 import java.io.InputStream;
 import java.util.Collection;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
@@ -45,14 +46,33 @@ public interface IIngestService {
     /**
      * Redirect collection of SIP to data flow (REST to messages)
      * @param sips raw {@link SIPCollection}
+     *
+     * Use {@link #handleSIPCollection(SIPCollection)} instead.
      */
+    @Deprecated
     RequestInfoDto redirectToDataflow(SIPCollection sips);
+
+    /**
+     * Handle SIP collection directly scheduling a generation job
+     * @param sips raw {@link SIPCollection}
+     * @throws EntityInvalidException if max bulk size exceeded
+     */
+    RequestInfoDto handleSIPCollection(SIPCollection sips) throws EntityInvalidException;
 
     /**
      * Redirect collection of SIP to data flow (REST to messages)
      * @param input JSON file containing a SIP collection
+     *
+     * Use {@link #handleSIPCollection(InputStream)} instead.
      */
+    @Deprecated
     RequestInfoDto redirectToDataflow(InputStream input) throws ModuleException;
+
+    /**
+     * Handle SIP collection directly scheduling a generation job
+     * @param input JSON file containing a SIP collection
+     */
+    RequestInfoDto handleSIPCollection(InputStream input) throws ModuleException;
 
     /**
      * Register deletion request from flow item

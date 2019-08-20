@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -47,7 +48,6 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
-import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
 /**
@@ -79,7 +79,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         Mockito.clearInvocations(ingestRequestService);
     }
 
-    private void ingestSIP(String providerId, String checksum) {
+    private void ingestSIP(String providerId, String checksum) throws EntityInvalidException {
         SIPCollection sips = SIPCollection
                 .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                StorageMetadata.build("disk", null)));
@@ -87,8 +87,8 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         sips.add(builder.buildReference(Paths.get("sip1.xml"), checksum));
 
         // First ingestion
-        Collection<IngestRequestFlowItem> items = IngestService.sipToFlow(sips);
-        ingestService.handleIngestRequests(items);
+        //        Collection<IngestRequestFlowItem> items = IngestService.sipToFlow(sips);
+        ingestService.handleSIPCollection(sips);
     }
 
     /**

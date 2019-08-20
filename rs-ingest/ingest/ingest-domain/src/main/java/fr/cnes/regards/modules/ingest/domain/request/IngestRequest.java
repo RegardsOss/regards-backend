@@ -92,6 +92,15 @@ public class IngestRequest extends AbstractRequest {
         this.sip = sip;
     }
 
+    public static IngestRequest build(IngestMetadata metadata, RequestState state, SIP sip) {
+        return build(generateRequestId(), metadata, state, sip, null);
+    }
+
+    public static IngestRequest build(IngestMetadata metadata, RequestState state, SIP sip,
+            @Nullable Set<String> errors) {
+        return build(generateRequestId(), metadata, state, sip, errors);
+    }
+
     public static IngestRequest build(String requestId, IngestMetadata metadata, RequestState state, SIP sip) {
         return build(requestId, metadata, state, sip, null);
     }

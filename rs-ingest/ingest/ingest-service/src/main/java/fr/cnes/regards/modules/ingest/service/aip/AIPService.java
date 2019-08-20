@@ -25,7 +25,6 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
@@ -73,9 +72,6 @@ public class AIPService implements IAIPService {
 
     @Autowired
     private IJobInfoService jobInfoService;
-
-    @Value("${regards.ingest.aips.bulk.request.limit:1000}")
-    private Integer bulkRequestLimit;
 
     @Autowired
     private Gson gson;

@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
-        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4" })
+        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100" })
 //@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
 //        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4",
 //        "regards.jpa.multitenant.tenants[0].tenant=PROJECT",

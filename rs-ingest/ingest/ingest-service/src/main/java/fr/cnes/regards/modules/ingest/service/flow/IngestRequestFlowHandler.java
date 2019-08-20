@@ -23,7 +23,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -32,6 +31,7 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
+import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 
 /**
  * This handler absorbs the incoming SIP flow
@@ -46,8 +46,8 @@ public class IngestRequestFlowHandler extends AbstractRequestFlowHandler<IngestR
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestFlowHandler.class);
 
-    @Value("${regards.ingest.request.flow.bulk.size:1000}")
-    private Integer bulkSize;
+    @Autowired
+    private IngestConfigurationProperties confProperties;
 
     @Autowired
     private ISubscriber subscriber;
@@ -71,7 +71,7 @@ public class IngestRequestFlowHandler extends AbstractRequestFlowHandler<IngestR
 
     @Override
     protected Integer getBulkSize() {
-        return bulkSize;
+        return confProperties.getMaxBulkSize();
     }
 
     @Override

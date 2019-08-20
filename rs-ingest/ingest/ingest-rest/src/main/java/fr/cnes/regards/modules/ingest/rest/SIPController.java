@@ -121,7 +121,7 @@ public class SIPController implements IResourceController<SIPEntity> {
     @ResourceAccess(description = "SIP collections submission (bulk request)")
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     public ResponseEntity<RequestInfoDto> ingest(@RequestBody SIPCollection sips) throws ModuleException {
-        RequestInfoDto requestInfo = ingestService.redirectToDataflow(sips);
+        RequestInfoDto requestInfo = ingestService.handleSIPCollection(sips);
         return ResponseEntity.ok(requestInfo);
     }
 
@@ -139,7 +139,7 @@ public class SIPController implements IResourceController<SIPEntity> {
     public ResponseEntity<RequestInfoDto> ingestFile(@RequestParam(name = REQUEST_PARAM_FILE) MultipartFile file)
             throws ModuleException {
         try {
-            RequestInfoDto requestInfo = ingestService.redirectToDataflow(file.getInputStream());
+            RequestInfoDto requestInfo = ingestService.handleSIPCollection(file.getInputStream());
             return ResponseEntity.ok(requestInfo);
         } catch (IOException e) {
             final String message = "Error with file stream while importing model.";

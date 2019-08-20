@@ -62,12 +62,14 @@ import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
 import fr.cnes.regards.modules.ingest.domain.mapper.ISessionDeletionRequestMapper;
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.SessionDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionRequestDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
+import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.SessionDeletionJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
@@ -87,6 +89,9 @@ public class IngestService implements IIngestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestService.class);
 
     public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
+
+    @Autowired
+    private IngestConfigurationProperties confProperties;
 
     @Autowired
     private Gson gson;
@@ -140,7 +145,7 @@ public class IngestService implements IIngestService {
     }
 
     /**
-     * Validate, save and publish a new new request
+     * Validate, save and publish a new request
      * @param item request to manage
      * @return {@link IngestRequest} or <code>null</code>
      */
@@ -207,6 +212,86 @@ public class IngestService implements IIngestService {
         return info;
     }
 
+    @Override
+    public RequestInfoDto handleSIPCollection(SIPCollection sips) throws EntityInvalidException {
+
+        // Check submission limit
+        if (sips.getFeatures().size() > confProperties.getMaxBulkSize()) {
+            throw new EntityInvalidException(
+                    String.format("Invalid request due to ingest configuration max bulk size set to %s."));
+        }
+
+        // Validate and transform ingest metadata
+        IngestMetadata ingestMetadata = getIngestMetadata(sips.getMetadata());
+
+        // Register requests
+        Collection<IngestRequest> requests = new ArrayList<>();
+        RequestInfoDto info = RequestInfoDto.build(RequestType.INGEST, "SIP Collection ingestion scheduled");
+
+        for (SIP sip : sips.getFeatures()) {
+            // Save granted ingest request
+            IngestRequest request = registerIngestRequest(sip, ingestMetadata);
+            info.addRequestMapping(sip.getId(), request.getRequestId());
+            requests.add(request);
+        }
+
+        ingestRequestService.scheduleIngestProcessingJobByChain(ingestMetadata.getIngestChain(), requests);
+
+        return info;
+    }
+
+    /**
+     * Validate and transform ingest metadata
+     */
+    private IngestMetadata getIngestMetadata(IngestMetadataDto dto) throws EntityInvalidException {
+        // Validate metadata
+        Errors errors = new MapBindingResult(new HashMap<>(), IngestMetadataDto.class.getName());
+        validator.validate(dto, errors);
+        if (errors.hasErrors()) {
+            Set<String> errs = buildErrors(errors);
+            if (LOGGER.isDebugEnabled()) {
+                StringJoiner joiner = new StringJoiner(", ");
+                errs.forEach(err -> joiner.add(err));
+                LOGGER.debug("SIP collection submission rejected for following reason(s) : {}", joiner.toString());
+            }
+            // Throw invalid exception
+            throw new EntityInvalidException(new ArrayList<>(errs));
+        }
+
+        return metadataMapper.dtoToMetadata(dto);
+    }
+
+    /**
+     * Validate, save and publish a new request
+     * @param item request to manage
+     * @return {@link IngestRequest} or <code>null</code>
+     */
+    private IngestRequest registerIngestRequest(SIP sip, IngestMetadata ingestMetadata) {
+
+        // Validate all elements of the flow item
+        Errors errors = new MapBindingResult(new HashMap<>(), SIP.class.getName());
+        validator.validate(sip, errors);
+        if (errors.hasErrors()) {
+            Set<String> errs = buildErrors(errors);
+            // Publish DENIED request (do not persist it in DB)
+            ingestRequestService
+                    .handleDeniedRequest(IngestRequest.build(ingestMetadata, RequestState.DENIED, sip, errs));
+            if (LOGGER.isDebugEnabled()) {
+                StringJoiner joiner = new StringJoiner(", ");
+                errs.forEach(err -> joiner.add(err));
+                LOGGER.debug("SIP ingestion request rejected due to invalid metadata : {}", joiner.toString());
+            }
+            // Do not save denied request
+            return null;
+        }
+
+        // Save granted ingest request
+        IngestRequest request = IngestRequest.build(ingestMetadata, RequestState.GRANTED, sip);
+        ingestRequestService.handleGrantedRequest(request);
+
+        return request;
+    }
+
     /**
      * Middleware method extracted for test simulation and also used by operational code.
      * Transform a SIP collection to a SIP flow item collection
@@ -227,6 +312,17 @@ public class IngestService implements IIngestService {
         try (Reader json = new InputStreamReader(input, DEFAULT_CHARSET)) {
             SIPCollection sips = gson.fromJson(json, SIPCollection.class);
             return redirectToDataflow(sips);
+        } catch (JsonIOException | IOException e) {
+            LOGGER.error("Cannot read JSON file containing SIP collection", e);
+            throw new EntityInvalidException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public RequestInfoDto handleSIPCollection(InputStream input) throws ModuleException {
+        try (Reader json = new InputStreamReader(input, DEFAULT_CHARSET)) {
+            SIPCollection sips = gson.fromJson(json, SIPCollection.class);
+            return handleSIPCollection(sips);
         } catch (JsonIOException | IOException e) {
             LOGGER.error("Cannot read JSON file containing SIP collection", e);
             throw new EntityInvalidException(e.getMessage(), e);

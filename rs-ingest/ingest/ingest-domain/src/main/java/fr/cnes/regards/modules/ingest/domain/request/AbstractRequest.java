@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.domain.request;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.EnumType;
@@ -99,5 +100,9 @@ public abstract class AbstractRequest {
 
     public void setJobInfo(JobInfo jobInfo) {
         this.jobInfo = jobInfo;
+    }
+
+    public static String generateRequestId() {
+        return UUID.randomUUID().toString();
     }
 }

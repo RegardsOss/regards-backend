@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.conf;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -27,7 +27,17 @@ import org.springframework.context.annotation.Configuration;
  * @author Marc SORDI
  */
 @Configuration
-@ConfigurationProperties(prefix = "regards.ingest")
 public class IngestConfigurationProperties {
+
+    @Value("${regards.ingest.max.bulk.size:1000}")
+    private Integer maxBulkSize;
+
+    public Integer getMaxBulkSize() {
+        return maxBulkSize;
+    }
+
+    public void setMaxBulkSize(Integer maxBulkSize) {
+        this.maxBulkSize = maxBulkSize;
+    }
 
 }
