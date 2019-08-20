@@ -49,9 +49,9 @@ import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
-        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.job.delay:5000" })
+        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4" })
 //@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
-//        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.job.delay:5000",
+//        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4",
 //        "regards.jpa.multitenant.tenants[0].tenant=PROJECT",
 //        "regards.jpa.multitenant.tenants[0].url=jdbc:postgresql://localhost:5432/rs_testdb_msordi",
 //        "regards.jpa.multitenant.tenants[0].userName=azertyuiop123456789",

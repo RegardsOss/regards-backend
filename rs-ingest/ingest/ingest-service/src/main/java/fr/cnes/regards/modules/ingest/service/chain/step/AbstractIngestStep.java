@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepExceptio
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
@@ -74,7 +73,6 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
     protected void handleRequestError(String error) {
         Assert.hasText(error, "Error message is required");
         addError(error);
-        job.getCurrentRequest().setState(RequestState.ERROR);
         job.getCurrentRequest().setErrors(errors);
         ingestRequestService.handleRequestError(job.getCurrentRequest());
     }

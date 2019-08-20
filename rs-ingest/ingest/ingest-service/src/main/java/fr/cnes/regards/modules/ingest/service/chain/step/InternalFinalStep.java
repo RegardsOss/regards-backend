@@ -27,7 +27,6 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
@@ -50,10 +49,7 @@ public class InternalFinalStep extends AbstractIngestStep<List<AIP>, Void> {
 
     @Override
     protected Void doExecute(List<AIP> aips) throws ProcessingStepException {
-
-        job.getCurrentRequest().setState(RequestState.SUCCESS);
         ingestRequestService.handleRequestSuccess(job.getCurrentRequest(), job.getCurrentEntity(), aips);
-
         return null;
     }
 
