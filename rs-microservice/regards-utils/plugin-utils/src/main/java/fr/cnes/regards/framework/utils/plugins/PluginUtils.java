@@ -182,9 +182,20 @@ public final class PluginUtils {
      * Retrieve all annotated plugins (@see {@link Plugin}) and initialize a map whose key is the {@link Plugin}
      * identifier and value the required plugin metadata.
      * @return all class annotated {@link Plugin}
+     *
+     * Use
      */
     public static Map<String, PluginMetaData> getPlugins() {
         return pluginMetadataCache;
+    }
+
+    /**
+     * Return {@link PluginMetaData} for specified plugin identifier (Equivalent to {@link Plugin#id()}
+     * @param pluginId {@link Plugin#id()}
+     * @return related {@link PluginMetaData} or null if plugin doesn't exist!
+     */
+    public static PluginMetaData getPluginMetadata(String pluginId) {
+        return pluginMetadataCache.get(pluginId);
     }
 
     /**
