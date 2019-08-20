@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainServic
  * Configuration manager for current module
  * @author Marc Sordi
  */
-@Service
+@Component
 public class IngestConfigurationManager extends AbstractModuleManager<Void> {
 
     @Autowired

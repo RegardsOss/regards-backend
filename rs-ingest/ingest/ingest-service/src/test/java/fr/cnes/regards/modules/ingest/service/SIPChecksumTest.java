@@ -33,6 +33,7 @@ import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
  *
@@ -41,7 +42,10 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=checksum" })
-public class SIPChecksumIT extends AbstractMultitenantServiceTest {
+public class SIPChecksumTest extends AbstractMultitenantServiceTest {
+
+    @Autowired
+    private ISIPService sipService;
 
     @Autowired
     private Gson gson;
@@ -58,7 +62,7 @@ public class SIPChecksumIT extends AbstractMultitenantServiceTest {
         try (Reader json = new InputStreamReader(this.getClass().getResourceAsStream(filename),
                 Charset.forName("UTF-8"))) {
             SIP sip = gson.fromJson(json, SIP.class);
-            checksum = IngestService.calculateChecksum(gson, sip, IngestService.MD5_ALGORITHM);
+            checksum = sipService.calculateChecksum(sip);
         }
         return checksum;
     }

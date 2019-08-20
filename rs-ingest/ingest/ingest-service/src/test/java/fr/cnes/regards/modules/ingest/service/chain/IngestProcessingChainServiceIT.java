@@ -25,34 +25,34 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.service.TestConfiguration;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 
-@ActiveProfiles({ "disable-scheduled-ingest", "noschdule" })
-@TestPropertySource(locations = "classpath:test.properties")
-@ContextConfiguration(classes = { TestConfiguration.class })
-@RegardsTransactional
-public class IngestProcessingServiceIT extends AbstractRegardsServiceTransactionalIT {
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestchain" })
+public class IngestProcessingChainServiceIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IIngestProcessingChainService ingestProcessingService;
 
     @Autowired
     private IPluginService pluginService;
+
+    @Override
+    public void doInit() {
+        simulateApplicationReadyEvent();
+        // Re-set tenant because above simulation clear it!
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+    }
 
     @Test
     public void checkDefaultProcessingChain() {

@@ -46,8 +46,8 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      * @param state request state
      * @param pageable page info
      */
-    // FIXME remove because lock service handle concurrent request!
-    //    @Lock(LockModeType.PESSIMISTIC_READ)
+    // FIXME remove if not used after PM implementation
+    @Deprecated
     Page<IngestRequest> findPageByMetadataIngestChainAndState(String ingestChain, RequestState state,
             Pageable pageable);
 
@@ -56,6 +56,8 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      * @param state new state
      * @param ids request identifiers
      */
+    // FIXME remove if not used after PM implementation
+    @Deprecated
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("UPDATE IngestRequest r set r.state = :state where r.id in (:ids)")
     void updateIngestRequestState(@Param("state") RequestState state, @Param("ids") Collection<Long> ids);
@@ -64,11 +66,4 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      * Get request by ids
      */
     List<IngestRequest> findByIdIn(Collection<Long> ids);
-
-    /**
-     * Check is a request exists with specified request id
-     * @param requestId request identifier
-     * @return true if at least one request exists
-     */
-    boolean existsByRequestId(String requestId);
 }

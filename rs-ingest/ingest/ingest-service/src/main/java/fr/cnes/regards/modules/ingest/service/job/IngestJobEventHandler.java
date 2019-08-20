@@ -29,8 +29,10 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
 /**
@@ -54,7 +56,7 @@ public class IngestJobEventHandler implements ApplicationListener<ApplicationRea
     private IIngestRequestService ingestRequestService;
 
     @Autowired
-    private IJobInfoService jobInfoService;
+    private INotificationClient notificationClient;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
@@ -82,8 +84,12 @@ public class IngestJobEventHandler implements ApplicationListener<ApplicationRea
                         break;
                 }
             } catch (Exception e) {
-                LOGGER.error("Error occurs during job event handling", e);
-                // FIXME add notification
+                String message = String
+                        .format("Ingest job with id \"%s\" and status \"%s\" causes exception during its processing",
+                                wrapper.getContent().getJobId(), wrapper.getContent().getJobEventType());
+                LOGGER.error(message, e);
+                notificationClient.notify(message, "Ingest job event failure", NotificationLevel.ERROR,
+                                          DefaultRole.ADMIN);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

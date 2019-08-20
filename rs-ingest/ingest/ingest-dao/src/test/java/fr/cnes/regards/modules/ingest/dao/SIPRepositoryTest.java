@@ -39,24 +39,24 @@ public class SIPRepositoryTest extends AbstractSIPRepositoryTest {
     public void searchSipEntities() {
 
         List<SIPEntity> res = sipRepository.findAll(SIPEntitySpecifications
-                .search(null, "sessionId", "sessionId", OffsetDateTime.now().minusHours(12),
+                .search(null, SESSION_OWNER, SESSION, OffsetDateTime.now().minusHours(12),
                         Lists.newArrayList(SIPState.INGESTED), PROCESSING_CHAIN));
-        Assert.assertEquals(2, res.size());
+        Assert.assertEquals(3, res.size());
 
         res = sipRepository.findAll(SIPEntitySpecifications
-                .search(null, "sessionId", "sessionId", OffsetDateTime.now().minusHours(1),
+                .search(null, SESSION_OWNER, SESSION, OffsetDateTime.now().minusHours(1),
                         Lists.newArrayList(SIPState.INGESTED), PROCESSING_CHAIN));
         Assert.assertEquals(1, res.size());
 
-        res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", "sessionId", null, null, null));
-        Assert.assertEquals(2, res.size());
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null, SESSION_OWNER, SESSION, null, null, null));
+        Assert.assertEquals(4, res.size());
 
-        res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, "sessionId", null, null, null));
-        Assert.assertEquals(2, res.size());
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, SESSION, null, null, null));
+        Assert.assertEquals(4, res.size());
 
-        res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, "sessionId", null,
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, SESSION, null,
                                                                    Lists.newArrayList(SIPState.INGESTED), null));
-        Assert.assertEquals(2, res.size());
+        Assert.assertEquals(4, res.size());
 
         res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, null, null, null, PROCESSING_CHAIN));
         Assert.assertEquals(3, res.size());
@@ -66,17 +66,12 @@ public class SIPRepositoryTest extends AbstractSIPRepositoryTest {
                                                         Lists.newArrayList(SIPState.INGESTED), null));
         Assert.assertEquals(0, res.size());
 
-        res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", "sessionId",
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null, SESSION_OWNER, SESSION,
                                                                    OffsetDateTime.now().minusHours(12),
                                                                    Lists.newArrayList(SIPState.INGESTED), null));
-        Assert.assertEquals(0, res.size());
+        Assert.assertEquals(4, res.size());
 
-        res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", "sessionId", OffsetDateTime.now(),
-                                                                   Lists.newArrayList(SIPState.INGESTED), null));
-        Assert.assertEquals(0, res.size());
-
-        res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", "sessionId",
-                                                                   OffsetDateTime.now().minusHours(12),
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null, SESSION_OWNER, SESSION, OffsetDateTime.now(),
                                                                    Lists.newArrayList(SIPState.INGESTED), null));
         Assert.assertEquals(0, res.size());
 
@@ -95,7 +90,7 @@ public class SIPRepositoryTest extends AbstractSIPRepositoryTest {
     @Test
     public void testFindIdAndProcessingByState() {
         List<SIPIdNProcessing> res = sipRepository.findIdAndIngestMetadataByState(SIPState.INGESTED);
-        Assert.assertEquals("There should be 2 sipIdNProcessing", 2, res.size());
+        Assert.assertEquals("There should be 4 sipIdNProcessing", 4, res.size());
     }
 
 }

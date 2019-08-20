@@ -198,15 +198,28 @@ public class IngestService implements IIngestService {
 
     @Override
     public RequestInfoDto redirectToDataflow(SIPCollection sips) {
-        IngestMetadataDto metadata = sips.getMetadata();
         RequestInfoDto info = RequestInfoDto.build(RequestType.INGEST,
                                                    "SIP Collection ingestion request redirected to dataflow");
-        for (SIP sip : sips.getFeatures()) {
-            IngestRequestFlowItem item = IngestRequestFlowItem.build(metadata, sip);
-            info.addRequestMapping(sip.getId(), item.getRequestId());
+        for (IngestRequestFlowItem item : sipToFlow(sips)) {
+            info.addRequestMapping(item.getSip().getId(), item.getRequestId());
             publisher.publish(item);
         }
         return info;
+    }
+
+    /**
+     * Middleware method extracted for test simulation and also used by operational code.
+     * Transform a SIP collection to a SIP flow item collection
+     */
+    public static Collection<IngestRequestFlowItem> sipToFlow(SIPCollection sips) {
+        Collection<IngestRequestFlowItem> items = new ArrayList<>();
+        if (sips != null) {
+            IngestMetadataDto metadata = sips.getMetadata();
+            for (SIP sip : sips.getFeatures()) {
+                items.add(IngestRequestFlowItem.build(metadata, sip));
+            }
+        }
+        return items;
     }
 
     @Override

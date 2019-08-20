@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,25 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service;
+package fr.cnes.regards.modules.ingest.service.conf;
 
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Ingest configuration properties
+ *
+ * @author Marc SORDI
+ */
 @Configuration
-@ComponentScan(basePackages = { "fr.cnes.regards.modules" })
-@EnableAutoConfiguration
-public class TestConfiguration {
-    //
-    //    @Bean
-    //    public IAipClient aipClient() {
-    //        return Mockito.mock(IAipClient.class);
-    //    }
-    //
-    //    @Bean
-    //    public IAipEntityClient mockAIPEntityClient() {
-    //        return Mockito.mock(IAipEntityClient.class);
-    //    }
+@ConfigurationProperties(prefix = "regards.ingest")
+public class IngestConfigurationProperties {
 
 }

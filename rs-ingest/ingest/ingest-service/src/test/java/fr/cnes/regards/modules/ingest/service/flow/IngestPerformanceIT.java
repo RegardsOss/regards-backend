@@ -31,16 +31,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 
 /**
  * Test SIP flow handling
@@ -58,23 +56,18 @@ import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 //        "regards.jpa.multitenant.tenants[0].password=azertyuiop123456789", "spring.rabbitmq.addresses=localhost:5672",
 //        "regards.amqp.management.host=localhost", "regards.amqp.management.port=16672" })
 @ActiveProfiles("testAmqp")
-public class SIPFlowHandlerIT extends AbstractMultitenantServiceTest {
+public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SIPFlowHandlerIT.class);
-
-    @Autowired
-    private IRuntimeTenantResolver threadTenantResolver;
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestPerformanceIT.class);
 
     @Autowired
     private IPublisher publisher;
 
-    @Autowired
-    private ISIPRepository sipRepository;
-
+    @Override
     @Before
-    public void init() {
+    public void doInit() {
         simulateApplicationReadyEvent();
-        threadTenantResolver.forceTenant(getDefaultTenant());
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
     }
 
     @Test
