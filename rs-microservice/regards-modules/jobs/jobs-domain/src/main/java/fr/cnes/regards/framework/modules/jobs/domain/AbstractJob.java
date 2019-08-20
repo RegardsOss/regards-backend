@@ -106,9 +106,7 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
      * @throws JobParameterMissingException the related exception
      */
     protected void handleMissingParameter(String parameterName) throws JobParameterMissingException {
-        String message = String.format("Missing parameter \"%s\"", parameterName);
-        logger.error(message);
-        throw new JobParameterMissingException(message);
+        IJob.handleMissingParameter(parameterName);
     }
 
     /**
@@ -118,9 +116,7 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
      * @throws JobParameterInvalidException the related exception
      */
     protected void handleInvalidParameter(String parameterName, String reason) throws JobParameterInvalidException {
-        String errorMessage = String.format("Invalid job parameter \"%s\" : \"%s\"", parameterName, reason);
-        logger.error(errorMessage);
-        throw new JobParameterInvalidException(errorMessage);
+        IJob.handleInvalidParameter(parameterName, reason);
     }
 
     /**
@@ -130,10 +126,7 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
      * @throws JobParameterInvalidException the related exception
      */
     protected void handleInvalidParameter(String parameterName, Exception reason) throws JobParameterInvalidException {
-        String errorMessage = String.format("Invalid job parameter \"%s\" : \"%s\"", parameterName,
-                                            reason.getMessage());
-        logger.error(errorMessage, reason);
-        throw new JobParameterInvalidException(errorMessage);
+        IJob.handleInvalidParameter(parameterName, reason);
     }
 
     /**
@@ -147,21 +140,12 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
      */
     protected <T> T getValue(Map<String, JobParameter> parameters, String parameterName, Type type)
             throws JobParameterMissingException, JobParameterInvalidException {
-        JobParameter parameter = parameters.get(parameterName);
-        if (parameter == null) {
-            handleMissingParameter(parameterName);
-        } else if (parameter.getValue() == null) { // NOSONAR : an exception is thrown when calling handleMissingParameter
-            handleInvalidParameter(parameterName, "Null value");
-        } else {
-            return type == null ? parameter.getValue() : parameter.getValue(type);
-        }
-        // Unreachable code (handle... methods throw Exceptions)
-        return null;
+        return IJob.getValue(parameters, parameterName, type);
     }
 
     protected <T> T getValue(Map<String, JobParameter> parameters, String parameterName)
             throws JobParameterMissingException, JobParameterInvalidException {
-        return getValue(parameters, parameterName, null);
+        return IJob.getValue(parameters, parameterName, null);
     }
 
     /**
@@ -172,16 +156,11 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
      * @return an {@link java.util.Optional} parameter value
      */
     protected <T> Optional<T> getOptionalValue(Map<String, JobParameter> parameters, String parameterName, Type type) {
-        JobParameter parameter = parameters.get(parameterName);
-        if (parameter == null) {
-            return Optional.empty();
-        }
-        T val = type == null ? parameter.getValue() : parameter.getValue(type);
-        return Optional.ofNullable(val);
+        return IJob.getOptionalValue(parameters, parameterName, type);
     }
 
     protected <T> Optional<T> getOptionalValue(Map<String, JobParameter> parameters, String parameterName) {
-        return getOptionalValue(parameters, parameterName, null);
+        return IJob.getOptionalValue(parameters, parameterName, null);
     }
 
 }

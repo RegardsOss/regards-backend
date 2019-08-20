@@ -41,6 +41,10 @@ public class Lock {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime expirationDate;
 
+    public Lock() {
+        // Default constructor
+    }
+
     /**
      * Constructor
      * @param lockName method for which lock is being acquired

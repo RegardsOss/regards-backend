@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.ImmutableList;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -126,6 +127,12 @@ public class JobInfoService implements IJobInfoService {
     }
 
     @Override
+    public JobInfo lock(JobInfo jobInfo) {
+        jobInfo.setLocked(true);
+        return save(jobInfo);
+    }
+
+    @Override
     public JobInfo unlock(JobInfo jobInfo) {
         jobInfo.setLocked(false);
         return save(jobInfo);
@@ -140,8 +147,8 @@ public class JobInfoService implements IJobInfoService {
     public void updateJobInfosCompletion(Iterable<JobInfo> jobInfos) {
         for (JobInfo jobInfo : jobInfos) {
             JobStatusInfo status = jobInfo.getStatus();
-            jobInfoRepository
-                    .updateCompletion(status.getPercentCompleted(), status.getEstimatedCompletion(), jobInfo.getId());
+            jobInfoRepository.updateCompletion(status.getPercentCompleted(), status.getEstimatedCompletion(),
+                                               jobInfo.getId());
         }
     }
 
