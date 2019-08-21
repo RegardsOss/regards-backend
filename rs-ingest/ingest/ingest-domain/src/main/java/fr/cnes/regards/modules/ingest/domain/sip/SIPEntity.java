@@ -85,7 +85,7 @@ public class SIPEntity {
     private Long id;
 
     /**
-     * The provider identifier = the feature ID
+     * The provider identifier is provided by the user along the SIP, with no guaranty of uniqueness
      */
     @NotBlank(message = "Provider ID is required")
     @Column(length = 100)

@@ -55,9 +55,11 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
 
     protected static final String SESSION = "session";
 
+    protected SIPEntity sip1;
+
     @Before
     public void init() {
-        SIPEntity sip1 = new SIPEntity();
+        sip1 = new SIPEntity();
         SIPBuilder b = new SIPBuilder("SIP_001");
         sip1.setSip(b.build());
         sip1.setSipId(UniformResourceName

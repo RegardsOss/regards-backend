@@ -62,12 +62,6 @@ public class SessionDeletionRequest extends AbstractRequest {
     @GeneratedValue(generator = "deletionRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    /**
-     * The SIP internal identifier (generated URN).
-     */
-    @Column(name = "sipId", length = SIPEntity.MAX_URN_SIZE, nullable = false)
-    private String sipId;
-
     @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER)
     @Column(length = 128, name = "session_owner", nullable = false)
     private String sessionOwner;

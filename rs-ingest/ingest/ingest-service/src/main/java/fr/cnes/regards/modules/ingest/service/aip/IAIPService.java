@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,7 +58,7 @@ public interface IAIPService {
     /**
      * Delete the {@link AIPEntity} by his ipId
      */
-    void deleteAip(UniformResourceName aipId, UniformResourceName sipId, AIPState state);
+    Collection<RejectedAipDto> deleteAip(String sipId);
 
     /**
      * Set {@link AIPEntity} state to give none

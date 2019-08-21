@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -325,8 +326,10 @@ public class IngestService implements IIngestService {
 
     @Override
     public SessionDeletionRequestDto registerSessionDeletionRequest(SessionDeletionRequestDto request) {
-
         SessionDeletionRequest deletionRequest = deletionRequestMapper.dtoToEntity(request);
+
+        // TODO check if we can accept this request now
+
 
         // Save granted deletion request
         deletionRequest.setRequestId(UUID.randomUUID().toString());

@@ -182,7 +182,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
     @Requirement("REGARDS_DSL_ING_PRO_400")
     @Purpose("Test fully configured process chain to ingest a new SIP provided by value")
     @Test
-    public void testProcessingChain() throws JobParameterMissingException, JobParameterInvalidException {
+    public void testProcessingChain() {
 
         SIPCollection sips = SIPCollection
                 .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST, STORAGE_METADATA));
@@ -231,13 +231,17 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         waitDuring(TWO_SECONDS);
 
         // Detect request error and no SIP or AIP is persisted
-        ArgumentCaptor<IngestRequest> argumentCaptor = ArgumentCaptor.forClass(IngestRequest.class);
-        Mockito.verify(ingestRequestService, Mockito.times(1)).handleRequestError(argumentCaptor.capture());
+        ArgumentCaptor<IngestRequest> ingestRequestCaptor = ArgumentCaptor.forClass(IngestRequest.class);
+        ArgumentCaptor<SIPEntity> sipCaptor = ArgumentCaptor.forClass(SIPEntity.class);
+
+        Mockito.verify(ingestRequestService, Mockito.times(1)).handleRequestError(ingestRequestCaptor.capture(), sipCaptor.capture());
         Mockito.clearInvocations(ingestRequestService);
-        IngestRequest request = argumentCaptor.getValue();
+        IngestRequest request = ingestRequestCaptor.getValue();
         Assert.assertNotNull(request);
         Assert.assertEquals(RequestState.ERROR, request.getState());
         Assert.assertTrue(!request.getErrors().isEmpty());
+
+        Assert.assertNotNull(sipCaptor.getValue());
 
         // Not sip ingested
         waitForIngestion(0, FIVE_SECONDS);
@@ -245,7 +249,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
     @Purpose("Test fully configured process chain to ingest a new SIP provided by reference")
     @Test
-    public void testProcessingChainByRef() throws JobParameterMissingException, JobParameterInvalidException {
+    public void testProcessingChainByRef() {
 
         // Init a SIP with reference in database with state CREATED
         SIPCollection sips = SIPCollection

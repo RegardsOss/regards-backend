@@ -74,6 +74,6 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
         Assert.hasText(error, "Error message is required");
         addError(error);
         job.getCurrentRequest().setErrors(errors);
-        ingestRequestService.handleRequestError(job.getCurrentRequest());
+        ingestRequestService.handleRequestError(job.getCurrentRequest(), job.getCurrentEntity());
     }
 }
