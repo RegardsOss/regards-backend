@@ -47,7 +47,6 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -101,9 +100,6 @@ public class IngestService implements IIngestService {
 
     @Autowired
     private IJobInfoService jobInfoService;
-
-    @Autowired
-    private IPublisher publisher;
 
     @Autowired
     private IIngestMetadataMapper metadataMapper;
@@ -201,16 +197,16 @@ public class IngestService implements IIngestService {
         }
     }
 
-    @Override
-    public RequestInfoDto redirectToDataflow(SIPCollection sips) {
-        RequestInfoDto info = RequestInfoDto.build(RequestType.INGEST,
-                                                   "SIP Collection ingestion request redirected to dataflow");
-        for (IngestRequestFlowItem item : sipToFlow(sips)) {
-            info.addRequestMapping(item.getSip().getId(), item.getRequestId());
-            publisher.publish(item);
-        }
-        return info;
-    }
+    //    @Override
+    //    public RequestInfoDto redirectToDataflow(SIPCollection sips) {
+    //        RequestInfoDto info = RequestInfoDto.build(RequestType.INGEST,
+    //                                                   "SIP Collection ingestion request redirected to dataflow");
+    //        for (IngestRequestFlowItem item : sipToFlow(sips)) {
+    //            info.addRequestMapping(item.getSip().getId(), item.getRequestId());
+    //            publisher.publish(item);
+    //        }
+    //        return info;
+    //    }
 
     @Override
     public RequestInfoDto handleSIPCollection(SIPCollection sips) throws EntityInvalidException {
@@ -307,16 +303,16 @@ public class IngestService implements IIngestService {
         return items;
     }
 
-    @Override
-    public RequestInfoDto redirectToDataflow(InputStream input) throws ModuleException {
-        try (Reader json = new InputStreamReader(input, DEFAULT_CHARSET)) {
-            SIPCollection sips = gson.fromJson(json, SIPCollection.class);
-            return redirectToDataflow(sips);
-        } catch (JsonIOException | IOException e) {
-            LOGGER.error("Cannot read JSON file containing SIP collection", e);
-            throw new EntityInvalidException(e.getMessage(), e);
-        }
-    }
+    //    @Override
+    //    public RequestInfoDto redirectToDataflow(InputStream input) throws ModuleException {
+    //        try (Reader json = new InputStreamReader(input, DEFAULT_CHARSET)) {
+    //            SIPCollection sips = gson.fromJson(json, SIPCollection.class);
+    //            return redirectToDataflow(sips);
+    //        } catch (JsonIOException | IOException e) {
+    //            LOGGER.error("Cannot read JSON file containing SIP collection", e);
+    //            throw new EntityInvalidException(e.getMessage(), e);
+    //        }
+    //    }
 
     @Override
     public RequestInfoDto handleSIPCollection(InputStream input) throws ModuleException {

@@ -86,8 +86,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         SIPBuilder builder = new SIPBuilder(providerId);
         sips.add(builder.buildReference(Paths.get("sip1.xml"), checksum));
 
-        // First ingestion
-        //        Collection<IngestRequestFlowItem> items = IngestService.sipToFlow(sips);
+        // First ingestion with synchronous service
         ingestService.handleSIPCollection(sips);
     }
 
