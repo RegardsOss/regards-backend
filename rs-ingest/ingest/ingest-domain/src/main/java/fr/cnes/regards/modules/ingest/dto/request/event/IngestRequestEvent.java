@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 
 /**
- * Generic event for all service requests
+ * Ingest request event
  *
  * @author Marc SORDI
  *

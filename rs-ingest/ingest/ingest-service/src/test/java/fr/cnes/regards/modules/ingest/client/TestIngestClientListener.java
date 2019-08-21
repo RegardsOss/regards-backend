@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -35,7 +33,7 @@ public class TestIngestClientListener implements IIngestClientListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestIngestClientListener.class);
 
     @Override
-    public void onDenied(RequestInfo info, Set<String> errors) {
+    public void onDenied(RequestInfo info) {
         LOGGER.debug(info.getRequestId());
     }
 
@@ -45,13 +43,13 @@ public class TestIngestClientListener implements IIngestClientListener {
     }
 
     @Override
-    public void onError(RequestInfo info, Set<String> errors) {
+    public void onError(RequestInfo info) {
         LOGGER.debug(info.getRequestId());
     }
 
     @Override
-    public void onSuccess(RequestInfo info, String urn) {
-        LOGGER.debug("{} request succeed. URN : {}", info.getRequestId(), urn);
+    public void onSuccess(RequestInfo info) {
+        LOGGER.debug("{} request succeed. URN : {}", info.getRequestId(), info.getSipId());
     }
 
 }

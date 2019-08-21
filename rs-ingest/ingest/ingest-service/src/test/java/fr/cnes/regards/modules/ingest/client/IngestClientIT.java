@@ -112,7 +112,7 @@ public class IngestClientIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(clientInfo.getRequestId(), grantedInfo.getValue().getRequestId());
 
         ArgumentCaptor<RequestInfo> successInfo = ArgumentCaptor.forClass(RequestInfo.class);
-        Mockito.verify(listener, Mockito.times(1)).onSuccess(successInfo.capture(), Mockito.anyString());
+        Mockito.verify(listener, Mockito.times(1)).onSuccess(successInfo.capture());
         Assert.assertEquals(clientInfo.getRequestId(), successInfo.getValue().getRequestId());
     }
 

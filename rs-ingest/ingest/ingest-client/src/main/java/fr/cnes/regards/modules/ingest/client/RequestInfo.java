@@ -18,59 +18,80 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
+import java.util.Set;
 import java.util.UUID;
+
+import org.springframework.lang.Nullable;
 
 /**
  * @author Marc SORDI
  */
 public class RequestInfo {
 
+    /**
+     * Request unique identifier
+     */
     private String requestId;
+
+    /**
+     * Provider identifier (i.e. feature id)
+     */
+    private String providerId;
+
+    /**
+     * Unique Resource Name : internal REGARDS versionned unique identifier
+     */
+    private String sipId;
+
+    /**
+     * List of errors
+     */
+    private Set<String> errors;
+
+    public static RequestInfo build(String providerId, @Nullable String urn, @Nullable Set<String> errors) {
+        return build(UUID.randomUUID().toString(), providerId, urn, errors);
+    }
+
+    public static RequestInfo build(String requestId, String providerId, @Nullable String urn,
+            @Nullable Set<String> errors) {
+        RequestInfo ri = new RequestInfo();
+        ri.setRequestId(requestId);
+        ri.setProviderId(providerId);
+        ri.setSipId(urn);
+        ri.setErrors(errors);
+        return ri;
+    }
 
     public String getRequestId() {
         return requestId;
     }
 
-    public static RequestInfo build() {
-        RequestInfo ri = new RequestInfo();
-        ri.requestId = UUID.randomUUID().toString();
-        return ri;
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
-    public static RequestInfo build(String requestId) {
-        RequestInfo ri = new RequestInfo();
-        ri.requestId = requestId;
-        return ri;
+    public String getProviderId() {
+        return providerId;
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (requestId == null ? 0 : requestId.hashCode());
-        return result;
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        RequestInfo other = (RequestInfo) obj;
-        if (requestId == null) {
-            if (other.requestId != null) {
-                return false;
-            }
-        } else if (!requestId.equals(other.requestId)) {
-            return false;
-        }
-        return true;
+    public String getSipId() {
+        return sipId;
+    }
+
+    public void setSipId(String urn) {
+        this.sipId = urn;
+    }
+
+    public Set<String> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(Set<String> errors) {
+        this.errors = errors;
     }
 
 }

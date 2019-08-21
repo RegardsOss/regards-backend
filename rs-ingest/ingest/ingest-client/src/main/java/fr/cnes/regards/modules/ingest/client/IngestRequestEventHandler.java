@@ -69,19 +69,20 @@ public class IngestRequestEventHandler
         runtimeTenantResolver.forceTenant(tenant);
         try {
             LOGGER.trace("Handling {}", event.toString());
-            RequestInfo info = RequestInfo.build(event.getRequestId());
+            RequestInfo info = RequestInfo.build(event.getRequestId(), event.getProviderId(), event.getSipId(),
+                                                 event.getErrors());
             switch (event.getState()) {
                 case DENIED:
-                    listener.onDenied(info, event.getErrors());
+                    listener.onDenied(info);
                     break;
                 case GRANTED:
                     listener.onGranted(info);
                     break;
                 case ERROR:
-                    listener.onError(info, event.getErrors());
+                    listener.onError(info);
                     break;
                 case SUCCESS:
-                    listener.onSuccess(info, event.getSipId());
+                    listener.onSuccess(info);
                     break;
                 default:
                     break;

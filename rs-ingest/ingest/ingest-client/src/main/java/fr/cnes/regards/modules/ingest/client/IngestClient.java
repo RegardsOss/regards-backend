@@ -32,6 +32,7 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
@@ -45,6 +46,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
  *
  */
 @Component
+@RegardsTransactional
 public class IngestClient implements IIngestClient {
 
     @Autowired
@@ -55,7 +57,7 @@ public class IngestClient implements IIngestClient {
 
     @Override
     public RequestInfo ingest(IngestMetadataDto ingestMetadata, SIP sip) throws IngestClientException {
-        RequestInfo requestInfo = RequestInfo.build();
+        RequestInfo requestInfo = RequestInfo.build(sip.getId(), null, null);
         IngestRequestFlowItem item = IngestRequestFlowItem.build(requestInfo.getRequestId(), ingestMetadata, sip);
         tryValidate(item);
         publisher.publish(item);
