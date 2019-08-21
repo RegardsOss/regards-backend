@@ -38,8 +38,8 @@ import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 
 /**
  * Asynchronous client implementation based on the message broker for requesting the file storage service.<br />
- * As this client use message broker to communicate with the storage service, responses are synchronous. NEvertheless,
- * you can easily listen for response by implementing your own {@link IStorageRequestListener}.
+ * As this client use message broker to communicate with the storage service, responses are asynchronous. Nevertheless,
+ * you can easily listen responses by implementing your own {@link IStorageRequestListener}.
  *
  * @author Marc SORDI
  * @author Sébastien Binda

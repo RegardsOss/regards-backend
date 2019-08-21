@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
  *  <li> Checksum algorithm </li>
  *  <li> mimeType </li>
  *  <li> Storage location where to delete the file</li>
- *  <li> Owner of the file who ask for deletion </li>
+ *  <li> Owner of the file who ask for storage </li>
  *  <li> originUrl where to access file to store. Must be locally accessible (file protocol for example) </li>
  * </ul>
  * See {@link StorageFlowItem} for more information about storage request process.
