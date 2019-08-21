@@ -1,9 +1,9 @@
 package fr.cnes.regards.modules.acquisition.domain.payload;
 
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import java.util.List;
 
 public class UpdateAcquisitionProcessingChains extends UpdateAcquisitionProcessingChain {
+
     private List<Long> chainIds;
 
     public List<Long> getChainIds() {
@@ -14,8 +14,8 @@ public class UpdateAcquisitionProcessingChains extends UpdateAcquisitionProcessi
         this.chainIds = chainIds;
     }
 
-
-    public static UpdateAcquisitionProcessingChains build(List<Long> chainIds, UpdateAcquisitionProcessingChain updateAcquisitionProcessingChain) {
+    public static UpdateAcquisitionProcessingChains build(List<Long> chainIds,
+            UpdateAcquisitionProcessingChain updateAcquisitionProcessingChain) {
         UpdateAcquisitionProcessingChains updateQuery = new UpdateAcquisitionProcessingChains();
         updateQuery.setChainIds(chainIds);
         updateQuery.setActive(updateAcquisitionProcessingChain.getActive());

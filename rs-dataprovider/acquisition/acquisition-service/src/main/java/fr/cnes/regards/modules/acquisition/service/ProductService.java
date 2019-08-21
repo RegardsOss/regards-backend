@@ -18,9 +18,30 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.util.Assert;
+
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import fr.cnes.regards.framework.amqp.IPublisher;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -47,29 +68,13 @@ import fr.cnes.regards.modules.acquisition.service.job.PostAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
-import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
-import fr.cnes.regards.modules.ingest.domain.flow.SipFlowItem;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.util.Assert;
+import fr.cnes.regards.modules.ingest.client.IIngestClient;
+import fr.cnes.regards.modules.ingest.client.IngestClientException;
+import fr.cnes.regards.modules.ingest.client.RequestInfo;
+import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 
 /**
  * Manage acquisition {@link Product}
@@ -98,7 +103,7 @@ public class ProductService implements IProductService {
     private IAcquisitionFileRepository acqFileRepository;
 
     @Autowired
-    private IPublisher publisher;
+    private IIngestClient ingestClient;
 
     @Autowired
     private IProductService self;
@@ -114,10 +119,8 @@ public class ProductService implements IProductService {
 
     @Override
     public Product save(Product product) {
-        LOGGER.trace("Saving product \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
-                     product.getProductName(),
-                     product.getIpId(),
-                     product.getSipState());
+        LOGGER.trace("Saving product \"{}\" with IP ID \"{}\" and SIP state \"{}\"", product.getProductName(),
+                     product.getIpId(), product.getSipState());
         product.setLastUpdate(OffsetDateTime.now());
         return productRepository.save(product);
     }
@@ -125,14 +128,20 @@ public class ProductService implements IProductService {
     @Override
     public Product saveAndSubmitSIP(Product product) {
         LOGGER.trace("Saving and submitting product \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
-                     product.getProductName(),
-                     product.getIpId(),
-                     product.getSipState());
-        // Build flow item
-        SipFlowItem item = SipFlowItem
-                .build(product.getProcessingChain().getIngestChain(), product.getSession(), product.getSip(), appName);
-        publisher.publish(item);
-        return save(product);
+                     product.getProductName(), product.getIpId(), product.getSipState());
+
+        // FIXME : fullfil ingest metadata properly
+        StorageMetadata storageMetadata = StorageMetadata.build("FIXME", null);
+        IngestMetadataDto ingestMetadata = IngestMetadataDto
+                .build(product.getProcessingChain().getLabel(), product.getSession(),
+                       product.getProcessingChain().getIngestChain(), storageMetadata);
+        try {
+            ingestClient.ingest(ingestMetadata, product.getSip());
+            return save(product);
+        } catch (IngestClientException e) {
+            // FIXME do something on error
+            return null;
+        }
     }
 
     @Override
@@ -268,19 +277,17 @@ public class ProductService implements IProductService {
                 product.setState(ProductState.INVALID);
                 // Propagate to SIP state
                 product.setSipState(ProductSIPState.NOT_SCHEDULED_INVALID);
-                product.setError(String.format(
-                        "This product should only have %s optional files according to configuration. We found %s files matching. Please check your configuration and reacquire.",
-                        nbExpectedMandatory,
-                        nbActualMandatory));
+                product.setError(String
+                        .format("This product should only have %s optional files according to configuration. We found %s files matching. Please check your configuration and reacquire.",
+                                nbExpectedMandatory, nbActualMandatory));
             }
         } else if (nbActualMandatory >= nbExpectedMandatory) {
             product.setState(ProductState.INVALID);
             // Propagate to SIP state
             product.setSipState(ProductSIPState.NOT_SCHEDULED_INVALID);
-            product.setError(String.format(
-                    "This product should only have %s mandatory files according to configuration. We found %s files matching. Please check your configuration and reacquire.",
-                    nbExpectedMandatory,
-                    nbActualMandatory));
+            product.setError(String
+                    .format("This product should only have %s mandatory files according to configuration. We found %s files matching. Please check your configuration and reacquire.",
+                            nbExpectedMandatory, nbActualMandatory));
         }
     }
 
@@ -297,7 +304,8 @@ public class ProductService implements IProductService {
         }
 
         // Get current session
-        Map<String, JobParameter> jobsParameters = processingChain.getLastProductAcquisitionJobInfo().getParametersAsMap();
+        Map<String, JobParameter> jobsParameters = processingChain.getLastProductAcquisitionJobInfo()
+                .getParametersAsMap();
         String session = jobsParameters.get(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION).getValue();
 
         // Compute the  list of products to create or update
@@ -307,7 +315,7 @@ public class ProductService implements IProductService {
 
             try {
                 String productName = productPlugin.getProductName(validFile.getFilePath());
-                if ((productName != null) && !productName.isEmpty()) {
+                if (productName != null && !productName.isEmpty()) {
                     productNames.add(productName);
                     validFilesByProductName.put(productName, validFile);
                 } else {
@@ -323,8 +331,7 @@ public class ProductService implements IProductService {
             } catch (ModuleException e) {
                 // Continue silently but register error in database
                 String errorMessage = String.format("Error computing product name for file %s : %s",
-                                                    validFile.getFilePath().toString(),
-                                                    e.getMessage());
+                                                    validFile.getFilePath().toString(), e.getMessage());
                 LOGGER.error(errorMessage, e);
                 validFile.setError(errorMessage);
                 validFile.setState(AcquisitionFileState.ERROR);
@@ -353,7 +360,8 @@ public class ProductService implements IProductService {
                 productMap.put(productName, currentProduct);
             } else if (!currentProduct.getSession().equals(session)) {
                 // The product is now managed by another session
-                sessionNotifier.notifyDecrementSession(currentProduct.getProcessingChain().getLabel(), currentProduct.getSession(), currentProduct.getState());
+                sessionNotifier.notifyDecrementSession(currentProduct.getProcessingChain().getLabel(),
+                                                       currentProduct.getSession(), currentProduct.getState());
                 currentProduct.setSession(session);
             }
             // Keep the current product state if we need to send a notif
@@ -363,9 +371,9 @@ public class ProductService implements IProductService {
             fulfillProduct(validFilesByProductName.get(productName), currentProduct, processingChain);
 
             // Store for scheduling
-            if ((currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED) && (
-                    (currentProduct.getState() == ProductState.COMPLETED) || (currentProduct.getState()
-                            == ProductState.FINISHED))) {
+            if (currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED
+                    && (currentProduct.getState() == ProductState.COMPLETED
+                            || currentProduct.getState() == ProductState.FINISHED)) {
                 LOGGER.trace("Product {} is candidate for SIP generation", currentProduct.getProductName());
                 productsToSchedule.add(currentProduct);
             }
@@ -381,7 +389,6 @@ public class ProductService implements IProductService {
 
         return new HashSet<>(productMap.values());
     }
-
 
     /**
      * Fulfill product with new valid acquired files
@@ -434,15 +441,14 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public void handleSIPEvent(SIPEvent event) {
-        Product product = productRepository.findByProductName(event.getProviderId());
+    public void handleSIPSuccess(RequestInfo info) {
+        Product product = productRepository.findByProductName(info.getProviderId());
         if (product != null) {
-            // Do post processing if SIP properly stored
-            if (SIPState.STORED.equals(event.getState()) && product.getProcessingChain().getPostProcessSipPluginConf()
-                    .isPresent()) {
+            // Do post processing when SIP properly stored
+            if (product.getProcessingChain().getPostProcessSipPluginConf().isPresent()) {
                 JobInfo jobInfo = new JobInfo(true);
                 jobInfo.setPriority(AcquisitionJobPriority.POST_ACQUISITION_JOB_PRIORITY.getPriority());
-                jobInfo.setParameters(new JobParameter(PostAcquisitionJob.EVENT_PARAMETER, event));
+                jobInfo.setParameters(new JobParameter(PostAcquisitionJob.EVENT_PARAMETER, info));
                 jobInfo.setClassName(PostAcquisitionJob.class.getName());
                 jobInfo.setOwner(authResolver.getUser());
                 jobInfo = jobInfoService.createAsQueued(jobInfo);
@@ -453,13 +459,12 @@ public class ProductService implements IProductService {
                 }
                 product.setLastPostProductionJobInfo(jobInfo);
             }
-            product.setSipState(event.getState());
-            product.setIpId(event.getSipId());
+            product.setSipState(SIPState.INGESTED);
+            product.setIpId(info.getSipId());
             save(product);
         } else {
-            LOGGER.warn("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider",
-                        event.getSipId(),
-                        event.getProviderId());
+            LOGGER.warn("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider", info.getSipId(),
+                        info.getProviderId());
         }
     }
 
@@ -477,9 +482,9 @@ public class ProductService implements IProductService {
     @Override
     public long countSIPGenerationJobInfoByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
             ISipState productSipState) {
-        return productRepository.countDistinctLastSIPGenerationJobInfoByProcessingChainAndSipState(processingChain,
-                                                                                                   productSipState
-                                                                                                           .toString());
+        return productRepository
+                .countDistinctLastSIPGenerationJobInfoByProcessingChainAndSipState(processingChain,
+                                                                                   productSipState.toString());
     }
 
     @Override
@@ -490,22 +495,18 @@ public class ProductService implements IProductService {
     @Override
     public Page<Product> search(List<ProductState> state, List<ISipState> sipState, String productName, String session,
             Long processingChainId, OffsetDateTime from, Boolean noSession, Pageable pageable) {
-        return productRepository.loadAll(ProductSpecifications.search(state,
-                                                                      sipState,
-                                                                      productName,
-                                                                      session,
-                                                                      processingChainId,
-                                                                      from,
-                                                                      noSession), pageable);
+        return productRepository.loadAll(ProductSpecifications.search(state, sipState, productName, session,
+                                                                      processingChainId, from, noSession),
+                                         pageable);
     }
 
     @Override
     public void stopProductJobs(AcquisitionProcessingChain processingChain) throws ModuleException {
 
         // Stop SIP generation jobs
-        Set<JobInfo> jobInfos = productRepository.findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(
-                processingChain,
-                ProductSIPState.SCHEDULED);
+        Set<JobInfo> jobInfos = productRepository
+                .findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(processingChain,
+                                                                                    ProductSIPState.SCHEDULED);
         jobInfos.forEach(j -> jobInfoService.stopJob(j.getId()));
     }
 
@@ -535,10 +536,9 @@ public class ProductService implements IProductService {
     @Override
     public boolean restartInterruptedJobsByPage(AcquisitionProcessingChain processingChain) {
 
-        Page<Product> products = productRepository.findByProcessingChainAndSipStateOrderByIdAsc(processingChain,
-                                                                                                ProductSIPState.SCHEDULED_INTERRUPTED,
-                                                                                                PageRequest.of(0,
-                                                                                                               AcquisitionProperties.WORKING_UNIT));
+        Page<Product> products = productRepository
+                .findByProcessingChainAndSipStateOrderByIdAsc(processingChain, ProductSIPState.SCHEDULED_INTERRUPTED,
+                                                              PageRequest.of(0, AcquisitionProperties.WORKING_UNIT));
         // Schedule SIP generation
         if (products.hasContent()) {
             LOGGER.debug("Restarting interrupted SIP generation for {} product(s)", products.getContent().size());
@@ -550,10 +550,9 @@ public class ProductService implements IProductService {
     @Override
     public boolean retrySIPGenerationByPage(AcquisitionProcessingChain processingChain) {
 
-        Page<Product> products = productRepository.findByProcessingChainAndSipStateOrderByIdAsc(processingChain,
-                                                                                                ProductSIPState.GENERATION_ERROR,
-                                                                                                PageRequest.of(0,
-                                                                                                               AcquisitionProperties.WORKING_UNIT));
+        Page<Product> products = productRepository
+                .findByProcessingChainAndSipStateOrderByIdAsc(processingChain, ProductSIPState.GENERATION_ERROR,
+                                                              PageRequest.of(0, AcquisitionProperties.WORKING_UNIT));
         // Schedule SIP generation
         if (products.hasContent()) {
             LOGGER.debug("Retrying SIP generation for {} product(s)", products.getContent().size());
@@ -588,17 +587,16 @@ public class ProductService implements IProductService {
     @Override
     public boolean manageUpdatedProductsByPage(AcquisitionProcessingChain processingChain) {
         // - Retrieve first page
-        Page<Product> page = productRepository.findByProcessingChainAndStateOrderByIdAsc(processingChain,
-                                                                                         ProductState.UPDATED,
-                                                                                         PageRequest.of(0,
-                                                                                                        AcquisitionProperties.WORKING_UNIT));
+        Page<Product> page = productRepository
+                .findByProcessingChainAndStateOrderByIdAsc(processingChain, ProductState.UPDATED,
+                                                           PageRequest.of(0, AcquisitionProperties.WORKING_UNIT));
         Set<Product> productsToSchedule = new HashSet<>();
         for (Product currentProduct : page.getContent()) {
             computeProductState(currentProduct);
             // Store for scheduling
-            if ((currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED) && (
-                    (currentProduct.getState() == ProductState.COMPLETED) || (currentProduct.getState()
-                            == ProductState.FINISHED))) {
+            if (currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED
+                    && (currentProduct.getState() == ProductState.COMPLETED
+                            || currentProduct.getState() == ProductState.FINISHED)) {
                 LOGGER.trace("Product {} is candidate for SIP generation", currentProduct.getProductName());
                 productsToSchedule.add(currentProduct);
             }

@@ -91,6 +91,10 @@
 			<artifactId>ingest-domain</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.ingest</groupId>
+			<artifactId>ingest-client</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>feign-regards-starter</artifactId>
 		</dependency>

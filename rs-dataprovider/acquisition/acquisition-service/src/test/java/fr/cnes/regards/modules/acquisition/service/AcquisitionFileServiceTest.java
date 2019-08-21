@@ -18,7 +18,26 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -39,23 +58,7 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.Set;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
 /**
  * Test {@link AcquisitionFileService}
@@ -118,8 +121,9 @@ public class AcquisitionFileServiceTest extends AbstractMultitenantServiceTest {
         // Search directory
         Path searchDir = Paths.get("src", "test", "resources", "data", "plugins", "scan");
 
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
-                PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))));
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
+                                        PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))));
 
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
@@ -166,7 +170,7 @@ public class AcquisitionFileServiceTest extends AbstractMultitenantServiceTest {
         product.setProcessingChain(processingChain);
         product.setProductName("product name");
         product.setSession("session");
-        product.setSipState(SIPState.INDEXED);
+        product.setSipState(SIPState.INGESTED);
         product.setState(ProductState.COMPLETED);
         product = productService.save(product);
 

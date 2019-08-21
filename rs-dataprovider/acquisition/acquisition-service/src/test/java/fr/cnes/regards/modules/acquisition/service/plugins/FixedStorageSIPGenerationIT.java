@@ -18,6 +18,16 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
+import java.nio.file.Paths;
+import java.util.Map;
+import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -31,15 +41,7 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import java.nio.file.Paths;
-import java.util.Map;
-import java.util.Set;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_service" })
 @RegardsTransactional
@@ -54,8 +56,9 @@ public class FixedStorageSIPGenerationIT extends AbstractMultitenantServiceTest 
         // Init plugin conf
         PluginMetaData plugin = PluginUtils.createPluginMetaData(FixedStorageSIPGeneration.class);
 
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(FixedStorageSIPGeneration.STAF_STORAGE_NODE, "node1"),
-                IPluginParam.build(FixedStorageSIPGeneration.DATASET, "dataset1"));
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(FixedStorageSIPGeneration.STAF_STORAGE_NODE, "node1"),
+                     IPluginParam.build(FixedStorageSIPGeneration.DATASET, "dataset1"));
         PluginConfiguration pluginConf = pluginService
                 .savePluginConfiguration(new PluginConfiguration(plugin, "sipGenerationPlugin", parameters));
 

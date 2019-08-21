@@ -19,7 +19,6 @@
 
 package fr.cnes.regards.modules.acquisition.service.job;
 
-import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +39,8 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
-import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * This job manages SIP generation for a given product
@@ -144,8 +144,9 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         }
 
         for (String session : sessions) {
-            if (productService.countSIPGenerationJobInfoByProcessingChainAndSipStateIn(
-                    processingChain, ProductSIPState.SCHEDULED) == 0) {
+            if (productService
+                    .countSIPGenerationJobInfoByProcessingChainAndSipStateIn(processingChain,
+                                                                             ProductSIPState.SCHEDULED) == 0) {
                 sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
                 break;
             }
