@@ -46,7 +46,6 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
-import fr.cnes.regards.modules.ingest.domain.dto.RequestType;
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
@@ -68,8 +67,6 @@ import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 public class IngestRequestService implements IIngestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestService.class);
-
-    private static final RequestType INGEST_REQUEST = RequestType.INGEST;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -148,7 +145,7 @@ public class IngestRequestService implements IIngestRequestService {
         // Publish GRANTED request
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   request.getState(), INGEST_REQUEST, request.getErrors()));
+                                                   request.getState(), request.getErrors()));
     }
 
     @Override
@@ -159,7 +156,7 @@ public class IngestRequestService implements IIngestRequestService {
         // Publish DENIED request
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   request.getState(), INGEST_REQUEST, request.getErrors()));
+                                                   request.getState(), request.getErrors()));
     }
 
     @Override
@@ -176,7 +173,7 @@ public class IngestRequestService implements IIngestRequestService {
         // Publish ERROR request
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   request.getState(), INGEST_REQUEST, request.getErrors()));
+                                                   request.getState(), request.getErrors()));
     }
 
     @Override
@@ -193,8 +190,8 @@ public class IngestRequestService implements IIngestRequestService {
         ingestRequestRepository.delete(request);
 
         // Publish SUCCESSFUL request
-        publisher.publish(IngestRequestEvent
-                .build(request.getRequestId(), request.getSip() != null ? request.getSip().getId() : null,
-                       sipEntity.getSipId(), request.getState(), INGEST_REQUEST, request.getErrors()));
+        publisher.publish(IngestRequestEvent.build(request.getRequestId(),
+                                                   request.getSip() != null ? request.getSip().getId() : null,
+                                                   sipEntity.getSipId(), request.getState(), request.getErrors()));
     }
 }

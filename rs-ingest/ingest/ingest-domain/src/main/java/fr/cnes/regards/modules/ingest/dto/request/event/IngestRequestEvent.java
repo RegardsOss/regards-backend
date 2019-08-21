@@ -25,7 +25,6 @@ import org.springframework.lang.Nullable;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.ingest.domain.dto.RequestType;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 
 /**
@@ -54,8 +53,6 @@ public class IngestRequestEvent implements ISubscribable {
 
     private RequestState state;
 
-    private RequestType type;
-
     private Set<String> errors;
 
     public RequestState getState() {
@@ -64,14 +61,6 @@ public class IngestRequestEvent implements ISubscribable {
 
     public void setState(RequestState state) {
         this.state = state;
-    }
-
-    public RequestType getType() {
-        return type;
-    }
-
-    public void setType(RequestType type) {
-        this.type = type;
     }
 
     public Set<String> getErrors() {
@@ -107,17 +96,16 @@ public class IngestRequestEvent implements ISubscribable {
     }
 
     public static IngestRequestEvent build(String requestId, String providerId, @Nullable String sipId,
-            RequestState state, RequestType type) {
-        return build(requestId, providerId, sipId, state, type, null);
+            RequestState state) {
+        return build(requestId, providerId, sipId, state, null);
     }
 
     public static IngestRequestEvent build(String requestId, String providerId, @Nullable String sipId,
-            RequestState state, RequestType type, Set<String> errors) {
+            RequestState state, Set<String> errors) {
         IngestRequestEvent event = new IngestRequestEvent();
         event.setProviderId(providerId);
         event.setSipId(sipId);
         event.setState(state);
-        event.setType(type);
         event.setErrors(errors);
         return event;
     }

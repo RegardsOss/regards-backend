@@ -47,7 +47,6 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
@@ -217,19 +216,6 @@ public class SIPEntity {
 
     public void setIngestMetadata(IngestMetadata ingestMetadata) {
         this.ingestMetadata = ingestMetadata;
-    }
-
-    /**
-     * Programmatic mapper between {@link SIPEntity} to {@link SIPDto}
-     * @return {@link SIPDto}
-     */
-    public SIPDto toDto() {
-        SIPDto dto = new SIPDto();
-        dto.setId(providerId);
-        dto.setSipId(sipId.toString());
-        dto.setState(state);
-        dto.setVersion(version);
-        return dto;
     }
 
     @Override

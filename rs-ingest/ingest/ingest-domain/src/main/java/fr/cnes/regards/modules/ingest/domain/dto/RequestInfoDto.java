@@ -30,8 +30,6 @@ import java.util.Map;
  */
 public class RequestInfoDto {
 
-    private RequestType type;
-
     /**
      * Mapping between SIP id and request id
      */
@@ -44,18 +42,10 @@ public class RequestInfoDto {
 
     private List<String> messages;
 
-    public static RequestInfoDto build(RequestType type, String... messages) {
+    public static RequestInfoDto build(String... messages) {
         RequestInfoDto ri = new RequestInfoDto();
         ri.setMessages(Arrays.asList(messages));
         return ri;
-    }
-
-    public RequestType getType() {
-        return type;
-    }
-
-    public void setType(RequestType type) {
-        this.type = type;
     }
 
     public List<String> getMessages() {

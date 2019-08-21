@@ -56,7 +56,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.ingest.dao.ISessionDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
-import fr.cnes.regards.modules.ingest.domain.dto.RequestType;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
 import fr.cnes.regards.modules.ingest.domain.mapper.ISessionDeletionRequestMapper;
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
@@ -218,7 +217,7 @@ public class IngestService implements IIngestService {
 
         // Register requests
         Collection<IngestRequest> grantedRequests = new ArrayList<>();
-        RequestInfoDto info = RequestInfoDto.build(RequestType.INGEST, "SIP Collection ingestion scheduled");
+        RequestInfoDto info = RequestInfoDto.build("SIP Collection ingestion scheduled");
 
         for (SIP sip : sips.getFeatures()) {
             // Validate and transform to request

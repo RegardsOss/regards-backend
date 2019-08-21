@@ -32,10 +32,9 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>feign-regards-starter</artifactId>
-			<scope>provided</scope>
-		</dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>gson-regards-starter</artifactId>
+        </dependency>
 		<!-- Module domain -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.ingest</groupId>
@@ -45,11 +44,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-integration-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.ingest</groupId>
-			<artifactId>ingest-rest</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

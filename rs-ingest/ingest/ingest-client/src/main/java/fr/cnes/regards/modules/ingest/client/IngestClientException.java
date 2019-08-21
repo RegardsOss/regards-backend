@@ -16,14 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.dto;
+package fr.cnes.regards.modules.ingest.client;
 
 /**
- * Available request types
+ *
+ * Generic client exception
+ *
  * @author Marc SORDI
+ *
  */
-public enum RequestType {
+public class IngestClientException extends Exception {
 
-    INGEST,
-    DELETION;
+    private static final long serialVersionUID = 5872745482890268979L;
+
+    public IngestClientException(String message) {
+        super(message);
+    }
 }
