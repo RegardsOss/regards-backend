@@ -18,6 +18,38 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.ClosedByInterruptException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.util.MimeTypeUtils;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -55,38 +87,9 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.channels.ClosedByInterruptException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import javax.persistence.EntityManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.util.MimeTypeUtils;
 
 /**
  * Acquisition processing service
@@ -331,7 +334,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public AcquisitionProcessingChain patchStateAndMode(Long chainId, UpdateAcquisitionProcessingChain payload) throws ModuleException {
+    public AcquisitionProcessingChain patchStateAndMode(Long chainId, UpdateAcquisitionProcessingChain payload)
+            throws ModuleException {
 
         // Check already exists
         if (!acqChainRepository.existsChain(chainId)) {
@@ -356,10 +360,12 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public List<AcquisitionProcessingChain> patchChainsStateAndMode(UpdateAcquisitionProcessingChains payload) throws ModuleException {
+    public List<AcquisitionProcessingChain> patchChainsStateAndMode(UpdateAcquisitionProcessingChains payload)
+            throws ModuleException {
         List<AcquisitionProcessingChain> results = new ArrayList<>();
         for (Long chainId : payload.getChainIds()) {
-            results.add(patchStateAndMode(chainId, UpdateAcquisitionProcessingChain.build(payload.getActive(), payload.getMode(), payload.getUpdateType())));
+            results.add(patchStateAndMode(chainId, UpdateAcquisitionProcessingChain
+                    .build(payload.getActive(), payload.getMode(), payload.getUpdateType())));
         }
         return results;
     }
@@ -403,7 +409,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private void checkProcessingChainMode(AcquisitionProcessingChain processingChain) throws ModuleException {
 
         if (AcquisitionProcessingChainMode.AUTO.equals(processingChain.getMode())
-                && (processingChain.getPeriodicity() == null)) {
+                && processingChain.getPeriodicity() == null) {
             throw new EntityInvalidException("Missing periodicity for automatic acquisition processing chain");
         }
     }
@@ -477,7 +483,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         // Stop all active jobs for current processing chain
         JobInfo jobInfo = processingChain.getLastProductAcquisitionJobInfo();
-        if ((jobInfo != null) && !jobInfo.getStatus().getStatus().isFinished()) {
+        if (jobInfo != null && !jobInfo.getStatus().getStatus().isFinished()) {
             jobInfoService.stopJob(jobInfo.getId());
         }
         productService.stopProductJobs(processingChain);
@@ -487,7 +493,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     public boolean isChainJobStoppedAndCleaned(Long processingChainId) throws ModuleException {
         AcquisitionProcessingChain processingChain = getChain(processingChainId);
         JobInfo jobInfo = processingChain.getLastProductAcquisitionJobInfo();
-        boolean acqJobStopped = (jobInfo == null) || jobInfo.getStatus().getStatus().isFinished();
+        boolean acqJobStopped = jobInfo == null || jobInfo.getStatus().getStatus().isFinished();
         return acqJobStopped && productService.isProductJobStoppedAndCleaned(processingChain);
     }
 
@@ -540,7 +546,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public AcquisitionProcessingChain startManualChain(Long processingChainId, Optional<String> session) throws ModuleException {
+    public AcquisitionProcessingChain startManualChain(Long processingChainId, Optional<String> session)
+            throws ModuleException {
 
         // Load chain
         AcquisitionProcessingChain processingChain = getChain(processingChainId);
@@ -583,7 +590,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         JobInfo jobInfo = new JobInfo(true);
         jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY.getPriority());
         jobInfo.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()),
-                new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, sessionName));
+                              new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, sessionName));
         jobInfo.setClassName(ProductAcquisitionJob.class.getName());
         jobInfo.setOwner(authResolver.getUser());
 
@@ -638,7 +645,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             int fromIndex = 0;
             int toIndex = AcquisitionProperties.WORKING_UNIT;
             int totalCount = 0;
-            while ((toIndex <= scannedFiles.size()) && !Thread.currentThread().isInterrupted()) {
+            while (toIndex <= scannedFiles.size() && !Thread.currentThread().isInterrupted()) {
                 long transactionStartTime = System.currentTimeMillis();
                 // Do it in one transaction
                 LOGGER.debug("Trying to register {}/{} of the new file(s) scanned", toIndex, scannedFiles.size());
@@ -885,12 +892,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain);
 
         // Handle job summary
-        summary.setActive(
-                (chain.getLastProductAcquisitionJobInfo() != null)
-                        && !chain.getLastProductAcquisitionJobInfo().getStatus().getStatus().isFinished(),
-                productService
-                        .countSIPGenerationJobInfoByProcessingChainAndSipStateIn(chain, ProductSIPState.SCHEDULED)
-        );
+        summary.setActive(chain.getLastProductAcquisitionJobInfo() != null
+                && !chain.getLastProductAcquisitionJobInfo().getStatus().getStatus().isFinished(),
+                          productService
+                                  .countSIPGenerationJobInfoByProcessingChainAndSipStateIn(chain,
+                                                                                           ProductSIPState.SCHEDULED));
 
         return summary;
     }

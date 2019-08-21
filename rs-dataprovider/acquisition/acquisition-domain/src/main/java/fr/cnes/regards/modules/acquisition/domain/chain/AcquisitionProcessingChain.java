@@ -19,12 +19,11 @@
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-
 import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -124,7 +123,8 @@ public class AcquisitionProcessingChain {
      * The cron expression of the acquisition periodicity
      */
     @Column(name = "period")
-    @Pattern(regexp = "0 .*", message = "Invalid cron periodicity. You must start your periodicity with 0 (for 0 second) as the lowest definition is minutes. e.g: 0 * 18 * * *")
+    @Pattern(regexp = "0 .*",
+            message = "Invalid cron periodicity. You must start your periodicity with 0 (for 0 second) as the lowest definition is minutes. e.g: 0 * 18 * * *")
     private String periodicity;
 
     /**

@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.acquisition.domain.model.GeoAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.LongAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.StringAttribute;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 
 /**
  * A simple {@link Plugin} of type {@link ISipGenerationPlugin}.
