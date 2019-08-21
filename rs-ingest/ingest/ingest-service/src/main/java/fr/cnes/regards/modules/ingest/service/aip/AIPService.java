@@ -18,10 +18,18 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
+import fr.cnes.regards.modules.storagelight.client.IStorageClient;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,14 +88,27 @@ public class AIPService implements IAIPService {
     private INotificationClient notificationClient;
 
     @Autowired
+    private IStorageClient storageClient;
+
+    @Autowired
     private ITemplateService templateService;
 
     @Override
     public List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips) {
         List<AIPEntity> entities = new ArrayList<>();
+//        List<FileStorageRequestDTO> filesToStore = new ArrayList<>();
         for (AIP aip : aips) {
             entities.add(aipRepository.save(AIPEntity.build(sip, AIPState.CREATED, aip)));
+//            for (ContentInformation ci : aip.getProperties().getContentInformations()) {
+//                OAISDataObject dataObject = ci.getDataObject();
+//
+//                filesToStore.add(FileStorageRequestDTO.build(dataObject.getFilename(), dataObject.getChecksum(), dataObject.getAlgorithm(),
+//                        ci.getRepresentationInformation().getSyntax().getMimeType().toString(), "owner",
+//                        dataObject.getUrls().iterator().next(), null, null
+//                ));
+//            }
         }
+//        storageClient.store(filesToStore);
         return entities;
     }
 
@@ -121,37 +142,35 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void deleteAip(UniformResourceName aipId, UniformResourceName sipId, AIPState state) {
-        // FIXME : refactor
-        // Check if deleted AIP exists in internal database
-        //        Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
-        //        if (oAip.isPresent()) {
-        //            // Delete aip
-        //            aipRepository.delete(oAip.get());
-        //        }
-        //        // Retrieve all AIP associated to the SIP.
-        //        FeignSecurityManager.asSystem();
-        //        ResponseEntity<PagedResources<Resource<fr.cnes.regards.modules.storage.domain.database.AIPEntity>>> result = aipEntityClient
-        //                .retrieveAIPEntities(sipId.toString(), 0, 100);
-        //        FeignSecurityManager.reset();
-        //        if (result.getStatusCode().equals(HttpStatus.OK) && result.getBody() != null) {
-        //            Optional<SIPEntity> oSip = sipRepository.findOneBySipId(sipId.toString());
-        //            if (oSip.isPresent()) {
-        //                SIPEntity sip = oSip.get();
-        //                // If all AIPs are deleted, update sip to DELETED state
-        //                if (result.getBody().getContent().stream()
-        //                        .allMatch(resource -> fr.cnes.regards.modules.storage.domain.AIPState.DELETED
-        //                                .equals(resource.getContent().getState()))) {
-        //                    sip.setState(SIPState.DELETED);
-        //                } else {
-        //                    // Else update sip to incomplete
-        //                    // FIXME
-        //                    // sip.setState(SIPState.INCOMPLETE);
-        //                }
-        //                sip.setLastUpdateDate(OffsetDateTime.now());
-        //                sipService.saveSIPEntity(sip);
-        //            }
-        //        }
+    public Collection<RejectedAipDto> deleteAip(String sipId) {
+        Set<RejectedAipDto> undeletableAips = Sets.newHashSet();
+
+        // Retrieve all AIP relative to this SIP id
+        Set<AIPEntity> aipsRelatedToSip = aipRepository.findBySipSipId(sipId);
+        // For each AIP,
+        //      notify storage to delete related files
+        //      mark the entity as TO_BE_DELETED
+        for (AIPEntity aip : aipsRelatedToSip) {
+            if (aip.getState() == AIPState.STORED) {
+                // TODO
+//                FileDeletionRequestDTO toDelete = FileDeletionRequestDTO.build("cheksum", "storage", "owner", false);
+//                RequestInfo delete = storageClient.delete(toDelete);
+//                String groupId = delete.getGroupId();
+//                // TODO send event to delete on storage
+
+                // TODO save inside a DB table this entity will be removed (keep removeIrrevocably too)
+                // And listen for events from storage for this entity
+//                aip.setState(AIPState.TO_BE_DELETED);
+                aipRepository.save(aip);
+            } else {
+                // We had this condition on those state here and not into #isDeletableWithAIPs because we just want to be silent.
+                // Indeed, if we ask for deletion of an already deleted or being deleted SIP that just mean there is less work to do this time.
+                String errorMsg = String.format("AIPEntity with state %s is not deletable", aip.getState());
+                undeletableAips.add(RejectedAipDto.build(aip.getAipId(), errorMsg));
+                // TODO gérer le cas ou la suppression n'est pas aussi simple
+            }
+        }
+        return undeletableAips;
     }
 
     @Override

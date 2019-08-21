@@ -66,7 +66,7 @@ public interface IIngestRequestService {
     /**
      * Handle request error during job processing
      */
-    void handleRequestError(IngestRequest request);
+    void handleRequestError(IngestRequest request, SIPEntity entity);
 
     /**
      * Handle request success at the end of the job processing

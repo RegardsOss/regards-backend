@@ -31,7 +31,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -65,44 +64,15 @@ public interface ISIPService {
      */
     SIPEntity getSIPEntity(UniformResourceName sipId) throws EntityNotFoundException;
 
-    /**
-     * Delete one {@link SIPEntity} for the given ipId
-     * @param sipIds
-     * @return rejected or undeletable {@link SIPEntity}s
-     * @throws EntityNotFoundException
-     */
-    Collection<RejectedSipDto> deleteSIPEntitiesBySipIds(Collection<UniformResourceName> sipIds) throws ModuleException;
-
-    Collection<SIPEntity> findAllByProviderId(String providerId);
 
     /**
      * Delete all {@link SIPEntity} for the given provider id
-     * @param providerId
+     * @param sipEntity
+     * @param removeIrrevocably
      * @return rejected or undeletable {@link SIPEntity}s
      * @throws ModuleException
      */
-    Collection<RejectedSipDto> deleteSIPEntitiesForProviderId(String providerId) throws ModuleException;
-
-    /**
-     * Delete all {@link SIPEntity}s associated to the given session.
-     * @param sessionId
-     * @return rejected or undeletable {@link SIPEntity}s
-     * @throws ModuleException
-     */
-    Collection<RejectedSipDto> deleteSIPEntitiesForSession(String sessionOwner, String session) throws ModuleException;
-
-    /**
-     * Delete all {@link SIPEntity}s.
-     * @param sips
-     * @return rejected or undeletable {@link SIPEntity}s
-     * @throws ModuleException
-     */
-    Collection<RejectedSipDto> deleteSIPEntities(Collection<SIPEntity> sips) throws ModuleException;
-
-    /**
-     * Check if the SIP with the given ipId is deletable
-     */
-    Boolean isDeletable(UniformResourceName sipId) throws EntityNotFoundException;
+    RejectedSipDto deleteSIPEntity(SIPEntity sipEntity, boolean removeIrrevocably);
 
     /**
      * Save the given {@link SIPEntity} in DAO, update the associated session and publish a change event
@@ -110,23 +80,6 @@ public interface ISIPService {
      * @return {@link SIPEntity} updated
      */
     SIPEntity saveSIPEntity(SIPEntity sip);
-
-    /**
-     * Notify single SIP state change
-     * @param metadata ingest metadata
-     * @param previousState previous state
-     * @param nextState next state
-     */
-    void notifySipChangedState(IngestMetadata metadata, SIPState previousState, SIPState nextState);
-
-    /**
-     * Notify multiple SIP state change
-     * @param metadata ingest metadata
-     * @param previousState previous state
-     * @param nextState next state
-     * @param nbSip SIP count
-     */
-    void notifySipsChangedState(IngestMetadata metadata, SIPState previousState, SIPState nextState, int nbSip);
 
     /**
      * Compute checksum for current SIP using {@link SIPService#MD5_ALGORITHM}

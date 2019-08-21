@@ -30,7 +30,7 @@ public enum SIPState implements ISipState {
      */
     INGESTED,
     /**
-     * SIP is deleted but already store in database
+     * SIP is deleted but we still keep it in database
      */
     DELETED;
 

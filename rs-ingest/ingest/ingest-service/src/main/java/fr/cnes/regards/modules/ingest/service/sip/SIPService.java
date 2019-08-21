@@ -18,16 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip;
 
+import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,10 +39,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -48,13 +49,9 @@ import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
 import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -69,10 +66,6 @@ public class SIPService implements ISIPService {
 
     public static final String MD5_ALGORITHM = "MD5";
 
-    public static final String SESSION_NOTIF_STEP = "SIP";
-
-    @Autowired
-    private IPublisher publisher;
 
     @Autowired
     private Gson gson;
@@ -80,12 +73,21 @@ public class SIPService implements ISIPService {
     @Autowired
     private ISIPRepository sipRepository;
 
+    @Autowired
+    private IAIPService aipService;
+
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
+
     @Override
     public Page<SIPEntity> search(String providerId, String sessionOwner, String session, OffsetDateTime from,
             List<SIPState> state, String ingestChain, Pageable page) {
-        return sipRepository
-                .loadAll(SIPEntitySpecifications.search(providerId, sessionOwner, session, from, state, ingestChain),
-                         page);
+        return sipRepository.loadAll(
+                        SIPEntitySpecifications.search(
+                                new ArrayList<>(Arrays.asList(providerId)), null,
+                                sessionOwner, session, from, state, ingestChain, true),
+                        page);
     }
 
     @Override
@@ -99,63 +101,25 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public Collection<RejectedSipDto> deleteSIPEntitiesBySipIds(Collection<UniformResourceName> sipIds)
-            throws ModuleException {
-        List<String> sipIdsStr = new ArrayList<>();
-        if (sipIds != null) {
-            sipIds.forEach(sipId -> sipIdsStr.add(sipId.toString()));
+    public RejectedSipDto deleteSIPEntity(SIPEntity sipEntity, boolean removeIrrevocably) {
+        RejectedSipDto rejectedSipDto = null;
+        // Remove all files and AIP related to this SIP
+        Collection<RejectedAipDto> rejectedAips = aipService.deleteAip(sipEntity.getSipId());
+        // Check if all linked AIPs have been removed
+        if (rejectedAips.isEmpty()) {
+            if (removeIrrevocably) {
+                // Completely remove this entity from DB
+                sipRepository.delete(sipEntity);
+                // Notify the entity does not exist anymore
+            } else {
+                sipEntity.setState(SIPState.DELETED);
+                saveSIPEntity(sipEntity);
+            }
+            sessionNotifier.notifySIPDeleted(sipEntity);
+        } else {
+            // TODO collect errors (files not yet stored, etc..)
         }
-        return this.deleteSIPEntities(sipRepository.findBySipIdIn(sipIdsStr));
-    }
-
-    @Override
-    public Collection<RejectedSipDto> deleteSIPEntitiesForProviderId(String providerId) throws ModuleException {
-        return this.deleteSIPEntities(sipRepository.findAllByProviderIdOrderByVersionAsc(providerId));
-    }
-
-    @Override
-    public Collection<SIPEntity> findAllByProviderId(String providerId) {
-        return sipRepository.findAllByProviderIdOrderByVersionAsc(providerId);
-    }
-
-    @Override
-    public Collection<RejectedSipDto> deleteSIPEntitiesForSession(String sessionOwner, String session)
-            throws ModuleException {
-        return this.deleteSIPEntities(sipRepository
-                .findByIngestMetadataSessionOwnerAndIngestMetadataSession(sessionOwner, session));
-    }
-
-    @Override
-    public Collection<RejectedSipDto> deleteSIPEntities(Collection<SIPEntity> sips) throws ModuleException {
-        Set<RejectedSipDto> undeletableSips = Sets.newHashSet();
-        // FIXME
-        //        long sipDeletionCheckStart = System.currentTimeMillis();
-        //        for (SIPEntity sip : sips) {
-        //            if (isDeletableWithAIPs(sip)) {
-        //                // If SIP is not stored, we can already delete sip and associated AIPs
-        //                if (isDeletableWithoutAips(sip)) {
-        //                    Set<AIPEntity> aips = aipRepository.findBySip(sip);
-        //                    if (!aips.isEmpty()) {
-        //                        aipRepository.deleteAll(aips);
-        //                    }
-        //                    notifySipChangedState(sip.getIngestMetadata(), sip.getState(), SIPState.DELETED);
-        //                    sipRepository.updateSIPEntityState(SIPState.DELETED, sip.getId());
-        //                } else {
-        //                    notifySipChangedState(sip.getIngestMetadata(), sip.getState(), SIPState.TO_BE_DELETED);
-        //                    sipRepository.updateSIPEntityState(SIPState.TO_BE_DELETED, sip.getId());
-        //                }
-        //            } else if (sip.getState() != SIPState.TO_BE_DELETED && sip.getState() != SIPState.DELETED) {
-        //                // We had this condition on those state here and not into #isDeletableWithAIPs because we just want to be silent.
-        //                // Indeed, if we ask for deletion of an already deleted or being deleted SIP that just mean there is less work to do this time.
-        //                String errorMsg = String.format("SIPEntity with state %s is not deletable", sip.getState());
-        //                undeletableSips.add(new RejectedSipDto(sip.getSipId().toString(), errorMsg));
-        //                LOGGER.error(errorMsg);
-        //            }
-        //        }
-        //        long sipDeletionCheckEnd = System.currentTimeMillis();
-        //        LOGGER.debug("Checking {} sips for deletion took {} ms", sips.size(),
-        //                     sipDeletionCheckEnd - sipDeletionCheckStart);
-        return undeletableSips;
+        return rejectedSipDto;
     }
 
     @Override
@@ -169,41 +133,11 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public Boolean isDeletable(UniformResourceName sipId) throws EntityNotFoundException {
-        // FIXME
-        return null;
-        //        Optional<SIPEntity> os = sipRepository.findOneBySipId(sipId.toString());
-        //        if (os.isPresent()) {
-        //            return isDeletableWithAIPs(os.get());
-        //        } else {
-        //            throw new EntityNotFoundException(sipId.toString(), SIPEntity.class);
-        //        }
-    }
-
-    @Override
     public SIPEntity saveSIPEntity(SIPEntity sip) {
         // do save SIP
+        sip.setLastUpdateDate(OffsetDateTime.now());
         SIPEntity savedSip = sipRepository.save(sip);
         return savedSip;
-    }
-
-    @Override
-    public void notifySipChangedState(IngestMetadata metadata, SIPState previousState, SIPState nextState) {
-        notifySipsChangedState(metadata, previousState, nextState, 1);
-    }
-
-    @Override
-    public void notifySipsChangedState(IngestMetadata metadata, SIPState previousState, SIPState nextState, int nbSip) {
-
-        // Decrement the previous state by one
-        publisher.publish(SessionMonitoringEvent
-                .build(metadata.getSessionOwner(), metadata.getSession(), SessionNotificationState.OK,
-                       SESSION_NOTIF_STEP, SessionNotificationOperator.DEC, previousState.toString(), nbSip));
-
-        // Increment the next state by one
-        publisher.publish(SessionMonitoringEvent.build(metadata.getSessionOwner(), metadata.getSession(),
-                                                       SessionNotificationState.OK, SESSION_NOTIF_STEP,
-                                                       SessionNotificationOperator.INC, nextState.toString(), nbSip));
     }
 
     @Override

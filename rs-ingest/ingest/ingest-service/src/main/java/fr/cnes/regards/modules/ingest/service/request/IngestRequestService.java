@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
@@ -89,6 +90,9 @@ public class IngestRequestService implements IIngestRequestService {
     @Autowired
     private INotificationClient notificationClient;
 
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
     @Override
     public void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests) {
 
@@ -122,7 +126,7 @@ public class IngestRequestService implements IIngestRequestService {
                 Set<Long> ids;
                 ids = IJob.getValue(jobInfo.getParametersAsMap(), IngestProcessingJob.IDS_PARAMETER, type);
                 List<IngestRequest> requests = loadByIds(ids);
-                requests.forEach(r -> handleRequestError(r));
+                requests.forEach(r -> handleRequestError(r, null));
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 String message = String.format("Ingest request job with id \"%s\" fails with status \"%s\"",
                                                jobEvent.getJobId(), jobEvent.getJobEventType());
@@ -160,7 +164,7 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void handleRequestError(IngestRequest request) {
+    public void handleRequestError(IngestRequest request, SIPEntity entity) {
         request.setState(RequestState.ERROR);
 
         // FIXME when can we unlock the job? on retry ... on remove requests?
@@ -174,6 +178,11 @@ public class IngestRequestService implements IIngestRequestService {
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
                                                    request.getState(), request.getErrors()));
+
+        // Publish failing SIP in current session
+        if (entity != null) {
+            sessionNotifier.notifySIPCreationFailed(entity);
+        }
     }
 
     @Override
@@ -181,7 +190,7 @@ public class IngestRequestService implements IIngestRequestService {
         request.setState(RequestState.SUCCESS);
 
         // Save SIP entity
-        sipService.saveSIPEntity(sipEntity);
+        sipEntity = sipService.saveSIPEntity(sipEntity);
 
         // Build AIP entities and save them
         aipService.createAndSave(sipEntity, aips);
@@ -193,5 +202,7 @@ public class IngestRequestService implements IIngestRequestService {
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null,
                                                    sipEntity.getSipId(), request.getState(), request.getErrors()));
+        // Publish new SIP in current session
+        sessionNotifier.notifySIPCreated(sipEntity);
     }
 }

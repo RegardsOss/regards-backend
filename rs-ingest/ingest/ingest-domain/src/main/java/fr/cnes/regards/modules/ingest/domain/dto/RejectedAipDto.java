@@ -4,42 +4,48 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * POJO allowing to known why a sip has been rejected
- * @author Sylvain VISSIERE-GUERINET
+ * POJO allowing to known which aip has been rejected for an action and why
  *
- * FIXME revoir la suppression des SIP/AIP
+ * @author Sylvain VISSIERE-GUERINET
  */
-public class RejectedSipDto {
+public class RejectedAipDto {
 
     /**
-     * Sip id
+     * Aip ip id
      */
-    private String sipId;
+    private String aipId;
 
     /**
-     * Causes of rejection
+     * causes for rejection
      */
     private List<String> rejectionCauses;
 
     /**
-     * @return the sip id
+     * @return the ip id
      */
-    public String getSipId() {
-        return sipId;
+    public String getAipId() {
+        return aipId;
     }
 
     /**
-     * Set the sip id
-     * @param sipId
+     * Set the ip id
+     * @param ipId
      */
-    public void setSipId(String sipId) {
-        this.sipId = sipId;
+    public void setAipId(String ipId) {
+        this.aipId = ipId;
     }
 
+    /**
+     * @return the rejection causes
+     */
     public List<String> getRejectionCauses() {
         return rejectionCauses;
     }
 
+    /**
+     * Set the rejection causes
+     * @param rejectionCauses
+     */
     public void setRejectionCauses(List<String> rejectionCauses) {
         this.rejectionCauses = rejectionCauses;
     }
@@ -53,19 +59,19 @@ public class RejectedSipDto {
             return false;
         }
 
-        RejectedSipDto that = (RejectedSipDto) o;
+        RejectedAipDto that = (RejectedAipDto) o;
 
-        return sipId != null ? sipId.equals(that.sipId) : that.sipId == null;
+        return aipId != null ? aipId.equals(that.aipId) : that.aipId == null;
     }
 
     @Override
     public int hashCode() {
-        return sipId != null ? sipId.hashCode() : 0;
+        return aipId != null ? aipId.hashCode() : 0;
     }
 
-    public static RejectedSipDto build(String sipId, String rejectionCause) {
-        RejectedSipDto rejectedAip = new RejectedSipDto();
-        rejectedAip.setSipId(sipId);
+    public static RejectedAipDto build(String aipId, String rejectionCause) {
+        RejectedAipDto rejectedAip = new RejectedAipDto();
+        rejectedAip.setAipId(aipId);
         List<String> rejectionCauses = new ArrayList<>();
         rejectionCauses.add(rejectionCause);
         rejectedAip.setRejectionCauses(rejectionCauses);
