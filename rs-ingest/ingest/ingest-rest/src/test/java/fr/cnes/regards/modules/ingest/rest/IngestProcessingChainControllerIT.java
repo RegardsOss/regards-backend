@@ -44,9 +44,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.service.plugin.FakeAIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.FakeValidationTestPlugin;
 

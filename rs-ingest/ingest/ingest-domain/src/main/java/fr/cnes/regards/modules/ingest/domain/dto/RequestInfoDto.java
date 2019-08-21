@@ -32,9 +32,23 @@ public class RequestInfoDto {
 
     private RequestType type;
 
-    private Map<String, String> requestMapping = new HashMap<>();
+    /**
+     * Mapping between SIP id and request id
+     */
+    private Map<String, String> granted = new HashMap<>();
+
+    /**
+     * Mapping between SIP id and denied reason
+     */
+    private Map<String, String> denied = new HashMap<>();
 
     private List<String> messages;
+
+    public static RequestInfoDto build(RequestType type, String... messages) {
+        RequestInfoDto ri = new RequestInfoDto();
+        ri.setMessages(Arrays.asList(messages));
+        return ri;
+    }
 
     public RequestType getType() {
         return type;
@@ -52,13 +66,19 @@ public class RequestInfoDto {
         this.messages = messages;
     }
 
-    public void addRequestMapping(String id, String requestId) {
-        requestMapping.put(id, requestId);
+    public void addGrantedRequest(String id, String requestId) {
+        granted.put(id, requestId);
     }
 
-    public static RequestInfoDto build(RequestType type, String... messages) {
-        RequestInfoDto ri = new RequestInfoDto();
-        ri.setMessages(Arrays.asList(messages));
-        return ri;
+    public void addDeniedRequest(String id, String reason) {
+        denied.put(id, reason);
+    }
+
+    public Map<String, String> getGranted() {
+        return granted;
+    }
+
+    public Map<String, String> getDenied() {
+        return denied;
     }
 }

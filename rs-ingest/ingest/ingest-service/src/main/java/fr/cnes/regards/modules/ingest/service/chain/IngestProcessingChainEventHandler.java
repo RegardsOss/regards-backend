@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionRe
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 
 /**
  * Module-common handler for AMQP events.

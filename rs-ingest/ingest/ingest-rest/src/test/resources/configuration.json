@@ -13,7 +13,7 @@
             },
             "configuration": [
                 {
-                    "key": "fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain",
+                    "key": "fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain",
                     "value": {
                         "name": "DefaultProcessingChain",
                         "validationPlugin": {
@@ -43,7 +43,7 @@
                     }
                 },
                 {
-                    "key": "fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain",
+                    "key": "fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain",
                     "value": {
                         "name": "MyProcessingChain",
                         "validationPlugin": {

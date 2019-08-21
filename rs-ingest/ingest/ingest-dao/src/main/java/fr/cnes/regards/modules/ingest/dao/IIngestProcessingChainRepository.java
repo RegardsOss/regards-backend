@@ -34,8 +34,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChainView;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChainView;
 
 /**
  * {@link IngestProcessingChain} repository

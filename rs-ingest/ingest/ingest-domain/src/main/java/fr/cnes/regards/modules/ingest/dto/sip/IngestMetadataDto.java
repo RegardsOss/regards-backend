@@ -51,7 +51,7 @@ public class IngestMetadataDto {
     private String session;
 
     /**
-     * {@link fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain} name
+     * {@link fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain} name
      */
     @NotBlank(message = IngestValidationMessages.MISSING_INGEST_CHAIN)
     @Size(max = 100)

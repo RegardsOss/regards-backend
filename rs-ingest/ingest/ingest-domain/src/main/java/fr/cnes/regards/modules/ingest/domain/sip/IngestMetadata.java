@@ -60,7 +60,7 @@ public class IngestMetadata {
     private String session;
 
     /**
-     * {@link fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain} name
+     * {@link fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain} name
      */
     @NotBlank(message = IngestValidationMessages.MISSING_INGEST_CHAIN)
     @Column(length = 100, name = "ingest_chain", nullable = false)

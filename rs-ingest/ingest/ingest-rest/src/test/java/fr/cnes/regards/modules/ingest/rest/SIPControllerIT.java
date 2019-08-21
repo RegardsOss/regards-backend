@@ -29,7 +29,6 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -54,12 +53,12 @@ import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
-import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
  *
@@ -74,12 +73,11 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPControllerIT.class);
 
-    public static final String SESSION_OWNER = "sessionOwner";
+    private static final String SESSION_OWNER = "sessionOwner";
 
-    public static final String SESSION = "session";
+    private static final String SESSION = "session";
 
-    @Autowired
-    private ISIPService sipService;
+    private static final StorageMetadata STORAGE_METADATA = StorageMetadata.build("disk", null);
 
     @Override
     protected Logger getLogger() {
@@ -92,7 +90,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void ingestSips() {
 
         SIPCollection collection = SIPCollection.build(IngestMetadataDto
-                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
+                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, STORAGE_METADATA));
 
         SIP firstSIPwithGeometry = buildSipOne("SIP_001", "data1.fits").build();
         firstSIPwithGeometry
@@ -119,9 +117,12 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         ConstrainedFields fields = new ConstrainedFields(SIPCollection.class);
 
         List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
-        lfd.add(fields.withPath("metadata.processing", "The ingest processing chain to used"));
+        lfd.add(fields.withPath("metadata.ingestChain", "The ingest processing chain to used"));
         lfd.add(fields.withPath("metadata.session", "The ingestion session name"));
         lfd.add(fields.withPath("metadata.sessionOwner", "The ingestion session source"));
+        lfd.add(fields.withPath("metadata.storages", "Target storages"));
+        lfd.add(fields.withPath("metadata.storages[].storage", "Storage identifier"));
+
         lfd.add(fields.withPath("type", "Feature collection"));
 
         GeoJsonFieldDescriptors geoJsonDescriptors = new GeoJsonFieldDescriptors("features[].");
@@ -141,7 +142,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void getSips() {
 
         SIPCollection collection = SIPCollection.build(IngestMetadataDto
-                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
+                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, STORAGE_METADATA));
 
         collection.add(buildSipOne("SIP_001", "data1.fits").build());
         collection.add(buildSipOne("SIP_002", "data2.fits").build());
@@ -153,9 +154,9 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultPost(SIPController.TYPE_MAPPING, collection, requestBuilderCustomizer,
                            "SIP collection should be submitted.");
 
-        // Retrieve SIPs
+        // No SIPs is already created / Just request
         requestBuilderCustomizer = customizer().expectStatusOk()
-                .expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(2)));
+                .expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(0)));
 
         documentSearchSipParameters(requestBuilderCustomizer);
 
@@ -201,7 +202,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void ingestInvalidSips() {
 
         SIPCollection collection = SIPCollection.build(IngestMetadataDto
-                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL));
+                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, STORAGE_METADATA));
 
         // SIP 1
         SIPBuilder sipBuilder = new SIPBuilder("SIP_001");
@@ -274,7 +275,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         final Path filePath = Paths.get("src", "test", "resources", "allInvalidSipCollection.json");
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.PARTIAL_CONTENT);
 
         performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH, filePath,
                                  requestBuilderCustomizer, "Should be able to import a partial valid SIP collection");

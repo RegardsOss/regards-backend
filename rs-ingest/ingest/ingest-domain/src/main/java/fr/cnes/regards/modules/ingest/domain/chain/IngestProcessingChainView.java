@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,13 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.rest;
+package fr.cnes.regards.modules.ingest.domain.chain;
 
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+/**
+ * @author Marc SORDI
+ *
+ */
+public interface IngestProcessingChainView {
 
-@Configuration
-@ComponentScan(basePackages = { "fr.cnes.regards.modules" })
-public class TestConfiguration {
-
+    String getName();
 }

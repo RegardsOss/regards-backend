@@ -1,9 +1,15 @@
 {
     "type": "FeatureCollection",
-    "metadata": {
-        "processing": "DefaultProcessingChain",
-        "session": "sampleSession"
-    },
+	"metadata": {
+		"sessionOwner": "sampleSessionOwner",
+		"session": "sampleSession",
+		"ingestChain": "DefaultProcessingChain",
+		"storages": [
+			{
+				"storage": "disk"
+			}
+		]
+	},
     "features": [
         {
             "type": "Feature",
