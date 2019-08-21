@@ -131,6 +131,7 @@
         <fr.cnes.regards.modules.opensearch.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.opensearch.version>
         <fr.cnes.regards.modules.order.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.order.version>
         <fr.cnes.regards.modules.ingest.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.ingest.version>
+        <fr.cnes.regards.modules.storage-light.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.storage-light.version>
         <fr.cnes.regards.modules.catalog-services.version>0.5.0-SNAPSHOT
         </fr.cnes.regards.modules.catalog-services.version>
         <fr.cnes.regards.modules.access-services.version>0.5.0-SNAPSHOT
@@ -860,6 +861,37 @@
                 <groupId>fr.cnes.regards.modules.storage</groupId>
                 <artifactId>storage-dao</artifactId>
                 <version>${fr.cnes.regards.modules.storage.version}</version>
+            </dependency>
+            <!-- Storage LIGHT-->
+            <dependency>
+                <groupId>fr.cnes.regards.modules.storage-light</groupId>
+                <artifactId>storage-light-rest</artifactId>
+                <version>${fr.cnes.regards.modules.storage-light.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.storage-light</groupId>
+                <artifactId>storage-light-client</artifactId>
+                <version>${fr.cnes.regards.modules.storage-light.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.storage-light</groupId>
+                <artifactId>storage-light-service</artifactId>
+                <version>${fr.cnes.regards.modules.storage-light.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.storage-light</groupId>
+                <artifactId>storage-light-domain</artifactId>
+                <version>${fr.cnes.regards.modules.storage-light.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.storage-light</groupId>
+                <artifactId>storage-light-dto</artifactId>
+                <version>${fr.cnes.regards.modules.storage-light.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.storage-light</groupId>
+                <artifactId>storage-light-dao</artifactId>
+                <version>${fr.cnes.regards.modules.storage-light.version}</version>
             </dependency>
             <!-- Storage security delegation plugin -->
             <dependency>
