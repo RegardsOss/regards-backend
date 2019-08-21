@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,21 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.flow;
+package fr.cnes.regards.modules.ingest.client;
 
 import java.nio.file.Paths;
-import java.time.OffsetDateTime;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
@@ -41,35 +48,49 @@ import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 
 /**
- * Test SIP flow handling
+ * Test asychronous ingestion client
  *
  * @author Marc SORDI
- *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
-        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100" })
-//@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
-//        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4",
-//        "regards.jpa.multitenant.tenants[0].tenant=PROJECT",
-//        "regards.jpa.multitenant.tenants[0].url=jdbc:postgresql://localhost:5432/rs_testdb_msordi",
-//        "regards.jpa.multitenant.tenants[0].userName=azertyuiop123456789",
-//        "regards.jpa.multitenant.tenants[0].password=azertyuiop123456789", "spring.rabbitmq.addresses=localhost:5672",
-//        "regards.amqp.management.host=localhost", "regards.amqp.management.port=16672" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=ingestclient", "regards.amqp.enabled=true" })
 @ActiveProfiles("testAmqp")
-public class IngestPerformanceIT extends IngestMultitenantServiceTest {
+public class IngestClientIT extends IngestMultitenantServiceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestPerformanceIT.class);
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestClientIT.class);
 
     @Autowired
-    private IPublisher publisher;
+    private IIngestClient ingestClient;
+
+    @Autowired
+    private IAmqpAdmin amqpAdmin;
+
+    @Autowired
+    private IRabbitVirtualHostAdmin vhostAdmin;
 
     @Autowired
     private ISubscriber subscriber;
 
+    @SpyBean
+    private TestIngestClientListener listener;
+
     @Override
-    public void doInit() {
+    public void doInit() throws ModuleException {
         simulateApplicationReadyEvent();
+        // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+
+        // Purge event queue
+        try {
+            vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+            amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(IngestRequestEventHandler.class,
+                                                                    Target.ONE_PER_MICROSERVICE_TYPE),
+                                 false);
+        } finally {
+            vhostAdmin.unbind();
+        }
+
     }
 
     @Override
@@ -79,34 +100,20 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
     }
 
     @Test
-    public void generateAndPublish() throws InterruptedException {
+    public void ingest() throws IngestClientException {
 
-        long start = System.currentTimeMillis();
-        long existingItems = 0;
-        long maxloops = 1000;
-        for (long i = 0; i < maxloops; i++) {
-            SIP sip = create("provider" + i);
-            // Create event
-            IngestMetadataDto mtd = IngestMetadataDto.build("source", OffsetDateTime.now().toString(),
-                                                            IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                            StorageMetadata.build("fake", null));
-            IngestRequestFlowItem flowItem = IngestRequestFlowItem.build(mtd, sip);
-            publisher.publish(flowItem);
-        }
+        RequestInfo clientInfo = ingestClient.ingest(IngestMetadataDto
+                .build("sessionOwner", "session", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                       StorageMetadata.build("disk", null)), create("sipFromClient"));
+        waitForIngestion(1, FIVE_SECONDS);
 
-        // Wait
-        long countSip;
-        do {
-            countSip = sipRepository.count();
-            LOGGER.debug("{} SIP(s) created in database", countSip);
-            if (countSip >= maxloops + existingItems) {
-                break;
-            }
-            Thread.sleep(1000);
-        } while (true);
+        ArgumentCaptor<RequestInfo> grantedInfo = ArgumentCaptor.forClass(RequestInfo.class);
+        Mockito.verify(listener, Mockito.times(1)).onGranted(grantedInfo.capture());
+        Assert.assertEquals(clientInfo.getRequestId(), grantedInfo.getValue().getRequestId());
 
-        LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", maxloops + existingItems,
-                    System.currentTimeMillis() - start);
+        ArgumentCaptor<RequestInfo> successInfo = ArgumentCaptor.forClass(RequestInfo.class);
+        Mockito.verify(listener, Mockito.times(1)).onSuccess(successInfo.capture(), Mockito.anyString());
+        Assert.assertEquals(clientInfo.getRequestId(), successInfo.getValue().getRequestId());
     }
 
     private SIP create(String providerId) {
@@ -125,5 +132,4 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 
         return sipBuilder.build();
     }
-
 }

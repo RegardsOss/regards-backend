@@ -103,6 +103,7 @@ public class IngestRequestEvent implements ISubscribable {
     public static IngestRequestEvent build(String requestId, String providerId, @Nullable String sipId,
             RequestState state, Set<String> errors) {
         IngestRequestEvent event = new IngestRequestEvent();
+        event.setRequestId(requestId);
         event.setProviderId(providerId);
         event.setSipId(sipId);
         event.setState(state);

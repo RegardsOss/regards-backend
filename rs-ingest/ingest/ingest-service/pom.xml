@@ -99,5 +99,10 @@
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.ingest</groupId>
+			<artifactId>ingest-client</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
