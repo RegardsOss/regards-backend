@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.oais.Event;
+import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 
 /**
@@ -49,6 +50,7 @@ import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
  * Methods to use :
  * <ul>
  * <li>{@link PDIBuilder#addTags(String...)}</li>
+ * <li>{@link #addContextCategories(String...)}</li>
  * <li>{@link PDIBuilder#addContextInformation(String, Object)}</li>
  * </ul>
  * <br/>
@@ -87,8 +89,15 @@ import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
  * </ul>
  * <br/>
  * @author Marc Sordi
+ *
+ * Use {@link InformationPackageProperties} fluent API
  */
+@Deprecated
 public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformation> {
+
+    private static final String CONTEXT_INFO_TAGS_KEY = "tags";
+
+    private static final String CONTEXT_INFO_CATEGORIES = "categories";
 
     /**
      * Preservation and description information
@@ -118,11 +127,10 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
     public void addTags(String... tags) {
         Assert.notEmpty(tags, "Tag is required");
         @SuppressWarnings("unchecked")
-        Collection<String> existingTags = (Collection<String>) pdi.getContextInformation()
-                .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
+        Collection<String> existingTags = (Collection<String>) pdi.getContextInformation().get(CONTEXT_INFO_TAGS_KEY);
         if (existingTags == null) {
             existingTags = Sets.newHashSet(tags);
-            pdi.getContextInformation().put(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY, existingTags);
+            pdi.getContextInformation().put(CONTEXT_INFO_TAGS_KEY, existingTags);
         } else {
             for (String tag : tags) {
                 if (!existingTags.contains(tag)) {
@@ -137,8 +145,7 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      */
     @SuppressWarnings("unchecked")
     public void removeTags(String... tags) {
-        Collection<String> existingTags = (Collection<String>) pdi.getContextInformation()
-                .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
+        Collection<String> existingTags = (Collection<String>) pdi.getContextInformation().get(CONTEXT_INFO_TAGS_KEY);
         if (existingTags != null) {
             existingTags.removeAll(Sets.newHashSet(tags));
         }
@@ -151,10 +158,30 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      */
     public void addContextInformation(String key, Object value) {
         Assert.hasLength(key, "Context information key is required");
-        Assert.isTrue(!key.equalsIgnoreCase(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY),
-                      "Tags must be added thanks to addTags method");
+        Assert.isTrue(!key.equalsIgnoreCase(CONTEXT_INFO_TAGS_KEY), "Tags must be added via dedicated method");
+        Assert.isTrue(!key.equalsIgnoreCase(CONTEXT_INFO_CATEGORIES), "Categories must be added via dedicated method");
         Assert.notNull(value, "Context information value is required");
         pdi.getContextInformation().put(key, value);
+    }
+
+    /**
+     * Add categories to context information (repeatable)
+     * @param categories list of category
+     */
+    public void addContextCategories(String... categories) {
+        Assert.notEmpty(categories, "Categories are required");
+        @SuppressWarnings("unchecked")
+        Collection<String> existingCats = (Collection<String>) pdi.getContextInformation().get(CONTEXT_INFO_CATEGORIES);
+        if (existingCats == null) {
+            existingCats = Sets.newHashSet(categories);
+            pdi.getContextInformation().put(CONTEXT_INFO_CATEGORIES, existingCats);
+        } else {
+            for (String cat : categories) {
+                if (!existingCats.contains(cat)) {
+                    existingCats.add(cat);
+                }
+            }
+        }
     }
 
     /**

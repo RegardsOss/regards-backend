@@ -65,7 +65,10 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
  * <br/>
  * To define descriptive information, just call {@link IPBuilder#addDescriptiveInformation(String, Object)}.
  * @author Marc Sordi
+ *
+ * Use {@link InformationPackageProperties} fluent API instead
  */
+@Deprecated
 public abstract class IPBuilder<T extends AbstractInformationPackage<?>> implements IOAISBuilder<T> {
 
     public static final String MD5_ALGORITHM = "MD5";
@@ -155,13 +158,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     }
 
     /**
-     * Add a new entry in misc informations
-     */
-    public void addMiscInformation(String key, Object value) {
-        ipPropertiesBuilder.addMiscInformation(key, value);
-    }
-
-    /**
      * @return builder for <b>required</b> {@link PreservationDescriptionInformation}
      */
     public PDIBuilder getPDIBuilder() {
@@ -183,6 +179,14 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      */
     public void addTags(String... tags) {
         ipPropertiesBuilder.addTags(tags);
+    }
+
+    /**
+     * Add categories to context information (repeatable)
+     * @param categories list of category
+     */
+    public void addContextCategories(String... categories) {
+        ipPropertiesBuilder.addContextCategories(categories);
     }
 
     /**

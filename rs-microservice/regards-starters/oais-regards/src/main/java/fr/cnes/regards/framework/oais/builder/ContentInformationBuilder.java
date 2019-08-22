@@ -27,6 +27,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.RepresentationInformation;
@@ -64,7 +65,10 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * </ul>
  * <br/>
  * @author Marc Sordi
+ *
+ * Use {@link InformationPackageProperties} fluent API
  */
+@Deprecated
 public class ContentInformationBuilder implements IOAISBuilder<ContentInformation> {
 
     private final ContentInformation ci = new ContentInformation();

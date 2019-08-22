@@ -22,7 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ public class OAISDataObjectLocation {
     /**
      * URL to access the file
      */
-    @NotEmpty(message = "URL is required")
+    @NotNull(message = "URL is required")
     private URL url;
 
     /**

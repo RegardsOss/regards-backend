@@ -42,7 +42,10 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 /**
  * Information package properties builder
  * @author Marc Sordi
+ *
+ * Use {@link InformationPackageProperties} fluent API
  */
+@Deprecated
 public class InformationPackagePropertiesBuilder implements IOAISBuilder<InformationPackageProperties> {
 
     /**
@@ -66,11 +69,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     private final Map<String, Object> descriptiveInformation;
 
     /**
-     * Descriptive information
-     */
-    private final Map<String, Object> miscInformation;
-
-    /**
      * Content information builder
      */
     private ContentInformationBuilder contentInformationBuilder;
@@ -84,7 +82,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
         this.contentInformationBuilder = new ContentInformationBuilder();
         this.pdiBuilder = new PDIBuilder();
         this.descriptiveInformation = Maps.newHashMap();
-        this.miscInformation = Maps.newHashMap();
     }
 
     /**
@@ -96,7 +93,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
         this.contentInformationBuilder = new ContentInformationBuilder();
         this.pdiBuilder = new PDIBuilder(properties.getPdi());
         this.descriptiveInformation = properties.getDescriptiveInformation();
-        this.miscInformation = properties.getMiscInformation();
     }
 
     @Override
@@ -104,7 +100,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
         addCis(cis);
         ip.setPdi(pdiBuilder.build());
         ip.getDescriptiveInformation().putAll(descriptiveInformation);
-        ip.getMiscInformation().putAll(miscInformation);
         return ip;
     }
 
@@ -127,15 +122,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
             cis.add(newCi);
         }
         contentInformationBuilder = new ContentInformationBuilder();
-    }
-
-    /**
-     * Add misc information to the information package thanks to the given parameters
-     */
-    public void addMiscInformation(String key, Object value) {
-        Assert.hasLength(key, "Misc information key is required");
-        Assert.notNull(value, "Misc information value is required");
-        miscInformation.put(key, value);
     }
 
     /**
@@ -166,6 +152,14 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
      */
     public void addTags(String... tags) {
         pdiBuilder.addTags(tags);
+    }
+
+    /**
+     * Add categories to context information (repeatable)
+     * @param categories list of category
+     */
+    public void addContextCategories(String... categories) {
+        pdiBuilder.addContextCategories(categories);
     }
 
     /**
