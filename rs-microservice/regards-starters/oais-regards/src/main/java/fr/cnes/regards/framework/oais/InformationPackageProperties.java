@@ -257,7 +257,7 @@ public class InformationPackageProperties {
     public InformationPackageProperties withDescriptiveInformation(String key, Object value) {
         Assert.hasLength(key, "Descriptive information key is required");
         Assert.notNull(value, "Descriptive information value is required");
-        descriptiveInformation.put(key, value);
+        getDescriptiveInformation().put(key, value);
         return this;
     }
 
