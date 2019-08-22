@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.domain;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -40,9 +41,10 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
-import fr.cnes.regards.framework.oais.builder.PDIBuilder;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -50,7 +52,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPReference;
 
@@ -68,6 +69,8 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIPReference;
 public class SIPValidationTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPValidationTest.class);
+
+    private static final List<String> CATEGORIES = Lists.newArrayList("CATEGORY");
 
     private static final String PROVIDER_ID = "providerId";
 
@@ -124,7 +127,7 @@ public class SIPValidationTest {
         if (!errors.hasErrors()) {
             Assert.fail("An empty SIP reference should be invalid");
         }
-        Assert.assertEquals(3, errors.getErrorCount());
+        Assert.assertEquals(5, errors.getErrorCount());
     }
 
     /**
@@ -135,8 +138,7 @@ public class SIPValidationTest {
     @Purpose("SIP validation")
     public void validSIPReference() {
 
-        SIPBuilder builder = new SIPBuilder(PROVIDER_ID);
-        SIP sip = builder.buildReference(Paths.get("sip.xml"), "abpfbfp222");
+        SIP sip = SIP.buildReference(EntityType.DATA, PROVIDER_ID, Paths.get("sip.xml"), "checksum", CATEGORIES);
         validator.validate(sip, errors);
         if (errors.hasErrors()) {
             Assert.fail("Builder should properly build SIP reference");
@@ -173,44 +175,39 @@ public class SIPValidationTest {
     @Purpose("SIP validation")
     public void validSIPValue() {
 
-        SIPBuilder sipBuilder = new SIPBuilder(PROVIDER_ID);
+        SIP sip = SIP.build(EntityType.DATA, PROVIDER_ID, CATEGORIES);
 
         // Geometry
-        sipBuilder.setGeometry(IGeometry.point(IGeometry.position(10.0, 10.0)));
+        sip.withGeometry(IGeometry.point(IGeometry.position(10.0, 10.0)));
         // Content information
         // Content information - data object
-        sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("sip.fits"),
-                                                                "abff1dffdfdf2sdsfsd");
+        sip.withDataObject(DataType.RAWDATA, Paths.get("sip.fits"), "abff1dffdfdf2sdsfsd");
         // Content information - data object representation information
-        sipBuilder.getContentInformationBuilder()
-                .setSyntaxAndSemantic("FITS", "http://www.iana.org/assignments/media-types/application/fits",
-                                      MimeType.valueOf("application/fits"), "semanticDescription");
+        sip.withSyntaxAndSemantic("FITS", "http://www.iana.org/assignments/media-types/application/fits",
+                                  MimeType.valueOf("application/fits"), "semanticDescription");
         // Effectively add content information to the current SIP
-        sipBuilder.addContentInformation();
+        sip.registerContentInformation();
 
         // PDI
-        PDIBuilder pdiBuilder = sipBuilder.getPDIBuilder();
         // PDI - context information
-        pdiBuilder.addTags("CNES", "TOULOUSE", "FRANCE");
-        pdiBuilder.addContextInformation("CNES", "http://www.cnes.fr");
+        sip.withContextTags("CNES", "TOULOUSE", "FRANCE");
+        sip.withContextInformation("CNES", "http://www.cnes.fr");
         // PDI - reference information
-        pdiBuilder.addReferenceInformation("doi", "dfdg://Dsfd.;");
+        sip.withReferenceInformation("doi", "dfdg://Dsfd.;");
         // PDI - provenance information
-        pdiBuilder.setFacility("facility");
-        pdiBuilder.setInstrument("instrument");
-        pdiBuilder.setFilter("filter");
-        pdiBuilder.setDetector("detector");
-        pdiBuilder.setProposal("proposal");
-        pdiBuilder.addAdditionalProvenanceInformation("from", "ender");
+        sip.withFacility("facility");
+        sip.withInstrument("instrument");
+        sip.withFilter("filter");
+        sip.withDetector("detector");
+        sip.withProposal("proposal");
+        sip.withAdditionalProvenanceInformation("from", "ender");
         // PDI - provenance information events
-        pdiBuilder.addProvenanceInformationEvent("SIP initialization");
-        pdiBuilder.addProvenanceInformationEvent("SIP_CREATION", "SIP creation", OffsetDateTime.now());
+        sip.withProvenanceInformationEvent("SIP initialization");
+        sip.withProvenanceInformationEvent("SIP_CREATION", "SIP creation", OffsetDateTime.now());
         // PDI - fixity
-        pdiBuilder.addFixityInformation("fixity", "see content info. for checksum algorithm");
+        sip.withFixityInformation("fixity", "see content info. for checksum algorithm");
         // PDI - access right information
-        pdiBuilder.setAccessRightInformation("MIT", "public", OffsetDateTime.now());
-
-        SIP sip = sipBuilder.build();
+        sip.withAccessRightInformation("MIT", "public", OffsetDateTime.now());
 
         validator.validate(sip, errors);
         if (errors.hasErrors()) {

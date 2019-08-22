@@ -353,13 +353,6 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         sipBuilder.getPDIBuilder().addFixityInformation("key-fixity-2", "fixity value 2");
         sipBuilder.getPDIBuilder().setAccessRightInformation("licence", "access rights", OffsetDateTime
                 .parse("2014-01-12T23:10:05+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        sipBuilder.addMiscInformation("key-misc-1", "misc value 1");
-        sipBuilder.addMiscInformation("key-misc-2", OffsetDateTime.parse("2014-02-10T00:00:01.123Z",
-                                                                         DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        sipBuilder
-                .addMiscInformation("key-misc-3",
-                                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
-
         return sipBuilder;
     }
 

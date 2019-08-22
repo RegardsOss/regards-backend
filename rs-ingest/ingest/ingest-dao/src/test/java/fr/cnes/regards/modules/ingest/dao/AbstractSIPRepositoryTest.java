@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.After;
@@ -27,17 +28,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
-import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:ingest_dao" })
 public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
+
+    private static final List<String> CATEGORIES = Lists.newArrayList("CATEGORY");
 
     @BeforeTransaction
     public void beforeTransaction() {
@@ -60,8 +65,8 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
     @Before
     public void init() {
         sip1 = new SIPEntity();
-        SIPBuilder b = new SIPBuilder("SIP_001");
-        sip1.setSip(b.build());
+
+        sip1.setSip(SIP.build(EntityType.DATA, "SIP_001", CATEGORIES));
         sip1.setSipId(UniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip1.setProviderId("SIP_001");
@@ -75,8 +80,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip1 = sipRepository.save(sip1);
 
         SIPEntity sip2 = new SIPEntity();
-        b = new SIPBuilder("SIP_002");
-        sip2.setSip(b.build());
+        sip2.setSip(SIP.build(EntityType.DATA, "SIP_002", CATEGORIES));
         sip2.setSipId(UniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip2.setProviderId("SIP_002");
@@ -90,8 +94,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip2 = sipRepository.save(sip2);
 
         SIPEntity sip3 = new SIPEntity();
-        b = new SIPBuilder("SIP_003");
-        sip3.setSip(b.build());
+        sip3.setSip(SIP.build(EntityType.DATA, "SIP_003", CATEGORIES));
         sip3.setSipId(UniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip3.setProviderId("SIP_003");
@@ -105,10 +108,8 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip3 = sipRepository.save(sip3);
 
         SIPEntity sip4 = new SIPEntity();
-        InformationPackagePropertiesBuilder ippb = new InformationPackagePropertiesBuilder();
-        ippb.addDescriptiveInformation("version", "2");
-        b = new SIPBuilder("SIP_003");
-        sip4.setSip(b.build(ippb.build()));
+
+        sip4.setSip(SIP.build(EntityType.DATA, "SIP_001", CATEGORIES).withDescriptiveInformation("version", "2"));
         sip4.setSipId(UniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip4.setProviderId("SIP_003");

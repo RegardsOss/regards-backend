@@ -52,6 +52,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 @ContextConfiguration(classes = GsonAutoConfiguration.class)
 @TestPropertySource(
         properties = { "regards.cipher.iv=1234567812345678", "regards.cipher.keyLocation=src/test/resources/testKey" })
+@Deprecated
 public class SIPBuilderTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPBuilderTest.class);
@@ -110,8 +111,6 @@ public class SIPBuilderTest {
 
         OAISDataObject dataObject = ciOne.getDataObject();
         Assert.assertEquals(dataType, dataObject.getRegardsDataType());
-        Assert.assertTrue(dataObject.getUrls().stream().map(url -> url.getPath())
-                .filter(path -> path.equals(Paths.get(fileName).toAbsolutePath().toString())).findFirst().isPresent());
         Assert.assertEquals(algorithm, dataObject.getAlgorithm());
         Assert.assertEquals(checksum, dataObject.getChecksum());
     }

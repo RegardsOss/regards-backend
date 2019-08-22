@@ -18,11 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.dto.aip;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.validation.constraints.NotBlank;
 
+import org.springframework.util.Assert;
+
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
 /**
@@ -105,5 +109,27 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
     @Override
     public int hashCode() {
         return super.hashCode();
+    }
+
+    // Fluent API
+
+    /**
+     * Build a new {@link AIP}
+     * @param type {@link EntityType}
+     * @param aipId AIP URN
+     * @param sipId SIP URN
+     * @param providerId the provider id
+     * @param categories context configuration categories
+     */
+    public static AIP build(EntityType type, UniformResourceName aipId, Optional<UniformResourceName> sipId,
+            String providerId, List<String> categories) {
+        Assert.notNull(type, "Entity type is required.");
+        Assert.notNull(aipId, "Uniform resource Name is required.");
+        Assert.notEmpty(categories, "At least one category is required");
+        AIP aip = new AIP().withIdAndType(aipId, type)
+                .withContextCategories(categories.toArray(new String[categories.size()]));
+        aip.setSipId(sipId.orElse(null));
+        aip.setProviderId(providerId);
+        return aip;
     }
 }

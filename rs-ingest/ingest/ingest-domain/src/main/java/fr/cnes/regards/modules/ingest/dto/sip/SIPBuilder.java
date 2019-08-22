@@ -41,7 +41,9 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
  *
  * @author Marc Sordi
  *
+ * Use {@link SIP} fluent API instead
  */
+@Deprecated
 public class SIPBuilder extends IPBuilder<SIP> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPBuilder.class);
