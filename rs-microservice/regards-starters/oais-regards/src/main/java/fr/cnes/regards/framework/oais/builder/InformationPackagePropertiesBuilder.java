@@ -35,6 +35,7 @@ import com.google.common.collect.Maps;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 import fr.cnes.regards.framework.oais.urn.DataType;
 
@@ -280,9 +281,11 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
      * @param dataType {@link DataType}
      * @param filename filename
      * @param url external url
+     * @param storage storage identifier not managed by storage service (to just reference the file and avoid manipulating it).
+     * An arbitrary character string may be appropriate!
      */
-    public void setDataObjectReference(DataType dataType, String filename, URL url) {
-        contentInformationBuilder.setDataObjectReference(dataType, filename, url);
+    public void setDataObjectReference(DataType dataType, String filename, URL url, String storage) {
+        contentInformationBuilder.setDataObjectReference(dataType, filename, url, storage);
     }
 
     /**
@@ -292,11 +295,11 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
      * @param algorithm checksum algorithm
      * @param checksum the checksum
      * @param fileSize <b>optional</b> file size
-     * @param urls references to the physical file
+     * @param locations references to the physical file. Use {@link OAISDataObjectLocation} build methods to create location!
      */
     public void setDataObject(DataType dataType, String filename, String algorithm, String checksum, Long fileSize,
-            URL... urls) {
-        contentInformationBuilder.setDataObject(dataType, filename, algorithm, checksum, fileSize, urls);
+            OAISDataObjectLocation... locations) {
+        contentInformationBuilder.setDataObject(dataType, filename, algorithm, checksum, fileSize, locations);
     }
 
     /**

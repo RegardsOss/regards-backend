@@ -18,12 +18,15 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
 
 /**
@@ -36,21 +39,23 @@ public class PreservationDescriptionInformation {
     public static final String CONTEXT_INFO_TAGS_KEY = "tags";
 
     /**
-     * Should contains the tags too as a "special" key
+     * Should contains the tags too as a "special" key.
+     *
+     * <b>Must contain <code>categories</code> property as a list of string</v>
      */
-    @NotNull
+    @NotEmpty(message = "Context information is required")
     private final InformationPackageMap contextInformation = new InformationPackageMap();
 
-    @NotNull
+    @NotNull(message = "Reference information is required")
     private final Map<String, String> referenceInformation = new HashMap<>();
 
-    @NotNull
+    @NotNull(message = "Provenance information is required")
     private final ProvenanceInformation provenanceInformation = new ProvenanceInformation();
 
-    @NotNull
+    @NotNull(message = "Fixity information is required")
     private final InformationPackageMap fixityInformation = new InformationPackageMap();
 
-    @NotNull
+    @NotNull(message = "Access right information is required")
     private final AccessRightInformation accessRightInformation = new AccessRightInformation();
 
     /**
@@ -71,8 +76,8 @@ public class PreservationDescriptionInformation {
      * @return the tags
      */
     public Collection<String> getTags() {
-        @SuppressWarnings("unchecked") Collection<String> tags = (Collection<String>) getContextInformation()
-                .get(CONTEXT_INFO_TAGS_KEY);
+        @SuppressWarnings("unchecked")
+        Collection<String> tags = (Collection<String>) getContextInformation().get(CONTEXT_INFO_TAGS_KEY);
         if (tags == null) {
             tags = Sets.newHashSet();
             getContextInformation().put(CONTEXT_INFO_TAGS_KEY, tags);

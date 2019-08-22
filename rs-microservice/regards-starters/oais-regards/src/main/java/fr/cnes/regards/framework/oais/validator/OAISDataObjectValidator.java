@@ -38,29 +38,30 @@ public class OAISDataObjectValidator implements ConstraintValidator<ValidOAISDat
     @Override
     public boolean isValid(OAISDataObject value, ConstraintValidatorContext context) {
 
+        // FIXME : cannot detect reference now! Remove this useless validator!
         // If reference is null, @NotNull annotation on OAISDataObject will throw a constraint violation
-        if (value.isReference() != null) {
-            if (value.isReference()) {
-                return true;
-            } else {
-                boolean isValid = true;
-                // Validate algorithm
-                if ((value.getAlgorithm() == null) || value.getAlgorithm().isEmpty()) {
-                    context.disableDefaultConstraintViolation();
-                    context.buildConstraintViolationWithTemplate("Data file checksum algorithm is required")
-                            .addPropertyNode("algorithm").addConstraintViolation();
-                    isValid = false;
-                }
-                // Validate checksum
-                if ((value.getChecksum() == null) || value.getChecksum().isEmpty()) {
-                    context.disableDefaultConstraintViolation();
-                    context.buildConstraintViolationWithTemplate("Data file checksum is required")
-                            .addPropertyNode("checksum").addConstraintViolation();
-                    isValid = false;
-                }
-                return isValid;
-            }
-        }
+        //        if (value.isReference() != null) {
+        //            if (value.isReference()) {
+        //                return true;
+        //            } else {
+        //                boolean isValid = true;
+        //                // Validate algorithm
+        //                if ((value.getAlgorithm() == null) || value.getAlgorithm().isEmpty()) {
+        //                    context.disableDefaultConstraintViolation();
+        //                    context.buildConstraintViolationWithTemplate("Data file checksum algorithm is required")
+        //                            .addPropertyNode("algorithm").addConstraintViolation();
+        //                    isValid = false;
+        //                }
+        //                // Validate checksum
+        //                if ((value.getChecksum() == null) || value.getChecksum().isEmpty()) {
+        //                    context.disableDefaultConstraintViolation();
+        //                    context.buildConstraintViolationWithTemplate("Data file checksum is required")
+        //                            .addPropertyNode("checksum").addConstraintViolation();
+        //                    isValid = false;
+        //                }
+        //                return isValid;
+        //            }
+        //        }
         return true;
     }
 
