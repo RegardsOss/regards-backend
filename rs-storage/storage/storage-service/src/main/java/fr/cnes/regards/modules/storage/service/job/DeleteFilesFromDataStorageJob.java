@@ -121,14 +121,14 @@ public class DeleteFilesFromDataStorageJob extends AbstractJob<Void> {
             JobParameterMissingException e = new JobParameterMissingException(
                     String.format("Job %s: parameter %s not provided", this.getClass().getName(),
                                   DATA_STORAGE_ID_PARAMETER_NAME));
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         }
         if (!Long.class.isAssignableFrom(dataStorageIdParam.getValue().getClass())) {
             JobParameterInvalidException e = new JobParameterInvalidException(
                     String.format("Job %s: parameter %s should be of type %s", this.getClass().getName(),
                                   DATA_STORAGE_ID_PARAMETER_NAME, Long.class.getName()));
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         }
         JobParameter filterParam = parameters.get(FILTER_PARAMETER_NAME);
@@ -136,7 +136,7 @@ public class DeleteFilesFromDataStorageJob extends AbstractJob<Void> {
 
             JobParameterMissingException e = new JobParameterMissingException(String
                     .format("Job %s: parameter %s not provided", this.getClass().getName(), FILTER_PARAMETER_NAME));
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         }
         // Check if the filterParam can be correctly parsed, depending of its type
@@ -144,7 +144,7 @@ public class DeleteFilesFromDataStorageJob extends AbstractJob<Void> {
             JobParameterInvalidException e = new JobParameterInvalidException(
                     String.format("Job %s: parameter %s should be of type %s", this.getClass().getName(),
                                   FILTER_PARAMETER_NAME, AIPQueryFilters.class.getName()));
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         }
     }

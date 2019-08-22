@@ -53,10 +53,6 @@
     </developers>
 
     <dependencies>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>feign-regards-starter</artifactId>
-        </dependency>
         <!-- Module domain -->
         <dependency>
             <groupId>fr.cnes.regards.modules.storage-light</groupId>

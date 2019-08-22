@@ -131,7 +131,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             JobParameterMissingException e = new JobParameterMissingException(
                     String.format(PARAMETER_MISSING, this.getClass().getName(), Long.class.getName(),
                                   PLUGIN_TO_USE_PARAMETER_NAME));
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         }
         // now lets check it is an id of a plugin configuration
@@ -143,7 +143,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         } catch (ModuleException e) {
             JobParameterInvalidException invalid = new JobParameterInvalidException(
                     String.format("Job %s: There is no plugin configuration with id: %s", this.getClass(), confId), e);
-            logger.error(invalid.getMessage(), invalid);
+            LOGGER.error(invalid.getMessage(), invalid);
             throw invalid;
         }
         // now that we are sure there is a plugin configuration as parameter, lets check if its a plugin configuration
@@ -152,7 +152,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             JobParameterInvalidException e = new JobParameterInvalidException(
                     String.format(PARAMETER_INVALID, this.getClass().getName(),
                                   IDataStorage.class.getName() + " configuration", confId));
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         }
         JobParameter workingSubSet;
@@ -161,7 +161,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             JobParameterMissingException e = new JobParameterMissingException(
                     String.format(PARAMETER_MISSING, this.getClass().getName(), IWorkingSubset.class.getName(),
                                   WORKING_SUB_SET_PARAMETER_NAME));
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         }
     }
@@ -180,10 +180,10 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         try {
             doRun(parameters);
         } catch (RuntimeException e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         } finally {
-            logger.debug("[FILE JOB] Executing some checks after execution");
+            LOGGER.debug("[FILE JOB] Executing some checks after execution");
             // eventually, lets see if everything went as planned
             afterRun();
         }
@@ -244,7 +244,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
                     setQuicklookProperties(dataFile);
                 } catch (IOException | NoSuchAlgorithmException e) {
                     // In case of error during quicklook dimensions recovering, lets set this data file to error
-                    logger.error(e.getMessage(), e);
+                    LOGGER.error(e.getMessage(), e);
                     dataFilesNotToStore.add(dataFile);
                     progressManager.storageFailed(dataFile, Optional.empty(),
                                                   "Issue occurred during quicklook dimension recovery");
@@ -275,7 +275,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
                                                                         storageDataFile.getChecksum());
             if (!downloadOk) {
                 String errorMsg = "Download of distant quicklook failed, dimensions cannot be set.";
-                logger.error(errorMsg);
+                LOGGER.error(errorMsg);
                 throw new IOException(errorMsg);
             }
             storageDataFile.setUrls(Sets.newHashSet(newURL));

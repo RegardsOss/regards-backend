@@ -105,7 +105,7 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
                         entityFailed.add(aip.getId().toString());
                     }
                     // Exception thrown while removing AIP
-                    logger.error(e.getMessage(), e);
+                    LOGGER.error(e.getMessage(), e);
                     nbError.incrementAndGet();
                 }
             });
@@ -161,14 +161,14 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
 
             JobParameterMissingException e = new JobParameterMissingException(String
                     .format("Job %s: parameter %s not provided", this.getClass().getName(), FILTER_PARAMETER_NAME));
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         }
         // Check if the filterParam can be correctly parsed, depending of its type
         if (!(filterParam.getValue() instanceof AIPQueryFilters)) {
             JobParameterInvalidException e = new JobParameterInvalidException(String
                     .format("Job %s: cannot read the parameter %s", this.getClass().getName(), FILTER_PARAMETER_NAME));
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         }
     }

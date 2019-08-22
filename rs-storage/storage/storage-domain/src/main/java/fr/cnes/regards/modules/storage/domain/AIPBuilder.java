@@ -36,15 +36,13 @@ public class AIPBuilder extends IPBuilder<AIP> {
      * @param sipId optional submission information package identifier (may be null!)
      * @param providerId required provider id
      * @param entityType entity type
-     * @param session acquisition session
      */
     public AIPBuilder(UniformResourceName aipId, Optional<UniformResourceName> sipId, String providerId,
-            EntityType entityType, String session) {
+            EntityType entityType) {
         super(AIP.class, entityType);
         ip.setId(aipId);
         ip.setSipId(sipId.orElse(null));
         ip.setProviderId(providerId);
-        getPDIBuilder().setSession(session);
     }
 
     /**
@@ -56,6 +54,5 @@ public class AIPBuilder extends IPBuilder<AIP> {
         ip.setId(toBeUpdated.getId());
         ip.setSipId(toBeUpdated.getSipId().orElse(null));
         ip.setProviderId(toBeUpdated.getProviderId());
-        getPDIBuilder().setSession(toBeUpdated.getSession());
     }
 }
