@@ -19,20 +19,16 @@
 package fr.cnes.regards.modules.ingest.client;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringJoiner;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
@@ -74,30 +70,9 @@ public class IngestClient implements IIngestClient {
             Errors errors = new MapBindingResult(new HashMap<>(), IngestRequestFlowItem.class.getName());
             validator.validate(item, errors);
             if (errors.hasErrors()) {
-                throw new IngestClientException(String.format("Invalid request : %s", getErrors(errors)));
+                throw new IngestClientException(
+                        String.format("Invalid request : %s", ErrorTranslator.getErrorsAsString(errors)));
             }
         }
     }
-
-    /**
-     * Build a set of error string from {@link Errors}
-     */
-    private String getErrors(Errors errors) {
-        Set<String> errs = new HashSet<>();
-        errors.getAllErrors().forEach(error -> {
-            if (error instanceof FieldError) {
-                FieldError fieldError = (FieldError) error;
-                errs.add(String.format("%s at %s: rejected value [%s].", fieldError.getDefaultMessage(),
-                                       fieldError.getField(),
-                                       ObjectUtils.nullSafeToString(fieldError.getRejectedValue())));
-            } else {
-                errs.add(error.getDefaultMessage());
-            }
-        });
-
-        StringJoiner joiner = new StringJoiner(", ");
-        errs.forEach(err -> joiner.add(err));
-        return joiner.toString();
-    }
-
 }

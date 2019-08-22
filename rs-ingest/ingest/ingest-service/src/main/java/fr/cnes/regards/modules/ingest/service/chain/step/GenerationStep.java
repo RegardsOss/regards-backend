@@ -18,11 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
 
+import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -43,6 +49,9 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerationStep.class);
 
+    @Autowired
+    private Validator validator;
+
     public GenerationStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
         super(job, ingestChain);
     }
@@ -59,7 +68,25 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
         UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, sipId.getEntityType(),
                 sipId.getTenant(), sipId.getEntityId(), sipId.getVersion());
         // Launch AIP generation
-        return generation.generate(sip, aipId, sipId, sip.getId());
+        List<AIP> aips = generation.generate(sip, aipId, sipId, sip.getId());
+        // Validate
+        validateAips(aips);
+        // Return valid AIPs
+        return aips;
+    }
+
+    private void validateAips(List<AIP> aips) throws ProcessingStepException {
+        // Validate all elements of the flow item
+        Errors errors;
+        for (AIP aip : aips) {
+            errors = new MapBindingResult(new HashMap<>(), AIP.class.getName());
+            validator.validate(aip, errors);
+            if (errors.hasErrors()) {
+                ErrorTranslator.getErrors(errors).forEach(e -> addError(e));
+                throw new ProcessingStepException(String.format("Validation error for AIP %s from SIP %s", aip.getId(),
+                                                                job.getCurrentEntity().getProviderId()));
+            }
+        }
     }
 
     @Override

@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,7 +26,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.UUID;
@@ -36,9 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
@@ -52,6 +48,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
@@ -149,7 +146,7 @@ public class IngestService implements IIngestService {
         Errors errors = new MapBindingResult(new HashMap<>(), IngestRequestFlowItem.class.getName());
         validator.validate(item, errors);
         if (errors.hasErrors()) {
-            Set<String> errs = buildErrors(errors);
+            Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB)
             ingestRequestService.handleDeniedRequest(IngestRequest
                     .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()), RequestState.DENIED,
@@ -169,28 +166,6 @@ public class IngestService implements IIngestService {
         ingestRequestService.handleGrantedRequest(request);
         // Add to granted request collection
         grantedRequests.add(request);
-    }
-
-    /**
-     * Build a set of error string from {@link Errors}
-     */
-    private Set<String> buildErrors(Errors errors) {
-        if (errors.hasErrors()) {
-            Set<String> err = new HashSet<>();
-            errors.getAllErrors().forEach(error -> {
-                if (error instanceof FieldError) {
-                    FieldError fieldError = (FieldError) error;
-                    err.add(String.format("%s at %s: rejected value [%s].", fieldError.getDefaultMessage(),
-                                          fieldError.getField(),
-                                          ObjectUtils.nullSafeToString(fieldError.getRejectedValue())));
-                } else {
-                    err.add(error.getDefaultMessage());
-                }
-            });
-            return err;
-        } else {
-            throw new IllegalArgumentException("This method must be called only if at least one error exists");
-        }
     }
 
     //    @Override
@@ -238,7 +213,7 @@ public class IngestService implements IIngestService {
         Errors errors = new MapBindingResult(new HashMap<>(), IngestMetadataDto.class.getName());
         validator.validate(dto, errors);
         if (errors.hasErrors()) {
-            Set<String> errs = buildErrors(errors);
+            Set<String> errs = ErrorTranslator.getErrors(errors);
             if (LOGGER.isDebugEnabled()) {
                 StringJoiner joiner = new StringJoiner(", ");
                 errs.forEach(err -> joiner.add(err));
@@ -262,11 +237,11 @@ public class IngestService implements IIngestService {
     private void registerIngestRequest(SIP sip, IngestMetadata ingestMetadata, RequestInfoDto info,
             Collection<IngestRequest> grantedRequests) {
 
-        // Validate all elements of the flow item
+        // Validate SIP
         Errors errors = new MapBindingResult(new HashMap<>(), SIP.class.getName());
         validator.validate(sip, errors);
         if (errors.hasErrors()) {
-            Set<String> errs = buildErrors(errors);
+            Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB) / Warning : request id cannot be known
             ingestRequestService
                     .handleDeniedRequest(IngestRequest.build(ingestMetadata, RequestState.DENIED, sip, errs));
@@ -329,7 +304,6 @@ public class IngestService implements IIngestService {
         SessionDeletionRequest deletionRequest = deletionRequestMapper.dtoToEntity(request);
 
         // TODO check if we can accept this request now
-
 
         // Save granted deletion request
         deletionRequest.setRequestId(UUID.randomUUID().toString());

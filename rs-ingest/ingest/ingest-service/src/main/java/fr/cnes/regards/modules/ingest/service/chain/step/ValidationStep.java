@@ -24,8 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.ObjectError;
 
+import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -56,9 +56,9 @@ public class ValidationStep extends AbstractIngestStep<SIP, Void> {
         validation.validate(sip, errors);
 
         if (errors.hasErrors()) {
-            for (ObjectError error : errors.getAllErrors()) {
-                LOGGER.error("SIP \"{}\" validation error : {}", sip.getId(), error.toString());
-                addError(error.toString());
+            for (String error : ErrorTranslator.getErrors(errors)) {
+                LOGGER.error("SIP \"{}\" validation error : {}", sip.getId(), error);
+                addError(error);
             }
             throw new ProcessingStepException(String.format("Invalid SIP \"%s\"", sip.getId()));
         }

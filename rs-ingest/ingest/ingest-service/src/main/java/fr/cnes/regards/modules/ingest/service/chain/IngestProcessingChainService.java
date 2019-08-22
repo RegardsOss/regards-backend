@@ -55,6 +55,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsExcept
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -177,7 +178,7 @@ public class IngestProcessingChainService implements IIngestProcessingChainServi
             validator.validate(ipc, errors);
             if (errors.hasErrors()) {
                 List<String> messages = new ArrayList<>();
-                errors.getAllErrors().forEach(error -> {
+                ErrorTranslator.getErrors(errors).forEach(error -> {
                     messages.add(error.toString());
                     LOGGER.error("IngestProcessingChain import error : {}", error.toString());
                 });
