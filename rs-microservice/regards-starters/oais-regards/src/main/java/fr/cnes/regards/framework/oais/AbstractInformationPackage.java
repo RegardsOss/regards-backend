@@ -24,9 +24,9 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
@@ -489,9 +489,18 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
     /**
      * Set the syntax to the information package thanks to the given parameters
      */
-    public <T extends AbstractInformationPackage<ID>> T withSyntax(String mimeName, String mimeDescription,
-            MimeType mimeType) {
+    public <T extends AbstractInformationPackage<ID>> T withSyntax(@Nullable String mimeName,
+            @Nullable String mimeDescription, MimeType mimeType) {
         properties.withSyntax(mimeName, mimeDescription, mimeType);
+        return (T) this;
+    }
+
+    /**
+     * Set syntax representation
+     * @param mimeType MIME type
+     */
+    public <T extends AbstractInformationPackage<ID>> T withSyntax(MimeType mimeType) {
+        properties.withSyntax(mimeType);
         return (T) this;
     }
 

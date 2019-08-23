@@ -24,8 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
+
+import org.springframework.lang.Nullable;
 
 /**
  * OAIS Preservation Description Information object

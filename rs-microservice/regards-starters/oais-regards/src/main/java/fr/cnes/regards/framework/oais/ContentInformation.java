@@ -26,6 +26,7 @@ import java.util.HashSet;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
@@ -55,6 +56,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * To set the representation information, use :
  * <ul>
  * <li>{@link #withSyntax(String, String, MimeType)}</li>
+ * <li>{@link #withSyntax(MimeType)}</li>
  * <li>{@link #withSyntaxAndSemantic(String, String, MimeType, String)}</li>
  * <li>{@link #withHardwareEnvironmentProperty(String, Object)}</li>
  * <li>{@link #withSoftwareEnvironmentProperty(String, Object)}</li>
@@ -229,7 +231,8 @@ public class ContentInformation {
      * @param mimeDescription MIME description
      * @param mimeType MIME type
      */
-    public ContentInformation withSyntax(String mimeName, String mimeDescription, MimeType mimeType) {
+    public ContentInformation withSyntax(@Nullable String mimeName, @Nullable String mimeDescription,
+            MimeType mimeType) {
         Assert.notNull(mimeType, "Mime type cannot be null");
         Assert.hasLength(mimeType.getType(), "Mime type type cannot be null");
         Assert.hasLength(mimeType.getSubtype(), "Mime type subtype cannot be null");

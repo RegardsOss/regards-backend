@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
 import javax.persistence.Transient;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * To set the representation information, use :
  * <ul>
  * <li>{@link #withSyntax(String, String, MimeType)}</li>
+ * <li>{@link #withSyntax(MimeType)}</li>
  * <li>{@link #withSyntaxAndSemantic(String, String, MimeType, String)}</li>
  * <li>{@link #withHardwareEnvironmentProperty(String, Object)}</li>
  * <li>{@link #withSoftwareEnvironmentProperty(String, Object)}</li>
@@ -481,10 +482,19 @@ public class InformationPackageProperties {
     }
 
     /**
+     * Set syntax representation
+     * @param mimeType MIME type
+     */
+    public InformationPackageProperties withSyntax(MimeType mimeType) {
+        getUnderConstruction().withSyntax(mimeType);
+        return this;
+    }
+
+    /**
      * Set the syntax and semantic to the information package thanks to the given parameters
      */
-    public InformationPackageProperties withSyntaxAndSemantic(String mimeName, String mimeDescription,
-            MimeType mimeType, String semanticDescription) {
+    public InformationPackageProperties withSyntaxAndSemantic(@Nullable String mimeName,
+            @Nullable String mimeDescription, MimeType mimeType, String semanticDescription) {
         getUnderConstruction().withSyntaxAndSemantic(mimeName, mimeDescription, mimeType, semanticDescription);
         return this;
     }

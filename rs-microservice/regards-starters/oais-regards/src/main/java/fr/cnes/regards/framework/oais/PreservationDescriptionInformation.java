@@ -23,15 +23,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
+import fr.cnes.regards.framework.oais.validator.CategoryRequired;
 
 /**
  * OAIS Preservation Description Information object<br/>
@@ -96,9 +97,9 @@ import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
  */
 public class PreservationDescriptionInformation {
 
-    private static final String CONTEXT_INFO_TAGS_KEY = "tags";
+    public static final String CONTEXT_INFO_TAGS_KEY = "tags";
 
-    private static final String CONTEXT_INFO_CATEGORIES = "categories";
+    public static final String CONTEXT_INFO_CATEGORIES = "categories";
 
     /**
      * Should contains the tags too as a "special" key.
@@ -106,6 +107,7 @@ public class PreservationDescriptionInformation {
      * <b>Must contain <code>categories</code> property as a list of string</v>
      */
     @NotEmpty(message = "Context information is required")
+    @CategoryRequired
     private final InformationPackageMap contextInformation = new InformationPackageMap();
 
     @NotNull(message = "Reference information is required")
