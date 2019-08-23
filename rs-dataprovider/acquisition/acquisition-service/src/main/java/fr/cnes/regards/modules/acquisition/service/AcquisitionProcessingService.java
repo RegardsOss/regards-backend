@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataDProvider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.ClosedByInterruptException;
@@ -253,6 +254,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         if (processingChain.getPostProcessSipPluginConf().isPresent()) {
             createPluginConfiguration(processingChain.getPostProcessSipPluginConf().get());
         }
+
+        List<StorageMetadataDProvider> storages = new ArrayList<>();
+        storages.add(StorageMetadataDProvider.build("AWS", "/path/to/file"));
+        storages.add(StorageMetadataDProvider.build("HELLO", "/other/path/to/file"));
+        processingChain.setStorages(storages);
 
         // Save new chain
         return acqChainRepository.save(processingChain);

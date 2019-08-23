@@ -126,11 +126,11 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             sessions.add(product.getSession());
             try {
                 SIP sip = generateSipPlugin.generate(product);
-                sessionNotifier.notifySipGenerationSucceed(product);
                 // Update product
                 product.setSip(sip);
                 product.setSipState(ProductSIPState.SUBMITTED);
-                productService.saveAndSubmitSIP(product);
+                productService.saveAndSubmitSIP(product, processingChain.getStorages());
+                sessionNotifier.notifySipSubmitting(product);
                 generatedCount++;
             } catch (ModuleException e) {
                 String message = String.format("Error while generating product \"%s\"", product.getProductName());
@@ -138,7 +138,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 logger.debug(message, e);
                 product.setSipState(ProductSIPState.GENERATION_ERROR);
                 product.setError(e.getMessage());
-                sessionNotifier.notifySipGenerationError(product);
+                sessionNotifier.notifySipSubmittingFailed(product);
                 productService.save(product);
             }
         }

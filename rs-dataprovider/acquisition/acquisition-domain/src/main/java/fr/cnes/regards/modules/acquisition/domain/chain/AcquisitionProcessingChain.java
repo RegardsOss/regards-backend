@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -45,6 +47,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -59,6 +62,10 @@ import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
 /**
  *
@@ -75,6 +82,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
                         subgraph = "graph.acquisition.chain.jobs") },
         subgraphs = { @NamedSubgraph(name = "graph.acquisition.chain.jobs",
                 attributeNodes = { @NamedAttributeNode(value = "parameters") }) }) })
+@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AcquisitionProcessingChain {
 
     /**
@@ -133,6 +141,13 @@ public class AcquisitionProcessingChain {
     @NotBlank(message = "Ingest chain is required")
     @Column(name = "ingest_chain")
     private String ingestChain;
+
+    @Valid
+    @NotNull(message = "Storage metadata is required")
+    @Column(columnDefinition = "jsonb")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+            value = "fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataDProvider") })
+    private List<StorageMetadataDProvider> storages;
 
     /**
      * The {@link List} of files to build a product
@@ -279,6 +294,14 @@ public class AcquisitionProcessingChain {
 
     public void setValidationPluginConf(PluginConfiguration validationPluginConf) {
         this.validationPluginConf = validationPluginConf;
+    }
+
+    public List<StorageMetadataDProvider> getStorages() {
+        return storages;
+    }
+
+    public void setStorages(List<StorageMetadataDProvider> storages) {
+        this.storages = storages;
     }
 
     public PluginConfiguration getProductPluginConf() {

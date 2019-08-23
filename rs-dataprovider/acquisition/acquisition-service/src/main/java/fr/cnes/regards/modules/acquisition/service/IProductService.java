@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataDProvider;
+import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -50,7 +52,7 @@ public interface IProductService {
     /**
      * After product SIP generation, save the product state and submit its SIP in the SIP data flow (within the same transaction)
      */
-    Product saveAndSubmitSIP(Product product);
+    Product saveAndSubmitSIP(Product product, List<StorageMetadataDProvider> storages) throws SIPGenerationException;
 
     /**
      * @return all {@link Product}
@@ -143,7 +145,13 @@ public interface IProductService {
     /**
      * Handle successful SIP submission
      */
-    public void handleSIPSuccess(RequestInfo info);
+    void handleIngestedSIPSuccess(RequestInfo info);
+
+
+    /**
+     * Handle failure SIP submission
+     */
+    void handleIngestedSIPFailed(RequestInfo info);
 
     /**
      * Count number of {@link Product} associated to the given {@link AcquisitionProcessingChain}
@@ -217,5 +225,4 @@ public interface IProductService {
      * @return whether there is a product page remaining to managed
      */
     boolean manageUpdatedProductsByPage(AcquisitionProcessingChain processingChain);
-
 }

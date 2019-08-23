@@ -25,11 +25,13 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataDProvider;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import org.assertj.core.util.Sets;
 import org.springframework.http.MediaType;
@@ -90,6 +92,12 @@ public class AcquisitionTestUtils {
 
         // SIP post processing
         // Not required
+
+
+        List<StorageMetadataDProvider> storages = new ArrayList<>();
+        storages.add(StorageMetadataDProvider.build("AWS", "/path/to/file"));
+        storages.add(StorageMetadataDProvider.build("HELLO", "/other/path/to/file"));
+        processingChain.setStorages(storages);
 
         return processingChain;
     }
