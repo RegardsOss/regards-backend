@@ -157,6 +157,7 @@ public class IngestService implements IIngestService {
                 LOGGER.debug("Ingest request {} rejected for following reason(s) : {}", item.getRequestId(),
                              joiner.toString());
             }
+            return;
         }
 
         // Save granted ingest request
@@ -251,6 +252,7 @@ public class IngestService implements IIngestService {
             LOGGER.debug("SIP ingestion request rejected for following reason(s) : {}", joiner.toString());
             // Trace denied request
             info.addDeniedRequest(sip.getId(), joiner.toString());
+            return;
         }
 
         // Save granted ingest request

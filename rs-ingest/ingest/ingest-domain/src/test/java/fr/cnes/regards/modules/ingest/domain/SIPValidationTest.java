@@ -138,7 +138,7 @@ public class SIPValidationTest {
     @Purpose("SIP validation")
     public void validSIPReference() {
 
-        SIP sip = SIP.buildReference(EntityType.DATA, PROVIDER_ID, Paths.get("sip.xml"), "checksum", CATEGORIES);
+        SIP sip = SIP.buildReference(EntityType.DATA, PROVIDER_ID, Paths.get("sip.xml"), "checksum");
         validator.validate(sip, errors);
         if (errors.hasErrors()) {
             Assert.fail("Builder should properly build SIP reference");

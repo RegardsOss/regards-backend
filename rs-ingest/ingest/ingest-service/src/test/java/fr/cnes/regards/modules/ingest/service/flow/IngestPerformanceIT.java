@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.flow;
 
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -29,14 +30,16 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 
@@ -59,6 +62,8 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestPerformanceIT.class);
+
+    private static final List<String> CATEGORIES = Lists.newArrayList("CATEGORY");
 
     @Autowired
     private IPublisher publisher;
@@ -110,20 +115,17 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
     }
 
     private SIP create(String providerId) {
-        // Init the builder
-        SIPBuilder sipBuilder = new SIPBuilder(providerId);
-
-        sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA,
-                                                                Paths.get("src", "main", "test", "resources", "data",
-                                                                          "cdpp_collection.json"),
-                                                                "MD5", "azertyuiopqsdfmlmld");
-        sipBuilder.getContentInformationBuilder().setSyntax(MediaType.APPLICATION_JSON_UTF8);
-        sipBuilder.addContentInformation();
+        SIP sip = SIP.build(EntityType.DATA, providerId, CATEGORIES);
+        sip.withDataObject(DataType.RAWDATA,
+                           Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"), "MD5",
+                           "azertyuiopqsdfmlmld");
+        sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
+        sip.registerContentInformation();
 
         // Add creation event
-        sipBuilder.addEvent(String.format("SIP %s generated", providerId));
+        sip.withEvent(String.format("SIP %s generated", providerId));
 
-        return sipBuilder.build();
+        return sip;
     }
 
 }

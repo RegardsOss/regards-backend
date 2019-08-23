@@ -18,16 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip;
 
-import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
-import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -39,19 +34,22 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
+import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
 import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -66,7 +64,6 @@ public class SIPService implements ISIPService {
 
     public static final String MD5_ALGORITHM = "MD5";
 
-
     @Autowired
     private Gson gson;
 
@@ -79,15 +76,13 @@ public class SIPService implements ISIPService {
     @Autowired
     private SessionNotifier sessionNotifier;
 
-
     @Override
     public Page<SIPEntity> search(String providerId, String sessionOwner, String session, OffsetDateTime from,
             List<SIPState> state, String ingestChain, Pageable page) {
-        return sipRepository.loadAll(
-                        SIPEntitySpecifications.search(
-                                new ArrayList<>(Arrays.asList(providerId)), null,
-                                sessionOwner, session, from, state, ingestChain, true),
-                        page);
+        return sipRepository
+                .loadAll(SIPEntitySpecifications.search(providerId == null ? null : Lists.newArrayList(providerId),
+                                                        null, sessionOwner, session, from, state, ingestChain, true),
+                         page);
     }
 
     @Override

@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  *
@@ -125,11 +126,35 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
             String providerId, List<String> categories) {
         Assert.notNull(type, "Entity type is required.");
         Assert.notNull(aipId, "Uniform resource Name is required.");
+        Assert.notNull(providerId, "Provider id is required.");
         Assert.notEmpty(categories, "At least one category is required");
         AIP aip = new AIP().withIdAndType(aipId, type)
                 .withContextCategories(categories.toArray(new String[categories.size()]));
         aip.setSipId(sipId.orElse(null));
         aip.setProviderId(providerId);
+        return aip;
+    }
+
+    /**
+     * Build a new AIP from SIP properties
+     * @param sip source SIP
+     * @param aipId AIP URN
+     * @param sipId SIP URN
+     * @param providerId the provider id
+     */
+    public static AIP build(SIP sip, UniformResourceName aipId, Optional<UniformResourceName> sipId,
+            String providerId) {
+        Assert.notNull(sip, "Valid SIP is required.");
+        Assert.notNull(aipId, "Uniform resource Name is required.");
+        Assert.notNull(providerId, "Provider id is required.");
+        AIP aip = new AIP().withIdAndType(aipId, sip.getIpType());
+        aip.setSipId(sipId.orElse(null));
+        aip.setProviderId(providerId);
+        aip.setBbox(sip.getBbox().orElse(null));
+        aip.setCrs(sip.getCrs().orElse(null));
+        aip.setGeometry(sip.getGeometry());
+        // Propagate properties from SIP
+        aip.setProperties(sip.getProperties());
         return aip;
     }
 }

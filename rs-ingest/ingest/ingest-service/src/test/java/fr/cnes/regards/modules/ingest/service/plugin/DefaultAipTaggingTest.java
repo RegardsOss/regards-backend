@@ -30,6 +30,8 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -42,8 +44,6 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.aip.AIPBuilder;
-import fr.cnes.regards.modules.ingest.service.plugin.DefaultAIPTagging;
 
 /**
  * Test {@link DefaultAIPTagging} plugin
@@ -58,6 +58,8 @@ public class DefaultAipTaggingTest {
     private static final List<String> TAGS = Arrays.asList("FRANCE", "JAPON", "MALAYSIE");
 
     private static final Map<String, String> LINKS = createLinks();
+
+    private static final List<String> CATEGORIES = Lists.newArrayList("CATEGORY");
 
     private static Map<String, String> createLinks() {
         Map<String, String> links = new HashMap<>();
@@ -115,11 +117,11 @@ public class DefaultAipTaggingTest {
         String providerId = "providerId1";
         String filename = "test.netcdf";
         String md5 = "plifplafplouf";
-        AIPBuilder builder = new AIPBuilder(UniformResourceName.fromString(aipUrn),
-                Optional.of(UniformResourceName.fromString(sipUrn)), providerId, EntityType.DATA);
-        builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("target", filename), md5);
-        builder.addContentInformation();
-        AIP single = builder.build();
+
+        AIP single = AIP.build(EntityType.DATA, UniformResourceName.fromString(aipUrn),
+                               Optional.of(UniformResourceName.fromString(sipUrn)), providerId, CATEGORIES);
+        single.withDataObject(DataType.RAWDATA, Paths.get("target", filename), md5);
+        single.registerContentInformation();
 
         plugin.tag(Arrays.asList(single));
 

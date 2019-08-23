@@ -1,15 +1,15 @@
 {
     "type": "FeatureCollection",
-	"metadata": {
-		"sessionOwner": "sampleSessionOwner",
-		"session": "sampleSession",
-		"ingestChain": "DefaultProcessingChain",
-		"storages": [
-			{
-				"storage": "disk"
-			}
-		]
-	},
+    "metadata": {
+        "sessionOwner": "sampleSessionOwner",
+        "session": "sampleSession",
+        "ingestChain": "DefaultProcessingChain",
+        "storages": [
+            {
+                "storage": "disk"
+            }
+        ]
+    },
     "features": [
         {
             "type": "Feature",
@@ -21,7 +21,11 @@
                     {
                         "dataObject": {
                             "regardsDataType": "RAWDATA",
-                            "urls": ["file:/home/test.xml"],
+                            "locations": [
+                                {
+                                    "url": "file:/home/test.xml"
+                                }
+                            ],
                             "checksum": "sdfsd455sdfdsgdfg4dgdfg",
                             "reference": false,
                             "filename": "test.xml",
@@ -37,6 +41,11 @@
                     }
                 ],
                 "pdi": {
+                    "contextInformation": {
+                        "categories": [
+                            "CAT"
+                        ]
+                    },
                     "provenanceInformation": {
                         "history": []
                     },
@@ -54,7 +63,11 @@
                     {
                         "dataObject": {
                             "regardsDataType": "RAWDATA",
-                            "urls": ["file:/home/test.xml"],
+                            "locations": [
+                                {
+                                    "url": "file:/home/test.xml"
+                                }
+                            ],
                             "checksum": "sdfsd455sdfdsgdfg4dgdfg",
                             "reference": false,
                             "filename": "test.xml",
@@ -63,6 +76,11 @@
                     }
                 ],
                 "pdi": {
+                    "contextInformation": {
+                        "categories": [
+                            "CAT"
+                        ]
+                    },
                     "provenanceInformation": {
                         "history": []
                     },

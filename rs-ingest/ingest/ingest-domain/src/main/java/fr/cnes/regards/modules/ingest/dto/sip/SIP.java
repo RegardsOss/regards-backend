@@ -30,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -94,10 +96,8 @@ public class SIP extends AbstractInformationPackage<String> {
      * @param url URL of the SIP file
      * @param algorithm {@link MessageDigest} checksum algorithm
      * @param checksum checksum for current SIP file
-     * @param categories context configuration categories
      */
-    public static SIP buildReference(EntityType type, String providerId, URL url, String algorithm, String checksum,
-            List<String> categories) {
+    public static SIP buildReference(EntityType type, String providerId, URL url, String algorithm, String checksum) {
 
         Assert.notNull(url, "URL is required");
         Assert.hasText(algorithm, "Checksum algorithm is required");
@@ -107,27 +107,26 @@ public class SIP extends AbstractInformationPackage<String> {
         reference.setChecksum(checksum);
         reference.setUrl(url);
 
-        SIP sip = build(type, providerId, categories);
+        SIP sip = build(type, providerId, Lists.newArrayList("NO_CAT"));
         sip.setRef(reference);
-        sip.setProperties(null);
+        sip.setProperties(null); // Remove properties so remove above fake CAT
         return sip;
     }
 
     /**
-     * Alias of method {@link #buildReference(EntityType, String, URL, String, List)} with a {@link Path} reference instead of
+     * Alias of method {@link #buildReference(EntityType, String, URL, String)} with a {@link Path} reference instead of
      * {@link URL}.
      * @param type {@link EntityType}
      * @param providerId the provider id
      * @param filePath path to the SIP file
      * @param algorithm {@link MessageDigest} checksum algorithm
      * @param checksum checksum for current SIP file
-     * @param categories context configuration categories
      */
     public static SIP buildReference(EntityType type, String providerId, Path filePath, String algorithm,
-            String checksum, List<String> categories) {
+            String checksum) {
         Assert.notNull(filePath, "File path is required");
         try {
-            return buildReference(type, providerId, filePath.toUri().toURL(), algorithm, checksum, categories);
+            return buildReference(type, providerId, filePath.toUri().toURL(), algorithm, checksum);
         } catch (MalformedURLException e) {
             String errorMessage = String.format("Cannot transform %s to valid URL (MalformedURLException).",
                                                 filePath.toString());
@@ -137,28 +136,23 @@ public class SIP extends AbstractInformationPackage<String> {
     }
 
     /**
-     * Alias for method {@link #buildReference(EntityType, String, URL, String, String, List)} with MD5 default checksum algorithm
+     * Alias for method {@link #buildReference(EntityType, String, URL, String, String)} with MD5 default checksum algorithm
      * @param type {@link EntityType}
      * @param providerId the provider id
      * @param url URL of the SIP file
      * @param checksum checksum for current SIP file
-     * @param categories context configuration categories
      */
-    public static SIP buildReference(EntityType type, String providerId, URL url, String checksum,
-            List<String> categories) {
-        return buildReference(type, providerId, url, ContentInformation.MD5_ALGORITHM, checksum, categories);
+    public static SIP buildReference(EntityType type, String providerId, URL url, String checksum) {
+        return buildReference(type, providerId, url, ContentInformation.MD5_ALGORITHM, checksum);
     }
 
     /**
-     * Alias for method {@link #buildReference(EntityType, String, Path, String, List)} with MD5 default checksum algorithm
+     * Alias for method {@link #buildReference(EntityType, String, Path, String)} with MD5 default checksum algorithm
      * @param type {@link EntityType}
      * @param providerId the provider id
      * @param filePath path to the SIP file
-     * @param checksum checksum for current SIP file
-     * @param categories context configuration categories
      */
-    public static SIP buildReference(EntityType type, String providerId, Path filePath, String checksum,
-            List<String> categories) {
-        return buildReference(type, providerId, filePath, ContentInformation.MD5_ALGORITHM, checksum, categories);
+    public static SIP buildReference(EntityType type, String providerId, Path filePath, String checksum) {
+        return buildReference(type, providerId, filePath, ContentInformation.MD5_ALGORITHM, checksum);
     }
 }

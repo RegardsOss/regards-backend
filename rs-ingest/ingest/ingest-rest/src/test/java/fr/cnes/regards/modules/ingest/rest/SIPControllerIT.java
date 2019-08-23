@@ -40,7 +40,7 @@ import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.google.gson.JsonObject;
+import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.geojson.GeoJsonFieldDescriptors;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
@@ -48,6 +48,7 @@ import fr.cnes.regards.framework.geojson.OaisFieldDescriptors;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
@@ -57,7 +58,6 @@ import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 
 /**
@@ -92,7 +92,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         SIPCollection collection = SIPCollection.build(IngestMetadataDto
                 .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, STORAGE_METADATA));
 
-        SIP firstSIPwithGeometry = buildSipOne("SIP_001", "data1.fits").build();
+        SIP firstSIPwithGeometry = buildSipOne("SIP_001", "data1.fits");
         firstSIPwithGeometry
                 .setGeometry(IGeometry.multiPoint(IGeometry.position(5.0, 5.0), IGeometry.position(25.0, 25.0)));
 
@@ -144,8 +144,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         SIPCollection collection = SIPCollection.build(IngestMetadataDto
                 .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, STORAGE_METADATA));
 
-        collection.add(buildSipOne("SIP_001", "data1.fits").build());
-        collection.add(buildSipOne("SIP_002", "data2.fits").build());
+        collection.add(buildSipOne("SIP_001", "data1.fits"));
+        collection.add(buildSipOne("SIP_002", "data2.fits"));
 
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
@@ -205,24 +205,18 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                 .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, STORAGE_METADATA));
 
         // SIP 1
-        SIPBuilder sipBuilder = new SIPBuilder("SIP_001");
-        sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "FAKE_ALGO",
-                                                                "sdsdfm1211vd");
-        sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
-                             "http://www.iana.org/assignments/media-types/application/fits",
-                             MediaType.valueOf("application/fits"));
-        sipBuilder.addContentInformation();
-        collection.add(sipBuilder.build());
+        SIP sip = SIP.build(EntityType.DATA, "SIP_001", Lists.newArrayList("CAT"));
+        sip.withDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "FAKE_ALGO", "sdsdfm1211vd");
+        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+                       MediaType.valueOf("application/fits"));
+        collection.add(sip.registerContentInformation());
 
         // SIP 2
-        sipBuilder = new SIPBuilder("SIP_002");
-        sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"),
-                                                                "sdsdfm1211vsdfdsfd");
-        sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
-                             "http://www.iana.org/assignments/media-types/application/fits",
-                             MediaType.valueOf("application/fits"));
-        sipBuilder.addContentInformation();
-        collection.add(sipBuilder.build());
+        sip = SIP.build(EntityType.DATA, "SIP_002", Lists.newArrayList("CAT"));
+        sip.withDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vsdfdsfd");
+        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+                       MediaType.valueOf("application/fits"));
+        collection.add(sip.registerContentInformation());
 
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.PARTIAL_CONTENT)
@@ -311,75 +305,73 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     //        performDefaultGet(SIPController.TYPE_MAPPING, requestBuilderCustomizer, "Should found valid SIP");
     //    }
 
-    private SIPBuilder buildSipOne(String providerId, String fileName) {
-        SIPBuilder sipBuilder = new SIPBuilder(providerId);
-        sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get(fileName),
-                                                                Paths.get(fileName).getFileName().toString(), "MD5",
-                                                                "b463726cfbb52d47e432bedf08edbec3", new Long(12345));
-        sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
-                             "http://www.iana.org/assignments/media-types/application/fits",
-                             MediaType.valueOf("application/fits"));
-        sipBuilder.addContentInformation();
-        sipBuilder.addDescriptiveInformation("longProperty", 987654);
-        sipBuilder.addDescriptiveInformation("stringProperty", "Lorem ipsum dolor sit amet");
-        sipBuilder.addDescriptiveInformation("dateProperty", OffsetDateTime
-                .parse("2014-05-02T23:10:17-02:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+    private SIP buildSipOne(String providerId, String fileName) {
+
+        SIP sip = SIP.build(EntityType.DATA, providerId, Lists.newArrayList("CAT"));
+        sip.withDataObject(DataType.RAWDATA, Paths.get(fileName), Paths.get(fileName).getFileName().toString(), "MD5",
+                           "b463726cfbb52d47e432bedf08edbec3", new Long(12345));
+        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+                       MediaType.valueOf("application/fits"));
+        sip.registerContentInformation();
+
+        sip.withDescriptiveInformation("longProperty", 987654);
+        sip.withDescriptiveInformation("stringProperty", "Lorem ipsum dolor sit amet");
+        sip.withDescriptiveInformation("dateProperty", OffsetDateTime.parse("2014-05-02T23:10:17-02:00",
+                                                                            DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         List<String> tags = new ArrayList<String>();
         tags.add("JASON_MISSION");
-        sipBuilder.addTags(tags.toArray(new String[tags.size()]));
+        sip.withContextTags(tags.toArray(new String[tags.size()]));
 
-        sipBuilder.getPDIBuilder().addProvenanceInformationEvent("creation", "AIP creation", OffsetDateTime
+        sip.withProvenanceInformationEvent("creation", "AIP creation", OffsetDateTime
                 .parse("2014-01-02T23:10:05+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        sipBuilder.getPDIBuilder().addProvenanceInformationEvent("update", "instrument calibration", OffsetDateTime
+        sip.withProvenanceInformationEvent("update", "instrument calibration", OffsetDateTime
                 .parse("2014-01-09T09:01:37+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        sipBuilder.getPDIBuilder().addProvenanceInformationEvent("update", "data acquisition", OffsetDateTime
+        sip.withProvenanceInformationEvent("update", "data acquisition", OffsetDateTime
                 .parse("2014-02-13T12:25:36+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        sipBuilder.getPDIBuilder()
-                .addProvenanceInformationEvent("update", "new calibratiopn parameter 0.001", OffsetDateTime
-                        .parse("2014-02-19T13:31:17+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        sipBuilder.getPDIBuilder().setFacility("CNES");
-        sipBuilder.getPDIBuilder().setFilter("a filter");
-        sipBuilder.getPDIBuilder().setDetector("detector");
-        sipBuilder.getPDIBuilder().setInstrument("Doris instrument");
-        sipBuilder.getPDIBuilder().setProposal("a proposal");
-        sipBuilder.getPDIBuilder().addAdditionalProvenanceInformation("key-ref-1", "additional value 1");
-        sipBuilder.getPDIBuilder().addAdditionalProvenanceInformation("key-ref-2", "additional value 2");
-        sipBuilder.getPDIBuilder().addAdditionalProvenanceInformation("key-ref-3", "additional value 3");
-        sipBuilder.getPDIBuilder().addReferenceInformation("ivoa", "ivo://XXXXX-YYYYYY");
-        sipBuilder.getPDIBuilder().addReferenceInformation("doi", "https://doi.org/10.1007/s00223-003-0070-0");
-        sipBuilder.getPDIBuilder().addReferenceInformation("ark",
-                                                           "http://example.org/ark:/13030/654xz321/s3/f8.05v.tiff");
-        sipBuilder.getPDIBuilder().addFixityInformation("key-fixity-1", "fixity value 1");
-        sipBuilder.getPDIBuilder().addFixityInformation("key-fixity-2", "fixity value 2");
-        sipBuilder.getPDIBuilder().setAccessRightInformation("licence", "access rights", OffsetDateTime
+        sip.withProvenanceInformationEvent("update", "new calibratiopn parameter 0.001", OffsetDateTime
+                .parse("2014-02-19T13:31:17+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        sip.withFacility("CNES");
+        sip.withFilter("a filter");
+        sip.withDetector("detector");
+        sip.withInstrument("Doris instrument");
+        sip.withProposal("a proposal");
+        sip.withAdditionalProvenanceInformation("key-ref-1", "additional value 1");
+        sip.withAdditionalProvenanceInformation("key-ref-2", "additional value 2");
+        sip.withAdditionalProvenanceInformation("key-ref-3", "additional value 3");
+        sip.withReferenceInformation("ivoa", "ivo://XXXXX-YYYYYY");
+        sip.withReferenceInformation("doi", "https://doi.org/10.1007/s00223-003-0070-0");
+        sip.withReferenceInformation("ark", "http://example.org/ark:/13030/654xz321/s3/f8.05v.tiff");
+        sip.withFixityInformation("key-fixity-1", "fixity value 1");
+        sip.withFixityInformation("key-fixity-2", "fixity value 2");
+        sip.withAccessRightInformation("licence", "access rights", OffsetDateTime
                 .parse("2014-01-12T23:10:05+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        return sipBuilder;
+        return sip;
     }
 
-    private SIPBuilder buildSipTwo(String providerId, String fileName) {
-        SIPBuilder sipBuilder = new SIPBuilder(providerId);
-        sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get(fileName),
-                                                                "3464e3f9a1dad119712c32e2290cbdf8");
-        sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
-                             "http://www.iana.org/assignments/media-types/application/fits",
-                             MediaType.valueOf("application/fits"));
-        sipBuilder.addContentInformation();
-        sipBuilder.addDescriptiveInformation("longProperty", "123456");
-        sipBuilder
-                .addDescriptiveInformation("stringProperty",
-                                           "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium");
-        sipBuilder.addDescriptiveInformation("dateProperty", "2018-09-09T10:00:00Z");
-        JsonObject timePeriod = new JsonObject();
-        timePeriod.addProperty("start_date", "2012-09-01T10:00:00Z");
-        timePeriod.addProperty("stop_date", "2012-09-02T10:00:00Z");
-        sipBuilder.addDescriptiveInformation("time_period", timePeriod);
-        List<String> tags = new ArrayList<String>();
-        tags.add("TAG_ONE");
-        tags.add("OCEAN");
-        tags.add("SPACE_OCEANOGRAPHY");
-        sipBuilder.addTags(tags.toArray(new String[tags.size()]));
-        sipBuilder.getPDIBuilder().setFacility("CS-SI");
-
-        return sipBuilder;
-    }
+    //    @SuppressWarnings("unused")
+    //    private SIP buildSipTwo(String providerId, String fileName) {
+    //
+    //        SIP sip = SIP.build(EntityType.DATA, providerId, Lists.newArrayList("CAT2"));
+    //        sip.withDataObject(DataType.RAWDATA, Paths.get(fileName), "3464e3f9a1dad119712c32e2290cbdf8");
+    //        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+    //                       MediaType.valueOf("application/fits"));
+    //        sip.registerContentInformation();
+    //
+    //        sip.withDescriptiveInformation("longProperty", "123456");
+    //        sip.withDescriptiveInformation("stringProperty",
+    //                                       "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium");
+    //        sip.withDescriptiveInformation("dateProperty", "2018-09-09T10:00:00Z");
+    //        JsonObject timePeriod = new JsonObject();
+    //        timePeriod.addProperty("start_date", "2012-09-01T10:00:00Z");
+    //        timePeriod.addProperty("stop_date", "2012-09-02T10:00:00Z");
+    //        sip.withDescriptiveInformation("time_period", timePeriod);
+    //        List<String> tags = new ArrayList<String>();
+    //        tags.add("TAG_ONE");
+    //        tags.add("OCEAN");
+    //        tags.add("SPACE_OCEANOGRAPHY");
+    //        sip.withContextTags(tags.toArray(new String[tags.size()]));
+    //        sip.withFacility("CS-SI");
+    //
+    //        return sip;
+    //    }
 }

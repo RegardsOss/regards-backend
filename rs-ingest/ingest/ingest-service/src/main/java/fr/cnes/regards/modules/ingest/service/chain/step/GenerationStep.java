@@ -82,7 +82,10 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
             errors = new MapBindingResult(new HashMap<>(), AIP.class.getName());
             validator.validate(aip, errors);
             if (errors.hasErrors()) {
-                ErrorTranslator.getErrors(errors).forEach(e -> addError(e));
+                ErrorTranslator.getErrors(errors).forEach(e -> {
+                    addError(e);
+                    LOGGER.error(e);
+                });
                 throw new ProcessingStepException(String.format("Validation error for AIP %s from SIP %s", aip.getId(),
                                                                 job.getCurrentEntity().getProviderId()));
             }

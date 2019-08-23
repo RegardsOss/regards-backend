@@ -20,12 +20,14 @@ package fr.cnes.regards.modules.ingest.service.plugin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.exception.InvalidSIPReferenceException;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPreprocessing;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPReference;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
 
@@ -56,9 +58,7 @@ public class PreprocessingTestPlugin implements ISipPreprocessing {
             throw new InvalidSIPReferenceException("Simulated exception for step PreprocessingTestPlugin");
         }
         // Simulate creation of a new SIP
-        SIPBuilder builder = new SIPBuilder(SIP_ID_TEST);
-        SIP sip = builder.build();
-        return sip;
+        return SIP.build(EntityType.DATA, SIP_ID_TEST, Lists.newArrayList("CAT"));
     }
 
 }

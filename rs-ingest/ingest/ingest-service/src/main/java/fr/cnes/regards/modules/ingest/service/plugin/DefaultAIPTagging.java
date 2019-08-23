@@ -28,7 +28,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.aip.AIPBuilder;
 
 /**
  * Default AIP tagging plugin that can manage either tags or links or both.<br/>
@@ -80,23 +79,21 @@ public class DefaultAIPTagging implements IAipTagging {
     public void tag(List<AIP> aips) throws TagAIPException {
         if (aips != null) {
             for (AIP aip : aips) {
-                AIPBuilder builder = new AIPBuilder(aip);
-                addTags(builder, tags);
-                addLinks(builder, links);
-                builder.build();
+                addTags(aip, tags);
+                addLinks(aip, links);
             }
         }
     }
 
-    private void addTags(AIPBuilder builder, List<String> tags) {
+    private void addTags(AIP aip, List<String> tags) {
         if (tags != null && !tags.isEmpty()) {
-            builder.addTags(tags.toArray(new String[tags.size()]));
+            aip.withContextTags(tags.toArray(new String[tags.size()]));
         }
     }
 
-    private void addLinks(AIPBuilder builder, Map<String, String> links) {
+    private void addLinks(AIP aip, Map<String, String> links) {
         if (links != null) {
-            links.forEach((k, v) -> builder.addContextInformation(k, v));
+            links.forEach((k, v) -> aip.withContextInformation(k, v));
         }
     }
 }

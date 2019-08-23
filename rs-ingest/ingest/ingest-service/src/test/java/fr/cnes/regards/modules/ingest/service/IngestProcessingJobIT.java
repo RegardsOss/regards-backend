@@ -33,13 +33,14 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -53,7 +54,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
@@ -155,13 +156,12 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         SIPCollection sips = SIPCollection.build(IngestMetadataDto
                 .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, STORAGE_METADATA));
 
-        SIPBuilder builder = new SIPBuilder(SIP_DEFAULT_CHAIN_ID_TEST);
-        builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "sdsdfm1211vd");
-        builder.setSyntax("FITS(FlexibleImageTransport)",
-                          "http://www.iana.org/assignments/media-types/application/fits",
-                          MediaType.valueOf("application/fits"));
-        builder.addContentInformation();
-        sips.add(builder.build());
+        SIP sip = SIP.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST, Lists.newArrayList("CAT"));
+        sip.withDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "sdsdfm1211vd");
+        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+                       MediaType.valueOf("application/fits"));
+        sip.registerContentInformation();
+        sips.add(sip);
 
         // Ingest
         Collection<IngestRequestFlowItem> items = IngestService.sipToFlow(sips);
@@ -187,13 +187,12 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         SIPCollection sips = SIPCollection
                 .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST, STORAGE_METADATA));
 
-        SIPBuilder builder = new SIPBuilder(SIP_ID_TEST);
-        builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
-        builder.setSyntax("FITS(FlexibleImageTransport)",
-                          "http://www.iana.org/assignments/media-types/application/fits",
-                          MediaType.valueOf("application/fits"));
-        builder.addContentInformation();
-        sips.add(builder.build());
+        SIP sip = SIP.build(EntityType.DATA, SIP_ID_TEST, Lists.newArrayList("CAT2"));
+        sip.withDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
+        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+                       MediaType.valueOf("application/fits"));
+        sip.registerContentInformation();
+        sips.add(sip);
 
         // Simulate an error on each step
         simulateProcessingError(sips, PreprocessingTestPlugin.class);
@@ -234,7 +233,8 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         ArgumentCaptor<IngestRequest> ingestRequestCaptor = ArgumentCaptor.forClass(IngestRequest.class);
         ArgumentCaptor<SIPEntity> sipCaptor = ArgumentCaptor.forClass(SIPEntity.class);
 
-        Mockito.verify(ingestRequestService, Mockito.times(1)).handleRequestError(ingestRequestCaptor.capture(), sipCaptor.capture());
+        Mockito.verify(ingestRequestService, Mockito.times(1)).handleRequestError(ingestRequestCaptor.capture(),
+                                                                                  sipCaptor.capture());
         Mockito.clearInvocations(ingestRequestService);
         IngestRequest request = ingestRequestCaptor.getValue();
         Assert.assertNotNull(request);
@@ -255,10 +255,9 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         SIPCollection sips = SIPCollection
                 .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST, STORAGE_METADATA));
 
-        SIPBuilder builder = new SIPBuilder(SIP_REF_ID_TEST);
-        sips.add(builder.buildReference(Paths.get("src/test/resources/file_ref.xml"),
-                                        "1e2d4ab665784e43243b9b07724cd483"));
-        builder.setSyntax("XML", "https://en.wikipedia.org/wiki/XML", MediaType.valueOf("application/xml"));
+        SIP sip = SIP.buildReference(EntityType.DATA, SIP_REF_ID_TEST, Paths.get("src/test/resources/file_ref.xml"),
+                                     "1e2d4ab665784e43243b9b07724cd483");
+        sips.add(sip);
 
         // Ingest
         ingestService.handleIngestRequests(IngestService.sipToFlow(sips));

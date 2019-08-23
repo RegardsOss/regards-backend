@@ -21,8 +21,10 @@
 					{
 						"dataObject": {
 							"regardsDataType": "RAWDATA",
-							"urls": [
-								"file:/home/test.xml"
+							"locations": [	
+								{
+									"url": "file:/home/test.xml"
+								}
 							],
 							"checksum": "c8a5f0b675909fc265395b9ab50a5755",
 							"reference": false,
@@ -38,6 +40,9 @@
 				],
 				"pdi": {
 					"contextInformation": {
+						"categories" : [
+							"CAT"
+						],
 						"tags": [
 							"DA_TC_JASON2_CORPFALTI_POE"
 						]

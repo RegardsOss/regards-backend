@@ -33,10 +33,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
+
+import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -46,7 +51,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
@@ -83,8 +88,10 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         SIPCollection sips = SIPCollection
                 .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                StorageMetadata.build("disk", null)));
-        SIPBuilder builder = new SIPBuilder(providerId);
-        sips.add(builder.buildReference(Paths.get("sip1.xml"), checksum));
+
+        sips.add(SIP.build(EntityType.DATA, providerId, Lists.newArrayList("CAT"))
+                .withDataObject(DataType.RAWDATA, Paths.get("sip1.xml"), checksum).withSyntax(MediaType.APPLICATION_XML)
+                .registerContentInformation());
 
         // First ingestion with synchronous service
         ingestService.handleSIPCollection(sips);
@@ -119,8 +126,8 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
 
         // Detect error
         ArgumentCaptor<IngestRequest> argumentCaptor = ArgumentCaptor.forClass(IngestRequest.class);
-        Mockito.verify(ingestRequestService, Mockito.times(1)).handleRequestError(argumentCaptor.capture(),
-                ArgumentCaptor.forClass(SIPEntity.class).capture());
+        Mockito.verify(ingestRequestService, Mockito.times(1))
+                .handleRequestError(argumentCaptor.capture(), ArgumentCaptor.forClass(SIPEntity.class).capture());
         IngestRequest request = argumentCaptor.getValue();
         Assert.assertNotNull(request);
         Assert.assertTrue(RequestState.ERROR.equals(request.getState()));
