@@ -144,8 +144,18 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
         this.properties = new InformationPackageProperties();
     }
 
+    /**
+     * Delegated method for retrieving tags from context information
+     */
     public Collection<String> getTags() {
         return properties.getPdi().getTags();
+    }
+
+    /**
+     * Delegated method for retrieving tags from context information
+     */
+    public Collection<String> getCategories() {
+        return properties.getPdi().getCategories();
     }
 
     public List<Event> getHistory() {

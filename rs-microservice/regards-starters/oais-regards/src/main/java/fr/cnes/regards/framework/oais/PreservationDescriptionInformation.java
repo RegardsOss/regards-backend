@@ -150,6 +150,19 @@ public class PreservationDescriptionInformation {
     }
 
     /**
+     * @return the categories
+     */
+    public Collection<String> getCategories() {
+        @SuppressWarnings("unchecked")
+        Collection<String> cats = (Collection<String>) getContextInformation().get(CONTEXT_INFO_CATEGORIES);
+        if (cats == null) {
+            cats = Sets.newHashSet();
+            getContextInformation().put(CONTEXT_INFO_CATEGORIES, cats);
+        }
+        return cats;
+    }
+
+    /**
      * @return the access right information
      */
     public AccessRightInformation getAccessRightInformation() {
