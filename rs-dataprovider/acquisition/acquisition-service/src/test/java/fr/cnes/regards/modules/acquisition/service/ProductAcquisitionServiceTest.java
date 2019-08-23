@@ -18,18 +18,32 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataDProvider;
+import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
+import fr.cnes.regards.modules.ingest.client.RequestInfo;
+import fr.cnes.regards.modules.sessionmanager.domain.Session;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
@@ -65,7 +79,6 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link Product} workflow
@@ -106,6 +119,9 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
     @Autowired
     private IJobInfoService jobInfoService;
+
+    @SpyBean
+    private IPublisher publisher;
 
     @Before
     public void before() throws ModuleException {
@@ -167,6 +183,11 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
         // SIP post processing
         // Not required
+
+        List<StorageMetadataDProvider> storages = new ArrayList<>();
+        storages.add(StorageMetadataDProvider.build("AWS", "/path/to/file"));
+        storages.add(StorageMetadataDProvider.build("HELLO", "/other/path/to/file"));
+        processingChain.setStorages(storages);
 
         // Save processing chain
         processingChain = processingService.createChain(processingChain);
@@ -261,7 +282,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
         // Check product
         Assert.assertEquals(0, productService.countByProcessingChainAndSipStateIn(processingChain, Arrays
-                .asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.NOT_SCHEDULED_INVALID, SIPState.REJECTED)));
+                .asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.NOT_SCHEDULED_INVALID)));
         Assert.assertEquals(4, productService.countByChain(processingChain));
         Assert.assertEquals(4,
                             productService.countByProcessingChainAndSipStateIn(processingChain, Arrays
@@ -276,6 +297,24 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         Assert.assertEquals(0, fileService
                 .countByChainAndStateIn(processingChain,
                                         Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID)));
+
+        // Let's test SessionNotifier
+        ArgumentCaptor<ISubscribable> grantedInfo = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(publisher, Mockito.times(16)).publish(grantedInfo.capture());
+        // Capture how many notif of each type have been sent
+        Map<String, Integer> callByProperty = new HashMap<>();
+        for (ISubscribable event: grantedInfo.getAllValues()) {
+            // We ignore all others types of events
+            if (event instanceof SessionMonitoringEvent) {
+                SessionMonitoringEvent monitoringEvent = (SessionMonitoringEvent) event;
+                if (callByProperty.containsKey(monitoringEvent.getProperty())) {
+                    callByProperty.put(monitoringEvent.getProperty(), callByProperty.get(monitoringEvent.getProperty()) + 1);
+                } else {
+                    callByProperty.put(monitoringEvent.getProperty(), 1);
+                }
+            }
+        }
+        Assert.assertEquals(4, (int) callByProperty.get(SessionNotifier.PROPERTY_GENERATED));
     }
 
     //    @Test

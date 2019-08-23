@@ -205,7 +205,8 @@ public interface IAcquisitionProcessingService {
     void restartInterruptedJobs(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
-     * Retry SIP generation for products in {@link ProductSIPState#GENERATION_ERROR}
+     * Retry SIP generation for products in {@link ProductSIPState#GENERATION_ERROR} or
+     *  {@link ProductSIPState#INGESTION_FAILED}
      */
     void retrySIPGeneration(AcquisitionProcessingChain processingChain);
 

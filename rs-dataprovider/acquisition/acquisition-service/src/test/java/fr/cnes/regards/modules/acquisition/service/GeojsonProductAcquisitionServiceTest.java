@@ -39,6 +39,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataDProvider;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
@@ -48,9 +49,11 @@ import fr.cnes.regards.modules.acquisition.service.plugins.GeoJsonFeatureCollect
 import fr.cnes.regards.modules.acquisition.service.plugins.GeoJsonSIPGeneration;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.Assert;
@@ -168,6 +171,10 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
 
         // SIP post processing
         // Not required
+        List<StorageMetadataDProvider> storages = new ArrayList<>();
+        storages.add(StorageMetadataDProvider.build("AWS", "/path/to/file"));
+        storages.add(StorageMetadataDProvider.build("HELLO", "/other/path/to/file"));
+        processingChain.setStorages(storages);
 
         // Save processing chain
         processingChain = processingService.createChain(processingChain);

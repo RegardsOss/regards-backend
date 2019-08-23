@@ -42,25 +42,22 @@ public class AcquisitionIngestClientListener implements IIngestClientListener {
 
     @Override
     public void onDenied(RequestInfo info) {
-        // TODO Auto-generated method stub
-
+        productService.handleIngestedSIPFailed(info);
     }
 
     @Override
     public void onGranted(RequestInfo info) {
-        // TODO Auto-generated method stub
-
+        // Nothing to do
     }
 
     @Override
     public void onError(RequestInfo info) {
-        // TODO Auto-generated method stub
-
+        productService.handleIngestedSIPFailed(info);
     }
 
     @Override
     public void onSuccess(RequestInfo info) {
-        productService.handleSIPSuccess(info);
+        productService.handleIngestedSIPSuccess(info);
     }
 
 }

@@ -18,7 +18,12 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataDProvider;
+import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
+import fr.cnes.regards.modules.acquisition.service.session.SessionChangingStateProbe;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -126,21 +131,23 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Product saveAndSubmitSIP(Product product) {
+    public Product saveAndSubmitSIP(Product product, List<StorageMetadataDProvider> storages) throws SIPGenerationException {
         LOGGER.trace("Saving and submitting product \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
                      product.getProductName(), product.getIpId(), product.getSipState());
 
-        // FIXME : fullfil ingest metadata properly
-        StorageMetadata storageMetadata = StorageMetadata.build("FIXME", null);
+        List<StorageMetadata> storageList = new ArrayList<>();
+        for(StorageMetadataDProvider storage: storages) {
+            storageList.add(StorageMetadata.build(storage.getStorage(), storage.getStorageSubDirectory()));
+        }
+
         IngestMetadataDto ingestMetadata = IngestMetadataDto
                 .build(product.getProcessingChain().getLabel(), product.getSession(),
-                       product.getProcessingChain().getIngestChain(), storageMetadata);
+                       product.getProcessingChain().getIngestChain(), storageList);
         try {
             ingestClient.ingest(ingestMetadata, product.getSip());
             return save(product);
         } catch (IngestClientException e) {
-            // FIXME do something on error
-            return null;
+            throw new SIPGenerationException(e.getMessage());
         }
     }
 
@@ -213,7 +220,7 @@ public class ProductService implements IProductService {
             if (product.getLastSIPGenerationJobInfo() != null) {
                 jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
             }
-
+            sessionNotifier.notifyRelaunchSIPGeneration(product);
             // Change product SIP state
             product.setSipState(ProductSIPState.SCHEDULED);
             product.setLastSIPGenerationJobInfo(jobInfo);
@@ -351,6 +358,7 @@ public class ProductService implements IProductService {
 
             // Get product
             Product currentProduct = productMap.get(productName);
+            SessionChangingStateProbe changingStateProbe = SessionChangingStateProbe.build(currentProduct);
             if (currentProduct == null) {
                 // It is a new Product, create it
                 currentProduct = new Product();
@@ -360,15 +368,13 @@ public class ProductService implements IProductService {
                 productMap.put(productName, currentProduct);
             } else if (!currentProduct.getSession().equals(session)) {
                 // The product is now managed by another session
-                sessionNotifier.notifyDecrementSession(currentProduct.getProcessingChain().getLabel(),
-                                                       currentProduct.getSession(), currentProduct.getState());
                 currentProduct.setSession(session);
             }
-            // Keep the current product state if we need to send a notif
+            // Keep the current product state to send the notif
             ProductState oldState = currentProduct.getState();
 
             // Fulfill product with new valid acquired files
-            fulfillProduct(validFilesByProductName.get(productName), currentProduct, processingChain);
+            fulfillProduct(validFilesByProductName.get(productName), currentProduct);
 
             // Store for scheduling
             if (currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED
@@ -377,8 +383,9 @@ public class ProductService implements IProductService {
                 LOGGER.trace("Product {} is candidate for SIP generation", currentProduct.getProductName());
                 productsToSchedule.add(currentProduct);
             }
+            changingStateProbe.addUpdatedProduct(currentProduct);
             // Notify about the product state change
-            sessionNotifier.notifyProductStateChanges(currentProduct, oldState);
+            sessionNotifier.notifyProductStateChange(changingStateProbe);
         }
 
         // Schedule SIP generation
@@ -393,8 +400,7 @@ public class ProductService implements IProductService {
     /**
      * Fulfill product with new valid acquired files
      */
-    private Product fulfillProduct(Collection<AcquisitionFile> validFiles, Product currentProduct,
-            AcquisitionProcessingChain processingChain) throws ModuleException {
+    private Product fulfillProduct(Collection<AcquisitionFile> validFiles, Product currentProduct) {
 
         for (AcquisitionFile validFile : validFiles) {
             // Mark old file as superseded
@@ -441,7 +447,7 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public void handleSIPSuccess(RequestInfo info) {
+    public void handleIngestedSIPSuccess(RequestInfo info) {
         Product product = productRepository.findByProductName(info.getProviderId());
         if (product != null) {
             // Do post processing when SIP properly stored
@@ -459,12 +465,35 @@ public class ProductService implements IProductService {
                 }
                 product.setLastPostProductionJobInfo(jobInfo);
             }
+            sessionNotifier.notifyProductIngested(product);
             product.setSipState(SIPState.INGESTED);
             product.setIpId(info.getSipId());
             save(product);
         } else {
             LOGGER.warn("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider", info.getSipId(),
                         info.getProviderId());
+        }
+    }
+
+    @Override
+    public void handleIngestedSIPFailed(RequestInfo info) {
+        Product product = productRepository.findByProductName(info.getProviderId());
+        if (product != null) {
+            // Do post processing when SIP properly stored
+            StringBuilder errorMessage = new StringBuilder();
+            errorMessage.append("Ingestion failed with following error :  \\n");
+            for (String error : info.getErrors()) {
+                errorMessage.append(error);
+                errorMessage.append("  \\n");
+            }
+            product.setSipState(ProductSIPState.INGESTION_FAILED);
+            product.setIpId(info.getSipId());
+            product.setError(errorMessage.toString());
+            save(product);
+            sessionNotifier.notifyProductIngestFailure(product);
+        } else {
+            LOGGER.warn("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider", info.getSipId(),
+                    info.getProviderId());
         }
     }
 
@@ -551,8 +580,9 @@ public class ProductService implements IProductService {
     public boolean retrySIPGenerationByPage(AcquisitionProcessingChain processingChain) {
 
         Page<Product> products = productRepository
-                .findByProcessingChainAndSipStateOrderByIdAsc(processingChain, ProductSIPState.GENERATION_ERROR,
-                                                              PageRequest.of(0, AcquisitionProperties.WORKING_UNIT));
+                .findByProcessingChainAndSipStateInOrderByIdAsc(processingChain,
+                        Arrays.asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.INGESTION_FAILED),
+                        PageRequest.of(0, AcquisitionProperties.WORKING_UNIT));
         // Schedule SIP generation
         if (products.hasContent()) {
             LOGGER.debug("Retrying SIP generation for {} product(s)", products.getContent().size());
