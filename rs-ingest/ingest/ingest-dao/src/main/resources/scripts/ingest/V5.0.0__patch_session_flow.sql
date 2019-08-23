@@ -26,8 +26,8 @@ ALTER TABLE t_aip ADD COLUMN storages jsonb;
 
 ALTER TABLE t_aip ADD COLUMN provider_id varchar(100) NOT NULL;
 ALTER TABLE t_aip ADD COLUMN last_update TIMESTAMP NOT NULL;
-alter table public.t_aip add column categories jsonb not null;
-alter table public.t_aip add column tags jsonb;
+alter table t_aip add column categories jsonb not null;
+alter table t_aip add column tags jsonb;
 
 create index idx_aip_session_owner on t_aip (session_owner);
 create index idx_aip_session on t_aip (session_name);
