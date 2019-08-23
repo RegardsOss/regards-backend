@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
 /**
@@ -44,16 +42,6 @@ public interface IAIPService {
      * @return list of related {@link AIPEntity}
      */
     List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips);
-
-    /**
-     * Handle job event
-     */
-    void handleJobEvent(JobEvent jobEvent);
-
-    /**
-     * Set the status of the given AIP to given one
-     */
-    void setAipInError(UniformResourceName aipId, AIPState storeError, String failureCause, SIPState sipState);
 
     /**
      * Delete the {@link AIPEntity} by his ipId

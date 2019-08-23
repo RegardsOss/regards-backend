@@ -52,7 +52,7 @@ public abstract class AbstractRequest {
 
     @NotNull(message = "Ingest request state is required")
     @Enumerated(EnumType.STRING)
-    @Column(name = "state", length = 20, nullable = false)
+    @Column(name = "state", length = 50, nullable = false)
     private RequestState state;
 
     @Column(columnDefinition = "jsonb", name = "errors")

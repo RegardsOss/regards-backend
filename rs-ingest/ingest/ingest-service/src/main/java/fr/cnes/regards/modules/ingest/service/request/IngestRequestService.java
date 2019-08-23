@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import java.lang.reflect.Type;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,17 +47,28 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
+import fr.cnes.regards.modules.storagelight.client.IStorageClient;
+import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 
 /**
  * Manage ingest requests
@@ -68,6 +81,9 @@ import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 public class IngestRequestService implements IIngestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestService.class);
+
+    @Autowired
+    private IngestConfigurationProperties confProperties;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -92,6 +108,9 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Autowired
     private SessionNotifier sessionNotifier;
+
+    @Autowired
+    private IStorageClient storageClient;
 
     @Override
     public void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests) {
@@ -186,14 +205,62 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void handleRequestSuccess(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
-        request.setState(RequestState.SUCCESS);
+    public void handleLocalRequestSuccess(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
 
         // Save SIP entity
         sipEntity = sipService.saveSIPEntity(sipEntity);
 
         // Build AIP entities and save them
-        aipService.createAndSave(sipEntity, aips);
+        List<AIPEntity> aipEntities = aipService.createAndSave(sipEntity, aips);
+
+        // Launch next remote step
+        request.setStep(IngestRequestStep.REMOTE_STORAGE_REQUESTED, confProperties.getRemoteRequestTimeout());
+
+        // Build file storage requests
+        Collection<FileStorageRequestDTO> files = new ArrayList<>();
+
+        for (AIPEntity aipEntity : aipEntities) {
+
+            AIP aip = aipEntity.getAip();
+            List<StorageMetadata> storages = aipEntity.getIngestMetadata().getStorages();
+
+            for (ContentInformation ci : aip.getProperties().getContentInformations()) {
+
+                OAISDataObject dataObject = ci.getDataObject();
+
+                // Find origin(s) URL (location without storage)
+                List<OAISDataObjectLocation> origins = dataObject.getLocations().stream()
+                        .filter(l -> l.getStorage() == null).collect(Collectors.toList());
+                if (origins.isEmpty()) {
+                    // FIXME : request error! this case can be validated directly on submission!
+                    return;
+                }
+                URL originUrl = origins.get(0).getUrl();
+
+                // Create a request for each storage
+                for (StorageMetadata storage : storages) {
+                    files.add(FileStorageRequestDTO
+                            .build(dataObject.getFilename(), dataObject.getChecksum(), dataObject.getAlgorithm(),
+                                   ci.getRepresentationInformation().getSyntax().getMimeType().toString(),
+                                   aip.getId().toString(), originUrl, storage.getStorage(),
+                                   Optional.ofNullable(storage.getStorePath())));
+                }
+            }
+        }
+
+        // Request storage for all AIPs of the ingest request
+        RequestInfo info = storageClient.store(files);
+
+        // Pb!!!! comme faire pour générer l'AIP par groupe ... ou pas!
+
+        // Register request info to handle callback events
+        // Keep track of the error
+        ingestRequestRepository.save(request);
+    }
+
+    @Override
+    public void handleRequestSuccess(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
+        request.setState(RequestState.SUCCESS);
 
         // Clean
         ingestRequestRepository.delete(request);
@@ -202,7 +269,10 @@ public class IngestRequestService implements IIngestRequestService {
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null,
                                                    sipEntity.getSipId(), request.getState(), request.getErrors()));
+
         // Publish new SIP in current session
+        // FIXME : on le met dans le success global ou partiel avant demande de stockage?
         sessionNotifier.notifySIPCreated(sipEntity);
+
     }
 }

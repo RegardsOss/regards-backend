@@ -24,6 +24,7 @@ import java.util.Set;
 
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
@@ -67,6 +68,12 @@ public interface IIngestRequestService {
      * Handle request error during job processing
      */
     void handleRequestError(IngestRequest request, SIPEntity entity);
+
+    /**
+     * Handle request success at the end of the job processing and launch remote storage request
+     * All LOCAL {@link IngestRequestStep} successfully done.
+     */
+    void handleLocalRequestSuccess(IngestRequest request, SIPEntity sipEntity, List<AIP> aips);
 
     /**
      * Handle request success at the end of the job processing

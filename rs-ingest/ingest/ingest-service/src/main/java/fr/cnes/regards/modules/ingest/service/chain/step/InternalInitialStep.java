@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -49,7 +50,7 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
     private ISIPService sipService;
 
     public InternalInitialStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
-        super(job, ingestChain);
+        super(job, ingestChain, IngestRequestStep.LOCAL_INIT);
     }
 
     @Override

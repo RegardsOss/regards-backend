@@ -32,6 +32,12 @@ public class IngestConfigurationProperties {
     @Value("${regards.ingest.max.bulk.size:1000}")
     private Integer maxBulkSize;
 
+    /*
+     * In minute.
+     */
+    @Value("${regards.ingest.remote.request.timeout:5}")
+    private Long remoteRequestTimeout;
+
     public Integer getMaxBulkSize() {
         return maxBulkSize;
     }
@@ -40,4 +46,11 @@ public class IngestConfigurationProperties {
         this.maxBulkSize = maxBulkSize;
     }
 
+    public Long getRemoteRequestTimeout() {
+        return remoteRequestTimeout;
+    }
+
+    public void setRemoteRequestTimeout(Long remoteRequestTimeout) {
+        this.remoteRequestTimeout = remoteRequestTimeout;
+    }
 }

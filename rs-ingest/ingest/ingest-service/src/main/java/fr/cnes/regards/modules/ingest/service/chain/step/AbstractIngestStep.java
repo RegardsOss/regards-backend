@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepExceptio
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
@@ -50,9 +51,10 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
 
     protected Set<String> errors;
 
-    public AbstractIngestStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
+    public AbstractIngestStep(IngestProcessingJob job, IngestProcessingChain ingestChain, IngestRequestStep step) {
         super(job);
         this.ingestChain = ingestChain;
+        this.job.getCurrentRequest().setStep(step);
     }
 
     protected <T> T getStepPlugin(String confId) throws ProcessingStepException {

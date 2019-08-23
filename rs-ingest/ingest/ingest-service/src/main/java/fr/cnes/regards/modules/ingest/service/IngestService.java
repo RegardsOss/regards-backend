@@ -57,6 +57,7 @@ import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
 import fr.cnes.regards.modules.ingest.domain.mapper.ISessionDeletionRequestMapper;
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.SessionDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
@@ -150,7 +151,7 @@ public class IngestService implements IIngestService {
             // Publish DENIED request (do not persist it in DB)
             ingestRequestService.handleDeniedRequest(IngestRequest
                     .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()), RequestState.DENIED,
-                           null, errs));
+                           IngestRequestStep.LOCAL_DENIED, null, errs));
             if (LOGGER.isDebugEnabled()) {
                 StringJoiner joiner = new StringJoiner(", ");
                 errs.forEach(err -> joiner.add(err));
@@ -161,9 +162,9 @@ public class IngestService implements IIngestService {
         }
 
         // Save granted ingest request
-        IngestRequest request = IngestRequest.build(item.getRequestId(),
-                                                    metadataMapper.dtoToMetadata(item.getMetadata()),
-                                                    RequestState.GRANTED, item.getSip());
+        IngestRequest request = IngestRequest
+                .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()), RequestState.GRANTED,
+                       IngestRequestStep.LOCAL_SCHEDULED, item.getSip());
         ingestRequestService.handleGrantedRequest(request);
         // Add to granted request collection
         grantedRequests.add(request);
@@ -244,8 +245,8 @@ public class IngestService implements IIngestService {
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB) / Warning : request id cannot be known
-            ingestRequestService
-                    .handleDeniedRequest(IngestRequest.build(ingestMetadata, RequestState.DENIED, sip, errs));
+            ingestRequestService.handleDeniedRequest(IngestRequest.build(ingestMetadata, RequestState.DENIED,
+                                                                         IngestRequestStep.LOCAL_DENIED, sip, errs));
 
             StringJoiner joiner = new StringJoiner(", ");
             errs.forEach(err -> joiner.add(err));
@@ -256,7 +257,8 @@ public class IngestService implements IIngestService {
         }
 
         // Save granted ingest request
-        IngestRequest request = IngestRequest.build(ingestMetadata, RequestState.GRANTED, sip);
+        IngestRequest request = IngestRequest.build(ingestMetadata, RequestState.GRANTED,
+                                                    IngestRequestStep.LOCAL_SCHEDULED, sip);
         ingestRequestService.handleGrantedRequest(request);
         // Trace granted request
         info.addGrantedRequest(sip.getId(), request.getRequestId());

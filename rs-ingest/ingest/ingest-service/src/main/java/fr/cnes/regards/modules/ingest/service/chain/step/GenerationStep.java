@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
@@ -53,7 +54,7 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
     private Validator validator;
 
     public GenerationStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
-        super(job, ingestChain);
+        super(job, ingestChain, IngestRequestStep.LOCAL_GENERATION);
     }
 
     @Override

@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepExceptio
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
@@ -43,7 +44,7 @@ public class PostprocessingStep extends AbstractIngestStep<SIP, Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PostprocessingStep.class);
 
     public PostprocessingStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
-        super(job, ingestChain);
+        super(job, ingestChain, IngestRequestStep.LOCAL_POST_PROCESSING);
     }
 
     @Override

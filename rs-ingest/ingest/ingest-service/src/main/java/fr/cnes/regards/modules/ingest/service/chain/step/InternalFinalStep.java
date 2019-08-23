@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -44,7 +45,7 @@ public class InternalFinalStep extends AbstractIngestStep<List<AIP>, Void> {
     private IIngestRequestService ingestRequestService;
 
     public InternalFinalStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
-        super(job, ingestChain);
+        super(job, ingestChain, IngestRequestStep.LOCAL_FINAL);
     }
 
     @Override

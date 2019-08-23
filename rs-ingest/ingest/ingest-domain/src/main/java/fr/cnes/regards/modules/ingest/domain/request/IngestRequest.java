@@ -18,11 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request;
 
+import java.time.OffsetDateTime;
 import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -30,6 +33,7 @@ import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -51,6 +55,8 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 @Entity
 @Table(name = "t_ingest_request",
         indexes = { @Index(name = "idx_ingest_request_id", columnList = "request_id"),
+                @Index(name = "idx_ingest_request_step", columnList = "step"),
+                @Index(name = "idx_ingest_remote_step_deadline", columnList = "remote_step_deadline"),
                 @Index(name = "idx_ingest_request_state", columnList = "state") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_ingest_request_id", columnNames = { "request_id" }) })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
@@ -63,6 +69,14 @@ public class IngestRequest extends AbstractRequest {
 
     @Embedded
     private IngestMetadata metadata;
+
+    @NotNull(message = "Ingest request step is required")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "step", length = 50, nullable = false)
+    private IngestRequestStep step;
+
+    @Column(name = "remote_step_deadline")
+    private OffsetDateTime remoteStepDeadline;
 
     @Column(columnDefinition = "jsonb", name = "rawsip")
     @Type(type = "jsonb")
@@ -92,27 +106,60 @@ public class IngestRequest extends AbstractRequest {
         this.sip = sip;
     }
 
-    public static IngestRequest build(IngestMetadata metadata, RequestState state, SIP sip) {
-        return build(generateRequestId(), metadata, state, sip, null);
+    public IngestRequestStep getStep() {
+        return step;
     }
 
-    public static IngestRequest build(IngestMetadata metadata, RequestState state, SIP sip,
+    /**
+     * @param step local step
+     */
+    public void setStep(IngestRequestStep step) {
+        if (step.isRemote()) {
+            throw new IllegalArgumentException("Remote step needs a timeout, use dedicated setter!");
+        }
+        this.step = step;
+    }
+
+    /**
+     * @param step remote step
+     * @param remoteStepTimeout timeout in minute
+     */
+    public void setStep(IngestRequestStep step, long remoteStepTimeout) {
+        if (!step.isRemote()) {
+            throw new IllegalArgumentException("Local step don't need timeout, use dedicated setter!");
+        }
+        this.step = step;
+        this.remoteStepDeadline = OffsetDateTime.now().plusMinutes(remoteStepTimeout);
+    }
+
+    public OffsetDateTime getRemoteStepDeadline() {
+        return remoteStepDeadline;
+    }
+
+    public static IngestRequest build(IngestMetadata metadata, RequestState state, IngestRequestStep step, SIP sip) {
+        return build(generateRequestId(), metadata, state, step, sip, null);
+    }
+
+    public static IngestRequest build(IngestMetadata metadata, RequestState state, IngestRequestStep step, SIP sip,
             @Nullable Set<String> errors) {
-        return build(generateRequestId(), metadata, state, sip, errors);
+        return build(generateRequestId(), metadata, state, step, sip, errors);
     }
 
-    public static IngestRequest build(String requestId, IngestMetadata metadata, RequestState state, SIP sip) {
-        return build(requestId, metadata, state, sip, null);
+    public static IngestRequest build(String requestId, IngestMetadata metadata, RequestState state,
+            IngestRequestStep step, SIP sip) {
+        return build(requestId, metadata, state, step, sip, null);
     }
 
-    public static IngestRequest build(String requestId, IngestMetadata metadata, RequestState state, SIP sip,
-            @Nullable Set<String> errors) {
+    public static IngestRequest build(String requestId, IngestMetadata metadata, RequestState state,
+            IngestRequestStep step, SIP sip, @Nullable Set<String> errors) {
         IngestRequest request = new IngestRequest();
         request.setRequestId(requestId);
         request.setMetadata(metadata);
         request.setState(state);
+        request.setStep(step);
         request.setSip(sip);
         request.setErrors(errors);
         return request;
     }
+
 }

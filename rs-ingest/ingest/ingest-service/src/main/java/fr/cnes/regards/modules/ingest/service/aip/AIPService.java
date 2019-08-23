@@ -18,43 +18,27 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
-import fr.cnes.regards.modules.storagelight.client.IStorageClient;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.gson.Gson;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.notification.NotificationLevel;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
-import fr.cnes.regards.modules.templates.service.ITemplateService;
 
 /**
  * Service to handle aip related issues in ingest, including sending bulk request of AIP to store to archival storage
@@ -67,66 +51,19 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
 @MultitenantTransactional
 public class AIPService implements IAIPService {
 
+    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPService.class);
-
-    @Autowired
-    private ISIPService sipService;
-
-    @Autowired
-    private ISIPRepository sipRepository;
 
     @Autowired
     private IAIPRepository aipRepository;
 
-    @Autowired
-    private IJobInfoService jobInfoService;
-
-    @Autowired
-    private Gson gson;
-
-    @Autowired
-    private INotificationClient notificationClient;
-
-    @Autowired
-    private IStorageClient storageClient;
-
-    @Autowired
-    private ITemplateService templateService;
-
     @Override
     public List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips) {
         List<AIPEntity> entities = new ArrayList<>();
-//        List<FileStorageRequestDTO> filesToStore = new ArrayList<>();
         for (AIP aip : aips) {
             entities.add(aipRepository.save(AIPEntity.build(sip, AIPState.CREATED, aip)));
-//            for (ContentInformation ci : aip.getProperties().getContentInformations()) {
-//                OAISDataObject dataObject = ci.getDataObject();
-//
-//                filesToStore.add(FileStorageRequestDTO.build(dataObject.getFilename(), dataObject.getChecksum(), dataObject.getAlgorithm(),
-//                        ci.getRepresentationInformation().getSyntax().getMimeType().toString(), "owner",
-//                        dataObject.getUrls().iterator().next(), null, null
-//                ));
-//            }
         }
-//        storageClient.store(filesToStore);
         return entities;
-    }
-
-    @Override
-    public void setAipInError(UniformResourceName aipId, AIPState state, String errorMessage, SIPState sipState) {
-        Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
-        if (oAip.isPresent()) {
-            // Update AIP State
-            AIPEntity aip = oAip.get();
-            aipRepository.updateAIPEntityStateAndErrorMessage(state, aipId.toString(), errorMessage);
-            // Update SIP associated State
-            SIPEntity sip = aip.getSip();
-            sip.setState(sipState);
-            //            // Save the errorMessage inside SIP rejections errors
-            //            sip.getRejectionCauses().add(String.format("Storage of AIP(%s) failed due to the following error: %s",
-            //                                                       aipId, errorMessage));
-            sipService.saveSIPEntity(sip);
-        }
     }
 
     @Override
@@ -153,14 +90,14 @@ public class AIPService implements IAIPService {
         for (AIPEntity aip : aipsRelatedToSip) {
             if (aip.getState() == AIPState.STORED) {
                 // TODO
-//                FileDeletionRequestDTO toDelete = FileDeletionRequestDTO.build("cheksum", "storage", "owner", false);
-//                RequestInfo delete = storageClient.delete(toDelete);
-//                String groupId = delete.getGroupId();
-//                // TODO send event to delete on storage
+                //                FileDeletionRequestDTO toDelete = FileDeletionRequestDTO.build("cheksum", "storage", "owner", false);
+                //                RequestInfo delete = storageClient.delete(toDelete);
+                //                String groupId = delete.getGroupId();
+                //                // TODO send event to delete on storage
 
                 // TODO save inside a DB table this entity will be removed (keep removeIrrevocably too)
                 // And listen for events from storage for this entity
-//                aip.setState(AIPState.TO_BE_DELETED);
+                //                aip.setState(AIPState.TO_BE_DELETED);
                 aipRepository.save(aip);
             } else {
                 // We had this condition on those state here and not into #isDeletableWithAIPs because we just want to be silent.
@@ -179,28 +116,10 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void handleJobEvent(JobEvent jobEvent) {
-        if (JobEventType.FAILED.equals(jobEvent.getJobEventType())) {
-            // Load job info
-            @SuppressWarnings("unused")
-            JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
-            String jobClass = jobInfo.getClassName();
-            String title = "Unhandled job error";
-            LOGGER.warn(title + String.format(" %s/%s", jobClass, jobInfo.getId().toString()));
-            String stacktrace = jobInfo.getStatus().getStackTrace();
-            LOGGER.warn(stacktrace);
-            notificationClient.notify(stacktrace, title, NotificationLevel.ERROR, DefaultRole.ADMIN);
-        }
-    }
-
-    @Override
     public AIPEntity save(AIPEntity entity) {
         return aipRepository.save(entity);
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.ingest.service.store.IAIPService#askForAipsDeletion()
-     */
     @Override
     public void askForAipsDeletion() {
         // TODO Auto-generated method stub
