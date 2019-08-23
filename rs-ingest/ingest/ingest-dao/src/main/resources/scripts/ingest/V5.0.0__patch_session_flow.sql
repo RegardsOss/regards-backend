@@ -10,11 +10,34 @@ ALTER TABLE t_sip ADD COLUMN storages jsonb;
 create index idx_sip_session_owner on t_sip (session_owner);
 create index idx_sip_session on t_sip (session_name);
 CREATE INDEX idx_sip_ingest_chain ON t_sip (ingest_chain);
+CREATE INDEX idx_sip_storage ON t_sip USING gin (storages);
 
 create index idx_sip_state on t_sip (state);
 create index idx_sip_providerId on t_sip (providerId);
 create index idx_sip_ingest_date on t_sip (ingestDate);
 create index idx_sip_version on t_sip (version);
+
+-- Propagate ingest metadata to AIP for search purpose
+
+alter table t_aip add column session_owner varchar(128) NOT NULL;
+alter table t_aip add column session_name varchar(128) NOT NULL;
+alter table t_aip ADD COLUMN ingest_chain varchar(100) NOT NULL;
+ALTER TABLE t_aip ADD COLUMN storages jsonb;
+
+ALTER TABLE t_aip ADD COLUMN provider_id varchar(100) NOT NULL;
+ALTER TABLE t_aip ADD COLUMN last_update TIMESTAMP NOT NULL;
+alter table public.t_aip add column categories jsonb not null;
+alter table public.t_aip add column tags jsonb;
+
+create index idx_aip_session_owner on t_aip (session_owner);
+create index idx_aip_session on t_aip (session_name);
+CREATE INDEX idx_aip_ingest_chain ON t_aip (ingest_chain);
+CREATE INDEX idx_aip_storage ON t_aip USING gin (storages);
+
+CREATE INDEX idx_aip_provider_id ON t_aip (provider_id);
+CREATE INDEX idx_aip_last_update ON t_aip (last_update);
+CREATE INDEX idx_aip_tags ON t_aip USING gin (tags);
+CREATE INDEX idx_aip_categories ON t_aip USING gin (categories);
 
 -- ALTER TABLE fk_sip_session DROP CONSTRAINT IF EXISTS fk_sip_session;
 alter table t_sip drop column session RESTRICT;
