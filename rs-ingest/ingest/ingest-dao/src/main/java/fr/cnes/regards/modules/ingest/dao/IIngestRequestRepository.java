@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -66,4 +67,15 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      * Get request by ids
      */
     List<IngestRequest> findByIdIn(Collection<Long> ids);
+
+    /**
+     * Load request and its related AIPs
+     */
+    @EntityGraph(attributePaths = "aips")
+    IngestRequest findAllByRemoteStepGroupId(String groupId);
+
+    /**
+     * Find request by remote group id (i.e. remote request id)
+     */
+    IngestRequest findByRemoteStepGroupId(String groupId);
 }

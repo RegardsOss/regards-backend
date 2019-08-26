@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 
 /**
  * Ingest request service
@@ -57,12 +58,12 @@ public interface IIngestRequestService {
     /**
      * Handle request granted during request handling
      */
-    void handleGrantedRequest(IngestRequest request);
+    void handleRequestGranted(IngestRequest request);
 
     /**
      * Handle request denied during request handling
      */
-    void handleDeniedRequest(IngestRequest request);
+    void handleRequestDenied(IngestRequest request);
 
     /**
      * Handle request error during job processing
@@ -73,11 +74,25 @@ public interface IIngestRequestService {
      * Handle request success at the end of the job processing and launch remote storage request
      * All LOCAL {@link IngestRequestStep} successfully done.
      */
-    void handleLocalRequestSuccess(IngestRequest request, SIPEntity sipEntity, List<AIP> aips);
-
-    /**
-     * Handle request success at the end of the job processing
-     */
     void handleRequestSuccess(IngestRequest request, SIPEntity sipEntity, List<AIP> aips);
 
+    /**
+     * Handle request granted from storage service
+     */
+    void handleRemoteRequestGranted(RequestInfo requestInfo);
+
+    /**
+     * Handle request denied from storage service
+     */
+    void handleRemoteRequestDenied(RequestInfo requestInfo);
+
+    /**
+     * Handle remote storage success
+     */
+    void handleRemoteStoreSuccess(RequestInfo requestInfo);
+
+    /**
+     * Handle remote storage error
+     */
+    void handleRemoteStoreError(RequestInfo requestInfo);
 }

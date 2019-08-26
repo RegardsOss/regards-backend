@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
@@ -44,6 +46,11 @@ public interface IAIPService {
     List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips);
 
     /**
+     * Download current AIP file related to AIP entity with specified urn
+     */
+    public void downloadAIP(UniformResourceName urn, OutputStream output) throws ModuleException;
+
+    /**
      * Delete the {@link AIPEntity} by his ipId
      */
     Collection<RejectedAipDto> deleteAip(String sipId);
@@ -62,10 +69,4 @@ public interface IAIPService {
      * Save AIP
      */
     AIPEntity save(AIPEntity entity);
-
-    /**
-     * Look for sips in state {@link fr.cnes.regards.modules.ingest.domain.sip.SIPState#TO_BE_DELETED} and
-     * ask to rs-storage to delete them per page of 100.
-     */
-    void askForAipsDeletion();
 }

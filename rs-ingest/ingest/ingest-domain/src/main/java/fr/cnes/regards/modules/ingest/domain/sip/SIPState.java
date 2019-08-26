@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.ingest.domain.sip;
 
 /**
+ * SIP lifecycle
  *
  * @author Marc Sordi
- *
  */
 public enum SIPState implements ISipState {
 
@@ -29,6 +29,10 @@ public enum SIPState implements ISipState {
      * SIP has been properly ingested
      */
     INGESTED,
+    /**
+     * SIP has been properly stored
+     */
+    STORED,
     /**
      * SIP is deleted but we still keep it in database
      */

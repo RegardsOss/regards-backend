@@ -27,40 +27,50 @@ package fr.cnes.regards.modules.ingest.domain.request;
 public enum IngestRequestStep {
 
     // Not granted before db persist
-    LOCAL_DENIED(false),
+    LOCAL_DENIED,
 
     // Awaiting processing
-    LOCAL_SCHEDULED(false),
+    LOCAL_SCHEDULED,
 
     // Synchronous ingest processing job steps
-    LOCAL_INIT(false),
-    LOCAL_PRE_PROCESSING(false),
-    LOCAL_VALIDATION(false),
-    LOCAL_GENERATION(false),
-    LOCAL_TAGGING(false),
-    LOCAL_POST_PROCESSING(false),
-    LOCAL_FINAL(false),
+    LOCAL_INIT,
+    LOCAL_PRE_PROCESSING,
+    LOCAL_VALIDATION,
+    LOCAL_GENERATION,
+    LOCAL_TAGGING,
+    LOCAL_POST_PROCESSING,
+    LOCAL_FINAL,
 
     // Remote and asynchronous storage steps
 
     // For AIP files
-    REMOTE_STORAGE_REQUESTED(true),
+    REMOTE_STORAGE_REQUESTED(true, true),
     REMOTE_STORAGE_GRANTED(true),
     REMOTE_STORAGE_DENIED(true),
     REMOTE_STORAGE_ERROR(true),
-    REMOTE_STORAGE_SUCCESS(true),
+    // REMOTE_STORAGE_SUCCESS(true),
 
     // For AIP itself
-    REMOTE_AIP_STORAGE_REQUESTED(true),
+    REMOTE_AIP_STORAGE_REQUESTED(true, true),
     REMOTE_AIP_STORAGE_GRANTED(true),
     REMOTE_AIP_STORAGE_DENIED(true),
-    REMOTE_AIP_STORAGE_ERROR(true),
-    REMOTE_AIP_STORAGE_SUCCESS(true);
+    REMOTE_AIP_STORAGE_ERROR(true);
+    // REMOTE_AIP_STORAGE_SUCCESS(true);
 
     private boolean remote = false;
 
+    private boolean timeout = false;
+
+    private IngestRequestStep() {
+    }
+
     private IngestRequestStep(boolean remote) {
         this.remote = remote;
+    }
+
+    private IngestRequestStep(boolean remote, boolean timeout) {
+        this.remote = remote;
+        this.timeout = timeout;
     }
 
     /**
@@ -68,5 +78,12 @@ public enum IngestRequestStep {
      */
     public boolean isRemote() {
         return remote;
+    }
+
+    /**
+     * Identify a remote step with request timeout
+     */
+    public boolean withTimeout() {
+        return timeout;
     }
 }

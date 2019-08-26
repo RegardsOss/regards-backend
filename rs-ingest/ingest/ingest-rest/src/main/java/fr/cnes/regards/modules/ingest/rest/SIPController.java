@@ -62,7 +62,7 @@ import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
- * This controller manages SIP submission API.
+ * REST API for managing SIP
  *
  * @author Marc Sordi
  *

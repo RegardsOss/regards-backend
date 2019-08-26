@@ -19,6 +19,9 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +33,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
@@ -161,7 +165,7 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void handleGrantedRequest(IngestRequest request) {
+    public void handleRequestGranted(IngestRequest request) {
         request.setState(RequestState.GRANTED);
 
         ingestRequestRepository.save(request);
@@ -172,7 +176,7 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void handleDeniedRequest(IngestRequest request) {
+    public void handleRequestDenied(IngestRequest request) {
         request.setState(RequestState.DENIED);
 
         // Do not keep track of the request
@@ -205,13 +209,15 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void handleLocalRequestSuccess(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
+    public void handleRequestSuccess(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
 
         // Save SIP entity
         sipEntity = sipService.saveSIPEntity(sipEntity);
 
         // Build AIP entities and save them
         List<AIPEntity> aipEntities = aipService.createAndSave(sipEntity, aips);
+        // Attach generated AIPs to the current request
+        request.setAips(aipEntities);
 
         // Launch next remote step
         request.setStep(IngestRequestStep.REMOTE_STORAGE_REQUESTED, confProperties.getRemoteRequestTimeout());
@@ -250,29 +256,157 @@ public class IngestRequestService implements IIngestRequestService {
 
         // Request storage for all AIPs of the ingest request
         RequestInfo info = storageClient.store(files);
+        // Register request info to identify storage callback events
+        request.setRemoteStepGroupId(info.getGroupId());
 
-        // Pb!!!! comme faire pour générer l'AIP par groupe ... ou pas!
-
-        // Register request info to handle callback events
-        // Keep track of the error
+        // Keep track of the request
         ingestRequestRepository.save(request);
     }
 
+    /**
+     * Do not use at the moment, just log.
+     */
     @Override
-    public void handleRequestSuccess(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
-        request.setState(RequestState.SUCCESS);
+    public void handleRemoteRequestGranted(RequestInfo requestInfo) {
+        // Do not track at the moment : the ongoing request could send a success too quickly
+        // and could cause unnecessary concurrent access to the database!
+        LOGGER.debug("Storage request granted with id \"{}\"", requestInfo.getGroupId());
 
-        // Clean
-        ingestRequestRepository.delete(request);
+        // IngestRequest request = ingestRequestRepository.findAllByRemoteStepGroupId(info.getGroupId());
+        // request.setStep(IngestRequestStep.REMOTE_STORAGE_GRANTED, confProperties.getRemoteRequestTimeout());
+        // ingestRequestRepository.save(request);
+    }
 
-        // Publish SUCCESSFUL request
-        publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null,
-                                                   sipEntity.getSipId(), request.getState(), request.getErrors()));
+    @Override
+    public void handleRemoteRequestDenied(RequestInfo requestInfo) {
 
-        // Publish new SIP in current session
-        // FIXME : on le met dans le success global ou partiel avant demande de stockage?
-        sessionNotifier.notifySIPCreated(sipEntity);
+        // Retrieve request
+        IngestRequest request = ingestRequestRepository.findByRemoteStepGroupId(requestInfo.getGroupId());
+        request.setState(RequestState.ERROR);
+
+        switch (request.getStep()) {
+            case REMOTE_STORAGE_REQUESTED:
+                // Request for FILEs storage
+                request.setStep(IngestRequestStep.REMOTE_STORAGE_DENIED);
+                break;
+            case REMOTE_AIP_STORAGE_REQUESTED:
+                // Request for AIPs storage
+                request.setStep(IngestRequestStep.REMOTE_AIP_STORAGE_DENIED);
+                break;
+            default:
+                LOGGER.warn("Unexpected step {}", request.getStep());
+                break;
+        }
+
+        String message = String.format("Storage request denied with id \"%s\" and SIP provider id \"%s\"",
+                                       requestInfo.getGroupId(), request.getSip().getId());
+        LOGGER.error(message);
+        request.addError(message);
+
+        // Keep track of the error
+        ingestRequestRepository.save(request);
+
+        // Publish ERROR request
+        publisher.publish(IngestRequestEvent.build(request.getRequestId(), request.getSip().getId(), null,
+                                                   request.getState(), request.getErrors()));
+    }
+
+    @Override
+    public void handleRemoteStoreSuccess(RequestInfo requestInfo) {
+
+        // Retrieve request and related entities SIP & AIPs
+        IngestRequest request = ingestRequestRepository.findAllByRemoteStepGroupId(requestInfo.getGroupId());
+
+        switch (request.getStep()) {
+            case REMOTE_STORAGE_REQUESTED:
+                // Request for FILEs storage successfully completed, now requests AIPs storage
+                storeAips(request);
+                break;
+            case REMOTE_AIP_STORAGE_REQUESTED:
+                // Request for AIPs storage successfully completed, now finalize sucessful request
+                finalizeSuccessfulRequest();
+                break;
+            default:
+                // FIXME throw exception?
+                LOGGER.warn("Unexpected step {}", request.getStep());
+                break;
+        }
+    }
+
+    private void storeAips(IngestRequest request) {
+
+        // Launch next remote step
+        request.setStep(IngestRequestStep.REMOTE_AIP_STORAGE_REQUESTED, confProperties.getRemoteRequestTimeout());
+
+        // Build file storage requests
+        Collection<FileStorageRequestDTO> files = new ArrayList<>();
+
+        for (AIPEntity aipEntity : request.getAips()) {
+
+            AIP aip = aipEntity.getAip();
+            List<StorageMetadata> storages = aipEntity.getIngestMetadata().getStorages();
+
+            // Build origin(s) URL (location without storage)
+            URL originUrl;
+            try {
+                originUrl = new URI(confProperties.getAipDownloadTemplate()
+                        .replace(IngestConfigurationProperties.DOWNLOAD_AIP_PLACEHOLDER, aip.getId().toString()))
+                                .toURL();
+            } catch (MalformedURLException | URISyntaxException e) {
+                // FIXME throw exception!!! fatal error!!!
+            }
+
+            // Create a request for each storage
+            // FIXME préciser le répertoire de sauvegarde des AIPs
+            for (StorageMetadata storage : storages) {
+                files.add(FileStorageRequestDTO.build(dataObject.getFilename(), dataObject.getChecksum(),
+                                                      dataObject.getAlgorithm(), MediaType.APPLICATION_JSON_UTF8_VALUE,
+                                                      aip.getId().toString(), originUrl, storage.getStorage(),
+                                                      Optional.ofNullable(storage.getStorePath())));
+            }
+        }
+
+        // Request storage for all AIPs of the ingest request
+        RequestInfo info = storageClient.store(files);
+        // Register request info to identify storage callback events
+        request.setRemoteStepGroupId(info.getGroupId());
+
+        // Keep track of the request
+        ingestRequestRepository.save(request);
+    }
+
+    private void finalizeSuccessfulRequest() {
+        // FIXME
+
+        // TODO remove old AIP
+        // TODO delete request
+    }
+
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.ingest.service.request.IIngestRequestService#handleRemoteStoreError(fr.cnes.regards.modules.storagelight.client.RequestInfo)
+     */
+    @Override
+    public void handleRemoteStoreError(RequestInfo requestInfo) {
+        // TODO Auto-generated method stub
 
     }
+
+    // FIXME
+    //    @Override
+    //    public void handleRequestSuccess(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
+    //        request.setState(RequestState.SUCCESS);
+    //
+    //        // Clean
+    //        ingestRequestRepository.delete(request);
+    //
+    //        // Publish SUCCESSFUL request
+    //        publisher.publish(IngestRequestEvent.build(request.getRequestId(),
+    //                                                   request.getSip() != null ? request.getSip().getId() : null,
+    //                                                   sipEntity.getSipId(), request.getState(), request.getErrors()));
+    //
+    //        // Publish new SIP in current session
+    //        // FIXME : on le met dans le success global ou partiel avant demande de stockage?
+    //        sessionNotifier.notifySIPCreated(sipEntity);
+    //
+    //    }
 }

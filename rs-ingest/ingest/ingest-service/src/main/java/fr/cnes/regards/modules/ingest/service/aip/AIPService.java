@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -41,8 +43,8 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
 /**
- * Service to handle aip related issues in ingest, including sending bulk request of AIP to store to archival storage
- * microservice.
+ * AIP service management
+ *
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
@@ -61,9 +63,18 @@ public class AIPService implements IAIPService {
     public List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips) {
         List<AIPEntity> entities = new ArrayList<>();
         for (AIP aip : aips) {
-            entities.add(aipRepository.save(AIPEntity.build(sip, AIPState.CREATED, aip)));
+            entities.add(aipRepository.save(AIPEntity.build(sip, AIPState.GENERATED, aip)));
         }
         return entities;
+    }
+
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.ingest.service.aip.IAIPService#downloadAIP(fr.cnes.regards.framework.oais.urn.UniformResourceName, java.lang.String, java.io.OutputStream)
+     */
+    @Override
+    public void downloadAIP(UniformResourceName urn, OutputStream output) throws ModuleException {
+        // TODO Auto-generated method stub
+
     }
 
     @Override
@@ -118,11 +129,5 @@ public class AIPService implements IAIPService {
     @Override
     public AIPEntity save(AIPEntity entity) {
         return aipRepository.save(entity);
-    }
-
-    @Override
-    public void askForAipsDeletion() {
-        // TODO Auto-generated method stub
-        // TODO refactor with files only
     }
 }

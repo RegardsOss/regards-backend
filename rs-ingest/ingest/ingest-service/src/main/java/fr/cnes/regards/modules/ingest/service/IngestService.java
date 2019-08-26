@@ -149,7 +149,7 @@ public class IngestService implements IIngestService {
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB)
-            ingestRequestService.handleDeniedRequest(IngestRequest
+            ingestRequestService.handleRequestDenied(IngestRequest
                     .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()), RequestState.DENIED,
                            IngestRequestStep.LOCAL_DENIED, null, errs));
             if (LOGGER.isDebugEnabled()) {
@@ -165,7 +165,7 @@ public class IngestService implements IIngestService {
         IngestRequest request = IngestRequest
                 .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()), RequestState.GRANTED,
                        IngestRequestStep.LOCAL_SCHEDULED, item.getSip());
-        ingestRequestService.handleGrantedRequest(request);
+        ingestRequestService.handleRequestGranted(request);
         // Add to granted request collection
         grantedRequests.add(request);
     }
@@ -245,7 +245,7 @@ public class IngestService implements IIngestService {
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB) / Warning : request id cannot be known
-            ingestRequestService.handleDeniedRequest(IngestRequest.build(ingestMetadata, RequestState.DENIED,
+            ingestRequestService.handleRequestDenied(IngestRequest.build(ingestMetadata, RequestState.DENIED,
                                                                          IngestRequestStep.LOCAL_DENIED, sip, errs));
 
             StringJoiner joiner = new StringJoiner(", ");
@@ -259,7 +259,7 @@ public class IngestService implements IIngestService {
         // Save granted ingest request
         IngestRequest request = IngestRequest.build(ingestMetadata, RequestState.GRANTED,
                                                     IngestRequestStep.LOCAL_SCHEDULED, sip);
-        ingestRequestService.handleGrantedRequest(request);
+        ingestRequestService.handleRequestGranted(request);
         // Trace granted request
         info.addGrantedRequest(sip.getId(), request.getRequestId());
         // Add to granted request collection

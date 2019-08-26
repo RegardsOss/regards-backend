@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.domain.request;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -26,10 +27,15 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -41,6 +47,7 @@ import org.hibernate.annotations.TypeDefs;
 import org.springframework.lang.Nullable;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -57,6 +64,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
         indexes = { @Index(name = "idx_ingest_request_id", columnList = "request_id"),
                 @Index(name = "idx_ingest_request_step", columnList = "step"),
                 @Index(name = "idx_ingest_remote_step_deadline", columnList = "remote_step_deadline"),
+                @Index(name = "idx_ingest_request_remote_step_group_id", columnList = "remote_step_group_id"),
                 @Index(name = "idx_ingest_request_state", columnList = "state") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_ingest_request_id", columnNames = { "request_id" }) })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
@@ -70,17 +78,42 @@ public class IngestRequest extends AbstractRequest {
     @Embedded
     private IngestMetadata metadata;
 
+    /**
+     * All internal request steps including local and remote ones
+     */
     @NotNull(message = "Ingest request step is required")
     @Enumerated(EnumType.STRING)
     @Column(name = "step", length = 50, nullable = false)
     private IngestRequestStep step;
 
+    /**
+     * Remote step dead line <br/>
+     * A daemon controls this and passes this request in {@link RequestState#ERROR} if deadline is outdated!
+     */
     @Column(name = "remote_step_deadline")
     private OffsetDateTime remoteStepDeadline;
+
+    /**
+     * Remote request group id
+     */
+    @Column(name = "remote_step_group_id", length = 36)
+    private String remoteStepGroupId;
 
     @Column(columnDefinition = "jsonb", name = "rawsip")
     @Type(type = "jsonb")
     private SIP sip;
+
+    /**
+     * The {@link List} of files to build a product
+     */
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "t_ingest_request_aip", joinColumns = @JoinColumn(name = "ingest_request_id"),
+            inverseJoinColumns = @JoinColumn(name = "aip_id"),
+            uniqueConstraints = {
+                    @UniqueConstraint(name = "uk_ingest_request_aip_aip_id", columnNames = { "aip_id" }) },
+            foreignKey = @ForeignKey(name = "fk_ingest_request_aip_request_id"),
+            inverseForeignKey = @ForeignKey(name = "fk_ingest_request_aip_aip_id"))
+    private List<AIPEntity> aips;
 
     public Long getId() {
         return id;
@@ -114,10 +147,11 @@ public class IngestRequest extends AbstractRequest {
      * @param step local step
      */
     public void setStep(IngestRequestStep step) {
-        if (step.isRemote()) {
+        if (step.isRemote() && step.withTimeout()) {
             throw new IllegalArgumentException("Remote step needs a timeout, use dedicated setter!");
         }
         this.step = step;
+        this.remoteStepDeadline = null;
     }
 
     /**
@@ -125,7 +159,7 @@ public class IngestRequest extends AbstractRequest {
      * @param remoteStepTimeout timeout in minute
      */
     public void setStep(IngestRequestStep step, long remoteStepTimeout) {
-        if (!step.isRemote()) {
+        if (!step.isRemote() && !step.withTimeout()) {
             throw new IllegalArgumentException("Local step don't need timeout, use dedicated setter!");
         }
         this.step = step;
@@ -134,6 +168,22 @@ public class IngestRequest extends AbstractRequest {
 
     public OffsetDateTime getRemoteStepDeadline() {
         return remoteStepDeadline;
+    }
+
+    public String getRemoteStepGroupId() {
+        return remoteStepGroupId;
+    }
+
+    public void setRemoteStepGroupId(String remoteStepGroupId) {
+        this.remoteStepGroupId = remoteStepGroupId;
+    }
+
+    public List<AIPEntity> getAips() {
+        return aips;
+    }
+
+    public void setAips(List<AIPEntity> aips) {
+        this.aips = aips;
     }
 
     public static IngestRequest build(IngestMetadata metadata, RequestState state, IngestRequestStep step, SIP sip) {
@@ -161,5 +211,4 @@ public class IngestRequest extends AbstractRequest {
         request.setErrors(errors);
         return request;
     }
-
 }
