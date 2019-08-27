@@ -190,7 +190,7 @@ public class FileStorageRequestService {
             Collection<String> owners) {
         Collection<JobInfo> jobList = Lists.newArrayList();
         Set<String> allStorages = fileStorageRequestRepo.findStoragesByStatus(status);
-        Set<String> storagesToSchedule = (storages != null) && !storages.isEmpty()
+        Set<String> storagesToSchedule = storages != null && !storages.isEmpty()
                 ? allStorages.stream().filter(storages::contains).collect(Collectors.toSet())
                 : allStorages;
         long start = System.currentTimeMillis();
@@ -199,7 +199,7 @@ public class FileStorageRequestService {
             Page<FileStorageRequest> filesPage;
             Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by("id"));
             do {
-                if ((owners != null) && !owners.isEmpty()) {
+                if (owners != null && !owners.isEmpty()) {
                     filesPage = fileStorageRequestRepo.findAllByStorageAndOwnersIn(storage, owners, page);
                 } else {
                     filesPage = fileStorageRequestRepo.findAllByStorage(storage, page);
@@ -244,7 +244,7 @@ public class FileStorageRequestService {
      * Schedule a {@link JobInfo} for the given {@link  FileStorageWorkingSubset}.<br/>
      * NOTE : A new transaction is created for each call at this method. It is mandatory to avoid having too long transactions.
      * @param workingSubset
-     * @param pluginConfId
+     * @param plgBusinessId
      * @return {@link JobInfo} scheduled.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)

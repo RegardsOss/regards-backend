@@ -191,7 +191,7 @@ public class FileReferenceEventPublisher {
      *
      * @param checksum of the file in error
      * @param owners owners of the file in error
-     * @param destinationLocation
+     * @param storage target destination
      * @param message Optional message
      * @param groupIds
      */
@@ -210,7 +210,7 @@ public class FileReferenceEventPublisher {
      *
      * @param checksum of the file in error
      * @param owners owners of the file in error
-     * @param destinationLocation
+     * @param storage target destination
      * @param message Optional message
      * @param groupId
      */

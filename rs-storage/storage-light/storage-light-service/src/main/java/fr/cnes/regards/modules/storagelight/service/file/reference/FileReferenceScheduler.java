@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
@@ -42,6 +43,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
  * </ul>
  * @author Sébastien Binda
  *
+ * FIXME manage concurrent calls ... apply and test {@link ILockService} to avoid READ LOCK on the target table
  */
 @Component
 @Profile("!noscheduler")
