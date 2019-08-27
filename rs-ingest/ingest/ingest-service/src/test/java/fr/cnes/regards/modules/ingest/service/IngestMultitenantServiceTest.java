@@ -65,9 +65,9 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     @Before
     public void init() throws Exception {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        ingestRequestRepository.deleteAll();
         aipRepository.deleteAll();
         sipRepository.deleteAll();
-        ingestRequestRepository.deleteAll();
         jobInfoRepo.deleteAll();
         pluginConfRepo.deleteAll();
         doInit();

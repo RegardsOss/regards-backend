@@ -95,14 +95,12 @@ public class IngestStorageListener implements IStorageRequestListener {
 
     @Override
     public void onStoreSuccess(RequestInfo requestInfo) {
-        // TODO Auto-generated method stub
-
+        ingestRequestService.handleRemoteStoreSuccess(requestInfo);
     }
 
     @Override
     public void onStoreError(RequestInfo requestInfo, Collection<ErrorFile> errors) {
-        // TODO Auto-generated method stub
-
+        ingestRequestService.handleRemoteStoreError(requestInfo, errors);
     }
 
 }

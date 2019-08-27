@@ -50,11 +50,12 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
     private ISIPService sipService;
 
     public InternalInitialStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
-        super(job, ingestChain, IngestRequestStep.LOCAL_INIT);
+        super(job, ingestChain);
     }
 
     @Override
     protected SIPEntity doExecute(IngestRequest request) throws ProcessingStepException {
+        job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_INIT);
 
         SIP sip = request.getSip();
 

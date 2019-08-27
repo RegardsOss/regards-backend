@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -106,7 +107,7 @@ public class IngestRequest extends AbstractRequest {
     /**
      * The {@link List} of files to build a product
      */
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "t_ingest_request_aip", joinColumns = @JoinColumn(name = "ingest_request_id"),
             inverseJoinColumns = @JoinColumn(name = "aip_id"),
             uniqueConstraints = {

@@ -46,11 +46,13 @@ public class PreprocessingStep extends AbstractIngestStep<SIP, SIP> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PreprocessingStep.class);
 
     public PreprocessingStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
-        super(job, ingestChain, IngestRequestStep.LOCAL_PRE_PROCESSING);
+        super(job, ingestChain);
     }
 
     @Override
     public SIP doExecute(SIP sip) throws ProcessingStepException {
+        job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_PRE_PROCESSING);
+
         Optional<PluginConfiguration> conf = ingestChain.getPreProcessingPlugin();
         if (conf.isPresent()) {
             LOGGER.debug("Preprocessing for SIP \"{}\"", sip.getId());

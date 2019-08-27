@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,8 +37,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -76,18 +73,8 @@ public class AIPController implements IResourceController<AIPEntity> {
 
         LOGGER.debug("Downloading AIP file for entity \"{}\"", aipId.toString());
 
-        // FIXME : Get data object from AIP
-        ContentInformation ci = null;
-        OAISDataObject dataObject = ci.getDataObject();
-
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + dataObject.getFilename());
-        // NOTE : Do not set content type after download. It can be ignored.
-        response.setContentType(ci.getRepresentationInformation().getSyntax().getMimeType().toString());
-        if (dataObject.getFileSize() != null) {
-            response.setContentLengthLong(dataObject.getFileSize());
-        }
         try {
-            aipService.downloadAIP(aipId, response.getOutputStream());
+            aipService.downloadAIP(aipId, response);
         } catch (ModuleException e) {
             // Workaround to handle conversion of ServletErrorResponse in JSON format and
             // avoid using ContentType of file set before.

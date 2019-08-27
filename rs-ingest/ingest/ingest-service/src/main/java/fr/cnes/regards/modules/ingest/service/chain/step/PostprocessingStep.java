@@ -44,11 +44,13 @@ public class PostprocessingStep extends AbstractIngestStep<SIP, Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PostprocessingStep.class);
 
     public PostprocessingStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
-        super(job, ingestChain, IngestRequestStep.LOCAL_POST_PROCESSING);
+        super(job, ingestChain);
     }
 
     @Override
     protected Void doExecute(SIP sip) throws ProcessingStepException {
+        job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_POST_PROCESSING);
+
         Optional<PluginConfiguration> conf = ingestChain.getPostProcessingPlugin();
         if (conf.isPresent()) {
             LOGGER.debug("Postprocessing for SIP \"{}\"", sip.getId());

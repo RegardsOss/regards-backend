@@ -45,11 +45,13 @@ public class ValidationStep extends AbstractIngestStep<SIP, Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidationStep.class);
 
     public ValidationStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
-        super(job, ingestChain, IngestRequestStep.LOCAL_VALIDATION);
+        super(job, ingestChain);
     }
 
     @Override
     protected Void doExecute(SIP sip) throws ProcessingStepException {
+        job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_VALIDATION);
+
         LOGGER.debug("Validating SIP \"{}\"", sip.getId());
         PluginConfiguration conf = ingestChain.getValidationPlugin();
         ISipValidation validation = this.getStepPlugin(conf.getBusinessId());

@@ -32,7 +32,25 @@ public enum IngestRequestStep {
     // Awaiting processing
     LOCAL_SCHEDULED,
 
-    // Synchronous ingest processing job steps
+    /**
+     * Synchronous ingest processing job steps
+     *
+     * Request created with {@link #LOCAL_SCHEDULED} step
+     *   |
+     *   {@link #LOCAL_INIT}
+     *   |
+     *   {@link #LOCAL_PRE_PROCESSING}
+     *   |
+     *   {@link #LOCAL_VALIDATION}
+     *   |
+     *   {@link #LOCAL_GENERATION}
+     *   |
+     *   {@link #LOCAL_TAGGING}
+     *   |
+     *   {@link #LOCAL_POST_PROCESSING}
+     *   |
+     *   {@link #LOCAL_FINAL}
+     */
     LOCAL_INIT,
     LOCAL_PRE_PROCESSING,
     LOCAL_VALIDATION,
@@ -41,18 +59,32 @@ public enum IngestRequestStep {
     LOCAL_POST_PROCESSING,
     LOCAL_FINAL,
 
-    // Remote and asynchronous storage steps
+    /**
+     * Remote and asynchronous storage steps
+     *
+     *   |
+     *   {@link #REMOTE_STORAGE_REQUESTED}
+     *   |_ {@link #REMOTE_STORAGE_DENIED}
+     *   |_ {@link #REMOTE_STORAGE_ERROR}
+     *   |
+     *   {@link #REMOTE_AIP_STORAGE_REQUESTED}
+     *   |_{@link #REMOTE_AIP_STORAGE_DENIED}
+     *   |_{@link #REMOTE_AIP_STORAGE_ERROR}
+     *   |
+     * Request deleted
+     *
+     */
 
     // For AIP files
     REMOTE_STORAGE_REQUESTED(true, true),
-    REMOTE_STORAGE_GRANTED(true),
+    // REMOTE_STORAGE_GRANTED(true),
     REMOTE_STORAGE_DENIED(true),
     REMOTE_STORAGE_ERROR(true),
     // REMOTE_STORAGE_SUCCESS(true),
 
     // For AIP itself
     REMOTE_AIP_STORAGE_REQUESTED(true, true),
-    REMOTE_AIP_STORAGE_GRANTED(true),
+    // REMOTE_AIP_STORAGE_GRANTED(true),
     REMOTE_AIP_STORAGE_DENIED(true),
     REMOTE_AIP_STORAGE_ERROR(true);
     // REMOTE_AIP_STORAGE_SUCCESS(true);

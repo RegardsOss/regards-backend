@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorFile;
 
 /**
  * Ingest request service
@@ -94,5 +95,5 @@ public interface IIngestRequestService {
     /**
      * Handle remote storage error
      */
-    void handleRemoteStoreError(RequestInfo requestInfo);
+    void handleRemoteStoreError(RequestInfo requestInfo, Collection<ErrorFile> errors);
 }

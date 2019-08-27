@@ -45,11 +45,12 @@ public class InternalFinalStep extends AbstractIngestStep<List<AIP>, Void> {
     private IIngestRequestService ingestRequestService;
 
     public InternalFinalStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
-        super(job, ingestChain, IngestRequestStep.LOCAL_FINAL);
+        super(job, ingestChain);
     }
 
     @Override
     protected Void doExecute(List<AIP> aips) throws ProcessingStepException {
+        job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_FINAL);
         ingestRequestService.handleRequestSuccess(job.getCurrentRequest(), job.getCurrentEntity(), aips);
         return null;
     }

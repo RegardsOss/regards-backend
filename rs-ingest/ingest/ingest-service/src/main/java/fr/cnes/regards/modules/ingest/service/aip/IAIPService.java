@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -30,6 +31,8 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 
 /**
  * AIP Service interface. Service to handle business around {@link AIPEntity}s
@@ -46,9 +49,15 @@ public interface IAIPService {
     List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips);
 
     /**
+     * Build storage request for AIP file itself!
+     */
+    Collection<FileStorageRequestDTO> buildAIPStorageRequest(AIP aip, List<StorageMetadata> storages)
+            throws ModuleException;
+
+    /**
      * Download current AIP file related to AIP entity with specified urn
      */
-    public void downloadAIP(UniformResourceName urn, OutputStream output) throws ModuleException;
+    void downloadAIP(UniformResourceName aipId, HttpServletResponse response) throws ModuleException;
 
     /**
      * Delete the {@link AIPEntity} by his ipId

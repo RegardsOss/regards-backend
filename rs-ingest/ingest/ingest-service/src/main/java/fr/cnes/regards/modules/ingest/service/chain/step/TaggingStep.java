@@ -43,11 +43,13 @@ public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(TaggingStep.class);
 
     public TaggingStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
-        super(job, ingestChain, IngestRequestStep.LOCAL_TAGGING);
+        super(job, ingestChain);
     }
 
     @Override
     protected Void doExecute(List<AIP> aips) throws ProcessingStepException {
+        job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_TAGGING);
+
         Optional<PluginConfiguration> conf = ingestChain.getTagPlugin();
         if (conf.isPresent()) {
             IAipTagging tagging = this.getStepPlugin(conf.get().getBusinessId());

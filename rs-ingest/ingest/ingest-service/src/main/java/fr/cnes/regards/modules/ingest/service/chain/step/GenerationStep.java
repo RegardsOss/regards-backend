@@ -54,11 +54,13 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
     private Validator validator;
 
     public GenerationStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
-        super(job, ingestChain, IngestRequestStep.LOCAL_GENERATION);
+        super(job, ingestChain);
     }
 
     @Override
     protected List<AIP> doExecute(SIP sip) throws ProcessingStepException {
+        job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_GENERATION);
+
         LOGGER.debug("Generating AIP(s) from SIP \"{}\"", sip.getId());
         PluginConfiguration conf = ingestChain.getGenerationPlugin();
         IAipGeneration generation = this.getStepPlugin(conf.getBusinessId());

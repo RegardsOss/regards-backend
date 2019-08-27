@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
@@ -60,6 +61,7 @@ import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
  * @author Sébastien Binda
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest" })
+@ActiveProfiles("StorageClientMock")
 public class IngestServiceIT extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
