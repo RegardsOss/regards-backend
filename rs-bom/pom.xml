@@ -61,6 +61,7 @@
 		<module>regards-parent</module>
 		<module>regards-frontend-parent</module>
 		<module>regards-aggregator-parent</module>
+		<module>regards-suppress-cve</module>
 	</modules>
 
 	<build>
