@@ -21,6 +21,9 @@ package fr.cnes.regards.modules.ingest.dao;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -73,4 +76,6 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     @Modifying
     @Query("UPDATE AIPEntity a set a.state = ?1, a.errorMessage = ?3 where a.aipId = ?2")
     void updateAIPEntityStateAndErrorMessage(AIPState state, String aipId, String errorMessage);
+
+    Page<AIPEntity> findAll(Specification<AIPEntity> aipEntitySpecification, Pageable pageable);
 }

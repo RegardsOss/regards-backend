@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.aip;
 
 import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +31,8 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * AIP Service interface. Service to handle business around {@link AIPEntity}s
@@ -46,19 +49,37 @@ public interface IAIPService {
     List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips);
 
     /**
+     * Delete the {@link AIPEntity} by his ipId
+     */
+    Collection<RejectedAipDto> deleteAip(String sipId);
+
+    /**
+     * Save AIP
+     */
+    AIPEntity save(AIPEntity entity);
+
+    /**
+     * Retrieve AIPs matching provided parameters
+     */
+    Page<AIPEntity> search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, String sessionOwner, String session, String providerId, List<String> storages, Pageable pageable);
+
+
+    /**
      * Handle job event
      */
     void handleJobEvent(JobEvent jobEvent);
 
+    // DO WE KEEP HERE UNDER METHODS ?
+
+    /**
+     * Look for sips in state {@link fr.cnes.regards.modules.ingest.domain.sip.SIPState#TO_BE_DELETED} and
+     * ask to rs-storage to delete them per page of 100.
+     */
+    void askForAipsDeletion();
     /**
      * Set the status of the given AIP to given one
      */
     void setAipInError(UniformResourceName aipId, AIPState storeError, String failureCause, SIPState sipState);
-
-    /**
-     * Delete the {@link AIPEntity} by his ipId
-     */
-    Collection<RejectedAipDto> deleteAip(String sipId);
 
     /**
      * Set {@link AIPEntity} state to give none
@@ -69,15 +90,4 @@ public interface IAIPService {
      * Search for a {@link AIPEntity} by its ipId
      */
     Optional<AIPEntity> searchAip(UniformResourceName aipId);
-
-    /**
-     * Save AIP
-     */
-    AIPEntity save(AIPEntity entity);
-
-    /**
-     * Look for sips in state {@link fr.cnes.regards.modules.ingest.domain.sip.SIPState#TO_BE_DELETED} and
-     * ask to rs-storage to delete them per page of 100.
-     */
-    void askForAipsDeletion();
 }

@@ -102,6 +102,19 @@ public class IngestMetadataDto {
      */
     public static IngestMetadataDto build(String sessionOwner, String session, String ingestChain,
             StorageMetadata... storages) {
+        return IngestMetadataDto.build(sessionOwner, session, ingestChain, Arrays.asList(storages));
+    }
+
+
+    /**
+     * Build ingest metadata
+     * @param sessionOwner Owner of the session
+     * @param session session
+     * @param ingestChain ingest processing chain name
+     * @param storages storage metadata
+     */
+    public static IngestMetadataDto build(String sessionOwner, String session, String ingestChain,
+            List<StorageMetadata> storages) {
         Assert.hasLength(ingestChain, IngestValidationMessages.MISSING_INGEST_CHAIN);
         Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
         Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION);
@@ -110,7 +123,7 @@ public class IngestMetadataDto {
         m.setIngestChain(ingestChain);
         m.setSessionOwner(sessionOwner);
         m.setSession(session);
-        m.setStorages(Arrays.asList(storages));
+        m.setStorages(storages);
         return m;
     }
 }

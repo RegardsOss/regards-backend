@@ -39,7 +39,7 @@ public class RequestInfo {
     private String providerId;
 
     /**
-     * Unique Resource Name : internal REGARDS versionned unique identifier
+     * Unique Resource Name : internal REGARDS versioned unique identifier
      */
     private String sipId;
 

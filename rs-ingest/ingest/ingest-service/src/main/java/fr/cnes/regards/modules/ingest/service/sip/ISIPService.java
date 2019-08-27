@@ -41,13 +41,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 public interface ISIPService {
 
     /**
-     * Retrieve all submitted SIP with same provider id
-     * @param providerId provider id
-     * @return all version of related SIP with specified provider id
-     */
-    Collection<SIPEntity> getAllVersions(String providerId);
-
-    /**
      * Does a version of asked SIP into "after valid" state already exist ? (see {@link SIPState} for accepted states
      */
     boolean validatedVersionExists(String providerId);
@@ -81,15 +74,15 @@ public interface ISIPService {
     /**
      * Compute checksum for current SIP using {@link SIPService#MD5_ALGORITHM}
      */
-    public String calculateChecksum(SIP sip) throws NoSuchAlgorithmException, IOException;
+    String calculateChecksum(SIP sip) throws NoSuchAlgorithmException, IOException;
 
     /**
      * Check if current checksum already stored
      */
-    public boolean isAlreadyIngested(String checksum);
+    boolean isAlreadyIngested(String checksum);
 
     /**
      * Get next version of this SIP
      */
-    public Integer getNextVersion(SIP sip);
+    Integer getNextVersion(SIP sip);
 }

@@ -118,11 +118,6 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public Collection<SIPEntity> getAllVersions(String providerId) {
-        return sipRepository.getAllVersions(providerId);
-    }
-
-    @Override
     public boolean validatedVersionExists(String providerId) {
         return sipRepository.countByProviderIdAndStateIn(providerId) > 0;
     }

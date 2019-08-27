@@ -21,9 +21,11 @@ package fr.cnes.regards.modules.ingest.service.aip;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.modules.ingest.dao.AIPSpecification;
 import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -33,6 +35,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
@@ -113,33 +117,17 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void setAipInError(UniformResourceName aipId, AIPState state, String errorMessage, SIPState sipState) {
-        Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
-        if (oAip.isPresent()) {
-            // Update AIP State
-            AIPEntity aip = oAip.get();
-            aipRepository.updateAIPEntityStateAndErrorMessage(state, aipId.toString(), errorMessage);
-            // Update SIP associated State
-            SIPEntity sip = aip.getSip();
-            sip.setState(sipState);
-            //            // Save the errorMessage inside SIP rejections errors
-            //            sip.getRejectionCauses().add(String.format("Storage of AIP(%s) failed due to the following error: %s",
-            //                                                       aipId, errorMessage));
-            sipService.saveSIPEntity(sip);
-        }
+    public AIPEntity save(AIPEntity entity) {
+        return aipRepository.save(entity);
     }
 
     @Override
-    public void setAipToStored(UniformResourceName aipId, AIPState state) {
-        // Retrieve aip and set the new status to stored
-        Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
-        if (oAip.isPresent()) {
-            AIPEntity aip = oAip.get();
-            aip.setState(state);
-            aip.setErrorMessage(null);
-            aipRepository.save(aip);
-        }
+    public Page<AIPEntity> search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
+            String sessionOwner, String session, String providerId, List<String> storages, Pageable pageable) {
+
+        return aipRepository.findAll(AIPSpecification.searchAll(state, from, to, tags, sessionOwner, session, providerId, storages), pageable);
     }
+
 
     @Override
     public Collection<RejectedAipDto> deleteAip(String sipId) {
@@ -194,9 +182,34 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public AIPEntity save(AIPEntity entity) {
-        return aipRepository.save(entity);
+    public void setAipInError(UniformResourceName aipId, AIPState state, String errorMessage, SIPState sipState) {
+        Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
+        if (oAip.isPresent()) {
+            // Update AIP State
+            AIPEntity aip = oAip.get();
+            aipRepository.updateAIPEntityStateAndErrorMessage(state, aipId.toString(), errorMessage);
+            // Update SIP associated State
+            SIPEntity sip = aip.getSip();
+            sip.setState(sipState);
+            //            // Save the errorMessage inside SIP rejections errors
+            //            sip.getRejectionCauses().add(String.format("Storage of AIP(%s) failed due to the following error: %s",
+            //                                                       aipId, errorMessage));
+            sipService.saveSIPEntity(sip);
+        }
     }
+
+    @Override
+    public void setAipToStored(UniformResourceName aipId, AIPState state) {
+        // Retrieve aip and set the new status to stored
+        Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
+        if (oAip.isPresent()) {
+            AIPEntity aip = oAip.get();
+            aip.setState(state);
+            aip.setErrorMessage(null);
+            aipRepository.save(aip);
+        }
+    }
+
 
     /* (non-Javadoc)
      * @see fr.cnes.regards.modules.ingest.service.store.IAIPService#askForAipsDeletion()
