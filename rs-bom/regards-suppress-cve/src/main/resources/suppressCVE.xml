@@ -30,4 +30,18 @@
    ]]></notes>
         <cpe>cpe:/a:vmware:springsource_spring_security</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   suppress wrong identification of postgres
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/fr\.cnes\.regards\.modules\.dam\.plugins\.datasources/postgresql\-datasource@.*$</packageUrl>
+        <cpe>cpe:/a:postgresql:postgresql</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   suppress wrong identification of spring
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/fr\.cnes\.regards\.framework\.utils/spring\-utils@.*$</packageUrl>
+        <cpe>cpe:/a:pivotal_software:spring_framework</cpe>
+    </suppress>
 </suppressions>
