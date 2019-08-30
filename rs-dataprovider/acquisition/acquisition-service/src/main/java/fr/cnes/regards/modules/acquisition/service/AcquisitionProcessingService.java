@@ -298,6 +298,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 // Manage scan plugin conf
                 existing = fileInfoRepository.findOneScanPlugin(fileInfo.getId());
                 confsToRemove.add(updatePluginConfiguration(Optional.of(fileInfo.getScanPlugin()), existing));
+                fileInfo.setLastModificationDate(OffsetDateTime.now());
             }
 
             // Save file info
