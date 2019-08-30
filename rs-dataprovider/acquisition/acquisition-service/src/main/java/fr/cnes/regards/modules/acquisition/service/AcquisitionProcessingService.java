@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -706,7 +706,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Override
     public void manageRegisteredFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
-        while (!Thread.currentThread().isInterrupted() && self.manageNewFilesByPage(processingChain)) {
+        while (!Thread.currentThread().isInterrupted() && self.manageRegisteredFilesByPage(processingChain)) {
             // Works as long as there is at least one page left
         }
         // Just trace interruption
@@ -717,7 +717,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public boolean manageNewFilesByPage(AcquisitionProcessingChain processingChain) throws ModuleException {
+    public boolean manageRegisteredFilesByPage(AcquisitionProcessingChain processingChain) throws ModuleException {
 
         // - Retrieve first page of new registered files
         Page<AcquisitionFile> page = acqFileRepository
@@ -768,7 +768,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         LOGGER.debug("Validation of {} file(s) finished with {} valid and {} invalid.", page.getNumberOfElements(),
                      validFiles.size(), page.getNumberOfElements() - validFiles.size());
 
-        // Build and schedule products
+        // Build and schedule products, for a subset of the current file page
         Set<Product> products = productService.linkAcquisitionFilesToProducts(processingChain, validFiles);
 
         if (LOGGER.isDebugEnabled()) {

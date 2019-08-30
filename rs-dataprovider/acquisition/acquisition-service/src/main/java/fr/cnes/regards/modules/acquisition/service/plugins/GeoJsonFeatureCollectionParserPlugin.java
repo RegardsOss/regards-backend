@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -156,6 +156,13 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                     String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(thumbnailFile.toFile()),
                                                                        "MD5");
                     builder.getContentInformationBuilder().setDataObject(DataType.THUMBNAIL,
+                                                                         thumbnailFile.toAbsolutePath(),
+                                                                         thumbnailFile.getFileName().toString(), "MD5",
+                                                                         checksum, thumbnailFile.toFile().length());
+                    builder.getContentInformationBuilder().setSyntax(MediaType.IMAGE_PNG);
+                    builder.addContentInformation();
+
+                    builder.getContentInformationBuilder().setDataObject(DataType.QUICKLOOK_SD,
                                                                          thumbnailFile.toAbsolutePath(),
                                                                          thumbnailFile.getFileName().toString(), "MD5",
                                                                          checksum, thumbnailFile.toFile().length());

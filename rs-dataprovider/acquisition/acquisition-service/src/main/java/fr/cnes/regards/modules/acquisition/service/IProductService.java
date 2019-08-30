@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -129,9 +129,6 @@ public interface IProductService {
      * Link acquired files to theirs products creating or updating them.<br/>
      * If product is completed or finished, a SIP generation job is scheduled.
      *
-     * @param session the current session
-     * @param acqFile the {@link AcquisitionFile} to add to the {@link Product}
-     * @param productName the {@link Product} name
      * @param processingChain the related {@link AcquisitionProcessingChain}
      * @return the existing {@link Product} corresponding to the product name
      */
@@ -210,4 +207,15 @@ public interface IProductService {
      * Update a list of products by their names
      */
     void updateSipStatesByProductNameIn(ISipState state, Set<String> productNames);
+
+    /**
+     * Manage product state of updated products and schedule them for SIP generation as soon as possible
+     */
+    void manageUpdatedProducts(AcquisitionProcessingChain processingChain);
+
+    /**
+     * Same action as {@link #manageUpdatedProducts(AcquisitionProcessingChain)} but in a new transaction and by page
+     * @return whether there is a product page remaining to managed
+     */
+    boolean manageUpdatedProductsByPage(AcquisitionProcessingChain processingChain);
 }
