@@ -191,10 +191,10 @@ public class FileReferenceEventHandler
                         updated = action.update(fileRef);
                         if (updated != null) {
                             fileReferenceService.update(checksum, storage, updated);
-                            LOGGER.debug("File reference updated by action %s", action.getClass().getName());
+                            LOGGER.debug("File reference updated by action {}", action.getClass().getName());
                         }
                     } catch (ModuleException e) {
-                        LOGGER.error("Error updating File Reference after availability for action %s. Cause : %s",
+                        LOGGER.error("Error updating File Reference after availability for action  {}. Cause : {}",
                                      action.getClass().getName(), e.getMessage());
                         LOGGER.error(e.getMessage(), e);
                     }

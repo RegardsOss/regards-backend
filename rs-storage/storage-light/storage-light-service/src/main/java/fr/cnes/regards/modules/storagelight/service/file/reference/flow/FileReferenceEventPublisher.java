@@ -259,7 +259,7 @@ public class FileReferenceEventPublisher {
     }
 
     public void updated(String checksum, String storage, FileReference updatedFile) {
-        LOGGER.debug("Publishing FileReferenceUpdateEvent for file checksum %s and storage location %s", checksum,
+        LOGGER.debug("Publishing FileReferenceUpdateEvent for file checksum {} and storage location {}", checksum,
                      storage);
         publisher.publish(FileReferenceUpdateEvent.build(checksum, storage, updatedFile));
     }

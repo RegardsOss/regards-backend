@@ -18,13 +18,16 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.event;
 
+import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 
 /**
- * @author sbinda
- *
+ * Bus message to inform that a {@link FileReference} has been updated.
+ * @author Sébastien Binda
  */
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class FileReferenceUpdateEvent implements ISubscribable {
 
     private String checksum;

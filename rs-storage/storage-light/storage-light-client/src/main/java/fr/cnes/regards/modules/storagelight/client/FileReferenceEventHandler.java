@@ -34,8 +34,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 
 /**
+ * Handle Bus messages {@link FileReferenceEvent}
  * @author sbinda
- *
  */
 @Profile("!test")
 @Component("clientFileRefEventHandler")
