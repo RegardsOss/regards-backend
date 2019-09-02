@@ -61,8 +61,8 @@ public interface IAIPService {
     /**
      * Retrieve AIPs matching provided parameters
      */
-    Page<AIPEntity> search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, String sessionOwner, String session, String providerId, List<String> storages, Pageable pageable);
-
+    Page<AIPEntity> search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, String sessionOwner,
+            String session, String providerId, List<String> storages, List<String> categories, Pageable pageable);
 
     /**
      * Handle job event

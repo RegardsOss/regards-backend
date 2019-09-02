@@ -95,13 +95,13 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-integration-test</artifactId>
+			<groupId>fr.cnes.regards.modules.ingest</groupId>
+			<artifactId>ingest-client</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.ingest</groupId>
-			<artifactId>ingest-client</artifactId>
+			<artifactId>ingest-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

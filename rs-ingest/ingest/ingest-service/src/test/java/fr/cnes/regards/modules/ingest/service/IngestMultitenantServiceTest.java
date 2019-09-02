@@ -18,6 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.modules.ingest.client.IngestRequestEventHandler;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
+import fr.cnes.regards.modules.test.IngestServiceTest;
+import java.nio.file.Paths;
+import java.util.List;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,6 +48,7 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import org.springframework.http.MediaType;
 
 /**
  * Overlay of the default class to manage context cleaning in non transactional testing
@@ -38,8 +56,6 @@ import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
  * @author Marc SORDI
  */
 public abstract class IngestMultitenantServiceTest extends AbstractMultitenantServiceTest {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestMultitenantServiceTest.class);
 
     protected static final long TWO_SECONDS = 2000;
 
@@ -57,19 +73,12 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     protected IAIPRepository aipRepository;
 
     @Autowired
-    private IJobInfoRepository jobInfoRepo;
-
-    @Autowired
-    private IPluginConfigurationRepository pluginConfRepo;
+    protected IngestServiceTest ingestServiceTest;
 
     @Before
     public void init() throws Exception {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        aipRepository.deleteAll();
-        sipRepository.deleteAll();
-        ingestRequestRepository.deleteAll();
-        jobInfoRepo.deleteAll();
-        pluginConfRepo.deleteAll();
+        ingestServiceTest.init();
         doInit();
     }
 
@@ -94,41 +103,30 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         // Override to init something
     }
 
-    /**
-     * Helper method to wait for SIP ingestion
-     * @param expectedSips expected count of sips in database
-     * @param timeout in ms
-     * @throws InterruptedException
-     */
-    protected void waitForIngestion(long expectedSips, long timeout) {
-
-        long end = System.currentTimeMillis() + timeout;
-        // Wait
-        long sipCount;
-        do {
-            sipCount = sipRepository.count();
-            LOGGER.debug("{} SIP(s) created in database", sipCount);
-            if (sipCount == expectedSips) {
-                break;
-            }
-            long now = System.currentTimeMillis();
-            if (end > now) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Assert.fail("Thread interrupted");
-                }
-            } else {
-                Assert.fail("Timeout");
-            }
-        } while (true);
-    }
-
-    protected void waitDuring(long delay) {
-        try {
-            Thread.sleep(delay);
-        } catch (InterruptedException e) {
-            Assert.fail("Wait interrupted");
+    protected SIP create(String providerId, List<String> categories, List<String> tags) {
+        SIP sip = SIP.build(EntityType.DATA, providerId, categories);
+        sip.withDataObject(DataType.RAWDATA,
+                Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"), "MD5",
+                "azertyuiopqsdfmlmld");
+        sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
+        sip.registerContentInformation();
+        if (tags != null && !tags.isEmpty()) {
+            sip.withContextTags(tags.toArray(new String[0]));
         }
+
+        // Add creation event
+        sip.withEvent(String.format("SIP %s generated", providerId));
+
+        return sip;
     }
+
+    protected void publishSIPEvent(SIP sip, String storage, String session, String sessionOwner) {
+        // Create event
+        IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner, session,
+                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                StorageMetadata.build(storage, null));
+        ingestServiceTest.sendIngestRequestEvent(sip, mtd);
+    }
+
+
 }

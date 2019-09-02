@@ -110,7 +110,7 @@ public class IngestClientIT extends IngestMultitenantServiceTest {
         RequestInfo clientInfo = ingestClient.ingest(IngestMetadataDto
                 .build("sessionOwner", "session", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                        StorageMetadata.build("disk", null)), create("sipFromClient"));
-        waitForIngestion(1, FIVE_SECONDS);
+        ingestServiceTest.waitForIngestion(1, FIVE_SECONDS);
 
         ArgumentCaptor<RequestInfo> grantedInfo = ArgumentCaptor.forClass(RequestInfo.class);
         Mockito.verify(listener, Mockito.times(1)).onGranted(grantedInfo.capture());

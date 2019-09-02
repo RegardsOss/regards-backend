@@ -122,10 +122,11 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Page<AIPEntity> search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
-            String sessionOwner, String session, String providerId, List<String> storages, Pageable pageable) {
+    public Page<AIPEntity> search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, String sessionOwner,
+            String session, String providerId, List<String> storages, List<String> categories, Pageable pageable) {
 
-        return aipRepository.findAll(AIPSpecification.searchAll(state, from, to, tags, sessionOwner, session, providerId, storages), pageable);
+        return aipRepository.findAll(AIPSpecification.searchAll(state, from, to, tags, sessionOwner, session,
+                providerId, storages, categories), pageable);
     }
 
 

@@ -112,7 +112,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         String providerId = "SIP_001";
         String checksum = "zaasfsdfsdlfkmsldgfml12df";
         ingestSIP(providerId, checksum);
-        waitForIngestion(1, TEN_SECONDS);
+        ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
 
         SIPEntity entity = sipRepository.findTopByProviderIdOrderByIngestDateDesc(providerId);
         Assert.assertNotNull(entity);
@@ -122,7 +122,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
 
         // Re-ingest same SIP
         ingestSIP(providerId, checksum);
-        waitDuring(FIVE_SECONDS);
+        ingestServiceTest.waitDuring(FIVE_SECONDS);
 
         // Detect error
         ArgumentCaptor<IngestRequest> argumentCaptor = ArgumentCaptor.forClass(IngestRequest.class);
@@ -133,7 +133,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertTrue(RequestState.ERROR.equals(request.getState()));
 
         // Check repository
-        waitForIngestion(1, TWO_SECONDS);
+        ingestServiceTest.waitForIngestion(1, TWO_SECONDS);
     }
 
     /**
@@ -151,11 +151,11 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         // Ingest SIP
         String providerId = "SIP_002";
         ingestSIP(providerId, "zaasfsdfsdlfkmsldgfml12df");
-        waitForIngestion(1, TEN_SECONDS);
+        ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
 
         // Ingest next SIP version
         ingestSIP(providerId, "yaasfsdfsdlfkmsldgfml12df");
-        waitForIngestion(2, TEN_SECONDS);
+        ingestServiceTest.waitForIngestion(2, TEN_SECONDS);
 
         // Check no request remains
         List<IngestRequest> requests = ingestRequestRepository.findAll();

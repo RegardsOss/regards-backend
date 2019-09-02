@@ -166,7 +166,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         // Ingest
         Collection<IngestRequestFlowItem> items = IngestService.sipToFlow(sips);
         ingestService.handleIngestRequests(items);
-        waitForIngestion(1, FIVE_SECONDS);
+        ingestServiceTest.waitForIngestion(1, FIVE_SECONDS);
 
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByIngestDateDesc(SIP_DEFAULT_CHAIN_ID_TEST);
         Assert.assertNotNull(resultSip);
@@ -206,7 +206,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
         // Ingest
         ingestService.handleIngestRequests(IngestService.sipToFlow(sips));
-        waitForIngestion(1, FIVE_SECONDS);
+        ingestServiceTest.waitForIngestion(1, FIVE_SECONDS);
 
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByIngestDateDesc(SIP_ID_TEST);
         Assert.assertNotNull(resultSip);
@@ -227,7 +227,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
         // Ingest
         ingestService.handleIngestRequests(IngestService.sipToFlow(sips));
-        waitDuring(TWO_SECONDS);
+        ingestServiceTest.waitDuring(TWO_SECONDS);
 
         // Detect request error and no SIP or AIP is persisted
         ArgumentCaptor<IngestRequest> ingestRequestCaptor = ArgumentCaptor.forClass(IngestRequest.class);
@@ -244,7 +244,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         Assert.assertNotNull(sipCaptor.getValue());
 
         // Not sip ingested
-        waitForIngestion(0, FIVE_SECONDS);
+        ingestServiceTest.waitForIngestion(0, FIVE_SECONDS);
     }
 
     @Purpose("Test fully configured process chain to ingest a new SIP provided by reference")
@@ -261,7 +261,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
         // Ingest
         ingestService.handleIngestRequests(IngestService.sipToFlow(sips));
-        waitForIngestion(1, FIVE_SECONDS);
+        ingestServiceTest.waitForIngestion(1, FIVE_SECONDS);
 
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByIngestDateDesc(SIP_REF_ID_TEST);
         Assert.assertNotNull(resultSip);

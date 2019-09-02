@@ -61,6 +61,16 @@ public class AIPController implements IResourceController<AIPEntity> {
 
     public static final String TYPE_MAPPING = "/aips";
 
+    public static final String REQUEST_PARAM_STATE = "state";
+    public static final String REQUEST_PARAM_FROM = "from";
+    public static final String REQUEST_PARAM_TO = "to";
+    public static final String REQUEST_PARAM_TAGS = "tags";
+    public static final String REQUEST_PARAM_PROVIDER_ID = "providerId";
+    public static final String REQUEST_PARAM_SESSION_OWNER = "sessionOwner";
+    public static final String REQUEST_PARAM_SESSION = "session";
+    public static final String REQUEST_PARAM_CATEGORIES = "categories";
+    public static final String REQUEST_PARAM_STORAGES = "storages";
+
     /**
      * {@link IResourceService} instance
      */
@@ -88,19 +98,21 @@ public class AIPController implements IResourceController<AIPEntity> {
     @ResponseBody
     @ResourceAccess(description = "Return a page of AIPs")
     public ResponseEntity<PagedResources<Resource<AIPEntity>>> searchAIPs(
-            @RequestParam(name = "state", required = false) AIPState state,
-            @RequestParam(name = "from",
+            @RequestParam(name = REQUEST_PARAM_STATE, required = false) AIPState state,
+            @RequestParam(name = REQUEST_PARAM_FROM,
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @RequestParam(name = "to",
+            @RequestParam(name = REQUEST_PARAM_TO,
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
-            @RequestParam(name = "tags", required = false) List<String> tags,
-            @RequestParam(name = "providerId", required = false) String providerId,
-            @RequestParam(name = "sessionOwner", required = false) String sessionOwner,
-            @RequestParam(name = "session", required = false) String session,
-            @RequestParam(name = "storedOn", required = false) List<String> storages,
+            @RequestParam(name = REQUEST_PARAM_TAGS, required = false) List<String> tags,
+            @RequestParam(name = REQUEST_PARAM_PROVIDER_ID, required = false) String providerId,
+            @RequestParam(name = REQUEST_PARAM_SESSION_OWNER, required = false) String sessionOwner,
+            @RequestParam(name = REQUEST_PARAM_SESSION, required = false) String session,
+            @RequestParam(name = REQUEST_PARAM_STORAGES, required = false) List<String> storages,
+            @RequestParam(name = REQUEST_PARAM_CATEGORIES, required = false) List<String> categories,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AIPEntity> assembler) throws ModuleException {
-        Page<AIPEntity> aips = aipService.search(state, from, to, tags, sessionOwner, session, providerId, storages, pageable);
+        Page<AIPEntity> aips = aipService.search(state, from, to, tags, sessionOwner, session, providerId,
+                storages, categories, pageable);
         return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
     }
 

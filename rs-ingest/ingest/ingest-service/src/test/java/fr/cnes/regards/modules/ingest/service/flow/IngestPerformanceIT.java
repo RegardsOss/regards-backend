@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.flow;
 
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
@@ -51,22 +52,12 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
         "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100" })
-//@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
-//        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4",
-//        "regards.jpa.multitenant.tenants[0].tenant=PROJECT",
-//        "regards.jpa.multitenant.tenants[0].url=jdbc:postgresql://localhost:5432/rs_testdb_msordi",
-//        "regards.jpa.multitenant.tenants[0].userName=azertyuiop123456789",
-//        "regards.jpa.multitenant.tenants[0].password=azertyuiop123456789", "spring.rabbitmq.addresses=localhost:5672",
-//        "regards.amqp.management.host=localhost", "regards.amqp.management.port=16672" })
 @ActiveProfiles("testAmqp")
 public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestPerformanceIT.class);
 
     private static final List<String> CATEGORIES = Lists.newArrayList("CATEGORY");
-
-    @Autowired
-    private IPublisher publisher;
 
     @Autowired
     private ISubscriber subscriber;
@@ -84,48 +75,23 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
     }
 
     @Test
-    public void generateAndPublish() throws InterruptedException {
+    public void generateAndPublish() {
 
         long start = System.currentTimeMillis();
         long existingItems = 0;
         long maxloops = 1000;
         for (long i = 0; i < maxloops; i++) {
-            SIP sip = create("provider" + i);
+            SIP sip = create("provider" + i, CATEGORIES, null);
             // Create event
-            IngestMetadataDto mtd = IngestMetadataDto.build("source", OffsetDateTime.now().toString(),
-                                                            IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                            StorageMetadata.build("fake", null));
-            IngestRequestFlowItem flowItem = IngestRequestFlowItem.build(mtd, sip);
-            publisher.publish(flowItem);
+            publishSIPEvent(sip, "fake", OffsetDateTime.now().toString(),"source");
         }
 
         // Wait
         long countSip;
-        do {
-            countSip = sipRepository.count();
-            LOGGER.debug("{} SIP(s) created in database", countSip);
-            if (countSip >= maxloops + existingItems) {
-                break;
-            }
-            Thread.sleep(1000);
-        } while (true);
+        ingestServiceTest.waitForIngestion(maxloops, maxloops * 1000);
 
         LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", maxloops + existingItems,
                     System.currentTimeMillis() - start);
-    }
-
-    private SIP create(String providerId) {
-        SIP sip = SIP.build(EntityType.DATA, providerId, CATEGORIES);
-        sip.withDataObject(DataType.RAWDATA,
-                           Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"), "MD5",
-                           "azertyuiopqsdfmlmld");
-        sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
-        sip.registerContentInformation();
-
-        // Add creation event
-        sip.withEvent(String.format("SIP %s generated", providerId));
-
-        return sip;
     }
 
 }

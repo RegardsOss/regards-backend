@@ -12,10 +12,12 @@ create index idx_sip_session on t_sip (session_name);
 CREATE INDEX idx_sip_ingest_chain ON t_sip (ingest_chain);
 CREATE INDEX idx_sip_storage ON t_sip USING gin (storages);
 
+
 create index idx_sip_state on t_sip (state);
 create index idx_sip_providerId on t_sip (providerId);
 create index idx_sip_ingest_date on t_sip (ingestDate);
 create index idx_sip_version on t_sip (version);
+
 
 -- Propagate ingest metadata to AIP for search purpose
 
@@ -29,13 +31,11 @@ ALTER TABLE t_aip ADD COLUMN last_update TIMESTAMP NOT NULL;
 alter table t_aip add column categories jsonb not null;
 alter table t_aip add column tags jsonb;
 
-create index idx_aip_session_owner on t_aip (session_owner);
-create index idx_aip_session on t_aip (session_name);
+CREATE INDEX idx_search_aip ON t_aip (session_owner, session_name, state, last_update);
+
 CREATE INDEX idx_aip_ingest_chain ON t_aip (ingest_chain);
 CREATE INDEX idx_aip_storage ON t_aip USING gin (storages);
-
 CREATE INDEX idx_aip_provider_id ON t_aip (provider_id);
-CREATE INDEX idx_aip_last_update ON t_aip (last_update);
 CREATE INDEX idx_aip_tags ON t_aip USING gin (tags);
 CREATE INDEX idx_aip_categories ON t_aip USING gin (categories);
 
@@ -64,7 +64,4 @@ CREATE INDEX idx_ingest_request_state ON t_ingest_request (state);
 ALTER TABLE t_ingest_request ADD CONSTRAINT uk_ingest_request_id UNIQUE (request_id);
 alter table t_ingest_request add constraint fk_req_job_info_id foreign key (job_info_id) references t_job_info;
 create sequence seq_ingest_request start 1 increment 50;
-
-
-
 
