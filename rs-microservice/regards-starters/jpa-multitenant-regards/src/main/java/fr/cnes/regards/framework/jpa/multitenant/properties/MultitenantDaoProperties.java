@@ -60,7 +60,7 @@ public class MultitenantDaoProperties {
     /**
      * Global hibernate dialect for all tenants
      */
-    private String dialect = "org.hibernate.dialect.PostgreSQLDialect";
+    private String dialect = "fr.cnes.regards.framework.jpa.utils.CustomPostgresDialect";
 
     /**
      * For pooled data source, min available connections

@@ -28,6 +28,7 @@ import java.util.Map;
 import javax.persistence.Entity;
 import javax.sql.DataSource;
 
+import org.hibernate.HibernateException;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.cfg.Environment;
@@ -187,7 +188,7 @@ public class DataSourcesAutoConfiguration {
             @Qualifier(DATASOURCE_SCHEMA_HELPER_BEAN_NAME) IDatasourceSchemaHelper datasourceSchemaHelper,
             @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME) Map<String, DataSource> dataSources) {
         return new MultitenantJpaEventHandler(microserviceName, dataSources, daoProperties, datasourceSchemaHelper,
-                instanceSubscriber, multitenantResolver, localPublisher(), encryptionService);
+                instanceSubscriber, multitenantResolver, localPublisher(), encryptionService, jpaProperties);
     }
 
     /**
@@ -212,8 +213,10 @@ public class DataSourcesAutoConfiguration {
             // Prevent duplicates
             if (!existingDataSources.containsKey(tenantConnection.getTenant())) {
                 try {
+                    // Retrieve schema name
+                    String schemaIdentifier = jpaProperties.getProperties().get(Environment.DEFAULT_SCHEMA);
                     // Init data source
-                    DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection);
+                    DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection, schemaIdentifier);
                     // Update database schema
                     datasourceSchemaHelper().migrate(dataSource);
                     // Register connection
