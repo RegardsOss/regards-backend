@@ -216,7 +216,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public boolean canDelete() {
+    public boolean allowPhysicalDeletion() {
         return true;
     }
 

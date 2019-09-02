@@ -92,7 +92,7 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
         FileDeletionWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         try {
             IStorageLocation storagePlugin = pluginService.getPlugin(plgBusinessId);
-            if (storagePlugin.canDelete()) {
+            if (storagePlugin.allowPhysicalDeletion()) {
                 // If deletion is allowed ask plugin for files deletion.
                 storagePlugin.delete(workingSubset, progressManager);
             } else {

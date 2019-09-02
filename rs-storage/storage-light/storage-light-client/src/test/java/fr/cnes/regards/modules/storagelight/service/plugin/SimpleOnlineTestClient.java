@@ -214,7 +214,7 @@ public class SimpleOnlineTestClient implements IOnlineStorageLocation {
     }
 
     @Override
-    public boolean canDelete() {
+    public boolean allowPhysicalDeletion() {
         return true;
     }
 

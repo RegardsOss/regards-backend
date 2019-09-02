@@ -34,18 +34,53 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
 @PluginInterface(description = "Contract to respect by any data storage plugin")
 public interface IStorageLocation {
 
+    /**
+     * Dispatch given storage requests in one or many working subsets. Each subset will result to a storage job.
+     * @param fileReferenceRequests {@link FileStorageRequest}s to dispatch
+     * @return generated subsets.
+     */
     Collection<FileStorageWorkingSubset> prepareForStorage(Collection<FileStorageRequest> fileReferenceRequests);
 
+    /**
+     * Dispatch given deletion requests in one or many working subsets. Each subset will result to a deletion job.
+     * @param fileDeletionRequests {@link FileDeletionRequest}s to dispatch
+     * @return generated subsets.
+     */
     Collection<FileDeletionWorkingSubset> prepareForDeletion(Collection<FileDeletionRequest> fileDeletionRequests);
 
+    /**
+     * Dispatch given cache requests in one or many working subsets. Each subset will result to a restoration job.
+     * @param requests {@link FileCacheRequest}s to dispatch
+     * @return generated subsets.
+     */
     Collection<FileRestorationWorkingSubset> prepareForRestoration(Collection<FileCacheRequest> requests);
 
+    /**
+     * Delete files included in the given working subset. Subset has been prepared by {@link #prepareForDeletion(Collection)}.
+     * {@link IDeletionProgressManager} is used to inform process of files deletion success or error.
+     * @param workingSet
+     * @param progressManager
+     */
     void delete(FileDeletionWorkingSubset workingSet, IDeletionProgressManager progressManager);
 
+    /**
+     * Store files included in the given working subset. Subset has been prepared by {@link #prepareForStorage(Collection)}.
+     * {@link IStorageProgressManager} is used to inform process of files storage success or error.
+     * @param workingSet
+     * @param progressManager
+     */
     void store(FileStorageWorkingSubset workingSet, IStorageProgressManager progressManager);
 
-    boolean canDelete();
+    /**
+     * Does the current storage location allow physical deletion of files ?
+     * @return boolean
+     */
+    boolean allowPhysicalDeletion();
 
+    /**
+     * Return the application limit size of files stored in the current storage location.
+     * @return
+     */
     Long getTotalSpaceInMo();
 
     /**
