@@ -28,6 +28,7 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -74,7 +75,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.flow.StorageF
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_perf_tests",
         "regards.storage.cache.path=target/cache" })
-// @Ignore("Performances tests")
+@Ignore("Performances tests")
 public class FlowPerformanceTest extends AbstractFileReferenceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceTest.class);

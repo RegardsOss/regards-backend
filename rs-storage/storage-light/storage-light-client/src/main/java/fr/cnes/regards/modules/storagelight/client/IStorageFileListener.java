@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.storagelight.client;
 
 import java.util.Collection;
 
+import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+
 /**
  *
  * Listener to handle bus messages from storage service.
@@ -46,5 +48,7 @@ public interface IStorageFileListener {
     public void onFileNotAvailable(String checksum, Collection<RequestInfo> requestInfos, String errorCause);
 
     public void onFileDeleted(String checksum, String storage, String owner, Collection<RequestInfo> requestInfos);
+
+    public void onFileUpdated(String checksum, String storage, FileReference updateFile);
 
 }

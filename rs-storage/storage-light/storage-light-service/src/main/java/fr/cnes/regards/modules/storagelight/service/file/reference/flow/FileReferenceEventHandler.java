@@ -20,7 +20,9 @@ package fr.cnes.regards.modules.storagelight.service.file.reference.flow;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -33,7 +35,9 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.storagelight.domain.IUpdateFileReferenceOnAvailable;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
@@ -81,6 +85,9 @@ public class FileReferenceEventHandler
 
     @Autowired
     private ISubscriber subscriber;
+
+    @Autowired(required = false)
+    private Collection<IUpdateFileReferenceOnAvailable> updateActions;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -172,6 +179,31 @@ public class FileReferenceEventHandler
     }
 
     private void handleFileAvailable(FileReferenceEvent event) {
+        // Execute file reference updates on availability if any defined
+        if (updateActions != null) {
+            Set<FileReference> fileReferences = fileReferenceService.search(event.getChecksum());
+            for (IUpdateFileReferenceOnAvailable action : updateActions) {
+                for (FileReference fileRef : fileReferences) {
+                    String checksum = fileRef.getMetaInfo().getChecksum();
+                    String storage = fileRef.getLocation().getStorage();
+                    FileReference updated;
+                    try {
+                        updated = action.update(fileRef);
+                        if (updated != null) {
+                            fileReferenceService.update(checksum, storage, updated);
+                            LOGGER.debug("File reference updated by action %s", action.getClass().getName());
+                        }
+                    } catch (ModuleException e) {
+                        LOGGER.error("Error updating File Reference after availability for action %s. Cause : %s",
+                                     action.getClass().getName(), e.getMessage());
+                        LOGGER.error(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+
+        // Check if a copy request is associated to the available file. If any, create a new storage request for the available file
+        // to the copy request destination location.
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
         if (request.isPresent()) {
             createNewStorageRequest(request.get(), event);

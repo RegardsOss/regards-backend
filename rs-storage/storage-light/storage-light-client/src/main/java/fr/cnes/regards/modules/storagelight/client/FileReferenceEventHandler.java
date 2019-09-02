@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -35,8 +37,8 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
  * @author sbinda
  *
  */
-// @Profile("!storageTest")
-// @Component("clientFileRefEventHandler")
+@Profile("!test")
+@Component("clientFileRefEventHandler")
 public class FileReferenceEventHandler
         implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileReferenceEvent> {
 

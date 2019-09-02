@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestS
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceUpdateEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorFile;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
@@ -255,6 +256,12 @@ public class FileReferenceEventPublisher {
                 checkForAvailabilityRequestError(groupId);
             }
         }
+    }
+
+    public void updated(String checksum, String storage, FileReference updatedFile) {
+        LOGGER.debug("Publishing FileReferenceUpdateEvent for file checksum %s and storage location %s", checksum,
+                     storage);
+        publisher.publish(FileReferenceUpdateEvent.build(checksum, storage, updatedFile));
     }
 
     /**

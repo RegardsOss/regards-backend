@@ -18,11 +18,15 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.event;
 
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.Target;
+
 /**
  * Type of {@link FileReferenceEvent}
  *
  * @author Sébastien Binda
  */
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public enum FileReferenceEventType {
 
     /**
@@ -69,5 +73,4 @@ public enum FileReferenceEventType {
      * File reference is not available for download
      */
     AVAILABILITY_ERROR;
-
 }
