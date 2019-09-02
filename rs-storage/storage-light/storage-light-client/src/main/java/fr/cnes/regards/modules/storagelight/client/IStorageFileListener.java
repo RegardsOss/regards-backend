@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.storagelight.client;
 import java.util.Collection;
 
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 
 /**
  *
@@ -32,7 +34,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 public interface IStorageFileListener {
 
     /**
-     * Callback called when a file is successfully stored or referenced
+     * Callback when a file is successfully stored or referenced
      * @param checksum Checksum of the file successfully stored or referenced
      * @param storage storage where the file is newly stored or referenced
      * @param owners Owners of the file
@@ -40,15 +42,46 @@ public interface IStorageFileListener {
     public void onFileStored(String checksum, String storage, Collection<String> owners,
             Collection<RequestInfo> requestInfos);
 
+    /**
+     * Callback when a file to store is in error.
+     * @param checksum
+     * @param storage
+     * @param owners
+     * @param requestInfos
+     * @param errorCause
+     */
     public void onFileStoreError(String checksum, String storage, Collection<String> owners,
             Collection<RequestInfo> requestInfos, String errorCause);
 
+    /**
+     * Callback when a file is available for download. Next to a {@link AvailabilityFlowItem} request.
+     * @param checksum
+     * @param requestInfos
+     */
     public void onFileAvailable(String checksum, Collection<RequestInfo> requestInfos);
 
+    /**
+     * Callback when a file is not available for download. Next to a {@link AvailabilityFlowItem} request.
+     * @param checksum
+     * @param requestInfos
+     */
     public void onFileNotAvailable(String checksum, Collection<RequestInfo> requestInfos, String errorCause);
 
+    /**
+     * Callback when a file is successfully deleted. Next to a {@link DeletionFlowItem} request.
+     * @param checksum
+     * @param storage
+     * @param owner
+     * @param requestInfos
+     */
     public void onFileDeleted(String checksum, String storage, String owner, Collection<RequestInfo> requestInfos);
 
+    /**
+     * Callback when a file is updated.
+     * @param checksum checksum of the updated file
+     * @param storage storage location of the updated file
+     * @param updateFile file updated.
+     */
     public void onFileUpdated(String checksum, String storage, FileReference updateFile);
 
 }
