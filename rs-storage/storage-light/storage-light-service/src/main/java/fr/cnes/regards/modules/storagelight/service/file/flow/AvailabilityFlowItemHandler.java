@@ -37,8 +37,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
-import fr.cnes.regards.modules.storagelight.service.file.FileRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.RequestsGroupService;
 
 /**

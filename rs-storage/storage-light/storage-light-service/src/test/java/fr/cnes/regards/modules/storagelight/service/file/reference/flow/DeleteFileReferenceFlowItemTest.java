@@ -45,9 +45,9 @@ import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
-import fr.cnes.regards.modules.storagelight.service.file.FileRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.flow.DeletionFlowHandler;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**

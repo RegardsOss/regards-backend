@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service.file;
+package fr.cnes.regards.modules.storagelight.service.file.request;
 
 import java.net.URL;
 import java.util.Arrays;
@@ -58,11 +58,8 @@ import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileCopyRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileDeletionRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.request.RequestsGroupService;
+import fr.cnes.regards.modules.storagelight.service.file.FileReferenceEventPublisher;
+import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.location.StoragePluginConfigurationHandler;
 
 /**

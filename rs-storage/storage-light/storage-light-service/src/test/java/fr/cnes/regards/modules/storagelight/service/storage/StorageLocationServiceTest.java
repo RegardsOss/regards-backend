@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.storagelight.dao.IStorageLocationRepository;
 import fr.cnes.regards.modules.storagelight.dao.IStorageMonitoringRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storagelight.service.file.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
 import fr.cnes.regards.modules.storagelight.service.location.StorageLocationService;
 
 /**

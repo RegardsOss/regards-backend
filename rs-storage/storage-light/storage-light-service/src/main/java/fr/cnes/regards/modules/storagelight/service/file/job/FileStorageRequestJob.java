@@ -42,7 +42,7 @@ import fr.cnes.regards.framework.utils.file.CommonFileUtils;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
-import fr.cnes.regards.modules.storagelight.service.file.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**
