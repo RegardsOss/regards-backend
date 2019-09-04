@@ -163,4 +163,18 @@ public class FileReferenceService {
         fileRefEventPublisher.updated(checksum, storage, updatedFile);
     }
 
+    /**
+     * @param fileReference
+     * @param owner
+     * @return
+     */
+    public FileReference addOwner(FileReference fileReference, String owner) {
+        if (!fileReference.getOwners().contains(owner)) {
+            fileReference.getOwners().add(owner);
+            return fileRefRepo.save(fileReference);
+        } else {
+            return fileReference;
+        }
+    }
+
 }

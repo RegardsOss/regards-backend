@@ -55,13 +55,17 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.JobsPriority;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceEventPublisher;
+import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.job.FileStorageRequestJob;
 import fr.cnes.regards.modules.storagelight.service.location.StoragePluginConfigurationHandler;
 
@@ -104,7 +108,76 @@ public class FileStorageRequestService {
     private RequestsGroupService reqGroupService;
 
     @Autowired
+    private FileReferenceService fileRefService;
+
+    @Autowired
+    private FileDeletionRequestService fileDelReqService;
+
+    @Autowired
     private EntityManager em;
+
+    /**
+     * Handle many {@link StorageFlowItem} to store files to a given storage location.
+     * @param items storage flow items
+     */
+    public void handle(Collection<FileStorageRequestDTO> requests, String groupId) {
+        int flushCount = 0;
+        // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
+        Set<FileReference> existingOnes = fileRefService
+                .search(requests.stream().map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet()));
+        for (FileStorageRequestDTO request : requests) {
+            // Check if the file already exists for the storage destination
+            Optional<FileReference> oFileRef = existingOnes.stream()
+                    .filter(f -> f.getMetaInfo().getChecksum().equals(request.getChecksum())
+                            && f.getLocation().getStorage().contentEquals(request.getStorage()))
+                    .findFirst();
+            handleRequest(request, oFileRef, groupId);
+            // Performance optimization.
+            flushCount++;
+            if (flushCount > 100) {
+                em.flush();
+                em.clear();
+                flushCount = 0;
+            }
+        }
+    }
+
+    /**
+     * Store a new file to a given storage destination
+     * @param owner Owner of the new file
+     * @param metaInfo information about file
+     * @param originUrl current location of file. This URL must be locally accessible to be copied.
+     * @param storage name of the storage destination. Must be a existing plugin configuration of a {@link IStorageLocation}
+     * @param subDirectory where to store file in the destination location.
+     * @param groupId business request identifier
+     * @return {@link FileReference} if the file is already referenced.
+     */
+    public Optional<FileReference> handleRequest(String owner, FileReferenceMetaInfo metaInfo, URL originUrl,
+            String storage, Optional<String> subDirectory, String groupId) {
+        Optional<FileReference> oFileRef = fileRefService.search(storage, metaInfo.getChecksum());
+        return handleRequest(FileStorageRequestDTO.build(metaInfo.getFileName(), metaInfo.getChecksum(),
+                                                         metaInfo.getAlgorithm(), metaInfo.getMimeType().toString(),
+                                                         owner, originUrl, storage, subDirectory),
+                             oFileRef, groupId);
+    }
+
+    /**
+     * Store a new file to a given storage destination
+     * @param request {@link FileStorageRequestDTO} info about file to store
+     * @param fileRef {@link FileReference} of associated file if already exists
+     * @param groupId business request identifier
+     * @return {@link FileReference} if the file is already referenced.
+     */
+    private Optional<FileReference> handleRequest(FileStorageRequestDTO request, Optional<FileReference> fileRef,
+            String groupId) {
+        if (fileRef.isPresent()) {
+            return handleAlreadyExists(fileRef.get(), request, groupId);
+        } else {
+            create(Sets.newHashSet(request.getOwner()), request.buildMetaInfo(), request.getOriginUrl(),
+                   request.getStorage(), request.getSubDirectory(), groupId);
+            return Optional.empty();
+        }
+    }
 
     /**
      * Search for {@link FileStorageRequest}s matching the given destination storage and checksum
@@ -416,6 +489,46 @@ public class FileStorageRequestService {
             reqGroupService.requestError(groupId, FileRequestType.STORAGE, request.getMetaInfo().getChecksum(),
                                          request.getStorage(), errorCause);
         }
+    }
+
+    /**
+     * Update if needed an already existing {@link FileReference} associated to a
+     * new {@link FileStorageRequestDTO} request received.<br/>
+     * <br/>
+     * If a deletion request is running on the existing {@link FileReference} then a new {@link FileStorageRequest}
+     * request is created as DELAYED.<br/>
+     *
+     * @param fileReference {@link FileReference} to update
+     * @param request associated {@link FileStorageRequestDTO} new request
+     * @param groupId new business request identifier
+     * @return {@link FileReference} updated or null.
+     */
+    private Optional<FileReference> handleAlreadyExists(FileReference fileReference, FileStorageRequestDTO request,
+            String groupId) {
+        FileReference updatedFileRef = null;
+        FileReferenceMetaInfo newMetaInfo = request.buildMetaInfo();
+        Optional<FileDeletionRequest> deletionRequest = fileDelReqService.search(fileReference);
+        if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
+            // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
+            create(Sets.newHashSet(request.getOwner()), newMetaInfo, request.getOriginUrl(), request.getStorage(),
+                   request.getSubDirectory(), FileRequestStatus.DELAYED, groupId);
+        } else {
+            if (deletionRequest.isPresent()) {
+                // Delete not running deletion request to add the new owner
+                fileDelReqService.delete(deletionRequest.get());
+            }
+            if (!fileReference.getMetaInfo().equals(request.buildMetaInfo())) {
+                LOGGER.warn("Existing referenced file meta information differs "
+                        + "from new reference meta information. Previous ones are maintained");
+            }
+            String message = String
+                    .format("New owner <%s> added to existing referenced file <%s> at <%s> (checksum: %s) ",
+                            request.getOwner(), fileReference.getMetaInfo().getFileName(),
+                            fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
+            eventPublisher.storeSuccess(fileReference, message, Sets.newHashSet(groupId));
+            updatedFileRef = fileRefService.addOwner(fileReference, request.getOwner());
+        }
+        return Optional.ofNullable(updatedFileRef);
     }
 
 }

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service.storage;
+package fr.cnes.regards.modules.storagelight.service.location;
 
 import java.util.UUID;
 
@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.storagelight.dao.IStorageLocationRepository;
 import fr.cnes.regards.modules.storagelight.dao.IStorageMonitoringRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.location.StorageLocationService;
 
 /**
@@ -62,7 +62,7 @@ public class StorageLocationServiceTest extends AbstractMultitenantServiceTest {
     private IStorageMonitoringRepository storageMonitorRepo;
 
     @Autowired
-    private FileRequestService fileRefService;
+    private FileReferenceRequestService fileRefService;
 
     @Before
     public void init() throws ModuleException {

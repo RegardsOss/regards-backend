@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.storagelight.service.file.request;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
@@ -70,7 +71,7 @@ public class FileCopyRequestService {
     @Autowired
     private RequestsGroupService reqGrpService;
 
-    public Optional<FileCopyRequest> create(FileCopyRequestDTO requestDto, String groupId) {
+    public Optional<FileCopyRequest> handle(FileCopyRequestDTO requestDto, String groupId) {
         // Check a same request already exists
         Optional<FileCopyRequest> request = copyRepository.findOneByMetaInfoChecksumAndStorage(requestDto.getChecksum(),
                                                                                                requestDto.getStorage());
@@ -124,6 +125,17 @@ public class FileCopyRequestService {
             }
             page = page.next();
         } while (pageResp.hasNext());
+    }
+
+    /**
+     * Handle many {@link FileCopyRequestDTO} to copy files to a given storage location.
+     * @param files copy requests
+     * @param groupId business request identifier
+     */
+    public void handle(Collection<FileCopyRequestDTO> requests, String groupId) {
+        for (FileCopyRequestDTO request : requests) {
+            handle(request, groupId);
+        }
     }
 
     public void handleSuccess(FileCopyRequest request, FileReference newFileRef) {

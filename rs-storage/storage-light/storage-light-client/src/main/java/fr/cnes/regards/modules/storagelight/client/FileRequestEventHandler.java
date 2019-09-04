@@ -36,7 +36,8 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
  *
  */
 @Component("clientRequestEventHandler")
-public class FileRequestEventHandler implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileRequestsGroupEvent> {
+public class FileRequestEventHandler
+        implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileRequestsGroupEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileRequestEventHandler.class);
 
@@ -94,19 +95,19 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
     private void handleDone(FileRequestsGroupEvent event, RequestInfo info) {
         switch (event.getType()) {
             case AVAILABILITY:
-                listener.onAvailable(info);
+                listener.onAvailable(info, event.getSuccess());
                 break;
             case DELETION:
-                listener.onDeletionSuccess(info);
+                listener.onDeletionSuccess(info, event.getSuccess());
                 break;
             case REFERENCE:
-                listener.onReferenceSuccess(info);
+                listener.onReferenceSuccess(info, event.getSuccess());
                 break;
             case STORAGE:
-                listener.onStoreSuccess(info);
+                listener.onStoreSuccess(info, event.getSuccess());
                 break;
             case COPY:
-                listener.onCopySuccess(info);
+                listener.onCopySuccess(info, event.getSuccess());
                 break;
             default:
                 break;
@@ -116,19 +117,19 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
     private void handleError(FileRequestsGroupEvent event, RequestInfo info) {
         switch (event.getType()) {
             case AVAILABILITY:
-                listener.onAvailabilityError(info, event.getErrors());
+                listener.onAvailabilityError(info, event.getSuccess(), event.getErrors());
                 break;
             case DELETION:
-                listener.onDeletionError(info, event.getErrors());
+                listener.onDeletionError(info, event.getSuccess(), event.getErrors());
                 break;
             case REFERENCE:
-                listener.onReferenceError(info, event.getErrors());
+                listener.onReferenceError(info, event.getSuccess(), event.getErrors());
                 break;
             case STORAGE:
-                listener.onStoreError(info, event.getErrors());
+                listener.onStoreError(info, event.getSuccess(), event.getErrors());
                 break;
             case COPY:
-                listener.onCopyError(info, event.getErrors());
+                listener.onCopyError(info, event.getSuccess(), event.getErrors());
                 break;
             default:
                 break;

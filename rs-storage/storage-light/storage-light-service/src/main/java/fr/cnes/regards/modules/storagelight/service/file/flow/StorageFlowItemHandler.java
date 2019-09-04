@@ -32,8 +32,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -41,7 +39,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.RequestsGroupService;
 
 /**
@@ -69,7 +67,7 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
     private ISubscriber subscriber;
 
     @Autowired
-    private FileRequestService fileRefService;
+    private FileStorageRequestService fileStorageReqService;
 
     @Autowired
     private RequestsGroupService reqGroupService;
@@ -114,7 +112,7 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
         runtimeTenantResolver.forceTenant(tenant);
         reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE);
         try {
-            fileRefService.store(Lists.newArrayList(item));
+            fileStorageReqService.handle(item.getFiles(), item.getGroupId());
         } finally {
             runtimeTenantResolver.clearTenant();
         }
@@ -147,7 +145,7 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
                     }
                     LOGGER.info("Bulk saving {} AddFileRefFlowItem...", list.size());
                     long start = System.currentTimeMillis();
-                    fileRefService.store(list);
+                    store(list);
                     LOGGER.info("...{} AddFileRefFlowItem handled in {} ms", list.size(),
                                 System.currentTimeMillis() - start);
                     list.clear();
@@ -155,6 +153,12 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
+        }
+    }
+
+    private void store(List<StorageFlowItem> list) {
+        for (StorageFlowItem item : list) {
+            fileStorageReqService.handle(item.getFiles(), item.getGroupId());
         }
     }
 }

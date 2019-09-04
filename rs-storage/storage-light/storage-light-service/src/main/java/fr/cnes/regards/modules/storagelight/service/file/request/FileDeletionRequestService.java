@@ -54,6 +54,7 @@ import fr.cnes.regards.modules.storagelight.dao.IFileDeletetionRequestRepository
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileDeletionWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
@@ -251,6 +252,46 @@ public class FileDeletionRequestService {
         Assert.notNull(fileDeletionRequest, "File deletion request to delete cannot be null");
         Assert.notNull(fileDeletionRequest.getId(), "File deletion request to delete identifier cannot be null");
         fileDeletionRequestRepo.deleteById(fileDeletionRequest.getId());
+    }
+
+    public void handle(Collection<FileDeletionRequestDTO> requests, String groupId) {
+        Set<FileReference> existingOnes = fileRefService
+                .search(requests.stream().map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet()));
+        for (FileDeletionRequestDTO request : requests) {
+            Optional<FileReference> oFileRef = existingOnes.stream()
+                    .filter(f -> f.getLocation().getStorage().contentEquals(request.getStorage())).findFirst();
+            if (oFileRef.isPresent()) {
+                removeOwner(oFileRef.get(), request.getOwner(), request.isForceDelete(), groupId);
+            } else {
+                // File does not exists. Handle has deletion success
+                reqGroupService.requestSuccess(groupId, FileRequestType.DELETION, request.getChecksum(),
+                                               request.getStorage(), oFileRef.orElse(null));
+            }
+        }
+        reqGroupService.done(groupId, FileRequestType.DELETION);
+    }
+
+    /**
+     * Remove the given owner of the to the given {@link FileReference}.
+     * If the owner is the last one this method tries to delete file physically if the storage location is a configured {@link IStorageLocation}.
+     * @param forceDelete allows to delete fileReference even if the deletion is in error.
+     * @param groupId Business identifier of the deletion request
+     */
+    private void removeOwner(FileReference fileReference, String owner, boolean forceDelete, String groupId) {
+        fileRefService.removeOwner(fileReference, owner, groupId);
+        // If file reference does not belongs to anyone anymore, delete file reference
+        if (fileReference.getOwners().isEmpty()) {
+            if (storageHandler.getConfiguredStorages().contains(fileReference.getLocation().getStorage())) {
+                // If the file is stored on an accessible storage, create a new deletion request
+                create(fileReference, forceDelete, groupId);
+            } else {
+                // Else, directly delete the file reference
+                fileRefService.delete(fileReference, groupId);
+                reqGroupService.requestSuccess(groupId, FileRequestType.DELETION,
+                                               fileReference.getMetaInfo().getChecksum(),
+                                               fileReference.getLocation().getStorage(), fileReference);
+            }
+        }
     }
 
     /**

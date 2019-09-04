@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service.file.reference;
+package fr.cnes.regards.modules.storagelight.service.file;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -68,13 +68,11 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.cache.CacheService;
-import fr.cnes.regards.modules.storagelight.service.file.FileReferenceEventPublisher;
-import fr.cnes.regards.modules.storagelight.service.file.NLFileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.handler.FileReferenceEventHandler;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCopyRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileDeletionRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageService;
 import fr.cnes.regards.modules.storagelight.service.location.StoragePluginConfigurationHandler;
@@ -85,9 +83,9 @@ import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStora
  * @author sbinda
  *
  */
-public abstract class AbstractFileReferenceTest extends AbstractMultitenantServiceTest {
+public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractFileReferenceTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStorageTest.class);
 
     protected static final String ONLINE_CONF_LABEL = "target";
 
@@ -103,13 +101,16 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected FileReferenceEventHandler fileRefEventHandler;
 
     @Autowired
-    protected FileRequestService fileRefService;
+    protected FileReferenceRequestService fileReqService;
 
     @Autowired
-    protected NLFileReferenceService nearlineFileRefService;
+    protected FileReferenceService fileRefService;
 
     @Autowired
-    protected FileStorageRequestService fileStorageRequestService;
+    protected FileDownloadService downloadService;
+
+    @Autowired
+    protected FileStorageRequestService stoReqService;
 
     @Autowired
     protected FileCacheRequestService fileCacheRequestService;
@@ -270,9 +271,9 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
             String newOwner) {
         Optional<FileReference> oFilef = fileRefService.search(storage, checksum);
         Assert.assertTrue("File reference should already exists", oFilef.isPresent());
-        return fileRefService.store(newOwner, oFilef.get().getMetaInfo(), originUrl,
-                                        oFilef.get().getLocation().getStorage(), Optional.empty(),
-                                        UUID.randomUUID().toString());
+        return stoReqService.handleRequest(newOwner, oFilef.get().getMetaInfo(), originUrl,
+                                           oFilef.get().getLocation().getStorage(), Optional.empty(),
+                                           UUID.randomUUID().toString());
 
     }
 
@@ -282,22 +283,22 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                 MediaType.APPLICATION_OCTET_STREAM);
         FileLocation destination = new FileLocation(storage, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.store(owner, fileMetaInfo, originUrl, storage, Optional.empty(),
-                                 UUID.randomUUID().toString());
+        stoReqService.handleRequest(owner, fileMetaInfo, originUrl, storage, Optional.empty(),
+                                    UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), checksum);
-        Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(), checksum);
+        Optional<FileStorageRequest> oFileRefReq = stoReqService.search(destination.getStorage(), checksum);
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
         Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TODO,
                             oFileRefReq.get().getStatus());
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, null, null);
+        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         runAndWaitJob(jobs);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        oFileRefReq = fileStorageRequestService.search(destination.getStorage(), checksum);
+        oFileRefReq = stoReqService.search(destination.getStorage(), checksum);
         oFileRef = fileRefService.search(destination.getStorage(), checksum);
         Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
         Assert.assertFalse("File reference request should not exists anymore", oFileRefReq.isPresent());
@@ -311,7 +312,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         fileMetaInfo.setType(type);
         FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/file.test");
         try {
-            fileRefService.reference(owner, fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
+            fileReqService.reference(owner, fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
@@ -329,12 +330,12 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                 "error.file.test", 132L, MediaType.APPLICATION_OCTET_STREAM);
         FileLocation destination = new FileLocation(storageDestination, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.store(owner, fileMetaInfo, originUrl, storageDestination, Optional.of("/in/this/directory"),
-                                 UUID.randomUUID().toString());
+        stoReqService.handleRequest(owner, fileMetaInfo, originUrl, storageDestination,
+                                    Optional.of("/in/this/directory"), UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-        Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(),
-                                                                                    fileMetaInfo.getChecksum());
+        Optional<FileStorageRequest> oFileRefReq = stoReqService.search(destination.getStorage(),
+                                                                        fileMetaInfo.getChecksum());
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
         // only the configured storage can be used for storage. Otherwise the request should be set in eroor.
@@ -342,13 +343,13 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
             Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TODO,
                                 oFileRefReq.get().getStatus());
             // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-            Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(),
-                                                                              Sets.newHashSet());
+            Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(),
+                                                                  Sets.newHashSet());
             Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
             // Run Job and wait for end
             runAndWaitJob(jobs);
             // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-            oFileRefReq = fileStorageRequestService.search(destination.getStorage(), fileMetaInfo.getChecksum());
+            oFileRefReq = stoReqService.search(destination.getStorage(), fileMetaInfo.getChecksum());
             oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
             Assert.assertFalse("File reference should have been created.", oFileRef.isPresent());
             Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
@@ -416,9 +417,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                                  UUID.randomUUID().toString());
             // Create file on disk
             if (!Files.exists(Paths.get(filePath).getParent())) {
-
                 Files.createDirectories(Paths.get(filePath).getParent());
-
             }
             if (!Files.exists(Paths.get(filePath))) {
                 Files.createFile(Paths.get(filePath));

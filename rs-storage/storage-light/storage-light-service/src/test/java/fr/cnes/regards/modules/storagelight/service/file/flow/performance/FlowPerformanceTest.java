@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service.file.reference.flow.performance;
+package fr.cnes.regards.modules.storagelight.service.file.flow.performance;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -60,13 +60,11 @@ import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
+import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
 import fr.cnes.regards.modules.storagelight.service.file.flow.AvailabilityFlowItemHandler;
 import fr.cnes.regards.modules.storagelight.service.file.flow.DeletionFlowHandler;
 import fr.cnes.regards.modules.storagelight.service.file.flow.ReferenceFlowItemHandler;
 import fr.cnes.regards.modules.storagelight.service.file.flow.StorageFlowItemHandler;
-import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**
  * Performances tests for creating and store new file references.
@@ -76,7 +74,7 @@ import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequ
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_perf_tests",
         "regards.storage.cache.path=target/cache" })
 @Ignore("Performances tests")
-public class FlowPerformanceTest extends AbstractFileReferenceTest {
+public class FlowPerformanceTest extends AbstractStorageTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceTest.class);
 
@@ -91,12 +89,6 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
 
     @Autowired
     private DeletionFlowHandler deleteHandler;
-
-    @Autowired
-    FileRequestService fileRefService;
-
-    @Autowired
-    FileStorageRequestService fileStorageRequestService;
 
     private final Set<String> nlChecksums = Sets.newHashSet();
 
@@ -219,11 +211,11 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
         Page<FileStorageRequest> page;
         do {
             Thread.sleep(5_000);
-            page = fileStorageRequestService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"));
+            page = stoReqService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
         } while ((loops < 10) && ((page.getTotalElements()) != 5000));
 
-        Assert.assertEquals("There should be 5000 file storage request created", 5000, fileStorageRequestService
+        Assert.assertEquals("There should be 5000 file storage request created", 5000, stoReqService
                 .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
 
         Assert.assertEquals("No file ref should be created", 0, fileRefService
@@ -232,14 +224,14 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
                         PageRequest.of(0, 1, Direction.ASC, "id"))
                 .getTotalElements());
         long start = System.currentTimeMillis();
-        Collection<JobInfo> jobs = fileStorageRequestService
+        Collection<JobInfo> jobs = stoReqService
                 .scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList());
         LOGGER.info("...{} jobs scheduled in {} ms", jobs.size(), System.currentTimeMillis() - start);
         Thread.sleep(10_000);
         start = System.currentTimeMillis();
         runAndWaitJob(jobs);
         LOGGER.info("...{} jobs handled in {} ms", jobs.size(), System.currentTimeMillis() - start);
-        Assert.assertEquals("There should be no file storage request created", 0, fileStorageRequestService
+        Assert.assertEquals("There should be no file storage request created", 0, stoReqService
                 .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
         Assert.assertEquals("5000 file ref should be created", 5000, fileRefService
                 .search(FileReferenceSpecification.search(null, null, null, Lists.newArrayList(ONLINE_CONF_LABEL), null,

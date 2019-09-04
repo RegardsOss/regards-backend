@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.service.file.flow;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +39,6 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.RequestsGroupService;
 
 /**
@@ -58,9 +58,6 @@ public class AvailabilityFlowItemHandler
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
-    private FileRequestService fileRefService;
 
     @Autowired
     private FileCacheRequestService fileCacheReqService;
@@ -136,7 +133,7 @@ public class AvailabilityFlowItemHandler
                     }
                     LOGGER.info("Bulk saving {} AvailabilityFlowItem...", list.size());
                     long start = System.currentTimeMillis();
-                    fileRefService.makeAvailable(list);
+                    makeAvailable(list);
                     LOGGER.info("...{} AvailabilityFlowItem handled in {} ms", list.size(),
                                 System.currentTimeMillis() - start);
                     list.clear();
@@ -145,6 +142,10 @@ public class AvailabilityFlowItemHandler
                 runtimeTenantResolver.clearTenant();
             }
         }
+    }
+
+    public void makeAvailable(Collection<AvailabilityFlowItem> items) {
+        items.forEach(i -> fileCacheReqService.makeAvailable(i.getChecksums(), i.getExpirationDate(), i.getGroupId()));
     }
 
 }

@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storagelight.client;
 
 import java.util.Collection;
 
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent.ErrorFile;
+import fr.cnes.regards.modules.storagelight.domain.database.request.group.GroupRequestsInfo;
 
 /**
  * @author sbinda
@@ -28,28 +28,32 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent.
  */
 public interface IStorageRequestListener {
 
-    void onCopySuccess(RequestInfo request);
-
-    void onCopyError(RequestInfo request, Collection<ErrorFile> errors);
-
-    void onAvailable(RequestInfo request);
-
-    void onAvailabilityError(RequestInfo request, Collection<ErrorFile> errors);
-
-    void onDeletionSuccess(RequestInfo request);
-
-    void onDeletionError(RequestInfo request, Collection<ErrorFile> errors);
-
-    void onReferenceSuccess(RequestInfo request);
-
-    void onReferenceError(RequestInfo request, Collection<ErrorFile> errors);
-
     void onRequestGranted(RequestInfo request);
 
     void onRequestDenied(RequestInfo request);
 
-    void onStoreSuccess(RequestInfo requestInfo);
+    void onCopySuccess(RequestInfo request, Collection<GroupRequestsInfo> success);
 
-    void onStoreError(RequestInfo requestInfo, Collection<ErrorFile> errors);
+    void onCopyError(RequestInfo request, Collection<GroupRequestsInfo> success, Collection<GroupRequestsInfo> errors);
+
+    void onAvailable(RequestInfo request, Collection<GroupRequestsInfo> success);
+
+    void onAvailabilityError(RequestInfo request, Collection<GroupRequestsInfo> success,
+            Collection<GroupRequestsInfo> errors);
+
+    void onDeletionSuccess(RequestInfo request, Collection<GroupRequestsInfo> success);
+
+    void onDeletionError(RequestInfo request, Collection<GroupRequestsInfo> success,
+            Collection<GroupRequestsInfo> errors);
+
+    void onReferenceSuccess(RequestInfo request, Collection<GroupRequestsInfo> success);
+
+    void onReferenceError(RequestInfo request, Collection<GroupRequestsInfo> success,
+            Collection<GroupRequestsInfo> errors);
+
+    void onStoreSuccess(RequestInfo requestInfo, Collection<GroupRequestsInfo> success);
+
+    void onStoreError(RequestInfo requestInfo, Collection<GroupRequestsInfo> success,
+            Collection<GroupRequestsInfo> errors);
 
 }

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.service.file.flow;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,7 +42,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.RequestsGroupService;
 
 /**
@@ -69,7 +70,7 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
     private ISubscriber subscriber;
 
     @Autowired
-    private FileRequestService fileRefService;
+    private FileDeletionRequestService fileDelReqService;
 
     @Autowired
     private RequestsGroupService reqGroupService;
@@ -105,7 +106,7 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
     public void handleSync(TenantWrapper<DeletionFlowItem> wrapper) {
         DeletionFlowItem item = wrapper.getContent();
         reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION);
-        fileRefService.delete(Lists.newArrayList(item));
+        delete(Lists.newArrayList(item));
     }
 
     /**
@@ -135,7 +136,7 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
                     }
                     LOGGER.info("Bulk saving {} DeleteFileRefFlowItem...", list.size());
                     long start = System.currentTimeMillis();
-                    fileRefService.delete(list);
+                    delete(list);
                     LOGGER.info("...{} DeleteFileRefFlowItem handled in {} ms", list.size(),
                                 System.currentTimeMillis() - start);
                     list.clear();
@@ -143,6 +144,16 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
+        }
+    }
+
+    /**
+     * Handle the given {@link DeletionFlowItem}s.
+     * @param items
+     */
+    public void delete(Collection<DeletionFlowItem> items) {
+        for (DeletionFlowItem item : items) {
+            fileDelReqService.handle(item.getFiles(), item.getGroupId());
         }
     }
 

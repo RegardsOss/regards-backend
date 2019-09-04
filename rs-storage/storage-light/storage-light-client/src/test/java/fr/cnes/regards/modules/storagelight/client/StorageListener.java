@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent.ErrorFile;
+import fr.cnes.regards.modules.storagelight.domain.database.request.group.GroupRequestsInfo;
 
 /**
  * @author sbinda
@@ -39,9 +39,9 @@ public class StorageListener implements IStorageRequestListener {
 
     private final Set<RequestInfo> granted = Sets.newHashSet();
 
-    private final Set<RequestInfo> success = Sets.newHashSet();
+    private final ArrayListMultimap<RequestInfo, GroupRequestsInfo> success = ArrayListMultimap.create();
 
-    private final ArrayListMultimap<RequestInfo, ErrorFile> errors = ArrayListMultimap.create();
+    private final ArrayListMultimap<RequestInfo, GroupRequestsInfo> errors = ArrayListMultimap.create();
 
     public void reset() {
         denied.clear();
@@ -51,44 +51,49 @@ public class StorageListener implements IStorageRequestListener {
     }
 
     @Override
-    public void onCopySuccess(RequestInfo request) {
-        success.add(request);
+    public void onCopySuccess(RequestInfo request, Collection<GroupRequestsInfo> success) {
+        this.success.putAll(request, success);
     }
 
     @Override
-    public void onCopyError(RequestInfo request, Collection<ErrorFile> errors) {
+    public void onCopyError(RequestInfo request, Collection<GroupRequestsInfo> success,
+            Collection<GroupRequestsInfo> errors) {
+        this.errors.putAll(request, errors);
+        this.success.putAll(request, success);
+
+    }
+
+    @Override
+    public void onAvailable(RequestInfo request, Collection<GroupRequestsInfo> success) {
+        this.success.putAll(request, success);
+    }
+
+    @Override
+    public void onAvailabilityError(RequestInfo request, Collection<GroupRequestsInfo> success,
+            Collection<GroupRequestsInfo> errors) {
         this.errors.putAll(request, errors);
 
     }
 
     @Override
-    public void onAvailable(RequestInfo request) {
-        success.add(request);
+    public void onDeletionSuccess(RequestInfo request, Collection<GroupRequestsInfo> success) {
+        this.success.putAll(request, success);
     }
 
     @Override
-    public void onAvailabilityError(RequestInfo request, Collection<ErrorFile> errors) {
-        this.errors.putAll(request, errors);
-
-    }
-
-    @Override
-    public void onDeletionSuccess(RequestInfo request) {
-        success.add(request);
-    }
-
-    @Override
-    public void onDeletionError(RequestInfo request, Collection<ErrorFile> errors) {
+    public void onDeletionError(RequestInfo request, Collection<GroupRequestsInfo> success,
+            Collection<GroupRequestsInfo> errors) {
         this.errors.putAll(request, errors);
     }
 
     @Override
-    public void onReferenceSuccess(RequestInfo request) {
-        success.add(request);
+    public void onReferenceSuccess(RequestInfo request, Collection<GroupRequestsInfo> success) {
+        this.success.putAll(request, success);
     }
 
     @Override
-    public void onReferenceError(RequestInfo request, Collection<ErrorFile> errors) {
+    public void onReferenceError(RequestInfo request, Collection<GroupRequestsInfo> success,
+            Collection<GroupRequestsInfo> errors) {
         this.errors.putAll(request, errors);
     }
 
@@ -104,12 +109,13 @@ public class StorageListener implements IStorageRequestListener {
     }
 
     @Override
-    public void onStoreSuccess(RequestInfo requestInfo) {
-        success.add(requestInfo);
+    public void onStoreSuccess(RequestInfo request, Collection<GroupRequestsInfo> success) {
+        this.success.putAll(request, success);
     }
 
     @Override
-    public void onStoreError(RequestInfo requestInfo, Collection<ErrorFile> errors) {
+    public void onStoreError(RequestInfo requestInfo, Collection<GroupRequestsInfo> success,
+            Collection<GroupRequestsInfo> errors) {
         this.errors.putAll(requestInfo, errors);
     }
 
@@ -121,11 +127,11 @@ public class StorageListener implements IStorageRequestListener {
         return granted;
     }
 
-    public Set<RequestInfo> getSuccess() {
+    public ArrayListMultimap<RequestInfo, GroupRequestsInfo> getSuccess() {
         return success;
     }
 
-    public ArrayListMultimap<RequestInfo, ErrorFile> getErrors() {
+    public ArrayListMultimap<RequestInfo, GroupRequestsInfo> getErrors() {
         return errors;
     }
 

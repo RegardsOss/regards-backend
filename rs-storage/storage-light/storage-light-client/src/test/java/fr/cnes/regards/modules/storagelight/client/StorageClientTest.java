@@ -139,7 +139,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
 
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
-        Assert.assertTrue("Request should be successful", listener.getSuccess().contains(info));
+        Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
 
         storedFileChecksums.add(cs1);
@@ -162,7 +162,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
 
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
-        Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
+        Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
     }
 
@@ -175,7 +175,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
 
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
-        Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
+        Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
     }
 
@@ -193,7 +193,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         RequestInfo info = client.store(files);
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
-        Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
+        Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
     }
 
@@ -210,7 +210,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         RequestInfo info = client.store(files);
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
-        Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
+        Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
 
         listener.reset();
@@ -218,7 +218,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         client.storeRetry(info);
 
         Thread.sleep(5_000);
-        Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
+        Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
 
     }
@@ -242,7 +242,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         RequestInfo info = client.reference(files);
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
-        Assert.assertTrue("Request should be successful", listener.getSuccess().contains(info));
+        Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
 
         referenceFileChecksums.add(cs1);
@@ -263,7 +263,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         Thread.sleep(5_000);
 
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
-        Assert.assertTrue("Request should be successful", listener.getSuccess().contains(info));
+        Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
 
         listener.reset();
@@ -273,7 +273,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
 
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(deleteInfo));
-        Assert.assertTrue("Request should be successful", listener.getSuccess().contains(deleteInfo));
+        Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(deleteInfo));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(deleteInfo));
 
     }
@@ -288,7 +288,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
 
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
-        Assert.assertTrue("Request should be successful", listener.getSuccess().contains(info));
+        Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
 
     }
@@ -312,7 +312,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
 
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
-        Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
+        Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
 
     }
@@ -331,7 +331,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
 
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
-        Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
+        Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
         Assert.assertEquals("Number of error invalid", referenceFileChecksums.size(),
                             listener.getErrors().get(info).size());
@@ -361,7 +361,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
 
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
-        Assert.assertFalse("Request should not be successful", listener.getSuccess().contains(info));
+        Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
 
         Assert.assertEquals("Number of error invalid", referenceFileChecksums.size() + unrestorableFileChecksums.size(),
@@ -390,7 +390,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
 
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue(String.format("Request should be successful for request id %s", info.getGroupId()),
-                          listener.getSuccess().contains(info));
+                          listener.getSuccess().containsKey(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
     }
 
@@ -407,7 +407,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
 
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertFalse(String.format("Request should be successful for request id %s", info.getGroupId()),
-                           listener.getSuccess().contains(info));
+                           listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should not be error", listener.getErrors().containsKey(info));
         Assert.assertEquals("Number of error files invalid", unrestorableFileChecksums.size(),
                             listener.getErrors().get(info).size());

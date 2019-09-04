@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service.file.reference.flow;
+package fr.cnes.regards.modules.storagelight.service.file.flow;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -45,9 +45,9 @@ import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
+import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
 import fr.cnes.regards.modules.storagelight.service.file.flow.DeletionFlowHandler;
-import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**
@@ -57,13 +57,13 @@ import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequ
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache" })
-public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
+public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
 
     @Autowired
     private DeletionFlowHandler handler;
 
     @Autowired
-    FileRequestService fileRefService;
+    FileReferenceRequestService fileRefService;
 
     @Autowired
     FileStorageRequestService fileRefRequestService;

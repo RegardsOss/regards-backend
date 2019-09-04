@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**
@@ -47,13 +47,13 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
 
     private final IJob<?> job;
 
-    private final FileRequestService referenceService;
+    private final FileReferenceRequestService referenceService;
 
     private final FileStorageRequestService storageRequestService;
 
     private final Set<FileStorageRequest> handledRequest = Sets.newHashSet();
 
-    public FileStorageJobProgressManager(FileRequestService referenceService,
+    public FileStorageJobProgressManager(FileReferenceRequestService referenceService,
             FileStorageRequestService storageRequestService, IJob<?> job) {
         this.job = job;
         this.referenceService = referenceService;

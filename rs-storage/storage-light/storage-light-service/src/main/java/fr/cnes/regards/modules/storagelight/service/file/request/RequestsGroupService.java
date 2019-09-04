@@ -75,7 +75,7 @@ public class RequestsGroupService {
             FileReference fileRef, boolean error, String errorCause) {
         boolean isDone = false;
         // 1. Add info in database
-        GroupRequestsInfo gInfo = new GroupRequestsInfo(groupId, type);
+        GroupRequestsInfo gInfo = new GroupRequestsInfo(groupId, type, checksum, storage);
         gInfo.setFileReference(fileRef);
         gInfo.setError(error);
         gInfo.setErrorCause(errorCause);

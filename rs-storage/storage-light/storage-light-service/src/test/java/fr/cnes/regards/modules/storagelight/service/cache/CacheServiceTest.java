@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service.file.cache;
+package fr.cnes.regards.modules.storagelight.service.cache;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

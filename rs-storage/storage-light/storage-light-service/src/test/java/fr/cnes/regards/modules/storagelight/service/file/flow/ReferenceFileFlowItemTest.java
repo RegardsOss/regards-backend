@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service.file.reference.flow;
+package fr.cnes.regards.modules.storagelight.service.file.flow;
 
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -40,10 +40,7 @@ import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
-import fr.cnes.regards.modules.storagelight.service.file.flow.ReferenceFlowItemHandler;
-import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
 
 /**
  *
@@ -52,18 +49,12 @@ import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequ
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache" })
-public class ReferenceFileFlowItemTest extends AbstractFileReferenceTest {
+public class ReferenceFileFlowItemTest extends AbstractStorageTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceFileFlowItemTest.class);
 
     @Autowired
     private ReferenceFlowItemHandler handler;
-
-    @Autowired
-    FileRequestService fileRefService;
-
-    @Autowired
-    FileStorageRequestService fileStorageRequestService;
 
     @Before
     public void initialize() throws ModuleException {

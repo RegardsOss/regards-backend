@@ -32,15 +32,13 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.RequestsGroupService;
 
 /**
@@ -69,7 +67,7 @@ public class ReferenceFlowItemHandler
     private ISubscriber subscriber;
 
     @Autowired
-    private FileRequestService fileRefService;
+    private FileReferenceRequestService fileRefReqService;
 
     @Autowired
     private RequestsGroupService reqGroupService;
@@ -114,7 +112,7 @@ public class ReferenceFlowItemHandler
         runtimeTenantResolver.forceTenant(tenant);
         reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE);
         try {
-            fileRefService.reference(Lists.newArrayList(item));
+            fileRefReqService.reference(item.getFiles(), item.getGroupId());
         } finally {
             runtimeTenantResolver.clearTenant();
         }
@@ -147,7 +145,7 @@ public class ReferenceFlowItemHandler
                     }
                     LOGGER.info("Bulk saving {} AddFileRefFlowItem...", list.size());
                     long start = System.currentTimeMillis();
-                    fileRefService.reference(list);
+                    reference(list);
                     LOGGER.info("...{} AddFileRefFlowItem handled in {} ms", list.size(),
                                 System.currentTimeMillis() - start);
                     list.clear();
@@ -155,6 +153,15 @@ public class ReferenceFlowItemHandler
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
+        }
+    }
+
+    /**
+     * @param list
+     */
+    private void reference(List<ReferenceFlowItem> list) {
+        for (ReferenceFlowItem item : list) {
+            fileRefReqService.reference(item.getFiles(), item.getGroupId());
         }
     }
 }

@@ -32,7 +32,9 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 
 /**
@@ -70,6 +72,12 @@ public class GroupRequestsInfo {
     @JoinColumn(name = "file_ref_id", referencedColumnName = "id")
     private FileReference fileReference;
 
+    @Column(name = "checksum", length = FileReferenceMetaInfo.CHECKSUM_MAX_LENGTH, nullable = false)
+    private String checksum;
+
+    @Column(name = "storage", length = FileLocation.STORAGE_MAX_LENGTH, nullable = false)
+    private String storage;
+
     @Column
     private boolean error;
 
@@ -80,7 +88,7 @@ public class GroupRequestsInfo {
         super();
     }
 
-    public GroupRequestsInfo(String groupId, FileRequestType requestType) {
+    public GroupRequestsInfo(String groupId, FileRequestType requestType, String checksum, String storage) {
         super();
         this.groupId = groupId;
         this.requestType = requestType;
@@ -146,6 +154,14 @@ public class GroupRequestsInfo {
 
     public void setErrorCause(String errorCause) {
         this.errorCause = errorCause;
+    }
+
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public String getStorage() {
+        return storage;
     }
 
 }

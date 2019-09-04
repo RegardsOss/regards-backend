@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service.file.reference.flow;
+package fr.cnes.regards.modules.storagelight.service.file.flow;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -48,10 +48,10 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.RetryFlowItem;
+import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
 import fr.cnes.regards.modules.storagelight.service.file.flow.AvailabilityFlowItemHandler;
 import fr.cnes.regards.modules.storagelight.service.file.flow.RetryFlowItemHandler;
-import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**
@@ -61,7 +61,7 @@ import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequ
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_availability_tests",
         "regards.storage.cache.path=target/cache" })
-public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReferenceTest {
+public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
 
     @Autowired
     private AvailabilityFlowItemHandler handler;
@@ -70,7 +70,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractFileReference
     private RetryFlowItemHandler retryHandler;
 
     @Autowired
-    FileRequestService fileRefService;
+    FileReferenceRequestService fileRefService;
 
     @Autowired
     FileStorageRequestService fileStorageRequestService;
