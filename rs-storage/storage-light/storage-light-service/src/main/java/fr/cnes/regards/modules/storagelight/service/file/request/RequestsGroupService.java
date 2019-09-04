@@ -126,6 +126,7 @@ public class RequestsGroupService {
     }
 
     public void granted(String groupId, FileRequestType type) {
+        LOGGER.debug("{} - Request group {} granted", type, groupId);
         publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.GRANTED, Sets.newHashSet()));
     }
 

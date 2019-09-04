@@ -83,6 +83,7 @@ public class AvailabilityFlowItemHandler
     public void handle(TenantWrapper<AvailabilityFlowItem> wrapper) {
         String tenant = wrapper.getTenant();
         AvailabilityFlowItem item = wrapper.getContent();
+        runtimeTenantResolver.forceTenant(tenant);
         if (item.getChecksums().size() > MAX_REQUEST_PER_GROUP) {
             String message = String.format("Number of availability requests for group %s exeeds maximum limit of %d",
                                            item.getGroupId(), MAX_REQUEST_PER_GROUP);

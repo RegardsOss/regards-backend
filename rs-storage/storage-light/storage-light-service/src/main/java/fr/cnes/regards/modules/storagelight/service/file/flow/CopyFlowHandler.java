@@ -89,6 +89,7 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
     public void handle(TenantWrapper<CopyFlowItem> wrapper) {
         String tenant = wrapper.getTenant();
         CopyFlowItem item = wrapper.getContent();
+        runtimeTenantResolver.forceTenant(tenant);
         if (item.getFiles().size() > MAX_REQUEST_PER_GROUP) {
             String message = String.format("Number of copy requests for group %s exeeds maximum limit of %d",
                                            item.getGroupId(), MAX_REQUEST_PER_GROUP);

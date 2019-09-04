@@ -447,7 +447,8 @@ public class FileCacheRequestService {
                                            fileRef.getMetaInfo().getFileName(), checksum);
             publisher.available(checksum, storage, fileRef.getLocation().getUrl(), fileRef.getOwners(), message,
                                 availabilityGroupId);
-            reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, fileRef);
+            reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, fileRef,
+                                         false);
         }
     }
 
@@ -463,7 +464,8 @@ public class FileCacheRequestService {
             String message = String.format("file %s (checksum %s) is not available for download.",
                                            fileRef.getMetaInfo().getFileName(), checksum);
             publisher.notAvailable(fileRef.getMetaInfo().getChecksum(), message, availabilityGroupId);
-            reqGrpService.requestError(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, message);
+            reqGrpService.requestError(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, message,
+                                       false);
         }
     }
 

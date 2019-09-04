@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storagelight.domain.event;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 
@@ -27,7 +28,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
  * Bus message to inform that a {@link FileReference} has been updated.
  * @author Sébastien Binda
  */
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class FileReferenceUpdateEvent implements ISubscribable {
 
     private String checksum;

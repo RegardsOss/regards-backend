@@ -140,6 +140,8 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
+        Assert.assertEquals("Group request should contains 4 success request", 4,
+                            listener.getSuccess().get(info).size());
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
 
         storedFileChecksums.add(cs1);
@@ -193,8 +195,10 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         RequestInfo info = client.store(files);
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
-        Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
+        Assert.assertTrue("Request should not be successful", listener.getSuccess().containsKey(info));
+        Assert.assertEquals("Request should not be successful", 1, listener.getSuccess().get(info).size());
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
+        Assert.assertEquals("Request should not be successful", 1, listener.getErrors().get(info).size());
     }
 
     @Test

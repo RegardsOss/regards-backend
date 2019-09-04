@@ -156,7 +156,7 @@ public class FileDeletionRequestService {
             Page<FileDeletionRequest> deletionRequestPage;
             Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
             do {
-                deletionRequestPage = fileDeletionRequestRepo.findByStorage(storage, page);
+                deletionRequestPage = fileDeletionRequestRepo.findByStorageAndStatus(storage, status, page);
                 if (storageHandler.getConfiguredStorages().contains(storage)) {
                     jobList = scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
                 } else {

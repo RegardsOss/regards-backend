@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.storagelight.client;
 import java.util.Collection;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -34,6 +36,8 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.group.GroupR
  */
 @Component
 public class StorageListener implements IStorageRequestListener {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageListener.class);
 
     private final Set<RequestInfo> denied = Sets.newHashSet();
 
@@ -52,12 +56,15 @@ public class StorageListener implements IStorageRequestListener {
 
     @Override
     public void onCopySuccess(RequestInfo request, Collection<GroupRequestsInfo> success) {
+        LOGGER.info("[TEST RESULT] - Copy success for group {} with {} success", request.getGroupId(), success.size());
         this.success.putAll(request, success);
     }
 
     @Override
     public void onCopyError(RequestInfo request, Collection<GroupRequestsInfo> success,
             Collection<GroupRequestsInfo> errors) {
+        LOGGER.info("[TEST RESULT] - Copy error for group {} with {} errors and {} success", request.getGroupId(),
+                    errors.size(), success.size());
         this.errors.putAll(request, errors);
         this.success.putAll(request, success);
 
@@ -65,36 +72,50 @@ public class StorageListener implements IStorageRequestListener {
 
     @Override
     public void onAvailable(RequestInfo request, Collection<GroupRequestsInfo> success) {
+        LOGGER.info("[TEST RESULT] - Availability success for group {} with {} success", request.getGroupId(),
+                    success.size());
         this.success.putAll(request, success);
     }
 
     @Override
     public void onAvailabilityError(RequestInfo request, Collection<GroupRequestsInfo> success,
             Collection<GroupRequestsInfo> errors) {
+        LOGGER.info("[TEST RESULT] - Availability error for group {} with {} errors and {} success",
+                    request.getGroupId(), errors.size(), success.size());
         this.errors.putAll(request, errors);
-
+        this.success.putAll(request, success);
     }
 
     @Override
     public void onDeletionSuccess(RequestInfo request, Collection<GroupRequestsInfo> success) {
+        LOGGER.info("[TEST RESULT] - Deletion success for group {} with {} success", request.getGroupId(),
+                    success.size());
         this.success.putAll(request, success);
     }
 
     @Override
     public void onDeletionError(RequestInfo request, Collection<GroupRequestsInfo> success,
             Collection<GroupRequestsInfo> errors) {
+        LOGGER.info("[TEST RESULT] - Deletion error for group {} with {} errors and {} success", request.getGroupId(),
+                    errors.size(), success.size());
         this.errors.putAll(request, errors);
+        this.success.putAll(request, success);
     }
 
     @Override
     public void onReferenceSuccess(RequestInfo request, Collection<GroupRequestsInfo> success) {
+        LOGGER.info("[TEST RESULT] - Reference success for group {} with {} success", request.getGroupId(),
+                    success.size());
         this.success.putAll(request, success);
     }
 
     @Override
     public void onReferenceError(RequestInfo request, Collection<GroupRequestsInfo> success,
             Collection<GroupRequestsInfo> errors) {
+        LOGGER.info("[TEST RESULT] - Reference error for group {} with {} errors and {} success", request.getGroupId(),
+                    errors.size(), success.size());
         this.errors.putAll(request, errors);
+        this.success.putAll(request, success);
     }
 
     @Override
@@ -110,13 +131,18 @@ public class StorageListener implements IStorageRequestListener {
 
     @Override
     public void onStoreSuccess(RequestInfo request, Collection<GroupRequestsInfo> success) {
+        LOGGER.info("[TEST RESULT] - Storage success for group {} with {} success", request.getGroupId(),
+                    success.size());
         this.success.putAll(request, success);
     }
 
     @Override
-    public void onStoreError(RequestInfo requestInfo, Collection<GroupRequestsInfo> success,
+    public void onStoreError(RequestInfo request, Collection<GroupRequestsInfo> success,
             Collection<GroupRequestsInfo> errors) {
-        this.errors.putAll(requestInfo, errors);
+        LOGGER.info("[TEST RESULT] - Storage error for group {} with {} errors and {} success", request.getGroupId(),
+                    errors.size(), success.size());
+        this.errors.putAll(request, errors);
+        this.success.putAll(request, success);
     }
 
     public Set<RequestInfo> getDenied() {

@@ -278,9 +278,10 @@ public class FileStorageRequestService {
             Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by("id"));
             do {
                 if ((owners != null) && !owners.isEmpty()) {
-                    filesPage = fileStorageRequestRepo.findAllByStorageAndOwnersIn(storage, owners, page);
+                    filesPage = fileStorageRequestRepo.findAllByStorageAndStatusAndOwnersIn(storage, status, owners,
+                                                                                            page);
                 } else {
-                    filesPage = fileStorageRequestRepo.findAllByStorage(storage, page);
+                    filesPage = fileStorageRequestRepo.findAllByStorageAndStatus(storage, status, page);
                 }
                 List<FileStorageRequest> fileStorageRequests = filesPage.getContent();
 
