@@ -18,14 +18,19 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,9 +44,12 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storagelight.domain.DownloadableFile;
+import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
+import fr.cnes.regards.modules.storagelight.service.cache.CacheService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageService;
 
 /**
@@ -58,13 +66,16 @@ public class FileDownloadService {
     private PrioritizedStorageService prioritizedStorageService;
 
     @Autowired
-    private NLFileReferenceService nearlineFileService;
-
-    @Autowired
     private IPluginService pluginService;
 
     @Autowired
     private FileReferenceService fileRefService;
+
+    @Autowired
+    private CacheService cachedFileService;
+
+    @Autowired
+    private FileCacheRequestService fileCacheReqService;
 
     /**
      * Download a file thanks to its checksum. If the file is stored in multiple storage location,
@@ -110,7 +121,7 @@ public class FileDownloadService {
         if (conf.isPresent()) {
             switch (conf.get().getStorageType()) {
                 case NEARLINE:
-                    return nearlineFileService.download(fileToDownload);
+                    return download(fileToDownload);
                 case ONLINE:
                     return downloadOnline(fileToDownload, conf.get());
                 default:
@@ -130,6 +141,7 @@ public class FileDownloadService {
      * @return
      * @throws ModuleException
      */
+    @Transactional(readOnly = true)
     private InputStream downloadOnline(FileReference fileToDownload, PrioritizedStorage storagePluginConf)
             throws ModuleException {
         try {
@@ -145,6 +157,33 @@ public class FileDownloadService {
             LOGGER.error(e.getMessage(), e);
             throw new ModuleException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * Try to download a nearline file. If the file is in the cache system, then the file can be downloaded. Else,
+     * a availability request is created and a {@link EntityNotFoundException} is thrown.
+     * @param fileToDownload {@link FileReference} to download.
+     * @return stream of the file from its cache copy.
+     * @throws EntityNotFoundException If file is not in cache currently.
+     */
+    @Transactional(noRollbackFor = EntityNotFoundException.class)
+    public InputStream download(FileReference fileToDownload) throws EntityNotFoundException {
+        Optional<CacheFile> ocf = cachedFileService.getCacheFile(fileToDownload.getMetaInfo().getChecksum());
+        if (ocf.isPresent()) {
+            // File is in cache and can be download
+            try {
+                // File is present in cache return stream
+                return new FileInputStream(ocf.get().getLocation().getPath());
+            } catch (FileNotFoundException e) {
+                // Only log error and then ask for new availability of the file
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+        // ask for file availability and return a not available yet response
+        fileCacheReqService.makeAvailable(Sets.newHashSet(fileToDownload), OffsetDateTime.now().plusHours(1),
+                                          UUID.randomUUID().toString());
+        throw new EntityNotFoundException(String.format("File %s is not available yet. Please try later.",
+                                                        fileToDownload.getMetaInfo().getFileName()));
     }
 
 }
