@@ -45,7 +45,8 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 public class FileReferenceServiceTest extends AbstractStorageTest {
 
     @Before
-    public void initialize() throws ModuleException {
+    @Override
+    public void init() throws ModuleException {
         super.init();
     }
 

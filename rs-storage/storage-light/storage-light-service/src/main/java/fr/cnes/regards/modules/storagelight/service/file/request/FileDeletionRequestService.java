@@ -289,7 +289,7 @@ public class FileDeletionRequestService {
                 fileRefService.delete(fileReference, groupId);
                 reqGroupService.requestSuccess(groupId, FileRequestType.DELETION,
                                                fileReference.getMetaInfo().getChecksum(),
-                                               fileReference.getLocation().getStorage(), fileReference);
+                                               fileReference.getLocation().getStorage(), null);
             }
         }
     }
@@ -355,6 +355,6 @@ public class FileDeletionRequestService {
         // 3. Publish request success
         reqGroupService.requestSuccess(fileDeletionRequest.getGroupId(), FileRequestType.DELETION,
                                        deletedFileRef.getMetaInfo().getChecksum(),
-                                       deletedFileRef.getLocation().getStorage(), deletedFileRef);
+                                       deletedFileRef.getLocation().getStorage(), null);
     }
 }

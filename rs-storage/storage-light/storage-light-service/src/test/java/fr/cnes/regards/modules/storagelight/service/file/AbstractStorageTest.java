@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.storagelight.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
+import fr.cnes.regards.modules.storagelight.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
@@ -152,6 +153,9 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected IJobInfoRepository jobInfoRepo;
 
     @Autowired
+    protected IGroupRequestInfoRepository grpReqInfoRepo;
+
+    @Autowired
     protected PrioritizedStorageService prioritizedDataStorageService;
 
     protected URL originUrl = null;
@@ -167,6 +171,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         } catch (IOException e) {
             Assert.fail(e.getMessage());
         }
+        grpReqInfoRepo.deleteAll();
         copyRequestRepository.deleteAll();
         fileDeletionRequestRepo.deleteAll();
         fileStorageRequestRepo.deleteAll();

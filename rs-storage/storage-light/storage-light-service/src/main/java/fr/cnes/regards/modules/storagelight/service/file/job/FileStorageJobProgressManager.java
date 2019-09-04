@@ -47,16 +47,16 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
 
     private final IJob<?> job;
 
-    private final FileReferenceRequestService referenceService;
+    private final FileReferenceRequestService fileRefReqService;
 
     private final FileStorageRequestService storageRequestService;
 
     private final Set<FileStorageRequest> handledRequest = Sets.newHashSet();
 
-    public FileStorageJobProgressManager(FileReferenceRequestService referenceService,
+    public FileStorageJobProgressManager(FileReferenceRequestService fileRefReqService,
             FileStorageRequestService storageRequestService, IJob<?> job) {
         this.job = job;
-        this.referenceService = referenceService;
+        this.fileRefReqService = fileRefReqService;
         this.storageRequestService = storageRequestService;
     }
 
@@ -76,8 +76,8 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
             request.getMetaInfo().setFileSize(fileSize);
             for (String owner : request.getOwners()) {
                 try {
-                    FileReference fileRef = referenceService.reference(owner, request.getMetaInfo(), newLocation,
-                                                                           request.getGroupIds());
+                    FileReference fileRef = fileRefReqService.reference(owner, request.getMetaInfo(), newLocation,
+                                                                        request.getGroupIds());
                     storageRequestService.handleSuccess(request, fileRef, message);
                 } catch (ModuleException e) {
                     String errorCause = String.format("Unable to save new file reference for file %s",

@@ -463,7 +463,6 @@ public class FileStorageRequestService {
                                       e.getMessage()),
                         e);
         }
-        eventPublisher.storeSuccess(fileRef, message, request.getGroupIds());
         for (String groupId : request.getGroupIds()) {
             reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE, fileRef.getMetaInfo().getChecksum(),
                                            fileRef.getLocation().getStorage(), fileRef);

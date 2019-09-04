@@ -32,6 +32,8 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.springframework.util.Assert;
+
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
@@ -44,7 +46,7 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 @Entity
 @Table(name = "t_groups_requests_info", indexes = { @Index(name = "idx_group_id", columnList = "group_id") },
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_t_groups_requests_info", columnNames = { "groupId", "file_ref_id" }) })
+                @UniqueConstraint(name = "uk_t_groups_requests_info", columnNames = { "group_id", "file_ref_id" }) })
 public class GroupRequestsInfo {
 
     @Id
@@ -75,7 +77,7 @@ public class GroupRequestsInfo {
     @Column(name = "checksum", length = FileReferenceMetaInfo.CHECKSUM_MAX_LENGTH, nullable = false)
     private String checksum;
 
-    @Column(name = "storage", length = FileLocation.STORAGE_MAX_LENGTH, nullable = false)
+    @Column(name = "storage", length = FileLocation.STORAGE_MAX_LENGTH)
     private String storage;
 
     @Column
@@ -89,9 +91,13 @@ public class GroupRequestsInfo {
     }
 
     public GroupRequestsInfo(String groupId, FileRequestType requestType, String checksum, String storage) {
-        super();
+        Assert.notNull(groupId, "groupId can not be null");
+        Assert.notNull(checksum, "checksum can not be null");
+        Assert.notNull(requestType, "requestType can not be null");
         this.groupId = groupId;
         this.requestType = requestType;
+        this.checksum = checksum;
+        this.storage = storage;
     }
 
     /**

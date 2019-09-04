@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.storagelight.service.file.request;
 import java.util.Set;
 
 import org.apache.commons.compress.utils.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -44,6 +46,8 @@ import fr.cnes.regards.modules.storagelight.domain.flow.FlowItemStatus;
 @Component
 public class RequestsGroupService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestsGroupService.class);
+
     @Autowired
     private IPublisher publisher;
 
@@ -64,43 +68,55 @@ public class RequestsGroupService {
 
     public void requestSuccess(String groupId, FileRequestType type, String checksum, String storage,
             FileReference fileRef) {
-        requestDone(groupId, type, checksum, storage, fileRef, false, null);
+        requestSuccess(groupId, type, checksum, storage, fileRef, true);
+    }
+
+    public void requestSuccess(String groupId, FileRequestType type, String checksum, String storage,
+            FileReference fileRef, boolean checkGroupDone) {
+        requestDone(groupId, type, checksum, storage, fileRef, false, null, checkGroupDone);
+    }
+
+    public void requestError(String groupId, FileRequestType type, String checksum, String storage, String errorCause,
+            boolean checkGroupDone) {
+        requestDone(groupId, type, checksum, storage, null, true, errorCause, checkGroupDone);
     }
 
     public void requestError(String groupId, FileRequestType type, String checksum, String storage, String errorCause) {
-        requestDone(groupId, type, checksum, storage, null, true, errorCause);
+        requestError(groupId, type, checksum, storage, errorCause, true);
     }
 
     private void requestDone(String groupId, FileRequestType type, String checksum, String storage,
-            FileReference fileRef, boolean error, String errorCause) {
-        boolean isDone = false;
+            FileReference fileRef, boolean error, String errorCause, boolean checkGroupDone) {
         // 1. Add info in database
         GroupRequestsInfo gInfo = new GroupRequestsInfo(groupId, type, checksum, storage);
         gInfo.setFileReference(fileRef);
         gInfo.setError(error);
         gInfo.setErrorCause(errorCause);
         groupReqInfoRepository.save(gInfo);
-        // 2. Check if there is remaining request not finished
-        switch (type) {
-            case AVAILABILITY:
-                isDone = cacheReqRepository.existsByGroupIdAndStatusNot(groupId, FileRequestStatus.ERROR);
-                break;
-            case COPY:
-                isDone = copyReqRepository.existsByGroupIdAndStatusNot(groupId, FileRequestStatus.ERROR);
-                break;
-            case DELETION:
-                isDone = delReqRepository.existsByGroupIdAndStatusNot(groupId, FileRequestStatus.ERROR);
-                break;
-            case STORAGE:
-                isDone = storageReqRepository.existsByGroupIdsAndStatusNot(groupId, FileRequestStatus.ERROR);
-                break;
-            case REFERENCE:
-            default:
-                break;
-        }
-        // 3. IF finished send a terminated group request event
-        if (isDone) {
-            done(groupId, type);
+        if (checkGroupDone) {
+            boolean isDone = false;
+            // 2. Check if there is remaining request not finished
+            switch (type) {
+                case AVAILABILITY:
+                    isDone = !cacheReqRepository.existsByGroupIdAndStatusNot(groupId, FileRequestStatus.ERROR);
+                    break;
+                case COPY:
+                    isDone = !copyReqRepository.existsByGroupIdAndStatusNot(groupId, FileRequestStatus.ERROR);
+                    break;
+                case DELETION:
+                    isDone = !delReqRepository.existsByGroupIdAndStatusNot(groupId, FileRequestStatus.ERROR);
+                    break;
+                case STORAGE:
+                    isDone = !storageReqRepository.existsByGroupIdsAndStatusNot(groupId, FileRequestStatus.ERROR);
+                    break;
+                case REFERENCE:
+                default:
+                    break;
+            }
+            // 3. IF finished send a terminated group request event
+            if (isDone) {
+                done(groupId, type);
+            }
         }
     }
 
@@ -120,8 +136,12 @@ public class RequestsGroupService {
         Set<GroupRequestsInfo> successes = groupReqInfoRepository.findByGroupIdAndError(groupId, false);
         // 3. Publish event
         if (errors.isEmpty()) {
+            LOGGER.debug("{} - Request group {} done in success with {} success requests", type.toString(), groupId,
+                         successes.size());
             publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.SUCCESS, successes));
         } else {
+            LOGGER.debug("{} - Request group {} terminated in error with {} success requests and {} error requests",
+                         type.toString(), groupId, successes.size(), errors.size());
             publisher.publish(FileRequestsGroupEvent.buildError(groupId, type, successes, errors));
         }
         // 4. Clear group info

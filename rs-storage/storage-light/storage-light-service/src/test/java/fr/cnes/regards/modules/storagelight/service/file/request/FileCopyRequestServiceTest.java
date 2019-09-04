@@ -25,15 +25,19 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
@@ -49,7 +53,16 @@ import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
  * @author sbinda
  *
  */
+@ActiveProfiles({ "noscheduler" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_copy_tests",
+        "regards.storage.cache.path=target/cache" })
 public class FileCopyRequestServiceTest extends AbstractStorageTest {
+
+    @Before
+    @Override
+    public void init() throws ModuleException {
+        super.init();
+    }
 
     @Test
     public void copyFile() throws InterruptedException, ExecutionException {

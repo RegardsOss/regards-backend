@@ -105,7 +105,10 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         String owner = "new-owner";
         FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL);
         String storage = fileRef.getLocation().getStorage();
-        // Create a new bus message File reference request
+        // One store event should be sent
+        Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
+
+        // Create a request to reference a file with the same checksum as the one stored before but with a new owner
         ReferenceFlowItem item = ReferenceFlowItem
                 .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
                                                      "owner-test", storage, "file://storage/location/file.name"),

@@ -44,12 +44,13 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestS
  * @author Sébastien Binda
  */
 @ActiveProfiles({ "noscheduler" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_tests",
         "regards.storage.cache.path=target/cache" })
 public class FileDownloadServiceTest extends AbstractStorageTest {
 
     @Before
-    public void initialize() throws ModuleException {
+    @Override
+    public void init() throws ModuleException {
         super.init();
     }
 

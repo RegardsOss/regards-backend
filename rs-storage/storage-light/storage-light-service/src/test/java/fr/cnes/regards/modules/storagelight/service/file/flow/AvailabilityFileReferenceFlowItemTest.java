@@ -49,8 +49,6 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.RetryFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
-import fr.cnes.regards.modules.storagelight.service.file.flow.AvailabilityFlowItemHandler;
-import fr.cnes.regards.modules.storagelight.service.file.flow.RetryFlowItemHandler;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
@@ -109,7 +107,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
         Mockito.clearInvocations(publisher);
         AvailabilityFlowItem request = AvailabilityFlowItem.build(checksums, OffsetDateTime.now().plusDays(1),
                                                                   UUID.randomUUID().toString());
-        handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
+        handler.handleSync(new TenantWrapper<>(request, this.getDefaultTenant()));
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
         // there should be 2 notification error for availability of offline files
@@ -164,7 +162,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
         AvailabilityFlowItem request = AvailabilityFlowItem.build(Sets.newHashSet(file1.getMetaInfo().getChecksum()),
                                                                   OffsetDateTime.now().plusDays(2),
                                                                   UUID.randomUUID().toString());
-        handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
+        handler.handleSync(new TenantWrapper<>(request, this.getDefaultTenant()));
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
@@ -194,7 +192,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
 
         String groupId = UUID.randomUUID().toString();
         AvailabilityFlowItem request = AvailabilityFlowItem.build(checksums, OffsetDateTime.now().plusDays(1), groupId);
-        handler.handle(new TenantWrapper<>(request, this.getDefaultTenant()));
+        handler.handleSync(new TenantWrapper<>(request, this.getDefaultTenant()));
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
         Assert.assertEquals("There should be 4 cache requests created", 4,

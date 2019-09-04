@@ -28,11 +28,15 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
@@ -43,7 +47,16 @@ import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
  * @author sbinda
  *
  */
+@ActiveProfiles({ "noscheduler" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_cache_tests",
+        "regards.storage.cache.path=target/cache", "regards.storage.cache.size.limit.ko.per.tenant=10" })
 public class FileCacheRequestServiceTest extends AbstractStorageTest {
+
+    @Before
+    @Override
+    public void init() throws ModuleException {
+        super.init();
+    }
 
     @Test
     public void makeAvailable() throws InterruptedException, ExecutionException {
@@ -60,6 +73,10 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
                           Files.exists(Paths.get(cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()))));
     }
 
+    /**
+     * Cache size limit is set to 10ko (regards.storage.cache.size.limit.ko.per.tenant=10) see class @TestPropertySource.
+     * @throws Exception
+     */
     @Test
     public void makeAvailable_cacheFull() throws Exception {
         // Simulate cache full 80% 8 file * 1ko (cache size limit 10ko)

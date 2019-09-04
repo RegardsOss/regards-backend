@@ -32,11 +32,14 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 
@@ -54,7 +57,16 @@ import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
  * @author sbinda
  *
  */
+@ActiveProfiles({ "noscheduler" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_storage_tests",
+        "regards.storage.cache.path=target/cache" })
 public class FileSstorageServiceRequestTest extends AbstractStorageTest {
+
+    @Before
+    @Override
+    public void init() throws ModuleException {
+        super.init();
+    }
 
     @Test
     public void retryMultipleStoreErrors() throws InterruptedException, ExecutionException, ModuleException {

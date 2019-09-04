@@ -90,18 +90,13 @@ public class FileReferenceRequestService {
                     .findFirst();
             try {
                 FileReference fileRef = reference(file, oFileRef, Sets.newHashSet(groupId));
-                String message = String.format("New file <%s> referenced at <%s> (checksum: %s)",
-                                               fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
-                                               fileRef.getMetaInfo().getChecksum());
-                LOGGER.debug(message);
-                fileRefEventPublisher.storeSuccess(fileRef, message, groupId);
                 reqGrpService.requestSuccess(groupId, FileRequestType.REFERENCE, fileRef.getMetaInfo().getChecksum(),
-                                             fileRef.getLocation().getStorage(), fileRef);
+                                             fileRef.getLocation().getStorage(), fileRef, false);
             } catch (ModuleException e) {
                 fileRefEventPublisher.storeError(file.getChecksum(), Sets.newHashSet(file.getOwner()),
                                                  file.getStorage(), e.getMessage(), Sets.newHashSet(groupId));
                 reqGrpService.requestError(groupId, FileRequestType.REFERENCE, file.getChecksum(), file.getStorage(),
-                                           e.getMessage());
+                                           e.getMessage(), false);
             }
             // Performance optimization.
             flushCount++;
@@ -147,8 +142,14 @@ public class FileReferenceRequestService {
         if (fileRef.isPresent()) {
             return handleAlreadyExists(fileRef.get(), request, groupIds);
         } else {
-            return fileRefService.create(Lists.newArrayList(request.getOwner()), request.buildMetaInfo(),
-                                         new FileLocation(request.getStorage(), request.getUrl()));
+            FileReference newFileRef = fileRefService.create(Lists.newArrayList(request.getOwner()),
+                                                             request.buildMetaInfo(),
+                                                             new FileLocation(request.getStorage(), request.getUrl()));
+            String message = String.format("New file <%s> referenced at <%s> (checksum: %s)",
+                                           newFileRef.getMetaInfo().getFileName(), newFileRef.getLocation().toString(),
+                                           newFileRef.getMetaInfo().getChecksum());
+            fileRefEventPublisher.storeSuccess(newFileRef, message, groupIds);
+            return newFileRef;
         }
     }
 
