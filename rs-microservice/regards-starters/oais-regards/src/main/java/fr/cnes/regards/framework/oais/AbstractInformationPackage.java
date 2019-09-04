@@ -91,7 +91,6 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
  * Methods to use :
  * <ul>
  * <li>{@link #withContextTags(String...)}</li>
- * <li>{@link #withContextCategories(String...)}</li>
  * <li>{@link #withContextInformation(String, Object)}</li>
  * </ul>
  * <br/>
@@ -149,13 +148,6 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
      */
     public Collection<String> getTags() {
         return properties.getPdi().getTags();
-    }
-
-    /**
-     * Delegated method for retrieving tags from context information
-     */
-    public Collection<String> getCategories() {
-        return properties.getPdi().getCategories();
     }
 
     public List<Event> getHistory() {
@@ -296,15 +288,6 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
      */
     public <T extends AbstractInformationPackage<ID>> T withContextInformation(String key, Object value) {
         properties.withContextInformation(key, value);
-        return (T) this;
-    }
-
-    /**
-     * Add categories to context information (repeatable)
-     * @param categories list of category
-     */
-    public <T extends AbstractInformationPackage<ID>> T withContextCategories(String... categories) {
-        properties.withContextCategories(categories);
         return (T) this;
     }
 

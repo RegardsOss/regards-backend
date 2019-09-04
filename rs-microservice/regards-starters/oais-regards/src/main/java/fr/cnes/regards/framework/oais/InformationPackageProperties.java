@@ -271,15 +271,6 @@ public class InformationPackageProperties {
     }
 
     /**
-     * Add categories to context information (repeatable)
-     * @param categories list of category
-     */
-    public InformationPackageProperties withContextCategories(String... categories) {
-        pdi.withContextCategories(categories);
-        return this;
-    }
-
-    /**
      * Add context information to the information package thanks to the given properties (repeatable)
      */
     public InformationPackageProperties withContextInformation(String key, Object value) {

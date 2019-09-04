@@ -37,7 +37,8 @@ import org.springframework.test.context.TestPropertySource;
  * @author Marc Sordi
  */
 @TestPropertySource(properties = { "regards.jpa.multitenant.migrationTool=HBM2DDL",
-        "regards.jpa.multitenant.embedded=false", "regards.jpa.multitenant.outputFile=target/project_script.sql" })
+        "regards.jpa.multitenant.embedded=false", "regards.jpa.multitenant.outputFile=target/project_script.sql",
+        "spring.jpa.properties.hibernate.default_schema:sql_generator" })
 public abstract class AbstractScriptGeneratorTest extends AbstractDaoTest {
 
     @Test

@@ -32,7 +32,6 @@ import org.springframework.util.Assert;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
-import fr.cnes.regards.framework.oais.validator.CategoryRequired;
 
 /**
  * OAIS Preservation Description Information object<br/>
@@ -53,7 +52,6 @@ import fr.cnes.regards.framework.oais.validator.CategoryRequired;
  * Methods to use :
  * <ul>
  * <li>{@link #withContextTags(String...)}</li>
- * <li>{@link #withContextCategories(String...)}</li>
  * <li>{@link #withContextInformation(String, Object)}</li>
  * </ul>
  * <br/>
@@ -99,15 +97,10 @@ public class PreservationDescriptionInformation {
 
     public static final String CONTEXT_INFO_TAGS_KEY = "tags";
 
-    public static final String CONTEXT_INFO_CATEGORIES = "categories";
-
     /**
      * Should contains the tags too as a "special" key.
-     *
-     * <b>Must contain <code>categories</code> property as a list of string</v>
      */
-    @NotEmpty(message = "Context information is required")
-    @CategoryRequired
+    @NotNull(message = "Context information is required")
     private final InformationPackageMap contextInformation = new InformationPackageMap();
 
     @NotNull(message = "Reference information is required")
@@ -147,19 +140,6 @@ public class PreservationDescriptionInformation {
             getContextInformation().put(CONTEXT_INFO_TAGS_KEY, tags);
         }
         return tags;
-    }
-
-    /**
-     * @return the categories
-     */
-    public Collection<String> getCategories() {
-        @SuppressWarnings("unchecked")
-        Collection<String> cats = (Collection<String>) getContextInformation().get(CONTEXT_INFO_CATEGORIES);
-        if (cats == null) {
-            cats = Sets.newHashSet();
-            getContextInformation().put(CONTEXT_INFO_CATEGORIES, cats);
-        }
-        return cats;
     }
 
     /**
@@ -267,30 +247,8 @@ public class PreservationDescriptionInformation {
     public PreservationDescriptionInformation withContextInformation(String key, Object value) {
         Assert.hasLength(key, "Context information key is required");
         Assert.isTrue(!key.equalsIgnoreCase(CONTEXT_INFO_TAGS_KEY), "Tags must be added via dedicated method");
-        Assert.isTrue(!key.equalsIgnoreCase(CONTEXT_INFO_CATEGORIES), "Categories must be added via dedicated method");
         Assert.notNull(value, "Context information value is required");
         getContextInformation().put(key, value);
-        return this;
-    }
-
-    /**
-     * Add categories to context information (repeatable)
-     * @param categories list of category
-     */
-    public PreservationDescriptionInformation withContextCategories(String... categories) {
-        Assert.notEmpty(categories, "Categories are required");
-        @SuppressWarnings("unchecked")
-        Collection<String> existingCats = (Collection<String>) getContextInformation().get(CONTEXT_INFO_CATEGORIES);
-        if (existingCats == null) {
-            existingCats = Sets.newHashSet(categories);
-            getContextInformation().put(CONTEXT_INFO_CATEGORIES, existingCats);
-        } else {
-            for (String cat : categories) {
-                if (!existingCats.contains(cat)) {
-                    existingCats.add(cat);
-                }
-            }
-        }
         return this;
     }
 
