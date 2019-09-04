@@ -36,7 +36,6 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
-import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -122,7 +121,8 @@ public class SessionDeletionJob extends AbstractJob<Void> {
                             SIPEntitySpecifications.search(deletionRequest.getProviderIds(),
                                     deletionRequest.getSipIds(), deletionRequest.getSessionOwner(),
                                     deletionRequest.getSession(), null, states, null,
-                                    deletionRequest.getSelectionMode() == SessionDeletionSelectionMode.INCLUDE),
+                                    deletionRequest.getSelectionMode() == SessionDeletionSelectionMode.INCLUDE,
+                                    null, null, null),
                             pageRequest);
             // Save number of pages to publish job advancement
             if (totalPages < sipsPage.getTotalPages()) {

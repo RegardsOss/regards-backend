@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
+import com.google.common.collect.Sets;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -109,6 +110,7 @@ public class IngestClientIT extends IngestMultitenantServiceTest {
 
         RequestInfo clientInfo = ingestClient.ingest(IngestMetadataDto
                 .build("sessionOwner", "session", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                        Sets.newHashSet("cat 1"),
                        StorageMetadata.build("disk", null)), create("sipFromClient"));
         ingestServiceTest.waitForIngestion(1, FIVE_SECONDS);
 
@@ -123,7 +125,7 @@ public class IngestClientIT extends IngestMultitenantServiceTest {
 
     private SIP create(String providerId) {
 
-        SIP sip = SIP.build(EntityType.DATA, providerId, CATEGORIES);
+        SIP sip = SIP.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA,
                            Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"), "MD5",
                            "azertyuiopqsdfmlmld");

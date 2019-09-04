@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
+import com.google.common.collect.Sets;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
@@ -106,7 +107,7 @@ public class SIPValidationTest {
         if (!errors.hasErrors()) {
             Assert.fail("An empty SIP should be invalid");
         }
-        Assert.assertEquals(3, errors.getErrorCount());
+        Assert.assertEquals(1, errors.getErrorCount());
     }
 
     /**
@@ -127,7 +128,7 @@ public class SIPValidationTest {
         if (!errors.hasErrors()) {
             Assert.fail("An empty SIP reference should be invalid");
         }
-        Assert.assertEquals(6, errors.getErrorCount());
+        Assert.assertEquals(4, errors.getErrorCount());
     }
 
     /**
@@ -175,7 +176,7 @@ public class SIPValidationTest {
     @Purpose("SIP validation")
     public void validSIPValue() {
 
-        SIP sip = SIP.build(EntityType.DATA, PROVIDER_ID, CATEGORIES);
+        SIP sip = SIP.build(EntityType.DATA, PROVIDER_ID);
 
         // Geometry
         sip.withGeometry(IGeometry.point(IGeometry.position(10.0, 10.0)));
@@ -222,7 +223,7 @@ public class SIPValidationTest {
     public void validateSIPCollection() {
 
         SIPCollection collection = SIPCollection.build(IngestMetadataDto.build("sessionOwner", "session", "ingestChain",
-                                                                               StorageMetadata.build("test", null)));
+                Sets.newHashSet("cat 1"), StorageMetadata.build("test", null)));
 
         validator.validate(collection, errors);
         if (errors.hasErrors()) {

@@ -18,25 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.domain.sip;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import java.util.Arrays;
 import java.util.List;
-
+import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 import org.springframework.util.Assert;
-
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 
 /**
  * Extra information useful for SIP submission.<br/>
@@ -73,6 +71,10 @@ public class IngestMetadata {
             value = "fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata") })
     private List<StorageMetadata> storages;
 
+    @Column(columnDefinition = "jsonb", nullable = false)
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    private Set<String> categories;
+
     public String getIngestChain() {
         return ingestChain;
     }
@@ -105,23 +107,34 @@ public class IngestMetadata {
         this.storages = storages;
     }
 
+    public Set<String> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(Set<String> categories) {
+        this.categories = categories;
+    }
+
     /**
      * Build ingest metadata
      * @param sessionOwner Owner of the session
      * @param session session
+     * @param categories category list
      * @param ingestChain ingest processing chain name
      * @param storages storage metadata
      */
-    public static IngestMetadata build(String sessionOwner, String session, String ingestChain,
+    public static IngestMetadata build(String sessionOwner, String session, String ingestChain, Set<String> categories,
             StorageMetadata... storages) {
         Assert.hasLength(ingestChain, IngestValidationMessages.MISSING_INGEST_CHAIN);
         Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
         Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION);
         Assert.notEmpty(storages, IngestValidationMessages.MISSING_STORAGE_METADATA);
+        Assert.notEmpty(categories, IngestValidationMessages.MISSING_CATEGORIES);
         IngestMetadata m = new IngestMetadata();
         m.setIngestChain(ingestChain);
         m.setSessionOwner(sessionOwner);
         m.setSession(session);
+        m.setCategories(categories);
         m.setStorages(Arrays.asList(storages));
         return m;
     }

@@ -18,28 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.flow;
 
-import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
@@ -81,9 +72,9 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
         long existingItems = 0;
         long maxloops = 1000;
         for (long i = 0; i < maxloops; i++) {
-            SIP sip = create("provider" + i, CATEGORIES, null);
+            SIP sip = create("provider" + i, null);
             // Create event
-            publishSIPEvent(sip, "fake", OffsetDateTime.now().toString(),"source");
+            publishSIPEvent(sip, "fake", OffsetDateTime.now().toString(),"source", CATEGORIES);
         }
 
         // Wait

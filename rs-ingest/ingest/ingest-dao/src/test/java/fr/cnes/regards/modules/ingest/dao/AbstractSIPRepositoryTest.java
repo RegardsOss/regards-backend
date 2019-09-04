@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.After;
@@ -34,7 +37,6 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -42,7 +44,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:ingest_dao" })
 public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
 
-    private static final List<String> CATEGORIES = Lists.newArrayList("CATEGORY");
+    private static final Set<String> CATEGORIES = Sets.newHashSet("CATEGORY");
 
     @BeforeTransaction
     public void beforeTransaction() {
@@ -66,12 +68,13 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
     public void init() {
         sip1 = new SIPEntity();
 
-        sip1.setSip(SIP.build(EntityType.DATA, "SIP_001", CATEGORIES));
+        sip1.setSip(SIP.build(EntityType.DATA, "SIP_001"));
         sip1.setSipId(UniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip1.setProviderId("SIP_001");
-        sip1.setIngestDate(OffsetDateTime.now());
-        sip1.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN,
+        sip1.setCreationDate(OffsetDateTime.now());
+        sip1.setLastUpdate(OffsetDateTime.now());
+        sip1.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN, CATEGORIES,
                                                     StorageMetadata.build("store", null)));
         sip1.setState(SIPState.INGESTED);
         sip1.setVersion(1);
@@ -80,12 +83,13 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip1 = sipRepository.save(sip1);
 
         SIPEntity sip2 = new SIPEntity();
-        sip2.setSip(SIP.build(EntityType.DATA, "SIP_002", CATEGORIES));
+        sip2.setSip(SIP.build(EntityType.DATA, "SIP_002"));
         sip2.setSipId(UniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip2.setProviderId("SIP_002");
-        sip2.setIngestDate(OffsetDateTime.now().minusHours(6));
-        sip2.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN,
+        sip2.setCreationDate(OffsetDateTime.now().minusHours(6));
+        sip2.setLastUpdate(OffsetDateTime.now().minusHours(6));
+        sip2.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN, CATEGORIES,
                                                     StorageMetadata.build("store", null)));
         sip2.setState(SIPState.INGESTED);
         sip2.setVersion(1);
@@ -94,12 +98,13 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip2 = sipRepository.save(sip2);
 
         SIPEntity sip3 = new SIPEntity();
-        sip3.setSip(SIP.build(EntityType.DATA, "SIP_003", CATEGORIES));
+        sip3.setSip(SIP.build(EntityType.DATA, "SIP_003"));
         sip3.setSipId(UniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip3.setProviderId("SIP_003");
-        sip3.setIngestDate(OffsetDateTime.now().minusHours(6));
-        sip3.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN,
+        sip3.setCreationDate(OffsetDateTime.now().minusHours(6));
+        sip3.setLastUpdate(OffsetDateTime.now().minusHours(6));
+        sip3.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN, CATEGORIES,
                                                     StorageMetadata.build("store", null)));
         sip3.setState(SIPState.INGESTED);
         sip3.setVersion(1);
@@ -109,12 +114,13 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
 
         SIPEntity sip4 = new SIPEntity();
 
-        sip4.setSip(SIP.build(EntityType.DATA, "SIP_001", CATEGORIES).withDescriptiveInformation("version", "2"));
+        sip4.setSip(SIP.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
         sip4.setSipId(UniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip4.setProviderId("SIP_003");
-        sip4.setIngestDate(OffsetDateTime.now().minusHours(6));
-        sip4.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN2,
+        sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
+        sip4.setLastUpdate(OffsetDateTime.now().minusHours(6));
+        sip4.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN2, CATEGORIES,
                                                     StorageMetadata.build("store", null)));
         sip4.setState(SIPState.INGESTED);
         sip4.setVersion(2);

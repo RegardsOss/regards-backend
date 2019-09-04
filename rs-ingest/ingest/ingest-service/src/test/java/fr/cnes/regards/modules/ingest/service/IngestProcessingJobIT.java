@@ -18,8 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -45,11 +49,9 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
@@ -89,6 +91,8 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
     private static final String SESSION = "session";
 
     private static final StorageMetadata STORAGE_METADATA = StorageMetadata.build("disk", null);
+
+    private static final HashSet<String> CATEGORIES = Sets.newHashSet("cat 1");
 
     @Autowired
     private IIngestProcessingChainRepository processingChainRepository;
@@ -154,9 +158,10 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
     public void testDefaultProcessingChain() {
         // Init a SIP in database with state CREATED and managed with default chain
         SIPCollection sips = SIPCollection.build(IngestMetadataDto
-                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, STORAGE_METADATA));
+                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                        CATEGORIES, STORAGE_METADATA));
 
-        SIP sip = SIP.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST, Lists.newArrayList("CAT"));
+        SIP sip = SIP.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST);
         sip.withDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "sdsdfm1211vd");
         sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
@@ -168,7 +173,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         ingestService.handleIngestRequests(items);
         ingestServiceTest.waitForIngestion(1, FIVE_SECONDS);
 
-        SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByIngestDateDesc(SIP_DEFAULT_CHAIN_ID_TEST);
+        SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_DEFAULT_CHAIN_ID_TEST);
         Assert.assertNotNull(resultSip);
         Assert.assertEquals(SIPState.INGESTED, resultSip.getState());
         Assert.assertEquals(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
@@ -185,9 +190,9 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
     public void testProcessingChain() {
 
         SIPCollection sips = SIPCollection
-                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST, STORAGE_METADATA));
+                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST, CATEGORIES, STORAGE_METADATA));
 
-        SIP sip = SIP.build(EntityType.DATA, SIP_ID_TEST, Lists.newArrayList("CAT2"));
+        SIP sip = SIP.build(EntityType.DATA, SIP_ID_TEST);
         sip.withDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
         sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
@@ -208,7 +213,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         ingestService.handleIngestRequests(IngestService.sipToFlow(sips));
         ingestServiceTest.waitForIngestion(1, FIVE_SECONDS);
 
-        SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByIngestDateDesc(SIP_ID_TEST);
+        SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_ID_TEST);
         Assert.assertNotNull(resultSip);
         Assert.assertEquals(SIPState.INGESTED, resultSip.getState());
         Assert.assertEquals(PROCESSING_CHAIN_TEST, resultSip.getIngestMetadata().getIngestChain());
@@ -253,7 +258,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
         // Init a SIP with reference in database with state CREATED
         SIPCollection sips = SIPCollection
-                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST, STORAGE_METADATA));
+                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST, CATEGORIES, STORAGE_METADATA));
 
         SIP sip = SIP.buildReference(EntityType.DATA, SIP_REF_ID_TEST, Paths.get("src/test/resources/file_ref.xml"),
                                      "1e2d4ab665784e43243b9b07724cd483");
@@ -263,7 +268,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         ingestService.handleIngestRequests(IngestService.sipToFlow(sips));
         ingestServiceTest.waitForIngestion(1, FIVE_SECONDS);
 
-        SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByIngestDateDesc(SIP_REF_ID_TEST);
+        SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_REF_ID_TEST);
         Assert.assertNotNull(resultSip);
         Assert.assertEquals(SIPState.INGESTED, resultSip.getState());
         Assert.assertEquals(PROCESSING_CHAIN_TEST, resultSip.getIngestMetadata().getIngestChain());

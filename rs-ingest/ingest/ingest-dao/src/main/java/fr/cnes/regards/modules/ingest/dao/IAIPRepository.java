@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.util.Optional;
 import java.util.Set;
 
@@ -28,9 +30,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 
 /**
  * JPA Repository to access {@link AIPEntity}

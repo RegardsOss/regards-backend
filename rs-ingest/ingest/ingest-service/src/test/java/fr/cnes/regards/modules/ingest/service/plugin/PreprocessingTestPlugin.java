@@ -58,7 +58,7 @@ public class PreprocessingTestPlugin implements ISipPreprocessing {
             throw new InvalidSIPReferenceException("Simulated exception for step PreprocessingTestPlugin");
         }
         // Simulate creation of a new SIP
-        return SIP.build(EntityType.DATA, SIP_ID_TEST, Lists.newArrayList("CAT"));
+        return SIP.build(EntityType.DATA, SIP_ID_TEST);
     }
 
 }

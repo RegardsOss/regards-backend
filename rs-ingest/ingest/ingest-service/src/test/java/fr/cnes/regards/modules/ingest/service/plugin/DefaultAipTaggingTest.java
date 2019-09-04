@@ -119,7 +119,7 @@ public class DefaultAipTaggingTest {
         String md5 = "plifplafplouf";
 
         AIP single = AIP.build(EntityType.DATA, UniformResourceName.fromString(aipUrn),
-                               Optional.of(UniformResourceName.fromString(sipUrn)), providerId, CATEGORIES);
+                               Optional.of(UniformResourceName.fromString(sipUrn)), providerId);
         single.withDataObject(DataType.RAWDATA, Paths.get("target", filename), md5);
         single.registerContentInformation();
 

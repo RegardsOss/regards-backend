@@ -120,16 +120,13 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
      * @param aipId AIP URN
      * @param sipId SIP URN
      * @param providerId the provider id
-     * @param categories context configuration categories
      */
     public static AIP build(EntityType type, UniformResourceName aipId, Optional<UniformResourceName> sipId,
-            String providerId, List<String> categories) {
+            String providerId) {
         Assert.notNull(type, "Entity type is required.");
         Assert.notNull(aipId, "Uniform resource Name is required.");
         Assert.notNull(providerId, "Provider id is required.");
-        Assert.notEmpty(categories, "At least one category is required");
-        AIP aip = new AIP().withIdAndType(aipId, type)
-                .withContextCategories(categories.toArray(new String[categories.size()]));
+        AIP aip = new AIP().withIdAndType(aipId, type);
         aip.setSipId(sipId.orElse(null));
         aip.setProviderId(providerId);
         return aip;

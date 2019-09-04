@@ -1,11 +1,33 @@
+/*
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.ingest.domain.aip;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.OAISEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -20,43 +42,28 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-
 @Entity
 @Table(name = "t_aip",
         indexes = { @Index(name = "idx_aip_id", columnList = "id,aipId,sip_id"),
-                @Index(name = "idx_aip_provider_id", columnList = "provider_id"),
-                @Index(name = "idx_aip_session_owner", columnList = "session_owner"),
-                @Index(name = "idx_aip_session", columnList = "session_name"),
-                @Index(name = "idx_aip_ingest_chain", columnList = "ingest_chain"),
-                @Index(name = "idx_aip_state", columnList = "state"),
-                @Index(name = "idx_aip_last_update", columnList = "last_update"), })
+            @Index(name = "idx_search_aip", columnList = "session_owner,session_name,state,last_update"),
+            @Index(name = "idx_aip_provider_id", columnList = "provider_id"),
+            @Index(name = "idx_aip_ingest_chain", columnList = "ingest_chain"),
+            @Index(name = "idx_aip_storage", columnList = "storages"),
+            @Index(name = "idx_aip_tags", columnList = "tags"),
+            @Index(name = "idx_aip_categories", columnList = "categories"),
+            @Index(name = "idx_aip_state", columnList = "state"), })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-public class AIPEntity {
+public class AIPEntity extends OAISEntity {
 
     @Id
     @SequenceGenerator(name = "AipSequence", initialValue = 1, sequenceName = "seq_aip")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AipSequence")
     private Long id;
-
-    /**
-     * The provider identifier is provided by the user along the SIP, with no guaranty of uniqueness,
-     * and propagated to children (i.e. AIPs)
-     */
-    @NotBlank(message = "Provider ID is required")
-    @Column(name = "provider_id", length = 100, nullable = false)
-    private String providerId;
 
     /**
      * The AIP Internal identifier (generated URN)
@@ -65,12 +72,6 @@ public class AIPEntity {
     @NotBlank(message = "AIP URN is required")
     @Column(name = "aipId", length = SIPEntity.MAX_URN_SIZE)
     private String aipId;
-
-    /**
-     * Look at {@link IngestMetadata}
-     */
-    @Embedded
-    private IngestMetadata ingestMetadata;
 
     /**
      * The SIP identifier which generate the current AIP
@@ -84,24 +85,8 @@ public class AIPEntity {
     @Enumerated(EnumType.STRING)
     private AIPState state;
 
-    @NotNull(message = "Creation date is required")
-    @Column(name = "creation_date", nullable = false)
-    private OffsetDateTime creationDate;
-
-    @NotNull(message = "Last update date is required")
-    @Column(name = "last_update", nullable = false)
-    private OffsetDateTime lastUpdate;
-
     @Column(name = "error_message", length = 256)
     private String errorMessage;
-
-    @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
-    private Set<String> tags;
-
-    @Column(columnDefinition = "jsonb", nullable = false)
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
-    private Set<String> categories;
 
     @NotNull(message = "RAW JSON AIP is required")
     @Column(columnDefinition = "jsonb", name = "rawaip", nullable = false)
@@ -110,14 +95,6 @@ public class AIPEntity {
 
     public Long getId() {
         return id;
-    }
-
-    public String getProviderId() {
-        return providerId;
-    }
-
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
     }
 
     public SIPEntity getSip() {
@@ -134,22 +111,6 @@ public class AIPEntity {
 
     public void setState(AIPState state) {
         this.state = state;
-    }
-
-    public OffsetDateTime getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(OffsetDateTime creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public OffsetDateTime getLastUpdate() {
-        return lastUpdate;
-    }
-
-    public void setLastUpdate(OffsetDateTime lastUpdate) {
-        this.lastUpdate = lastUpdate;
     }
 
     public AIP getAip() {
@@ -184,30 +145,6 @@ public class AIPEntity {
         this.aipId = aipId.toString();
     }
 
-    public IngestMetadata getIngestMetadata() {
-        return ingestMetadata;
-    }
-
-    public void setIngestMetadata(IngestMetadata ingestMetadata) {
-        this.ingestMetadata = ingestMetadata;
-    }
-
-    public Set<String> getTags() {
-        return tags;
-    }
-
-    public void setTags(Set<String> tags) {
-        this.tags = tags;
-    }
-
-    public Set<String> getCategories() {
-        return categories;
-    }
-
-    public void setCategories(Set<String> categories) {
-        this.categories = categories;
-    }
-
     public static AIPEntity build(SIPEntity sip, AIPState state, AIP aip) {
         AIPEntity aipEntity = new AIPEntity();
         aipEntity.setAip(aip);
@@ -221,7 +158,6 @@ public class AIPEntity {
         aipEntity.setIngestMetadata(sip.getIngestMetadata());
         // Extracted from AIP for search purpose
         aipEntity.setTags(new HashSet<>(aip.getTags()));
-        aipEntity.setCategories(new HashSet<>(aip.getCategories()));
         return aipEntity;
     }
 }

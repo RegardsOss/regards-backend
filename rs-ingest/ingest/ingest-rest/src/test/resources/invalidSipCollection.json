@@ -4,6 +4,9 @@
         "sessionOwner": "sampleSessionOwner",
         "session": "sampleSession",
         "ingestChain": "DefaultProcessingChain",
+        "categories": [
+            "CAT"
+        ],
         "storages": [
             {
                 "storage": "disk"
@@ -41,11 +44,7 @@
                     }
                 ],
                 "pdi": {
-                    "contextInformation": {
-                        "categories": [
-                            "CAT"
-                        ]
-                    },
+                    "contextInformation": {},
                     "provenanceInformation": {
                         "history": []
                     },

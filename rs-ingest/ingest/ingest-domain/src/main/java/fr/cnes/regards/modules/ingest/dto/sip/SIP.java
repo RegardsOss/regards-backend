@@ -79,14 +79,11 @@ public class SIP extends AbstractInformationPackage<String> {
      * Build a new {@link SIP}
      * @param type {@link EntityType}
      * @param providerId the provider id
-     * @param categories context configuration categories
      */
-    public static SIP build(EntityType type, String providerId, List<String> categories) {
-        Assert.notNull(type, "Entity type is required.");
+    public static SIP build(EntityType type, String providerId) {
+        Assert.notNull(type, "OAISEntity type is required.");
         Assert.hasLength(providerId, "Provider identifier is required.");
-        Assert.notEmpty(categories, "At least one category is required");
-        return new SIP().withIdAndType(providerId, type)
-                .withContextCategories(categories.toArray(new String[categories.size()]));
+        return new SIP().withIdAndType(providerId, type);
     }
 
     /**
@@ -107,7 +104,7 @@ public class SIP extends AbstractInformationPackage<String> {
         reference.setChecksum(checksum);
         reference.setUrl(url);
 
-        SIP sip = build(type, providerId, Lists.newArrayList("NO_CAT"));
+        SIP sip = build(type, providerId);
         sip.setRef(reference);
         sip.setProperties(null); // Remove properties so remove above fake CAT
         return sip;

@@ -84,13 +84,13 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
     @Test
     public void testSearchAIPEntity() throws InterruptedException {
         long nbSIP = 7;
-        publishSIPEvent(create("provider 1", CATEGORIES_0, TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0);
-        publishSIPEvent(create("provider 2", CATEGORIES_1, TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_1);
-        publishSIPEvent(create("provider 3", CATEGORIES_0, TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0);
-        publishSIPEvent(create("provider 4", CATEGORIES_1, TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1);
-        publishSIPEvent(create("provider 5", CATEGORIES_2, TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1);
-        publishSIPEvent(create("provider 6", CATEGORIES_0, TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0);
-        publishSIPEvent(create("provider 7", CATEGORIES_0, TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0);
+        publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create("provider 2", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_1, CATEGORIES_1);
+        publishSIPEvent(create("provider 3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORIES_1);
+        publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_2);
+        publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create("provider 7", TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 1000);
 

@@ -18,9 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
+import com.google.common.collect.Sets;
 import java.nio.file.Paths;
 import java.util.List;
 
+import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,7 +61,7 @@ public class SIPBuilderTest {
 
     private static final String CATEGORY = "category";
 
-    private static final List<String> CATEGORIES = Lists.newArrayList(CATEGORY);
+    private static final Set<String> CATEGORIES = Sets.newHashSet(CATEGORY);
 
     @Autowired
     private Gson gson;
@@ -79,11 +81,11 @@ public class SIPBuilderTest {
 
         // Initialize a SIP Collection builder
         SIPCollection collection = SIPCollection.build(IngestMetadataDto.build(sessionOwner, session, ingestChain,
-                                                                               StorageMetadata.build("test", null)));
+                CATEGORIES, StorageMetadata.build("test", null)));
 
         // Create a SIP builder
         String providerId = "SIP_001";
-        SIP sip = SIP.build(EntityType.DATA, providerId, CATEGORIES);
+        SIP sip = SIP.build(EntityType.DATA, providerId);
 
         // Fill in required content information
         sip.withDataObject(dataType, Paths.get(fileName), algorithm, checksum);

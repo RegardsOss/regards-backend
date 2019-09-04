@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
@@ -46,7 +48,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
@@ -87,9 +88,10 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
     private void ingestSIP(String providerId, String checksum) throws EntityInvalidException {
         SIPCollection sips = SIPCollection
                 .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                               StorageMetadata.build("disk", null)));
+                        Sets.newHashSet("CAT"),
+                        StorageMetadata.build("disk", null)));
 
-        sips.add(SIP.build(EntityType.DATA, providerId, Lists.newArrayList("CAT"))
+        sips.add(SIP.build(EntityType.DATA, providerId)
                 .withDataObject(DataType.RAWDATA, Paths.get("sip1.xml"), checksum).withSyntax(MediaType.APPLICATION_XML)
                 .registerContentInformation());
 
@@ -114,7 +116,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         ingestSIP(providerId, checksum);
         ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
 
-        SIPEntity entity = sipRepository.findTopByProviderIdOrderByIngestDateDesc(providerId);
+        SIPEntity entity = sipRepository.findTopByProviderIdOrderByCreationDateDesc(providerId);
         Assert.assertNotNull(entity);
         Assert.assertTrue(providerId.equals(entity.getProviderId()));
         Assert.assertTrue(entity.getVersion() == 1);

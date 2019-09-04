@@ -30,6 +30,7 @@ import org.springframework.data.jpa.domain.Specification;
 /**
  * JPA {@link Specification} to define {@link Predicate}s for criteria search for {@link SIPEntity} from repository.
  * @author Sébastien Binda
+ * @author Léo Mieulet
  */
 public final class SIPEntitySpecifications {
 
@@ -52,18 +53,10 @@ public final class SIPEntitySpecifications {
      *                         lists would rather remove entries from returning result
      */
     public static Specification<SIPEntity> search(List<String> providerIds, List<String> sipIds, String sessionOwner, String session,
-            OffsetDateTime from, List<SIPState> states, String ingestChain, boolean areIdListInclusive) {
+            OffsetDateTime from, List<SIPState> states, String ingestChain, boolean areIdListInclusive,
+            List<String> tags, List<String> storages, List<String> categories) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            if (sessionOwner != null) {
-                predicates.add(cb.equal(root.get("ingestMetadata").get("sessionOwner"), sessionOwner));
-            }
-            if (session != null) {
-                predicates.add(cb.equal(root.get("ingestMetadata").get("session"), session));
-            }
-            if (from != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("ingestDate"), from));
-            }
             if (states != null && !states.isEmpty()) {
                 Set<Predicate> statePredicates = Sets.newHashSet();
                 for (SIPState state : states) {
@@ -91,6 +84,9 @@ public final class SIPEntitySpecifications {
                 }
                 predicates.add(cb.or(providerIdPredicates.toArray(new Predicate[providerIdPredicates.size()])));
             }
+            if (from != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), from));
+            }
             if (sipIds != null && !sipIds.isEmpty()) {
                 Set<Predicate> sipIdsPredicates = Sets.newHashSet();
                 for (String sipId: sipIds) {
@@ -105,7 +101,11 @@ public final class SIPEntitySpecifications {
             if (ingestChain != null) {
                 predicates.add(cb.equal(root.get("ingestMetadata").get("ingestChain"), ingestChain));
             }
-            query.orderBy(cb.desc(root.get("ingestDate")));
+
+            predicates.addAll(OAISEntitySpecification.buildCommonPredicate(root, cb, tags,
+                    sessionOwner, session, null, storages, categories));
+
+            query.orderBy(cb.desc(root.get("lastUpdate")));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

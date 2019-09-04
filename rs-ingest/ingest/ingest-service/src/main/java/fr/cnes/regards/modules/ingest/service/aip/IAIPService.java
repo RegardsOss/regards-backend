@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -26,9 +28,7 @@ import java.util.Optional;
 
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import org.springframework.data.domain.Page;

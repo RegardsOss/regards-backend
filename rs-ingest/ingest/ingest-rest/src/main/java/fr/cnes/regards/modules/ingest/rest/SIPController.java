@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -54,7 +55,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionRequestDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;

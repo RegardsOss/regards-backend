@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.rest;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -36,6 +37,7 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.StringJoiner;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,7 +59,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 /**
-* {@link fr.cnes.regards.modules.ingest.domain.aip.AIPEntity} REST API testing
+* {@link AIPEntity} REST API testing
 *
 * @author Léo Mieulet
 *
@@ -93,8 +95,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
     }
 
-    public void createAIP(String providerId, List<String> categories, String sessionOwner, String session, String storage) {
-        SIP sip = SIP.build(EntityType.DATA, providerId, categories);
+    public void createAIP(String providerId, Set<String> categories, String sessionOwner, String session, String storage) {
+        SIP sip = SIP.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA,
                 Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"), "MD5",
                 "azertyuiopqsdfmlmld");
@@ -106,7 +108,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         // Create event
         IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner, session,
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, categories,
                 StorageMetadata.build(storage, null));
 
         ingestServiceTest.sendIngestRequestEvent(sip, mtd);
@@ -116,7 +118,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     public void searchAIPs() {
 
         // Create AIP
-        createAIP("my object #1", Lists.newArrayList("CAT 1", "CAT 2"), "ESA",
+        createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), "ESA",
                 OffsetDateTime.now().toString(), "NAS #1");
 
         // Wait for ingestion finished
@@ -235,9 +237,6 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         fields.add(constrainedFields.withPath(prefix + "tags", "tags", "List of tags")
                 .type(JSON_ARRAY_TYPE));
 
-        fields.add(constrainedFields.withPath(prefix + "categories", "categories", "List of categories")
-                .type(JSON_ARRAY_TYPE));
-
         fields.add(constrainedFields.withPath(prefix + "sip", "sip", "Generated SIP")
                 .type(JSON_OBJECT_TYPE));
 
@@ -256,6 +255,9 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                 .type(JSON_STRING_TYPE));
 
         fields.add(constrainedFields.withPath(prefixIngestMetadata + "storages", "storages", "List of storage")
+                .type(JSON_ARRAY_TYPE));
+
+        fields.add(constrainedFields.withPath(prefixIngestMetadata + "categories", "categories", "List of categories")
                 .type(JSON_ARRAY_TYPE));
 
         String prefixStorages = "content[].content.ingestMetadata.storages[].";

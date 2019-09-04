@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import com.google.common.collect.Sets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -25,6 +26,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Set;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -77,6 +79,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final String SESSION = "session";
 
+    private static final Set<String> CATEGORIES = Sets.newHashSet("CAT");
+
     private static final StorageMetadata STORAGE_METADATA = StorageMetadata.build("disk", null);
 
     @Override
@@ -90,7 +94,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void ingestSips() {
 
         SIPCollection collection = SIPCollection.build(IngestMetadataDto
-                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, STORAGE_METADATA));
+                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, CATEGORIES, STORAGE_METADATA));
 
         SIP firstSIPwithGeometry = buildSipOne("SIP_001", "data1.fits");
         firstSIPwithGeometry
@@ -142,7 +146,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void getSips() {
 
         SIPCollection collection = SIPCollection.build(IngestMetadataDto
-                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, STORAGE_METADATA));
+                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, Sets.newHashSet("CAT"), STORAGE_METADATA));
 
         collection.add(buildSipOne("SIP_001", "data1.fits"));
         collection.add(buildSipOne("SIP_002", "data2.fits"));
@@ -202,17 +206,17 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void ingestInvalidSips() {
 
         SIPCollection collection = SIPCollection.build(IngestMetadataDto
-                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, STORAGE_METADATA));
+                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, Sets.newHashSet("CAT"), STORAGE_METADATA));
 
         // SIP 1
-        SIP sip = SIP.build(EntityType.DATA, "SIP_001", Lists.newArrayList("CAT"));
+        SIP sip = SIP.build(EntityType.DATA, "SIP_001");
         sip.withDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "FAKE_ALGO", "sdsdfm1211vd");
         sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
         collection.add(sip.registerContentInformation());
 
         // SIP 2
-        sip = SIP.build(EntityType.DATA, "SIP_002", Lists.newArrayList("CAT"));
+        sip = SIP.build(EntityType.DATA, "SIP_002");
         sip.withDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vsdfdsfd");
         sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
@@ -307,7 +311,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private SIP buildSipOne(String providerId, String fileName) {
 
-        SIP sip = SIP.build(EntityType.DATA, providerId, Lists.newArrayList("CAT"));
+        SIP sip = SIP.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA, Paths.get(fileName), Paths.get(fileName).getFileName().toString(), "MD5",
                            "b463726cfbb52d47e432bedf08edbec3", new Long(12345));
         sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",

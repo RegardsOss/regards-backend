@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
+import java.util.List;
+import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -48,7 +50,7 @@ public class SIPCollection extends AbstractFeatureCollection<SIP> {
     /**
      * Create a new {@link SIPCollection} with a generated unique request id.<br/>
      * An {@link IngestRequestEvent} including this request id will be sent to monitor the progress of the request.
-     * @param metadata metadata built with {@link IngestMetadataDto#build(String, String, String, StorageMetadata...)}
+     * @param metadata metadata built with {@link IngestMetadataDto#build(String, String, String, Set<String>, List<StorageMetadata>)}
      * @return a {@link SIPCollection}
      */
     public static SIPCollection build(IngestMetadataDto metadata) {

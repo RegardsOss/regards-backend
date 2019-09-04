@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -37,7 +38,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPIdNProcessing;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
@@ -64,7 +64,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @param providerId external SIP identifier
      * @return the latest registered SIP
      */
-    SIPEntity findTopByProviderIdOrderByIngestDateDesc(String providerId);
+    SIPEntity findTopByProviderIdOrderByCreationDateDesc(String providerId);
 
     /**
      * Find all SIP version of a provider id
@@ -172,7 +172,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @return next version
      */
     default Integer getNextVersion(String providerId) {
-        SIPEntity latest = findTopByProviderIdOrderByIngestDateDesc(providerId);
+        SIPEntity latest = findTopByProviderIdOrderByCreationDateDesc(providerId);
         return latest == null ? 1 : latest.getVersion() + 1;
     }
 

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.dao;
 import org.junit.Ignore;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Generate DDL with HBM2DDL
@@ -30,7 +31,8 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTes
 // Use following line to launch FLYWAY on public schema (comment it to use HBM2DDL)
 //@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=public",
 //        "regards.jpa.multitenant.migrationTool=FLYWAYDB" })
-@Ignore
+//@Ignore
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:ingest_dao" })
 public class IngestSQLGenerator extends AbstractScriptGeneratorTest {
 
 }

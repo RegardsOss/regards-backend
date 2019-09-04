@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip;
 
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,7 +46,6 @@ import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
 import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
 import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
@@ -81,7 +81,8 @@ public class SIPService implements ISIPService {
             List<SIPState> state, String ingestChain, Pageable page) {
         return sipRepository
                 .loadAll(SIPEntitySpecifications.search(providerId == null ? null : Lists.newArrayList(providerId),
-                                                        null, sessionOwner, session, from, state, ingestChain, true),
+                                                        null, sessionOwner, session, from, state, ingestChain,
+                        true, null, null, null),
                          page);
     }
 
@@ -125,7 +126,7 @@ public class SIPService implements ISIPService {
     @Override
     public SIPEntity saveSIPEntity(SIPEntity sip) {
         // do save SIP
-        sip.setLastUpdateDate(OffsetDateTime.now());
+        sip.setLastUpdate(OffsetDateTime.now());
         SIPEntity savedSip = sipRepository.save(sip);
         return savedSip;
     }

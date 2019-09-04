@@ -4,8 +4,14 @@ DROP INDEX idx_sip_session;
 
 alter table t_sip add column session_owner varchar(128) NOT NULL;
 alter table t_sip add column session_name varchar(128) NOT NULL;
+ALTER TABLE t_sip ADD COLUMN provider_id varchar(100) NOT NULL;
 alter table t_sip RENAME COLUMN processing TO ingest_chain;
+alter table t_sip RENAME COLUMN ingestDate TO creation_date;
+alter table t_sip RENAME COLUMN lastUpdateDate TO last_update;
+
+ALTER TABLE t_sip ADD COLUMN tags jsonb;
 ALTER TABLE t_sip ADD COLUMN storages jsonb;
+ALTER TABLE t_sip ADD COLUMN categories jsonb;
 
 create index idx_sip_session_owner on t_sip (session_owner);
 create index idx_sip_session on t_sip (session_name);
@@ -15,7 +21,7 @@ CREATE INDEX idx_sip_storage ON t_sip USING gin (storages);
 
 create index idx_sip_state on t_sip (state);
 create index idx_sip_providerId on t_sip (providerId);
-create index idx_sip_ingest_date on t_sip (ingestDate);
+create index idx_sip_creation_date on t_sip (creation_date);
 create index idx_sip_version on t_sip (version);
 
 
@@ -58,7 +64,7 @@ alter table t_deletion_request add constraint fk_req_job_info_id foreign key (jo
 create sequence seq_deletion_request start 1 increment 50;
 
 -- Ingest request
-create table t_ingest_request (id int8 not null, request_id varchar(36) NOT NULL, ingest_chain varchar(100) not null, session_name varchar(128) not null, session_owner varchar(128) not null, storages jsonb, state varchar(20) NOT NULL, errors jsonb, rawsip jsonb, job_info_id uuid, primary key (id));
+create table t_ingest_request (id int8 not null, request_id varchar(36) NOT NULL, ingest_chain varchar(100) not null, session_name varchar(128) not null, session_owner varchar(128) not null, storages jsonb, state varchar(20) NOT NULL, errors jsonb, rawsip jsonb, job_info_id uuid, categories jsonb, primary key (id));
 CREATE INDEX idx_ingest_request_id on t_ingest_request (request_id);
 CREATE INDEX idx_ingest_request_state ON t_ingest_request (state);
 ALTER TABLE t_ingest_request ADD CONSTRAINT uk_ingest_request_id UNIQUE (request_id);

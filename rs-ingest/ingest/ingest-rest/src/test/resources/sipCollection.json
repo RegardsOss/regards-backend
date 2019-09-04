@@ -4,6 +4,9 @@
 		"sessionOwner": "sampleSessionOwner",
 		"session": "sampleSession",
 		"ingestChain": "DefaultProcessingChain",
+		"categories" : [
+			"CAT"
+		],
 		"storages": [
 			{
 				"storage": "disk"
@@ -40,9 +43,6 @@
 				],
 				"pdi": {
 					"contextInformation": {
-						"categories" : [
-							"CAT"
-						],
 						"tags": [
 							"DA_TC_JASON2_CORPFALTI_POE"
 						]

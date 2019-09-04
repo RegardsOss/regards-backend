@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.domain.sip;
 
+import fr.cnes.regards.modules.ingest.domain.OAISEntity;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -57,11 +59,11 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
  */
 @Entity
 @Table(name = "t_sip",
-        indexes = { @Index(name = "idx_sip_id", columnList = "providerId,sipId,checksum"),
+        indexes = { @Index(name = "idx_sip_id", columnList = "provider_id,sipId,checksum"),
                 @Index(name = "idx_sip_ingest_chain", columnList = "ingest_chain"),
                 @Index(name = "idx_sip_state", columnList = "state"),
-                @Index(name = "idx_sip_providerId", columnList = "providerId"),
-                @Index(name = "idx_sip_ingest_date", columnList = "ingestDate"),
+                @Index(name = "idx_sip_providerId", columnList = "provider_id"),
+                @Index(name = "idx_sip_creation_date", columnList = "creation_date"),
                 @Index(name = "idx_sip_version", columnList = "version"),
                 @Index(name = "idx_sip_session_owner", columnList = "session_owner"),
                 @Index(name = "idx_sip_session", columnList = "session_name") },
@@ -69,7 +71,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
         uniqueConstraints = { @UniqueConstraint(name = "uk_sip_sipId", columnNames = "sipId"),
                 @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-public class SIPEntity {
+public class SIPEntity extends OAISEntity {
 
     /**
      * Length used as the checksum column definition.
@@ -85,25 +87,12 @@ public class SIPEntity {
     private Long id;
 
     /**
-     * The provider identifier is provided by the user along the SIP, with no guaranty of uniqueness
-     */
-    @NotBlank(message = "Provider ID is required")
-    @Column(length = 100)
-    private String providerId;
-
-    /**
      * The SIP internal identifier (generated URN). If two SIP are ingested with same id, this idIp will distinguish
      * them as 2 different versions
      */
     @NotBlank(message = "SIP ID is required")
     @Column(name = "sipId", length = MAX_URN_SIZE)
     private String sipId;
-
-    /**
-     * Look at {@link IngestMetadata}
-     */
-    @Embedded
-    private IngestMetadata ingestMetadata;
 
     /**
      * SIP version : this value is also reported in {@link #sipId} and must be the same
@@ -128,11 +117,6 @@ public class SIPEntity {
     @Column(columnDefinition = "jsonb", name = "rawsip")
     @Type(type = "jsonb")
     private SIP sip;
-
-    @NotNull(message = "Ingestion date is required")
-    private OffsetDateTime ingestDate;
-
-    private OffsetDateTime lastUpdateDate;
 
     public String getSipId() {
         return sipId;
@@ -174,22 +158,6 @@ public class SIPEntity {
         this.sip = sip;
     }
 
-    public OffsetDateTime getIngestDate() {
-        return ingestDate;
-    }
-
-    public void setIngestDate(OffsetDateTime ingestDate) {
-        this.ingestDate = ingestDate;
-    }
-
-    public String getProviderId() {
-        return providerId;
-    }
-
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
-    }
-
     public Long getId() {
         return id;
     }
@@ -200,22 +168,6 @@ public class SIPEntity {
 
     public void setVersion(Integer version) {
         this.version = version;
-    }
-
-    public OffsetDateTime getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(OffsetDateTime lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
-    }
-
-    public IngestMetadata getIngestMetadata() {
-        return ingestMetadata;
-    }
-
-    public void setIngestMetadata(IngestMetadata ingestMetadata) {
-        this.ingestMetadata = ingestMetadata;
     }
 
     @Override
@@ -258,11 +210,13 @@ public class SIPEntity {
 
         sipEntity.setProviderId(sip.getId());
         sipEntity.setSipId(urn);
-        sipEntity.setIngestDate(OffsetDateTime.now());
+        sipEntity.setCreationDate(OffsetDateTime.now());
         sipEntity.setState(state);
         sipEntity.setSip(sip);
         sipEntity.setIngestMetadata(metadata);
         sipEntity.setVersion(version);
+        // Extracted from SIP for search purpose
+        sipEntity.setTags(new HashSet<>(sip.getTags()));
 
         return sipEntity;
     }
