@@ -28,14 +28,14 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 
 /**
  * Flow message to request file(s) reference deletion.<br/>
  * A deletion request is always a success as the only action is to remove the requesting owner to the file(s)<br/>
  * When a file does not belongs to any owner anymore, then a deletion request is made for stored files (ONLINE and NEARLINE).<br/>
  * <br/>
- * See {@link FileRequestEvent} for asynchronous responses when request is finished.<br/>
+ * See {@link FileRequestsGroupEvent} for asynchronous responses when request is finished.<br/>
  * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
  *
  * @author Sébastien Binda

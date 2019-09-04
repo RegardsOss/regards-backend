@@ -45,9 +45,10 @@ import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
+import fr.cnes.regards.modules.storagelight.service.file.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.flow.DeletionFlowHandler;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**
  * @author Sébastien Binda
@@ -62,7 +63,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
     private DeletionFlowHandler handler;
 
     @Autowired
-    FileReferenceService fileRefService;
+    FileRequestService fileRefService;
 
     @Autowired
     FileStorageRequestService fileRefRequestService;

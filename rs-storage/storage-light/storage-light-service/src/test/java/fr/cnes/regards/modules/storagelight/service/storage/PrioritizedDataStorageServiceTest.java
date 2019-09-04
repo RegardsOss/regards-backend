@@ -46,6 +46,7 @@ import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
+import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageService;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
 
 /**

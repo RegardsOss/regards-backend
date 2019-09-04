@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.storagelight.domain.event;
 
 /**
- * Type of {@link FileRequestEvent}
+ * Type of {@link FileRequestsGroupEvent}
  *
  * @author Sébastien Binda
  */

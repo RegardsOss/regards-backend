@@ -12,6 +12,7 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
@@ -50,6 +51,11 @@ public class FileReferenceEvent implements ISubscribable {
     private FileLocation location;
 
     /**
+     * Meta information of the {@link FileReference}
+     */
+    private FileReferenceMetaInfo metaInfo;
+
+    /**
      * Business request identifier associated to the {@link FileReference}. Those identifiers are the identifier of file request.
      * See {@link StorageFlowItem}, {@link DeletionFlowItem} and {@link ReferenceFlowItem} for more information about
      * file requests.
@@ -67,7 +73,7 @@ public class FileReferenceEvent implements ISubscribable {
      * @return {@link FileReferenceEvent}
      */
     public static FileReferenceEvent build(String checksum, FileReferenceEventType type, Collection<String> owners,
-            String message, FileLocation location, Collection<String> groupIds) {
+            String message, FileLocation location, FileReferenceMetaInfo metaInfo, Collection<String> groupIds) {
         Assert.notNull(checksum, "Checksum is mandatory");
         Assert.notNull(type, "Type is mandatory");
         Assert.notNull(groupIds, "GroupIds is mandatory");
@@ -79,6 +85,7 @@ public class FileReferenceEvent implements ISubscribable {
         event.location = location;
         event.owners = owners;
         event.groupIds.addAll(groupIds);
+        event.metaInfo = metaInfo;
         return event;
     }
 

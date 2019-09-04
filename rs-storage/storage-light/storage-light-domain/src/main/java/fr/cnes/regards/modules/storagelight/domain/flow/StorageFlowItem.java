@@ -28,11 +28,11 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 
 /**
  * Flow message to request a new file storage.<br/>
- * See {@link FileRequestEvent} for asynchronous responses when request is finished.<br/>
+ * See {@link FileRequestsGroupEvent} for asynchronous responses when request is finished.<br/>
  * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
  *
  * @author Sébastien Binda

@@ -49,9 +49,11 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.flow.RetryFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
+import fr.cnes.regards.modules.storagelight.service.file.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.flow.RetryFlowItemHandler;
+import fr.cnes.regards.modules.storagelight.service.file.flow.StorageFlowItemHandler;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**
  *
@@ -69,7 +71,7 @@ public class StoreFileFlowItemTest extends AbstractFileReferenceTest {
     private RetryFlowItemHandler retryHandler;
 
     @Autowired
-    FileReferenceService fileRefService;
+    FileRequestService fileRefService;
 
     @Autowired
     FileStorageRequestService fileStorageRequestService;

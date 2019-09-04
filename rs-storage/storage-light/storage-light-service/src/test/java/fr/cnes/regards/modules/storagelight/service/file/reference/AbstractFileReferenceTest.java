@@ -67,13 +67,19 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestS
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
-import fr.cnes.regards.modules.storagelight.service.file.cache.CacheService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventHandler;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventPublisher;
+import fr.cnes.regards.modules.storagelight.service.cache.CacheService;
+import fr.cnes.regards.modules.storagelight.service.file.FileReferenceEventPublisher;
+import fr.cnes.regards.modules.storagelight.service.file.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.NLFileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.handler.FileReferenceEventHandler;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileCopyRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileDeletionRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
+import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageService;
+import fr.cnes.regards.modules.storagelight.service.location.StoragePluginConfigurationHandler;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
-import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedStorageService;
-import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
 /**
  * @author sbinda
@@ -97,7 +103,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected FileReferenceEventHandler fileRefEventHandler;
 
     @Autowired
-    protected FileReferenceService fileRefService;
+    protected FileRequestService fileRefService;
 
     @Autowired
     protected NLFileReferenceService nearlineFileRefService;
@@ -264,7 +270,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
             String newOwner) {
         Optional<FileReference> oFilef = fileRefService.search(storage, checksum);
         Assert.assertTrue("File reference should already exists", oFilef.isPresent());
-        return fileRefService.storeFile(newOwner, oFilef.get().getMetaInfo(), originUrl,
+        return fileRefService.store(newOwner, oFilef.get().getMetaInfo(), originUrl,
                                         oFilef.get().getLocation().getStorage(), Optional.empty(),
                                         UUID.randomUUID().toString());
 
@@ -276,7 +282,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                 MediaType.APPLICATION_OCTET_STREAM);
         FileLocation destination = new FileLocation(storage, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.storeFile(owner, fileMetaInfo, originUrl, storage, Optional.empty(),
+        fileRefService.store(owner, fileMetaInfo, originUrl, storage, Optional.empty(),
                                  UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), checksum);
@@ -305,7 +311,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         fileMetaInfo.setType(type);
         FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/file.test");
         try {
-            fileRefService.referenceFile(owner, fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
+            fileRefService.reference(owner, fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
@@ -323,7 +329,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                 "error.file.test", 132L, MediaType.APPLICATION_OCTET_STREAM);
         FileLocation destination = new FileLocation(storageDestination, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.storeFile(owner, fileMetaInfo, originUrl, storageDestination, Optional.of("/in/this/directory"),
+        fileRefService.store(owner, fileMetaInfo, originUrl, storageDestination, Optional.of("/in/this/directory"),
                                  UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());

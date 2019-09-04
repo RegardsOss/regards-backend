@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storagelight.client;
 
 import java.util.Collection;
 
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorFile;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent.ErrorFile;
 
 /**
  * @author sbinda

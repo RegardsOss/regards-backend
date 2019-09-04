@@ -29,14 +29,14 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 
 /**
  * @author sbinda
  *
  */
 @Component("clientRequestEventHandler")
-public class FileRequestEventHandler implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileRequestEvent> {
+public class FileRequestEventHandler implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileRequestsGroupEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileRequestEventHandler.class);
 
@@ -52,16 +52,16 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         if (listener != null) {
-            subscriber.subscribeTo(FileRequestEvent.class, this);
+            subscriber.subscribeTo(FileRequestsGroupEvent.class, this);
         } else {
             LOGGER.warn("No listener configured to collect storage FileRequestEvent bus messages !!");
         }
     }
 
     @Override
-    public void handle(TenantWrapper<FileRequestEvent> wrapper) {
+    public void handle(TenantWrapper<FileRequestsGroupEvent> wrapper) {
         String tenant = wrapper.getTenant();
-        FileRequestEvent event = wrapper.getContent();
+        FileRequestsGroupEvent event = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
         try {
             LOGGER.info("Handling {}", event.toString());
@@ -71,10 +71,10 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
         }
     }
 
-    private void handle(FileRequestEvent event) {
+    private void handle(FileRequestsGroupEvent event) {
         RequestInfo info = RequestInfo.build(event.getGroupId());
         switch (event.getState()) {
-            case DONE:
+            case SUCCESS:
                 handleDone(event, info);
                 break;
             case ERROR:
@@ -91,7 +91,7 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
         }
     }
 
-    private void handleDone(FileRequestEvent event, RequestInfo info) {
+    private void handleDone(FileRequestsGroupEvent event, RequestInfo info) {
         switch (event.getType()) {
             case AVAILABILITY:
                 listener.onAvailable(info);
@@ -113,7 +113,7 @@ public class FileRequestEventHandler implements ApplicationListener<ApplicationR
         }
     }
 
-    private void handleError(FileRequestEvent event, RequestInfo info) {
+    private void handleError(FileRequestsGroupEvent event, RequestInfo info) {
         switch (event.getType()) {
             case AVAILABILITY:
                 listener.onAvailabilityError(info, event.getErrors());

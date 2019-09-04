@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorFile;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent.ErrorFile;
 
 /**
  * @author sbinda

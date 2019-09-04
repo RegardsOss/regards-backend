@@ -71,9 +71,9 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
 import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventHandler;
-import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileDeletionJobProgressManager;
-import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileDeletionRequestJob;
+import fr.cnes.regards.modules.storagelight.service.file.handler.FileReferenceEventHandler;
+import fr.cnes.regards.modules.storagelight.service.file.job.FileDeletionJobProgressManager;
+import fr.cnes.regards.modules.storagelight.service.file.job.FileDeletionRequestJob;
 
 /**
  * @author sbinda
@@ -101,7 +101,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
                 MediaType.APPLICATION_OCTET_STREAM);
         URL originUrl = new URL("file://in/this/directory/file.test");
         FileLocation destination = new FileLocation("elsewhere", "elsewhere://in/this/directory/file.test");
-        fileRefService.storeFile(owner, fileMetaInfo, originUrl, "elsewhere",
+        fileRefService.store(owner, fileMetaInfo, originUrl, "elsewhere",
                                  Optional.of("elsewhere://in/this/directory/file.test"), UUID.randomUUID().toString());
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
         Optional<FileStorageRequest> oFileRefReq = fileStorageRequestService.search(destination.getStorage(),
@@ -287,7 +287,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         URL origin = new URL("file", "localhost", inputImage.getAbsolutePath());
         FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.storeFile(owner, fileMetaInfo, origin, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"),
+        fileRefService.store(owner, fileMetaInfo, origin, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"),
                                  UUID.randomUUID().toString());
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
         Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, null, null);
@@ -322,14 +322,14 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         String fileNameNotHandled = "doNotHandle.file.test";
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksumNotHandled, "MD5", fileNameNotHandled,
                 132L, MediaType.APPLICATION_OCTET_STREAM);
-        fileRefService.storeFile(owner, fileMetaInfo, originUrl, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"),
+        fileRefService.store(owner, fileMetaInfo, originUrl, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"),
                                  UUID.randomUUID().toString());
         // Add a valid one for storage
         String fileNameHandled = "file.test";
         String checksumHandled = UUID.randomUUID().toString();
         fileMetaInfo = new FileReferenceMetaInfo(checksumHandled, "MD5", fileNameHandled, 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
-        fileRefService.storeFile(owner, fileMetaInfo, originUrl, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"),
+        fileRefService.store(owner, fileMetaInfo, originUrl, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"),
                                  UUID.randomUUID().toString());
 
         Collection<JobInfo> jobs = fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, null, null);

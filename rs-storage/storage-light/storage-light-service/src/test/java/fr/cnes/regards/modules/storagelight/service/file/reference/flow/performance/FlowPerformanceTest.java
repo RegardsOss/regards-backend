@@ -60,13 +60,13 @@ import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
+import fr.cnes.regards.modules.storagelight.service.file.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.flow.AvailabilityFlowItemHandler;
+import fr.cnes.regards.modules.storagelight.service.file.flow.DeletionFlowHandler;
+import fr.cnes.regards.modules.storagelight.service.file.flow.ReferenceFlowItemHandler;
+import fr.cnes.regards.modules.storagelight.service.file.flow.StorageFlowItemHandler;
 import fr.cnes.regards.modules.storagelight.service.file.reference.AbstractFileReferenceTest;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileStorageRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.AvailabilityFlowItemHandler;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.DeletionFlowHandler;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.ReferenceFlowItemHandler;
-import fr.cnes.regards.modules.storagelight.service.file.reference.flow.StorageFlowItemHandler;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**
  * Performances tests for creating and store new file references.
@@ -93,7 +93,7 @@ public class FlowPerformanceTest extends AbstractFileReferenceTest {
     private DeletionFlowHandler deleteHandler;
 
     @Autowired
-    FileReferenceService fileRefService;
+    FileRequestService fileRefService;
 
     @Autowired
     FileStorageRequestService fileStorageRequestService;

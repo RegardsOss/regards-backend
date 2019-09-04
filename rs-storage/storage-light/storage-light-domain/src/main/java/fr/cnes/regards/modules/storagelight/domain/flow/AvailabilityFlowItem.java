@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 
 /**
@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
  * Files stored with an NEARLINE {@link IStorageLocation} plugin needs to be retrieved in cache before being available<br/>
  * Files not stored (only reference) or OFFLINE cannot be available <br/>
  * <br/>
- * See {@link FileRequestEvent} for asynchronous responses when request is finished.<br/>
+ * See {@link FileRequestsGroupEvent} for asynchronous responses when request is finished.<br/>
  * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
  *
  * @author Sébastien Binda

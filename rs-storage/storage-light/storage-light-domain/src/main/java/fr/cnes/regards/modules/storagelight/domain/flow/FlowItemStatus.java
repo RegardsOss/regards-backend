@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.flow;
 
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 
 /**
- * State of a {@link FileRequestEvent}
+ * State of a {@link FileRequestsGroupEvent}
  *
  * @author Sébastien Binda
  */
@@ -40,7 +40,7 @@ public enum FlowItemStatus {
     /**
      * Request is done successfully
      */
-    DONE,
+    SUCCESS,
 
     /**
      * Request is finished in error

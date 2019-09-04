@@ -24,12 +24,12 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 
 /**
  * Flow message to to retry error requests.<br/>
- * See {@link FileRequestEvent} for asynchronous responses when request is finished.<br/>
+ * See {@link FileRequestsGroupEvent} for asynchronous responses when request is finished.<br/>
  * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
  *
  * @author Sébastien Binda

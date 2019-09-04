@@ -37,7 +37,8 @@ import fr.cnes.regards.modules.storagelight.dao.IStorageLocationRepository;
 import fr.cnes.regards.modules.storagelight.dao.IStorageMonitoringRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.FileRequestService;
+import fr.cnes.regards.modules.storagelight.service.location.StorageLocationService;
 
 /**
  * @author sbinda
@@ -61,7 +62,7 @@ public class StorageLocationServiceTest extends AbstractMultitenantServiceTest {
     private IStorageMonitoringRepository storageMonitorRepo;
 
     @Autowired
-    private FileReferenceService fileRefService;
+    private FileRequestService fileRefService;
 
     @Before
     public void init() throws ModuleException {
@@ -76,7 +77,7 @@ public class StorageLocationServiceTest extends AbstractMultitenantServiceTest {
                 MediaType.APPLICATION_OCTET_STREAM);
         FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/" + checksum);
         try {
-            fileRefService.referenceFile("someone", fileMetaInfo, location,
+            fileRefService.reference("someone", fileMetaInfo, location,
                                          Sets.newHashSet(UUID.randomUUID().toString()));
         } catch (ModuleException e) {
             Assert.fail(e.getMessage());

@@ -50,9 +50,9 @@ import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageService;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineTestClient;
-import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedStorageService;
 
 /**
  * @author sbinda

@@ -35,6 +35,7 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.modules.storagelight.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
+import fr.cnes.regards.modules.storagelight.service.cache.CacheService;
 
 /**
  * Test class for cache service.
