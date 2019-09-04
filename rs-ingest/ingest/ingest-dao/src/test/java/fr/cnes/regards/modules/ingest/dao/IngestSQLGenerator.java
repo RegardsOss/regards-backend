@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import org.junit.Ignore;
+import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
 import org.springframework.test.context.TestPropertySource;

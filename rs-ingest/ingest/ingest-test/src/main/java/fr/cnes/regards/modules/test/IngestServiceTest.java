@@ -72,9 +72,9 @@ public class IngestServiceTest {
      * @throws Exception
      */
     public void init() throws Exception {
+        ingestRequestRepository.deleteAll();
         aipRepository.deleteAll();
         sipRepository.deleteAll();
-        ingestRequestRepository.deleteAll();
         jobInfoRepo.deleteAll();
         pluginConfRepo.deleteAll();
         cleanAMQPQueues();

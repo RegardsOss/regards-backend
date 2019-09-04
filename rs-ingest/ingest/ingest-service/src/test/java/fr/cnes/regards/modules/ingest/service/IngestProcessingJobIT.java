@@ -223,7 +223,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         Assert.assertTrue(resultAips.size() == 1);
         AIPEntity resultAip = resultAips.stream().findFirst().get();
         Assert.assertNotNull(resultAip);
-        Assert.assertEquals(AIPState.CREATED, resultAip.getState());
+        Assert.assertEquals(AIPState.GENERATED, resultAip.getState());
     }
 
     private void simulateProcessingError(SIPCollection sips, Class<?> errorClass) {

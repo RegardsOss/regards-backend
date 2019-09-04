@@ -22,12 +22,16 @@ package fr.cnes.regards.modules.ingest.rest;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +44,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -51,11 +57,11 @@ import org.springframework.web.bind.annotation.RestController;
  * This controller manages AIP.
  *
  * @author Léo Mieulet
+ * @author Marc Sordi
  */
 @RestController
 @RequestMapping(AIPController.TYPE_MAPPING)
 public class AIPController implements IResourceController<AIPEntity> {
-
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPController.class);
 
@@ -70,6 +76,10 @@ public class AIPController implements IResourceController<AIPEntity> {
     public static final String REQUEST_PARAM_SESSION = "session";
     public static final String REQUEST_PARAM_CATEGORIES = "categories";
     public static final String REQUEST_PARAM_STORAGES = "storages";
+
+    public static final String AIP_ID_PATH_PARAM = "aip_id";
+
+    public static final String AIP_DOWNLOAD_PATH = "/{" + AIP_ID_PATH_PARAM + "}/download";
 
     /**
      * {@link IResourceService} instance
@@ -114,6 +124,27 @@ public class AIPController implements IResourceController<AIPEntity> {
         Page<AIPEntity> aips = aipService.search(state, from, to, tags, sessionOwner, session, providerId,
                 storages, categories, pageable);
         return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = AIP_DOWNLOAD_PATH, method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @ResourceAccess(description = "Download AIP as JSON file")
+    public void downloadAIP(@RequestParam(required = false) String origin,
+            @Valid @PathVariable(AIP_ID_PATH_PARAM) UniformResourceName aipId, HttpServletResponse response)
+            throws ModuleException, IOException {
+
+        LOGGER.debug("Downloading AIP file for entity \"{}\"", aipId.toString());
+
+        try {
+            aipService.downloadAIP(aipId, response);
+        } catch (ModuleException e) {
+            // Workaround to handle conversion of ServletErrorResponse in JSON format and
+            // avoid using ContentType of file set before.
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            throw e;
+        }
+        response.getOutputStream().flush();
+        response.setStatus(HttpStatus.OK.value());
     }
 
     @Override

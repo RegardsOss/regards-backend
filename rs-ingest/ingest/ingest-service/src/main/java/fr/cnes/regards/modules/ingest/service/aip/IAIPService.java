@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -26,13 +27,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import javax.servlet.http.HttpServletResponse;
+
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 
 /**
  * AIP Service interface. Service to handle business around {@link AIPEntity}s
@@ -49,6 +56,14 @@ public interface IAIPService {
     List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips);
 
     /**
+     * Build storage request for AIP file itself!
+     */
+    Collection<FileStorageRequestDTO> buildAIPStorageRequest(AIP aip, List<StorageMetadata> storages)
+            throws ModuleException;
+
+    void setAipToStored(UniformResourceName aipId, AIPState state);
+
+    /**
      * Delete the {@link AIPEntity} by his ipId
      */
     Collection<RejectedAipDto> deleteAip(String sipId);
@@ -59,32 +74,16 @@ public interface IAIPService {
     AIPEntity save(AIPEntity entity);
 
     /**
+     * Download current AIP file related to AIP entity with specified urn
+     */
+    void downloadAIP(UniformResourceName aipId, HttpServletResponse response) throws ModuleException;
+
+    /**
      * Retrieve AIPs matching provided parameters
      */
     Page<AIPEntity> search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, String sessionOwner,
             String session, String providerId, List<String> storages, List<String> categories, Pageable pageable);
 
-    /**
-     * Handle job event
-     */
-    void handleJobEvent(JobEvent jobEvent);
-
-    // DO WE KEEP HERE UNDER METHODS ?
-
-    /**
-     * Look for sips in state {@link fr.cnes.regards.modules.ingest.domain.sip.SIPState#TO_BE_DELETED} and
-     * ask to rs-storage to delete them per page of 100.
-     */
-    void askForAipsDeletion();
-    /**
-     * Set the status of the given AIP to given one
-     */
-    void setAipInError(UniformResourceName aipId, AIPState storeError, String failureCause, SIPState sipState);
-
-    /**
-     * Set {@link AIPEntity} state to give none
-     */
-    void setAipToStored(UniformResourceName aipId, AIPState state);
 
     /**
      * Search for a {@link AIPEntity} by its ipId

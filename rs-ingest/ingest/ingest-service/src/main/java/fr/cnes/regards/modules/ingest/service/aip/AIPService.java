@@ -19,47 +19,69 @@
 package fr.cnes.regards.modules.ingest.service.aip;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.AIPSpecification;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
 import java.util.Set;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+import com.google.gson.stream.JsonWriter;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.notification.NotificationLevel;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
-import fr.cnes.regards.modules.templates.service.ITemplateService;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 
 /**
- * Service to handle aip related issues in ingest, including sending bulk request of AIP to store to archival storage
- * microservice.
+ * AIP service management
+ *
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
@@ -70,46 +92,27 @@ public class AIPService implements IAIPService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPService.class);
 
-    @Autowired
-    private ISIPService sipService;
+    private static final String UTF8_ENCODING = "UTF-8";
+
+    private static final String MD5_ALGORITHM = "MD5";
+
+    private static final String JSON_INDENT = "  ";
 
     @Autowired
-    private ISIPRepository sipRepository;
+    private IngestConfigurationProperties confProperties;
 
     @Autowired
     private IAIPRepository aipRepository;
 
     @Autowired
-    private IJobInfoService jobInfoService;
-
-    @Autowired
     private Gson gson;
-
-    @Autowired
-    private INotificationClient notificationClient;
-
-    @Autowired
-    private IStorageClient storageClient;
-
-    @Autowired
-    private ITemplateService templateService;
 
     @Override
     public List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips) {
         List<AIPEntity> entities = new ArrayList<>();
-//        List<FileStorageRequestDTO> filesToStore = new ArrayList<>();
         for (AIP aip : aips) {
-            entities.add(aipRepository.save(AIPEntity.build(sip, AIPState.CREATED, aip)));
-//            for (ContentInformation ci : aip.getProperties().getContentInformations()) {
-//                OAISDataObject dataObject = ci.getDataObject();
-//
-//                filesToStore.add(FileStorageRequestDTO.build(dataObject.getFilename(), dataObject.getChecksum(), dataObject.getAlgorithm(),
-//                        ci.getRepresentationInformation().getSyntax().getMimeType().toString(), "owner",
-//                        dataObject.getUrls().iterator().next(), null, null
-//                ));
-//            }
+            entities.add(aipRepository.save(AIPEntity.build(sip, AIPState.GENERATED, aip)));
         }
-//        storageClient.store(filesToStore);
         return entities;
     }
 
@@ -118,12 +121,101 @@ public class AIPService implements IAIPService {
         return aipRepository.save(entity);
     }
 
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.ingest.service.aip.IAIPService#buildAIPStorageRequest(fr.cnes.regards.modules.ingest.dto.aip.AIP)
+     */
+    public Collection<FileStorageRequestDTO> buildAIPStorageRequest(AIP aip, List<StorageMetadata> storages)
+            throws ModuleException {
+
+        // Build file storage requests
+        Collection<FileStorageRequestDTO> files = new ArrayList<>();
+
+        try {
+            // Compute checksum
+            String checksum = calculateChecksum(aip);
+
+            // Build origin(s) URL
+            URL originUrl = new URI(confProperties.getAipDownloadTemplate()
+                    .replace(IngestConfigurationProperties.DOWNLOAD_AIP_PLACEHOLDER, aip.getId().toString())).toURL();
+
+            // Create a request for each storage
+            for (StorageMetadata storage : storages) {
+                files.add(FileStorageRequestDTO.build(aip.getId().toString(), checksum, MD5_ALGORITHM,
+                                                      MediaType.APPLICATION_JSON_UTF8_VALUE, aip.getId().toString(),
+                                                      originUrl, storage.getStorage(),
+                                                      Optional.ofNullable(storage.getStorePath())));
+            }
+        } catch (URISyntaxException | NoSuchAlgorithmException | IOException e) {
+            String message = String.format("Error with building storage request for AIP %s", aip.getId());
+            LOGGER.error(message, e);
+            throw new ModuleException(message, e);
+        }
+
+        return files;
+    }
+
+    private String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException {
+        try (PipedInputStream in = new PipedInputStream(); PipedOutputStream out = new PipedOutputStream(in)) {
+            writeAip(aip, out);
+            return ChecksumUtils.computeHexChecksum(in, MD5_ALGORITHM);
+        }
+    }
+
     @Override
     public Page<AIPEntity> search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, String sessionOwner,
             String session, String providerId, List<String> storages, List<String> categories, Pageable pageable) {
 
         return aipRepository.findAll(AIPSpecification.searchAll(state, from, to, tags, sessionOwner, session,
                 providerId, storages, categories), pageable);
+    }
+
+    public void downloadAIP(UniformResourceName aipId, HttpServletResponse response) throws ModuleException {
+
+        // Find AIP
+        AIPEntity aipEntity = aipRepository.findByAipId(aipId.toString()).orElse(null);
+        if (aipEntity == null) {
+            String message = String.format("AIP with URN %s not found!", aipId);
+            LOGGER.error(message);
+            throw new EntityNotFoundException(message);
+        }
+
+        AIP aip = aipEntity.getAip();
+
+        // Populate response
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + aip.getId().toString());
+        // NOTE : Do not set content type after download. It can be ignored.
+        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        // Stream AIP file
+        try {
+            writeAip(aip, response.getOutputStream());
+        } catch (IOException e) {
+            String message = String.format("Error occurs while trying to stream AIP file with URN %s!", aip.getId());
+            LOGGER.error(message, e);
+            throw new EntityException(message, e);
+        }
+    }
+
+    /**
+     * Write AIP in specified {@link OutputStream}
+     */
+    private void writeAip(AIP aip, OutputStream out) throws UnsupportedEncodingException, IOException {
+        try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, UTF8_ENCODING))) {
+            writer.setIndent(JSON_INDENT);
+            gson.toJson(aip, AIP.class, writer);
+        }
+    }
+
+    @Override
+    public void setAipToStored(UniformResourceName aipId, AIPState state) {
+        // Retrieve aip and set the new status to stored
+        Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
+        if (oAip.isPresent()) {
+            AIPEntity aip = oAip.get();
+            aip.setState(state);
+            aip.setErrorMessage(null);
+            aipRepository.save(aip);
+        }
     }
 
 
@@ -139,14 +231,14 @@ public class AIPService implements IAIPService {
         for (AIPEntity aip : aipsRelatedToSip) {
             if (aip.getState() == AIPState.STORED) {
                 // TODO
-//                FileDeletionRequestDTO toDelete = FileDeletionRequestDTO.build("cheksum", "storage", "owner", false);
-//                RequestInfo delete = storageClient.delete(toDelete);
-//                String groupId = delete.getGroupId();
-//                // TODO send event to delete on storage
+                //                FileDeletionRequestDTO toDelete = FileDeletionRequestDTO.build("cheksum", "storage", "owner", false);
+                //                RequestInfo delete = storageClient.delete(toDelete);
+                //                String groupId = delete.getGroupId();
+                //                // TODO send event to delete on storage
 
                 // TODO save inside a DB table this entity will be removed (keep removeIrrevocably too)
                 // And listen for events from storage for this entity
-//                aip.setState(AIPState.TO_BE_DELETED);
+                //                aip.setState(AIPState.TO_BE_DELETED);
                 aipRepository.save(aip);
             } else {
                 // We had this condition on those state here and not into #isDeletableWithAIPs because we just want to be silent.
@@ -164,57 +256,4 @@ public class AIPService implements IAIPService {
         return aipRepository.findByAipId(aipId.toString());
     }
 
-    @Override
-    public void handleJobEvent(JobEvent jobEvent) {
-        if (JobEventType.FAILED.equals(jobEvent.getJobEventType())) {
-            // Load job info
-            @SuppressWarnings("unused")
-            JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
-            String jobClass = jobInfo.getClassName();
-            String title = "Unhandled job error";
-            LOGGER.warn(title + String.format(" %s/%s", jobClass, jobInfo.getId().toString()));
-            String stacktrace = jobInfo.getStatus().getStackTrace();
-            LOGGER.warn(stacktrace);
-            notificationClient.notify(stacktrace, title, NotificationLevel.ERROR, DefaultRole.ADMIN);
-        }
-    }
-
-    @Override
-    public void setAipInError(UniformResourceName aipId, AIPState state, String errorMessage, SIPState sipState) {
-        Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
-        if (oAip.isPresent()) {
-            // Update AIP State
-            AIPEntity aip = oAip.get();
-            aipRepository.updateAIPEntityStateAndErrorMessage(state, aipId.toString(), errorMessage);
-            // Update SIP associated State
-            SIPEntity sip = aip.getSip();
-            sip.setState(sipState);
-            //            // Save the errorMessage inside SIP rejections errors
-            //            sip.getRejectionCauses().add(String.format("Storage of AIP(%s) failed due to the following error: %s",
-            //                                                       aipId, errorMessage));
-            sipService.saveSIPEntity(sip);
-        }
-    }
-
-    @Override
-    public void setAipToStored(UniformResourceName aipId, AIPState state) {
-        // Retrieve aip and set the new status to stored
-        Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
-        if (oAip.isPresent()) {
-            AIPEntity aip = oAip.get();
-            aip.setState(state);
-            aip.setErrorMessage(null);
-            aipRepository.save(aip);
-        }
-    }
-
-
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.ingest.service.store.IAIPService#askForAipsDeletion()
-     */
-    @Override
-    public void askForAipsDeletion() {
-        // TODO Auto-generated method stub
-        // TODO refactor with files only
-    }
 }

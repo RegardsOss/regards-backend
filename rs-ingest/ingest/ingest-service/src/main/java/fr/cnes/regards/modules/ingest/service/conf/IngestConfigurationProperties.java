@@ -25,12 +25,28 @@ import org.springframework.context.annotation.Configuration;
  * Ingest configuration properties
  *
  * @author Marc SORDI
+ *
+ * FIXME faire un set du AIP download template à partir du controller donnant accès aux AIPs
  */
 @Configuration
 public class IngestConfigurationProperties {
 
     @Value("${regards.ingest.max.bulk.size:1000}")
     private Integer maxBulkSize;
+
+    /*
+     * In minute.
+     */
+    @Value("${regards.ingest.remote.request.timeout:5}")
+    private Long remoteRequestTimeout;
+
+    public static final String DOWNLOAD_AIP_PLACEHOLDER = "@aip@ ";
+
+    /**
+     * Include @aip@ in your template
+     */
+    @Value("${regards.ingest.aip.download.url.template:}")
+    private String aipDownloadTemplate = "";
 
     public Integer getMaxBulkSize() {
         return maxBulkSize;
@@ -40,4 +56,19 @@ public class IngestConfigurationProperties {
         this.maxBulkSize = maxBulkSize;
     }
 
+    public Long getRemoteRequestTimeout() {
+        return remoteRequestTimeout;
+    }
+
+    public void setRemoteRequestTimeout(Long remoteRequestTimeout) {
+        this.remoteRequestTimeout = remoteRequestTimeout;
+    }
+
+    public String getAipDownloadTemplate() {
+        return aipDownloadTemplate;
+    }
+
+    public void setAipDownloadTemplate(String aipDownloadTemplate) {
+        this.aipDownloadTemplate = aipDownloadTemplate;
+    }
 }
