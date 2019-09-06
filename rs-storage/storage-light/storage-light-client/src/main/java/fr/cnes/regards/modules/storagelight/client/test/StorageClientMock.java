@@ -42,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeType;
 
 /**
  * Provide a bean to replace the behavior of the {@link StorageClient} while testing
@@ -85,7 +86,7 @@ public class StorageClientMock implements IStorageClient {
                 requestInfo.getGroupId(),
                 FileRequestType.STORAGE,
                 file.getChecksum(),
-                null
+                file.getStorage()
         );
 
 
@@ -97,7 +98,7 @@ public class StorageClientMock implements IStorageClient {
                             file.getAlgorithm(),
                             file.getFileName(),
                             1000L,
-                            null
+                            MimeType.valueOf(file.getMimeType())
                     ),
                     new FileLocation(file.getStorage(), null)
         ));
