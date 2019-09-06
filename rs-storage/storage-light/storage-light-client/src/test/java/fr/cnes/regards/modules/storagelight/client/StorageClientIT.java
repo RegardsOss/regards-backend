@@ -52,6 +52,10 @@ import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageService;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineTestClient;
@@ -116,6 +120,20 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         Assert.assertTrue(prioritizedDataStorageService.search(ONLINE_CONF).isPresent());
         Assert.assertTrue(prioritizedDataStorageService.search(NEARLINE_CONF).isPresent());
         Assert.assertTrue(prioritizedDataStorageService.search(NEARLINE_CONF_2).isPresent());
+    }
+
+    @Test
+    public void storeDenied() throws MalformedURLException, InterruptedException {
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        Set<FileStorageRequestDTO> files = Sets.newHashSet();
+        for (int i = 0; i < (StorageFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
+            files.add(FileStorageRequestDTO
+                    .build("file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
+                           new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
+        }
+        RequestInfo info = client.store(files);
+        Thread.sleep(5_000);
+        Assert.assertTrue("Request should be denied", listener.getDenied().contains(info));
     }
 
     @Test
@@ -235,6 +253,19 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
     }
 
     @Test
+    public void referenceDenied() throws InterruptedException {
+        Set<FileReferenceRequestDTO> files = Sets.newHashSet();
+        for (int i = 0; i < (ReferenceFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
+            files.add(FileReferenceRequestDTO.build("file1.test", UUID.randomUUID().toString(), "UUID",
+                                                    "application/octet-stream", 10L, "owner", "somewhere",
+                                                    "file://here/file1.test"));
+        }
+        RequestInfo info = client.reference(files);
+        Thread.sleep(5_000);
+        Assert.assertTrue("Request should be denied", listener.getDenied().contains(info));
+    }
+
+    @Test
     public void referenceFile() throws InterruptedException {
         String owner = "refe-test";
         String storage = "somewhere";
@@ -290,6 +321,17 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
     }
 
     @Test
+    public void deleteDenied() throws InterruptedException {
+        Set<FileDeletionRequestDTO> files = Sets.newHashSet();
+        for (int i = 0; i < (DeletionFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
+            files.add(FileDeletionRequestDTO.build(UUID.randomUUID().toString(), ONLINE_CONF, "owner", false));
+        }
+        RequestInfo info = client.delete(files);
+        Thread.sleep(5_000);
+        Assert.assertTrue("Request should be denied", listener.getDenied().contains(info));
+    }
+
+    @Test
     public void availability() throws MalformedURLException, InterruptedException {
 
         this.storeFile();
@@ -302,6 +344,17 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
 
+    }
+
+    @Test
+    public void availabilityDenied() throws InterruptedException {
+        Set<String> files = Sets.newHashSet();
+        for (int i = 0; i < (AvailabilityFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
+            files.add(UUID.randomUUID().toString());
+        }
+        RequestInfo info = client.makeAvailable(files, OffsetDateTime.now().plusDays(1));
+        Thread.sleep(5_000);
+        Assert.assertTrue("Request should be denied", listener.getDenied().contains(info));
     }
 
     @Test

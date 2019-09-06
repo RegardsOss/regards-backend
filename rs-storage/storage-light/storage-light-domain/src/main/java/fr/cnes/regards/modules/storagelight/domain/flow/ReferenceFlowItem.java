@@ -41,6 +41,11 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 public class ReferenceFlowItem implements ISubscribable {
 
     /**
+     * Maximum number of Request per flow item
+     */
+    public static final int MAX_REQUEST_PER_GROUP = 100;
+
+    /**
      * Information about files to reference.
      */
     private final Set<FileReferenceRequestDTO> files = Sets.newHashSet();

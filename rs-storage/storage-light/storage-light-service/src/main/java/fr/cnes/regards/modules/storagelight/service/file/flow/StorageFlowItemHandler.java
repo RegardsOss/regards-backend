@@ -58,8 +58,6 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
      */
     private static final int BULK_SIZE = 1_000;
 
-    private static final int MAX_REQUEST_PER_GROUP = 100;
-
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -89,9 +87,9 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
         runtimeTenantResolver.forceTenant(tenant);
         LOGGER.trace("[EVENT] New FileStorageFlowItem received -- {}", wrapper.getContent().toString());
         StorageFlowItem item = wrapper.getContent();
-        if (item.getFiles().size() > MAX_REQUEST_PER_GROUP) {
+        if (item.getFiles().size() > StorageFlowItem.MAX_REQUEST_PER_GROUP) {
             String message = String.format("Number of storage requests for group %s exeeds maximum limit of %d",
-                                           item.getGroupId(), MAX_REQUEST_PER_GROUP);
+                                           item.getGroupId(), StorageFlowItem.MAX_REQUEST_PER_GROUP);
             reqGroupService.denied(item.getGroupId(), FileRequestType.STORAGE, message);
         } else {
             if (!items.containsKey(tenant)) {

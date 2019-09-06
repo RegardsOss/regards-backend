@@ -58,8 +58,6 @@ public class ReferenceFlowItemHandler
      */
     private static final int BULK_SIZE = 1_000;
 
-    private static final int MAX_REQUEST_PER_GROUP = 100;
-
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -89,9 +87,9 @@ public class ReferenceFlowItemHandler
         ReferenceFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
         LOGGER.trace("[EVENT] New FileReferenceFlowItem received -- {}", wrapper.getContent().toString());
-        if (item.getFiles().size() > MAX_REQUEST_PER_GROUP) {
+        if (item.getFiles().size() > ReferenceFlowItem.MAX_REQUEST_PER_GROUP) {
             String message = String.format("Number of reference requests for group %s exeeds maximum limit of %d",
-                                           item.getGroupId(), MAX_REQUEST_PER_GROUP);
+                                           item.getGroupId(), ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
             reqGroupService.denied(item.getGroupId(), FileRequestType.REFERENCE, message);
         } else {
             if (!items.containsKey(tenant)) {

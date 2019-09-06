@@ -48,6 +48,8 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class AvailabilityFlowItem implements ISubscribable {
 
+    public static final int MAX_REQUEST_PER_GROUP = 1000;
+
     /**
      * Checksums of files to make available for download
      */

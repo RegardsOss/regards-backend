@@ -44,6 +44,11 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 public class DeletionFlowItem implements ISubscribable {
 
     /**
+     * Maximum number of Request per flow item
+     */
+    public static final int MAX_REQUEST_PER_GROUP = 100;
+
+    /**
      * Files to delete information
      */
     private final Set<FileDeletionRequestDTO> files = Sets.newHashSet();

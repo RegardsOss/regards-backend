@@ -36,10 +36,10 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
  *
  */
 @Component("clientRequestEventHandler")
-public class FileRequestEventHandler
+public class FileRequestGroupEventHandler
         implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileRequestsGroupEvent> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileRequestEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileRequestGroupEventHandler.class);
 
     @Autowired(required = false)
     private IStorageRequestListener listener;
