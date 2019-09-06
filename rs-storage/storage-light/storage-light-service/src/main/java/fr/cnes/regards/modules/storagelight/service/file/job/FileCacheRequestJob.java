@@ -78,11 +78,14 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        long start = System.currentTimeMillis();
         // Initiate the job progress manager
         FileCacheJobProgressManager progressManager = new FileCacheJobProgressManager(fileCacheRequestService, this);
         // lets instantiate the plugin to use
         String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         FileRestorationWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
+        int nbRequestToHandle = workingSubset.getFileRestorationRequests().size();
+        LOGGER.info("[AVAILABILITY JOB] Runing availability job for {} cache requests", nbRequestToHandle);
         INearlineStorageLocation storagePlugin;
         String errorCause = null;
         try {
@@ -103,6 +106,8 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
                                                                 fileRef.getMetaInfo().getChecksum(), errorCause));
                 }
             }
+            LOGGER.info("[AVAILABILITY JOB] Availability job handled in {}ms for {} cache requests",
+                        System.currentTimeMillis() - start, nbRequestToHandle);
         }
     }
 }

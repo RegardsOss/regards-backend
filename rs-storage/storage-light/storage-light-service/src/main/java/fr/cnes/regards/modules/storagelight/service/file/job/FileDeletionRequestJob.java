@@ -80,12 +80,16 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        long start = System.currentTimeMillis();
         // Initiate the job progress manager
         FileDeletionJobProgressManager progressManager = new FileDeletionJobProgressManager(fileDeletionRequestService,
                 publisher, this);
         // lets instantiate the plugin to use
         String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         FileDeletionWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
+        int nbRequestToHandle = workingSubset.getFileDeletionRequests().size();
+        LOGGER.info("[DELETION JOB] Runing deletion job for {} deletion requests", nbRequestToHandle);
+        String errorCause = null;
         try {
             IStorageLocation storagePlugin = pluginService.getPlugin(plgBusinessId);
             if (storagePlugin.allowPhysicalDeletion()) {
@@ -96,17 +100,21 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
                 workingSubset.getFileDeletionRequests().forEach(progressManager::deletionSucceed);
             }
         } catch (Exception e) {
+            errorCause = String.format("Deletion job failed cause : %s", e.getMessage());
+            // throwing new runtime allows us to make the job fail.
+            throw new JobRuntimeException(e);
+        } finally {
             // Publish event for all not handled files
             for (FileDeletionRequest req : workingSubset.getFileDeletionRequests()) {
                 if (!progressManager.isHandled(req)) {
                     progressManager.deletionFailed(req, String
                             .format("File %s (checksum: %s) not handled by deletion job. Deletion job failed cause : %s",
                                     req.getFileReference().getMetaInfo().getFileName(),
-                                    req.getFileReference().getMetaInfo().getChecksum(), e.getMessage()));
+                                    req.getFileReference().getMetaInfo().getChecksum(), errorCause));
                 }
             }
-            // throwing new runtime allows us to make the job fail.
-            throw new JobRuntimeException(e);
+            LOGGER.info("[DELETION JOB] Deletion job handled in {}ms for {} deletion requests",
+                        System.currentTimeMillis() - start, nbRequestToHandle);
         }
     }
 }

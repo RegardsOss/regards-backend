@@ -27,10 +27,12 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.RunnableFuture;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -40,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -382,8 +385,12 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         String tenant = runtimeTenantResolver.getTenant();
         try {
             Iterator<JobInfo> it = jobs.iterator();
+            List<RunnableFuture<Void>> list = Lists.newArrayList();
             while (it.hasNext()) {
-                jobService.runJob(it.next(), tenant).get();
+                list.add(jobService.runJob(it.next(), tenant));
+            }
+            for (RunnableFuture<Void> futur : list) {
+                futur.get();
             }
         } catch (InterruptedException | ExecutionException e) {
             LOGGER.error(e.getMessage(), e);

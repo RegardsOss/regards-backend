@@ -71,7 +71,7 @@ import fr.cnes.regards.modules.storagelight.service.file.flow.StorageFlowItemHan
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_perf_tests",
-        "regards.storage.cache.path=target/cache" })
+        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-local.properties" })
 // @Ignore("Performances tests")
 public class FlowPerformanceTest extends AbstractStorageTest {
 
@@ -174,7 +174,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         int loops = 0;
         Page<FileReference> page;
         do {
-            Thread.sleep(5_000);
+            Thread.sleep(10_000);
             page = fileRefRepo.findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
         } while ((loops < 10) && ((page.getTotalElements()) != 5000));
