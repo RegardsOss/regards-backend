@@ -142,7 +142,7 @@ public class FileCopyRequestService {
         String successMessage = String.format("File %s (checksum: %s) successfully copied in %s storage location",
                                               request.getMetaInfo().getFileName(), request.getMetaInfo().getChecksum(),
                                               request.getStorage());
-        LOGGER.info("[COPY SUCCESS] {}", successMessage);
+        LOGGER.debug("[COPY SUCCESS] {}", successMessage);
         // Delete the copy request
         copyRepository.delete(request);
 
@@ -161,9 +161,9 @@ public class FileCopyRequestService {
     }
 
     public void handleError(FileCopyRequest request, String errorCause) {
-        LOGGER.info("[COPY ERROR] Error copying file {} (checksum: {}) to {} storage location. Cause : {}",
-                    request.getMetaInfo().getFileName(), request.getMetaInfo().getChecksum(), request.getStorage(),
-                    errorCause);
+        LOGGER.error("[COPY ERROR] Error copying file {} (checksum: {}) to {} storage location. Cause : {}",
+                     request.getMetaInfo().getFileName(), request.getMetaInfo().getChecksum(), request.getStorage(),
+                     errorCause);
         // Update copy request to error status
         request.setStatus(FileRequestStatus.ERROR);
         request.setErrorCause(errorCause);

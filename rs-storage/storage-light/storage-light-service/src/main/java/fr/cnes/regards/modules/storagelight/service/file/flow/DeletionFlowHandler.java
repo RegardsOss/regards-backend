@@ -100,13 +100,13 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
                 items.put(tenant, new ConcurrentLinkedQueue<>());
             }
             items.get(tenant).add(item);
-            reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION);
+            reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
         }
     }
 
     public void handleSync(TenantWrapper<DeletionFlowItem> wrapper) {
         DeletionFlowItem item = wrapper.getContent();
-        reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION);
+        reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
         delete(Lists.newArrayList(item));
     }
 
@@ -135,10 +135,10 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
                             list.add(doc);
                         }
                     }
-                    LOGGER.info("Bulk saving {} DeleteFileRefFlowItem...", list.size());
+                    LOGGER.info("[DELETION REQUESTS HANDLER] Bulk saving {} DeleteFileRefFlowItem...", list.size());
                     long start = System.currentTimeMillis();
                     delete(list);
-                    LOGGER.info("...{} DeleteFileRefFlowItem handled in {} ms", list.size(),
+                    LOGGER.info("[DELETION REQUESTS HANDLER] {} DeleteFileRefFlowItem handled in {} ms", list.size(),
                                 System.currentTimeMillis() - start);
                     list.clear();
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved

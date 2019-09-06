@@ -93,7 +93,7 @@ public class AvailabilityFlowItemHandler
                 items.put(tenant, new ConcurrentLinkedQueue<>());
             }
             items.get(tenant).add(item);
-            reqGroupService.granted(item.getGroupId(), FileRequestType.AVAILABILITY);
+            reqGroupService.granted(item.getGroupId(), FileRequestType.AVAILABILITY, item.getChecksums().size());
         }
     }
 
@@ -132,10 +132,10 @@ public class AvailabilityFlowItemHandler
                             list.add(doc);
                         }
                     }
-                    LOGGER.info("Bulk saving {} AvailabilityFlowItem...", list.size());
+                    LOGGER.info("[AVAILABILITY REQUESTS HANDLER] Bulk saving {} AvailabilityFlowItem...", list.size());
                     long start = System.currentTimeMillis();
                     makeAvailable(list);
-                    LOGGER.info("...{} AvailabilityFlowItem handled in {} ms", list.size(),
+                    LOGGER.info("[AVAILABILITY REQUESTS HANDLER] {} AvailabilityFlowItem handled in {} ms", list.size(),
                                 System.currentTimeMillis() - start);
                     list.clear();
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved

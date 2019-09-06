@@ -88,7 +88,7 @@ public class ReferenceFlowItemHandler
         String tenant = wrapper.getTenant();
         ReferenceFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
-        LOGGER.info("[EVENT] New FileReferenceFlowItem received -- {}", wrapper.getContent().toString());
+        LOGGER.trace("[EVENT] New FileReferenceFlowItem received -- {}", wrapper.getContent().toString());
         if (item.getFiles().size() > MAX_REQUEST_PER_GROUP) {
             String message = String.format("Number of reference requests for group %s exeeds maximum limit of %d",
                                            item.getGroupId(), MAX_REQUEST_PER_GROUP);
@@ -98,7 +98,7 @@ public class ReferenceFlowItemHandler
                 items.put(tenant, new ConcurrentLinkedQueue<>());
             }
             items.get(tenant).add(item);
-            reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE);
+            reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size());
         }
     }
 
@@ -110,7 +110,7 @@ public class ReferenceFlowItemHandler
         String tenant = wrapper.getTenant();
         ReferenceFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
-        reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE);
+        reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size());
         try {
             fileRefReqService.reference(item.getFiles(), item.getGroupId());
         } finally {
@@ -143,10 +143,10 @@ public class ReferenceFlowItemHandler
                             list.add(doc);
                         }
                     }
-                    LOGGER.info("Bulk saving {} AddFileRefFlowItem...", list.size());
+                    LOGGER.info("[REFERENCE REQUESTS HANDLER] Bulk saving {} AddFileRefFlowItem...", list.size());
                     long start = System.currentTimeMillis();
                     reference(list);
-                    LOGGER.info("...{} AddFileRefFlowItem handled in {} ms", list.size(),
+                    LOGGER.info("[REFERENCE REQUESTS HANDLER] {} AddFileRefFlowItem handled in {} ms", list.size(),
                                 System.currentTimeMillis() - start);
                     list.clear();
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved

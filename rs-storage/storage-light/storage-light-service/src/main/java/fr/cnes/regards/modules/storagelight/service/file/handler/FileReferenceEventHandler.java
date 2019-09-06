@@ -97,7 +97,7 @@ public class FileReferenceEventHandler
     @Override
     public void handle(TenantWrapper<FileReferenceEvent> wrapper) {
         String tenant = wrapper.getTenant();
-        LOGGER.info("Handling {}", wrapper.getContent().toString());
+        LOGGER.trace("Handling {}", wrapper.getContent().toString());
         runtimeTenantResolver.forceTenant(tenant);
         try {
             switch (wrapper.getContent().getType()) {
@@ -152,6 +152,10 @@ public class FileReferenceEventHandler
         }
     }
 
+    /**
+     * Handle {@link FileReferenceEvent} for successfully stored file
+     * @param event
+     */
     private void handleFileStored(FileReferenceEvent event) {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
         if (request.isPresent()) {
@@ -159,8 +163,8 @@ public class FileReferenceEventHandler
                                                                            request.get().getMetaInfo().getChecksum());
             if (oFileRef.isPresent()) {
                 fileCopyRequestService.handleSuccess(request.get(), oFileRef.get());
-                LOGGER.info("[COPY REQUEST] New stored file {} is associated to copy request {}", event.getChecksum(),
-                            request.get().getGroupId());
+                LOGGER.trace("[STORE SUCCESS {}] New stored file is associated to a copy request {}",
+                             event.getChecksum(), request.get().getGroupId());
             } else {
                 String errorCause = String
                         .format("Error no file reference found for newly stored file %s at %s storage location",
@@ -171,13 +175,23 @@ public class FileReferenceEventHandler
         }
     }
 
+    /**
+     * Handle {@link FileReferenceEvent} for successfully stored file
+     * @param event
+     */
     private void handleStoreError(FileReferenceEvent event) {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
         if (request.isPresent()) {
+            LOGGER.error("[STORE ERROR {}] File is associated to a copy request {}", event.getChecksum(),
+                         request.get().getGroupId());
             fileCopyRequestService.handleError(request.get(), event.getMessage());
         }
     }
 
+    /**
+     * Handle {@link FileReferenceEvent} for successfully restored file
+     * @param event
+     */
     private void handleFileAvailable(FileReferenceEvent event) {
         // Execute file reference updates on availability if any defined
         if (updateActions != null) {
@@ -191,7 +205,8 @@ public class FileReferenceEventHandler
                         updated = action.update(fileRef);
                         if (updated != null) {
                             fileReferenceService.update(checksum, storage, updated);
-                            LOGGER.debug("File reference updated by action {}", action.getClass().getName());
+                            LOGGER.trace("[AVAILABILITY SUCCESS {}] File reference updated by action {}", checksum,
+                                         action.getClass().getName());
                         }
                     } catch (ModuleException e) {
                         LOGGER.error("Error updating File Reference after availability for action  {}. Cause : {}",
@@ -206,41 +221,55 @@ public class FileReferenceEventHandler
         // to the copy request destination location.
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
         if (request.isPresent()) {
+            LOGGER.trace("[AVAILABILITY SUCCESS {}] Available file is associated to a copy request {}",
+                         event.getChecksum(), request.get().getGroupId());
             createNewStorageRequest(request.get(), event);
-            LOGGER.info("[COPY REQUEST] Available file {} is associated to copy request {}", event.getChecksum(),
-                        request.get().getGroupId());
         }
     }
 
+    /**
+     * Handle {@link FileReferenceEvent} for file restoration error
+     * @param event
+     */
     private void handleFileNotAvailable(FileReferenceEvent event) {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
         if (request.isPresent()) {
-            FileCopyRequest copyRequest = request.get();
-            copyRequest.setStatus(FileRequestStatus.ERROR);
-            copyRequest.setErrorCause(event.getMessage());
-            fileCopyRequestService.update(copyRequest);
-            LOGGER.info("[COPY REQUEST] Not Available file {} is associated to copy request {}", event.getChecksum(),
-                        request.get().getGroupId());
+            LOGGER.error("[AVAILABILITY ERROR {}] File is associated to a copy request {}", event.getChecksum(),
+                         request.get().getGroupId());
+            fileCopyRequestService.handleError(request.get(), event.getMessage());
         }
     }
 
+    /**
+     * Creates a new storage request for a given copy request. This method is called after the file has been restored with
+     * a previous availability request
+     * @param copyRequest
+     * @param fileAvailableEvent
+     */
     private void createNewStorageRequest(FileCopyRequest copyRequest, FileReferenceEvent fileAvailableEvent) {
         String storageGroupId = UUID.randomUUID().toString();
         try {
+            // Create a new storage request associated to the copy request
             Optional<FileStorageRequest> request = fileStorageRequestService
                     .create(fileAvailableEvent.getOwners(), copyRequest.getMetaInfo(),
                             new URL(fileAvailableEvent.getLocation().getUrl()), copyRequest.getStorage(),
-                            Optional.ofNullable(copyRequest.getStorageSubDirectory()), storageGroupId);
+                            Optional.ofNullable(copyRequest.getStorageSubDirectory()), FileRequestStatus.TODO,
+                            storageGroupId);
             if (request.isPresent()) {
                 copyRequest.setFileStorageGroupId(storageGroupId);
                 fileCopyRequestService.update(copyRequest);
+                LOGGER.trace("[COPY REQUEST {}] Storage request is created for successfully restored file",
+                             copyRequest.getMetaInfo().getChecksum(), copyRequest.getGroupId());
+            } else {
+                fileCopyRequestService.handleError(copyRequest, String
+                        .format("Unable to create storage request associated to successuflly restored file"));
             }
         } catch (MalformedURLException e) {
             LOGGER.error(e.getMessage(), e);
-            copyRequest.setStatus(FileRequestStatus.ERROR);
-            copyRequest.setErrorCause(String.format("Restored file is not available at url {}. Cause  : {}",
-                                                    fileAvailableEvent.getLocation().getUrl(), e.getMessage()));
-            fileCopyRequestService.update(copyRequest);
+            fileCopyRequestService.handleError(copyRequest,
+                                               String.format("Restored file is not available at url {}. Cause  : {}",
+                                                             fileAvailableEvent.getLocation().getUrl(),
+                                                             e.getMessage()));
         }
     }
 

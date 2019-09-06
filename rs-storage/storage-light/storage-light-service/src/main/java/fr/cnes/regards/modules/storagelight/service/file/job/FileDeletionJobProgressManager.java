@@ -72,7 +72,7 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
         String successMessage = String.format("File %s successfully deteled from %s (checksum: %s)",
                                               fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
                                               fileRef.getMetaInfo().getChecksum());
-        LOGGER.info("[DELETION SUCCESS] - {}", successMessage);
+        LOGGER.debug("[DELETION SUCCESS] - {}", successMessage);
         job.advanceCompletion();
         fileDeletionRequestService.handleSuccess(fileDeletionRequest);
         // NOTE : the FileReferenceEvent is published by the fileReferenceService when the file is completely deleted

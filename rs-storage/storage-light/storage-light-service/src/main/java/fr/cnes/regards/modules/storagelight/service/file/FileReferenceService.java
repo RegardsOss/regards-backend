@@ -118,7 +118,7 @@ public class FileReferenceService {
                                     owner);
             fileRefRepo.save(fileReference);
         }
-        LOGGER.debug(message);
+        LOGGER.trace(message);
         fileRefEventPublisher.deletionForOwnerSuccess(fileReference, owner, message, groupId);
     }
 

@@ -301,18 +301,18 @@ public class CacheService {
             Path fileLocation = Paths.get(cachedFile.getLocation().getPath());
             if (fileLocation.toFile().exists()) {
                 try {
-                    LOGGER.debug("Deletion of cached file {} (exp date={}). {}", cachedFile.getChecksum(),
+                    LOGGER.trace("Deletion of cached file {} (exp date={}). {}", cachedFile.getChecksum(),
                                  cachedFile.getExpirationDate().toString(), fileLocation);
                     Files.delete(fileLocation);
                     cachedFileRepository.delete(cachedFile);
-                    LOGGER.info(" [CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}). {}",
-                                cachedFile.getChecksum(), cachedFile.getExpirationDate().toString(), fileLocation);
+                    LOGGER.debug(" [CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}). {}",
+                                 cachedFile.getChecksum(), cachedFile.getExpirationDate().toString(), fileLocation);
                 } catch (NoSuchFileException e) {
                     // File does not exists, just log a warning and do delet file in db.
                     LOGGER.warn(e.getMessage(), e);
                     cachedFileRepository.delete(cachedFile);
-                    LOGGER.info("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}).",
-                                cachedFile.getChecksum(), cachedFile.getExpirationDate().toString(), fileLocation);
+                    LOGGER.debug("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}).",
+                                 cachedFile.getChecksum(), cachedFile.getExpirationDate().toString(), fileLocation);
                 } catch (IOException e) {
                     // File exists but is not deletable.
                     LOGGER.error(e.getMessage(), e);
@@ -320,13 +320,13 @@ public class CacheService {
             } else {
                 LOGGER.error("File to delete {} does not exists", fileLocation);
                 cachedFileRepository.delete(cachedFile);
-                LOGGER.info("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}). {}",
-                            cachedFile.getChecksum(), cachedFile.getExpirationDate().toString(), fileLocation);
+                LOGGER.debug("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}). {}",
+                             cachedFile.getChecksum(), cachedFile.getExpirationDate().toString(), fileLocation);
             }
         } else {
             cachedFileRepository.delete(cachedFile);
-            LOGGER.info("Cached file {} deleted (exp date={}).", cachedFile.getChecksum(),
-                        cachedFile.getExpirationDate().toString());
+            LOGGER.debug("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}).",
+                         cachedFile.getChecksum(), cachedFile.getExpirationDate().toString());
         }
     }
 

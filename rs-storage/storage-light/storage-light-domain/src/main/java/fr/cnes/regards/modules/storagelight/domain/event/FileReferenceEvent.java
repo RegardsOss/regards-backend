@@ -9,6 +9,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
@@ -22,7 +23,7 @@ import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
  *
  * @author Sébastien Binda
  */
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class FileReferenceEvent implements ISubscribable {
 
     /**

@@ -145,7 +145,7 @@ public class FileDeletionRequestService {
      * @return {@link JobInfo}s scheduled
      */
     public Collection<JobInfo> scheduleJobs(FileRequestStatus status, Collection<String> storages) {
-        LOGGER.info("... scheduling deletion jobs");
+        LOGGER.trace("... scheduling deletion jobs");
         long start = System.currentTimeMillis();
         Collection<JobInfo> jobList = Lists.newArrayList();
         Set<String> allStorages = fileDeletionRequestRepo.findStoragesByStatus(status);
@@ -165,7 +165,7 @@ public class FileDeletionRequestService {
                 page = deletionRequestPage.nextPageable();
             } while (deletionRequestPage.hasNext());
         }
-        LOGGER.info("...{} deletion jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
+        LOGGER.trace("...{} deletion jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
         return jobList;
     }
 
@@ -268,7 +268,7 @@ public class FileDeletionRequestService {
                                                request.getStorage(), oFileRef.orElse(null));
             }
         }
-        reqGroupService.done(groupId, FileRequestType.DELETION);
+        reqGroupService.checkRequestsGroupDone(groupId, FileRequestType.DELETION);
     }
 
     /**

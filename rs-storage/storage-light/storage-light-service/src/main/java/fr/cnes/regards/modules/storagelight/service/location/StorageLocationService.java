@@ -123,8 +123,8 @@ public class StorageLocationService {
                                  NotificationLevel.WARNING, MimeTypeUtils.TEXT_PLAIN);
                 }
             } else {
-                LOGGER.debug("Ratio calculation for {} storage disabled cause storage allowed size is not configured.",
-                             storage.getName());
+                LOGGER.info("[STORAGE LOCATION] Ratio calculation for {} storage disabled cause storage allowed size is not configured.",
+                            storage.getName());
             }
         }
         long finish = System.currentTimeMillis();

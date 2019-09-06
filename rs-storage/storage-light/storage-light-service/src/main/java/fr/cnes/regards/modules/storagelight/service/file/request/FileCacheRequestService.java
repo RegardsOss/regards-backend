@@ -145,7 +145,7 @@ public class FileCacheRequestService {
             request = new FileCacheRequest(fileRefToRestore, cacheService.getCacheDirectoryPath(checksum),
                     expirationDate, groupId);
             request = repository.save(request);
-            LOGGER.debug("File {} (checksum {}) is requested for cache.", fileRefToRestore.getMetaInfo().getFileName(),
+            LOGGER.trace("File {} (checksum {}) is requested for cache.", fileRefToRestore.getMetaInfo().getFileName(),
                          fileRefToRestore.getMetaInfo().getChecksum());
         } else {
             request = oFcr.get();
@@ -153,7 +153,7 @@ public class FileCacheRequestService {
                 request.setStatus(FileRequestStatus.TODO);
                 request = repository.save(request);
             }
-            LOGGER.debug("File {} (checksum {}) is already requested for cache.",
+            LOGGER.trace("File {} (checksum {}) is already requested for cache.",
                          fileRefToRestore.getMetaInfo().getFileName(), fileRefToRestore.getMetaInfo().getChecksum());
         }
         return Optional.ofNullable(request);
@@ -216,13 +216,13 @@ public class FileCacheRequestService {
                     .collect(Collectors.toSet()));
         }
         notifyAvailables(onlines, groupId);
-        notifyNotAvailables(offlines, groupId);
-        // Hack to handle offline errors as request errors to be notified in request ERROR notification.
+        // notifyNotAvailables(offlines, groupId);
+        // Handle off lines as near lines files to create new FileCacheRequests.
         nearlines.addAll(offlines);
         int nbRequests = makeAvailable(nearlines, expirationDate, groupId);
         // If no cache requests are needed, we have to notify the end of the availability request
         if (nearlines.isEmpty() || (nbRequests == 0)) {
-            reqGrpService.done(groupId, FileRequestType.AVAILABILITY);
+            reqGrpService.checkRequestsGroupDone(groupId, FileRequestType.AVAILABILITY);
         }
     }
 
@@ -244,7 +244,7 @@ public class FileCacheRequestService {
      * @return scheduled {@link JobInfo}s
      */
     public Collection<JobInfo> scheduleJobs(FileRequestStatus status) {
-        LOGGER.info("... scheduling cache jobs");
+        LOGGER.trace("... scheduling cache jobs");
         long start = System.currentTimeMillis();
         Collection<JobInfo> jobList = Lists.newArrayList();
         Set<String> allStorages = repository.findStoragesByStatus(status);
@@ -263,7 +263,7 @@ public class FileCacheRequestService {
                 page = filesPage.nextPageable();
             } while (filesPage.hasNext());
         }
-        LOGGER.info("...{} cache jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
+        LOGGER.trace("...{} cache jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
         return jobList;
     }
 
@@ -278,6 +278,7 @@ public class FileCacheRequestService {
      */
     public void handleSuccess(FileCacheRequest fileReq, URL cacheLocation, Collection<String> owners, Long realFileSize,
             String successMessage) {
+        LOGGER.debug("[AVAILABILITY SUCCESS {}] - {}", fileReq.getChecksum(), successMessage);
         Optional<FileCacheRequest> oRequest = repository.findById(fileReq.getId());
         if (oRequest.isPresent()) {
             // Create the cache file associated
@@ -298,6 +299,10 @@ public class FileCacheRequestService {
      * @param cause
      */
     public void handleError(FileCacheRequest fileReq, String cause) {
+        FileReference fileRef = fileReq.getFileReference();
+        LOGGER.error("[AVAILABILITY ERROR {}] - Restoration error for file {} from {}. Cause : {}",
+                     fileRef.getMetaInfo().getChecksum(), fileRef.getMetaInfo().getFileName(),
+                     fileRef.getLocation().toString(), cause);
         Optional<FileCacheRequest> oRequest = repository.findById(fileReq.getId());
         if (oRequest.isPresent()) {
             FileCacheRequest request = oRequest.get();
@@ -427,7 +432,7 @@ public class FileCacheRequestService {
         request.setStatus(FileRequestStatus.ERROR);
         request.setErrorCause(message);
         repository.save(request);
-        LOGGER.error("[CACHE ERROR] File {} is not available. Cause : {}",
+        LOGGER.error("[AVAILABILITY ERROR] File {} is not available. Cause : {}",
                      request.getFileReference().getMetaInfo().getChecksum(), request.getErrorCause());
         publisher.notAvailable(request.getChecksum(), request.getErrorCause(), request.getGroupId());
         reqGrpService.requestError(request.getGroupId(), FileRequestType.AVAILABILITY, request.getChecksum(),
@@ -445,27 +450,11 @@ public class FileCacheRequestService {
             String storage = fileRef.getLocation().getStorage();
             String message = String.format("file %s (checksum %s) is available for download.",
                                            fileRef.getMetaInfo().getFileName(), checksum);
+            LOGGER.debug("[AVAILABILITY SUCCESS {}] - {}", checksum, message);
             publisher.available(checksum, storage, fileRef.getLocation().getUrl(), fileRef.getOwners(), message,
                                 availabilityGroupId);
             reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, fileRef,
                                          false);
-        }
-    }
-
-    /**
-     * Send {@link FileReferenceEvent} for not available given files.
-     * @param availables newly available files
-     * @param availabilityGroupId business request identifier of the availability request associated.
-     */
-    private void notifyNotAvailables(Set<FileReference> notAvailables, String availabilityGroupId) {
-        for (FileReference fileRef : notAvailables) {
-            String checksum = fileRef.getMetaInfo().getChecksum();
-            String storage = fileRef.getLocation().getStorage();
-            String message = String.format("file %s (checksum %s) is not available for download.",
-                                           fileRef.getMetaInfo().getFileName(), checksum);
-            publisher.notAvailable(fileRef.getMetaInfo().getChecksum(), message, availabilityGroupId);
-            reqGrpService.requestError(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, message,
-                                       false);
         }
     }
 

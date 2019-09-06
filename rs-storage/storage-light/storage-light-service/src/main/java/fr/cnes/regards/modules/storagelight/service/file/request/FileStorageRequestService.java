@@ -60,7 +60,6 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestS
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.JobsPriority;
@@ -117,7 +116,7 @@ public class FileStorageRequestService {
     private EntityManager em;
 
     /**
-     * Handle many {@link StorageFlowItem} to store files to a given storage location.
+     * Handle many {@link FileStorageRequestDTO} to store files to a given storage location.
      * @param items storage flow items
      */
     public void handle(Collection<FileStorageRequestDTO> requests, String groupId) {
@@ -140,6 +139,8 @@ public class FileStorageRequestService {
                 flushCount = 0;
             }
         }
+        // Check requests group status
+        reqGroupService.checkRequestsGroupDone(groupId, FileRequestType.STORAGE);
     }
 
     /**
@@ -174,7 +175,7 @@ public class FileStorageRequestService {
             return handleAlreadyExists(fileRef.get(), request, groupId);
         } else {
             create(Sets.newHashSet(request.getOwner()), request.buildMetaInfo(), request.getOriginUrl(),
-                   request.getStorage(), request.getSubDirectory(), groupId);
+                   request.getStorage(), request.getSubDirectory(), FileRequestStatus.TODO, groupId);
             return Optional.empty();
         }
     }
@@ -272,7 +273,7 @@ public class FileStorageRequestService {
                 ? allStorages.stream().filter(storages::contains).collect(Collectors.toSet())
                 : allStorages;
         long start = System.currentTimeMillis();
-        LOGGER.info("... scheduling storage jobs");
+        LOGGER.info("[STORAGE REQUESTS] Scheduling storage jobs ...");
         for (String storage : storagesToSchedule) {
             Page<FileStorageRequest> filesPage;
             Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by("id"));
@@ -290,10 +291,11 @@ public class FileStorageRequestService {
                 } else {
                     handleStorageNotAvailable(fileStorageRequests);
                 }
-                page = filesPage.nextPageable();
-            } while (filesPage.hasNext());
+                // page = filesPage.nextPageable();
+            } while (filesPage.hasContent());
         }
-        LOGGER.info("...{} storage jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
+        LOGGER.info("[STORAGE REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
+                    System.currentTimeMillis() - start);
         return jobList;
     }
 
@@ -311,7 +313,9 @@ public class FileStorageRequestService {
             IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
             Collection<FileStorageWorkingSubset> workingSubSets = storagePlugin.prepareForStorage(fileStorageRequests);
             for (FileStorageWorkingSubset ws : workingSubSets) {
-                jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId()));
+                if (!ws.getFileReferenceRequests().isEmpty()) {
+                    jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId(), storage));
+                }
             }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             this.handleStorageNotAvailable(fileStorageRequests);
@@ -327,7 +331,7 @@ public class FileStorageRequestService {
      * @return {@link JobInfo} scheduled.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public JobInfo scheduleJob(FileStorageWorkingSubset workingSubset, String plgBusinessId) {
+    public JobInfo scheduleJob(FileStorageWorkingSubset workingSubset, String plgBusinessId, String storage) {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, plgBusinessId));
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
@@ -337,6 +341,8 @@ public class FileStorageRequestService {
                 parameters, authResolver.getUser(), FileStorageRequestJob.class.getName()));
         em.flush();
         em.clear();
+        LOGGER.info("[STORAGE REQUESTS] Job scheduled for {} requests on storage {}",
+                    workingSubset.getFileReferenceRequests().size(), storage);
         return jobInfo;
     }
 
@@ -346,14 +352,10 @@ public class FileStorageRequestService {
      * @param fileMetaInfo meta information of the file to store
      * @param originUrl file origin location
      * @param storage storage destination location
-     * @param storageSubDirectory Optioanl subdirectory where to store file in the storage destination location
+     * @param storageSubDirectory Optional sub directory where to store file in the storage destination location
+     * @param status
      * @param groupId Business identifier of the deletion request
      */
-    public Optional<FileStorageRequest> create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
-            URL originUrl, String storage, Optional<String> storageSubDirectory, String groupId) {
-        return create(owners, fileMetaInfo, originUrl, storage, storageSubDirectory, FileRequestStatus.TODO, groupId);
-    }
-
     public Optional<FileStorageRequest> create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             URL originUrl, String storage, Optional<String> storageSubDirectory, FileRequestStatus status,
             String groupId) {
@@ -367,12 +369,12 @@ public class FileStorageRequestService {
             fileStorageRequest.setStatus(status);
             if (!storageHandler.getConfiguredStorages().contains(storage)) {
                 // The storage destination is unknown, we can already set the request in error status
-                handleStorageNotAvailable(fileStorageRequest);
+                handleStorageNotAvailable(fileStorageRequest, false);
             } else {
                 fileStorageRequestRepo.save(fileStorageRequest);
-                LOGGER.info("New file storage request created for file <{}> to store to {} with status {}",
-                            fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage(),
-                            fileStorageRequest.getStatus());
+                LOGGER.trace("New file storage request created for file <{}> to store to {} with status {}",
+                             fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage(),
+                             fileStorageRequest.getStatus());
             }
             return Optional.of(fileStorageRequest);
         }
@@ -396,7 +398,7 @@ public class FileStorageRequestService {
             LOGGER.warn("Existing file meta information differs from new meta information. Previous ones are maintained");
         }
 
-        LOGGER.info("Storage request already exists for file {}", newMetaInfo.getFileName());
+        LOGGER.trace("Storage request already exists for file {}", newMetaInfo.getFileName());
 
         switch (fileStorageRequest.getStatus()) {
             case ERROR:
@@ -423,7 +425,7 @@ public class FileStorageRequestService {
      * @param fileStorageRequests
      */
     private void handleStorageNotAvailable(Collection<FileStorageRequest> fileStorageRequests) {
-        fileStorageRequests.forEach(this::handleStorageNotAvailable);
+        fileStorageRequests.forEach(r -> handleStorageNotAvailable(r, true));
     }
 
     /**
@@ -434,17 +436,25 @@ public class FileStorageRequestService {
      * </ul>
      * @param fileStorageRequest
      */
-    private void handleStorageNotAvailable(FileStorageRequest fileStorageRequest) {
+    private void handleStorageNotAvailable(FileStorageRequest fileStorageRequest, boolean checkRequestsGroupStatus) {
         // The storage destination is unknown, we can already set the request in error status
-        fileStorageRequest.setStatus(FileRequestStatus.ERROR);
-        fileStorageRequest.setErrorCause(String
+        String errorCause = String
                 .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown or disabled.",
-                        fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage()));
+                        fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage());
+        fileStorageRequest.setStatus(FileRequestStatus.ERROR);
+        fileStorageRequest.setErrorCause(errorCause);
         update(fileStorageRequest);
         LOGGER.error(fileStorageRequest.getErrorCause());
+        // Send notification for file storage error
         eventPublisher.storeError(fileStorageRequest.getMetaInfo().getChecksum(), fileStorageRequest.getOwners(),
                                   fileStorageRequest.getStorage(), fileStorageRequest.getErrorCause(),
                                   fileStorageRequest.getGroupIds());
+        // Inform request groups that the request is in error
+        for (String groupId : fileStorageRequest.getGroupIds()) {
+            reqGroupService.requestError(groupId, FileRequestType.STORAGE,
+                                         fileStorageRequest.getMetaInfo().getChecksum(),
+                                         fileStorageRequest.getStorage(), errorCause, checkRequestsGroupStatus);
+        }
     }
 
     /**

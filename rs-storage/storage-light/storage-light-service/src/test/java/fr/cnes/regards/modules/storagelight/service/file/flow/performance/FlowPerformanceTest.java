@@ -28,7 +28,6 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -73,7 +72,7 @@ import fr.cnes.regards.modules.storagelight.service.file.flow.StorageFlowItemHan
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_perf_tests",
         "regards.storage.cache.path=target/cache" })
-@Ignore("Performances tests")
+// @Ignore("Performances tests")
 public class FlowPerformanceTest extends AbstractStorageTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceTest.class);
@@ -94,6 +93,8 @@ public class FlowPerformanceTest extends AbstractStorageTest {
 
     @Before
     public void initialize() throws ModuleException {
+
+        LOGGER.info("----- Tests initialization -----");
         Mockito.clearInvocations(publisher);
 
         fileStorageRequestRepo.deleteAll();
@@ -117,7 +118,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
                 FileLocation location = new FileLocation("storage_" + i, "storage://plop/file");
                 FileReference fileRef = new FileReference(Lists.newArrayList("owner"), metaInfo, location);
                 toSave.add(fileRef);
-                if (toSave.size() > 10_000) {
+                if (toSave.size() >= 10_000) {
                     long start = System.currentTimeMillis();
                     fileRefRepo.saveAll(toSave);
                     LOGGER.info("Saves {} done in {}ms", toSave.size(), System.currentTimeMillis() - start);
@@ -150,17 +151,13 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         } catch (MalformedURLException e) {
             Assert.fail(e.getMessage());
         }
+
+        LOGGER.info("----- Tests initialization OK-----");
     }
 
     @Test
     public void referenceFiles() throws InterruptedException {
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" --------     Starting     --------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
+        LOGGER.info(" --------     REFERENCE TEST     --------- ");
         String storage = "storage" + UUID.randomUUID().toString();
         for (int i = 0; i < 5000; i++) {
             String checksum = UUID.randomUUID().toString();
@@ -188,13 +185,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
 
     @Test
     public void storeFiles() throws InterruptedException {
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" --------     Starting     --------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
+        LOGGER.info(" --------     STORE TEST     --------- ");
         OffsetDateTime now = OffsetDateTime.now();
         for (int i = 0; i < 5000; i++) {
             String checksum = UUID.randomUUID().toString();
@@ -210,7 +201,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         int loops = 0;
         Page<FileStorageRequest> page;
         do {
-            Thread.sleep(5_000);
+            Thread.sleep(10_000);
             page = stoReqService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
         } while ((loops < 10) && ((page.getTotalElements()) != 5000));
@@ -226,7 +217,6 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         long start = System.currentTimeMillis();
         Collection<JobInfo> jobs = stoReqService
                 .scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList());
-        LOGGER.info("...{} jobs scheduled in {} ms", jobs.size(), System.currentTimeMillis() - start);
         Thread.sleep(10_000);
         start = System.currentTimeMillis();
         runAndWaitJob(jobs);
@@ -242,13 +232,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
 
     @Test
     public void deleteReferencedFiles() throws InterruptedException {
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" --------     Starting     --------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
+        LOGGER.info(" --------     DELETE TEST     --------- ");
         int nbToDelete = 500;
         Page<FileReference> page = fileRefService.search(PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
         Long total = page.getTotalElements();
@@ -274,13 +258,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
 
     @Test
     public void makeAvailableFlowItem() throws InterruptedException {
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" --------     Starting     --------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
-        LOGGER.info(" ----------------------------------- ");
+        LOGGER.info(" --------     AVAILABILITY TEST     --------- ");
         Assert.assertEquals("Invalid count of cached files", 0, cacheFileRepo.count());
         // Create a new bus message File reference request
         AvailabilityFlowItem item = AvailabilityFlowItem.build(nlChecksums, OffsetDateTime.now().plusDays(1),

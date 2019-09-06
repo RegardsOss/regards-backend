@@ -71,7 +71,6 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
                         .format("File %s (checksum=%s, size=%s) successfully restored from %s to %s.",
                                 fileRef.getMetaInfo().getFileName(), fileRef.getMetaInfo().getChecksum(),
                                 resoredFilePath.toFile().length(), fileRef.getLocation().toString(), resoredFilePath);
-                LOGGER.info("[RESTORATION SUCCESS] - {}", successMessage);
                 job.advanceCompletion();
                 fileCacheRequestService.handleSuccess(fileReq, cacheFileLocation, fileRef.getOwners(),
                                                       resoredFilePath.toFile().length(), successMessage);
@@ -96,10 +95,6 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
 
     @Override
     public void restoreFailed(FileCacheRequest fileReq, String cause) {
-        FileReference fileRef = fileReq.getFileReference();
-        LOGGER.error("[RESTORATION ERROR] - Restoration error for file {} from {} (checksum: {}). Cause : {}",
-                     fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
-                     fileRef.getMetaInfo().getChecksum(), cause);
         job.advanceCompletion();
         fileCacheRequestService.handleError(fileReq, cause);
         handled.add(fileReq);

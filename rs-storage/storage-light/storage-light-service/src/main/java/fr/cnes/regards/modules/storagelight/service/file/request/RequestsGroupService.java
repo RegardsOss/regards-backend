@@ -94,39 +94,47 @@ public class RequestsGroupService {
         gInfo.setErrorCause(errorCause);
         groupReqInfoRepository.save(gInfo);
         if (checkGroupDone) {
-            boolean isDone = false;
-            // 2. Check if there is remaining request not finished
-            switch (type) {
-                case AVAILABILITY:
-                    isDone = !cacheReqRepository.existsByGroupIdAndStatusNot(groupId, FileRequestStatus.ERROR);
-                    break;
-                case COPY:
-                    isDone = !copyReqRepository.existsByGroupIdAndStatusNot(groupId, FileRequestStatus.ERROR);
-                    break;
-                case DELETION:
-                    isDone = !delReqRepository.existsByGroupIdAndStatusNot(groupId, FileRequestStatus.ERROR);
-                    break;
-                case STORAGE:
-                    isDone = !storageReqRepository.existsByGroupIdsAndStatusNot(groupId, FileRequestStatus.ERROR);
-                    break;
-                case REFERENCE:
-                default:
-                    break;
-            }
-            // 3. IF finished send a terminated group request event
-            if (isDone) {
-                done(groupId, type);
-            }
+            checkRequestsGroupDone(groupId, type);
+        }
+    }
+
+    public void checkRequestsGroupDone(String groupId, FileRequestType type) {
+        boolean isDone = false;
+        // Check if there is remaining request not finished
+        switch (type) {
+            case AVAILABILITY:
+                isDone = !cacheReqRepository.existsByGroupIdAndStatusNot(groupId, FileRequestStatus.ERROR);
+                break;
+            case COPY:
+                isDone = !copyReqRepository.existsByGroupIdAndStatusNot(groupId, FileRequestStatus.ERROR);
+                break;
+            case DELETION:
+                isDone = !delReqRepository.existsByGroupIdAndStatusNot(groupId, FileRequestStatus.ERROR);
+                break;
+            case STORAGE:
+                isDone = !storageReqRepository.existsByGroupIdsAndStatusNot(groupId, FileRequestStatus.ERROR);
+                break;
+            case REFERENCE:
+                LOGGER.warn("There is no requests for type REFERENCE. It is impossible to automaticly determine if group requests is done.");
+            default:
+                break;
+        }
+        // IF finished send a terminated group request event
+        if (isDone) {
+            done(groupId, type);
         }
     }
 
     public void denied(String groupId, FileRequestType type, String denyCause) {
+        LOGGER.error("[{} GROUP DENIED {}] - Group request denied. Cause : {}", type.toString().toUpperCase(), groupId,
+                     denyCause);
         publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.DENIED, Sets.newHashSet())
                 .withMessage(denyCause));
     }
 
-    public void granted(String groupId, FileRequestType type) {
-        LOGGER.debug("{} - Request group {} granted", type, groupId);
+    public void granted(String groupId, FileRequestType type, int nbRequestInGroup) {
+        LOGGER.debug("[{} GROUP GRANTED {}] - Group request granted with {} requests.", type.toString().toUpperCase(),
+                     groupId, nbRequestInGroup);
         publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.GRANTED, Sets.newHashSet()));
     }
 
@@ -137,12 +145,12 @@ public class RequestsGroupService {
         Set<GroupRequestsInfo> successes = groupReqInfoRepository.findByGroupIdAndError(groupId, false);
         // 3. Publish event
         if (errors.isEmpty()) {
-            LOGGER.debug("{} - Request group {} done in success with {} success requests", type.toString(), groupId,
-                         successes.size());
+            LOGGER.debug("[{} GROUP SUCCESS {}] - Request group done with {} success requests",
+                         type.toString().toUpperCase(), groupId, successes.size());
             publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.SUCCESS, successes));
         } else {
-            LOGGER.debug("{} - Request group {} terminated in error with {} success requests and {} error requests",
-                         type.toString(), groupId, successes.size(), errors.size());
+            LOGGER.error("[{} GROUP ERROR {}] - Request group terminated in error with {} success requests and {} error requests",
+                         type.toString().toUpperCase(), groupId, successes.size(), errors.size());
             publisher.publish(FileRequestsGroupEvent.buildError(groupId, type, successes, errors));
         }
         // 4. Clear group info

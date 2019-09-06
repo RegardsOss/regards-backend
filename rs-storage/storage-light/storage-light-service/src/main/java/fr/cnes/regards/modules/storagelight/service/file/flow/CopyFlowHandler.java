@@ -99,13 +99,13 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
                 items.put(tenant, new ConcurrentLinkedQueue<>());
             }
             items.get(tenant).add(item);
-            reqGroupService.granted(item.getGroupId(), FileRequestType.COPY);
+            reqGroupService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size());
         }
     }
 
     public void handleSync(TenantWrapper<CopyFlowItem> wrapper) {
         CopyFlowItem item = wrapper.getContent();
-        reqGroupService.granted(item.getGroupId(), FileRequestType.COPY);
+        reqGroupService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size());
         copy(item.getFiles(), item.getGroupId());
     }
 
@@ -134,10 +134,11 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
                             list.add(doc);
                         }
                     }
-                    LOGGER.info("Bulk saving {} CopyFlowItem...", list.size());
+                    LOGGER.info("[COPY REQUESTS HANDLER] Bulk saving {} CopyFlowItem...", list.size());
                     long start = System.currentTimeMillis();
                     copy(list);
-                    LOGGER.info("...{} CopyFlowItem handled in {} ms", list.size(), System.currentTimeMillis() - start);
+                    LOGGER.info("[COPY REQUESTS HANDLER] {} CopyFlowItem handled in {} ms", list.size(),
+                                System.currentTimeMillis() - start);
                     list.clear();
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
             } finally {

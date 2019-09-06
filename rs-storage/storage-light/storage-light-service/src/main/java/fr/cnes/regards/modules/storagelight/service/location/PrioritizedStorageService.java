@@ -238,9 +238,10 @@ public class PrioritizedStorageService {
                 }
                 prioritizedStorageRepo.saveAll(lessPrioritizeds);
             } else {
-                String msg = String.format("Data storage %s could not be deleted because it contains files",
-                                           toDelete.getStorageConfiguration().getLabel());
-                LOG.info(msg);
+                String msg = String
+                        .format("[STORAGE LOCATION] Data storage %s could not be deleted because it contains files",
+                                toDelete.getStorageConfiguration().getLabel());
+                LOG.error(msg);
                 throw new EntityOperationForbiddenException(msg);
             }
         }

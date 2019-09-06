@@ -71,7 +71,7 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
             String message = String.format("Store success for file %s (id=%s)in %s (checksum: %s).",
                                            request.getMetaInfo().getFileName(), request.getId(), newLocation,
                                            request.getMetaInfo().getChecksum());
-            LOG.info("[STORAGE SUCCESS] - {}.", message);
+            LOG.debug("[STORE SUCCESS {}] - {}.", request.getMetaInfo().getChecksum(), message);
             job.advanceCompletion();
             request.getMetaInfo().setFileSize(fileSize);
             for (String owner : request.getOwners()) {
@@ -93,7 +93,7 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
 
     @Override
     public void storageFailed(FileStorageRequest request, String cause) {
-        LOG.error("[STORAGE ERROR] - Store error for file {} (id={})in {} (checksum: {}). Cause : {}",
+        LOG.error("[STORE ERROR {}] - Store error for file {} (id={})in {}. Cause : {}",
                   request.getMetaInfo().getFileName(), request.getId(), request.getStorage(),
                   request.getMetaInfo().getChecksum(), cause);
         job.advanceCompletion();

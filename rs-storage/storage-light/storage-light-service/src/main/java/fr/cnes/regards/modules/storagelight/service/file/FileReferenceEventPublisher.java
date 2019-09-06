@@ -58,7 +58,7 @@ public class FileReferenceEventPublisher {
      * @param groupId Business request identifier
      */
     public void copySuccess(FileReference fileRef, String message, String groupId) {
-        LOGGER.debug("Publishing FileReferenceEvent COPIED. {}", message);
+        LOGGER.trace("Publishing FileReferenceEvent COPIED. {}", message);
         publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(), FileReferenceEventType.COPIED,
                                                    fileRef.getOwners(), message, fileRef.getLocation(),
                                                    fileRef.getMetaInfo(), Sets.newHashSet(groupId)));
@@ -73,7 +73,7 @@ public class FileReferenceEventPublisher {
      * @param errorCause error message
      */
     public void copyError(FileCopyRequest errorRequest, String errorCause) {
-        LOGGER.debug("Publishing FileReferenceEvent COPY_ERROR. {}", errorCause);
+        LOGGER.trace("Publishing FileReferenceEvent COPY_ERROR. {}", errorCause);
         publisher.publish(FileReferenceEvent
                 .build(errorRequest.getMetaInfo().getChecksum(), FileReferenceEventType.COPY_ERROR, null, errorCause,
                        new FileLocation(errorRequest.getStorage(), errorRequest.getStorageSubDirectory()), null,
@@ -88,7 +88,7 @@ public class FileReferenceEventPublisher {
      * @param groupId
      */
     public void deletionSuccess(FileReference fileRef, String message, String groupId) {
-        LOGGER.debug("Publishing FileReferenceEvent FULLY_DELETED. {}", message);
+        LOGGER.trace("Publishing FileReferenceEvent FULLY_DELETED. {}", message);
         publisher.publish(FileReferenceEvent
                 .build(fileRef.getMetaInfo().getChecksum(), FileReferenceEventType.FULLY_DELETED, null, message,
                        fileRef.getLocation(), fileRef.getMetaInfo(), Sets.newHashSet(groupId)));
@@ -102,7 +102,7 @@ public class FileReferenceEventPublisher {
      * @param groupId
      */
     public void deletionError(FileReference fileRef, String message, String groupId) {
-        LOGGER.debug("Publishing FileReferenceEvent DELETION_ERROR. {}", message);
+        LOGGER.trace("Publishing FileReferenceEvent DELETION_ERROR. {}", message);
         publisher.publish(FileReferenceEvent
                 .build(fileRef.getMetaInfo().getChecksum(), FileReferenceEventType.DELETION_ERROR, null, message,
                        fileRef.getLocation(), fileRef.getMetaInfo(), Sets.newHashSet(groupId)));
@@ -116,7 +116,7 @@ public class FileReferenceEventPublisher {
      * @param groupId
      */
     public void deletionForOwnerSuccess(FileReference fileRef, String owner, String message, String groupId) {
-        LOGGER.debug("Publishing FileReferenceEvent DELETED_FOR_OWNER. {}", message);
+        LOGGER.trace("Publishing FileReferenceEvent DELETED_FOR_OWNER. {}", message);
         publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
                                                    FileReferenceEventType.DELETED_FOR_OWNER, Sets.newHashSet(owner),
                                                    message, fileRef.getLocation(), fileRef.getMetaInfo(),
@@ -133,7 +133,7 @@ public class FileReferenceEventPublisher {
      * @param groupIds
      */
     public void storeSuccess(FileReference fileRef, String message, Collection<String> groupIds) {
-        LOGGER.debug("Publishing FileReferenceEvent STORED. {}", message);
+        LOGGER.trace("Publishing FileReferenceEvent STORED. {}", message);
         publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(), FileReferenceEventType.STORED,
                                                    fileRef.getOwners(), message, fileRef.getLocation(),
                                                    fileRef.getMetaInfo(), groupIds));
@@ -165,7 +165,7 @@ public class FileReferenceEventPublisher {
      */
     public void storeError(String checksum, Collection<String> owners, String storage, String message,
             Collection<String> groupIds) {
-        LOGGER.debug("Publishing FileReferenceEvent STORE_ERROR. {}", message);
+        LOGGER.trace("Publishing FileReferenceEvent STORE_ERROR. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.STORE_ERROR, owners, message,
                                                    new FileLocation(storage, null), null, groupIds));
     }
@@ -199,13 +199,13 @@ public class FileReferenceEventPublisher {
      */
     public void available(String checksum, String storage, String url, Collection<String> owners, String message,
             String groupId) {
-        LOGGER.debug("Publishing FileReferenceEvent AVAILABLE. {}", message);
+        LOGGER.trace("Publishing FileReferenceEvent AVAILABLE. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABLE, owners, message,
                                                    new FileLocation(storage, url), null, Sets.newHashSet(groupId)));
     }
 
     public void updated(String checksum, String storage, FileReference updatedFile) {
-        LOGGER.debug("Publishing FileReferenceUpdateEvent for file checksum {} and storage location {}", checksum,
+        LOGGER.trace("Publishing FileReferenceUpdateEvent for file checksum {} and storage location {}", checksum,
                      storage);
         publisher.publish(FileReferenceUpdateEvent.build(checksum, storage, updatedFile));
     }
@@ -221,7 +221,7 @@ public class FileReferenceEventPublisher {
      * @param notifyRequest
      */
     public void notAvailable(String checksum, String message, String groupId) {
-        LOGGER.debug("Publishing FileReferenceEvent AVAILABILITY_ERROR. {}", message);
+        LOGGER.trace("Publishing FileReferenceEvent AVAILABILITY_ERROR. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABILITY_ERROR, null, message,
                                                    null, null, Sets.newHashSet(groupId)));
     }

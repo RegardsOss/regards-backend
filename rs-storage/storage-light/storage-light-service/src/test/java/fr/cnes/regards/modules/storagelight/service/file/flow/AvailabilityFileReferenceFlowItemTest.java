@@ -105,15 +105,33 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
                                                 file5.getMetaInfo().getChecksum(), file6.getMetaInfo().getChecksum(),
                                                 file7.getMetaInfo().getChecksum(), checksum);
         Mockito.clearInvocations(publisher);
-        AvailabilityFlowItem request = AvailabilityFlowItem.build(checksums, OffsetDateTime.now().plusDays(1),
-                                                                  UUID.randomUUID().toString());
+        String groupId = UUID.randomUUID().toString();
+        AvailabilityFlowItem request = AvailabilityFlowItem.build(checksums, OffsetDateTime.now().plusDays(1), groupId);
         handler.handleSync(new TenantWrapper<>(request, this.getDefaultTenant()));
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
+        // There should be 5 cache request for the 3 files only in near line and 2 files offline.
+        // The file stored in two locations online and near line does not need to be restored
+        // as its available online.
+        Assert.assertEquals("There should be 5 cache requests created", 5,
+                            fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TODO).size());
+        Assert.assertTrue("A cache request should be done for near line file 1",
+                          fileCacheRequestService.search(file1.getMetaInfo().getChecksum()).isPresent());
+        Assert.assertTrue("A cache request should be done for near line file 2",
+                          fileCacheRequestService.search(file2.getMetaInfo().getChecksum()).isPresent());
+        Assert.assertTrue("A cache request should be done for near line file 3",
+                          fileCacheRequestService.search(file3.getMetaInfo().getChecksum()).isPresent());
+        Assert.assertFalse("A cache request should not be done for near line file 4 as it is online too",
+                           fileCacheRequestService.search(checksum).isPresent());
+
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        runAndWaitJob(jobs);
+
         // there should be 2 notification error for availability of offline files
+        // There should be 3 notification for near line files available
         // There should be 3 notification for online files available
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(publisher, Mockito.times(5)).publish(Mockito.any(FileReferenceEvent.class));
+        Mockito.verify(publisher, Mockito.times(8)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Set<String> availables = Sets.newHashSet();
         Set<String> notAvailables = Sets.newHashSet();
@@ -124,7 +142,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
                 notAvailables.add(evt.getChecksum());
             }
         }
-        Assert.assertEquals("There should be 3 files availables", 3, availables.size());
+        Assert.assertEquals("There should be 6 files availables", 6, availables.size());
         Assert.assertTrue("File should be available as it is online",
                           availables.contains(file4.getMetaInfo().getChecksum()));
         Assert.assertTrue("File should be available as it is online",
@@ -135,18 +153,6 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
                           notAvailables.contains(file6.getMetaInfo().getChecksum()));
         Assert.assertTrue("File should be unavailable as it is offline",
                           notAvailables.contains(file7.getMetaInfo().getChecksum()));
-
-        // There should be 3 cache request for the 3 files only in near line.
-        // The file stored in two locations online and near line does not need to be restored
-        // as its available online.
-        Assert.assertTrue("A cache request should be done for near line file 1",
-                          fileCacheRequestService.search(file1.getMetaInfo().getChecksum()).isPresent());
-        Assert.assertTrue("A cache request should be done for near line file 2",
-                          fileCacheRequestService.search(file2.getMetaInfo().getChecksum()).isPresent());
-        Assert.assertTrue("A cache request should be done for near line file 3",
-                          fileCacheRequestService.search(file3.getMetaInfo().getChecksum()).isPresent());
-        Assert.assertFalse("A cache request should not be done for near line file 4 as it is online too",
-                           fileCacheRequestService.search(checksum).isPresent());
     }
 
     @Test

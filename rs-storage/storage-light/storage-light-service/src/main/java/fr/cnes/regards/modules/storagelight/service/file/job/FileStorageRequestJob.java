@@ -93,13 +93,14 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
     @Override
     public void run() {
         long start = System.currentTimeMillis();
-        LOGGER.info("... runing storage job");
         // Initiate the job progress manager
         FileStorageJobProgressManager progressManager = new FileStorageJobProgressManager(fileReferenceService,
                 fileRefRequestService, this);
         // lets instantiate the plugin to use
         String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         FileStorageWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
+        int nbRequestToHandle = workingSubset.getFileReferenceRequests().size();
+        LOGGER.info("[STORAGE JOB] Runing storage job for {} storage requests", nbRequestToHandle);
         workingSubset.getFileReferenceRequests().forEach(this::calculateImageDimension);
         IStorageLocation storagePlugin;
         String errorCause = null;
@@ -120,7 +121,8 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
                                                                 req.getMetaInfo().getChecksum(), errorCause));
                 }
             }
-            LOGGER.info("... storage job handled in {}ms", System.currentTimeMillis() - start);
+            LOGGER.info("[STORAGE JOB] storage job handled in {}ms for {} storage requests",
+                        System.currentTimeMillis() - start, nbRequestToHandle);
         }
 
     }

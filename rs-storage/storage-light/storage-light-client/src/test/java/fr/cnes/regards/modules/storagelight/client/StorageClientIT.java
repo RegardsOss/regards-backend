@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -61,7 +63,9 @@ import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineTestClien
 @ActiveProfiles({ "testAmqp", "storageTest" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
         "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true" })
-public class StorageClientTest extends AbstractMultitenantServiceTest {
+public class StorageClientIT extends AbstractMultitenantServiceTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageClientIT.class);
 
     @Autowired
     private StorageListener listener;
@@ -214,8 +218,10 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         RequestInfo info = client.store(files);
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
-        Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
-        Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
+        Assert.assertTrue("Request should contains successful storage", listener.getSuccess().containsKey(info));
+        Assert.assertEquals("Request should contains 1 successful storage", 1, listener.getSuccess().get(info).size());
+        Assert.assertTrue("Request should contains error storage", listener.getErrors().containsKey(info));
+        Assert.assertEquals("Request should contains 1 error storage", 1, listener.getErrors().get(info).size());
 
         listener.reset();
 
@@ -224,6 +230,7 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         Thread.sleep(5_000);
         Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
+        Assert.assertEquals("Request should contains 1 error storage", 1, listener.getErrors().get(info).size());
 
     }
 
@@ -298,30 +305,6 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void availability_restorationError() throws MalformedURLException, InterruptedException {
-
-        this.storeFile();
-
-        listener.reset();
-
-        this.referenceFile();
-
-        listener.reset();
-
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-        Set<String> checksums = Sets.newHashSet();
-        checksums.addAll(storedFileChecksums);
-        checksums.addAll(referenceFileChecksums);
-        RequestInfo info = client.makeAvailable(storedFileChecksums, OffsetDateTime.now().plusDays(1));
-
-        Thread.sleep(5_000);
-        Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
-        Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
-        Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
-
-    }
-
-    @Test
     public void availability_offlineFiles() throws MalformedURLException, InterruptedException {
 
         this.referenceFile();
@@ -361,15 +344,19 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         Set<String> checksums = Sets.newHashSet();
         checksums.addAll(referenceFileChecksums);
         checksums.addAll(storedFileChecksums);
+        int nbSuccessExpected = restorableFileChecksums.size();
+        int nbErrorExpected = unrestorableFileChecksums.size() + referenceFileChecksums.size();
         RequestInfo info = client.makeAvailable(checksums, OffsetDateTime.now().plusDays(1));
 
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
-        Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
-        Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
-
-        Assert.assertEquals("Number of error invalid", referenceFileChecksums.size() + unrestorableFileChecksums.size(),
+        Assert.assertTrue("Request should contains successful requests ", listener.getSuccess().containsKey(info));
+        Assert.assertEquals("Request should contains successful requests ", nbSuccessExpected,
+                            listener.getSuccess().get(info).size());
+        Assert.assertTrue("Request should contains error requests", listener.getErrors().containsKey(info));
+        Assert.assertEquals("Request should contains error requests", nbErrorExpected,
                             listener.getErrors().get(info).size());
+
         for (String checksum : referenceFileChecksums) {
             Assert.assertTrue("Missing error checksum",
                               listener.getErrors().get(info).stream().anyMatch(e -> e.getChecksum().equals(checksum)));
@@ -407,14 +394,21 @@ public class StorageClientTest extends AbstractMultitenantServiceTest {
         Set<FileCopyRequestDTO> requests = storedFileChecksums.stream()
                 .map(f -> FileCopyRequestDTO.build(f, NEARLINE_CONF_2)).collect(Collectors.toSet());
         RequestInfo info = client.copy(requests);
+        LOGGER.info("[TEST COPY] Running copy group request {} with {} requests", info.getGroupId(), requests.size());
         Thread.sleep(15_000);
 
-        Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
-        Assert.assertFalse(String.format("Request should be successful for request id %s", info.getGroupId()),
-                           listener.getSuccess().containsKey(info));
-        Assert.assertTrue("Request should not be error", listener.getErrors().containsKey(info));
-        Assert.assertEquals("Number of error files invalid", unrestorableFileChecksums.size(),
-                            listener.getErrors().get(info).size());
+        Assert.assertTrue("Request group should be granted", listener.getGranted().contains(info));
+        Assert.assertTrue(String.format("Request group %s should contains 3 successful request", info.getGroupId()),
+                          listener.getSuccess().containsKey(info));
+        Assert.assertEquals(String.format("Request group %s should contains 3 successful request", info.getGroupId()),
+                            restorableFileChecksums.size(), listener.getSuccess().get(info).size());
+        Assert.assertTrue("Request group should be in error", listener.getErrors().containsKey(info));
+        Assert.assertEquals(String.format("Request group %s should contains 1 error request", info.getGroupId()),
+                            unrestorableFileChecksums.size(), listener.getErrors().get(info).size());
+        restorableFileChecksums.forEach(f -> {
+            Assert.assertTrue("Missing a sucess file",
+                              listener.getSuccess().get(info).stream().anyMatch(e -> e.getChecksum().equals(f)));
+        });
         unrestorableFileChecksums.forEach(f -> {
             Assert.assertTrue("Missing an error file",
                               listener.getErrors().get(info).stream().anyMatch(e -> e.getChecksum().equals(f)));
