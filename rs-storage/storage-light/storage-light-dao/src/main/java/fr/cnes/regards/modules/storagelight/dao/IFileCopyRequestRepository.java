@@ -30,4 +30,6 @@ public interface IFileCopyRequestRepository
 
     Set<FileCopyRequest> findByGroupId(String groupId);
 
+    boolean existsByGroupIdAndStatusNot(String groupId, FileRequestStatus error);
+
 }

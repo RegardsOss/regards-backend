@@ -28,17 +28,22 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 
 /**
  * Flow message to request a new file reference.<br/>
- * See {@link FileRequestEvent} for asynchronous responses when request is finished.<br/>
+ * See {@link FileRequestsGroupEvent} for asynchronous responses when request is finished.<br/>
  * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
  *
  * @author Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class ReferenceFlowItem implements ISubscribable {
+
+    /**
+     * Maximum number of Request per flow item
+     */
+    public static final int MAX_REQUEST_PER_GROUP = 100;
 
     /**
      * Information about files to reference.
@@ -65,7 +70,7 @@ public class ReferenceFlowItem implements ISubscribable {
     /**
      * Build a file reference request event for one file
      * @param file {@link FileReferenceRequestDTO} file to reference information
-     * @param groupId business request identifier to identify request in asynchronous response messages {@link FileRequestEvent}
+     * @param groupId business request identifier to identify request in asynchronous response messages {@link FileRequestsGroupEvent}
      * @return {@link ReferenceFlowItem}
      */
     public static ReferenceFlowItem build(FileReferenceRequestDTO file, String groupId) {
@@ -78,7 +83,7 @@ public class ReferenceFlowItem implements ISubscribable {
     /**
      * Build a file reference request event for a collection of files
      * @param files  {@link FileReferenceRequestDTO} files to reference information
-     * @param groupId business request identifier to identify request in asynchronous response messages {@link FileRequestEvent}
+     * @param groupId business request identifier to identify request in asynchronous response messages {@link FileRequestsGroupEvent}
      * @return {@link ReferenceFlowItem}
      */
     public static ReferenceFlowItem build(Collection<FileReferenceRequestDTO> files, String groupId) {
