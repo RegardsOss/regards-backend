@@ -22,6 +22,9 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.client.StorageClient;
+import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.request.RequestResultInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
@@ -77,8 +80,28 @@ public class StorageClientMock implements IStorageClient {
         } else {
             firstStatus = FlowItemStatus.DENIED;
         }
-        List<RequestResultInfo> requestInfos = Collections.singletonList(new RequestResultInfo(
-                requestInfo.getGroupId(), FileRequestType.STORAGE, file.getChecksum(), file.getStorage()));
+
+        RequestResultInfo resultInfo = new RequestResultInfo(
+                requestInfo.getGroupId(),
+                FileRequestType.STORAGE,
+                file.getChecksum(),
+                null
+        );
+
+
+        resultInfo.setResultFile(
+            new FileReference(
+                    file.getOwner(),
+                    new FileReferenceMetaInfo(
+                            file.getChecksum(),
+                            file.getAlgorithm(),
+                            file.getFileName(),
+                            1000L,
+                            null
+                    ),
+                    new FileLocation(file.getStorage(), null)
+        ));
+        List<RequestResultInfo> requestInfos = Collections.singletonList(resultInfo);
         publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.STORAGE, firstStatus,
                 requestInfos
         ));
