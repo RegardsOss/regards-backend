@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storagelight.client;
 
 import java.util.Collection;
 
-import fr.cnes.regards.modules.storagelight.domain.dto.request.group.GroupRequestInfoDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.group.GroupRequestsInfoDTO;
 
 /**
  * Listener to implements to handle storage group requests results.
@@ -43,80 +43,80 @@ public interface IStorageRequestListener {
     /**
      * Callback when a copy group request is successfully done.
      * @param request
-     * @param success {@link GroupRequestInfoDTO} successfully copied files
+     * @param success {@link GroupRequestsInfoDTO} successfully copied files
      */
-    void onCopySuccess(RequestInfo request, Collection<GroupRequestInfoDTO> success);
+    void onCopySuccess(RequestInfo request, Collection<GroupRequestsInfoDTO> success);
 
     /**
      * Callback when a copy group request is terminated with errors.
      * @param request
-     * @param success {@link GroupRequestInfoDTO}s successfully copied files
-     * @param errors {@link GroupRequestInfoDTO}s copy files in error.
+     * @param success {@link GroupRequestsInfoDTO}s successfully copied files
+     * @param errors {@link GroupRequestsInfoDTO}s copy files in error.
      */
-    void onCopyError(RequestInfo request, Collection<GroupRequestInfoDTO> success,
-            Collection<GroupRequestInfoDTO> errors);
+    void onCopyError(RequestInfo request, Collection<GroupRequestsInfoDTO> success,
+            Collection<GroupRequestsInfoDTO> errors);
 
     /**
      * Callback when a availability group request is successfully done.
      * @param request
-     * @param success {@link GroupRequestInfoDTO}s available.
+     * @param success {@link GroupRequestsInfoDTO}s available.
      */
-    void onAvailable(RequestInfo request, Collection<GroupRequestInfoDTO> success);
+    void onAvailable(RequestInfo request, Collection<GroupRequestsInfoDTO> success);
 
     /**
      * Callback when a availability group request is terminated with errors.
      * @param request
-     * @param success {@link GroupRequestInfoDTO}s available.
-     * @param errors {@link GroupRequestInfoDTO}s not available.
+     * @param success {@link GroupRequestsInfoDTO}s available.
+     * @param errors {@link GroupRequestsInfoDTO}s not available.
      */
-    void onAvailabilityError(RequestInfo request, Collection<GroupRequestInfoDTO> success,
-            Collection<GroupRequestInfoDTO> errors);
+    void onAvailabilityError(RequestInfo request, Collection<GroupRequestsInfoDTO> success,
+            Collection<GroupRequestsInfoDTO> errors);
 
     /**
      * Callback when a deletion group request is successfully done.
      * @param request
-     * @param success {@link GroupRequestInfoDTO}s deleted files
+     * @param success {@link GroupRequestsInfoDTO}s deleted files
      */
-    void onDeletionSuccess(RequestInfo request, Collection<GroupRequestInfoDTO> success);
+    void onDeletionSuccess(RequestInfo request, Collection<GroupRequestsInfoDTO> success);
 
     /** Callback when a deletion group request is terminated with errors.
      * @param request
-     * @param success {@link GroupRequestInfoDTO}s deleted files
-     * @param errors {@link GroupRequestInfoDTO}s not deleted files
+     * @param success {@link GroupRequestsInfoDTO}s deleted files
+     * @param errors {@link GroupRequestsInfoDTO}s not deleted files
      */
-    void onDeletionError(RequestInfo request, Collection<GroupRequestInfoDTO> success,
-            Collection<GroupRequestInfoDTO> errors);
+    void onDeletionError(RequestInfo request, Collection<GroupRequestsInfoDTO> success,
+            Collection<GroupRequestsInfoDTO> errors);
 
     /**
      * Callback when a reference group request is successfully done.
      * @param request
-     * @param success {@link GroupRequestInfoDTO}s referenced files
+     * @param success {@link GroupRequestsInfoDTO}s referenced files
      */
-    void onReferenceSuccess(RequestInfo request, Collection<GroupRequestInfoDTO> success);
+    void onReferenceSuccess(RequestInfo request, Collection<GroupRequestsInfoDTO> success);
 
     /**
      * Callback when a reference group request is terminated with errors.
      * @param request
-     * @param success {@link GroupRequestInfoDTO}s referenced files
-     * @param errors {@link GroupRequestInfoDTO}s not referenced files
+     * @param success {@link GroupRequestsInfoDTO}s referenced files
+     * @param errors {@link GroupRequestsInfoDTO}s not referenced files
      */
-    void onReferenceError(RequestInfo request, Collection<GroupRequestInfoDTO> success,
-            Collection<GroupRequestInfoDTO> errors);
+    void onReferenceError(RequestInfo request, Collection<GroupRequestsInfoDTO> success,
+            Collection<GroupRequestsInfoDTO> errors);
 
     /**
      * Callback when a storage group request is successfully done.
      * @param requestInfo
-     * @param success {@link GroupRequestInfoDTO}s stored files
+     * @param success {@link GroupRequestsInfoDTO}s stored files
      */
-    void onStoreSuccess(RequestInfo request, Collection<GroupRequestInfoDTO> success);
+    void onStoreSuccess(RequestInfo request, Collection<GroupRequestsInfoDTO> success);
 
     /**
      * Callback when a storage group request is terminated with errors.
      * @param request
-     * @param success {@link GroupRequestInfoDTO}s stored files
-     * @param errors {@link GroupRequestInfoDTO}s not stored files
+     * @param success {@link GroupRequestsInfoDTO}s stored files
+     * @param errors {@link GroupRequestsInfoDTO}s not stored files
      */
-    void onStoreError(RequestInfo request, Collection<GroupRequestInfoDTO> success,
-            Collection<GroupRequestInfoDTO> errors);
+    void onStoreError(RequestInfo request, Collection<GroupRequestsInfoDTO> success,
+            Collection<GroupRequestsInfoDTO> errors);
 
 }

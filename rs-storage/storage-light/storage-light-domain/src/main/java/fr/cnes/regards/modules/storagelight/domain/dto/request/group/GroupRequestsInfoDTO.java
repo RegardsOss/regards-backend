@@ -24,21 +24,36 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
  * @author sbinda
  *
  */
-public class GroupRequestInfoDTO {
+public class GroupRequestsInfoDTO {
 
+    /**
+     * Group request business provided identifier
+     */
     private String groupId;
 
+    /**
+     * Checksum of the requested file
+     */
     private String checksum;
 
+    /**
+     * Storage of the requested file
+     */
     private String storage;
 
+    /**
+     * Request result file
+     */
     private FileReference fileReference;
 
+    /**
+     * Request error cause
+     */
     private String errorCause;
 
-    public static GroupRequestInfoDTO build(String groupId, String checksum, String storage,
+    public static GroupRequestsInfoDTO build(String groupId, String checksum, String storage,
             FileReference fileReference, String errorCause) {
-        GroupRequestInfoDTO dto = new GroupRequestInfoDTO();
+        GroupRequestsInfoDTO dto = new GroupRequestsInfoDTO();
         dto.groupId = groupId;
         dto.checksum = checksum;
         dto.storage = storage;
