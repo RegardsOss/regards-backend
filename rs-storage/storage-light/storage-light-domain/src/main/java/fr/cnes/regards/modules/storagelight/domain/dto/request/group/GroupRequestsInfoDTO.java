@@ -19,10 +19,13 @@
 package fr.cnes.regards.modules.storagelight.domain.dto.request.group;
 
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileLocationDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceMetaInfoDTO;
 
 /**
- * @author sbinda
- *
+ * DTO represents results information about request from a group of requests.
+ * @author Sébastien Binda
  */
 public class GroupRequestsInfoDTO {
 
@@ -44,7 +47,7 @@ public class GroupRequestsInfoDTO {
     /**
      * Request result file
      */
-    private FileReference fileReference;
+    private FileReferenceDTO fileReference;
 
     /**
      * Request error cause
@@ -57,7 +60,9 @@ public class GroupRequestsInfoDTO {
         dto.groupId = groupId;
         dto.checksum = checksum;
         dto.storage = storage;
-        dto.fileReference = fileReference;
+        dto.fileReference = FileReferenceDTO.build(fileReference.getStorageDate(),
+                                                   FileReferenceMetaInfoDTO.build(fileReference.getMetaInfo()),
+                                                   FileLocationDTO.build(fileReference.getLocation()));
         dto.errorCause = errorCause;
         return dto;
     }
@@ -74,7 +79,7 @@ public class GroupRequestsInfoDTO {
         return storage;
     }
 
-    public FileReference getFileReference() {
+    public FileReferenceDTO getFileReference() {
         return fileReference;
     }
 

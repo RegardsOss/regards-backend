@@ -25,10 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileReferenceRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;

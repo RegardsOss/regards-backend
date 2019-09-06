@@ -139,6 +139,10 @@ public class FileReferenceEvent implements ISubscribable {
         return groupIds;
     }
 
+    public FileReferenceMetaInfo getMetaInfo() {
+        return metaInfo;
+    }
+
     @Override
     public String toString() {
         return "FileReferenceEvent [" + (checksum != null ? "checksum=" + checksum + ", " : "")

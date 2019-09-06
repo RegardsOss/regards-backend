@@ -22,10 +22,10 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileReferenceRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 

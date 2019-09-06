@@ -22,11 +22,17 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 
 /**
- * @author sbinda
- *
+ * Interface to implements as a spring bean to add customizable update action on a restored file.
+ * @author Sébastien Binda
  */
 public interface IUpdateFileReferenceOnAvailable {
 
+    /**
+     * Update the {@link FileReference} restored.
+     * @param availableFileReference {@link FileReference} file reference restored
+     * @return {@link FileReference} updated file reference
+     * @throws ModuleException
+     */
     FileReference update(FileReference availableFileReference) throws ModuleException;
 
 }

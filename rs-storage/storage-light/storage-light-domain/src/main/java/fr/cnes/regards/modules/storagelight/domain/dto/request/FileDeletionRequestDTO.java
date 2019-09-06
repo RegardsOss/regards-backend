@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.domain.dto;
+package fr.cnes.regards.modules.storagelight.domain.dto.request;
 
 import org.springframework.util.Assert;
 
@@ -26,14 +26,14 @@ import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
  * Information about a file for a deletion request.<br/>
  * Mandatory information are : <ul>
  *  <li> Checksum of the file to delete</li>
- *  <li> Storage location where to copy the file</li>
+ *  <li> Storage location where to delete the file</li>
  *  <li> Owner of the file who ask for deletion </li>
  * </ul>
  * See {@link DeletionFlowItem} for more information about deletion request process.
  *
  * @author Sébastien Binda
  */
-public class FileCopyRequestDTO {
+public class FileDeletionRequestDTO {
 
     /**
      * Checksum of the file to delete
@@ -41,14 +41,20 @@ public class FileCopyRequestDTO {
     private String checksum;
 
     /**
-     * Storage location where to copy the file
+     * Storage location where to delete the file
      */
     private String storage;
-    
+
     /**
-     * Sub directory where to store file in the storage location
+     * Owner of the file who ask for deletion
      */
-    private String subDirectory;
+    private String owner;
+
+    /**
+     * Force file reference deletion when physical deletion on storage location is in error.<br/>
+     * Can be useful if file doesn't exists anymore on storage location or if storage location is not accessible anymore.
+     */
+    private boolean forceDelete;
 
     public String getChecksum() {
         return checksum;
@@ -58,30 +64,33 @@ public class FileCopyRequestDTO {
         return storage;
     }
 
-    public String getSubDirectory() {
-		return subDirectory;
-	}
-
-    public static FileCopyRequestDTO build(String checksum, String storage) {
-        FileCopyRequestDTO request = new FileCopyRequestDTO();
-
-        Assert.notNull(checksum, "Checksum is mandatory.");
-        Assert.notNull(storage, "Destination storage location is mandatory");
-
-        request.checksum = checksum;
-        request.storage = storage;
-        return request;
+    public String getOwner() {
+        return owner;
     }
-    
-    public static FileCopyRequestDTO build(String checksum, String storage, String subDirectory, String owner) {
-        FileCopyRequestDTO request = new FileCopyRequestDTO();
+
+    public boolean isForceDelete() {
+        return forceDelete;
+    }
+
+    /**
+     * Build a new file deletion request information
+     * @param checksum
+     * @param storage
+     * @param owner
+     * @param forceDelete
+     * @return {@link FileDeletionRequestDTO}
+     */
+    public static FileDeletionRequestDTO build(String checksum, String storage, String owner, boolean forceDelete) {
+        FileDeletionRequestDTO request = new FileDeletionRequestDTO();
 
         Assert.notNull(checksum, "Checksum is mandatory.");
+        Assert.notNull(owner, "Owner is mandatory.");
         Assert.notNull(storage, "Destination storage location is mandatory");
 
         request.checksum = checksum;
+        request.owner = owner;
         request.storage = storage;
-        request.subDirectory = subDirectory;
+        request.forceDelete = forceDelete;
         return request;
     }
 

@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileCopyRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
