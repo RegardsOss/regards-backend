@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storagelight.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storagelight.domain.database.request.group.GroupRequestsInfo;
+import fr.cnes.regards.modules.storagelight.domain.database.request.RequestResultInfo;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storagelight.domain.flow.FlowItemStatus;
@@ -88,8 +88,8 @@ public class RequestsGroupService {
     private void requestDone(String groupId, FileRequestType type, String checksum, String storage,
             FileReference fileRef, boolean error, String errorCause, boolean checkGroupDone) {
         // 1. Add info in database
-        GroupRequestsInfo gInfo = new GroupRequestsInfo(groupId, type, checksum, storage);
-        gInfo.setFileReference(fileRef);
+        RequestResultInfo gInfo = new RequestResultInfo(groupId, type, checksum, storage);
+        gInfo.setResultFile(fileRef);
         gInfo.setError(error);
         gInfo.setErrorCause(errorCause);
         groupReqInfoRepository.save(gInfo);
@@ -140,9 +140,9 @@ public class RequestsGroupService {
 
     public void done(String groupId, FileRequestType type) {
         // 1. Get errors
-        Set<GroupRequestsInfo> errors = groupReqInfoRepository.findByGroupIdAndError(groupId, true);
+        Set<RequestResultInfo> errors = groupReqInfoRepository.findByGroupIdAndError(groupId, true);
         // 2. Get success
-        Set<GroupRequestsInfo> successes = groupReqInfoRepository.findByGroupIdAndError(groupId, false);
+        Set<RequestResultInfo> successes = groupReqInfoRepository.findByGroupIdAndError(groupId, false);
         // 3. Publish event
         if (errors.isEmpty()) {
             LOGGER.debug("[{} GROUP SUCCESS {}] - Request group done with {} success requests",

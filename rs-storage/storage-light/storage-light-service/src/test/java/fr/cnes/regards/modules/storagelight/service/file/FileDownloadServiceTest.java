@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -55,12 +56,14 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
     }
 
     @Test
-    public void downloadFileReferenceOnline() throws ModuleException, InterruptedException, ExecutionException {
+    public void downloadFileReferenceOnline()
+            throws ModuleException, InterruptedException, ExecutionException, FileNotFoundException {
         downloadService.downloadFile(this.generateRandomStoredOnlineFileReference().getMetaInfo().getChecksum());
     }
 
     @Test
-    public void downloadFileReferenceOffLine() throws ModuleException, InterruptedException, ExecutionException {
+    public void downloadFileReferenceOffLine()
+            throws ModuleException, InterruptedException, ExecutionException, FileNotFoundException {
         FileReference fileRef = this
                 .referenceFile(UUID.randomUUID().toString(), "owner", null, "file.test", "somewhere").get();
         try {

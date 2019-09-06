@@ -22,15 +22,15 @@ import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.storagelight.domain.database.request.group.GroupRequestsInfo;
+import fr.cnes.regards.modules.storagelight.domain.database.request.RequestResultInfo;
 
 /**
  * @author sbinda
  *
  */
-public interface IGroupRequestInfoRepository extends JpaRepository<GroupRequestsInfo, Long> {
+public interface IGroupRequestInfoRepository extends JpaRepository<RequestResultInfo, Long> {
 
-    Set<GroupRequestsInfo> findByGroupIdAndError(String groupId, boolean error);
+    Set<RequestResultInfo> findByGroupIdAndError(String groupId, boolean error);
 
     void deleteByGroupId(String groupId);
 

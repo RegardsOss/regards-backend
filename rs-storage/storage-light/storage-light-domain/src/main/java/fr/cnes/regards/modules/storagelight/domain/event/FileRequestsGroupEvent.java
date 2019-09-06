@@ -30,8 +30,8 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.storagelight.domain.database.request.group.GroupRequestsInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.group.GroupRequestsInfoDTO;
+import fr.cnes.regards.modules.storagelight.domain.database.request.RequestResultInfo;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.FlowItemStatus;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
@@ -70,12 +70,12 @@ public class FileRequestsGroupEvent implements ISubscribable {
     /**
      * Files in error status
      */
-    private final Set<GroupRequestsInfoDTO> errors = Sets.newHashSet();
+    private final Set<RequestResultInfoDTO> errors = Sets.newHashSet();
 
     /**
      * Files in error status
      */
-    private final Set<GroupRequestsInfoDTO> success = Sets.newHashSet();
+    private final Set<RequestResultInfoDTO> success = Sets.newHashSet();
 
     private String message;
 
@@ -87,7 +87,7 @@ public class FileRequestsGroupEvent implements ISubscribable {
      * @return {@link FileRequestsGroupEvent}
      */
     public static FileRequestsGroupEvent build(String groupId, FileRequestType type, FlowItemStatus state,
-            Collection<GroupRequestsInfo> success) {
+            Collection<RequestResultInfo> success) {
         Assert.notNull(groupId, "Request Id is mandatory");
         Assert.notNull(type, "Request type is mandatory");
         Assert.notNull(state, "Request state is mandatory");
@@ -96,8 +96,8 @@ public class FileRequestsGroupEvent implements ISubscribable {
         event.state = state;
         event.type = type;
         event.success.addAll(success.stream()
-                .map(s -> GroupRequestsInfoDTO.build(s.getGroupId(), s.getChecksum(), s.getStorage(),
-                                                    s.getFileReference(), s.getErrorCause()))
+                .map(s -> RequestResultInfoDTO.build(s.getGroupId(), s.getRequestChecksum(), s.getRequestStorage(),
+                                                    s.getResultFile(), s.getErrorCause()))
                 .collect(Collectors.toSet()));
         return event;
     }
@@ -115,25 +115,25 @@ public class FileRequestsGroupEvent implements ISubscribable {
      * @return {@link FileRequestsGroupEvent}
      */
     public static FileRequestsGroupEvent buildError(String groupId, FileRequestType type,
-            Collection<GroupRequestsInfo> success, Collection<GroupRequestsInfo> errors) {
+            Collection<RequestResultInfo> success, Collection<RequestResultInfo> errors) {
         Assert.notNull(groupId, "Request Id is mandatory");
         Assert.notNull(type, "Request type is mandatory");
         FileRequestsGroupEvent event = new FileRequestsGroupEvent();
         event.groupId = groupId;
         event.state = FlowItemStatus.ERROR;
         event.errors.addAll(errors.stream()
-                .map(e -> GroupRequestsInfoDTO.build(e.getGroupId(), e.getChecksum(), e.getStorage(),
-                                                    e.getFileReference(), e.getErrorCause()))
+                .map(e -> RequestResultInfoDTO.build(e.getGroupId(), e.getRequestChecksum(), e.getRequestStorage(),
+                                                    e.getResultFile(), e.getErrorCause()))
                 .collect(Collectors.toSet()));
         event.success.addAll(success.stream()
-                .map(s -> GroupRequestsInfoDTO.build(s.getGroupId(), s.getChecksum(), s.getStorage(),
-                                                    s.getFileReference(), s.getErrorCause()))
+                .map(s -> RequestResultInfoDTO.build(s.getGroupId(), s.getRequestChecksum(), s.getRequestStorage(),
+                                                    s.getResultFile(), s.getErrorCause()))
                 .collect(Collectors.toSet()));
         event.type = type;
         return event;
     }
 
-    public Set<GroupRequestsInfoDTO> getErrors() {
+    public Set<RequestResultInfoDTO> getErrors() {
         return errors;
     }
 
@@ -153,7 +153,7 @@ public class FileRequestsGroupEvent implements ISubscribable {
         return state;
     }
 
-    public Set<GroupRequestsInfoDTO> getSuccess() {
+    public Set<RequestResultInfoDTO> getSuccess() {
         return success;
     }
 

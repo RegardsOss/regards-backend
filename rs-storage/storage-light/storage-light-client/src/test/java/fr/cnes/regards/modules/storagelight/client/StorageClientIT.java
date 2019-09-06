@@ -377,7 +377,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                             listener.getErrors().get(info).size());
         for (String checksum : checksums) {
             Assert.assertTrue("Missing error checksum",
-                              listener.getErrors().get(info).stream().anyMatch(e -> e.getChecksum().equals(checksum)));
+                              listener.getErrors().get(info).stream().anyMatch(e -> e.getRequestChecksum().equals(checksum)));
         }
 
     }
@@ -412,12 +412,12 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
 
         for (String checksum : referenceFileChecksums) {
             Assert.assertTrue("Missing error checksum",
-                              listener.getErrors().get(info).stream().anyMatch(e -> e.getChecksum().equals(checksum)));
+                              listener.getErrors().get(info).stream().anyMatch(e -> e.getRequestChecksum().equals(checksum)));
         }
 
         for (String checksum : unrestorableFileChecksums) {
             Assert.assertTrue("Missing error checksum",
-                              listener.getErrors().get(info).stream().anyMatch(e -> e.getChecksum().equals(checksum)));
+                              listener.getErrors().get(info).stream().anyMatch(e -> e.getRequestChecksum().equals(checksum)));
         }
     }
 
@@ -460,11 +460,11 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                             unrestorableFileChecksums.size(), listener.getErrors().get(info).size());
         restorableFileChecksums.forEach(f -> {
             Assert.assertTrue("Missing a sucess file",
-                              listener.getSuccess().get(info).stream().anyMatch(e -> e.getChecksum().equals(f)));
+                              listener.getSuccess().get(info).stream().anyMatch(e -> e.getRequestChecksum().equals(f)));
         });
         unrestorableFileChecksums.forEach(f -> {
             Assert.assertTrue("Missing an error file",
-                              listener.getErrors().get(info).stream().anyMatch(e -> e.getChecksum().equals(f)));
+                              listener.getErrors().get(info).stream().anyMatch(e -> e.getRequestChecksum().equals(f)));
         });
     }
 

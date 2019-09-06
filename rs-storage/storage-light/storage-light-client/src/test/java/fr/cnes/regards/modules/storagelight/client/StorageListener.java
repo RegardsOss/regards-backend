@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.storagelight.domain.dto.request.group.GroupRequestsInfoDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * @author sbinda
@@ -43,9 +43,9 @@ public class StorageListener implements IStorageRequestListener {
 
     private final Set<RequestInfo> granted = Sets.newHashSet();
 
-    private final ArrayListMultimap<RequestInfo, GroupRequestsInfoDTO> success = ArrayListMultimap.create();
+    private final ArrayListMultimap<RequestInfo, RequestResultInfoDTO> success = ArrayListMultimap.create();
 
-    private final ArrayListMultimap<RequestInfo, GroupRequestsInfoDTO> errors = ArrayListMultimap.create();
+    private final ArrayListMultimap<RequestInfo, RequestResultInfoDTO> errors = ArrayListMultimap.create();
 
     public void reset() {
         denied.clear();
@@ -55,14 +55,14 @@ public class StorageListener implements IStorageRequestListener {
     }
 
     @Override
-    public void onCopySuccess(RequestInfo request, Collection<GroupRequestsInfoDTO> success) {
+    public void onCopySuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
         LOGGER.debug("[TEST RESULT] - Copy success for group {} with {} success", request.getGroupId(), success.size());
         this.success.putAll(request, success);
     }
 
     @Override
-    public void onCopyError(RequestInfo request, Collection<GroupRequestsInfoDTO> success,
-            Collection<GroupRequestsInfoDTO> errors) {
+    public void onCopyError(RequestInfo request, Collection<RequestResultInfoDTO> success,
+            Collection<RequestResultInfoDTO> errors) {
         LOGGER.debug("[TEST RESULT] - Copy error for group {} with {} errors and {} success", request.getGroupId(),
                      errors.size(), success.size());
         this.errors.putAll(request, errors);
@@ -71,15 +71,15 @@ public class StorageListener implements IStorageRequestListener {
     }
 
     @Override
-    public void onAvailable(RequestInfo request, Collection<GroupRequestsInfoDTO> success) {
+    public void onAvailable(RequestInfo request, Collection<RequestResultInfoDTO> success) {
         LOGGER.debug("[TEST RESULT] - Availability success for group {} with {} success", request.getGroupId(),
                      success.size());
         this.success.putAll(request, success);
     }
 
     @Override
-    public void onAvailabilityError(RequestInfo request, Collection<GroupRequestsInfoDTO> success,
-            Collection<GroupRequestsInfoDTO> errors) {
+    public void onAvailabilityError(RequestInfo request, Collection<RequestResultInfoDTO> success,
+            Collection<RequestResultInfoDTO> errors) {
         LOGGER.debug("[TEST RESULT] - Availability error for group {} with {} errors and {} success",
                      request.getGroupId(), errors.size(), success.size());
         this.errors.putAll(request, errors);
@@ -87,15 +87,15 @@ public class StorageListener implements IStorageRequestListener {
     }
 
     @Override
-    public void onDeletionSuccess(RequestInfo request, Collection<GroupRequestsInfoDTO> success) {
+    public void onDeletionSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
         LOGGER.debug("[TEST RESULT] - Deletion success for group {} with {} success", request.getGroupId(),
                      success.size());
         this.success.putAll(request, success);
     }
 
     @Override
-    public void onDeletionError(RequestInfo request, Collection<GroupRequestsInfoDTO> success,
-            Collection<GroupRequestsInfoDTO> errors) {
+    public void onDeletionError(RequestInfo request, Collection<RequestResultInfoDTO> success,
+            Collection<RequestResultInfoDTO> errors) {
         LOGGER.debug("[TEST RESULT] - Deletion error for group {} with {} errors and {} success", request.getGroupId(),
                      errors.size(), success.size());
         this.errors.putAll(request, errors);
@@ -103,15 +103,15 @@ public class StorageListener implements IStorageRequestListener {
     }
 
     @Override
-    public void onReferenceSuccess(RequestInfo request, Collection<GroupRequestsInfoDTO> success) {
+    public void onReferenceSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
         LOGGER.debug("[TEST RESULT] - Reference success for group {} with {} success", request.getGroupId(),
                      success.size());
         this.success.putAll(request, success);
     }
 
     @Override
-    public void onReferenceError(RequestInfo request, Collection<GroupRequestsInfoDTO> success,
-            Collection<GroupRequestsInfoDTO> errors) {
+    public void onReferenceError(RequestInfo request, Collection<RequestResultInfoDTO> success,
+            Collection<RequestResultInfoDTO> errors) {
         LOGGER.debug("[TEST RESULT] - Reference error for group {} with {} errors and {} success", request.getGroupId(),
                      errors.size(), success.size());
         this.errors.putAll(request, errors);
@@ -130,15 +130,15 @@ public class StorageListener implements IStorageRequestListener {
     }
 
     @Override
-    public void onStoreSuccess(RequestInfo request, Collection<GroupRequestsInfoDTO> success) {
+    public void onStoreSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
         LOGGER.debug("[TEST RESULT] - Storage success for group {} with {} success", request.getGroupId(),
                      success.size());
         this.success.putAll(request, success);
     }
 
     @Override
-    public void onStoreError(RequestInfo request, Collection<GroupRequestsInfoDTO> success,
-            Collection<GroupRequestsInfoDTO> errors) {
+    public void onStoreError(RequestInfo request, Collection<RequestResultInfoDTO> success,
+            Collection<RequestResultInfoDTO> errors) {
         LOGGER.debug("[TEST RESULT] - Storage error for group {} with {} errors and {} success", request.getGroupId(),
                      errors.size(), success.size());
         this.errors.putAll(request, errors);
@@ -153,11 +153,11 @@ public class StorageListener implements IStorageRequestListener {
         return granted;
     }
 
-    public ArrayListMultimap<RequestInfo, GroupRequestsInfoDTO> getSuccess() {
+    public ArrayListMultimap<RequestInfo, RequestResultInfoDTO> getSuccess() {
         return success;
     }
 
-    public ArrayListMultimap<RequestInfo, GroupRequestsInfoDTO> getErrors() {
+    public ArrayListMultimap<RequestInfo, RequestResultInfoDTO> getErrors() {
         return errors;
     }
 

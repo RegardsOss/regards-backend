@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.domain.dto.request.group;
+package fr.cnes.regards.modules.storagelight.domain.dto.request;
 
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileLocationDTO;
@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceMetaInfoDTO;
  * DTO represents results information about request from a group of requests.
  * @author Sébastien Binda
  */
-public class GroupRequestsInfoDTO {
+public class RequestResultInfoDTO {
 
     /**
      * Group request business provided identifier
@@ -37,32 +37,45 @@ public class GroupRequestsInfoDTO {
     /**
      * Checksum of the requested file
      */
-    private String checksum;
+    private String requestChecksum;
 
     /**
      * Storage of the requested file
      */
-    private String storage;
+    private String requestStorage;
 
     /**
      * Request result file
      */
-    private FileReferenceDTO fileReference;
+    private FileReferenceDTO resultFile;
 
     /**
      * Request error cause
      */
     private String errorCause;
 
-    public static GroupRequestsInfoDTO build(String groupId, String checksum, String storage,
+    public static RequestResultInfoDTO build(String groupId, String checksum, String storage,
             FileReference fileReference, String errorCause) {
-        GroupRequestsInfoDTO dto = new GroupRequestsInfoDTO();
+        RequestResultInfoDTO dto = new RequestResultInfoDTO();
         dto.groupId = groupId;
-        dto.checksum = checksum;
-        dto.storage = storage;
-        dto.fileReference = FileReferenceDTO.build(fileReference.getStorageDate(),
-                                                   FileReferenceMetaInfoDTO.build(fileReference.getMetaInfo()),
-                                                   FileLocationDTO.build(fileReference.getLocation()));
+        dto.requestChecksum = checksum;
+        dto.requestStorage = storage;
+        if (fileReference != null) {
+            dto.resultFile = FileReferenceDTO.build(fileReference.getStorageDate(),
+                                                    FileReferenceMetaInfoDTO.build(fileReference.getMetaInfo()),
+                                                    FileLocationDTO.build(fileReference.getLocation()));
+        }
+        dto.errorCause = errorCause;
+        return dto;
+    }
+
+    public static RequestResultInfoDTO build(String groupId, String checksum, String storage,
+            FileReferenceDTO resultFile, String errorCause) {
+        RequestResultInfoDTO dto = new RequestResultInfoDTO();
+        dto.groupId = groupId;
+        dto.requestChecksum = checksum;
+        dto.requestStorage = storage;
+        dto.resultFile = resultFile;
         dto.errorCause = errorCause;
         return dto;
     }
@@ -71,16 +84,16 @@ public class GroupRequestsInfoDTO {
         return groupId;
     }
 
-    public String getChecksum() {
-        return checksum;
+    public String getRequestChecksum() {
+        return requestChecksum;
     }
 
-    public String getStorage() {
-        return storage;
+    public String getRequestStorage() {
+        return requestStorage;
     }
 
-    public FileReferenceDTO getFileReference() {
-        return fileReference;
+    public FileReferenceDTO getResultFile() {
+        return resultFile;
     }
 
     public String getErrorCause() {

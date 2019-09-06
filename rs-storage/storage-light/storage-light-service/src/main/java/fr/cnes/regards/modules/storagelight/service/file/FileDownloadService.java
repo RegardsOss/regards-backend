@@ -47,6 +47,7 @@ import fr.cnes.regards.modules.storagelight.domain.DownloadableFile;
 import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.cache.CacheService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheRequestService;
@@ -85,11 +86,15 @@ public class FileDownloadService {
      * </ul>
      *
      * @param checksum Checksum of the file to download
+     * @throws FileNotFoundException
      */
     @Transactional(noRollbackFor = { EntityNotFoundException.class })
     public DownloadableFile downloadFile(String checksum) throws ModuleException {
         // 1. Retrieve all the FileReference matching the given checksum
         Set<FileReference> fileRefs = fileRefService.search(checksum);
+        if (fileRefs.isEmpty()) {
+            throw new EntityNotFoundException(checksum, FileReferenceDTO.class);
+        }
         Map<String, FileReference> storages = fileRefs.stream()
                 .collect(Collectors.toMap(f -> f.getLocation().getStorage(), f -> f));
         // 2. get the storage location with the higher priority

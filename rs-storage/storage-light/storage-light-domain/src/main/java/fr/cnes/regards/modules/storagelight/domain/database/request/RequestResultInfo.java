@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.domain.database.request.group;
+package fr.cnes.regards.modules.storagelight.domain.database.request;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -44,10 +44,10 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
  *
  */
 @Entity
-@Table(name = "t_groups_requests_info", indexes = { @Index(name = "idx_group_id", columnList = "group_id") },
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_t_groups_requests_info", columnNames = { "group_id", "file_ref_id" }) })
-public class GroupRequestsInfo {
+@Table(name = "t_request_result_info", indexes = { @Index(name = "idx_group_id", columnList = "group_id") },
+        uniqueConstraints = { @UniqueConstraint(name = "uk_t_request_result_info",
+                columnNames = { "group_id", "result_file_ref_id" }) })
+public class RequestResultInfo {
 
     @Id
     @SequenceGenerator(name = "groupRequestsInfoSequence", initialValue = 1, sequenceName = "seq_groups_requests_info")
@@ -63,7 +63,7 @@ public class GroupRequestsInfo {
     /**
      * Request type
      */
-    @Column(name = "type", nullable = false)
+    @Column(name = "request_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private FileRequestType requestType;
 
@@ -71,14 +71,14 @@ public class GroupRequestsInfo {
      * File reference associated to the request
      */
     @OneToOne
-    @JoinColumn(name = "file_ref_id", referencedColumnName = "id")
-    private FileReference fileReference;
+    @JoinColumn(name = "result_file_ref_id", referencedColumnName = "id")
+    private FileReference resultFile;
 
-    @Column(name = "checksum", length = FileReferenceMetaInfo.CHECKSUM_MAX_LENGTH, nullable = false)
-    private String checksum;
+    @Column(name = "request_checksum", length = FileReferenceMetaInfo.CHECKSUM_MAX_LENGTH, nullable = false)
+    private String requestChecksum;
 
-    @Column(name = "storage", length = FileLocation.STORAGE_MAX_LENGTH)
-    private String storage;
+    @Column(name = "request_storage", length = FileLocation.STORAGE_MAX_LENGTH)
+    private String requestStorage;
 
     @Column
     private boolean error;
@@ -86,60 +86,42 @@ public class GroupRequestsInfo {
     @Column(name = "error_cause", length = 512)
     private String errorCause;
 
-    public GroupRequestsInfo() {
+    public RequestResultInfo() {
         super();
     }
 
-    public GroupRequestsInfo(String groupId, FileRequestType requestType, String checksum, String storage) {
+    public RequestResultInfo(String groupId, FileRequestType requestType, String checksum, String storage) {
         Assert.notNull(groupId, "groupId can not be null");
         Assert.notNull(checksum, "checksum can not be null");
         Assert.notNull(requestType, "requestType can not be null");
         this.groupId = groupId;
         this.requestType = requestType;
-        this.checksum = checksum;
-        this.storage = storage;
+        this.requestChecksum = checksum;
+        this.requestStorage = storage;
     }
 
-    /**
-     * @return the groupId
-     */
     public String getGroupId() {
         return groupId;
     }
 
-    /**
-     * @param groupId the groupId to set
-     */
     public void setGroupId(String groupId) {
         this.groupId = groupId;
     }
 
-    /**
-     * @return the requestType
-     */
     public FileRequestType getRequestType() {
         return requestType;
     }
 
-    /**
-     * @param requestType the requestType to set
-     */
     public void setRequestType(FileRequestType requestType) {
         this.requestType = requestType;
     }
 
-    /**
-     * @return the fileReference
-     */
-    public FileReference getFileReference() {
-        return fileReference;
+    public FileReference getResultFile() {
+        return resultFile;
     }
 
-    /**
-     * @param fileReference the fileReference to set
-     */
-    public void setFileReference(FileReference fileReference) {
-        this.fileReference = fileReference;
+    public void setResultFile(FileReference fileReference) {
+        this.resultFile = fileReference;
     }
 
     public boolean isError() {
@@ -162,12 +144,12 @@ public class GroupRequestsInfo {
         this.errorCause = errorCause;
     }
 
-    public String getChecksum() {
-        return checksum;
+    public String getRequestChecksum() {
+        return requestChecksum;
     }
 
-    public String getStorage() {
-        return storage;
+    public String getRequestStorage() {
+        return requestStorage;
     }
 
 }

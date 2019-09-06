@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.client.StorageClient;
-import fr.cnes.regards.modules.storagelight.domain.database.request.group.GroupRequestsInfo;
+import fr.cnes.regards.modules.storagelight.domain.database.request.RequestResultInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileReferenceRequestDTO;
@@ -77,7 +77,7 @@ public class StorageClientMock implements IStorageClient {
         } else {
             firstStatus = FlowItemStatus.DENIED;
         }
-        List<GroupRequestsInfo> requestInfos = Collections.singletonList(new GroupRequestsInfo(
+        List<RequestResultInfo> requestInfos = Collections.singletonList(new RequestResultInfo(
                 requestInfo.getGroupId(), FileRequestType.STORAGE, file.getChecksum(), file.getStorage()));
         publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.STORAGE, firstStatus,
                 requestInfos
