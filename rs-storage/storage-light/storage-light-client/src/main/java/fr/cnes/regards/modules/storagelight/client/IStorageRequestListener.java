@@ -28,32 +28,93 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.group.GroupR
  */
 public interface IStorageRequestListener {
 
+    /**
+     * Callback when a group request is granted.
+     * @param request
+     */
     void onRequestGranted(RequestInfo request);
 
+    /**
+     * Callback when a group request is denied
+     * @param request
+     */
     void onRequestDenied(RequestInfo request);
 
+    /**
+     * Callback when a copy group request is successuflly done.
+     * @param request
+     * @param success
+     */
     void onCopySuccess(RequestInfo request, Collection<GroupRequestsInfo> success);
 
+    /**
+     * Callback when a copy group request is terminated with errors.
+     * @param request
+     * @param success {@link GroupRequestsInfo}s successfully copied files
+     * @param errors {@link GroupRequestsInfo}s copy files in error.
+     */
     void onCopyError(RequestInfo request, Collection<GroupRequestsInfo> success, Collection<GroupRequestsInfo> errors);
 
+    /**
+     * Callback when a availability group request is successfully done.
+     * @param request
+     * @param success {@link GroupRequestsInfo}s available.
+     */
     void onAvailable(RequestInfo request, Collection<GroupRequestsInfo> success);
 
+    /**
+     * Callback when a availability group request is terminated with errors.
+     * @param request
+     * @param success {@link GroupRequestsInfo}s available.
+     * @param errors {@link GroupRequestsInfo}s not available.
+     */
     void onAvailabilityError(RequestInfo request, Collection<GroupRequestsInfo> success,
             Collection<GroupRequestsInfo> errors);
 
+    /**
+     * Callback when a deletion group request is successfully done.
+     * @param request
+     * @param success {@link GroupRequestsInfo}s deleted files
+     */
     void onDeletionSuccess(RequestInfo request, Collection<GroupRequestsInfo> success);
 
+    /** Callback when a deletion group request is terminated with errors.
+     * @param request
+     * @param success {@link GroupRequestsInfo}s deleted files
+     * @param errors {@link GroupRequestsInfo}s not deleted files
+     */
     void onDeletionError(RequestInfo request, Collection<GroupRequestsInfo> success,
             Collection<GroupRequestsInfo> errors);
 
+    /**
+     * Callback when a reference group request is successfully done.
+     * @param request
+     * @param success {@link GroupRequestsInfo}s referenced files
+     */
     void onReferenceSuccess(RequestInfo request, Collection<GroupRequestsInfo> success);
 
+    /**
+     * Callback when a reference group request is terminated with errors.
+     * @param request
+     * @param success {@link GroupRequestsInfo}s referenced files
+     * @param errors {@link GroupRequestsInfo}s not referenced files
+     */
     void onReferenceError(RequestInfo request, Collection<GroupRequestsInfo> success,
             Collection<GroupRequestsInfo> errors);
 
-    void onStoreSuccess(RequestInfo requestInfo, Collection<GroupRequestsInfo> success);
+    /**
+     * Callback when a storage group request is successfully done.
+     * @param requestInfo
+     * @param success {@link GroupRequestsInfo}s stored files
+     */
+    void onStoreSuccess(RequestInfo request, Collection<GroupRequestsInfo> success);
 
-    void onStoreError(RequestInfo requestInfo, Collection<GroupRequestsInfo> success,
-            Collection<GroupRequestsInfo> errors);
+    /**
+     * Callback when a storage group request is terminated with errors.
+     * @param request
+     * @param success {@link GroupRequestsInfo}s stored files
+     * @param errors {@link GroupRequestsInfo}s not stored files
+     */
+    void onStoreError(RequestInfo request, Collection<GroupRequestsInfo> success, Collection<GroupRequestsInfo> errors);
 
 }

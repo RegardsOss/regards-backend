@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.storagelight.client;
 import java.util.UUID;
 
 /**
- * @author sbinda
- *
+ * POJO containing information about a group of requests.
+ * @author Sébastien Binda
  */
 public class RequestInfo {
 

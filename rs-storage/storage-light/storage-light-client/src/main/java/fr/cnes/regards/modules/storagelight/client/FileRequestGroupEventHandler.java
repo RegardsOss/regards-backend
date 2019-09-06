@@ -32,8 +32,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 
 /**
- * @author sbinda
- *
+ * Handle {@link FileRequestsGroupEvent} events.
+ * @author Sébastien Binda
  */
 @Component("clientRequestEventHandler")
 public class FileRequestGroupEventHandler

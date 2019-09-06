@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 
 /**
  * Handle Bus messages {@link FileReferenceEvent}
- * @author sbinda
+ * @author Sébastien Binda
  */
 @Profile("!test")
 @Component("clientFileRefEventHandler")
@@ -66,13 +66,17 @@ public class FileReferenceEventHandler
         FileReferenceEvent event = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            LOGGER.info("Handling {}", event.toString());
+            LOGGER.debug("Handling {}", event.toString());
             handle(event);
         } finally {
             runtimeTenantResolver.clearTenant();
         }
     }
 
+    /**
+     * Handle event by calling the listener method associated to the event type.
+     * @param event {@link FileReferenceEvent}
+     */
     private void handle(FileReferenceEvent event) {
         Set<RequestInfo> requestInfos = event.getGroupIds().stream().map(RequestInfo::build)
                 .collect(Collectors.toSet());

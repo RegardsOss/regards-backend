@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceUpdateEven
 
 /**
  * Handle bus messages {@link FileReferenceUpdateEvent}
- * @author sbinda
+ * @author Sébastien Binda
  */
 @Component("clientRequestUpdateEventHandler")
 public class FileReferenceUpdateEventHandler
