@@ -22,6 +22,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -91,5 +92,13 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
      */
     protected void simulateApplicationReadyEvent() {
         springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
+    }
+
+    /**
+     * Useful class to simulate a Spring Boot {@link ApplicationStartedEvent}.<br/>
+     * <b>Warning : subscribers may manipulate tenant so call this method before all others.</b>
+     */
+    protected void simulateApplicationStartedEvent() {
+        springPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null));
     }
 }
