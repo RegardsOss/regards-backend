@@ -60,7 +60,7 @@ import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_storage_tests",
         "regards.storage.cache.path=target/cache" })
-public class FileSstorageServiceRequestTest extends AbstractStorageTest {
+public class FileStorageServiceRequestTest extends AbstractStorageTest {
 
     @Before
     @Override

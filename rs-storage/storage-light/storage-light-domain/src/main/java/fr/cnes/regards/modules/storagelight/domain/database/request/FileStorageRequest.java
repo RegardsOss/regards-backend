@@ -19,12 +19,14 @@
 package fr.cnes.regards.modules.storagelight.domain.database.request;
 
 import java.net.URL;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -45,6 +47,7 @@ import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 
@@ -105,8 +108,13 @@ public class FileStorageRequest {
     @Column(name = "error_cause", length = 512)
     private String errorCause;
 
+    @Column(name = "creation_date")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private final OffsetDateTime creationDate;
+
     public FileStorageRequest() {
         super();
+        this.creationDate = OffsetDateTime.now();
     }
 
     public FileStorageRequest(String owner, FileReferenceMetaInfo metaInfos, URL originUrl, String storage,
@@ -127,6 +135,7 @@ public class FileStorageRequest {
         }
         this.metaInfo = metaInfos;
         this.groupIds.add(groupId);
+        this.creationDate = OffsetDateTime.now();
     }
 
     public FileStorageRequest(Collection<String> owners, FileReferenceMetaInfo metaInfos, URL originUrl, String storage,
@@ -148,6 +157,7 @@ public class FileStorageRequest {
         }
         this.metaInfo = metaInfos;
         this.groupIds.add(groupId);
+        this.creationDate = OffsetDateTime.now();
     }
 
     public Long getId() {
@@ -212,6 +222,10 @@ public class FileStorageRequest {
 
     public Set<String> getGroupIds() {
         return groupIds;
+    }
+
+    public OffsetDateTime getCreationDate() {
+        return creationDate;
     }
 
     @Override

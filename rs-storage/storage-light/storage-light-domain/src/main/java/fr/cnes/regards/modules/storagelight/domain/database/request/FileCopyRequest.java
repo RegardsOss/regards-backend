@@ -1,6 +1,9 @@
 package fr.cnes.regards.modules.storagelight.domain.database.request;
 
+import java.time.OffsetDateTime;
+
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -13,6 +16,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 
@@ -62,8 +66,13 @@ public class FileCopyRequest {
     @Column(name = "error_cause", length = 512)
     private String errorCause;
 
+    @Column(name = "creation_date")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private final OffsetDateTime creationDate;
+
     public FileCopyRequest() {
         super();
+        this.creationDate = OffsetDateTime.now();
     }
 
     public FileCopyRequest(String groupId, FileReferenceMetaInfo metaInfo, String storageSubDirectory, String storage) {
@@ -73,6 +82,7 @@ public class FileCopyRequest {
         this.storageSubDirectory = storageSubDirectory;
         this.storage = storage;
         this.status = FileRequestStatus.TODO;
+        this.creationDate = OffsetDateTime.now();
     }
 
     public Long getId() {
@@ -125,6 +135,10 @@ public class FileCopyRequest {
 
     public void setFileStorageGroupId(String fileCacheGroupId) {
         this.fileStorageGroupId = fileCacheGroupId;
+    }
+
+    public OffsetDateTime getCreationDate() {
+        return creationDate;
     }
 
 }

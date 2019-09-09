@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.database.request;
 
+import java.time.OffsetDateTime;
+
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -36,6 +39,7 @@ import javax.persistence.UniqueConstraint;
 
 import org.springframework.util.Assert;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 
@@ -81,8 +85,13 @@ public class FileDeletionRequest {
     @Column(name = "error_cause", length = 512)
     private String errorCause;
 
+    @Column(name = "creation_date")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private final OffsetDateTime creationDate;
+
     public FileDeletionRequest() {
         super();
+        this.creationDate = OffsetDateTime.now();
 
     }
 
@@ -96,6 +105,7 @@ public class FileDeletionRequest {
         this.fileReference = fileReference;
         this.storage = fileReference.getLocation().getStorage();
         this.groupId = groupId;
+        this.creationDate = OffsetDateTime.now();
     }
 
     public FileDeletionRequest(FileReference fileReference, boolean forceDelete, String groupId) {
@@ -153,6 +163,10 @@ public class FileDeletionRequest {
 
     public String getGroupId() {
         return groupId;
+    }
+
+    public OffsetDateTime getCreationDate() {
+        return creationDate;
     }
 
     @Override

@@ -92,6 +92,10 @@ public class FileCacheRequest {
     @Column(name = "error_cause", length = 512)
     private String errorCause;
 
+    @Column(name = "creation_date")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private final OffsetDateTime creationDate;
+
     public FileCacheRequest(FileReference fileReference, String restorationDirectory, OffsetDateTime expirationDate,
             String groupId) {
         super();
@@ -102,10 +106,12 @@ public class FileCacheRequest {
         this.restorationDirectory = restorationDirectory;
         this.expirationDate = expirationDate;
         this.groupId = groupId;
+        this.creationDate = OffsetDateTime.now();
     }
 
     public FileCacheRequest() {
         super();
+        this.creationDate = OffsetDateTime.now();
     }
 
     public Long getId() {
@@ -150,6 +156,10 @@ public class FileCacheRequest {
 
     public OffsetDateTime getExpirationDate() {
         return expirationDate;
+    }
+
+    public OffsetDateTime getCreationDate() {
+        return creationDate;
     }
 
     public void setExpirationDate(OffsetDateTime expirationDate) {
