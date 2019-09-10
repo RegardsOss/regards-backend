@@ -110,6 +110,9 @@ public class AcquisitionFileServiceTest extends AbstractMultitenantServiceTest {
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
+        processingChain.setPeriodicity("0 * * * * *");
+        processingChain.setCategories(org.assertj.core.util.Sets.newLinkedHashSet());
+
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
