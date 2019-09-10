@@ -129,7 +129,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 // Update product
                 product.setSip(sip);
                 product.setSipState(ProductSIPState.SUBMITTED);
-                productService.saveAndSubmitSIP(product, processingChain.getStorages());
+                productService.saveAndSubmitSIP(product, processingChain);
                 sessionNotifier.notifySipSubmitting(product);
                 generatedCount++;
             } catch (ModuleException e) {

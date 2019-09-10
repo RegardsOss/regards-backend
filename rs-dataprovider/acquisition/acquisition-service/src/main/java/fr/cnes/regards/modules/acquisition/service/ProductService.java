@@ -18,7 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataDProvider;
+import com.google.common.collect.Lists;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
 import fr.cnes.regards.modules.acquisition.service.session.SessionChangingStateProbe;
 import java.time.OffsetDateTime;
@@ -131,18 +132,19 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Product saveAndSubmitSIP(Product product, List<StorageMetadataDProvider> storages) throws SIPGenerationException {
+    public Product saveAndSubmitSIP(Product product, AcquisitionProcessingChain acquisitionChain) throws SIPGenerationException {
         LOGGER.trace("Saving and submitting product \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
                      product.getProductName(), product.getIpId(), product.getSipState());
 
         List<StorageMetadata> storageList = new ArrayList<>();
-        for(StorageMetadataDProvider storage: storages) {
+        for(StorageMetadataProvider storage: acquisitionChain.getStorages()) {
             storageList.add(StorageMetadata.build(storage.getStorage(), storage.getStorageSubDirectory()));
         }
 
         IngestMetadataDto ingestMetadata = IngestMetadataDto
                 .build(product.getProcessingChain().getLabel(), product.getSession(),
-                       product.getProcessingChain().getIngestChain(), storageList);
+                       product.getProcessingChain().getIngestChain(),
+                        acquisitionChain.getCategories(), storageList);
         try {
             ingestClient.ingest(ingestMetadata, product.getSip());
             return save(product);

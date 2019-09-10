@@ -146,8 +146,14 @@ public class AcquisitionProcessingChain {
     @NotNull(message = "Storage metadata is required")
     @Column(columnDefinition = "jsonb")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-            value = "fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataDProvider") })
-    private List<StorageMetadataDProvider> storages;
+            value = "fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider") })
+    private List<StorageMetadataProvider> storages;
+
+    @Valid
+    @NotNull(message = "Categories are required")
+    @Column(columnDefinition = "jsonb")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String" ) })
+    private Set<String> categories;
 
     /**
      * The {@link List} of files to build a product
@@ -296,12 +302,20 @@ public class AcquisitionProcessingChain {
         this.validationPluginConf = validationPluginConf;
     }
 
-    public List<StorageMetadataDProvider> getStorages() {
+    public List<StorageMetadataProvider> getStorages() {
         return storages;
     }
 
-    public void setStorages(List<StorageMetadataDProvider> storages) {
+    public void setStorages(List<StorageMetadataProvider> storages) {
         this.storages = storages;
+    }
+
+    public Set<String> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(Set<String> categories) {
+        this.categories = categories;
     }
 
     public PluginConfiguration getProductPluginConf() {

@@ -25,7 +25,7 @@ import javax.validation.constraints.Size;
  * Storage information
  * @author Léo Mieulet
  */
-public class StorageMetadataDProvider {
+public class StorageMetadataProvider {
 
     private static final int STORAGE_MAX_LENGTH = 128;
 
@@ -33,13 +33,10 @@ public class StorageMetadataDProvider {
 
     private static final String MISSING_STORAGE = "Destination location cannot be null";
 
-    private static final String MISSING_STORAGE_SUB_DIRECTORY = "A path inside the storage location must be provided";
-
-    @NotBlank(message = StorageMetadataDProvider.MISSING_STORAGE)
+    @NotBlank(message = StorageMetadataProvider.MISSING_STORAGE)
     @Size(min=1, max= STORAGE_MAX_LENGTH)
     private String storage;
 
-    @NotBlank(message = StorageMetadataDProvider.MISSING_STORAGE_SUB_DIRECTORY)
     @Size(min=1, max= URL_MAX_LENGTH)
     private String storageSubDirectory;
 
@@ -59,8 +56,8 @@ public class StorageMetadataDProvider {
         this.storageSubDirectory = storageSubDirectory;
     }
 
-    public static StorageMetadataDProvider build(String storage, String storageSubDirectory) {
-        StorageMetadataDProvider storageMetadata = new StorageMetadataDProvider();
+    public static StorageMetadataProvider build(String storage, String storageSubDirectory) {
+        StorageMetadataProvider storageMetadata = new StorageMetadataProvider();
         storageMetadata.setStorage(storage);
         storageMetadata.setStorageSubDirectory(storageSubDirectory);
         return storageMetadata;
