@@ -125,6 +125,8 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
 
         fields.add(constrainedFields.withPath("session", "Ingest session name for SIP submission").optional()
                 .type("String"));
+        fields.add(constrainedFields.withPath("categories", "Ingest categories").optional()
+                .type(List.class));
         fields.add(constrainedFields.withPath("ingestChain", "Ingest chain name for SIP submission"));
         fields.add(constrainedFields.withPath("locked", "locked", "Internal chain processing lock", "NA").optional()
                 .type("Boolean"));

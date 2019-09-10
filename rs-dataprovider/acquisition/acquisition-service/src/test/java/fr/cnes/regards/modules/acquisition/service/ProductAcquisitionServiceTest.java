@@ -20,10 +20,8 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataDProvider;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
-import fr.cnes.regards.modules.ingest.client.RequestInfo;
-import fr.cnes.regards.modules.sessionmanager.domain.Session;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -184,9 +182,9 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         // SIP post processing
         // Not required
 
-        List<StorageMetadataDProvider> storages = new ArrayList<>();
-        storages.add(StorageMetadataDProvider.build("AWS", "/path/to/file"));
-        storages.add(StorageMetadataDProvider.build("HELLO", "/other/path/to/file"));
+        List<StorageMetadataProvider> storages = new ArrayList<>();
+        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file"));
+        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file"));
         processingChain.setStorages(storages);
 
         // Save processing chain

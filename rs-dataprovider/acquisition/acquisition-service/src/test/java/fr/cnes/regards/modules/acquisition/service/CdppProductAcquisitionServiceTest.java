@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataDProvider;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import fr.cnes.regards.modules.acquisition.plugins.Arcad3IsoprobeDensiteProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
@@ -210,9 +210,9 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         // Save processing chain
         processingChain = processingService.createChain(processingChain);
 
-        List<StorageMetadataDProvider> storages = new ArrayList<>();
-        storages.add(StorageMetadataDProvider.build("AWS", "/path/to/file"));
-        storages.add(StorageMetadataDProvider.build("HELLO", "/other/path/to/file"));
+        List<StorageMetadataProvider> storages = new ArrayList<>();
+        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file"));
+        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file"));
         processingChain.setStorages(storages);
 
         // we need to set up a fake ProductAcquisitionJob to fill its attributes
