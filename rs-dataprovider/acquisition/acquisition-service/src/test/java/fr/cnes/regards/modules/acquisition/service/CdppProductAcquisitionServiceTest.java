@@ -129,6 +129,8 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
+        processingChain.setPeriodicity("0 * * * * *");
+        processingChain.setCategories(Sets.newLinkedHashSet());
 
         // RAW DATA file infos
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
