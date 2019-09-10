@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +51,7 @@ import org.springframework.util.MimeType;
  */
 @Profile("StorageClientMock")
 @Component
+@Primary
 @Transactional
 public class StorageClientMock implements IStorageClient {
 
@@ -163,12 +165,60 @@ public class StorageClientMock implements IStorageClient {
 
     @Override
     public RequestInfo delete(FileDeletionRequestDTO file) {
-        return null;
+        checkInit();
+        RequestInfo requestInfo = RequestInfo.build();
+
+        // Send the first event
+        FlowItemStatus firstStatus;
+        if (shouldReturnGranted.get()) {
+            firstStatus = FlowItemStatus.GRANTED;
+        } else {
+            firstStatus = FlowItemStatus.DENIED;
+        }
+
+        RequestResultInfo resultInfo = new RequestResultInfo(
+                requestInfo.getGroupId(),
+                FileRequestType.DELETION,
+                file.getChecksum(),
+                file.getStorage()
+        );
+
+
+        resultInfo.setResultFile(
+                new FileReference(
+                        file.getOwner(),
+                        new FileReferenceMetaInfo(
+                                file.getChecksum(),
+                                "some algo",
+                                "some file",
+                                1000L,
+                                MimeType.valueOf("application/pdf")
+                        ),
+                        new FileLocation(file.getStorage(), null)
+                ));
+        List<RequestResultInfo> requestInfos = Collections.singletonList(resultInfo);
+        publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.DELETION, firstStatus,
+                requestInfos
+        ));
+
+
+        // Send the second event if the first one is GRANTED
+        if (shouldReturnGranted.get()) {
+            FlowItemStatus secondStatus;
+            if (shouldReturnSuccess.get()) {
+                secondStatus = FlowItemStatus.SUCCESS;
+            } else {
+                secondStatus = FlowItemStatus.ERROR;
+            }
+            publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.DELETION, secondStatus, requestInfos));
+        }
+
+        return requestInfo;
     }
 
     @Override
     public RequestInfo delete(Collection<FileDeletionRequestDTO> files) {
-        return null;
+        return delete(files.iterator().next());
     }
 
     @Override
