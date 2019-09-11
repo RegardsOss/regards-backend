@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.database.request;
 
-import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
@@ -117,7 +116,7 @@ public class FileStorageRequest {
         this.creationDate = OffsetDateTime.now();
     }
 
-    public FileStorageRequest(String owner, FileReferenceMetaInfo metaInfos, URL originUrl, String storage,
+    public FileStorageRequest(String owner, FileReferenceMetaInfo metaInfos, String originUrl, String storage,
             Optional<String> storageSubDirectory, String groupId) {
         super();
         Assert.notNull(owner, "File storage request need a owner !");
@@ -128,7 +127,7 @@ public class FileStorageRequest {
         Assert.notNull(groupId, "Group id is mandatory");
 
         this.owners.add(owner);
-        this.originUrl = originUrl.toString();
+        this.originUrl = originUrl;
         this.storage = storage;
         if (storageSubDirectory != null) {
             this.storageSubDirectory = storageSubDirectory.orElse(null);
@@ -138,8 +137,8 @@ public class FileStorageRequest {
         this.creationDate = OffsetDateTime.now();
     }
 
-    public FileStorageRequest(Collection<String> owners, FileReferenceMetaInfo metaInfos, URL originUrl, String storage,
-            Optional<String> storageSubDirectory, String groupId) {
+    public FileStorageRequest(Collection<String> owners, FileReferenceMetaInfo metaInfos, String originUrl,
+            String storage, Optional<String> storageSubDirectory, String groupId) {
         super();
         Assert.notNull(owners, "File storage request need a owner !");
         Assert.isTrue(!owners.isEmpty(), "File storage request need a owner !");
@@ -150,7 +149,7 @@ public class FileStorageRequest {
         Assert.notNull(groupId, "GroupId is mandatory");
 
         this.owners.addAll(owners);
-        this.originUrl = originUrl.toString();
+        this.originUrl = originUrl;
         this.storage = storage;
         if (storageSubDirectory != null) {
             this.storageSubDirectory = storageSubDirectory.orElse(null);

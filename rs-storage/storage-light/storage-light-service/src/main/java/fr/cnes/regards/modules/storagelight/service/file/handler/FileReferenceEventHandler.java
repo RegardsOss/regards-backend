@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.handler;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
@@ -248,28 +246,20 @@ public class FileReferenceEventHandler
      */
     private void createNewStorageRequest(FileCopyRequest copyRequest, FileReferenceEvent fileAvailableEvent) {
         String storageGroupId = UUID.randomUUID().toString();
-        try {
-            // Create a new storage request associated to the copy request
-            Optional<FileStorageRequest> request = fileStorageRequestService
-                    .create(fileAvailableEvent.getOwners(), copyRequest.getMetaInfo(),
-                            new URL(fileAvailableEvent.getLocation().getUrl()), copyRequest.getStorage(),
-                            Optional.ofNullable(copyRequest.getStorageSubDirectory()), FileRequestStatus.TODO,
-                            storageGroupId);
-            if (request.isPresent()) {
-                copyRequest.setFileStorageGroupId(storageGroupId);
-                fileCopyRequestService.update(copyRequest);
-                LOGGER.trace("[COPY REQUEST {}] Storage request is created for successfully restored file",
-                             copyRequest.getMetaInfo().getChecksum(), copyRequest.getGroupId());
-            } else {
-                fileCopyRequestService.handleError(copyRequest, String
-                        .format("Unable to create storage request associated to successuflly restored file"));
-            }
-        } catch (MalformedURLException e) {
-            LOGGER.error(e.getMessage(), e);
-            fileCopyRequestService.handleError(copyRequest,
-                                               String.format("Restored file is not available at url {}. Cause  : {}",
-                                                             fileAvailableEvent.getLocation().getUrl(),
-                                                             e.getMessage()));
+        // Create a new storage request associated to the copy request
+        Optional<FileStorageRequest> request = fileStorageRequestService
+                .create(fileAvailableEvent.getOwners(), copyRequest.getMetaInfo(),
+                        fileAvailableEvent.getLocation().getUrl(), copyRequest.getStorage(),
+                        Optional.ofNullable(copyRequest.getStorageSubDirectory()), FileRequestStatus.TODO,
+                        storageGroupId);
+        if (request.isPresent()) {
+            copyRequest.setFileStorageGroupId(storageGroupId);
+            fileCopyRequestService.update(copyRequest);
+            LOGGER.trace("[COPY REQUEST {}] Storage request is created for successfully restored file",
+                         copyRequest.getMetaInfo().getChecksum(), copyRequest.getGroupId());
+        } else {
+            fileCopyRequestService.handleError(copyRequest, String
+                    .format("Unable to create storage request associated to successuflly restored file"));
         }
     }
 

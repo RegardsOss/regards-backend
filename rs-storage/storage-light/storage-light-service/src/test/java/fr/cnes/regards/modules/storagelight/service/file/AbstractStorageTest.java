@@ -161,7 +161,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     @Autowired
     protected PrioritizedStorageService prioritizedDataStorageService;
 
-    protected URL originUrl = null;
+    protected String originUrl = "file://in/this/directory/file.test";
 
     protected void init() throws ModuleException {
         try {
@@ -201,11 +201,6 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
         storagePlgConfHandler.refresh();
 
-        try {
-            originUrl = new URL("file://in/this/directory/file.test");
-        } catch (MalformedURLException e) {
-            Assert.fail(e.getMessage());
-        }
     }
 
     protected PrioritizedStorage initDataStoragePluginConfiguration(String label) throws ModuleException {

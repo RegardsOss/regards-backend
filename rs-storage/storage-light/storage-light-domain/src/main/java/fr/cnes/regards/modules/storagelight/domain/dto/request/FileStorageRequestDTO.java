@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.dto.request;
 
-import java.net.URL;
 import java.util.Optional;
 
 import org.springframework.http.MediaType;
@@ -56,14 +55,14 @@ public class FileStorageRequestDTO {
 
     private String type;
 
-    private URL originUrl;
+    private String originUrl;
 
     private String storage;
 
     private Optional<String> subDirectory;
 
     public static FileStorageRequestDTO build(String fileName, String checksum, String algorithm, String mimeType,
-            String owner, URL originUrl, String storage, Optional<String> subDirectory) {
+            String owner, String originUrl, String storage, Optional<String> subDirectory) {
 
         Assert.notNull(fileName, "File name is mandatory.");
         Assert.notNull(checksum, "Checksum is mandatory.");
@@ -118,7 +117,7 @@ public class FileStorageRequestDTO {
         return owner;
     }
 
-    public URL getOriginUrl() {
+    public String getOriginUrl() {
         return originUrl;
     }
 

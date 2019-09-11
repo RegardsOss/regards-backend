@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.request;
 
-import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -153,7 +152,7 @@ public class FileStorageRequestService {
      * @param groupId business request identifier
      * @return {@link FileReference} if the file is already referenced.
      */
-    public Optional<FileReference> handleRequest(String owner, FileReferenceMetaInfo metaInfo, URL originUrl,
+    public Optional<FileReference> handleRequest(String owner, FileReferenceMetaInfo metaInfo, String originUrl,
             String storage, Optional<String> subDirectory, String groupId) {
         Optional<FileReference> oFileRef = fileRefService.search(storage, metaInfo.getChecksum());
         return handleRequest(FileStorageRequestDTO.build(metaInfo.getFileName(), metaInfo.getChecksum(),
@@ -357,7 +356,7 @@ public class FileStorageRequestService {
      * @param groupId Business identifier of the deletion request
      */
     public Optional<FileStorageRequest> create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
-            URL originUrl, String storage, Optional<String> storageSubDirectory, FileRequestStatus status,
+            String originUrl, String storage, Optional<String> storageSubDirectory, FileRequestStatus status,
             String groupId) {
         // Check if file storage request already exists
         Optional<FileStorageRequest> oFileRefRequest = search(storage, fileMetaInfo.getChecksum());

@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.flow.performance;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
@@ -146,12 +144,6 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         long start = System.currentTimeMillis();
         fileRefRepo.saveAll(toSave);
         LOGGER.info("Saves {} NearLines done in {}ms", toSave.size(), System.currentTimeMillis() - start);
-
-        try {
-            originUrl = new URL("file://in/this/directory/file.test");
-        } catch (MalformedURLException e) {
-            Assert.fail(e.getMessage());
-        }
 
         LOGGER.info("----- Tests initialization OK-----");
     }

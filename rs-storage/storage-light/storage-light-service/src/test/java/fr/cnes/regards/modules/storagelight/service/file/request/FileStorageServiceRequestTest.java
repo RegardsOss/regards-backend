@@ -183,8 +183,8 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
         URL origin = new URL("file", "localhost", inputImage.getAbsolutePath());
         FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
         // Run file reference creation.
-        stoReqService.handleRequest(owner, fileMetaInfo, origin, ONLINE_CONF_LABEL, Optional.of("/in/this/directory"),
-                                    UUID.randomUUID().toString());
+        stoReqService.handleRequest(owner, fileMetaInfo, origin.toString(), ONLINE_CONF_LABEL,
+                                    Optional.of("/in/this/directory"), UUID.randomUUID().toString());
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
         Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
@@ -263,7 +263,7 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
                 MediaType.APPLICATION_OCTET_STREAM);
         URL originUrl = new URL("file://in/this/directory/file.test");
         FileLocation destination = new FileLocation("elsewhere", "elsewhere://in/this/directory/file.test");
-        stoReqService.handleRequest(owner, fileMetaInfo, originUrl, "elsewhere",
+        stoReqService.handleRequest(owner, fileMetaInfo, originUrl.toString(), "elsewhere",
                                     Optional.of("elsewhere://in/this/directory/file.test"),
                                     UUID.randomUUID().toString());
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
