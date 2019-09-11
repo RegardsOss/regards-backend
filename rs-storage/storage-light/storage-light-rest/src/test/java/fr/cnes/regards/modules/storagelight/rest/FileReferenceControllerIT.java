@@ -108,7 +108,7 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
         String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(filePath.toFile()), algorithm);
         FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum, algorithm,
                 filePath.getFileName().toString(), null, MediaType.APPLICATION_OCTET_STREAM);
-        storeReqService.handleRequest("rest-test", metaInfo, filePath.toAbsolutePath().toUri().toURL(), TARGET_STORAGE,
+        storeReqService.handleRequest("rest-test", metaInfo, filePath.toAbsolutePath().toUri().toURL().toString(), TARGET_STORAGE,
                                       Optional.of("/sub/dir/1/"), UUID.randomUUID().toString());
         Thread.sleep(5_000);
         storedFileChecksum = checksum;

@@ -129,7 +129,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         for (int i = 0; i < (StorageFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
             files.add(FileStorageRequestDTO
                     .build("file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
-                           new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
+                           new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
         }
         RequestInfo info = client.store(files);
         Thread.sleep(5_000);
@@ -145,16 +145,16 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         String cs4 = UUID.randomUUID().toString();
         Set<FileStorageRequestDTO> files = Sets.newHashSet();
         files.add(FileStorageRequestDTO.build("file.test", cs1, "UUID", "application/octet-stream", "owner",
-                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()),
+                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
                                               ONLINE_CONF, null));
         files.add(FileStorageRequestDTO.build("file2.test", cs2, "UUID", "application/octet-stream", "owner",
-                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()),
+                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
                                               ONLINE_CONF, null));
         files.add(FileStorageRequestDTO.build("restoError.file3.test", cs3, "UUID", "application/octet-stream", "owner",
-                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()),
+                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
                                               NEARLINE_CONF, null));
         files.add(FileStorageRequestDTO.build("file4.test", cs4, "UUID", "application/octet-stream", "owner",
-                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()),
+                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
                                               NEARLINE_CONF, null));
 
         RequestInfo info = client.store(files);
@@ -182,7 +182,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         RequestInfo info = client.store(FileStorageRequestDTO
                 .build("file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()), "somewhere", null));
+                       new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), "somewhere", null));
 
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
@@ -195,7 +195,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         RequestInfo info = client.store(FileStorageRequestDTO
                 .build("error.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
+                       new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
 
         Thread.sleep(5_000);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
@@ -209,10 +209,10 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         Set<FileStorageRequestDTO> files = Sets.newHashSet();
         files.add(FileStorageRequestDTO
                 .build("error.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
+                       new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
         files.add(FileStorageRequestDTO
                 .build("ok.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
+                       new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         RequestInfo info = client.store(files);
         Thread.sleep(5_000);
@@ -228,10 +228,10 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         Set<FileStorageRequestDTO> files = Sets.newHashSet();
         files.add(FileStorageRequestDTO
                 .build("error.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
+                       new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
         files.add(FileStorageRequestDTO
                 .build("ok.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
+                       new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         RequestInfo info = client.store(files);
         Thread.sleep(5_000);
@@ -301,7 +301,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         RequestInfo info = client.store(FileStorageRequestDTO
                 .build("ok.file.test", checksum, "UUID", "application/octet-stream", owner,
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()), ONLINE_CONF, null));
+                       new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
         Thread.sleep(5_000);
 
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
