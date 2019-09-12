@@ -119,13 +119,6 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
         return providerId;
     }
 
-    /**
-     * @return the session identifier linked to this AIP
-     */
-    public String getSession() {
-        return this.getProperties().getPdi().getProvenanceInformation().getSession();
-    }
-
     public void setProviderId(String providerId) {
         this.providerId = providerId;
     }

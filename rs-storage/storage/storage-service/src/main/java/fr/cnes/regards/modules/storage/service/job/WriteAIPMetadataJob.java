@@ -103,10 +103,10 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
                 try {
                     AIP aip = aipService.retrieveAip(aipId);
                     try {
-                        logger.debug("[METADATA STORE] Writting meta-data for aip fully stored {}", aipId);
+                        LOGGER.debug("[METADATA STORE] Writting meta-data for aip fully stored {}", aipId);
                         metadataToStore.add(writeMetaToWorkspace(aip));
                     } catch (IOException | FileCorruptedException e) {
-                        logger.error(e.getMessage(), e);
+                        LOGGER.error(e.getMessage(), e);
                         aip.setState(AIPState.STORAGE_ERROR);
                         aipService.save(aip, true);
 
@@ -163,7 +163,7 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
                 metadataAipFile.setState(DataFileState.PENDING);
             } else {
                 workspaceService.removeFromWorkspace(metadataName);
-                logger.error(String
+                LOGGER.error(String
                         .format("Storage of AIP metadata(%s) into workspace(%s) failed. Computed checksum once stored does not "
                                 + "match expected one", aip.getId().toString(),
                                 workspaceService.getMicroserviceWorkspace()));
@@ -173,13 +173,13 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
             }
         } catch (NoSuchAlgorithmException e) {
             // Delete written file
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             workspaceService.removeFromWorkspace(metadataName);
             // this exception should never be thrown as it comes from the same algorithm then at the beginning
             throw new IOException(e);
         } catch (EntityNotFoundException e) {
             // Delete written file
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             workspaceService.removeFromWorkspace(metadataName);
             // this exception should never be thrown because is already created and so is the session
             throw new RsRuntimeException(e);

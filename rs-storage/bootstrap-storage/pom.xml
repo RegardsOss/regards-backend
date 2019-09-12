@@ -73,8 +73,8 @@
 			<artifactId>remote-authorities-provider</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.storage</groupId>
-			<artifactId>storage-rest</artifactId>
+			<groupId>fr.cnes.regards.modules.storage-light</groupId>
+			<artifactId>storage-light-rest</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>

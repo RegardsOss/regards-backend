@@ -123,7 +123,7 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
                     }
                     nbError.incrementAndGet();
                     // Exception thrown while updating tag list on AIP
-                    logger.error(e.getMessage(), e);
+                    LOGGER.error(e.getMessage(), e);
                 }
             });
         } while (aipsPage.hasNext());
@@ -186,14 +186,14 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
             JobParameterMissingException e = new JobParameterMissingException(
                     String.format("Job %s: parameter %s not provided", this.getClass().getName(),
                                   UPDATE_TYPE_PARAMETER_NAME));
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         }
         if (!(typeParam.getValue() instanceof UpdateAIPsTagJobType)) {
             JobParameterInvalidException e = new JobParameterInvalidException(
                     String.format("Job %s: cannot read the parameter %s", this.getClass().getName(),
                                   UPDATE_TYPE_PARAMETER_NAME));
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         }
 
@@ -202,7 +202,7 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
 
             JobParameterMissingException e = new JobParameterMissingException(String
                     .format("Job %s: parameter %s not provided", this.getClass().getName(), FILTER_PARAMETER_NAME));
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         }
         // Check if the filterParam can be correctly parsed, depending of its type
@@ -211,7 +211,7 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
                         && !(filterParam.getValue() instanceof RemoveAIPTagsFilters)) {
             JobParameterInvalidException e = new JobParameterInvalidException(String
                     .format("Job %s: cannot read the parameter %s", this.getClass().getName(), FILTER_PARAMETER_NAME));
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         }
     }
