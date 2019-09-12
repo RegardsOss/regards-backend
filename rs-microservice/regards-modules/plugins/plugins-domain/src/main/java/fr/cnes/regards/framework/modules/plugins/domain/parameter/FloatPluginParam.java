@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,25 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.modules.plugins.domain;
-
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
 /**
- * Converter for plugin parameter value.
- * @author Marc Sordi
+ * Supported plugin parameter
+ *
+ * @author Marc SORDI
+ *
  */
-@Converter(autoApply = true)
-public class PluginParameterValueConverter implements AttributeConverter<PluginParameterValue, String> {
+public class FloatPluginParam extends AbstractPluginParam<Float> {
 
-    @Override
-    public String convertToDatabaseColumn(PluginParameterValue attribute) {
-        return attribute == null ? null : attribute.getValue();
+    public FloatPluginParam() {
+        super(PluginParamType.FLOAT);
     }
 
     @Override
-    public PluginParameterValue convertToEntityAttribute(String dbData) {
-        return dbData == null ? null : PluginParameterValue.create(dbData);
+    public boolean supportsDefaultValue() {
+        return true;
+    }
+
+    @Override
+    public void applyDefaultValue(String value) {
+        if (!hasValue()) {
+            this.value = Float.valueOf(value);
+        }
     }
 }

@@ -18,19 +18,18 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.HashSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
-import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.RepresentationInformation;
 import fr.cnes.regards.framework.oais.Semantic;
 import fr.cnes.regards.framework.oais.Syntax;
@@ -51,7 +50,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * To define the data object, use one of the following methods :
  * <ul>
  * <li>{@link #setDataObject(DataType, Path, String, String)}</li>
- * <li>{@link #setDataObject(DataType, String, String, String, Long, URL...)}</li>
+ * <li>{@link #setDataObject(DataType, String, String, String, Long, OAISDataObjectLocation...)}</li>
  * <li>{@link #setDataObject(DataType, Path, String, String, String, Long)}</li>
  * <li>{@link #setDataObject(DataType, Path, String)}</li>
  * <li>{@link #setDataObject(DataType, Path, String, String)}</li>
@@ -66,10 +65,11 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * </ul>
  * <br/>
  * @author Marc Sordi
+ *
+ * Use {@link InformationPackageProperties} fluent API
  */
+@Deprecated
 public class ContentInformationBuilder implements IOAISBuilder<ContentInformation> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ContentInformationBuilder.class);
 
     private final ContentInformation ci = new ContentInformation();
 
@@ -85,16 +85,19 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param dataType {@link DataType}
      * @param filename filename
      * @param url external url
+     * @param storage storage identifier not managed by storage service (to just reference the file and avoid manipulating it).
+     * An arbitrary character string may be appropriate!
      */
-    public void setDataObjectReference(DataType dataType, String filename, URL url) {
+    public void setDataObjectReference(DataType dataType, String filename, URL url, String storage) {
         Assert.notNull(dataType, "Data type is required");
         Assert.hasText(filename, "Filename is required");
         Assert.notNull(url, "URL is required");
+        Assert.hasText(storage,
+                       "Storage identifier is required (not managed by storage - not a plugin configuration business identifier");
 
         OAISDataObject dataObject = new OAISDataObject();
         dataObject.setRegardsDataType(dataType);
-        dataObject.setReference(Boolean.TRUE);
-        dataObject.setUrls(Sets.newHashSet(url));
+        dataObject.addLocation(OAISDataObjectLocation.build(url, storage));
         dataObject.setFilename(filename);
         ci.setDataObject(dataObject);
     }
@@ -106,21 +109,20 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param algorithm checksum algorithm
      * @param checksum the checksum
      * @param fileSize <b>optional</b> file size
-     * @param urls references to the physical file
+     * @param locations references to the physical file. Use {@link OAISDataObjectLocation} build methods to create location!
      */
     public void setDataObject(DataType dataType, String filename, String algorithm, String checksum, Long fileSize,
-            URL... urls) {
+            OAISDataObjectLocation... locations) {
         Assert.notNull(dataType, "Data type is required");
         Assert.hasText(filename, "Filename is required");
         Assert.hasText(algorithm, "Checksum algorithm is required");
         Assert.hasText(checksum, "Checksum is required");
-        Assert.notNull(urls, "At least one URL is required");
+        Assert.notEmpty(locations, "At least one location is required");
 
         OAISDataObject dataObject = new OAISDataObject();
         dataObject.setFilename(filename);
         dataObject.setRegardsDataType(dataType);
-        dataObject.setReference(Boolean.FALSE);
-        dataObject.setUrls(Sets.newHashSet(urls));
+        dataObject.setLocations(new HashSet<>(Arrays.asList(locations)));
         dataObject.setAlgorithm(algorithm);
         dataObject.setChecksum(checksum);
         dataObject.setFileSize(fileSize);
@@ -138,15 +140,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      */
     public void setDataObject(DataType dataType, Path filePath, String filename, String algorithm, String checksum,
             Long fileSize) {
-        Assert.notNull(filePath, "Data path is required");
-        try {
-            setDataObject(dataType, filename, algorithm, checksum, fileSize, filePath.toUri().toURL());
-        } catch (MalformedURLException e) {
-            String errorMessage = String.format("Cannot transform %s to valid URL (MalformedURLException).",
-                                                filePath.toString());
-            LOGGER.error(errorMessage, e);
-            throw new IllegalArgumentException(errorMessage);
-        }
+        setDataObject(dataType, filename, algorithm, checksum, fileSize, OAISDataObjectLocation.build(filePath));
     }
 
     /**

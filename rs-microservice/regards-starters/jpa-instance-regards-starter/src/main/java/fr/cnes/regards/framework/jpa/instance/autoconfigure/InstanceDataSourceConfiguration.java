@@ -23,8 +23,10 @@ import java.io.IOException;
 
 import javax.sql.DataSource;
 
+import org.hibernate.cfg.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -51,6 +53,12 @@ public class InstanceDataSourceConfiguration {
     private InstanceDaoProperties daoProperties;
 
     /**
+     * JPA Configuration
+     */
+    @Autowired
+    private JpaProperties jpaProperties;
+
+    /**
      * Default data source for persistence unit instance.
      */
     @Bean
@@ -63,6 +71,8 @@ public class InstanceDataSourceConfiguration {
             datasource = DataSourceHelper.createEmbeddedDataSource(tenant, daoProperties.getEmbeddedPath());
 
         } else {
+            // Retrieve schema name
+            String schemaIdentifier = jpaProperties.getProperties().get(Environment.DEFAULT_SCHEMA);
             // this datasource does not need to be encrypted because it doesn't live in any database,
             // just into the configuration file which is not encrypted but accesses are restricted.
             datasource = DataSourceHelper
@@ -70,7 +80,7 @@ public class InstanceDataSourceConfiguration {
                                             daoProperties.getDatasource().getDriverClassName(),
                                             daoProperties.getDatasource().getUsername(),
                                             daoProperties.getDatasource().getPassword(), daoProperties.getMinPoolSize(),
-                                            daoProperties.getMaxPoolSize(), daoProperties.getPreferredTestQuery());
+                                            daoProperties.getMaxPoolSize(), daoProperties.getPreferredTestQuery(), schemaIdentifier);
         }
         return datasource;
     }

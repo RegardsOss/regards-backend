@@ -198,45 +198,45 @@ public class ParamTestPlugin implements IParamTestPlugin {
         this.pBoolean = pBoolean;
     }
 
-    public List<String> getsList() {
-        return sList;
-    }
-
-    public void setsList(List<String> sList) {
-        this.sList = sList;
-    }
-
-    public Map<String, String> getSsMap() {
-        return ssMap;
-    }
-
-    public void setSsMap(Map<String, String> ssMap) {
-        this.ssMap = ssMap;
-    }
-
-    public Pojo getPojo() {
-        return pojo;
-    }
-
-    public void setPojo(Pojo pojo) {
-        this.pojo = pojo;
-    }
-
-    public Constraints getConstraints() {
-        return constraints;
-    }
-
-    public void setConstraints(Constraints constraints) {
-        this.constraints = constraints;
-    }
-
-    public Map<String, Constraint> getScMap() {
-        return scMap;
-    }
-
-    public void setScMap(Map<String, Constraint> scMap) {
-        this.scMap = scMap;
-    }
+    //    public List<String> getsList() {
+    //        return sList;
+    //    }
+    //
+    //    public void setsList(List<String> sList) {
+    //        this.sList = sList;
+    //    }
+    //
+    //    public Map<String, String> getSsMap() {
+    //        return ssMap;
+    //    }
+    //
+    //    public void setSsMap(Map<String, String> ssMap) {
+    //        this.ssMap = ssMap;
+    //    }
+    //
+    //    public Pojo getPojo() {
+    //        return pojo;
+    //    }
+    //
+    //    public void setPojo(Pojo pojo) {
+    //        this.pojo = pojo;
+    //    }
+    //
+    //    public Constraints getConstraints() {
+    //        return constraints;
+    //    }
+    //
+    //    public void setConstraints(Constraints constraints) {
+    //        this.constraints = constraints;
+    //    }
+    //
+    //    public Map<String, Constraint> getScMap() {
+    //        return scMap;
+    //    }
+    //
+    //    public void setScMap(Map<String, Constraint> scMap) {
+    //        this.scMap = scMap;
+    //    }
 
     public IParamTestPlugin getInnerPlugin() {
         return innerPlugin;

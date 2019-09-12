@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -64,7 +65,10 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
  * <br/>
  * To define descriptive information, just call {@link IPBuilder#addDescriptiveInformation(String, Object)}.
  * @author Marc Sordi
+ *
+ * Use {@link InformationPackageProperties} fluent API instead
  */
+@Deprecated
 public abstract class IPBuilder<T extends AbstractInformationPackage<?>> implements IOAISBuilder<T> {
 
     public static final String MD5_ALGORITHM = "MD5";
@@ -154,13 +158,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     }
 
     /**
-     * Add a new entry in misc informations
-     */
-    public void addMiscInformation(String key, Object value) {
-        ipPropertiesBuilder.addMiscInformation(key, value);
-    }
-
-    /**
      * @return builder for <b>required</b> {@link PreservationDescriptionInformation}
      */
     public PDIBuilder getPDIBuilder() {
@@ -182,6 +179,14 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      */
     public void addTags(String... tags) {
         ipPropertiesBuilder.addTags(tags);
+    }
+
+    /**
+     * Add categories to context information (repeatable)
+     * @param categories list of category
+     */
+    public void addContextCategories(String... categories) {
+        ipPropertiesBuilder.addContextCategories(categories);
     }
 
     /**
@@ -299,9 +304,11 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      * @param dataType {@link DataType}
      * @param filename filename
      * @param url external url
+     * @param storage storage identifier not managed by storage service (to just reference the file and avoid manipulating it).
+     * An arbitrary character string may be appropriate!
      */
-    public void setDataObjectReference(DataType dataType, String filename, URL url) {
-        ipPropertiesBuilder.setDataObjectReference(dataType, filename, url);
+    public void setDataObjectReference(DataType dataType, String filename, URL url, String storage) {
+        ipPropertiesBuilder.setDataObjectReference(dataType, filename, url, storage);
     }
 
     /**
@@ -311,11 +318,11 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      * @param algorithm checksum algorithm
      * @param checksum the checksum
      * @param fileSize <b>optional</b> file size
-     * @param urls references to the physical file
+     * @param locations references to the physical file. Use {@link OAISDataObjectLocation} build methods to create location!
      */
     public void setDataObject(DataType dataType, String filename, String algorithm, String checksum, Long fileSize,
-            URL... urls) {
-        ipPropertiesBuilder.setDataObject(dataType, filename, algorithm, checksum, fileSize, urls);
+            OAISDataObjectLocation... locations) {
+        ipPropertiesBuilder.setDataObject(dataType, filename, algorithm, checksum, fileSize, locations);
     }
 
     /**

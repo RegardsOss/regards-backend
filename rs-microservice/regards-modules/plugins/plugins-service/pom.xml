@@ -50,6 +50,10 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>gson-regards-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>amqp-regards</artifactId>
         </dependency>
         <dependency>

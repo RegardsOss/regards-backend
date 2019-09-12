@@ -27,10 +27,10 @@ import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
@@ -67,54 +67,58 @@ public interface IPluginService {
     List<PluginMetaData> getPluginsByType(Class<?> interfacePluginType);
 
     /**
-     * @return whether the plugin configured by the given plugin configuration threw its id cna be instantiated or not
+     * @return whether the plugin configured by the given plugin configuration threw its id can be instantiated or not
      * @throws NotAvailablePluginConfigurationException
      */
-    boolean canInstantiate(Long pluginConfigurationId) throws ModuleException, NotAvailablePluginConfigurationException;
+    @Deprecated
+    boolean canInstantiate(Long id) throws ModuleException, NotAvailablePluginConfigurationException;
+
+    /**
+     * Use {@link #canInstantiate(String)} with business identifier to be instance independent.
+     * @return whether the plugin configured by the given plugin configuration threw its id can be instantiated or not
+     * @throws NotAvailablePluginConfigurationException
+     */
+    boolean canInstantiate(String businessId) throws ModuleException, NotAvailablePluginConfigurationException;
+
+    /**
+     * Use {@link #getPlugin(String, IPluginParam...)} with business identifier to be instance independent.
+     * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
+     * return type.
+     * @param <T> a plugin instance
+     * @param id database identifier of the {@link PluginConfiguration}.
+     * @param dynamicPluginParameters list of dynamic {@link AbstractPluginParam}
+     * @return a plugin instance
+     * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
+     * @throws NotAvailablePluginConfigurationException
+     */
+    @Deprecated
+    <T> T getPlugin(Long id, IPluginParam... dynamicPluginParameters)
+            throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
      * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
      * return type.
      * @param <T> a plugin instance
-     * @param pluginConfigurationId the id of a {@link PluginConfiguration}.
-     * @param dynamicPluginParameters list of dynamic {@link PluginParameter}
+     * @param businessId business identifier of the {@link PluginConfiguration}.
+     * @param dynamicPluginParameters list of dynamic {@link AbstractPluginParam}
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
      * @throws NotAvailablePluginConfigurationException
      */
-    <T> T getPlugin(Long pluginConfigurationId, final PluginParameter... dynamicPluginParameters)
+    <T> T getPlugin(String businessId, IPluginParam... dynamicPluginParameters)
             throws ModuleException, NotAvailablePluginConfigurationException;
-
-    /**
-     * Get a plugin instance for a {@link PluginConfiguration} and dynamic plugin parameters<br/>
-     *
-     * Note : this method is just a proxy for {@link IPluginService#getPlugin(Long, PluginParameter...)}
-     * so plugin configuration is reloaded from database before instanciation.
-     * @param <T> a plugin instance
-     * @param pluginConfiguration a {@link PluginConfiguration}.
-     * @param dynamicPluginParameters list of dynamic {@link PluginParameter}
-     * @return a plugin instance
-     * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
-     * @throws NotAvailablePluginConfigurationException
-     * @deprecated Use {@link IPluginService#getPlugin(Long, PluginParameter...)} instead.
-     */
-    @Deprecated
-    default <T> T getPlugin(PluginConfiguration pluginConfiguration, final PluginParameter... dynamicPluginParameters)
-            throws ModuleException, NotAvailablePluginConfigurationException {
-        return getPlugin(pluginConfiguration.getId(), dynamicPluginParameters);
-    }
 
     /**
      * Get the first plugin instance of a plugin type. The pReturnInterfaceType attribute indicates the PluginInterface
      * return type.
      * @param <T> a plugin instance
      * @param interfacePluginType a specific interface plugin type
-     * @param pluginParameters an optional list of {@link PluginParameter}
+     * @param pluginParameters an optional list of {@link AbstractPluginParam}
      * @return a plugin instance
      * @throws ModuleException thrown if an error occurs
      * @throws NotAvailablePluginConfigurationException
      */
-    <T> T getFirstPluginByType(Class<?> interfacePluginType, final PluginParameter... pluginParameters)
+    <T> T getFirstPluginByType(Class<?> interfacePluginType, IPluginParam... pluginParameters)
             throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
@@ -134,10 +138,10 @@ public interface IPluginService {
 
     /**
      * Delete a {@link PluginConfiguration}.
-     * @param confId a specific configuration
+     * @param businessId business identifier of the {@link PluginConfiguration}.
      * @throws ModuleException Entity to delete does not exist
      */
-    void deletePluginConfiguration(Long confId) throws ModuleException;
+    void deletePluginConfiguration(String businessId) throws ModuleException;
 
     /**
      * Update a {@link PluginConfiguration}.
@@ -149,25 +153,35 @@ public interface IPluginService {
 
     /**
      * Get the {@link PluginConfiguration}.
-     * @param id a plugin identifier
+     * Use {@link #getPluginConfiguration(String)} with business identifier to be instance independent.
+     * @param id business identifier of the {@link PluginConfiguration}.
      * @return a specific configuration
      * @throws EntityNotFoundException thrown if we cannot find any PluginConfiguration corresponding to pId
      */
+    @Deprecated
     PluginConfiguration getPluginConfiguration(Long id) throws EntityNotFoundException;
+
+    /**
+     * Get the {@link PluginConfiguration}.
+     * @param businessId business identifier of the {@link PluginConfiguration}.
+     * @return a specific configuration
+     * @throws EntityNotFoundException thrown if we cannot find any PluginConfiguration corresponding
+     */
+    PluginConfiguration getPluginConfiguration(String businessId) throws EntityNotFoundException;
 
     /**
      * Load a PluginConfiguration with all its relations
      * @param id {@link Long}
      * @return {@link PluginConfiguration}
      */
-    PluginConfiguration loadPluginConfiguration(Long id);
+    PluginConfiguration loadPluginConfiguration(String businessId);
 
     /**
      * Does given PluginConfiguration exist ?
-     * @param id PluginConfiguration id to test
+     * @param businessId business identifier of the {@link PluginConfiguration}.
      * @return true or false (it's a boolean !!!)
      */
-    boolean exists(Long id);
+    boolean exists(String businessId);
 
     /**
      * Does given PluginConfiguration exist ?
@@ -204,18 +218,6 @@ public interface IPluginService {
     List<PluginConfiguration> getActivePluginConfigurations(final String pluginId);
 
     /**
-     * This method is no longer used. Package(s) to scan is define once in properties
-     * <code>regards.plugins.packages-to-scan</code>. If not define, default package is used (i.e.
-     * <code>fr.cnes.regards</code>)
-     * Add a package to scan to find the plugins.
-     * @param pluginPackage A package name to scan to find the plugins.
-     */
-    @Deprecated
-    default void addPluginPackage(String pluginPackage) {
-        // Nothing to do
-    }
-
-    /**
      * Get {@link PluginMetaData} for a plugin of a specific plugin type.</br>
      * If the plugin class name does not match a plugin of the plugin type, an exception is thrown.
      * @param clazz the plugin type
@@ -240,24 +242,17 @@ public interface IPluginService {
     Optional<PluginConfiguration> findPluginConfigurationByLabel(String configurationLabel);
 
     /**
-     * Add plugin instance to cache (resolving tenant internally)
-     * @param confId configuration identifier
-     * @param plugin plugin instance corresponding to the configuration
-     */
-    void addPluginToCache(Long confId, Object plugin);
-
-    /**
      * Check if plugin is cached (resolving tenant internally)
-     * @param confId configuration identifier
+     * @param businessId business identifier
      * @return {@link boolean}
      */
-    boolean isPluginCached(Long confId);
+    boolean isPluginCached(String businessId);
 
     /**
      * Remove plugin instance cache with specified configuration identifier (resolving tenant internally)
-     * @param confId configuration identifier
+     * @param businessId business identifier
      */
-    void cleanPluginCache(Long confId);
+    void cleanPluginCache(String businessId);
 
     /**
      * Remove all plugin instances from cache
@@ -267,28 +262,19 @@ public interface IPluginService {
     /**
      * @return tenant plugin cache
      */
-    Map<Long, Object> getPluginCache();
+    Map<String, Object> getPluginCache();
 
     /**
-     * @param confId configuration identifier
+     * @param businessId business identifier
      * @return tenant plugin instance
      */
-    Object getCachedPlugin(Long confId);
+    Object getCachedPlugin(String businessId);
 
     /**
-     * Return a {@link PluginConfiguration} for a plugin identifier.
-     * If it does not exists, the {@link PluginConfiguration} is created.
-     * @param pluginId a pluginidentifier
-     * @param interfacePluginType the {@link PluginInterface}
-     * @return a {@link PluginConfiguration}
-     * @throws ModuleException an error is trhown
-     */
-    PluginConfiguration getPluginConfiguration(String pluginId, Class<?> interfacePluginType) throws ModuleException;
-
-    /**
-     * Export {@link PluginConfiguration} by removing all internal identifier and decrypting all crypted values.
+     * Prepare {@link PluginConfiguration} by decrypting all crypted values.
+     * A clone is return only if values are mutated! It may be a shallow clone so only use it for configuration export.
      * @param pluginConf {@link PluginConfiguration} to export
      * @return exported {@link PluginConfiguration}
      */
-    PluginConfiguration exportConfiguration(PluginConfiguration pluginConf);
+    PluginConfiguration prepareForExport(PluginConfiguration pluginConf);
 }

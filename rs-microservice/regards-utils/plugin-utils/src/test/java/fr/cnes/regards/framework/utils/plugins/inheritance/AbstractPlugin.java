@@ -40,4 +40,8 @@ public abstract class AbstractPlugin implements IBasicPlugin {
     protected void init() {
         LOGGER.info("Init the plugin in an inherited class"); // Just for manual test!
     }
+
+    public String getInheritedField() {
+        return inheritedField;
+    }
 }

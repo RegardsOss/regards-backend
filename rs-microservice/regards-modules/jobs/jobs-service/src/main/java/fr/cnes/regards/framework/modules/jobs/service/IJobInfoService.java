@@ -57,6 +57,12 @@ public interface IJobInfoService {
     JobInfo save(JobInfo jobInfo);
 
     /**
+     * Lock job info, cannot be candidate for cleaning
+     * @return the update job info
+     */
+    JobInfo lock(JobInfo jobInfo);
+
+    /**
      * Unlock job info, make it candidate for cleaning
      * @return the update job info
      */

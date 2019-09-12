@@ -26,6 +26,7 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
@@ -62,6 +63,17 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * <br/>
  * The test is launched enabling auto configuration and scanning all components inside
  * <code>fr.cnes.regards.modules</code> base package.
+ * <br/>
+ * <br/>
+ * To enable AMQP, first you have to add <code>regards.amqp.enabled=true</code> in {@link TestPropertySource}.
+ * <br/>
+ * <br/>
+ * And afterwards, you have to activate profile using {@link ActiveProfiles} as follows :
+ * <br/>
+ * <br/>
+ * <code>
+ * &#64;ActiveProfiles("testAmqp")
+ * </code>
  * @author Marc Sordi
  */
 @ContextConfiguration(classes = { AbstractMultitenantServiceTest.ScanningConfiguration.class })

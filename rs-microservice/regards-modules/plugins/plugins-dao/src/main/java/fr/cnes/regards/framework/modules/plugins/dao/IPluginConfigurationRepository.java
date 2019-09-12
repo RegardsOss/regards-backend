@@ -20,11 +20,9 @@ package fr.cnes.regards.framework.modules.plugins.dao;
 
 import java.util.List;
 
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -41,7 +39,6 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
      * @param pluginId the plugin identifier
      * @return a {@link List} of {@link PluginConfiguration}
      */
-    @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
     List<PluginConfiguration> findByPluginIdOrderByPriorityOrderDesc(String pluginId);
 
     /**
@@ -51,9 +48,6 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
      */
     List<PluginConfiguration> findByPluginIdAndActiveTrueOrderByPriorityOrderDesc(String pluginId);
 
-    @Query("from PluginConfiguration conf join fetch conf.parameters where conf.id=:id")
-    PluginConfiguration findOneWithPluginParameter(@Param("id") Long id);
-
     /**
      * @return the plugin configuration which label is the given label in parameter
      */
@@ -61,19 +55,22 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
 
     /**
      * Find a plugin configuration loading its parameters and dynamic values
-     * @param id pluginConfiguration id
-     * @return a PluginConfiguration without lazy relations
+     * @param businessId pluginConfiguration business id
+     * @return a PluginConfiguration
      */
-    @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
-    PluginConfiguration findCompleteById(Long id);
+    PluginConfiguration findCompleteByBusinessId(String businessId);
 
-    List<PluginConfiguration> findByParametersPluginConfiguration(PluginConfiguration plgConf);
+    /**
+     * Check if plugin configuration exists for this business id
+     * @param businessId pluginConfiguration business id
+     */
+    boolean existsByBusinessId(String businessId);
 
     @Override
     @Modifying
     @Query(value = "TRUNCATE {h-schema}t_plugin_configuration CASCADE", nativeQuery = true)
     void deleteAll();
 
-    @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
+    @Override
     List<PluginConfiguration> findAll();
 }

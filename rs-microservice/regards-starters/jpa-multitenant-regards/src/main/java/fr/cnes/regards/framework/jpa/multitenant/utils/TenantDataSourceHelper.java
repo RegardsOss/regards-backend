@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  */
 public final class TenantDataSourceHelper {
 
+
     private TenantDataSourceHelper() {
     }
 
@@ -41,12 +42,13 @@ public final class TenantDataSourceHelper {
      * Init a tenant data source
      * @param pDaoProperties {@link MultitenantDaoProperties}
      * @param pTenantConnection tenant connection to create
+     * @param schemaIdentifier
      * @return a {@link DataSource}
      * @throws PropertyVetoException if parameter not supported
      * @throws SQLException          if connection fails
      */
-    public static DataSource initDataSource(MultitenantDaoProperties pDaoProperties, TenantConnection pTenantConnection)
-            throws PropertyVetoException, SQLException, IOException {
+    public static DataSource initDataSource(MultitenantDaoProperties pDaoProperties, TenantConnection pTenantConnection,
+            String schemaIdentifier) throws PropertyVetoException, SQLException, IOException {
         DataSource dataSource;
         // Bypass configuration if embedded enabled
         if (pDaoProperties.getEmbedded()) {
@@ -59,7 +61,8 @@ public final class TenantDataSourceHelper {
                     .createHikariDataSource(pTenantConnection.getTenant(), pTenantConnection.getUrl(),
                                             pTenantConnection.getDriverClassName(), pTenantConnection.getUserName(),
                                             pTenantConnection.getPassword(), pDaoProperties.getMinPoolSize(),
-                                            pDaoProperties.getMaxPoolSize(), pDaoProperties.getPreferredTestQuery());
+                                            pDaoProperties.getMaxPoolSize(), pDaoProperties.getPreferredTestQuery(),
+                                            schemaIdentifier);
 
             // Test connection for pooled datasource
             DataSourceHelper.testConnection(dataSource, true);
