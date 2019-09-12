@@ -16,28 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins;
+package fr.cnes.regards.modules.acquisition.exception;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
- * This plugin is used for generating product SIP
- *
- * @author Christophe Mertz
- * @author Marc Sordi
- *
+ * SIPGenerationException thrown by ProductService while sending SIP to ingest
+ * @author Sébastien Binda
  */
-@PluginInterface(description = "Plugin to generate SIP with product and file metadata")
-public interface ISipGenerationPlugin {
+public class SIPGenerationException extends ModuleException {
 
-    /**
-     * Generate SIP according to specified {@link Product}
-     * @param product {@link Product}
-     * @return {@link SIP}
-     * @throws ModuleException if error occurs!
-     */
-    SIP generate(Product product) throws ModuleException;
+    public SIPGenerationException(String pMessage) {
+        super(pMessage);
+    }
+
 }

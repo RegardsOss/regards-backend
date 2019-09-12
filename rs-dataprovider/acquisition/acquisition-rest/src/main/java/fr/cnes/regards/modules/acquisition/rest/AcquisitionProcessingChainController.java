@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.rest;
 
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
+import java.util.List;
+import java.util.Optional;
 import javax.validation.Valid;
 
 /*
@@ -53,9 +57,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import antlr.collections.List;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -123,6 +127,13 @@ public class AcquisitionProcessingChainController implements IResourceController
         return new ResponseEntity<>(toResource(processingService.createChain(processingChain)), HttpStatus.CREATED);
     }
 
+    @RequestMapping(method = RequestMethod.PATCH)
+    @ResourceAccess(description = "Patch several acquisition chains with new state and mode", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<List<Resource<AcquisitionProcessingChain>>> updateChainsStateAndMode(
+            @Valid @RequestBody UpdateAcquisitionProcessingChains payload) throws ModuleException {
+        return new ResponseEntity<>(toResources(processingService.patchChainsStateAndMode(payload)), HttpStatus.OK);
+    }
+
     /**
      * Get a {@link AcquisitionProcessingChain}
      * @param chainId the {@link AcquisitionProcessingChain} identifier
@@ -149,6 +160,14 @@ public class AcquisitionProcessingChainController implements IResourceController
         return ResponseEntity.ok(toResource(processingService.updateChain(processingChain)));
     }
 
+
+    @RequestMapping(method = RequestMethod.PATCH, value = CHAIN_PATH)
+    @ResourceAccess(description = "Patch the state and the mode of the chain", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Resource<AcquisitionProcessingChain>> updateStateAndMode(@PathVariable Long chainId,
+            @Valid @RequestBody UpdateAcquisitionProcessingChain payload) throws ModuleException {
+        return ResponseEntity.ok(toResource(processingService.patchStateAndMode(chainId, payload)));
+    }
+
     @RequestMapping(method = RequestMethod.DELETE, value = CHAIN_PATH)
     @ResourceAccess(description = "Delete a chain", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> delete(@PathVariable Long chainId) throws ModuleException {
@@ -158,9 +177,10 @@ public class AcquisitionProcessingChainController implements IResourceController
 
     @RequestMapping(method = RequestMethod.GET, value = START_MANUAL_CHAIN_PATH)
     @ResourceAccess(description = "Start a manual chain", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<AcquisitionProcessingChain>> startManualChain(@PathVariable Long chainId)
+    public ResponseEntity<Resource<AcquisitionProcessingChain>> startManualChain(@PathVariable Long chainId,
+            @RequestParam(name = "session", required = false) Optional<String> session)
             throws ModuleException {
-        return ResponseEntity.ok(toResource(processingService.startManualChain(chainId)));
+        return ResponseEntity.ok(toResource(processingService.startManualChain(chainId, session)));
     }
 
     @RequestMapping(method = RequestMethod.GET, value = STOP_CHAIN_PATH)
@@ -192,6 +212,8 @@ public class AcquisitionProcessingChainController implements IResourceController
         }
         resourceService.addLink(resource, this.getClass(), "stopChain", "stop",
                                 MethodParamFactory.build(Long.class, element.getId()));
+        resourceService.addLink(resource, this.getClass(), "updateStateAndMode", "patch",
+                MethodParamFactory.build(Long.class, element.getId()));
         return resource;
     }
 }

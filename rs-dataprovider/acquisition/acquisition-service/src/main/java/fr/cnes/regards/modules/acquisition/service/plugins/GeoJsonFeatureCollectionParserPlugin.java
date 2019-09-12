@@ -53,8 +53,8 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 
 /**
  * This plugin allows to scan a directory to find geojson files and generate a new file to acquire for each feature found in it.

@@ -28,7 +28,7 @@ import com.google.gson.stream.JsonWriter;
 
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.modules.acquisition.domain.SipStateManager;
-import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
+import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 
 /**
  * Adapter for extended SIP state

@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -87,6 +90,23 @@ public interface IAcquisitionProcessingService {
     AcquisitionProcessingChain updateChain(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
+     * Patch an existing processing chain with new values for active and state
+     *
+     * @param chainId
+     * @param payload
+     * @return
+     */
+    AcquisitionProcessingChain patchStateAndMode(Long chainId, UpdateAcquisitionProcessingChain payload) throws ModuleException;
+
+
+    /**
+     * Patch several existing processing chain with provided values for active and state
+     * @param payload
+     * @return
+     */
+    List<AcquisitionProcessingChain> patchChainsStateAndMode(UpdateAcquisitionProcessingChains payload) throws ModuleException;
+
+    /**
      * Delete an inactive processing chain according to its identifier
      * @param id {@link AcquisitionProcessingChain} identifier
      * @throws ModuleException if error occurs.
@@ -113,10 +133,11 @@ public interface IAcquisitionProcessingService {
     /**
      * Start a chain manually
      * @param processingChainId identifier of the chain to start
+     * @param session optional, replace the name of the acquisition session
      * @return started processing chain
      * @throws ModuleException if error occurs!
      */
-    AcquisitionProcessingChain startManualChain(Long processingChainId) throws ModuleException;
+    AcquisitionProcessingChain startManualChain(Long processingChainId, Optional<String> session) throws ModuleException;
 
     /**
      * Stop a chain regardless of its mode.
@@ -184,7 +205,8 @@ public interface IAcquisitionProcessingService {
     void restartInterruptedJobs(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
-     * Retry SIP generation for products in {@link ProductSIPState#GENERATION_ERROR}
+     * Retry SIP generation for products in {@link ProductSIPState#GENERATION_ERROR} or
+     *  {@link ProductSIPState#INGESTION_FAILED}
      */
     void retrySIPGeneration(AcquisitionProcessingChain processingChain);
 

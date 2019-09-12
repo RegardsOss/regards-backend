@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -44,9 +47,10 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.validation.constraints.Min;
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
@@ -58,6 +62,10 @@ import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
 /**
  *
@@ -74,6 +82,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
                         subgraph = "graph.acquisition.chain.jobs") },
         subgraphs = { @NamedSubgraph(name = "graph.acquisition.chain.jobs",
                 attributeNodes = { @NamedAttributeNode(value = "parameters") }) }) })
+@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AcquisitionProcessingChain {
 
     /**
@@ -103,10 +112,6 @@ public class AcquisitionProcessingChain {
     @Enumerated(EnumType.STRING)
     private AcquisitionProcessingChainMode mode = AcquisitionProcessingChainMode.AUTO;
 
-    // FIXME @Max(value = 50, message = "Session must be 50 characters length max")
-    @Column(length = 50)
-    private String session;
-
     /**
      * Flag to allow to run an action only once at a time
      */
@@ -123,11 +128,12 @@ public class AcquisitionProcessingChain {
     private OffsetDateTime lastActivationDate;
 
     /**
-     * The periodicity in seconds between two acquisitions
+     * The cron expression of the acquisition periodicity
      */
     @Column(name = "period")
-    @Min(value = 10, message = "Periodicity must be greater or equals to 10 seconds")
-    private Long periodicity;
+    @Pattern(regexp = "0 .*",
+            message = "Invalid cron periodicity. You must start your periodicity with 0 (for 0 second) as the lowest definition is minutes. e.g: 0 * 18 * * *")
+    private String periodicity;
 
     /**
      * Then INGEST chain name for SIP submission
@@ -136,6 +142,19 @@ public class AcquisitionProcessingChain {
     @Column(name = "ingest_chain")
     private String ingestChain;
 
+    @Valid
+    @NotNull(message = "Storage metadata is required")
+    @Column(columnDefinition = "jsonb")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+            value = "fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider") })
+    private List<StorageMetadataProvider> storages;
+
+    @Valid
+    @NotNull(message = "Categories are required")
+    @Column(columnDefinition = "jsonb")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String" ) })
+    private Set<String> categories;
+
     /**
      * The {@link List} of files to build a product
      */
@@ -143,7 +162,7 @@ public class AcquisitionProcessingChain {
     @Size(min = 1)
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "acq_chain_id", foreignKey = @ForeignKey(name = "fk_acq_chain_id"))
-    private List<AcquisitionFileInfo> fileInfos;
+    private Set<AcquisitionFileInfo> fileInfos;
 
     /**
      * An optional {@link PluginConfiguration} of a {@link IValidationPlugin}
@@ -204,11 +223,11 @@ public class AcquisitionProcessingChain {
         this.lastActivationDate = lastActivationDate;
     }
 
-    public Long getPeriodicity() {
+    public String getPeriodicity() {
         return periodicity;
     }
 
-    public void setPeriodicity(Long periodicity) {
+    public void setPeriodicity(String periodicity) {
         this.periodicity = periodicity;
     }
 
@@ -220,17 +239,17 @@ public class AcquisitionProcessingChain {
         this.ingestChain = ingestChain;
     }
 
-    public List<AcquisitionFileInfo> getFileInfos() {
+    public Set<AcquisitionFileInfo> getFileInfos() {
         return fileInfos;
     }
 
-    public void setFileInfos(List<AcquisitionFileInfo> fileInfos) {
+    public void setFileInfos(Set<AcquisitionFileInfo> fileInfos) {
         this.fileInfos = fileInfos;
     }
 
     public void addFileInfo(AcquisitionFileInfo fileInfo) {
         if (fileInfos == null) {
-            fileInfos = new ArrayList<>();
+            fileInfos = new LinkedHashSet<>();
         }
         fileInfos.add(fileInfo);
     }
@@ -283,20 +302,28 @@ public class AcquisitionProcessingChain {
         this.validationPluginConf = validationPluginConf;
     }
 
+    public List<StorageMetadataProvider> getStorages() {
+        return storages;
+    }
+
+    public void setStorages(List<StorageMetadataProvider> storages) {
+        this.storages = storages;
+    }
+
+    public Set<String> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(Set<String> categories) {
+        this.categories = categories;
+    }
+
     public PluginConfiguration getProductPluginConf() {
         return productPluginConf;
     }
 
     public void setProductPluginConf(PluginConfiguration productPluginConf) {
         this.productPluginConf = productPluginConf;
-    }
-
-    public Optional<String> getSession() {
-        return Optional.ofNullable(session);
-    }
-
-    public void setSession(String session) {
-        this.session = session;
     }
 
     public Boolean isLocked() {

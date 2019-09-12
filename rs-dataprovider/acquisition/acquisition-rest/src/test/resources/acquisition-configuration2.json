@@ -6,7 +6,7 @@
         "id": "acquisition",
         "name": "Acquisition module",
         "description": "Data driven SIP creation",
-        "version": "2.0.0-SNAPSHOT",
+        "version": "0.4.1",
         "author": "CSSI",
         "legalOwner": "CNES",
         "documentation": "https://github.com/RegardsOss"
@@ -15,32 +15,27 @@
         {
           "key": "fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain",
           "value": {
-            "label": "Processing chain 2",
+            "label": "Processing chain 1",
             "active": true,
-            "mode": "AUTO",
-            "locked": false,
-            "periodicity": 10,
+            "mode": "MANUAL",
             "ingestChain": "DefaultIngestChain",
+            "categories": ["Category 1"],
             "fileInfos": [
               {
                 "mandatory": true,
                 "scanPlugin": {
                   "pluginId": "GlobDiskScanning",
-                  "label": "Auto11s : Scan plugin",
+                  "label": "post : Scan plugin",
+                  "businessId": "25d69db2-04f3-419e-ba2e-89285395e6df",
                   "version": "1.0.0-SNAPSHOT",
                   "priorityOrder": 0,
                   "active": true,
-                  "pluginClassName": "fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning",
-                  "interfaceNames": [
-                    "fr.cnes.regards.modules.acquisition.plugins.IScanPlugin"
-                  ],
                   "parameters": [
                     {
                       "name": "directories",
-                      "value": [
-                      ],
-                      "dynamic": false,
-                      "dynamicsValues": []
+                      "type": "COLLECTION",
+                      "value": [],
+                      "dynamic": false
                     }
                   ]
                 },
@@ -51,40 +46,32 @@
             ],
             "validationPluginConf": {
               "pluginId": "DefaultFileValidation",
-              "label": "Auto11s : Validation plugin",
+              "label": "post : Validation plugin",
+              "businessId": "32b73981-84ff-4a61-83f6-10cabfcccc18",
               "version": "1.0.0-SNAPSHOT",
               "priorityOrder": 0,
               "active": true,
-              "pluginClassName": "fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation",
-              "interfaceNames": [
-                "fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin"
-              ],
               "parameters": []
             },
             "productPluginConf": {
               "pluginId": "DefaultProductPlugin",
-              "label": "Auto11s : Product plugin",
+              "label": "post : Product plugin",
+              "businessId": "1c9fe69e-9716-443a-a69f-80f23858e9c1",
               "version": "1.0.0-SNAPSHOT",
               "priorityOrder": 0,
               "active": true,
-              "pluginClassName": "fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin",
-              "interfaceNames": [
-                "fr.cnes.regards.modules.acquisition.plugins.IProductPlugin"
-              ],
               "parameters": []
             },
             "generateSipPluginConf": {
               "pluginId": "DefaultSIPGeneration",
-              "label": "Auto11s : SIP generation plugin",
+              "label": "post : SIP generation plugin",
+              "businessId": "d47d2af4-a060-4f49-8d12-8b193e859d0c",
               "version": "1.0.0-SNAPSHOT",
               "priorityOrder": 0,
               "active": true,
-              "pluginClassName": "fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration",
-              "interfaceNames": [
-                "fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin"
-              ],
               "parameters": []
-            }
+            },
+            "generationRetryEnabled": false
           }
         }
       ]

@@ -46,6 +46,7 @@ import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.urn.DataType;
 
+
 /**
  *
  * Acquisition file information. An acquisition file is an optional or mandatory part of a product.

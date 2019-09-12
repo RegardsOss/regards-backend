@@ -18,24 +18,24 @@
  */
 package fr.cnes.regards.modules.acquisition.rest;
 
-import java.util.ArrayList;
-import java.util.Set;
-
-import org.assertj.core.util.Sets;
-import org.springframework.http.MediaType;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.assertj.core.util.Sets;
+import org.springframework.http.MediaType;
 
 /**
  * Utils for product acquisition testing
@@ -53,6 +53,8 @@ public class AcquisitionTestUtils {
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
+        processingChain.setPeriodicity("0 * * * * *");
+        processingChain.setCategories(Sets.newLinkedHashSet());
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
@@ -61,8 +63,7 @@ public class AcquisitionTestUtils {
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        Set<PluginParameter> param = PluginParametersFactory.build()
-                .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
+        Set<IPluginParam> param = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()));
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(param, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel(labelPrefix + " : " + "Scan plugin");
@@ -93,6 +94,12 @@ public class AcquisitionTestUtils {
 
         // SIP post processing
         // Not required
+
+
+        List<StorageMetadataProvider> storages = new ArrayList<>();
+        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file"));
+        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file"));
+        processingChain.setStorages(storages);
 
         return processingChain;
     }

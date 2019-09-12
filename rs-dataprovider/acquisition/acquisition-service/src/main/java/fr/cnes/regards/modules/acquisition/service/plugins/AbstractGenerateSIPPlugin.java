@@ -33,8 +33,8 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 
 /**
  * Common SIP generation tools

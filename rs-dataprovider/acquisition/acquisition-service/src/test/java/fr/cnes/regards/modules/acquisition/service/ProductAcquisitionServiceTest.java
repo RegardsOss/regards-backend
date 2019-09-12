@@ -18,18 +18,30 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
+import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
@@ -39,12 +51,18 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -53,6 +71,8 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
+import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
+import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
@@ -86,8 +106,29 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
     @Autowired
     private IAcquisitionFileService fileService;
 
-    @After
-    public void cleanAfter() {
+    @Autowired
+    private IAcquisitionFileInfoRepository fileInfoRepository;
+
+    @Autowired
+    private IAcquisitionProcessingChainRepository acquisitionProcessingChainRepository;
+
+    @Autowired
+    private IPluginService pluginService;
+
+    @Autowired
+    private IJobInfoService jobInfoService;
+
+    @SpyBean
+    private IPublisher publisher;
+
+    @Before
+    public void before() throws ModuleException {
+        acqFileRepository.deleteAll();
+        fileInfoRepository.deleteAll();
+        acquisitionProcessingChainRepository.deleteAll();
+        for (PluginConfiguration pc : pluginService.getAllPluginConfigurations()) {
+            pluginService.deletePluginConfiguration(pc.getBusinessId());
+        }
     }
 
     public AcquisitionProcessingChain createProcessingChain(Path searchDir) throws ModuleException {
@@ -98,6 +139,8 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
+        processingChain.setPeriodicity("0 * * * * *");
+        processingChain.setCategories(Sets.newLinkedHashSet());
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
@@ -106,8 +149,9 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
+                                        PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))));
 
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
@@ -140,8 +184,26 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         // SIP post processing
         // Not required
 
+        List<StorageMetadataProvider> storages = new ArrayList<>();
+        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file"));
+        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file"));
+        processingChain.setStorages(storages);
+
         // Save processing chain
-        return processingService.createChain(processingChain);
+        processingChain = processingService.createChain(processingChain);
+
+        // we need to set up a fake ProductAcquisitionJob to fill its attributes
+        JobInfo jobInfo = new JobInfo(true);
+        jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY.getPriority());
+        jobInfo.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()),
+                              new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, "my funky session"));
+        jobInfo.setClassName(ProductAcquisitionJob.class.getName());
+        jobInfo.setOwner("user 1");
+        jobInfoService.createAsQueued(jobInfo);
+
+        processingChain.setLastProductAcquisitionJobInfo(jobInfo);
+
+        return processingService.updateChain(processingChain);
     }
 
     //    @Test
@@ -161,7 +223,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
         AcquisitionProcessingChain processingChain = createProcessingChain(Paths.get("src", "test", "resources", "data",
                                                                                      "plugins", "scan"));
-        AcquisitionFileInfo fileInfo = processingChain.getFileInfos().get(0);
+        AcquisitionFileInfo fileInfo = processingChain.getFileInfos().iterator().next();
 
         processingService.scanAndRegisterFiles(processingChain);
 
@@ -173,9 +235,10 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         processingService.manageRegisteredFiles(processingChain);
 
         // Check registered files
-        inProgressFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS,
-                                                                               processingChain.getFileInfos().get(0),
-                                                                               PageRequest.of(0, 1));
+        inProgressFiles = acqFileRepository
+                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS,
+                                                    processingChain.getFileInfos().iterator().next(),
+                                                    PageRequest.of(0, 1));
         Assert.assertTrue(inProgressFiles.getTotalElements() == 0);
 
         Page<AcquisitionFile> validFiles = acqFileRepository
@@ -215,12 +278,43 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         Page<AcquisitionProcessingChainMonitor> monitor = processingService
                 .buildAcquisitionProcessingChainSummaries(null, null, null, PageRequest.of(0, 10));
         Assert.assertTrue(!monitor.getContent().isEmpty());
-        Assert.assertTrue(monitor.getContent().get(0).getNbFileErrors() == 0);
-        Assert.assertTrue(monitor.getContent().get(0).getNbFiles() == 4);
-        Assert.assertTrue(monitor.getContent().get(0).getNbFilesInProgress() == 0);
-        Assert.assertTrue(monitor.getContent().get(0).getNbProducts() == 4);
-        Assert.assertTrue(monitor.getContent().get(0).getNbProductErrors() == 0);
-        // Assert.assertTrue(monitor.getContent().get(0).getNbProductsInProgress() == 0);
+        Assert.assertEquals(true, monitor.getContent().get(0).isActive());
+
+        // Check product
+        Assert.assertEquals(0, productService.countByProcessingChainAndSipStateIn(processingChain, Arrays
+                .asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.NOT_SCHEDULED_INVALID)));
+        Assert.assertEquals(4, productService.countByChain(processingChain));
+        Assert.assertEquals(4,
+                            productService.countByProcessingChainAndSipStateIn(processingChain, Arrays
+                                    .asList(ProductSIPState.NOT_SCHEDULED, ProductSIPState.SCHEDULED,
+                                            ProductSIPState.SCHEDULED_INTERRUPTED)));
+
+        // Check files
+        Assert.assertEquals(0, fileService
+                .countByChainAndStateIn(processingChain,
+                                        Arrays.asList(AcquisitionFileState.ERROR, AcquisitionFileState.INVALID)));
+        Assert.assertEquals(4, fileService.countByChain(processingChain));
+        Assert.assertEquals(0, fileService
+                .countByChainAndStateIn(processingChain,
+                                        Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID)));
+
+        // Let's test SessionNotifier
+        ArgumentCaptor<ISubscribable> grantedInfo = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(publisher, Mockito.times(16)).publish(grantedInfo.capture());
+        // Capture how many notif of each type have been sent
+        Map<String, Integer> callByProperty = new HashMap<>();
+        for (ISubscribable event: grantedInfo.getAllValues()) {
+            // We ignore all others types of events
+            if (event instanceof SessionMonitoringEvent) {
+                SessionMonitoringEvent monitoringEvent = (SessionMonitoringEvent) event;
+                if (callByProperty.containsKey(monitoringEvent.getProperty())) {
+                    callByProperty.put(monitoringEvent.getProperty(), callByProperty.get(monitoringEvent.getProperty()) + 1);
+                } else {
+                    callByProperty.put(monitoringEvent.getProperty(), 1);
+                }
+            }
+        }
+        Assert.assertEquals(4, (int) callByProperty.get(SessionNotifier.PROPERTY_GENERATED));
     }
 
     //    @Test

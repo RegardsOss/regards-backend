@@ -33,16 +33,15 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_service" })
 @RegardsTransactional
@@ -57,13 +56,13 @@ public class FixedStorageSIPGenerationIT extends AbstractMultitenantServiceTest 
         // Init plugin conf
         PluginMetaData plugin = PluginUtils.createPluginMetaData(FixedStorageSIPGeneration.class);
 
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(FixedStorageSIPGeneration.STAF_STORAGE_NODE, "node1")
-                .addParameter(FixedStorageSIPGeneration.DATASET, "dataset1").getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(FixedStorageSIPGeneration.STAF_STORAGE_NODE, "node1"),
+                     IPluginParam.build(FixedStorageSIPGeneration.DATASET, "dataset1"));
         PluginConfiguration pluginConf = pluginService
                 .savePluginConfiguration(new PluginConfiguration(plugin, "sipGenerationPlugin", parameters));
 
-        FixedStorageSIPGeneration pluginImp = pluginService.getPlugin(pluginConf.getId());
+        FixedStorageSIPGeneration pluginImp = pluginService.getPlugin(pluginConf.getBusinessId());
 
         Product product = new Product();
         product.setProductName("testProduct");
