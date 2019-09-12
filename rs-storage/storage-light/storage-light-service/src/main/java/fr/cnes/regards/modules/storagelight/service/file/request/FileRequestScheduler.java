@@ -42,8 +42,6 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
  * <li> {@link FileDeletionRequest} for deletion</li>
  * </ul>
  * @author Sébastien Binda
- *
- * FIXME manage concurrent calls ... apply and test {@link ILockService} to avoid READ LOCK on the target table
  */
 @Component
 @Profile("!noscheduler")
@@ -68,6 +66,9 @@ public class FileRequestScheduler {
     @Autowired
     private FileCopyRequestService FileCopyRequestService;
 
+    @Autowired
+    private ILockService lockService;
+
     /**
      * Number of created AIPs processed on each iteration by project
      */
@@ -76,49 +77,89 @@ public class FileRequestScheduler {
 
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
     public void handleFileStorageRequests() throws ModuleException {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
+        if (getLock()) {
             try {
-                runtimeTenantResolver.forceTenant(tenant);
-                fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(), Sets.newHashSet());
+                for (String tenant : tenantResolver.getAllActiveTenants()) {
+                    try {
+                        runtimeTenantResolver.forceTenant(tenant);
+                        fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(),
+                                                               Sets.newHashSet());
+                    } finally {
+                        runtimeTenantResolver.clearTenant();
+                    }
+                }
             } finally {
-                runtimeTenantResolver.clearTenant();
+                releaseLock();
             }
         }
     }
 
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
     public void handleFileCacheRequests() throws ModuleException {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
+        if (getLock()) {
             try {
-                runtimeTenantResolver.forceTenant(tenant);
-                fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+                for (String tenant : tenantResolver.getAllActiveTenants()) {
+                    try {
+                        runtimeTenantResolver.forceTenant(tenant);
+                        fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+                    } finally {
+                        runtimeTenantResolver.clearTenant();
+                    }
+                }
             } finally {
-                runtimeTenantResolver.clearTenant();
+                releaseLock();
             }
         }
     }
 
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
     public void handleFileDeletionRequests() throws ModuleException {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
+        if (getLock()) {
             try {
-                runtimeTenantResolver.forceTenant(tenant);
-                fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet());
+                for (String tenant : tenantResolver.getAllActiveTenants()) {
+                    try {
+                        runtimeTenantResolver.forceTenant(tenant);
+                        fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet());
+                    } finally {
+                        runtimeTenantResolver.clearTenant();
+                    }
+                }
             } finally {
-                runtimeTenantResolver.clearTenant();
+                releaseLock();
             }
         }
     }
 
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
     public void handleFileCopyRequests() throws ModuleException {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
+        if (getLock()) {
             try {
-                runtimeTenantResolver.forceTenant(tenant);
-                FileCopyRequestService.scheduleAvailabilityRequests(FileRequestStatus.TODO);
+                for (String tenant : tenantResolver.getAllActiveTenants()) {
+                    try {
+                        runtimeTenantResolver.forceTenant(tenant);
+                        FileCopyRequestService.scheduleAvailabilityRequests(FileRequestStatus.TODO);
+                    } finally {
+                        runtimeTenantResolver.clearTenant();
+                    }
+                }
             } finally {
-                runtimeTenantResolver.clearTenant();
+                releaseLock();
             }
         }
+    }
+
+    /**
+     * Get lock to ensure schedulers are not started at the same time by many instance of this microservice
+     * @return
+     */
+    private boolean getLock() {
+        return lockService.obtainLockOrSkip(this.getClass().getName(), this, 60_000);
+    }
+
+    /**
+     * Release lock
+     */
+    private void releaseLock() {
+        lockService.releaseLock(this.getClass().getName(), this);
     }
 }
