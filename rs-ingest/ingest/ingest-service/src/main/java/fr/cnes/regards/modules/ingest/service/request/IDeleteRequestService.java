@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,34 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.sip;
+package fr.cnes.regards.modules.ingest.service.request;
+
+import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
+import java.util.Collection;
 
 /**
- * SIP lifecycle
+ * Delete file request service
  *
- * @author Marc Sordi
+ * @author Léo Mieulet
+ *
  */
-public enum SIPState implements ISipState {
+public interface IDeleteRequestService {
+    /**
+     * Handle file deletion error
+     */
+    void handleRemoteDeleteError(RequestInfo request, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors);
 
     /**
-     * SIP has been properly ingested
+     * Handle file deletion success
      */
-    INGESTED,
-    /**
-     * SIP has been properly stored
-     */
-    STORED,
-    /**
-     * SIP is deleted but we still keep it in database
-     */
-    DELETED,
-    /**
-     * SIP has encountered an issue
-     */
-    ERROR;
-
-    @Override
-    public String getName() {
-        return this.name();
-    }
+    void handleRemoteDeleteSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success);
 }

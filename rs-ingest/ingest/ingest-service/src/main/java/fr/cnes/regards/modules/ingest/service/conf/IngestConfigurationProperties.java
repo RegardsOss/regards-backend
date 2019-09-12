@@ -40,12 +40,13 @@ public class IngestConfigurationProperties {
     @Value("${regards.ingest.remote.request.timeout:5}")
     private Long remoteRequestTimeout;
 
-    public static final String DOWNLOAD_AIP_PLACEHOLDER = "@aip@ ";
+    public static final String DOWNLOAD_AIP_PLACEHOLDER = "@aip@";
 
     /**
      * Include @aip@ in your template
      */
-    @Value("${regards.ingest.aip.download.url.template:}")
+    // TODO remove this bullshit !
+    @Value("${regards.ingest.aip.download.url.template:http://localhost/api/v1/ingest/aips/download/@aip@}")
     private String aipDownloadTemplate = "";
 
     public Integer getMaxBulkSize() {

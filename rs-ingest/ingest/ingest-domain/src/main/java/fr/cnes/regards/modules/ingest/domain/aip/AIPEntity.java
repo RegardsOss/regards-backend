@@ -85,13 +85,16 @@ public class AIPEntity extends OAISEntity {
     @Enumerated(EnumType.STRING)
     private AIPState state;
 
-    @Column(name = "error_message", length = 256)
-    private String errorMessage;
-
     @NotNull(message = "RAW JSON AIP is required")
     @Column(columnDefinition = "jsonb", name = "rawaip", nullable = false)
     @Type(type = "jsonb")
     private AIP aip;
+
+    /**
+     * Real AIP content checksum, computed once all associated files are stored
+     */
+    @Column(name = "checksum", length = SIPEntity.CHECKSUM_MAX_LENGTH)
+    private String checksum;
 
     public Long getId() {
         return id;
@@ -121,14 +124,6 @@ public class AIPEntity extends OAISEntity {
         this.aip = aip;
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
     public String getAipId() {
         return aipId;
     }
@@ -143,6 +138,14 @@ public class AIPEntity extends OAISEntity {
 
     public void setAipId(UniformResourceName aipId) {
         this.aipId = aipId.toString();
+    }
+
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
     }
 
     public static AIPEntity build(SIPEntity sip, AIPState state, AIP aip) {

@@ -18,34 +18,28 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
 import java.util.Set;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
- * JPA Repository to manage {@link IngestProcessingChain} entities.
- * @author Sébastien Binda
+ * JPA {@link Specification} to define {@link Predicate}s for criteria search for {@link IngestRequest} from repository.
+ * @author Léo Mieulet
  */
-public final class IngestProcessingChainSpecifications {
+public class IngestRequestSpecifications {
 
-    private static final String LIKE_CHAR = "%";
-
-    private IngestProcessingChainSpecifications() {
-    }
-
-    /**
-     * Filter on the given attributes
-     */
-    public static Specification<IngestProcessingChain> search(String name) {
+    public static Specification<IngestRequest> searchByRemoteStepId(String remoteStepGroupId) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            if (name != null) {
-                predicates.add(cb.like(root.get("name"), LIKE_CHAR + name + LIKE_CHAR));
-            }
+            Path<Object> attributeRequeted = root.get("remoteStepGroupIds");
+            predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingElements(attributeRequeted,
+                    Lists.newArrayList(remoteStepGroupId), cb));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
-
 }

@@ -70,11 +70,11 @@ public class SessionDeletionRequest extends AbstractRequest {
     private String session;
 
     @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_MODE)
-    @Column(length = 20, name = "deletion_mode", nullable = false)
+    @Column(name = "deletion_mode", nullable = false)
     private SessionDeletionMode deletionMode;
 
     @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_SELECTION_MODE)
-    @Column(length = 20, name = "selection_mode", nullable = false)
+    @Column(name = "selection_mode", nullable = false)
     private SessionDeletionSelectionMode selectionMode;
 
     /**

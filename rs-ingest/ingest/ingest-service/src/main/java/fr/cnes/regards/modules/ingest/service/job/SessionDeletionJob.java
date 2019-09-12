@@ -55,7 +55,7 @@ import org.springframework.data.domain.Sort;
 /**
  * This job handles session deletion requests
  *
- * @author Marc SORDI
+ * @author Léo Mieulet
  */
 public class SessionDeletionJob extends AbstractJob<Void> {
 
@@ -107,38 +107,30 @@ public class SessionDeletionJob extends AbstractJob<Void> {
     public void run() {
         Pageable pageRequest = PageRequest.of(0, sipIterationLimit, Sort.Direction.ASC, "id");
         boolean removeIrrevocably = deletionRequest.getDeletionMode() == SessionDeletionMode.IRREVOCABLY;
-        List<SIPState> states = null;
-        if (!removeIrrevocably) {
-            // If the job is doing a soft removal, we can add this filter to the query
-            states = new ArrayList<>(Arrays.asList(SIPState.INGESTED));
-        }
+        List<SIPState> states = new ArrayList<>(Arrays.asList(SIPState.INGESTED, SIPState.STORED));
 
         Page<SIPEntity> sipsPage;
 
         do {
+            // Page request isn't modified as the state of entities are modified
             sipsPage = sipRepository
                     .loadAll(
                             SIPEntitySpecifications.search(deletionRequest.getProviderIds(),
                                     deletionRequest.getSipIds(), deletionRequest.getSessionOwner(),
                                     deletionRequest.getSession(), null, states, null,
                                     deletionRequest.getSelectionMode() == SessionDeletionSelectionMode.INCLUDE,
-                                    null, null, null),
+                                    null, null, null, pageRequest),
                             pageRequest);
             // Save number of pages to publish job advancement
             if (totalPages < sipsPage.getTotalPages()) {
                 totalPages = sipsPage.getTotalPages();
             }
             sipsPage.forEach(sip -> {
-                // Ask for SIP, AIP and files deletion
-                RejectedSipDto rejectedSip = sipService.deleteSIPEntity(sip, removeIrrevocably);
-                if (rejectedSip == null) {
-                    notifySipProperlyDeleted(sip);
-                } else {
-                    notifySipError(sip, rejectedSip);
-                }
+                // Mark SIP and AIP deleted
+                // Send events for files deletion
+                sipService.scheduleDeletion(sip, deletionRequest.getDeletionMode());
             });
             advanceCompletion();
-            pageRequest = sipsPage.nextPageable();
         } while (sipsPage.hasNext());
     }
 

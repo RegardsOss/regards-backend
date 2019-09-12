@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.dto.request;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import java.util.UUID;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -63,19 +65,21 @@ public class SessionDeletionRequestDto {
     /**
      * Build a new session deletion request
      */
-    public static SessionDeletionRequestDto build(String requestId, String sessionOwner, String session,
+    public static SessionDeletionRequestDto build(String sessionOwner, String session,
             SessionDeletionMode deletionMode, SessionDeletionSelectionMode selectionMode) {
-        Assert.notNull(requestId, IngestValidationMessages.MISSING_REQUEST_ID);
         Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
         Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION);
         Assert.notNull(deletionMode, IngestValidationMessages.MISSING_SESSION_DELETION_MODE);
         Assert.notNull(selectionMode, IngestValidationMessages.MISSING_SESSION_DELETION_SELECTION_MODE);
 
         SessionDeletionRequestDto item = new SessionDeletionRequestDto();
+        item.setRequestId(UUID.randomUUID().toString());
         item.setSessionOwner(sessionOwner);
         item.setSession(session);
         item.setDeletionMode(deletionMode);
         item.setSelectionMode(selectionMode);
+        item.setSipIds(new ArrayList<>());
+        item.setProviderIds(new ArrayList<>());
         return item;
     }
 

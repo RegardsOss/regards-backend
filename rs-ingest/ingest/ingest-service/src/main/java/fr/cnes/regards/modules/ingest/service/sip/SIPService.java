@@ -18,13 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip;
 
+import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.request.StorageDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,8 +46,6 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
-import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
-import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
@@ -71,6 +71,9 @@ public class SIPService implements ISIPService {
     private ISIPRepository sipRepository;
 
     @Autowired
+    private IStorageDeletionRequestRepository storageDeletionRequest;
+
+    @Autowired
     private IAIPService aipService;
 
     @Autowired
@@ -82,12 +85,12 @@ public class SIPService implements ISIPService {
         return sipRepository
                 .loadAll(SIPEntitySpecifications.search(providerId == null ? null : Lists.newArrayList(providerId),
                                                         null, sessionOwner, session, from, state, ingestChain,
-                        true, null, null, null),
+                        true, null, null, null, page),
                          page);
     }
 
     @Override
-    public SIPEntity getSIPEntity(UniformResourceName sipId) throws EntityNotFoundException {
+    public SIPEntity getEntity(String sipId) throws EntityNotFoundException {
         Optional<SIPEntity> sipEntity = sipRepository.findOneBySipId(sipId.toString());
         if (sipEntity.isPresent()) {
             return sipEntity.get();
@@ -97,25 +100,28 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public RejectedSipDto deleteSIPEntity(SIPEntity sipEntity, boolean removeIrrevocably) {
-        RejectedSipDto rejectedSipDto = null;
-        // Remove all files and AIP related to this SIP
-        Collection<RejectedAipDto> rejectedAips = aipService.deleteAip(sipEntity.getSipId());
-        // Check if all linked AIPs have been removed
-        if (rejectedAips.isEmpty()) {
-            if (removeIrrevocably) {
-                // Completely remove this entity from DB
-                sipRepository.delete(sipEntity);
-                // Notify the entity does not exist anymore
-            } else {
-                sipEntity.setState(SIPState.DELETED);
-                saveSIPEntity(sipEntity);
-            }
+    public void scheduleDeletion(SIPEntity sipEntity, SessionDeletionMode deletionMode) {
+        // Update AIPs state as deleted and retrieve events to delete associated files and AIPs
+        String deleteRequestId = aipService.scheduleAIPEntityDeletion(sipEntity.getSipId());
+
+        sipEntity.setState(SIPState.DELETED);
+        save(sipEntity);
+
+        // Save the request id sent to storage
+        StorageDeletionRequest sdr = StorageDeletionRequest.build(deleteRequestId, sipEntity.getSipId(), deletionMode);
+        storageDeletionRequest.save(sdr);
+
+        sessionNotifier.notifySIPDeleting(sipEntity);
+    }
+
+    @Override
+    public void deleteIrrevocably(String sipId) {
+        Optional<SIPEntity> optionalSIPEntity = sipRepository.findOneBySipId(sipId);
+        if (optionalSIPEntity.isPresent()) {
+            SIPEntity sipEntity = optionalSIPEntity.get();
             sessionNotifier.notifySIPDeleted(sipEntity);
-        } else {
-            // TODO collect errors (files not yet stored, etc..)
+            sipRepository.delete(sipEntity);
         }
-        return rejectedSipDto;
     }
 
     @Override
@@ -124,11 +130,11 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public SIPEntity saveSIPEntity(SIPEntity sip) {
-        // do save SIP
+    public SIPEntity save(SIPEntity sip) {
+        // update last update
         sip.setLastUpdate(OffsetDateTime.now());
-        SIPEntity savedSip = sipRepository.save(sip);
-        return savedSip;
+        // save
+        return sipRepository.save(sip);
     }
 
     @Override

@@ -64,6 +64,10 @@ public abstract class OAISEntity {
     @Column(name = "last_update", nullable = false)
     private OffsetDateTime lastUpdate;
 
+    @Column(columnDefinition = "jsonb", name = "errors")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    private Set<String> errors;
+
     public OffsetDateTime getCreationDate() {
         return creationDate;
     }
@@ -102,5 +106,13 @@ public abstract class OAISEntity {
 
     public void setIngestMetadata(IngestMetadata ingestMetadata) {
         this.ingestMetadata = ingestMetadata;
+    }
+
+    public Set<String> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(Set<String> errors) {
+        this.errors = errors;
     }
 }

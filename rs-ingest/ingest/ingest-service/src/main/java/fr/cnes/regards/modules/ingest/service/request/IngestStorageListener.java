@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import java.util.Collection;
 
 import org.slf4j.Logger;
@@ -27,7 +29,6 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.storagelight.client.IStorageRequestListener;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestEvent.ErrorFile;
 
 /**
  * This class offers callbacks from storage events
@@ -43,44 +44,57 @@ public class IngestStorageListener implements IStorageRequestListener {
     @Autowired
     private IIngestRequestService ingestRequestService;
 
+    @Autowired
+    private IDeleteRequestService deleteRequestService;
+
     @Override
-    public void onCopySuccess(RequestInfo request) {
+    public void onCopySuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
         // Nothing to do
     }
 
     @Override
-    public void onCopyError(RequestInfo request, Collection<ErrorFile> errors) {
+    public void onCopyError(RequestInfo request, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
         // Nothing to do
     }
 
     @Override
-    public void onAvailable(RequestInfo request) {
+    public void onAvailable(RequestInfo request, Collection<RequestResultInfoDTO> success) {
         // Nothing to do
     }
 
     @Override
-    public void onAvailabilityError(RequestInfo request, Collection<ErrorFile> errors) {
+    public void onAvailabilityError(RequestInfo request, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
         // Nothing to do
     }
 
     @Override
-    public void onDeletionSuccess(RequestInfo request) {
-        // TODO Léo
+    public void onDeletionSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
+        deleteRequestService.handleRemoteDeleteSuccess(request, success);
     }
 
     @Override
-    public void onDeletionError(RequestInfo request, Collection<ErrorFile> errors) {
-        // TODO Léo
+    public void onDeletionError(RequestInfo request, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
+        deleteRequestService.handleRemoteDeleteError(request, success, errors);
     }
 
     @Override
-    public void onReferenceSuccess(RequestInfo request) {
-        // Nothing to do
+    public void onReferenceSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
+        ingestRequestService.handleRemoteStoreSuccess(request, success, FileRequestType.REFERENCE);
     }
 
     @Override
-    public void onReferenceError(RequestInfo request, Collection<ErrorFile> errors) {
-        // Nothing to do
+    public void onReferenceError(RequestInfo request, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
+        ingestRequestService.handleRemoteStoreError(request, success, errors, FileRequestType.REFERENCE);
+    }
+
+    @Override
+    public void onStoreSuccess(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success) {
+        ingestRequestService.handleRemoteStoreSuccess(requestInfo, success, FileRequestType.STORAGE);
+    }
+
+    @Override
+    public void onStoreError(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
+        ingestRequestService.handleRemoteStoreError(requestInfo, success, errors, FileRequestType.STORAGE);
     }
 
     @Override
@@ -92,15 +106,4 @@ public class IngestStorageListener implements IStorageRequestListener {
     public void onRequestDenied(RequestInfo requestInfo) {
         ingestRequestService.handleRemoteRequestDenied(requestInfo);
     }
-
-    @Override
-    public void onStoreSuccess(RequestInfo requestInfo) {
-        ingestRequestService.handleRemoteStoreSuccess(requestInfo);
-    }
-
-    @Override
-    public void onStoreError(RequestInfo requestInfo, Collection<ErrorFile> errors) {
-        ingestRequestService.handleRemoteStoreError(requestInfo, errors);
-    }
-
 }

@@ -218,7 +218,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(SIPState.INGESTED, resultSip.getState());
         Assert.assertEquals(PROCESSING_CHAIN_TEST, resultSip.getIngestMetadata().getIngestChain());
 
-        Set<AIPEntity> resultAips = aipRepository.findBySip(resultSip);
+        Set<AIPEntity> resultAips = aipRepository.findBySipSipId(resultSip.getSipId());
         Assert.assertNotNull(resultAips);
         Assert.assertTrue(resultAips.size() == 1);
         AIPEntity resultAip = resultAips.stream().findFirst().get();

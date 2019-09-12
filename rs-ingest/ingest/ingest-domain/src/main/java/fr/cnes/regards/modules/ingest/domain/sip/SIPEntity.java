@@ -73,12 +73,12 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class SIPEntity extends OAISEntity {
 
+
     /**
      * Length used as the checksum column definition.
      * Why 128? it allows to use sha-512. That should limit issues with checksum length for a few years
      */
     public static final int CHECKSUM_MAX_LENGTH = 128;
-
     public static final int MAX_URN_SIZE = 128;
 
     @Id

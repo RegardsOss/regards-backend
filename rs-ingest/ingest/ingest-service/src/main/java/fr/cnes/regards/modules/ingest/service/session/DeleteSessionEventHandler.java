@@ -67,7 +67,7 @@ public class DeleteSessionEventHandler implements ApplicationListener<Applicatio
         runtimeTenantResolver.forceTenant(wrapper.getTenant());
         // Run a SessionDeletionJob
         ingestService.registerSessionDeletionRequest(SessionDeletionRequestDto.build(
-                UUID.randomUUID().toString(), event.getSource(), event.getName(),
+                event.getSource(), event.getName(),
                 SessionDeletionMode.IRREVOCABLY, SessionDeletionSelectionMode.INCLUDE
         ));
     }

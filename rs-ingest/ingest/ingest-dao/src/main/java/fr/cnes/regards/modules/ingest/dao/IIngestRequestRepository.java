@@ -18,20 +18,20 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import java.util.Collection;
 import java.util.List;
-
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 
 /**
  * {@link IngestRequest} repository
@@ -69,13 +69,37 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
     List<IngestRequest> findByIdIn(Collection<Long> ids);
 
     /**
-     * Load request and its related AIPs
+     * Find request by remote group id (i.e. remote request id) and retrieve linked AIPs
      */
-    @EntityGraph(attributePaths = "aips")
-    IngestRequest findAllByRemoteStepGroupId(String groupId);
+    default Optional<IngestRequest> findOneWithAIPs(String remoteStepGroupId) {
+        List<IngestRequest> ingestRequests = findAll(IngestRequestSpecifications.searchByRemoteStepId(remoteStepGroupId));
+        Optional<IngestRequest> result = Optional.empty();
+        if (!ingestRequests.isEmpty()) {
+            result = Optional.ofNullable(ingestRequests.get(0));
+        }
+        return result;
+    }
 
     /**
      * Find request by remote group id (i.e. remote request id)
      */
-    IngestRequest findByRemoteStepGroupId(String groupId);
+    default Optional<IngestRequest> findOne(String remoteStepGroupId) {
+        List<IngestRequest> ingestRequests = findOne(IngestRequestSpecifications.searchByRemoteStepId(remoteStepGroupId));
+        Optional<IngestRequest> result = Optional.empty();
+        if (!ingestRequests.isEmpty()) {
+            result = Optional.ofNullable(ingestRequests.get(0));
+        }
+        return result;
+    }
+
+    /**
+     * Internal method used to retrieve IngestRequest using a specification with linked AIPs
+     */
+    @EntityGraph(attributePaths = "aips")
+    List<IngestRequest> findAll(Specification<IngestRequest> spec);
+
+    /**
+     * Internal method used to retrieve IngestRequest using a specification
+     */
+    List<IngestRequest> findOne(Specification<IngestRequest> spec);
 }

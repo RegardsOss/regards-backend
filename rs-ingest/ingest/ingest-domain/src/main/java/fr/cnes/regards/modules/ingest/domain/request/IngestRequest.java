@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request;
 
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +43,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -65,7 +67,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
         indexes = { @Index(name = "idx_ingest_request_id", columnList = "request_id"),
                 @Index(name = "idx_ingest_request_step", columnList = "step"),
                 @Index(name = "idx_ingest_remote_step_deadline", columnList = "remote_step_deadline"),
-                @Index(name = "idx_ingest_request_remote_step_group_id", columnList = "remote_step_group_id"),
+                @Index(name = "idx_ingest_request_remote_step_group_ids", columnList = "remote_step_group_ids"),
                 @Index(name = "idx_ingest_request_state", columnList = "state") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_ingest_request_id", columnNames = { "request_id" }) })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
@@ -97,8 +99,9 @@ public class IngestRequest extends AbstractRequest {
     /**
      * Remote request group id
      */
-    @Column(name = "remote_step_group_id", length = 36)
-    private String remoteStepGroupId;
+    @Column(columnDefinition = "jsonb", name = "remote_step_group_ids")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    private List<String> remoteStepGroupIds;
 
     @Column(columnDefinition = "jsonb", name = "rawsip")
     @Type(type = "jsonb")
@@ -107,7 +110,7 @@ public class IngestRequest extends AbstractRequest {
     /**
      * The {@link List} of files to build a product
      */
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "t_ingest_request_aip", joinColumns = @JoinColumn(name = "ingest_request_id"),
             inverseJoinColumns = @JoinColumn(name = "aip_id"),
             uniqueConstraints = {
@@ -171,12 +174,12 @@ public class IngestRequest extends AbstractRequest {
         return remoteStepDeadline;
     }
 
-    public String getRemoteStepGroupId() {
-        return remoteStepGroupId;
+    public List<String> getRemoteStepGroupIds() {
+        return remoteStepGroupIds;
     }
 
-    public void setRemoteStepGroupId(String remoteStepGroupId) {
-        this.remoteStepGroupId = remoteStepGroupId;
+    public void setRemoteStepGroupIds(List<String> remoteStepGroupIds) {
+        this.remoteStepGroupIds = remoteStepGroupIds;
     }
 
     public List<AIPEntity> getAips() {

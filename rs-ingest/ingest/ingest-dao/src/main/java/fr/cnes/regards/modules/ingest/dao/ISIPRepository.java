@@ -19,13 +19,14 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPIdNProcessing;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -37,9 +38,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import fr.cnes.regards.modules.ingest.domain.sip.SIPIdNProcessing;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
 /**
  * {@link SIPEntity} repository
@@ -166,6 +164,8 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      */
     Long countByChecksum(String checksum);
 
+    long countByState(SIPState sipState);
+
     /**
      * Get next version of the SIP identified by provider id
      * @param providerId provider id
@@ -206,4 +206,5 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     }
 
     List<SIPEntity> findAllByIdIn(List<Long> ingestProcChainIds, Sort sort);
+
 }

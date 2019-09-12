@@ -16,34 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.sip;
+package fr.cnes.regards.modules.ingest.dao;
+
+import fr.cnes.regards.modules.ingest.domain.request.StorageDeletionRequest;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * SIP lifecycle
+ * {@link StorageDeletionRequest} repository
  *
- * @author Marc Sordi
+ * @author Léo Mieulet
+ *
  */
-public enum SIPState implements ISipState {
-
-    /**
-     * SIP has been properly ingested
-     */
-    INGESTED,
-    /**
-     * SIP has been properly stored
-     */
-    STORED,
-    /**
-     * SIP is deleted but we still keep it in database
-     */
-    DELETED,
-    /**
-     * SIP has encountered an issue
-     */
-    ERROR;
-
-    @Override
-    public String getName() {
-        return this.name();
-    }
+public interface IStorageDeletionRequestRepository extends JpaRepository<StorageDeletionRequest, Long> {
+    Optional<StorageDeletionRequest> findOneByRequestId(String requestId);
 }

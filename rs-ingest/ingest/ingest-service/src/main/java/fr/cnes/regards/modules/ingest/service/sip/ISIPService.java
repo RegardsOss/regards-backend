@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.sip;
 
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
@@ -29,13 +30,13 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
  * @author Sébastien Binda
+ * @author Léo Mieulet
  */
 public interface ISIPService {
 
@@ -45,7 +46,7 @@ public interface ISIPService {
     boolean validatedVersionExists(String providerId);
 
     /**
-     * Retrieve all {@link SIPEntity}s matching the parameters. SIPs are ordered by {@link SIPEntity#getIngestDate()}
+     * Retrieve all {@link SIPEntity}s matching parameters.
      */
     Page<SIPEntity> search(String providerId, String sessionOwner, String session, OffsetDateTime from,
             List<SIPState> state, String ingestChain, Pageable page);
@@ -53,22 +54,28 @@ public interface ISIPService {
     /**
      * Retrieve one {@link SIPEntity} for the given sipId
      */
-    SIPEntity getSIPEntity(UniformResourceName sipId) throws EntityNotFoundException;
+    SIPEntity getEntity(String sipId) throws EntityNotFoundException;
 
     /**
-     * Delete all {@link SIPEntity} for the given provider id
-     * @param sipEntity
-     * @param removeIrrevocably
-     * @return rejected or undeletable {@link SIPEntity}s
+     * Mark provided {@link SIPEntity} and all linked {@link fr.cnes.regards.modules.ingest.domain.aip.AIPEntity}
+     * as deleted. This methods also send events to remove all files linked to these AIPs
+     * @param sipEntity entity to remove
+     * @param removeIrrevocably mode of removal
      */
-    RejectedSipDto deleteSIPEntity(SIPEntity sipEntity, boolean removeIrrevocably);
+    void scheduleDeletion(SIPEntity sipEntity, SessionDeletionMode removeIrrevocably);
 
     /**
-     * Save the given {@link SIPEntity} in DAO, update the associated session and publish a change event
+     * Delete the SIPEntity using its {@link SIPEntity#getSipId()}.
+     * @param sipId
+     */
+    void deleteIrrevocably(String sipId);
+
+    /**
+     * Update the last update date of the {@link SIPEntity} and save it in DAO,
      * @param sip {@link SIPEntity} to update
      * @return {@link SIPEntity} updated
      */
-    SIPEntity saveSIPEntity(SIPEntity sip);
+    SIPEntity save(SIPEntity sip);
 
     /**
      * Compute checksum for current SIP using {@link SIPService#MD5_ALGORITHM}
@@ -76,7 +83,7 @@ public interface ISIPService {
     String calculateChecksum(SIP sip) throws NoSuchAlgorithmException, IOException;
 
     /**
-     * Check if current checksum already stored
+     * @return true if a {@link SIPEntity} with provided checksum is already stored
      */
     boolean isAlreadyIngested(String checksum);
 

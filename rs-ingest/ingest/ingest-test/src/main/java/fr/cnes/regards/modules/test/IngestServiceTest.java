@@ -29,12 +29,14 @@ import fr.cnes.regards.modules.ingest.client.IngestRequestEventHandler;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -93,6 +95,9 @@ public class IngestServiceTest {
                 amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(IngestRequestEventHandler.class,
                         Target.ONE_PER_MICROSERVICE_TYPE),
                         false);
+
+            } catch(AmqpIOException e) {
+                //todo
             } finally {
                 vhostAdmin.unbind();
             }
@@ -103,19 +108,28 @@ public class IngestServiceTest {
     public void waitForIngestion(long expectedSips) {
         waitForIngestion(expectedSips, expectedSips * 1000);
     }
-        /**
-         * Helper method to wait for SIP ingestion
-         * @param expectedSips expected count of sips in database
-         * @param timeout in ms
-         * @throws InterruptedException
-         */
-    public void waitForIngestion(long expectedSips, long timeout) {
 
+
+    public void waitForIngestion(long expectedSips, long timeout) {
+        waitForIngestion(expectedSips, timeout, null);
+    }
+
+    /**
+     * Helper method to wait for SIP ingestion
+     * @param expectedSips expected count of sips in database
+     * @param timeout in ms
+     * @throws InterruptedException
+     */
+    public void waitForIngestion(long expectedSips, long timeout, SIPState sipState) {
         long end = System.currentTimeMillis() + timeout;
         // Wait
         long sipCount;
         do {
-            sipCount = sipRepository.count();
+            if (sipState != null) {
+                sipCount = sipRepository.countByState(sipState);
+            } else {
+                sipCount = sipRepository.count();
+            }
             LOGGER.debug("{} SIP(s) created in database", sipCount);
             if (sipCount == expectedSips) {
                 break;

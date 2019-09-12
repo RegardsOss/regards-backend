@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -38,8 +39,6 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-
-import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -62,7 +61,6 @@ import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
  * @author Sébastien Binda
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest" })
-@ActiveProfiles("StorageClientMock")
 public class IngestServiceIT extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
@@ -161,9 +159,15 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         ingestSIP(providerId, "yaasfsdfsdlfkmsldgfml12df");
         ingestServiceTest.waitForIngestion(2, TEN_SECONDS);
 
-        // Check no request remains
+        // Check remove storage requested
         List<IngestRequest> requests = ingestRequestRepository.findAll();
-        Assert.assertTrue(requests.isEmpty());
+        int nbStorageRequested = 0;
+        for (IngestRequest ir : requests) {
+            if (ir.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
+                nbStorageRequested = nbStorageRequested + 1;
+            }
+        }
+        Assert.assertTrue(nbStorageRequested == requests.size());
 
         // Check two versions of the SIP is persisted
         Collection<SIPEntity> sips = sipRepository.findAllByProviderIdOrderByVersionAsc(providerId);

@@ -19,12 +19,15 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import javax.persistence.criteria.Predicate;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
@@ -33,12 +36,6 @@ import org.springframework.data.jpa.domain.Specification;
  * @author Léo Mieulet
  */
 public final class SIPEntitySpecifications {
-
-    private static final String LIKE_CHAR = "%";
-
-    private SIPEntitySpecifications() {
-    }
-
     /**
      * Filter on the given attributes and return result ordered by descending
      * ingestDate
@@ -50,11 +47,11 @@ public final class SIPEntitySpecifications {
      * @param states list of states
      * @param ingestChain name of the chain
      * @param areIdListInclusive true when sipIds and providerIds should be include in the request, otherwise these
-     *                         lists would rather remove entries from returning result
+     * @param page
      */
     public static Specification<SIPEntity> search(List<String> providerIds, List<String> sipIds, String sessionOwner, String session,
             OffsetDateTime from, List<SIPState> states, String ingestChain, boolean areIdListInclusive,
-            List<String> tags, List<String> storages, List<String> categories) {
+            List<String> tags, List<String> storages, List<String> categories, Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (states != null && !states.isEmpty()) {
@@ -68,7 +65,7 @@ public final class SIPEntitySpecifications {
                 Set<Predicate> providerIdPredicates = Sets.newHashSet();
                 for (String providerId : providerIds) {
                     // Use the like operator only if the providerId contains a % directly in the chain
-                    if (providerId.startsWith(LIKE_CHAR) || providerId.endsWith(LIKE_CHAR)) {
+                    if (providerId.startsWith(SpecificationUtils.LIKE_CHAR) || providerId.endsWith(SpecificationUtils.LIKE_CHAR)) {
                         if (areIdListInclusive) {
                             providerIdPredicates.add(cb.like(root.get("providerId"), providerId));
                         } else {
@@ -105,9 +102,14 @@ public final class SIPEntitySpecifications {
             predicates.addAll(OAISEntitySpecification.buildCommonPredicate(root, cb, tags,
                     sessionOwner, session, null, storages, categories));
 
-            query.orderBy(cb.desc(root.get("lastUpdate")));
+            // Add order
+            Sort.Direction defaultDirection = Sort.Direction.ASC;
+            String defaultAttribute = "creationDate";
+            query.orderBy(SpecificationUtils.buildOrderBy(page, root, cb, defaultAttribute, defaultDirection));
+
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
+
 
 }

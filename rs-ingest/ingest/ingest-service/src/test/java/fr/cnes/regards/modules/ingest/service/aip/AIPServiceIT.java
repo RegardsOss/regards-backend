@@ -141,12 +141,12 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(3, results.getTotalElements());
 
 
-        results = aipService.search(AIPState.CREATED, null, null, null, null,
+        results = aipService.search(AIPState.GENERATED, null, null, null, null,
                 null, null, null, null, PageRequest.of(0, 100));
         Assert.assertEquals(7, results.getTotalElements());
 
 
-        results = aipService.search(AIPState.CREATED, OffsetDateTime.now().minusHours(5), OffsetDateTime.now().plusDays(5), TAG_1, SESSION_OWNER_1,
+        results = aipService.search(AIPState.GENERATED, OffsetDateTime.now().minusHours(5), OffsetDateTime.now().plusDays(5), TAG_1, SESSION_OWNER_1,
                 SESSION_1, null, Lists.newArrayList(STORAGE_2), CATEGORIES_2, PageRequest.of(0, 100));
         Assert.assertEquals(1, results.getTotalElements());
     }

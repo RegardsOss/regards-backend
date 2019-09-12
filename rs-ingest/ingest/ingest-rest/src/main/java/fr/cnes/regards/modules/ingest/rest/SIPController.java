@@ -185,7 +185,7 @@ public class SIPController implements IResourceController<SIPEntity> {
     @RequestMapping(value = SIPID_PATH, method = RequestMethod.GET)
     public ResponseEntity<Resource<SIPEntity>> getSipEntity(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
             throws ModuleException {
-        SIPEntity sip = sipService.getSIPEntity(UniformResourceName.fromString(sipId));
+        SIPEntity sip = sipService.getEntity(sipId);
         return new ResponseEntity<>(toResource(sip), HttpStatus.OK);
     }
 

@@ -19,6 +19,8 @@
 
 package fr.cnes.regards.modules.ingest.domain.aip;
 
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+
 /**
  * AIP lifecycle
  *
@@ -36,5 +38,9 @@ public enum AIPState {
     /**
      * AIP is deleted but we still keep it in database
      */
-    DELETED;
+    DELETED,
+    /**
+     * AIP has encountered an issue
+     */
+    ERROR;
 }

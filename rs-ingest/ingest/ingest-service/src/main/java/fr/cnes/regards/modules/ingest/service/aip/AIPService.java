@@ -18,26 +18,22 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
-import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ingest.dao.AIPSpecification;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
+import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.dto.RejectedAipDto;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -60,7 +56,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 
@@ -71,13 +66,10 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileStorageRequestDTO;
 
 /**
  * AIP service management
@@ -105,6 +97,12 @@ public class AIPService implements IAIPService {
     private IAIPRepository aipRepository;
 
     @Autowired
+    private IStorageClient storageClient;
+
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
+    @Autowired
     private Gson gson;
 
     @Override
@@ -118,21 +116,18 @@ public class AIPService implements IAIPService {
 
     @Override
     public AIPEntity save(AIPEntity entity) {
+        entity.setLastUpdate(OffsetDateTime.now());
         return aipRepository.save(entity);
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.ingest.service.aip.IAIPService#buildAIPStorageRequest(fr.cnes.regards.modules.ingest.dto.aip.AIP)
-     */
-    public Collection<FileStorageRequestDTO> buildAIPStorageRequest(AIP aip, List<StorageMetadata> storages)
+
+    public Collection<FileStorageRequestDTO> buildAIPStorageRequest(AIP aip, String checksum, List<StorageMetadata> storages)
             throws ModuleException {
 
         // Build file storage requests
         Collection<FileStorageRequestDTO> files = new ArrayList<>();
 
         try {
-            // Compute checksum
-            String checksum = calculateChecksum(aip);
 
             // Build origin(s) URL
             URL originUrl = new URI(confProperties.getAipDownloadTemplate()
@@ -142,10 +137,10 @@ public class AIPService implements IAIPService {
             for (StorageMetadata storage : storages) {
                 files.add(FileStorageRequestDTO.build(aip.getId().toString(), checksum, MD5_ALGORITHM,
                                                       MediaType.APPLICATION_JSON_UTF8_VALUE, aip.getId().toString(),
-                                                      originUrl, storage.getStorage(),
+                                                      originUrl.toString(), storage.getStorage(),
                                                       Optional.ofNullable(storage.getStorePath())));
             }
-        } catch (URISyntaxException | NoSuchAlgorithmException | IOException e) {
+        } catch (URISyntaxException | IOException e) {
             String message = String.format("Error with building storage request for AIP %s", aip.getId());
             LOGGER.error(message, e);
             throw new ModuleException(message, e);
@@ -155,18 +150,22 @@ public class AIPService implements IAIPService {
     }
 
     private String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException {
-        try (PipedInputStream in = new PipedInputStream(); PipedOutputStream out = new PipedOutputStream(in)) {
-            writeAip(aip, out);
-            return ChecksumUtils.computeHexChecksum(in, MD5_ALGORITHM);
-        }
+        // TODO @msordi si t'as des idées
+//        try (PipedInputStream in = new PipedInputStream(); PipedOutputStream out = new PipedOutputStream(in)) {
+//            writeAip(aip, out);
+//            return ChecksumUtils.computeHexChecksum(in, MD5_ALGORITHM);
+//        }
+        String jsonSip = gson.toJson(aip);
+        InputStream inputStream = new ByteArrayInputStream(jsonSip.getBytes());
+        return ChecksumUtils.computeHexChecksum(inputStream, MD5_ALGORITHM);
     }
 
     @Override
     public Page<AIPEntity> search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, String sessionOwner,
             String session, String providerId, List<String> storages, List<String> categories, Pageable pageable) {
 
-        return aipRepository.findAll(AIPSpecification.searchAll(state, from, to, tags, sessionOwner, session,
-                providerId, storages, categories), pageable);
+        return aipRepository.findAll(AIPEntitySpecification.searchAll(state, from, to, tags, sessionOwner, session,
+                providerId, storages, categories, pageable), pageable);
     }
 
     public void downloadAIP(UniformResourceName aipId, HttpServletResponse response) throws ModuleException {
@@ -199,11 +198,12 @@ public class AIPService implements IAIPService {
     /**
      * Write AIP in specified {@link OutputStream}
      */
-    private void writeAip(AIP aip, OutputStream out) throws UnsupportedEncodingException, IOException {
-        try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, UTF8_ENCODING))) {
+    private void writeAip(AIP aip, OutputStream out) throws IOException {
+//        try () {
+            JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, UTF8_ENCODING));
             writer.setIndent(JSON_INDENT);
             gson.toJson(aip, AIP.class, writer);
-        }
+//        }
     }
 
     @Override
@@ -213,47 +213,83 @@ public class AIPService implements IAIPService {
         if (oAip.isPresent()) {
             AIPEntity aip = oAip.get();
             aip.setState(state);
-            aip.setErrorMessage(null);
+            aip.setErrors(null);
             aipRepository.save(aip);
         }
     }
 
 
     @Override
-    public Collection<RejectedAipDto> deleteAip(String sipId) {
-        Set<RejectedAipDto> undeletableAips = Sets.newHashSet();
+    public String scheduleAIPEntityDeletion(String sipId) {
+        List<FileDeletionRequestDTO> filesToDelete = new ArrayList<>();
 
         // Retrieve all AIP relative to this SIP id
         Set<AIPEntity> aipsRelatedToSip = aipRepository.findBySipSipId(sipId);
-        // For each AIP,
-        //      notify storage to delete related files
-        //      mark the entity as TO_BE_DELETED
-        for (AIPEntity aip : aipsRelatedToSip) {
-            if (aip.getState() == AIPState.STORED) {
-                // TODO
-                //                FileDeletionRequestDTO toDelete = FileDeletionRequestDTO.build("cheksum", "storage", "owner", false);
-                //                RequestInfo delete = storageClient.delete(toDelete);
-                //                String groupId = delete.getGroupId();
-                //                // TODO send event to delete on storage
 
-                // TODO save inside a DB table this entity will be removed (keep removeIrrevocably too)
-                // And listen for events from storage for this entity
-                //                aip.setState(AIPState.TO_BE_DELETED);
-                aipRepository.save(aip);
-            } else {
-                // We had this condition on those state here and not into #isDeletableWithAIPs because we just want to be silent.
-                // Indeed, if we ask for deletion of an already deleted or being deleted SIP that just mean there is less work to do this time.
-                String errorMsg = String.format("AIPEntity with state %s is not deletable", aip.getState());
-                undeletableAips.add(RejectedAipDto.build(aip.getAipId(), errorMsg));
-                // TODO gérer le cas ou la suppression n'est pas aussi simple
+        for (AIPEntity aipEntity : aipsRelatedToSip) {
+            // Retrieve all files linked to this AIP
+            for (ContentInformation ci : aipEntity.getAip().getProperties().getContentInformations()) {
+                OAISDataObject dataObject = ci.getDataObject();
+                for (OAISDataObjectLocation location : dataObject.getLocations()) {
+                    if (location.getStorage() != null) {
+                        // Create the storage delete event
+                        filesToDelete.add(FileDeletionRequestDTO.build(dataObject.getChecksum(),
+                                location.getStorage(), aipEntity.getAipId(), false));
+                    }
+                }
             }
+
+            // Add the AIP itself (on each storage) to the file list to remove
+            for (StorageMetadata storage: aipEntity.getIngestMetadata().getStorages()) {
+                filesToDelete.add(FileDeletionRequestDTO.build(aipEntity.getChecksum(),
+                        storage.getStorage(), aipEntity.getAipId(), false));
+            }
+
+            // Mark the AIP as deleted
+            aipEntity.setState(AIPState.DELETED);
+            aipRepository.save(aipEntity);
         }
-        return undeletableAips;
+        // Mark this entity as deleting
+        sessionNotifier.notifyAIPDeleting(aipsRelatedToSip);
+
+        // Publish event to delete AIP files and AIPs itself
+        RequestInfo deleteRequestInfo = storageClient.delete(filesToDelete);
+        return deleteRequestInfo.getGroupId();
     }
 
     @Override
-    public Optional<AIPEntity> searchAip(UniformResourceName aipId) {
+    public void deleteIrrevocably(String sipId) {
+        // Retrieve all AIP relative to this SIP id
+        Set<AIPEntity> aipsRelatedToSip = aipRepository.findBySipSipId(sipId);
+
+        sessionNotifier.notifyAIPDeleted(aipsRelatedToSip);
+
+        // Delete them
+        aipRepository.deleteAll(aipsRelatedToSip);
+    }
+
+    @Override
+    public Optional<AIPEntity> getAip(UniformResourceName aipId) {
         return aipRepository.findByAipId(aipId.toString());
     }
+
+    @Override
+    public Set<AIPEntity> getAips(String sipId) {
+        return aipRepository.findBySipSipId(sipId);
+    }
+
+    @Override
+    public void computeAndSaveChecksum(AIPEntity aipEntity) throws ModuleException {
+        try {
+            String checksum = calculateChecksum(aipEntity.getAip());
+            aipEntity.setChecksum(checksum);
+            save(aipEntity);
+        } catch (IOException | NoSuchAlgorithmException e) {
+            String message = String.format("Failed to compute AIP checksum for AIP %s", aipEntity.getId());
+            LOGGER.error(message, e);
+            throw new ModuleException(message, e);
+        }
+    }
+
 
 }
