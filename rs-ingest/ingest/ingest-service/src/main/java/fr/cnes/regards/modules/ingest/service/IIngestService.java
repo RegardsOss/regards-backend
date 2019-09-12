@@ -21,13 +21,13 @@ package fr.cnes.regards.modules.ingest.service;
 import java.io.InputStream;
 import java.util.Collection;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.SIPCollection;
-import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
+import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionRequestDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
+import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 
 /**
  * Ingest service interface
@@ -38,36 +38,45 @@ import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 public interface IIngestService {
 
     /**
-     * Store SIP for further asynchronous processing
+     * Register and schedule ingest requests from flow items
+     * @param item flow items to register as ingest requests and to schedule as an ingestion job
+     */
+    Collection<IngestRequest> handleIngestRequests(Collection<IngestRequestFlowItem> items);
+
+    //    /**
+    //     * Redirect collection of SIP to data flow (REST to messages)
+    //     * @param sips raw {@link SIPCollection}
+    //     *
+    //     * Use {@link #handleSIPCollection(SIPCollection)} instead.
+    //     */
+    //    @Deprecated
+    //    RequestInfoDto redirectToDataflow(SIPCollection sips);
+
+    /**
+     * Handle SIP collection directly scheduling a generation job
      * @param sips raw {@link SIPCollection}
-     * @return SIP DTO
-     * @throws ModuleException if error occurs!
+     * @throws EntityInvalidException if max bulk size exceeded
      */
-    Collection<SIPDto> ingest(SIPCollection sips) throws ModuleException;
+    RequestInfoDto handleSIPCollection(SIPCollection sips) throws EntityInvalidException;
+
+    //    /**
+    //     * Redirect collection of SIP to data flow (REST to messages)
+    //     * @param input JSON file containing a SIP collection
+    //     *
+    //     * Use {@link #handleSIPCollection(InputStream)} instead.
+    //     */
+    //    @Deprecated
+    //    RequestInfoDto redirectToDataflow(InputStream input) throws ModuleException;
 
     /**
-     * Store SIP for further asynchronous processing
+     * Handle SIP collection directly scheduling a generation job
      * @param input JSON file containing a SIP collection
-     * @return SIP DTO
-     * @throws ModuleException if error occurs!
      */
-    Collection<SIPDto> ingest(InputStream input) throws ModuleException;
+    RequestInfoDto handleSIPCollection(InputStream input) throws ModuleException;
 
     /**
-     * Retry to store a SIP already submitted previously.
-     * @param sipId {@link String} ipId of the SIP to retry
-     * @return SIP DTO
-     * @throws ModuleException
+     * Register deletion request from flow item
+     * @param item flow item to register as deletion request
      */
-    SIPDto retryIngest(UniformResourceName sipId) throws ModuleException;
-
-    /**
-     * Check if the SIP with the given ipId is available for new ingestion submission
-     */
-    Boolean isRetryable(UniformResourceName sipId) throws EntityNotFoundException;
-
-    /**
-     * Store SIP received by HTTP bulk request or data flow
-     */
-    SIPDto store(SIP sip, IngestMetadata metadata, String owner, boolean publishRejected);
+    SessionDeletionRequestDto registerSessionDeletionRequest(SessionDeletionRequestDto request);
 }

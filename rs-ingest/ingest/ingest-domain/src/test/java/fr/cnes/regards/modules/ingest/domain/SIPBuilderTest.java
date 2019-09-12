@@ -18,9 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
+import com.google.common.collect.Sets;
 import java.nio.file.Paths;
 import java.util.List;
 
+import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,14 +33,18 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 
 /**
  * Test building, serializing and deserializing SIP feature.
@@ -53,6 +59,10 @@ public class SIPBuilderTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPBuilderTest.class);
 
+    private static final String CATEGORY = "category";
+
+    private static final Set<String> CATEGORIES = Sets.newHashSet(CATEGORY);
+
     @Autowired
     private Gson gson;
 
@@ -60,8 +70,9 @@ public class SIPBuilderTest {
     public void createSIPByValue() {
 
         // Ingestion metadata
-        String processingChain = "chain";
-        String sessionId = "firstSession";
+        String sessionOwner = "sessionOwner";
+        String session = "firstSession";
+        String ingestChain = "chain";
 
         String fileName = "test.xml";
         DataType dataType = DataType.RAWDATA;
@@ -69,20 +80,20 @@ public class SIPBuilderTest {
         String algorithm = "checksumAlgorithm";
 
         // Initialize a SIP Collection builder
-        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(processingChain, sessionId);
+        SIPCollection collection = SIPCollection.build(IngestMetadataDto.build(sessionOwner, session, ingestChain,
+                CATEGORIES, StorageMetadata.build("test", null)));
 
         // Create a SIP builder
         String providerId = "SIP_001";
-        SIPBuilder sipBuilder = new SIPBuilder(providerId);
+        SIP sip = SIP.build(EntityType.DATA, providerId);
 
         // Fill in required content information
-        sipBuilder.getContentInformationBuilder().setDataObject(dataType, Paths.get(fileName), algorithm, checksum);
-        sipBuilder.addContentInformation();
+        sip.withDataObject(dataType, Paths.get(fileName), algorithm, checksum);
+        sip.registerContentInformation();
 
         // Add SIP to its collection
-        collectionBuilder.add(sipBuilder.build());
+        collection.add(sip);
 
-        SIPCollection collection = collectionBuilder.build();
         String collectionString = gson.toJson(collection);
         LOGGER.debug(collectionString);
 
@@ -106,8 +117,6 @@ public class SIPBuilderTest {
 
         OAISDataObject dataObject = ciOne.getDataObject();
         Assert.assertEquals(dataType, dataObject.getRegardsDataType());
-        Assert.assertTrue(dataObject.getUrls().stream().map(url -> url.getPath())
-                .filter(path -> path.equals(Paths.get(fileName).toAbsolutePath().toString())).findFirst().isPresent());
         Assert.assertEquals(algorithm, dataObject.getAlgorithm());
         Assert.assertEquals(checksum, dataObject.getChecksum());
     }
@@ -116,8 +125,7 @@ public class SIPBuilderTest {
     public void createSIPByReference() {
 
         String providerId = "refSip";
-        SIPBuilder builder = new SIPBuilder(providerId);
-        SIP ref = builder.buildReference(Paths.get("ref.xml"), "algo", "123456789a");
+        SIP ref = SIP.buildReference(EntityType.DATA, providerId, Paths.get("ref.xml"), "algo", "123456789a");
 
         String refString = gson.toJson(ref);
         LOGGER.debug(refString);

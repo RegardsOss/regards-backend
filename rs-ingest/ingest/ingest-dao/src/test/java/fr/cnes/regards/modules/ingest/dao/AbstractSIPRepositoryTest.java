@@ -18,7 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.After;
@@ -27,18 +31,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
-import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPSessionBuilder;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:ingest_dao" })
 public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
+
+    private static final Set<String> CATEGORIES = Sets.newHashSet("CATEGORY");
 
     @BeforeTransaction
     public void beforeTransaction() {
@@ -48,81 +54,75 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
     @Autowired
     protected ISIPRepository sipRepository;
 
-    @Autowired
-    protected ISIPSessionRepository sipSessionRepository;
-
     protected static final String PROCESSING_CHAIN = "processing";
 
     protected static final String PROCESSING_CHAIN2 = "processing2";
 
+    protected static final String SESSION_OWNER = "SESSION_OWNER";
+
+    protected static final String SESSION = "session";
+
+    protected SIPEntity sip1;
+
     @Before
     public void init() {
+        sip1 = new SIPEntity();
 
-        SIPSession session = sipSessionRepository.save(SIPSessionBuilder.build("sessionId"));
-        SIPSession session2 = sipSessionRepository.save(SIPSessionBuilder.build("sessionId2"));
-        sipSessionRepository.save(SIPSessionBuilder.build("otherSession"));
-
-        SIPEntity sip1 = new SIPEntity();
-        SIPBuilder b = new SIPBuilder("SIP_001");
-        sip1.setSip(b.build());
+        sip1.setSip(SIP.build(EntityType.DATA, "SIP_001"));
         sip1.setSipId(UniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip1.setProviderId("SIP_001");
-        sip1.setIngestDate(OffsetDateTime.now());
-        sip1.setOwner("admin");
-        sip1.setProcessing(PROCESSING_CHAIN);
-        sip1.setSession(session);
-        sip1.setState(SIPState.CREATED);
+        sip1.setCreationDate(OffsetDateTime.now());
+        sip1.setLastUpdate(OffsetDateTime.now());
+        sip1.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN, CATEGORIES,
+                                                    StorageMetadata.build("store", null)));
+        sip1.setState(SIPState.INGESTED);
         sip1.setVersion(1);
         sip1.setChecksum("1234567890");
 
         sip1 = sipRepository.save(sip1);
 
         SIPEntity sip2 = new SIPEntity();
-        b = new SIPBuilder("SIP_002");
-        sip2.setSip(b.build());
+        sip2.setSip(SIP.build(EntityType.DATA, "SIP_002"));
         sip2.setSipId(UniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip2.setProviderId("SIP_002");
-        sip2.setIngestDate(OffsetDateTime.now().minusHours(6));
-        sip2.setOwner("admin");
-        sip2.setProcessing(PROCESSING_CHAIN);
-        sip2.setSession(session);
-        sip2.setState(SIPState.CREATED);
+        sip2.setCreationDate(OffsetDateTime.now().minusHours(6));
+        sip2.setLastUpdate(OffsetDateTime.now().minusHours(6));
+        sip2.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN, CATEGORIES,
+                                                    StorageMetadata.build("store", null)));
+        sip2.setState(SIPState.INGESTED);
         sip2.setVersion(1);
         sip2.setChecksum("12345678902");
 
         sip2 = sipRepository.save(sip2);
 
         SIPEntity sip3 = new SIPEntity();
-        b = new SIPBuilder("SIP_003");
-        sip3.setSip(b.build());
+        sip3.setSip(SIP.build(EntityType.DATA, "SIP_003"));
         sip3.setSipId(UniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip3.setProviderId("SIP_003");
-        sip3.setIngestDate(OffsetDateTime.now().minusHours(6));
-        sip3.setOwner("admin2");
-        sip3.setProcessing(PROCESSING_CHAIN);
-        sip3.setSession(session2);
-        sip3.setState(SIPState.STORED);
+        sip3.setCreationDate(OffsetDateTime.now().minusHours(6));
+        sip3.setLastUpdate(OffsetDateTime.now().minusHours(6));
+        sip3.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN, CATEGORIES,
+                                                    StorageMetadata.build("store", null)));
+        sip3.setState(SIPState.INGESTED);
         sip3.setVersion(1);
         sip3.setChecksum("12345678903");
 
         sip3 = sipRepository.save(sip3);
 
         SIPEntity sip4 = new SIPEntity();
-        InformationPackagePropertiesBuilder ippb = new InformationPackagePropertiesBuilder();
-        ippb.addDescriptiveInformation("version", "2");
-        b = new SIPBuilder("SIP_003");
-        sip4.setSip(b.build(ippb.build()));
+
+        sip4.setSip(SIP.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
         sip4.setSipId(UniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip4.setProviderId("SIP_003");
-        sip4.setIngestDate(OffsetDateTime.now().minusHours(6));
-        sip4.setOwner("admin2");
-        sip4.setProcessing(PROCESSING_CHAIN2);
-        sip4.setSession(session2);
-        sip4.setState(SIPState.STORED);
+        sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
+        sip4.setLastUpdate(OffsetDateTime.now().minusHours(6));
+        sip4.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN2, CATEGORIES,
+                                                    StorageMetadata.build("store", null)));
+        sip4.setState(SIPState.INGESTED);
         sip4.setVersion(2);
         sip4.setChecksum("123456789032");
 
@@ -132,6 +132,5 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
     @After
     public void cleanUp() {
         sipRepository.deleteAll();
-        sipSessionRepository.deleteAll();
     }
 }

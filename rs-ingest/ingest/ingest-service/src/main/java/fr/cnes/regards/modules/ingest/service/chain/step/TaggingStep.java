@@ -26,10 +26,11 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
-import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
  * Tagging step is used to tag {@link AIP}(s) calling {@link IAipTagging#tag(List)}.
@@ -39,20 +40,19 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  */
 public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(TaggingStep.class);
 
-    public TaggingStep(IngestProcessingJob job) {
-        super(job);
+    public TaggingStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
+        super(job, ingestChain);
     }
 
     @Override
     protected Void doExecute(List<AIP> aips) throws ProcessingStepException {
-        Optional<PluginConfiguration> conf = processingChain.getTagPlugin();
+        job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_TAGGING);
+
+        Optional<PluginConfiguration> conf = ingestChain.getTagPlugin();
         if (conf.isPresent()) {
-            IAipTagging tagging = this.getStepPlugin(conf.get().getId());
+            IAipTagging tagging = this.getStepPlugin(conf.get().getBusinessId());
             aips.forEach(aip -> LOGGER.debug("Tagging AIP \"{}\" from SIP \"{}\"", aip.getId(), aip.getProviderId()));
             tagging.tag(aips);
         } else {
@@ -63,6 +63,7 @@ public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
 
     @Override
     protected void doAfterError(List<AIP> pIn) {
-        updateSIPEntityState(SIPState.AIP_GEN_ERROR);
+        handleRequestError(String.format("Tagging fails for AIP of SIP \"%s\"",
+                                         job.getCurrentEntity().getProviderId()));
     }
 }

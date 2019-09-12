@@ -23,7 +23,7 @@
 	<artifactId>ingest</artifactId>
 	<packaging>pom</packaging>
 
-	<description>Microservice responsible for managing the system's SIP before passing them to Storage</description>
+	<description>OAIS submission (SIP) and archival (AIP) information package manager</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
 	<licenses>

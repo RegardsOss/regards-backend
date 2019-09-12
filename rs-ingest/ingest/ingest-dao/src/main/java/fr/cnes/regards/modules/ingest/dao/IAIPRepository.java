@@ -18,22 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.persistence.LockModeType;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-
-import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
-import fr.cnes.regards.modules.storage.domain.IAipState;
 
 /**
  * JPA Repository to access {@link AIPEntity}
@@ -41,13 +33,6 @@ import fr.cnes.regards.modules.storage.domain.IAipState;
  *
  */
 public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
-
-    /**
-     * Retrieve all {@link AIPEntity}s associated to the given {@link SIPEntity}
-     * @param sip {@link SIPEntity}
-     * @return {@link AIPEntity}s
-     */
-    Set<AIPEntity> findBySip(SIPEntity sip);
 
     /**
      * Retrieve all {@link AIPEntity}s associated to the given {@link SIPEntity}
@@ -64,34 +49,10 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     Optional<AIPEntity> findByAipId(String aipId);
 
     /**
-     * Retrieve an {@link AIPEntity} by is {@link AIPEntity#getState()}
-     * @param state {@link SipAIPState}
-     * @return optional {@link AIPEntity}
+     * Retrieve a page of {@link AIPEntity} matching the provided specification
+     * @param aipEntitySpecification
+     * @param pageable
+     * @return a page of {@link AIPEntity}
      */
-    @Query("select id from AIPEntity a where a.state= ?1")
-    Set<Long> findIdByState(IAipState state);
-
-    @Deprecated // Do not use lock
-    @Lock(LockModeType.PESSIMISTIC_READ)
-    Page<AIPEntity> findWithLockBySipProcessingAndState(String processingChain, IAipState state, Pageable pageable);
-
-    Set<AIPEntity> findBySipProcessingAndState(String processingChain, IAipState state);
-
-    /**
-     * Update state of the given {@link AIPEntity}
-     * @param state New state
-     * @param id {@link AIPEntity} to update
-     */
-    @Modifying
-    @Query("UPDATE AIPEntity a set a.state = ?1, a.errorMessage = ?3 where a.aipId = ?2")
-    void updateAIPEntityStateAndErrorMessage(IAipState state, String aipId, String errorMessage);
-
-    /**
-     * Switch state for a given session
-     */
-    @Modifying
-    @Query(value = "UPDATE {h-schema}t_aip set state = ?1, error_message = ?2 FROM {h-schema}t_sip sip WHERE t_aip.sip_id = sip.id AND t_aip.state = ?3 AND sip.session = ?4",
-            nativeQuery = true)
-    void updateAIPEntityStateAndErrorMessageByStateAndSessionId(String state, String errorMessage, String filterState,
-            String sessionId);
+    Page<AIPEntity> findAll(Specification<AIPEntity> aipEntitySpecification, Pageable pageable);
 }

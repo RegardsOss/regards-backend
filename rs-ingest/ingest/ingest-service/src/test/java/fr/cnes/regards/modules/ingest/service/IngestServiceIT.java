@@ -18,62 +18,85 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import java.io.ByteArrayInputStream;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.ingest.dao.ISIPSessionRepository;
-import fr.cnes.regards.modules.ingest.domain.SIPCollection;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
-import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.request.RequestState;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
+import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
 /**
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-public class IngestServiceIT extends AbstractSipIT {
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest" })
+public class IngestServiceIT extends IngestMultitenantServiceTest {
 
+    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceIT.class);
-
-    @Autowired
-    private ISIPSessionRepository sipSessionRepository;
 
     @Autowired
     private IIngestService ingestService;
 
-    @Autowired
-    private IIngestProcessingService ingestProcessingService;
+    @SpyBean
+    private IIngestRequestService ingestRequestService;
 
-    @Autowired
-    private ISIPService sipService;
+    private final static String SESSION_OWNER = "sessionOwner";
 
-    private final static String SESSION_ID = "sessionId";
-
-    private final static String PROCESSING = "processingChain";
+    private final static String SESSION = "session";
 
     @Override
-    public void doInit() throws ModuleException {
-        sipSessionRepository.deleteAll();
-        ingestProcessingService.initDefaultServiceConfiguration();
+    public void doInit() {
+        simulateApplicationReadyEvent();
+        // Re-set tenant because above simulation clear it!
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+
+        Mockito.clearInvocations(ingestRequestService);
+    }
+
+    private void ingestSIP(String providerId, String checksum) throws EntityInvalidException {
+        SIPCollection sips = SIPCollection
+                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                        Sets.newHashSet("CAT"),
+                        StorageMetadata.build("disk", null)));
+
+        sips.add(SIP.build(EntityType.DATA, providerId)
+                .withDataObject(DataType.RAWDATA, Paths.get("sip1.xml"), checksum).withSyntax(MediaType.APPLICATION_XML)
+                .registerContentInformation());
+
+        // First ingestion with synchronous service
+        ingestService.handleSIPCollection(sips);
     }
 
     /**
@@ -87,61 +110,32 @@ public class IngestServiceIT extends AbstractSipIT {
     @Test
     public void ingestWithCollision() throws ModuleException {
 
-        LOGGER.debug("Starting test ingestWithCollision");
+        // Ingest SIP
+        String providerId = "SIP_001";
+        String checksum = "zaasfsdfsdlfkmsldgfml12df";
+        ingestSIP(providerId, checksum);
+        ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
 
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                SESSION_ID);
-        SIPCollection collection = colBuilder.build();
-
-        SIPBuilder builder = new SIPBuilder("SIP_001");
-        collection.add(builder.buildReference(Paths.get("sip1.xml"), "zaasfsdfsdlfkmsldgfml12df"));
-
-        // First ingestion
-        Collection<SIPDto> results = ingestService.ingest(collection);
-        Assert.assertNotNull(results);
-        Assert.assertTrue(results.size() == 1);
-        SIPDto one = results.iterator().next();
-        Assert.assertTrue(one.getVersion() == 1);
-        Assert.assertTrue(SIPState.CREATED.equals(one.getState()));
+        SIPEntity entity = sipRepository.findTopByProviderIdOrderByCreationDateDesc(providerId);
+        Assert.assertNotNull(entity);
+        Assert.assertTrue(providerId.equals(entity.getProviderId()));
+        Assert.assertTrue(entity.getVersion() == 1);
+        Assert.assertTrue(SIPState.INGESTED.equals(entity.getState()));
 
         // Re-ingest same SIP
-        results = ingestService.ingest(collection);
-        Assert.assertNotNull(results);
-        Assert.assertTrue(results.size() == 1);
-        SIPDto two = results.iterator().next();
-        Assert.assertTrue(two.getVersion() == 2);
-        Assert.assertTrue(SIPState.REJECTED.equals(two.getState()));
+        ingestSIP(providerId, checksum);
+        ingestServiceTest.waitDuring(FIVE_SECONDS);
 
-        Page<SIPEntity> page = sipService.search(null, SESSION_ID, null, null, null, null, PageRequest.of(0, 10));
-        Assert.assertTrue(page.getNumberOfElements() == 1);
-    }
+        // Detect error
+        ArgumentCaptor<IngestRequest> argumentCaptor = ArgumentCaptor.forClass(IngestRequest.class);
+        Mockito.verify(ingestRequestService, Mockito.times(1))
+                .handleRequestError(argumentCaptor.capture(), ArgumentCaptor.forClass(SIPEntity.class).capture());
+        IngestRequest request = argumentCaptor.getValue();
+        Assert.assertNotNull(request);
+        Assert.assertTrue(RequestState.ERROR.equals(request.getState()));
 
-    /**
-     * Store SIP without session and check that the SIP is added in the default session
-     * @throws ModuleException
-     */
-    @Purpose("Store SIP without session and check that the SIP is added in the default session")
-    @Test
-    public void ingestWithoutSession() throws ModuleException {
-
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
-        SIPCollection collection = colBuilder.build();
-
-        SIPBuilder builder = new SIPBuilder("SIP_001");
-        collection.add(builder.buildReference(Paths.get("sip1.xml"), "zaasfsdfsdlfkmsldgfml12df"));
-
-        // First ingestion
-        Collection<SIPDto> results = ingestService.ingest(collection);
-        Assert.assertNotNull(results);
-        Assert.assertTrue(results.size() == 1);
-        SIPDto one = results.iterator().next();
-        Assert.assertTrue(one.getVersion() == 1);
-        Assert.assertTrue(SIPState.CREATED.equals(one.getState()));
-
-        Page<SIPEntity> page = sipService.search(null, SIPSessionService.DEFAULT_SESSION_ID, null, null, null, null,
-                                                 PageRequest.of(0, 10));
-        Assert.assertTrue(page.getNumberOfElements() == 1);
-
+        // Check repository
+        ingestServiceTest.waitForIngestion(1, TWO_SECONDS);
     }
 
     /**
@@ -154,141 +148,41 @@ public class IngestServiceIT extends AbstractSipIT {
     @Requirement("REGARDS_DSL_ING_PRO_220")
     @Purpose("Manage SIP versionning")
     @Test
-    public void ingestWithUpdate() throws ModuleException, NoSuchAlgorithmException, IOException {
+    public void ingestMultipleVersions() throws ModuleException, NoSuchAlgorithmException, IOException {
 
-        String providerId = "sipToUpdate";
-        int sipNb = 3;
+        // Ingest SIP
+        String providerId = "SIP_002";
+        ingestSIP(providerId, "zaasfsdfsdlfkmsldgfml12df");
+        ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
 
-        for (int i = 1; i <= sipNb; i++) {
-            ingestNextVersion(providerId, i);
+        // Ingest next SIP version
+        ingestSIP(providerId, "yaasfsdfsdlfkmsldgfml12df");
+        ingestServiceTest.waitForIngestion(2, TEN_SECONDS);
+
+        // Check remove storage requested
+        List<IngestRequest> requests = ingestRequestRepository.findAll();
+        int nbStorageRequested = 0;
+        for (IngestRequest ir : requests) {
+            if (ir.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
+                nbStorageRequested = nbStorageRequested + 1;
+            }
         }
+        Assert.assertTrue(nbStorageRequested == requests.size());
 
-        // Check sipNb SIP are stored
-        Collection<SIPEntity> sips = sipService.getAllVersions(providerId);
-        Assert.assertNotNull(sips);
-        Assert.assertTrue(sips.size() == sipNb);
+        // Check two versions of the SIP is persisted
+        Collection<SIPEntity> sips = sipRepository.findAllByProviderIdOrderByVersionAsc(providerId);
+        Assert.assertTrue(sips.size() == 2);
 
-        Page<SIPEntity> page = sipService.search(null, null, null, null, null, null, PageRequest.of(0, 10));
-        Assert.assertTrue(page.getNumberOfElements() == sipNb);
-    }
+        List<SIPEntity> list = new ArrayList<>(sips);
 
-    @Purpose("Manage ingestion retry after error")
-    @Test
-    public void retryIngest() throws NoSuchAlgorithmException, IOException, ModuleException {
-        // Simulate a SIP in CREATED state
-        SIPEntity sip = createSIP("RETY_SIP_001", SESSION_ID, PROCESSING, "admin", 1);
-        try {
-            ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
-        } catch (ModuleException e) {
-            // Tothing to do
-        }
-        sip.setState(SIPState.QUEUED);
-        sip = sipRepository.save(sip);
-        try {
-            ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
-        } catch (ModuleException e) {
-            // Tothing to do
-        }
+        SIPEntity first = list.get(0);
+        Assert.assertTrue(providerId.equals(first.getProviderId()));
+        Assert.assertTrue(first.getVersion() == 1);
+        Assert.assertTrue(SIPState.INGESTED.equals(first.getState()));
 
-        sip.setState(SIPState.INCOMPLETE);
-        sip = sipRepository.save(sip);
-        try {
-            ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a incompletly stored ingest");
-        } catch (ModuleException e) {
-            // Tothing to do
-        }
-
-        sip.setState(SIPState.INDEXED);
-        sip = sipRepository.save(sip);
-        try {
-            ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a indexed ingest");
-        } catch (ModuleException e) {
-            // Tothing to do
-        }
-
-        sip.setState(SIPState.AIP_CREATED);
-        sip = sipRepository.save(sip);
-        try {
-            ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
-        } catch (ModuleException e) {
-            // Tothing to do
-        }
-
-        sip.setState(SIPState.STORED);
-        sip = sipRepository.save(sip);
-        try {
-            ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a stored ingest");
-        } catch (ModuleException e) {
-            // Tothing to do
-        }
-
-        sip.setState(SIPState.VALID);
-        sip = sipRepository.save(sip);
-        try {
-            ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
-        } catch (ModuleException e) {
-            // Tothing to do
-        }
-
-        sip.setState(SIPState.STORE_ERROR);
-        sip = sipRepository.save(sip);
-        try {
-            ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a store error ingest");
-        } catch (ModuleException e) {
-            // Tothing to do
-        }
-
-        sip.setState(SIPState.REJECTED);
-        sip = sipRepository.save(sip);
-        try {
-            ingestService.retryIngest(sip.getSipIdUrn());
-            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a rejected ingest");
-        } catch (ModuleException e) {
-            // Tothing to do
-        }
-
-        // Simulate a SIP in AIP_GEN_ERROR error
-        sip.setState(SIPState.AIP_GEN_ERROR);
-        sip = sipRepository.save(sip);
-        ingestService.retryIngest(sip.getSipIdUrn());
-        sip = sipRepository.findById(sip.getId()).get();
-        Assert.assertEquals(SIPState.CREATED, sip.getState());
-
-        // Simulate a SIP in AIP_GEN_ERROR error
-        sip.setState(SIPState.INVALID);
-        sip = sipRepository.save(sip);
-        ingestService.retryIngest(sip.getSipIdUrn());
-        sip = sipRepository.findById(sip.getId()).get();
-        Assert.assertEquals(SIPState.CREATED, sip.getState());
-
-    }
-
-    private void ingestNextVersion(String providerId, Integer version)
-            throws NoSuchAlgorithmException, IOException, ModuleException {
-
-        String sipFilename = "sip" + version + ".xml";
-
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                SESSION_ID);
-        SIPCollection collection = colBuilder.build();
-
-        SIPBuilder builder = new SIPBuilder(providerId);
-        collection.add(builder.buildReference(Paths.get(sipFilename), ChecksumUtils
-                .computeHexChecksum(new ByteArrayInputStream(sipFilename.getBytes()), IngestService.MD5_ALGORITHM)));
-
-        Collection<SIPDto> results = ingestService.ingest(collection);
-        Assert.assertNotNull(results);
-        Assert.assertTrue(results.size() == 1);
-        SIPDto one = results.iterator().next();
-        Assert.assertTrue(one.getVersion() == version);
-        Assert.assertTrue(SIPState.CREATED.equals(one.getState()));
+        SIPEntity second = list.get(1);
+        Assert.assertTrue(providerId.equals(second.getProviderId()));
+        Assert.assertTrue(second.getVersion() == 2);
+        Assert.assertTrue(SIPState.INGESTED.equals(second.getState()));
     }
 }

@@ -18,44 +18,44 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.step.AbstractProcessingStep;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
+import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
 /**
  * Common ingest processing step
+ *
  * @author Marc Sordi
  */
 public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I, O, IngestProcessingJob> {
 
-    protected final IngestProcessingChain processingChain;
+    protected final IngestProcessingChain ingestChain;
 
-    protected final IPluginService pluginService;
+    @Autowired
+    protected IPluginService pluginService;
 
-    protected List<String> processingErrors;
+    @Autowired
+    protected IIngestRequestService ingestRequestService;
 
-    public AbstractIngestStep(IngestProcessingJob job) {
+    protected Set<String> errors;
+
+    public AbstractIngestStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
         super(job);
-        this.processingChain = job.getProcessingChain();
-        this.pluginService = job.getPluginService();
+        this.ingestChain = ingestChain;
     }
 
-    protected SIPEntity updateSIPEntityState(SIPState newEntitySIPState) {
-        job.getCurrentEntity().setState(newEntitySIPState);
-        job.getCurrentEntity().setProcessingErrors(processingErrors);
-        return job.getIngestProcessingService().updateSIPEntity(job.getCurrentEntity());
-    }
-
-    protected <T> T getStepPlugin(Long confId) throws ProcessingStepException {
+    protected <T> T getStepPlugin(String confId) throws ProcessingStepException {
         try {
             return pluginService.getPlugin(confId);
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
@@ -63,10 +63,17 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
         }
     }
 
-    public void addProcessingError(String error) {
-        if (processingErrors == null) {
-            processingErrors = new ArrayList<>();
+    protected void addError(String error) {
+        if (errors == null) {
+            errors = new HashSet<>();
         }
-        processingErrors.add(error);
+        errors.add(error);
+    }
+
+    protected void handleRequestError(String error) {
+        Assert.hasText(error, "Error message is required");
+        addError(error);
+        job.getCurrentRequest().setErrors(errors);
+        ingestRequestService.handleRequestError(job.getCurrentRequest(), job.getCurrentEntity());
     }
 }

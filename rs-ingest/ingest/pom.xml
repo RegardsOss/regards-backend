@@ -61,6 +61,11 @@
 				<artifactId>ingest-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.ingest</groupId>
+				<artifactId>ingest-test</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -70,5 +75,6 @@
 		<module>ingest-dao</module>
 		<module>ingest-rest</module>
 		<module>ingest-service</module>
+		<module>ingest-test</module>
 	</modules>
 </project>

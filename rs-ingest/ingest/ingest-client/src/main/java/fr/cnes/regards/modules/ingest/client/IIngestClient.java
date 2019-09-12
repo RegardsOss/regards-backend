@@ -18,32 +18,25 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
-import java.util.Collection;
-
-import javax.validation.Valid;
-
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
-import fr.cnes.regards.modules.ingest.domain.SIPCollection;
-import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
- * Ingest client API
+ * Client interface for requesting the ingest service
  *
- * @author Marc Sordi
- *
+ * Client requests are done asynchronously.
+ * To listen to the feedback messages, you have to implement your own {@link IIngestClientListener}.
  */
-@RestClient(name = "rs-ingest", contextId = "rs-ingest.ingest.client")
-@RequestMapping(value = "/sips", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IIngestClient {
 
-    @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
-    ResponseEntity<Collection<SIPDto>> ingest(@Valid @RequestBody SIPCollection sips);
+    /**
+     * Requests a SIP ingestion with specified ingestion metadata.
+     * <br/>
+     * @param ingestMetadata related {@link IngestMetadataDto}
+     * @param sip the {@link SIP} to ingest
+     * @return {@link RequestInfo} containing a unique request id. This request id can
+     * be used to identify responses in your {@link IIngestClientListener} implementation.
+     * @throws IngestClientException if error occurs preparing ingestion submission
+     */
+    RequestInfo ingest(IngestMetadataDto ingestMetadata, SIP sip) throws IngestClientException;
 }

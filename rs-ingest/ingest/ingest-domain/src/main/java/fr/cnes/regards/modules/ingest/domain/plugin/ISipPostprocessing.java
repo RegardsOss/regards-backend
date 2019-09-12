@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.domain.plugin;
 
+import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * Fifth <b>optional</b> step of the SIP processing chain
@@ -35,5 +36,5 @@ public interface ISipPostprocessing {
      * Allows to make some action after SIP processing.
      * @param sip processed {@link SIP}
      */
-    void postprocess(final SIP sip);
+    void postprocess(final SIP sip) throws ProcessingStepException;
 }

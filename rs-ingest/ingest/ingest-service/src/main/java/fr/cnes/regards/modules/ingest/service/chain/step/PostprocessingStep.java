@@ -25,10 +25,12 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
-import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
  * Postprocessing step is used to do something after {@link AIP}(s) generation calling
@@ -39,21 +41,20 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  */
 public class PostprocessingStep extends AbstractIngestStep<SIP, Void> {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(PostprocessingStep.class);
 
-    public PostprocessingStep(IngestProcessingJob job) {
-        super(job);
+    public PostprocessingStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
+        super(job, ingestChain);
     }
 
     @Override
     protected Void doExecute(SIP sip) throws ProcessingStepException {
-        Optional<PluginConfiguration> conf = processingChain.getPostProcessingPlugin();
+        job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_POST_PROCESSING);
+
+        Optional<PluginConfiguration> conf = ingestChain.getPostProcessingPlugin();
         if (conf.isPresent()) {
             LOGGER.debug("Postprocessing for SIP \"{}\"", sip.getId());
-            ISipPostprocessing postprocessing = this.getStepPlugin(conf.get().getId());
+            ISipPostprocessing postprocessing = this.getStepPlugin(conf.get().getBusinessId());
             postprocessing.postprocess(sip);
         } else {
             LOGGER.debug("No postprocessing for SIP \"{}\"", sip.getId());
@@ -63,6 +64,6 @@ public class PostprocessingStep extends AbstractIngestStep<SIP, Void> {
 
     @Override
     protected void doAfterError(SIP sip) {
-        LOGGER.error("Error during post processing for SIP \"{}\"", sip.getId());
+        handleRequestError(String.format("Post processing fails for SIP \"{}\"", sip.getId()));
     }
 }

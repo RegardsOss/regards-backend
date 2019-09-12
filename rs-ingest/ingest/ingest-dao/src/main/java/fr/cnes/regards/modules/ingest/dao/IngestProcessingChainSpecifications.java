@@ -18,15 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
-
-import org.springframework.data.jpa.domain.Specification;
-
 import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import java.util.Set;
+import javax.persistence.criteria.Predicate;
+import org.springframework.data.jpa.domain.Specification;
 
 /**
  * JPA Repository to manage {@link IngestProcessingChain} entities.

@@ -22,7 +22,7 @@ import java.util.List;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
-import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
 /**
  * Fourth <b>optional</b> step of the SIP processing chain.

@@ -32,10 +32,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-  			<artifactId>feign-regards-starter</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.ingest</groupId>
 			<artifactId>ingest-dao</artifactId>
 		</dependency>
@@ -44,8 +40,8 @@
 			<artifactId>ingest-domain</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.dam</groupId>
-			<artifactId>dam-domain</artifactId>
+			<groupId>fr.cnes.regards.modules.session-manager</groupId>
+			<artifactId>session-manager-domain</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
@@ -64,8 +60,8 @@
 			<artifactId>plugins-service</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.storage</groupId>
-			<artifactId>storage-client</artifactId>
+			<groupId>fr.cnes.regards.framework.modules.locks</groupId>
+			<artifactId>locks-service</artifactId>
 		</dependency>
 		<dependency>
   			<groupId>fr.cnes.regards.framework</groupId>
@@ -79,6 +75,10 @@
 			<groupId>fr.cnes.regards.modules.templates</groupId>
 			<artifactId>templates-service</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.storage-light</groupId>
+			<artifactId>storage-light-client</artifactId>
+		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
@@ -91,8 +91,13 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-integration-test</artifactId>
+			<groupId>fr.cnes.regards.modules.ingest</groupId>
+			<artifactId>ingest-client</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.ingest</groupId>
+			<artifactId>ingest-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

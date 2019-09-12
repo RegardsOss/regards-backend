@@ -25,14 +25,12 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.exception.AIPGenerationException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 
 /**
  * Test plugin for the processing chains.
@@ -52,18 +50,9 @@ public class AIPGenerationTestPlugin implements IAipGeneration {
         if (AIPGenerationTestPlugin.class.equals(errorSimulator.getSimulateErrorForStep())) {
             throw new AIPGenerationException("Simulated exception for step AIPGenerationTestPlugin");
         }
-        AIPBuilder builder = new AIPBuilder(aipId, Optional.of(sipId), providerId, EntityType.DATA, "session 1");
-        // Propagate BBOX
-        if (sip.getBbox().isPresent()) {
-            builder.setBbox(sip.getBbox().get(), sip.getCrs().orElse(null));
-        }
-        // Propagate geometry
-        builder.setGeometry(sip.getGeometry());
-        // Propagate properties
-        AIP aip = builder.build(sip.getProperties());
 
         List<AIP> aips = new ArrayList<>();
-        aips.add(aip);
+        aips.add(AIP.build(sip, aipId, Optional.of(sipId), providerId));
         return aips;
     }
 

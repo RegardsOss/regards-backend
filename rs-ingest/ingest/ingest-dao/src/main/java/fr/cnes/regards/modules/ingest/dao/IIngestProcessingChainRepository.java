@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChainView;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,9 +35,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
-
 /**
  * {@link IngestProcessingChain} repository
  *
@@ -44,6 +43,11 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
  */
 public interface IIngestProcessingChainRepository
         extends JpaRepository<IngestProcessingChain, Long>, JpaSpecificationExecutor<IngestProcessingChain> {
+
+    /**
+     * Retrieve all processing chain name
+     */
+    List<IngestProcessingChainView> findNamesBy();
 
     /**
      * Retrieve chain with specified name
@@ -82,10 +86,9 @@ public interface IIngestProcessingChainRepository
         // now that we have the ids, lets load the products and keep the same sort
         List<IngestProcessingChain> loaded = findAllByIdIn(ingestProcChainIds, pageable.getSort());
         return new PageImpl<>(loaded,
-                              PageRequest.of(ingestProcessingChains.getNumber(),
-                                             ingestProcessingChains.getSize(),
-                                             ingestProcessingChains.getSort()),
-                              ingestProcessingChains.getTotalElements());
+                PageRequest.of(ingestProcessingChains.getNumber(), ingestProcessingChains.getSize(),
+                               ingestProcessingChains.getSort()),
+                ingestProcessingChains.getTotalElements());
     }
 
     @EntityGraph("graph.ingest.processing.chain.complete")
