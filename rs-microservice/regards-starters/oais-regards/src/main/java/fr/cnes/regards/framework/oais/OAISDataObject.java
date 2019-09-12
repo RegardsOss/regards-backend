@@ -29,6 +29,7 @@ import javax.validation.constraints.NotNull;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.validator.ValidOAISDataObject;
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
+import org.springframework.util.MimeType;
 
 /**
  * OAIS data object
@@ -191,20 +192,6 @@ public class OAISDataObject {
                 return false;
             }
         } else if (!checksum.equals(other.checksum)) {
-            return false;
-        }
-        if (fileSize == null) {
-            if (other.fileSize != null) {
-                return false;
-            }
-        } else if (!fileSize.equals(other.fileSize)) {
-            return false;
-        }
-        if (filename == null) {
-            if (other.filename != null) {
-                return false;
-            }
-        } else if (!filename.equals(other.filename)) {
             return false;
         }
         if (regardsDataType != other.regardsDataType) {

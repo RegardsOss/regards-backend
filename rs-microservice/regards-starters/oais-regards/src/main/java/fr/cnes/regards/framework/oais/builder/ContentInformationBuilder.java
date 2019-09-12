@@ -88,7 +88,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param storage storage identifier not managed by storage service (to just reference the file and avoid manipulating it).
      * An arbitrary character string may be appropriate!
      */
-    public void setDataObjectReference(DataType dataType, String filename, URL url, String storage) {
+    public void setDataObjectReference(DataType dataType, String filename, String url, String storage) {
         Assert.notNull(dataType, "Data type is required");
         Assert.hasText(filename, "Filename is required");
         Assert.notNull(url, "URL is required");

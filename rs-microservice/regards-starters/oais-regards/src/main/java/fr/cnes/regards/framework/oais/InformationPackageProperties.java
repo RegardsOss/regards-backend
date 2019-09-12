@@ -402,7 +402,7 @@ public class InformationPackageProperties {
      * @param storage storage identifier not managed by storage service (to just reference the file and avoid manipulating it).
      * An arbitrary character string may be appropriate!
      */
-    public InformationPackageProperties withDataObjectReference(DataType dataType, String filename, URL url,
+    public InformationPackageProperties withDataObjectReference(DataType dataType, String filename, String url,
             String storage) {
         getUnderConstruction().withDataObjectReference(dataType, filename, url, storage);
         return this;

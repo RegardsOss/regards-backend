@@ -307,7 +307,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      * @param storage storage identifier not managed by storage service (to just reference the file and avoid manipulating it).
      * An arbitrary character string may be appropriate!
      */
-    public void setDataObjectReference(DataType dataType, String filename, URL url, String storage) {
+    public void setDataObjectReference(DataType dataType, String filename, String url, String storage) {
         ipPropertiesBuilder.setDataObjectReference(dataType, filename, url, storage);
     }
 

@@ -417,7 +417,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
      * An arbitrary character string may be appropriate!
      */
     public <T extends AbstractInformationPackage<ID>> T withDataObjectReference(DataType dataType, String filename,
-            URL url, String storage) {
+            String url, String storage) {
         properties.withDataObjectReference(dataType, filename, url, storage);
         return (T) this;
     }

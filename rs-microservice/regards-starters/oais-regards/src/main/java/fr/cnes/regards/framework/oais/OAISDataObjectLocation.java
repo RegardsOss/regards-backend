@@ -48,12 +48,12 @@ public class OAISDataObjectLocation {
      * URL to access the file
      */
     @NotNull(message = "URL is required")
-    private URL url;
+    private String url;
 
     /**
      * Build a file location directly accessible through FILE or HTTP URL protocol
      */
-    public static OAISDataObjectLocation build(URL url) {
+    public static OAISDataObjectLocation build(String url) {
         Assert.notNull(url, "URL is required");
         return buildInternal(url, null);
     }
@@ -63,7 +63,7 @@ public class OAISDataObjectLocation {
      * accessible through storage service if storage identifier is recognize
      * else just treated as a reference.
      */
-    public static OAISDataObjectLocation build(URL url, String storage) {
+    public static OAISDataObjectLocation build(String url, String storage) {
         Assert.notNull(url, "URL is required");
         Assert.hasText(storage, "Storage identifier is required");
         return buildInternal(url, storage);
@@ -75,7 +75,7 @@ public class OAISDataObjectLocation {
     public static OAISDataObjectLocation build(Path path) {
         Assert.notNull(path, "File path is required");
         try {
-            return buildInternal(path.toUri().toURL(), null);
+            return buildInternal(path.toUri().toURL().toString(), null);
         } catch (MalformedURLException e) {
             String errorMessage = String.format("Cannot transform %s to valid URL (MalformedURLException).",
                                                 path.toString());
@@ -84,7 +84,7 @@ public class OAISDataObjectLocation {
         }
     }
 
-    private static OAISDataObjectLocation buildInternal(URL url, String storage) {
+    private static OAISDataObjectLocation buildInternal(String url, String storage) {
         OAISDataObjectLocation location = new OAISDataObjectLocation();
         location.setUrl(url);
         location.setStorage(storage);
@@ -99,11 +99,11 @@ public class OAISDataObjectLocation {
         this.storage = storage;
     }
 
-    public URL getUrl() {
+    public String getUrl() {
         return url;
     }
 
-    public void setUrl(URL url) {
+    public void setUrl(String url) {
         this.url = url;
     }
 
