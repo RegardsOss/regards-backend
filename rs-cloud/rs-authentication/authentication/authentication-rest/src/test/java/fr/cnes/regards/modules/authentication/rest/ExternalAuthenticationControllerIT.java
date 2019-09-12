@@ -168,7 +168,8 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
         PluginConfiguration conf = new PluginConfiguration(metadata, "Plugin2", 0);
         conf.setId(1L);
 
-        performDefaultPost(SPS_URL, conf, customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_CONTENT)
+        performDefaultPost(SPS_URL, conf,
+                           customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_CONTENT)
                                    .expectIsNotEmpty(JSON_PATH_LINKS).expectIsArray(JSON_PATH_LINKS),
                            "createServiceProvider : Error getting Service provider");
     }
@@ -185,7 +186,8 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
         String newVersion = "2.0";
         aPluginConfSaved.setVersion(newVersion);
 
-        performDefaultPut(SP_URL, aPluginConfSaved, customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_CONTENT)
+        performDefaultPut(SP_URL, aPluginConfSaved,
+                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_CONTENT)
                                   .expectIsNotEmpty(JSON_PATH_LINKS).expectIsArray(JSON_PATH_LINKS)
                                   .expectValue(JSON_PATH_CONTENT + ".version", newVersion),
                           "updateServiceProvider : Error getting Service provider", aPluginConfSaved.getId());
@@ -244,7 +246,8 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
         PluginConfiguration aPluginConfToDelete = new PluginConfiguration(metadata, "PluginToDelete", 0);
         aPluginConfToDelete = pluginConfRepo.save(aPluginConfToDelete);
         performDefaultDelete(SP_URL, customizer().expectStatusOk(),
-                             "deleteIdentityProvider : Error getting Service provider", aPluginConfToDelete.getId());
+                             "deleteIdentityProvider : Error getting Service provider",
+                             aPluginConfToDelete.getBusinessId());
     }
 
     /**
@@ -255,7 +258,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void deleteInexistantIndentityProvider() {
-        performDefaultDelete(SP_URL, customizer().expectStatusNotFound(), "Error getting Service provider", 1000);
+        performDefaultDelete(SP_URL, customizer().expectStatusNotFound(), "Error getting Service provider", "plop");
 
     }
 
@@ -264,7 +267,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     public void authenticateKerberosServiceProvider() {
 
         ExternalAuthenticationInformations infos = new ExternalAuthenticationInformations("usernma", getDefaultTenant(),
-                                                                                          "ticket".getBytes(), "key");
+                "ticket".getBytes(), "key");
 
         performDefaultPost("/authentication/sps/0/authenticate", infos, customizer().expectStatusOk(),
                            "kerberos authenticate : Authentication error");

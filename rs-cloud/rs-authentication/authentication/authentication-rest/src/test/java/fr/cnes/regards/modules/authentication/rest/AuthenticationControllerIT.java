@@ -250,7 +250,8 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
         PluginConfiguration aPluginConfToDelete = new PluginConfiguration(metadata, "PluginToDelete", 0);
         aPluginConfToDelete = pluginConfRepo.save(aPluginConfToDelete);
         performDefaultDelete(IDP_URL, customizer().expectStatusOk(),
-                             "deleteIdentityProvider : Error getting identity provider", aPluginConfToDelete.getId());
+                             "deleteIdentityProvider : Error getting identity provider",
+                             aPluginConfToDelete.getBusinessId());
     }
 
     /**
@@ -261,7 +262,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void deleteInexistantIndentityProvider() {
-        performDefaultDelete(IDP_URL, customizer().expectStatusNotFound(), "Error getting identity provider", 1000);
+        performDefaultDelete(IDP_URL, customizer().expectStatusNotFound(), "Error getting identity provider", "plop");
 
     }
 
