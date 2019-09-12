@@ -79,8 +79,8 @@ public class InternalAuthenticationPluginService implements IInternalAuthenticat
     }
 
     @Override
-    public void deleteIdentityProviderPlugin(final Long pPluginConfigurationId) throws ModuleException {
-        pluginService.deletePluginConfiguration(pPluginConfigurationId);
+    public void deleteIdentityProviderPlugin(final String pluginBisnessId) throws ModuleException {
+        pluginService.deletePluginConfiguration(pluginBisnessId);
     }
 
 }

@@ -36,9 +36,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -74,11 +73,11 @@ public class LdapAuthenticationPluginTest {
         /*
          * Set all parameters
          */
-        final Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_HOST, "test")
-                .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_PORT, "8080")
-                .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_CN, "ou=people,ou=commun")
-                .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, "email").getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_HOST, "test"),
+                     IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_PORT, "8080"),
+                     IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_CN, "ou=people,ou=commun"),
+                     IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, "email"));
         try {
             // instantiate plugin
             plugin = PluginUtils.getPlugin(parameters, LdapAuthenticationPlugin.class, new HashMap<>());

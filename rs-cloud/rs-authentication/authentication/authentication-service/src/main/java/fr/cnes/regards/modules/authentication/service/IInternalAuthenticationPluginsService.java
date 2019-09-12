@@ -65,9 +65,9 @@ public interface IInternalAuthenticationPluginsService {
 
     /**
      * Delete an Identity Provider plugin
-     * @param pPluginConfigurationId PluginConfiguration identifier to delete
+     * @param pluginBisnessId PluginConfiguration identifier to delete
      * @throws ModuleException Plugin to delete does not exists
      */
-    void deleteIdentityProviderPlugin(Long pPluginConfigurationId) throws ModuleException;
+    void deleteIdentityProviderPlugin(String pluginBisnessId) throws ModuleException;
 
 }

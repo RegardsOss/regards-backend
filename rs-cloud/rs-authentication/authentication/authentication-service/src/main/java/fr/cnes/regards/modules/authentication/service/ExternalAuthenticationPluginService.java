@@ -110,8 +110,8 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
     }
 
     @Override
-    public void deleteServiceProviderPlugin(final Long pPluginConfigurationId) throws ModuleException {
-        pluginService.deletePluginConfiguration(pPluginConfigurationId);
+    public void deleteServiceProviderPlugin(String pluginBisnessId) throws ModuleException {
+        pluginService.deletePluginConfiguration(pluginBisnessId);
     }
 
     @Override

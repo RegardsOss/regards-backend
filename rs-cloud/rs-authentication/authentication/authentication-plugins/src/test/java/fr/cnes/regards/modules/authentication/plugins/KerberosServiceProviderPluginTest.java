@@ -36,11 +36,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -103,14 +102,16 @@ public class KerberosServiceProviderPluginTest {
         /*
          * Set all parameters
          */
-        final Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(KerberosSPParameters.PRINCIPAL_PARAMETER, applicationPrincipal)
-                .addParameter(KerberosSPParameters.REALM_PARAMETER, "REGARDS.CLOUD-ESPACE.SI.C-S.FR")
-                .addParameter(KerberosSPParameters.LDAP_ADRESS_PARAMETER, "REGARDS-AD.CLOUD-ESPACE.SI.C-S.FR")
-                .addParameter(KerberosSPParameters.LDAP_PORT_PARAMETER, "389")
-                .addParameter(KerberosSPParameters.PARAM_LDAP_CN, "dc=REGARDS,dc=CLOUD-ESPACE,dc=SI,dc=C-S,dc=FR")
-                .addParameter(KerberosSPParameters.KRB5_FILEPATH_PARAMETER, urlkrb5.getPath())
-                .addParameter(KerberosSPParameters.KEYTAB_FILEPATH_PARAMETER, keytabFilePath.getPath()).getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(KerberosSPParameters.PRINCIPAL_PARAMETER, applicationPrincipal),
+                     IPluginParam.build(KerberosSPParameters.REALM_PARAMETER, "REGARDS.CLOUD-ESPACE.SI.C-S.FR"),
+                     IPluginParam.build(KerberosSPParameters.LDAP_ADRESS_PARAMETER,
+                                        "REGARDS-AD.CLOUD-ESPACE.SI.C-S.FR"),
+                     IPluginParam.build(KerberosSPParameters.LDAP_PORT_PARAMETER, "389"),
+                     IPluginParam.build(KerberosSPParameters.PARAM_LDAP_CN,
+                                        "dc=REGARDS,dc=CLOUD-ESPACE,dc=SI,dc=C-S,dc=FR"),
+                     IPluginParam.build(KerberosSPParameters.KRB5_FILEPATH_PARAMETER, urlkrb5.getPath()),
+                     IPluginParam.build(KerberosSPParameters.KEYTAB_FILEPATH_PARAMETER, keytabFilePath.getPath()));
         try {
             // instantiate plugin
             plugin = PluginUtils.getPlugin(parameters, KerberosServiceProviderPlugin.class, new HashMap<>());

@@ -32,11 +32,10 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.modules.authentication.plugins.impl.ldap.LdapAuthenticationPlugin;
 
@@ -101,11 +100,13 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
         metadata.getInterfaceNames().add(IAuthenticationPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_HOST, "test")
-                .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_PORT, "8080")
-                .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_CN, "ou=people,ou=commun")
-                .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, "email").getParameters();
+
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_HOST, "test"),
+                     IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_PORT, "8080"),
+                     IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_CN, "ou=people,ou=commun"),
+                     IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, "email"));
+
         conf.setParameters(parameters);
         aPluginConfSaved = pluginConfRepo.save(conf);
     }
@@ -131,7 +132,8 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void retrieveIdentityProvider() {
-        performDefaultGet(IDP_URL, customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_CONTENT)
+        performDefaultGet(IDP_URL,
+                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_CONTENT)
                                   .expectIsNotEmpty(JSON_PATH_LINKS).expectIsArray(JSON_PATH_LINKS),
                           "retrieveIdentityProvider : Error getting identity provider", aPluginConfSaved.getId());
     }
@@ -162,11 +164,13 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
         metadata.setPluginClassName(LdapAuthenticationPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         PluginConfiguration conf = new PluginConfiguration(metadata, "Plugin2", 0);
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_HOST, "test")
-                .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_PORT, "8080")
-                .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_CN, "ou=people,ou=commun")
-                .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, "email").getParameters();
+
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_HOST, "test"),
+                     IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_PORT, "8080"),
+                     IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_CN, "ou=people,ou=commun"),
+                     IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, "email"));
+
         conf.setParameters(parameters);
 
         performDefaultPost(InternalAuthenticationController.TYPE_MAPPING, conf,
@@ -186,7 +190,8 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     public void updateIdentityProvider() {
         String newVersion = "2.0";
         aPluginConfSaved.setVersion(newVersion);
-        performDefaultPut(IDP_URL, aPluginConfSaved, customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_CONTENT)
+        performDefaultPut(IDP_URL, aPluginConfSaved,
+                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_CONTENT)
                                   .expectIsNotEmpty(JSON_PATH_LINKS).expectIsArray(JSON_PATH_LINKS)
                                   .expectValue(JSON_PATH_CONTENT + ".version", newVersion),
                           "updateIdentityProvider : Error getting identity provider", aPluginConfSaved.getId());
