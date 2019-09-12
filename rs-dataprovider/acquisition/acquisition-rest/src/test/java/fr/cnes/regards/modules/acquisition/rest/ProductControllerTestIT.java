@@ -112,7 +112,7 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
                                                                                                                    .value("Product")),
                                                                                      documentProduct()));
 
-        requestBuilderCustomizer.addParameter("sipState", "NOT_SCHEDULED", "QUEUED");
+        requestBuilderCustomizer.addParameter("sipState", ProductSIPState.NOT_SCHEDULED.getName(), ProductSIPState.SUBMITTED.getName());
         performDefaultGet(ProductController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve products");
     }
 

@@ -18,11 +18,32 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -33,29 +54,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
-import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link AcquisitionProcessingChain} workflow
@@ -96,6 +94,8 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
+        processingChain.setPeriodicity("0 * * * * *");
+        processingChain.setCategories(Sets.newLinkedHashSet());
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
@@ -104,8 +104,7 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        Set<PluginParameter> param = PluginParametersFactory.build()
-                .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
+        Set<IPluginParam> param = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS, PluginParameterTransformer.toJson(new ArrayList<>())));
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(param, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin");
@@ -136,6 +135,10 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
 
         // SIP post processing
         // Not required
+        List<StorageMetadataProvider> storages = new ArrayList<>();
+        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file"));
+        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file"));
+        processingChain.setStorages(storages);
 
         // Validate
         Errors errors = new MapBindingResult(new HashMap<>(), "apc");

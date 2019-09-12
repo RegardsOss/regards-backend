@@ -18,12 +18,37 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
+import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
+import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
+import fr.cnes.regards.modules.acquisition.service.plugin.LongLastingSIPGeneration;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-
-import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,28 +58,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
-import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
-import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
-import fr.cnes.regards.modules.acquisition.service.plugin.LongLastingSIPGeneration;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
-import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 
 /**
  * Launch a chain with very long plugin actions and stop it.
@@ -82,6 +85,13 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
     @Autowired
     private IJobInfoService jobInfoService;
 
+    @Autowired
+    private IPluginConfigurationRepository pluginRepo;
+
+    @Before
+    public void before() {
+        pluginRepo.deleteAll();
+    }
     /**
      * Create chain with slow SIP generation plugin
      */
@@ -94,6 +104,8 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
         processingChain.setGenerationRetryEnabled(true);
+        processingChain.setPeriodicity("0 * * * * *");
+        processingChain.setCategories(Sets.newLinkedHashSet());
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
@@ -102,8 +114,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS, PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))));
 
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
@@ -135,6 +146,12 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
 
         // SIP post processing
         // Not required
+
+
+        List<StorageMetadataProvider> storages = new ArrayList<>();
+        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file"));
+        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file"));
+        processingChain.setStorages(storages);
 
         // Save processing chain
         return processingService.createChain(processingChain);
@@ -170,7 +187,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                 .get("src", "test", "resources", "startstop", "fake").toAbsolutePath());
 
         // Start chain
-        processingService.startManualChain(processingChain.getId());
+        processingService.startManualChain(processingChain.getId(), Optional.empty());
 
         // Check all products are registered
         long productCount;
@@ -223,7 +240,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
 
         // Restart chain verifying all re-run properly
         updateProcessingChain(processingChain.getId());
-        processingService.startManualChain(processingChain.getId());
+        processingService.startManualChain(processingChain.getId(), Optional.empty());
 
         // At the end, all product must be valid
         loops = 100;

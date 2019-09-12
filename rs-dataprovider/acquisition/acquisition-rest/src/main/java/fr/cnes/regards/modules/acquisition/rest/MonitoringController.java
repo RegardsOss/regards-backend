@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.rest;
 
+import fr.cnes.regards.framework.hateoas.LinkRels;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -95,6 +96,12 @@ public class MonitoringController implements IResourceController<AcquisitionProc
                 resourceService.addLink(resource, AcquisitionProcessingChainController.class, "stopChain", "stop",
                                         MethodParamFactory.build(Long.class, element.getChain().getId()));
             }
+            if (!element.getChain().isActive()) {
+                resourceService.addLink(resource, AcquisitionProcessingChainController.class, "delete", LinkRels.DELETE,
+                        MethodParamFactory.build(Long.class, element.getChain().getId()));
+            }
+            resourceService.addLink(resource, AcquisitionProcessingChainController.class, "updateStateAndMode", "patch",
+                    MethodParamFactory.build(Long.class, element.getChain().getId()));
         }
         return resource;
     }

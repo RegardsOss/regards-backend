@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -34,9 +35,9 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
+import fr.cnes.regards.modules.ingest.client.RequestInfo;
+import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
 /**
  *
@@ -50,7 +51,7 @@ public interface IProductService {
     /**
      * After product SIP generation, save the product state and submit its SIP in the SIP data flow (within the same transaction)
      */
-    Product saveAndSubmitSIP(Product product);
+    Product saveAndSubmitSIP(Product product, AcquisitionProcessingChain acquisitionChain) throws SIPGenerationException;
 
     /**
      * @return all {@link Product}
@@ -141,10 +142,15 @@ public interface IProductService {
     void handleSIPGenerationError(JobInfo jobInfo);
 
     /**
-     * Handle a SIP event
-     * @param event {@link SIPEvent}
+     * Handle successful SIP submission
      */
-    void handleSIPEvent(SIPEvent event);
+    void handleIngestedSIPSuccess(RequestInfo info);
+
+
+    /**
+     * Handle failure SIP submission
+     */
+    void handleIngestedSIPFailed(RequestInfo info);
 
     /**
      * Count number of {@link Product} associated to the given {@link AcquisitionProcessingChain}

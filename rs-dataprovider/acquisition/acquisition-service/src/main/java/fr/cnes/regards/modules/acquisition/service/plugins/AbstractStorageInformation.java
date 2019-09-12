@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 
 /**
  * Abstract class to provide a configurable {@link ISipGenerationPlugin} tool

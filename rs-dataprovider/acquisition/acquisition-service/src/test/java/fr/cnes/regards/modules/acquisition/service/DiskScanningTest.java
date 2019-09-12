@@ -18,6 +18,14 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
+import fr.cnes.regards.modules.acquisition.service.plugins.RegexDiskScanning;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,19 +38,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
-import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
-import fr.cnes.regards.modules.acquisition.service.plugins.RegexDiskScanning;
 
 /**
  * Test scanning plugin
@@ -64,8 +62,7 @@ public class DiskScanningTest {
             throws ModuleException, IOException, NotAvailablePluginConfigurationException {
 
         // Plugin parameters
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS, PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))));
 
         // Instantiate plugin
         IScanPlugin plugin = PluginUtils.getPlugin(parameters, GlobDiskScanning.class, new HashMap<>());
@@ -96,9 +93,8 @@ public class DiskScanningTest {
     public void testDirectoryScanningWithGlobber() throws ModuleException, NotAvailablePluginConfigurationException {
 
         // Plugin parameters
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString()))
-                .addParameter(GlobDiskScanning.FIELD_GLOB, "*_0[12].md").getParameters();
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS, PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))),
+                IPluginParam.build(GlobDiskScanning.FIELD_GLOB, "*_0[12].md"));
 
         // Instantiate plugin
         IScanPlugin plugin = PluginUtils.getPlugin(parameters, GlobDiskScanning.class, new HashMap<>());
@@ -114,8 +110,7 @@ public class DiskScanningTest {
     public void testDirectoryScanningWithoutRegex() throws ModuleException, NotAvailablePluginConfigurationException {
 
         // Plugin parameters
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(RegexDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(RegexDiskScanning.FIELD_DIRS, PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))));
 
         // Instantiate plugin
         IScanPlugin plugin = PluginUtils.getPlugin(parameters, RegexDiskScanning.class, new HashMap<>());
@@ -131,9 +126,8 @@ public class DiskScanningTest {
     public void testDirectoryScanningWithRegex() throws ModuleException, NotAvailablePluginConfigurationException {
 
         // Plugin parameters
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(RegexDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString()))
-                .addParameter(RegexDiskScanning.FIELD_REGEX, ".*_0[12]\\.md").getParameters();
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(RegexDiskScanning.FIELD_DIRS, PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))),
+                IPluginParam.build(RegexDiskScanning.FIELD_REGEX, ".*_0[12]\\.md"));
 
         // Instantiate plugin
         IScanPlugin plugin = PluginUtils.getPlugin(parameters, RegexDiskScanning.class, new HashMap<>());

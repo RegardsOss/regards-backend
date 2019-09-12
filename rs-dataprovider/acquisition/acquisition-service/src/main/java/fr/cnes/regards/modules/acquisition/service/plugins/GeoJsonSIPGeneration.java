@@ -33,7 +33,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
-import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * This plugin allows to generate SIP by reading it into the content of the file to acquire.

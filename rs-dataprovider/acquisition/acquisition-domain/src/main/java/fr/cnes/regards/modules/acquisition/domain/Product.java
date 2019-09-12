@@ -18,6 +18,13 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -42,12 +49,6 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -60,8 +61,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.converters.SipStateConverter;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
+import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  *
@@ -77,11 +78,15 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
         uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_ipId", columnNames = "ip_id"),
                 @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-@NamedEntityGraph(name = "graph.product.complete", attributeNodes = { @NamedAttributeNode(value = "fileList"),
-        @NamedAttributeNode(value = "lastSIPGenerationJobInfo", subgraph = "graph.product.jobs"),
-        @NamedAttributeNode(value = "lastPostProductionJobInfo", subgraph = "graph.product.jobs") }, subgraphs = {
-        @NamedSubgraph(name = "graph.product.jobs", attributeNodes = { @NamedAttributeNode(value = "parameters") }) })
+@NamedEntityGraph(name = "graph.product.complete",
+        attributeNodes = { @NamedAttributeNode(value = "fileList"),
+                @NamedAttributeNode(value = "lastSIPGenerationJobInfo", subgraph = "graph.product.jobs"),
+                @NamedAttributeNode(value = "lastPostProductionJobInfo", subgraph = "graph.product.jobs") },
+        subgraphs = { @NamedSubgraph(name = "graph.product.jobs",
+                attributeNodes = { @NamedAttributeNode(value = "parameters") }) })
 public class Product {
+
+    private static final String MISSING_SESSION_ERROR = "Session is required";
 
     /**
      * {@link List} of file include in the {@link Product}
@@ -89,7 +94,7 @@ public class Product {
     @GsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
-    private final Set<AcquisitionFile> fileList = (Set<AcquisitionFile>) new HashSet<AcquisitionFile>();
+    private final Set<AcquisitionFile> fileList = new HashSet<AcquisitionFile>();
 
     /**
      * Unique id
@@ -128,8 +133,9 @@ public class Product {
     private String productName;
 
     /**
-     * The session identifier that create the current product
+     * The session name that create the current product
      */
+    @NotBlank(message = MISSING_SESSION_ERROR)
     @Column(name = "session", length = 128)
     private String session;
 

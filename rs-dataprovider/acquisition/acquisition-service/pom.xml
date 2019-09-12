@@ -91,6 +91,10 @@
 			<artifactId>ingest-domain</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.ingest</groupId>
+			<artifactId>ingest-client</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>feign-regards-starter</artifactId>
 		</dependency>
@@ -113,6 +117,10 @@
         <dependency>
 			<groupId>fr.cnes.regards.framework.modules.workspace</groupId>
 			<artifactId>workspace-service</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.session-manager</groupId>
+			<artifactId>session-manager-domain</artifactId>
 		</dependency>
 		<!-- TEST dependencies -->
 		<dependency>

@@ -22,7 +22,7 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
 import fr.cnes.regards.modules.acquisition.domain.SipStateManager;
-import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
+import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 
 /**
  * Converter for extended SIP state
