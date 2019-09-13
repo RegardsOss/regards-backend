@@ -440,8 +440,9 @@ public class PluginService implements IPluginService {
     public List<PluginConfiguration> getPluginConfigurationsByType(Class<?> interfacePluginType) {
         List<PluginConfiguration> result = new ArrayList<>();
         for (PluginConfiguration conf : repos.findAll()) {
-            PluginMetaData pluginMeta = PluginUtils.getPlugins().get(conf.getPluginId());
+            PluginMetaData pluginMeta = PluginUtils.getPluginMetadata(conf.getPluginId());
             if (pluginMeta.getInterfaceNames().contains(interfacePluginType.getName())) {
+                conf.setMetaData(pluginMeta);
                 result.add(conf);
             }
         }
