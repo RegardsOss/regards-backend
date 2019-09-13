@@ -203,6 +203,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         super();
         generateBusinessIdIfNotSet();
         this.setMetaData(metaData);
+        this.version = metaData.getVersion();
         if (parameters != null) {
             this.parameters.addAll(parameters);
         }
@@ -218,7 +219,6 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     public final void setMetaData(PluginMetaData metaData) {
         // For serialization
         pluginId = metaData.getPluginId();
-        version = metaData.getVersion();
         // Transient information only useful at runtime
         this.metaData = metaData;
     }
@@ -230,7 +230,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public IPluginParam getParameter(String name) {
         for (IPluginParam p : parameters) {
-            if (p != null && p.getName().equals(name)) {
+            if ((p != null) && p.getName().equals(name)) {
                 return p;
             }
         }
@@ -243,7 +243,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public Object getParameterValue(String name) {
         for (IPluginParam p : parameters) {
-            if (p != null && p.getName().equals(name)) {
+            if ((p != null) && p.getName().equals(name)) {
                 return p.getValue();
             }
         }
@@ -279,10 +279,6 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return version;
     }
 
-    /**
-     * This setter <b>must</b> only be used while TESTING
-     * @param version
-     */
     public void setVersion(String version) {
         this.version = version;
     }
@@ -309,7 +305,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     public void setParameters(Set<IPluginParam> parameters) {
         this.parameters.clear();
-        if (parameters != null && !parameters.isEmpty()) {
+        if ((parameters != null) && !parameters.isEmpty()) {
             this.parameters.addAll(parameters);
         }
     }
@@ -381,8 +377,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (businessId == null ? 0 : businessId.hashCode());
-        result = prime * result + (pluginId == null ? 0 : pluginId.hashCode());
+        result = (prime * result) + (businessId == null ? 0 : businessId.hashCode());
+        result = (prime * result) + (pluginId == null ? 0 : pluginId.hashCode());
         return result;
     }
 
