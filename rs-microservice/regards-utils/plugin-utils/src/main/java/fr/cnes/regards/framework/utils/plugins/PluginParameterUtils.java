@@ -83,7 +83,7 @@ public final class PluginParameterUtils {
         List<PluginParamDescriptor> parameters = new ArrayList<>();
 
         for (final Field field : ReflectionUtils.getAllDeclaredFields(pluginClass)) {
-            if (field.isAnnotationPresent(PluginParameter.class) || isChildParameters && isToBeConsidered(field)) {
+            if (field.isAnnotationPresent(PluginParameter.class) || (isChildParameters && isToBeConsidered(field))) {
                 // Initialize list of managed types for in depth scanning from root fields
                 List<String> managedTypes = new ArrayList<>();
                 if (isChildParameters) {
@@ -148,12 +148,12 @@ public final class PluginParameterUtils {
 
             // Manage markdown description
             String markdown = AnnotationUtils.loadMarkdown(pluginClass, pluginParameter.markdown());
-            if (markdown != null && !markdown.isEmpty()) {
+            if ((markdown != null) && !markdown.isEmpty()) {
                 result.setMarkdown(markdown);
             }
 
             // Manage default value
-            if (pluginParameter.defaultValue() != null && !pluginParameter.defaultValue().isEmpty()) {
+            if ((pluginParameter.defaultValue() != null) && !pluginParameter.defaultValue().isEmpty()) {
                 result.setDefaultValue(pluginParameter.defaultValue());
             }
         }
@@ -308,7 +308,7 @@ public final class PluginParameterUtils {
         boolean isSupportedType = false;
         Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
 
-        if (pluginInterfaces != null && !pluginInterfaces.isEmpty()) {
+        if ((pluginInterfaces != null) && !pluginInterfaces.isEmpty()) {
             isSupportedType = pluginInterfaces.stream().anyMatch(s -> s.equalsIgnoreCase(clazz.getName()));
         }
 
@@ -402,34 +402,33 @@ public final class PluginParameterUtils {
      */
     private static IPluginParam findParameter(String parameterName, PluginConfiguration pluginConf,
             IPluginParam... dynamicPluginParameters) {
-
         // Default value comes from plugin configuration
         IPluginParam staticParam = pluginConf.getParameter(parameterName);
-
         // Manage dynamic parameters
-        if (staticParam != null && staticParam.isDynamic() && dynamicPluginParameters != null
-                && dynamicPluginParameters.length > 0) {
-
+        // IF static parameter is not found, so the parameter can only be dynamic.
+        if ((dynamicPluginParameters != null) && (dynamicPluginParameters.length > 0)) {
             // Search dynamic parameter for current parameter name
             Optional<IPluginParam> dynamicParameterOpt = Arrays.stream(dynamicPluginParameters)
                     .filter(s -> s.getName().equals(parameterName)).findFirst();
-
             // Dynamic parameter found
             if (dynamicParameterOpt.isPresent()) {
                 IPluginParam dynamicParam = dynamicParameterOpt.get();
                 LOGGER.debug("Dynamic parameter found for parameter \"{}\" with value \"{}\"", parameterName,
                              dynamicParam);
-
-                if (!staticParam.isValid(dynamicParam)) {
-                    throw new PluginUtilsRuntimeException(String
-                            .format("Dynamic param %s not consistent with static one %s", dynamicParam, staticParam));
+                if (staticParam != null) {
+                    if (!staticParam.isValid(dynamicParam)) {
+                        throw new PluginUtilsRuntimeException(
+                                String.format("Dynamic param %s not consistent with static one %s", dynamicParam,
+                                              staticParam));
+                    }
+                    if (!staticParam.isDynamic()) {
+                        throw new PluginUtilsRuntimeException(
+                                String.format("Param %s is not allowed to be dynamic", dynamicParam, staticParam));
+                    }
                 }
-
                 return dynamicParam;
-
             }
         }
-
         return staticParam;
     }
 
@@ -745,7 +744,7 @@ public final class PluginParameterUtils {
 
         private final Class<?> primitive;
 
-        private PluginParamType paramType;
+        private final PluginParamType paramType;
 
         /**
          * Constructor

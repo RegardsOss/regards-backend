@@ -563,7 +563,7 @@ public class PluginService implements IPluginService {
         PluginConfiguration pluginConf = loadPluginConfiguration(businessId);
 
         // Get the plugin implementation associated
-        PluginMetaData pluginMetadata = PluginUtils.getPlugins().get(pluginConf.getPluginId());
+        PluginMetaData pluginMetadata = PluginUtils.getPluginMetadata(pluginConf.getPluginId());
 
         if (pluginMetadata == null) {
             LOGGER.debug("No plugin metadata found for plugin configuration id {}", pluginConf.getPluginId());
