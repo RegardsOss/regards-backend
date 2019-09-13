@@ -58,7 +58,7 @@ public class CatalogServicesController {
 
     public static final String PATH_SERVICES = "/services";
 
-    public static final String PATH_SERVICE_NAME = "/{pluginConfigurationId}/apply";
+    public static final String PATH_SERVICE_NAME = "/{pluginConfigurationBusinessId}/apply";
 
     public static final String DATASET_IDS_QUERY_PARAM = "datasetIpIds";
 
@@ -95,7 +95,7 @@ public class CatalogServicesController {
     /**
      * Apply the given service.
      *
-     * @param pPluginConfigurationId
+     * @param pluginConfigurationBusinessId
      *            the id of the {@link Dataset}
      * @return whatever is returned by the given service
      * @throws ModuleException
@@ -103,10 +103,10 @@ public class CatalogServicesController {
     @RequestMapping(method = RequestMethod.POST, path = PATH_SERVICE_NAME, produces = MediaType.TEXT_PLAIN_VALUE)
     @ResourceAccess(description = "Apply a given plugin service", role = DefaultRole.PUBLIC)
     public ResponseEntity<StreamingResponseBody> applyService(
-            @PathVariable("pluginConfigurationId") final Long pPluginConfigurationId,
+            @PathVariable("pluginConfigurationBusinessId") final String pluginConfigurationBusinessId,
             @RequestBody ServicePluginParameters pServiceParameters, HttpServletResponse response)
             throws ModuleException {
-        return serviceManager.apply(pPluginConfigurationId, pServiceParameters, response);
+        return serviceManager.apply(pluginConfigurationBusinessId, pServiceParameters, response);
     }
 
 }

@@ -18,31 +18,17 @@
  */
 package fr.cnes.regards.modules.search.client;
 
-import java.lang.reflect.ParameterizedType;
-import java.util.List;
-import java.util.Set;
-
-import org.assertj.core.util.Lists;
-import org.elasticsearch.index.IndexNotFoundException;
-import org.junit.After;
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
@@ -55,6 +41,18 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.ge
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.media.MediaExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
+import java.lang.reflect.ParameterizedType;
+import java.util.List;
+import java.util.Set;
+import org.assertj.core.util.Lists;
+import org.elasticsearch.index.IndexNotFoundException;
+import org.junit.After;
+import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Abstract Integration Test for clients of the module.
@@ -124,7 +122,7 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
 
     private void initPlugins() throws ModuleException {
         PluginConfiguration legacyConf = PluginUtils
-                .getPluginConfiguration(PluginParametersFactory.build().getParameters(), LegacySearchEngine.class);
+                .getPluginConfiguration(IPluginParam.set(), LegacySearchEngine.class);
         legacyConf = pluginService.savePluginConfiguration(legacyConf);
         SearchEngineConfiguration seConf = new SearchEngineConfiguration();
         seConf.setLabel("Legacy conf for all datasets");
@@ -165,12 +163,13 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
         engineConfiguration.setImage("http://plop/image.png");
         engineConfiguration.setEntityLastUpdateDatePropertyPath("TimePeriod.startDate");
 
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(OpenSearchEngine.TIME_EXTENSION_PARAMETER, geoTime)
-                .addParameter(OpenSearchEngine.REGARDS_EXTENSION_PARAMETER, regardsExt)
-                .addParameter(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER, mediaExt)
-                .addParameter(OpenSearchEngine.PARAMETERS_CONFIGURATION, paramConfigurations)
-                .addParameter(OpenSearchEngine.ENGINE_PARAMETERS, engineConfiguration).getParameters();
+        Set<IPluginParam> parameters = IPluginParam.set(
+                IPluginParam.build(OpenSearchEngine.TIME_EXTENSION_PARAMETER, PluginParameterTransformer.toJson(geoTime)),
+                IPluginParam.build(OpenSearchEngine.REGARDS_EXTENSION_PARAMETER, PluginParameterTransformer.toJson(regardsExt)),
+                IPluginParam.build(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER, PluginParameterTransformer.toJson(mediaExt)),
+                IPluginParam.build(OpenSearchEngine.PARAMETERS_CONFIGURATION, PluginParameterTransformer.toJson(paramConfigurations)),
+                IPluginParam.build(OpenSearchEngine.ENGINE_PARAMETERS, PluginParameterTransformer.toJson(engineConfiguration))
+        );
         PluginConfiguration opensearchConf = PluginUtils.getPluginConfiguration(parameters, OpenSearchEngine.class);
         PluginConfiguration openSearchPluginConf = pluginService.savePluginConfiguration(opensearchConf);
         SearchEngineConfiguration seConfOS = new SearchEngineConfiguration();

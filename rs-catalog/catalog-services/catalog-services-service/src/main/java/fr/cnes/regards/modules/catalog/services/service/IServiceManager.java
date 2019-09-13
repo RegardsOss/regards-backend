@@ -43,10 +43,10 @@ public interface IServiceManager {
      * Retrieve all PluginConfiguration in the system for plugins of type {@link IService} linked to a dataset, and adds applicationModes
      * & entityTypes info via a DTO
      *
-     * @param pDatasetId
-     *            Id of dataset. Can be <code>null</code>.
-     * @param pServiceScope
-     *            scope we are interrested in. Can be <code>null</code>.
+     * @param pDatasetIds
+     *            Ids of dataset. Can be <code>empty</code>.
+     * @param pServiceScopes
+     *            scopes we are interrested in. Can be <code>empty</code>.
      * @return PluginConfigurations in the system for plugins of type {@link IService} linked to a dataset for a given
      *         scope. Returns an empty list if <code>pDatasetId</code> is <code>null</code>
      */
@@ -55,12 +55,12 @@ public interface IServiceManager {
     /**
      * Apply the service
      *
-     * @param pPluginConfigurationId Plugin configuration to run
+     * @param pluginConfigurationBusinessId Plugin configuration to run
      * @param pServicePluginParameters Plugin parameters
      * @return the result of the service call wrapped in a resonse entity
      * @throws ModuleException
      */
-    ResponseEntity<StreamingResponseBody> apply(final Long pPluginConfigurationId,
+    ResponseEntity<StreamingResponseBody> apply(final String pluginConfigurationBusinessId,
             final ServicePluginParameters pServicePluginParameters, HttpServletResponse response)
             throws ModuleException;
 

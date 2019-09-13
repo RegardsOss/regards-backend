@@ -18,31 +18,16 @@
  */
 package fr.cnes.regards.modules.catalog.services.service;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
@@ -53,6 +38,20 @@ import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDt
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.catalog.services.plugins.AbstractCatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 /**
  * Class managing the execution of {@link IService} plugins
@@ -134,31 +133,32 @@ public class ServiceManager implements IServiceManager {
     }
 
     @Override
-    public ResponseEntity<StreamingResponseBody> apply(final Long pPluginConfigurationId,
+    public ResponseEntity<StreamingResponseBody> apply(final String pluginConfigurationBusinessId,
             final ServicePluginParameters pServicePluginParameters, HttpServletResponse response)
             throws ModuleException {
 
-        LOGGER.info("Applying plugin service {}", pPluginConfigurationId);
-        final PluginConfiguration conf = pluginService.getPluginConfiguration(pPluginConfigurationId);
+        LOGGER.info("Applying plugin service {}", pluginConfigurationBusinessId);
+        final PluginConfiguration conf = pluginService.getPluginConfiguration(pluginConfigurationBusinessId);
         // is it a Service configuration?
         if (!conf.getInterfaceNames().contains(IService.class.getName())) {
             throw new EntityInvalidException(
-                    pPluginConfigurationId + " is not a " + IService.class.getName() + " plugin configuration");
+                    pluginConfigurationBusinessId + " is not a " + IService.class.getName() + " plugin configuration");
         }
         // is it a service applyable to this dataset?
         // TODO : Check if the current service is applicable for the given entities (throught the dataset associated)
 
         // Build dynamic parameters
-        PluginParametersFactory factory = PluginParametersFactory.build();
+        Set<IPluginParam> parameters = new HashSet<>();
         if (pServicePluginParameters.getDynamicParameters() != null) {
-            pServicePluginParameters.getDynamicParameters().forEach(factory::addDynamicParameter);
+            pServicePluginParameters.getDynamicParameters().forEach((k,v) -> {
+                parameters.add(IPluginParam.build(k,v).dynamic());
+            });
         }
 
         IService toExecute;
         try {
             toExecute = (IService) pluginService
-                    .getPlugin(pPluginConfigurationId,
-                               factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
+                    .getPlugin(pluginConfigurationBusinessId, Iterables.toArray(parameters, IPluginParam.class));
         } catch (NotAvailablePluginConfigurationException e) {
             throw new ModuleException("Unable to apply disabled service.", e);
         }
@@ -174,8 +174,9 @@ public class ServiceManager implements IServiceManager {
 
         // 2. Get all plugin conf with the applyToAllDataset parameter set to true.
         for (PluginConfiguration conf : confs) {
-            PluginParameter param = conf.getParameter(AbstractCatalogServicePlugin.APPLY_TO_ALL_DATASETS_PARAM);
-            if ((param != null) && Boolean.parseBoolean(param.getValue())) {
+            IPluginParam param = conf.getParameter(AbstractCatalogServicePlugin.APPLY_TO_ALL_DATASETS_PARAM);
+            if ((param != null) && param.getType() == PluginParamType.STRING &&
+                    Boolean.parseBoolean((String) param.getValue())) {
                 allServices.add(conf);
             }
         }

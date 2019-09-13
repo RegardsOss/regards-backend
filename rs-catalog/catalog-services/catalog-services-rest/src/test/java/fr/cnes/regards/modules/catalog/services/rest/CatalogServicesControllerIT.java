@@ -18,6 +18,30 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
+import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
+import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
+import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
+import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -30,7 +54,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -45,33 +68,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
-
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.security.utils.HttpConstants;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
-import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
-import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
-import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
-import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
-import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -110,8 +106,9 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
     @Before
     public void init() throws ModuleException {
         LOG.info("--------------------> Initialization <-------------------------------------");
-        Set<PluginParameter> parameters = PluginParametersFactory.build().addDynamicParameter("para", "never used")
-                .getParameters();
+        Set<IPluginParam> parameters = IPluginParam.set(
+                IPluginParam.build("para", "never used").dynamic()
+        );
         final PluginMetaData metaData = new PluginMetaData();
         metaData.setPluginId("tata");
         metaData.setAuthor("toto");
@@ -129,10 +126,9 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         }
         // 2. second one
         if (!pluginService.findPluginConfigurationByLabel(PLUGIN_CONF_LABEL_1).isPresent()) {
-            parameters = PluginParametersFactory.build()
-                    .addDynamicParameter(SampleServicePlugin.RESPONSE_TYPE_PARAMETER,
-                                         SampleServicePlugin.RESPONSE_TYPE_JSON)
-                    .getParameters();
+            parameters = IPluginParam.set(
+                    IPluginParam.build(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON).dynamic()
+            );
             samplePlgConf = new PluginConfiguration(PluginUtils.createPluginMetaData(SampleServicePlugin.class),
                     PLUGIN_CONF_LABEL_1, parameters);
             pluginService.savePluginConfiguration(samplePlgConf);
@@ -150,9 +146,9 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         metaData2.getInterfaceNames().add(IService.class.getName());
         metaData2.setPluginClassName(TestService.class.getName());
 
-        parameters = PluginParametersFactory.build().addDynamicParameter(SampleServicePlugin.RESPONSE_TYPE_PARAMETER,
-                                                                         SampleServicePlugin.RESPONSE_TYPE_JSON)
-                .getParameters();
+        parameters = IPluginParam.set(
+                IPluginParam.build(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON).dynamic()
+        );
         PluginConfiguration samplePlgConf2 = new PluginConfiguration(
                 PluginUtils.createPluginMetaData(SampleServicePlugin.class), PLUGIN_CONF_LABEL_2, parameters);
         pluginService.savePluginConfiguration(samplePlgConf2);

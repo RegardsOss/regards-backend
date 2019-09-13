@@ -49,13 +49,13 @@ public class PluginConfigurationDto extends PluginConfiguration {
      * For a {@link PluginConfiguration}, return its corresponding DTO, in which we have added fields <code>applicationModes</code>
      * and <code>entityTypes</code>
      *
-     * @param pPluginConfiguration
+     * @param pluginConfiguration
      */
-    public PluginConfigurationDto(PluginConfiguration pPluginConfiguration) {
-        super(pPluginConfiguration);
+    public PluginConfigurationDto(PluginConfiguration pluginConfiguration) {
+        super(pluginConfiguration.getMetaData(), pluginConfiguration.getLabel());
         applicationModes = Sets
-                .newHashSet(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(pPluginConfiguration).applicationModes());
-        entityTypes = Sets.newHashSet(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(pPluginConfiguration).entityTypes());
+                .newHashSet(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(pluginConfiguration).applicationModes());
+        entityTypes = Sets.newHashSet(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(pluginConfiguration).entityTypes());
     }
 
     /**

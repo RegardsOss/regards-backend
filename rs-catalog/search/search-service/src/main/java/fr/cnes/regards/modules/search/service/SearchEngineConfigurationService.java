@@ -18,23 +18,7 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Lists;
-
 import feign.FeignException;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -45,16 +29,15 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.locks.domain.Lock;
-import fr.cnes.regards.framework.modules.locks.domain.LockException;
 import fr.cnes.regards.framework.modules.locks.service.ILockService;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
@@ -63,6 +46,18 @@ import fr.cnes.regards.modules.dam.domain.entities.event.EventType;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
 /**
  * Service to handle {@link SearchEngineConfiguration} entities.
@@ -74,6 +69,11 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 public class SearchEngineConfigurationService implements ISearchEngineConfigurationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineConfigurationService.class);
+
+    /**
+     * Name of the lock used in this service
+     */
+    public static final String SEARCH_ENGINE_LOCK_NAME = "initDefaultSearchEngine";
 
     @Autowired
     private ISearchEngineConfRepository repository;
@@ -104,20 +104,9 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
     @Override
     public void initDefaultSearchEngine(Class<?> legacySearchEnginePluginClass) {
-        Lock lock = null;
-        try {
-            lock = lockService.lock(new Lock("initDefaultSearchEngine", this.getClass()), 10L);
-        } catch (LockException e) {
-            // lock could not be acquired, mainly because thread was interrupted while sleeping. Lets log and do nothing
-            LOGGER.error("Default search engine could not be initialized.", e);
-            noticationClient.notify(
-                                    "You can initialize it by going to relevant part of HMI. Plugin type: \"legacy\"."
-                                            + " Select use this search protocol for every search on catalog.",
-                                    "Default search engine could not be initialized", NotificationLevel.INFO,
-                                    DefaultRole.ADMIN);
-        }
-        // if the lock is null it means it could not be acquired
-        if (lock != null) {
+        boolean haveLock = lockService.waitForlock(SEARCH_ENGINE_LOCK_NAME, this.getClass(), 10L, 200);
+        // if the haveLock is null it means it could not be acquired
+        if (haveLock) {
             try {
                 // Initialize the mandatory legacy searchengine if it does not exists yet.
                 SearchEngineConfiguration conf = repository
@@ -126,9 +115,9 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                     // Create the new one
                     conf = new SearchEngineConfiguration();
                     conf.setLabel("REGARDS search protocol");
-                    conf.setConfiguration(PluginUtils
-                            .getPluginConfiguration(PluginParametersFactory.build().getParameters(),
-                                                    legacySearchEnginePluginClass));
+                    PluginMetaData pluginMetaData = PluginUtils.createPluginMetaData(legacySearchEnginePluginClass);
+                    PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetaData, conf.getLabel());
+                    conf.setConfiguration(pluginConfiguration);
                     try {
                         createConf(conf);
                     } catch (ModuleException e) {
@@ -136,8 +125,16 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                     }
                 }
             } finally {
-                lockService.release(lock);
+                lockService.releaseLock(SEARCH_ENGINE_LOCK_NAME, this.getClass());
             }
+        } else {
+            // haveLock could not be acquired, mainly because thread was interrupted while sleeping. Lets log and do nothing
+            LOGGER.error("Default search engine could not be initialized.");
+            noticationClient.notify(
+                    "You can initialize it by going to relevant part of HMI. Plugin type: \"legacy\"."
+                            + " Select use this search protocol for every search on catalog.",
+                    "Default search engine could not be initialized", NotificationLevel.INFO,
+                    DefaultRole.ADMIN);
         }
     }
 
@@ -179,7 +176,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
         Page<SearchEngineConfiguration> otherConfs = repository
                 .findByConfigurationId(confToDelete.getConfiguration().getId(), PageRequest.of(0, 1));
         if (otherConfs.getContent().isEmpty()) {
-            pluginService.deletePluginConfiguration(confToDelete.getConfiguration().getId());
+            pluginService.deletePluginConfiguration(confToDelete.getConfiguration().getBusinessId());
         }
 
     }
