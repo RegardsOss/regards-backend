@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,12 +178,13 @@ public class CacheService {
             availableFiles = cachedFileRepository.findAll(page);
             Set<String> availableFilePaths = availableFiles.getContent().stream()
                     .map(availableFile -> availableFile.getLocation().getPath().toString()).collect(Collectors.toSet());
-            Files.walk(getTenantCachePath())
-                    .filter(path -> availableFilePaths.contains(path.toAbsolutePath().toString()))
-                    .forEach(path -> notificationClient.notify(String
-                            .format("File %s is present in cache directory while it shouldn't be. Please remove this file from the cache directory",
-                                    path.toString()), "Dirty cache", NotificationLevel.WARNING,
-                                                               DefaultRole.PROJECT_ADMIN));
+            try (Stream<Path> stream = Files.walk(getTenantCachePath())) {
+                stream.filter(path -> availableFilePaths.contains(path.toAbsolutePath().toString()))
+                        .forEach(path -> notificationClient.notify(String
+                                .format("File %s is present in cache directory while it shouldn't be. Please remove this file from the cache directory",
+                                        path.toString()), "Dirty cache", NotificationLevel.WARNING,
+                                                                   DefaultRole.PROJECT_ADMIN));
+            }
             page = availableFiles.nextPageable();
         } while (availableFiles.hasNext());
     }
@@ -336,8 +338,8 @@ public class CacheService {
     private Path getTenantCachePath() {
         String currentTenant = runtimeTenantResolver.getTenant();
         if (currentTenant == null) {
-            LOGGER.error("Unable to define current tenant cache directory path, Tenant is not defined from the runtimeTenantResolver.");
-            return null;
+            throw new RuntimeException(
+                    "Unable to define current tenant cache directory path, Tenant is not defined from the runtimeTenantResolver.");
         }
         return Paths.get(globalCachePath, currentTenant);
     }
