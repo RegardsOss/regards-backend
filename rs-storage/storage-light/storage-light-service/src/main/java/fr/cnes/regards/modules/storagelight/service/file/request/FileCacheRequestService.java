@@ -355,6 +355,7 @@ public class FileCacheRequestService {
                     jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId()));
                 }
             } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+                LOGGER.error(e.getMessage(), e);
                 this.handleStorageNotAvailable(requests);
             }
         }

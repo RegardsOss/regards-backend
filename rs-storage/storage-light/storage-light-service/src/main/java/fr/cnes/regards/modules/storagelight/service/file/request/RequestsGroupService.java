@@ -116,6 +116,7 @@ public class RequestsGroupService {
                 break;
             case REFERENCE:
                 LOGGER.warn("There is no requests for type REFERENCE. It is impossible to automaticly determine if group requests is done.");
+                break;
             default:
                 break;
         }

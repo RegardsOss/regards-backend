@@ -317,6 +317,7 @@ public class FileStorageRequestService {
                 }
             }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+            LOGGER.error(e.getMessage(), e);
             this.handleStorageNotAvailable(fileStorageRequests);
         }
         return jobInfoList;

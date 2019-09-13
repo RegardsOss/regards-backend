@@ -18,6 +18,19 @@
  */
 package fr.cnes.regards.modules.storagelight.client.test;
 
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeType;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
@@ -33,17 +46,6 @@ import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageReques
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storagelight.domain.flow.FlowItemStatus;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.MimeType;
 
 /**
  * Provide a bean to replace the behavior of the {@link StorageClient} while testing
@@ -57,7 +59,9 @@ public class StorageClientMock implements IStorageClient {
 
     @Autowired
     private IPublisher publisher;
+
     private Optional<Boolean> shouldReturnGranted;
+
     private Optional<Boolean> shouldReturnSuccess;
 
     /**
@@ -69,7 +73,6 @@ public class StorageClientMock implements IStorageClient {
         this.shouldReturnGranted = Optional.of(shouldReturnGranted);
         this.shouldReturnSuccess = Optional.of(shouldReturnSuccess);
     }
-
 
     @Override
     public RequestInfo store(FileStorageRequestDTO file) {
@@ -84,31 +87,17 @@ public class StorageClientMock implements IStorageClient {
             firstStatus = FlowItemStatus.DENIED;
         }
 
-        RequestResultInfo resultInfo = new RequestResultInfo(
-                requestInfo.getGroupId(),
-                FileRequestType.STORAGE,
-                file.getChecksum(),
-                file.getStorage()
-        );
-
+        RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(), FileRequestType.STORAGE,
+                file.getChecksum(), file.getStorage());
 
         resultInfo.setResultFile(
-            new FileReference(
-                    file.getOwner(),
-                    new FileReferenceMetaInfo(
-                            file.getChecksum(),
-                            file.getAlgorithm(),
-                            file.getFileName(),
-                            1000L,
-                            MimeType.valueOf(file.getMimeType())
-                    ),
-                    new FileLocation(file.getStorage(), null)
-        ));
+                                 new FileReference(file.getOwner(),
+                                         new FileReferenceMetaInfo(file.getChecksum(), file.getAlgorithm(),
+                                                 file.getFileName(), 1000L, MimeType.valueOf(file.getMimeType())),
+                                         new FileLocation(file.getStorage(), null)));
         List<RequestResultInfo> requestInfos = Collections.singletonList(resultInfo);
         publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.STORAGE, firstStatus,
-                requestInfos
-        ));
-
+                                                       requestInfos));
 
         // Send the second event if the first one is GRANTED
         if (shouldReturnGranted.get()) {
@@ -118,7 +107,8 @@ public class StorageClientMock implements IStorageClient {
             } else {
                 secondStatus = FlowItemStatus.ERROR;
             }
-            publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.STORAGE, secondStatus, requestInfos));
+            publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.STORAGE,
+                                                           secondStatus, requestInfos));
         }
 
         return requestInfo;
@@ -129,7 +119,7 @@ public class StorageClientMock implements IStorageClient {
      */
     private void checkInit() {
         if (!shouldReturnGranted.isPresent() && !shouldReturnSuccess.isPresent()) {
-            throw new Error("Please call setBehavior before using the StorageClientMock");
+            throw new RuntimeException("Please call setBehavior before using the StorageClientMock");
         }
     }
 
@@ -140,27 +130,32 @@ public class StorageClientMock implements IStorageClient {
 
     @Override
     public void storeRetry(RequestInfo requestInfo) {
-
+        // Not implemented yet
+        throw new UnsupportedOperationException("Not implemented yet !");
     }
 
     @Override
     public void storeRetry(Collection<String> owners) {
-
+        // Not implemented yet
+        throw new UnsupportedOperationException("Not implemented yet !");
     }
 
     @Override
     public void availabilityRetry(RequestInfo requestInfo) {
-
+        // Not implemented yet
+        throw new UnsupportedOperationException("Not implemented yet !");
     }
 
     @Override
     public RequestInfo reference(FileReferenceRequestDTO file) {
-        return null;
+        // Not implemented yet
+        throw new UnsupportedOperationException("Not implemented yet !");
     }
 
     @Override
     public RequestInfo reference(Collection<FileReferenceRequestDTO> files) {
-        return null;
+        // Not implemented yet
+        throw new UnsupportedOperationException("Not implemented yet !");
     }
 
     @Override
@@ -176,31 +171,17 @@ public class StorageClientMock implements IStorageClient {
             firstStatus = FlowItemStatus.DENIED;
         }
 
-        RequestResultInfo resultInfo = new RequestResultInfo(
-                requestInfo.getGroupId(),
-                FileRequestType.DELETION,
-                file.getChecksum(),
-                file.getStorage()
-        );
-
+        RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(), FileRequestType.DELETION,
+                file.getChecksum(), file.getStorage());
 
         resultInfo.setResultFile(
-                new FileReference(
-                        file.getOwner(),
-                        new FileReferenceMetaInfo(
-                                file.getChecksum(),
-                                "some algo",
-                                "some file",
-                                1000L,
-                                MimeType.valueOf("application/pdf")
-                        ),
-                        new FileLocation(file.getStorage(), null)
-                ));
+                                 new FileReference(file.getOwner(),
+                                         new FileReferenceMetaInfo(file.getChecksum(), "some algo", "some file", 1000L,
+                                                 MimeType.valueOf("application/pdf")),
+                                         new FileLocation(file.getStorage(), null)));
         List<RequestResultInfo> requestInfos = Collections.singletonList(resultInfo);
         publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.DELETION, firstStatus,
-                requestInfos
-        ));
-
+                                                       requestInfos));
 
         // Send the second event if the first one is GRANTED
         if (shouldReturnGranted.get()) {
@@ -210,7 +191,8 @@ public class StorageClientMock implements IStorageClient {
             } else {
                 secondStatus = FlowItemStatus.ERROR;
             }
-            publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.DELETION, secondStatus, requestInfos));
+            publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.DELETION,
+                                                           secondStatus, requestInfos));
         }
 
         return requestInfo;
@@ -223,16 +205,18 @@ public class StorageClientMock implements IStorageClient {
 
     @Override
     public RequestInfo copy(FileCopyRequestDTO file) {
-        return null;
+        // Not implemented yet
+        throw new UnsupportedOperationException("Not implemented yet !");
     }
 
     @Override
     public RequestInfo copy(Collection<FileCopyRequestDTO> files) {
-        return null;
+        // Not implemented yet
+        throw new UnsupportedOperationException("Not implemented yet !");
     }
 
     @Override
     public RequestInfo makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 }

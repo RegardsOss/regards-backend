@@ -93,6 +93,7 @@ public class FileReferenceRequestService {
                 reqGrpService.requestSuccess(groupId, FileRequestType.REFERENCE, fileRef.getMetaInfo().getChecksum(),
                                              fileRef.getLocation().getStorage(), fileRef, false);
             } catch (ModuleException e) {
+                LOGGER.error(e.getMessage(), e);
                 fileRefEventPublisher.storeError(file.getChecksum(), Sets.newHashSet(file.getOwner()),
                                                  file.getStorage(), e.getMessage(), Sets.newHashSet(groupId));
                 reqGrpService.requestError(groupId, FileRequestType.REFERENCE, file.getChecksum(), file.getStorage(),

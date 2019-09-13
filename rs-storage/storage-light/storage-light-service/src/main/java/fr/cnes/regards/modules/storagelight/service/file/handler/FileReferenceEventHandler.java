@@ -121,6 +121,7 @@ public class FileReferenceEventHandler
                     break;
                 case STORE_ERROR:
                     handleStoreError(wrapper.getContent());
+                    break;
                 default:
                     break;
             }

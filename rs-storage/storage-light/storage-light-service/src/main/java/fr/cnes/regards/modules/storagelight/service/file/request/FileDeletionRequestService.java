@@ -189,6 +189,7 @@ public class FileDeletionRequestService {
                 jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId()));
             }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+            LOGGER.error(e.getMessage(), e);
             this.handleStorageNotAvailable(fileDeletionRequests);
         }
         return jobInfoList;

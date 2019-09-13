@@ -157,7 +157,8 @@ public class FileDownloadService {
             throw new ModuleException(String
                     .format("Unable to download file %s (checksum : %s) as its storage location %s is not active.",
                             fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getChecksum(),
-                            fileToDownload.getLocation().toString()));
+                            fileToDownload.getLocation().toString()),
+                    e);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             throw new ModuleException(e.getMessage(), e);

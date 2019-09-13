@@ -42,6 +42,7 @@ import javax.persistence.UniqueConstraint;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
@@ -97,15 +98,7 @@ public class FileReference {
     }
 
     public FileReference(String owner, FileReferenceMetaInfo metaInfo, FileLocation location) {
-        super();
-        Assert.notNull(owner, "File reference needs at least one owner to be created");
-        Assert.notNull(metaInfo, "File reference needs meta informations to be created");
-        Assert.notNull(location, "File reference needs a storage location to be created");
-
-        this.owners.add(owner);
-        this.metaInfo = metaInfo;
-        this.location = location;
-        this.setStorageDate(OffsetDateTime.now());
+        this(Sets.newHashSet(owner), metaInfo, location);
     }
 
     public FileReference(Collection<String> owners, FileReferenceMetaInfo metaInfo, FileLocation location) {
@@ -118,7 +111,7 @@ public class FileReference {
         this.owners.addAll(owners);
         this.metaInfo = metaInfo;
         this.location = location;
-        this.setStorageDate(OffsetDateTime.now());
+        this.storageDate = OffsetDateTime.now();
     }
 
     /**

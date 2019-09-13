@@ -200,6 +200,7 @@ public class PrioritizedStorageService {
                 updatable = plugin.allowConfigurationUpdate(updated.getStorageConfiguration(),
                                                             oldOne.getStorageConfiguration(), nbfilesAlreadyStored > 0);
             } catch (NotAvailablePluginConfigurationException e) {
+                LOG.error(e.getMessage(), e);
                 throw new EntityOperationForbiddenException(e.getMessage());
             }
         }

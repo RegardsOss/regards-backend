@@ -80,10 +80,10 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
                                                                         request.getGroupIds());
                     storageRequestService.handleSuccess(request, fileRef, message);
                 } catch (ModuleException e) {
+                    LOG.error(e.getMessage(), e);
                     String errorCause = String.format("Unable to save new file reference for file %s",
                                                       request.getStorage());
                     storageRequestService.handleError(request, errorCause);
-
                 }
             }
 

@@ -80,7 +80,7 @@ public class FileRequestScheduler {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                if (getLock()) {
+                if (obtainLock()) {
                     fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(),
                                                            Sets.newHashSet());
                 }
@@ -95,7 +95,7 @@ public class FileRequestScheduler {
     public void handleFileCacheRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            if (getLock()) {
+            if (obtainLock()) {
                 try {
                     fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
                 } finally {
@@ -111,7 +111,7 @@ public class FileRequestScheduler {
     public void handleFileDeletionRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            if (getLock()) {
+            if (obtainLock()) {
                 try {
                     fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet());
                 } finally {
@@ -126,7 +126,7 @@ public class FileRequestScheduler {
     public void handleFileCopyRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            if (getLock()) {
+            if (obtainLock()) {
                 try {
                     FileCopyRequestService.scheduleAvailabilityRequests(FileRequestStatus.TODO);
                 } finally {
@@ -141,7 +141,7 @@ public class FileRequestScheduler {
      * Get lock to ensure schedulers are not started at the same time by many instance of this microservice
      * @return
      */
-    private boolean getLock() {
+    private boolean obtainLock() {
         return lockService.obtainLockOrSkip(this.getClass().getName(), this, 60_000);
     }
 
