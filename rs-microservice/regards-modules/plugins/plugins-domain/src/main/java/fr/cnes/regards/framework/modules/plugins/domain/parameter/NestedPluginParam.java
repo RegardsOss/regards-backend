@@ -30,4 +30,10 @@ public class NestedPluginParam extends AbstractPluginParam<String> {
     public NestedPluginParam() {
         super(PluginParamType.PLUGIN);
     }
+
+    @Override
+    public void value(String value) {
+        this.setValue(value);
+    }
+
 }
