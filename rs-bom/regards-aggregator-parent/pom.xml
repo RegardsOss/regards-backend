@@ -50,18 +50,18 @@
 	</developers>
 
 	<distributionManagement>
-		<repository>
-			<uniqueVersion>true</uniqueVersion>
-			<id>archiva-internal</id>
-			<name>Archiva Managed Repository</name>
-			<url>http://172.26.46.158:8010/repository/internal/</url>
-		</repository>
 		<snapshotRepository>
 			<uniqueVersion>true</uniqueVersion>
-			<id>archiva-snapshots</id>
-			<name>Archiva Managed Snapshot Repository</name>
-			<url>http://172.26.46.158:8010/repository/snapshots/</url>
+			<id>nexus-maven-regards</id>
+			<name>Nexus Maven Repository for regards artifacts</name>
+			<url>https://172.26.46.158:8443/repository/nexus-maven-regards/</url>
 		</snapshotRepository>
+		<repository>
+			<uniqueVersion>true</uniqueVersion>
+			<id>nexus-maven-group</id>
+			<name>Nexus Managed Repositories group</name>
+			<url>https://172.26.46.158:8443/repository/nexus-maven-group/</url>
+		</repository>
 	</distributionManagement>
 
 	<build>
