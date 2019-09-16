@@ -18,13 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -33,12 +27,9 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import fr.cnes.regards.modules.storagelight.client.FileRequestGroupEventHandler;
 import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
 import java.nio.file.Paths;
-import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -65,19 +56,8 @@ public class IngestClientIT extends IngestMultitenantServiceTest {
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestClientIT.class);
 
-    private static final List<String> CATEGORIES = Lists.newArrayList("CATEGORY");
-
     @Autowired
     private IIngestClient ingestClient;
-
-    @Autowired
-    private IAmqpAdmin amqpAdmin;
-
-    @Autowired
-    private IRabbitVirtualHostAdmin vhostAdmin;
-
-    @Autowired
-    private ISubscriber subscriber;
 
     @SpyBean
     private TestIngestClientListener listener;
@@ -91,22 +71,6 @@ public class IngestClientIT extends IngestMultitenantServiceTest {
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         storageClientMock.setBehavior(true, true);
-        // Purge event queue
-        try {
-            vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
-            amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(FileRequestGroupEventHandler.class,
-                    Target.ONE_PER_MICROSERVICE_TYPE),
-                    false);
-        } finally {
-            vhostAdmin.unbind();
-        }
-
-    }
-
-    @Override
-    protected void doAfter() throws Exception {
-        // WARNING : clean context manually because Spring doesn't do it between tests
-        subscriber.unsubscribeFrom(IngestRequestFlowItem.class);
     }
 
     @Test

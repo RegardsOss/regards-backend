@@ -80,6 +80,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
 
     @After
     public void clear() throws Exception {
+        ingestServiceTest.clear();
         doAfter();
     }
 
