@@ -84,12 +84,13 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      * Find request by remote group id (i.e. remote request id)
      */
     default Optional<IngestRequest> findOne(String remoteStepGroupId) {
-        List<IngestRequest> ingestRequests = findOne(IngestRequestSpecifications.searchByRemoteStepId(remoteStepGroupId));
-        Optional<IngestRequest> result = Optional.empty();
-        if (!ingestRequests.isEmpty()) {
-            result = Optional.ofNullable(ingestRequests.get(0));
-        }
-        return result;
+        return  findOne(IngestRequestSpecifications.searchByRemoteStepId(remoteStepGroupId));
+//        List<IngestRequest> ingestRequests = findOne(IngestRequestSpecifications.searchByRemoteStepId(remoteStepGroupId));
+//        Optional<IngestRequest> result = Optional.empty();
+//        if (!ingestRequests.isEmpty()) {
+//            result = Optional.ofNullable(ingestRequests.get(0));
+//        }
+//        return result;
     }
 
     /**
@@ -101,5 +102,5 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
     /**
      * Internal method used to retrieve IngestRequest using a specification
      */
-    List<IngestRequest> findOne(Specification<IngestRequest> spec);
+    Optional<IngestRequest> findOne(Specification<IngestRequest> spec);
 }

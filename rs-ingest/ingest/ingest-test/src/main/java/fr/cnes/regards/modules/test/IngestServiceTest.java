@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.test;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
@@ -30,9 +31,12 @@ import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
+import fr.cnes.regards.modules.storagelight.client.FileRequestGroupEventHandler;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +73,9 @@ public class IngestServiceTest {
     @Autowired(required = false)
     private IRabbitVirtualHostAdmin vhostAdmin;
 
+    @Autowired
+    private ISubscriber subscriber;
+
     /**
      * Clean everything a test can use, to prepare the empty environment for the next test
      * @throws Exception
@@ -80,6 +87,13 @@ public class IngestServiceTest {
         jobInfoRepo.deleteAll();
         pluginConfRepo.deleteAll();
         cleanAMQPQueues();
+    }
+
+    public void clear() {
+        // WARNING : clean context manually because Spring doesn't do it between tests
+        subscriber.unsubscribeFrom(IngestRequestFlowItem.class);
+        subscriber.unsubscribeFrom(IngestRequestEvent.class);
+        subscriber.unsubscribeFrom(FileRequestsGroupEvent.class);
     }
 
     /**
@@ -96,6 +110,9 @@ public class IngestServiceTest {
                         Target.ONE_PER_MICROSERVICE_TYPE),
                         false);
 
+                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(FileRequestGroupEventHandler.class,
+                        Target.ONE_PER_MICROSERVICE_TYPE),
+                        false);
             } catch(AmqpIOException e) {
                 //todo
             } finally {
@@ -164,4 +181,5 @@ public class IngestServiceTest {
         IngestRequestFlowItem flowItem = IngestRequestFlowItem.build(mtd, sip);
         publisher.publish(flowItem);
     }
+
 }
