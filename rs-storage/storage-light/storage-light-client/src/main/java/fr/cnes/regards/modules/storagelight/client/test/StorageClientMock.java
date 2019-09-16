@@ -94,7 +94,7 @@ public class StorageClientMock implements IStorageClient {
                                  new FileReference(file.getOwner(),
                                          new FileReferenceMetaInfo(file.getChecksum(), file.getAlgorithm(),
                                                  file.getFileName(), 1000L, MimeType.valueOf(file.getMimeType())),
-                                         new FileLocation(file.getStorage(), null)));
+                                         new FileLocation(file.getStorage(), "http://somedomain.com/api/v1/storage/file/2")));
         List<RequestResultInfo> requestInfos = Collections.singletonList(resultInfo);
         publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.STORAGE, firstStatus,
                                                        requestInfos));
