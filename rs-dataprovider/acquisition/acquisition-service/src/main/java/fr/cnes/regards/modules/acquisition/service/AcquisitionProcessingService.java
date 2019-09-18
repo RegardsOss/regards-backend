@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.ClosedByInterruptException;
@@ -61,6 +60,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -81,6 +81,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
@@ -303,7 +304,15 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 // Manage scan plugin conf
                 existing = fileInfoRepository.findOneScanPlugin(fileInfo.getId());
                 confsToRemove.add(updatePluginConfiguration(Optional.of(fileInfo.getScanPlugin()), existing));
-                fileInfo.setLastModificationDate(OffsetDateTime.now());
+                if (existing.isPresent()) {
+                    PluginConfiguration exConf = existing.get();
+                    for (IPluginParam param : fileInfo.getScanPlugin().getParameters()) {
+                        if (!param.getValue().equals(exConf.getParameterValue(param.getName()))) {
+                            // Conf has changed, so reset the last scanning date
+                            fileInfo.setLastModificationDate(null);
+                        }
+                    }
+                }
             }
 
             // Save file info
@@ -415,7 +424,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private void checkProcessingChainMode(AcquisitionProcessingChain processingChain) throws ModuleException {
 
         if (AcquisitionProcessingChainMode.AUTO.equals(processingChain.getMode())
-                && processingChain.getPeriodicity() == null) {
+                && (processingChain.getPeriodicity() == null)) {
             throw new EntityInvalidException("Missing periodicity for automatic acquisition processing chain");
         }
     }
@@ -489,7 +498,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         // Stop all active jobs for current processing chain
         JobInfo jobInfo = processingChain.getLastProductAcquisitionJobInfo();
-        if (jobInfo != null && !jobInfo.getStatus().getStatus().isFinished()) {
+        if ((jobInfo != null) && !jobInfo.getStatus().getStatus().isFinished()) {
             jobInfoService.stopJob(jobInfo.getId());
         }
         productService.stopProductJobs(processingChain);
@@ -499,7 +508,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     public boolean isChainJobStoppedAndCleaned(Long processingChainId) throws ModuleException {
         AcquisitionProcessingChain processingChain = getChain(processingChainId);
         JobInfo jobInfo = processingChain.getLastProductAcquisitionJobInfo();
-        boolean acqJobStopped = jobInfo == null || jobInfo.getStatus().getStatus().isFinished();
+        boolean acqJobStopped = (jobInfo == null) || jobInfo.getStatus().getStatus().isFinished();
         return acqJobStopped && productService.isProductJobStoppedAndCleaned(processingChain);
     }
 
@@ -651,7 +660,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             int fromIndex = 0;
             int toIndex = AcquisitionProperties.WORKING_UNIT;
             int totalCount = 0;
-            while (toIndex <= scannedFiles.size() && !Thread.currentThread().isInterrupted()) {
+            while ((toIndex <= scannedFiles.size()) && !Thread.currentThread().isInterrupted()) {
                 long transactionStartTime = System.currentTimeMillis();
                 // Do it in one transaction
                 LOGGER.debug("Trying to register {}/{} of the new file(s) scanned", toIndex, scannedFiles.size());
@@ -898,7 +907,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain);
 
         // Handle job summary
-        summary.setActive(chain.getLastProductAcquisitionJobInfo() != null
+        summary.setActive((chain.getLastProductAcquisitionJobInfo() != null)
                 && !chain.getLastProductAcquisitionJobInfo().getStatus().getStatus().isFinished(),
                           productService
                                   .countSIPGenerationJobInfoByProcessingChainAndSipStateIn(chain,
