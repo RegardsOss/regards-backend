@@ -512,9 +512,7 @@ public class IngestRequestService implements IIngestRequestService {
         if (requestOp.isPresent()) {
             IngestRequest request = requestOp.get();
             // Propagate errors
-            if (errors != null) {
-                errors.forEach(e -> request.addError(e.getErrorCause()));
-            }
+            errors.forEach(e -> request.addError(e.getErrorCause()));
 
             switch (request.getStep()) {
                 case REMOTE_STORAGE_REQUESTED:

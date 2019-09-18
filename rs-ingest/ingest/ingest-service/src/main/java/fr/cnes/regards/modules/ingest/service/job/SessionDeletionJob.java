@@ -28,23 +28,17 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISessionDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
-import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
 import fr.cnes.regards.modules.ingest.domain.request.SessionDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
-import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -58,8 +52,6 @@ import org.springframework.data.domain.Sort;
  * @author Léo Mieulet
  */
 public class SessionDeletionJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SessionDeletionJob.class);
 
     public static final String ID = "ID";
 
@@ -132,20 +124,6 @@ public class SessionDeletionJob extends AbstractJob<Void> {
             });
             advanceCompletion();
         } while (sipsPage.hasNext());
-    }
-
-    private void notifySipProperlyDeleted(SIPEntity sip) {
-        // Publish SUCCESSFUL notif
-        publisher.publish(IngestRequestEvent
-                .build(deletionRequest.getRequestId(), sip.getProviderId(),
-                        sip.getSipId(), RequestState.GRANTED));
-    }
-
-    private void notifySipError(SIPEntity sip, RejectedSipDto rejectedSip) {
-        // Publish ERROR notif
-        publisher.publish(IngestRequestEvent
-                .build(deletionRequest.getRequestId(), sip.getProviderId(),
-                        sip.getSipId(), RequestState.ERROR, new HashSet<>(rejectedSip.getRejectionCauses())));
     }
 
     @Override

@@ -18,12 +18,22 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -32,23 +42,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.ingest.domain.dto.RejectedSipDto;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
-import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
  * FIXME refactor
@@ -361,14 +355,6 @@ public class SIPServiceIT extends IngestMultitenantServiceTest {
     //        return new ResponseEntity<>(pagedRes, HttpStatus.OK);
     //    }
 
-    /**
-     * Simulate response from {@link IAipClient#deleteAipFromSips(Set)}
-     * @return
-     */
-    private ResponseEntity<List<RejectedSipDto>> simulateDeleteSIPAIPsREsponseFromStorage() {
-        List<RejectedSipDto> rejectedSips = Lists.newArrayList();
-        return new ResponseEntity<>(rejectedSips, HttpStatus.OK);
-    }
 
     /**
      * Get all simulated archival storag AIPs intialized in the test for the given SIP.
