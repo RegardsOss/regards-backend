@@ -49,7 +49,6 @@ import fr.cnes.regards.framework.geojson.FeatureCollection;
 import fr.cnes.regards.framework.gson.GsonBuilderFactory;
 import fr.cnes.regards.framework.gson.adapters.ClassAdapter;
 import fr.cnes.regards.framework.gson.strategy.SerializationExclusionStrategy;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.microservice.manager.MicroserviceConfiguration;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.module.manager.IModuleManager;
@@ -57,14 +56,21 @@ import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItemAdapter;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
+import fr.cnes.regards.modules.dam.dao.models.IAttributeModelRepository;
+import fr.cnes.regards.modules.dam.dao.models.IModelRepository;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.attribute.builder.AttributeBuilder;
 import fr.cnes.regards.modules.dam.domain.models.Model;
 import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
+import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.rest.engine.AbstractEngineIT;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
@@ -75,7 +81,6 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEn
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
         properties = { "regards.tenant=departments", "spring.jpa.properties.hibernate.default_schema=departments" })
-@MultitenantTransactional
 public class DepartmentSearchControllerIT extends AbstractEngineIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DepartmentSearchControllerIT.class);
@@ -91,6 +96,27 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
     @Autowired
     private GsonBuilderFactory gsonBuilderFactory;
 
+    @Autowired
+    private IPluginConfigurationRepository pluginRepo;
+
+    @Autowired
+    private ISearchEngineConfRepository seRepo;
+
+    @Autowired
+    private IModelRepository modelRepo;
+
+    @Autowired
+    private IDatasetRepository dataSetRepo;
+
+    @Autowired
+    private IEsRepository esRepo;
+
+    @Autowired
+    private IAttributeModelRepository attrModelRepo;
+
+    @Autowired
+    private IRuntimeTenantResolver runTimeTenantResoler;
+
     private Gson configGson;
 
     private Gson configItemGson;
@@ -100,6 +126,14 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
     @Override
     @Before
     public void prepareData() throws ModuleException, InterruptedException {
+
+        runTimeTenantResoler.forceTenant(getDefaultTenant());
+        seRepo.deleteAll();
+        pluginRepo.deleteAll();
+        dataSetRepo.deleteAll();
+        modelRepo.deleteAll();
+        attrModelRepo.deleteAll();
+        esRepo.deleteAll(getDefaultTenant());
 
         prepareProject();
 

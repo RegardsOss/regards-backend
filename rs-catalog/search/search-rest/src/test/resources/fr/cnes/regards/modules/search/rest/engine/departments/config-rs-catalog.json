@@ -15,82 +15,56 @@
         {
           "key": "fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration",
           "value": {
-            "label": "Legacy search protocol",
-            "configuration": {
-              "pluginId": "legacy",
-              "label": "Legacy search engine",
-              "version": "1.0.0",
-              "priorityOrder": 1,
-              "active": true,
-              "pluginClassName": "fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine",
-              "interfaceNames": [
-                "fr.cnes.regards.modules.search.domain.plugin.ISearchEngine"
-              ],
-              "parameters": []
-            }
-          }
-        },
-        {
-          "key": "fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration",
-          "value": {
             "label": "Open search protocol",
             "configuration": {
-              "pluginId": "opensearch",
+              "businessId": "opensearch-plugin",
               "label": "Open search engine",
+              "active": true,
+              "pluginId": "opensearch",
               "version": "1.0.0",
               "priorityOrder": 1,
-              "active": true,
-              "pluginClassName": "fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine",
-              "interfaceNames": [
-                "fr.cnes.regards.modules.search.domain.plugin.ISearchEngine"
-              ],
               "parameters": [
-                {
-                  "name": "engineConfiguration",
-                  "value": {
+				{
+				  "type": "POJO",
+      			  "name": "engineConfiguration",
+      			  "clazz": "fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter.EngineConfiguration",
+				  "value": {
                     "searchTitle": "Open search",
                     "searchDescription": "Open search",
                     "contact": "regards@c-s.fr",
                     "shortName": "Open search",
                     "longName": "Open search"
-                  },
-                  "dynamic": false,
-                  "dynamicsValues": [],
-                  "onlyDynamic": false
-                },
+                  }
+    			},
                 {
-                  "name": "timeExtension",
+                  "type": "POJO",
+      			  "name": "timeExtension",
+      			  "clazz": "fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.geo.GeoTimeExtension",
                   "value": {
                     "activated": true
-                  },
-                  "dynamic": false,
-                  "dynamicsValues": [],
-                  "onlyDynamic": false
+                  }
                 },
                 {
-                  "name": "regardsExtension",
+                  "type": "POJO",
+      			  "name": "regardsExtension",
+      			  "clazz": "fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension",
                   "value": {
                     "activated": true
-                  },
-                  "dynamic": false,
-                  "dynamicsValues": [],
-                  "onlyDynamic": false
+                  }
                 },
-                {
-                  "name": "mediaExtension",
+               {
+                  "type": "POJO",
+      			  "name": "mediaExtension",
+      			  "clazz": "fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.media.MediaExtension",
                   "value": {
                     "activated": true
-                  },
-                  "dynamic": false,
-                  "dynamicsValues": [],
-                  "onlyDynamic": false
+                  }
                 },
                 {
-                  "name": "parametersConfiguration",
-                  "value": [],
-                  "dynamic": false,
-                  "dynamicsValues": [],
-                  "onlyDynamic": false
+                  "type": "COLLECTION",
+                  "name": "paramConfigurations",
+                  "clazz": "fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration",
+                  "value": []
                 }
               ]
             }
