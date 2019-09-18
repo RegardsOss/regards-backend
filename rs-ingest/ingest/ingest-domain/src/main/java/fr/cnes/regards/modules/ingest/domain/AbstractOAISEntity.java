@@ -36,7 +36,7 @@ import org.hibernate.annotations.Type;
  * @author Léo Mieulet
  */
 @MappedSuperclass
-public abstract class OAISEntity {
+public abstract class AbstractOAISEntity {
 
     /**
      * Look at {@link IngestMetadata}

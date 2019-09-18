@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.ingest.domain.aip;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.OAISEntity;
+import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import java.time.OffsetDateTime;
@@ -55,7 +55,7 @@ import org.hibernate.annotations.TypeDefs;
             @Index(name = "idx_aip_categories", columnList = "categories"),
             @Index(name = "idx_aip_state", columnList = "state"), })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-public class AIPEntity extends OAISEntity {
+public class AIPEntity extends AbstractOAISEntity {
 
     @Id
     @SequenceGenerator(name = "AipSequence", initialValue = 1, sequenceName = "seq_aip")
