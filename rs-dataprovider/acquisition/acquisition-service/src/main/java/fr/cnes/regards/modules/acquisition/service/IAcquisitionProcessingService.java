@@ -74,20 +74,20 @@ public interface IAcquisitionProcessingService {
     Page<AcquisitionProcessingChain> getFullChains(Pageable pageable) throws ModuleException;
 
     /**
-     * Create a new acquisition processing chain
-     * @param processingChain the processing chain
-     * @return registered processing chain
-     * @throws ModuleException if error occurs!
-     */
-    AcquisitionProcessingChain createChain(AcquisitionProcessingChain processingChain) throws ModuleException;
-
-    /**
      * Update an existing processing chain
      * @param processingChain the updated processing chain
      * @return updated processing chain
      * @throws ModuleException if error occurs!
      */
     AcquisitionProcessingChain updateChain(AcquisitionProcessingChain processingChain) throws ModuleException;
+
+    /**
+     * Create a new acquisition processing chain
+     * @param processingChain the processing chain
+     * @return registered processing chain
+     * @throws ModuleException if error occurs!
+     */
+    AcquisitionProcessingChain createChain(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
      * Patch an existing processing chain with new values for active and state

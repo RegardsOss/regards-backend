@@ -207,6 +207,18 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         return new PageImpl<>(fullChains, pageable, apcs.getTotalElements());
     }
 
+    private PluginConfiguration createPluginConfiguration(PluginConfiguration pluginConfiguration)
+            throws ModuleException {
+        // Check no identifier. For each new chain, we force plugin configuration creation. A configuration cannot be
+        // reused.
+        if (pluginConfiguration.getId() != null) {
+            throw new EntityInvalidException(
+                    String.format("Plugin configuration %s must not already have an identifier.",
+                                  pluginConfiguration.getLabel()));
+        }
+        return pluginService.savePluginConfiguration(pluginConfiguration);
+    }
+
     @Override
     public AcquisitionProcessingChain createChain(AcquisitionProcessingChain processingChain) throws ModuleException {
 
@@ -222,7 +234,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // Prevent bad values
         processingChain.setLocked(Boolean.FALSE);
         processingChain.setLastActivationDate(null);
-        processingChain.setLastProductAcquisitionJobInfo(null);
 
         // Manage acquisition file info
         for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
@@ -262,18 +273,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         // Save new chain
         return acqChainRepository.save(processingChain);
-    }
-
-    private PluginConfiguration createPluginConfiguration(PluginConfiguration pluginConfiguration)
-            throws ModuleException {
-        // Check no identifier. For each new chain, we force plugin configuration creation. A configuration cannot be
-        // reused.
-        if (pluginConfiguration.getId() != null) {
-            throw new EntityInvalidException(
-                    String.format("Plugin configuration %s must not already have an identifier.",
-                                  pluginConfiguration.getLabel()));
-        }
-        return pluginService.savePluginConfiguration(pluginConfiguration);
     }
 
     @Override

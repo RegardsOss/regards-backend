@@ -189,21 +189,19 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file"));
         processingChain.setStorages(storages);
 
-        // Save processing chain
-        processingChain = processingService.createChain(processingChain);
-
         // we need to set up a fake ProductAcquisitionJob to fill its attributes
         JobInfo jobInfo = new JobInfo(true);
         jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY.getPriority());
         jobInfo.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()),
-                              new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, "my funky session"));
+                new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, "my funky session"));
         jobInfo.setClassName(ProductAcquisitionJob.class.getName());
         jobInfo.setOwner("user 1");
         jobInfoService.createAsQueued(jobInfo);
 
         processingChain.setLastProductAcquisitionJobInfo(jobInfo);
 
-        return processingService.updateChain(processingChain);
+        // Save processing chain
+        return processingService.createChain(processingChain);
     }
 
     //    @Test
@@ -300,7 +298,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
         // Let's test SessionNotifier
         ArgumentCaptor<ISubscribable> grantedInfo = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(publisher, Mockito.times(16)).publish(grantedInfo.capture());
+        Mockito.verify(publisher, Mockito.times(12)).publish(grantedInfo.capture());
         // Capture how many notif of each type have been sent
         Map<String, Integer> callByProperty = new HashMap<>();
         for (ISubscribable event: grantedInfo.getAllValues()) {
