@@ -31,7 +31,7 @@ import org.springframework.data.jpa.domain.Specification;
  * JPA {@link Specification} to define {@link Predicate}s for criteria search for {@link IngestRequest} from repository.
  * @author Léo Mieulet
  */
-public class IngestRequestSpecifications {
+public final class IngestRequestSpecifications {
 
     private IngestRequestSpecifications() {
         throw new IllegalStateException("Utility class");

@@ -85,11 +85,11 @@ public class SessionDeletionJob extends AbstractJob<Void> {
             throws JobParameterMissingException, JobParameterInvalidException {
 
         // Retrieve deletion request
-        Long database_id = getValue(parameters, ID);
-        Optional<SessionDeletionRequest> oDeletionRequest = deletionRequestRepository.findById(database_id);
+        Long databaseId = getValue(parameters, ID);
+        Optional<SessionDeletionRequest> oDeletionRequest = deletionRequestRepository.findById(databaseId);
 
         if (!oDeletionRequest.isPresent()) {
-            throw new JobRuntimeException(String.format("Unknown deletion request with id %d", database_id));
+            throw new JobRuntimeException(String.format("Unknown deletion request with id %d", databaseId));
         }
 
         deletionRequest = oDeletionRequest.get();

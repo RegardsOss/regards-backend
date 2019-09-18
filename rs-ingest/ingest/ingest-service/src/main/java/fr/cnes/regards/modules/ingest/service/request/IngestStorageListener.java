@@ -18,17 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import fr.cnes.regards.modules.storagelight.client.IStorageRequestListener;
+import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import java.util.Collection;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import fr.cnes.regards.modules.storagelight.client.IStorageRequestListener;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 
 /**
  * This class offers callbacks from storage events

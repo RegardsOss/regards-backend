@@ -35,7 +35,7 @@ import org.springframework.data.jpa.domain.Specification;
  * Specification class to filter DAO searches on {@link AIPEntity} entities
  * @author Léo Mieulet
  */
-public class AIPEntitySpecification {
+public final class AIPEntitySpecification {
 
     private AIPEntitySpecification() {
         throw new IllegalStateException("Utility class");

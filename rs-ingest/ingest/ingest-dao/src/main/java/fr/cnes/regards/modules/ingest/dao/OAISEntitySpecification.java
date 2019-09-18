@@ -15,7 +15,7 @@ import javax.persistence.criteria.Root;
  * Specification class to filter on common attributes shared by SIP and AIP
  * @author Léo Mieulet
  */
-public class OAISEntitySpecification {
+public final class OAISEntitySpecification {
 
     private static final String INGEST_METADATA = "ingestMetadata";
 
