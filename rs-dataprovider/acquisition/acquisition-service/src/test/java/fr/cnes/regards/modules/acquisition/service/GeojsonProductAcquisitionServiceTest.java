@@ -178,9 +178,6 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
         storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file"));
         processingChain.setStorages(storages);
 
-        // Save processing chain
-        processingChain = processingService.createChain(processingChain);
-
 
         // we need to set up a fake ProductAcquisitionJob to fill its attributes
         JobInfo jobInfo = new JobInfo(true);
@@ -193,7 +190,8 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
 
         processingChain.setLastProductAcquisitionJobInfo(jobInfo);
 
-        return processingService.updateChain(processingChain);
+        // Save processing chain
+        return processingService.createChain(processingChain);
     }
 
     @Test

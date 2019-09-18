@@ -209,8 +209,6 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         // SIP post processing
         // Not required
 
-        // Save processing chain
-        processingChain = processingService.createChain(processingChain);
 
         List<StorageMetadataProvider> storages = new ArrayList<>();
         storages.add(StorageMetadataProvider.build("AWS", "/path/to/file"));
@@ -228,7 +226,8 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
 
         processingChain.setLastProductAcquisitionJobInfo(jobInfo);
 
-        return processingService.updateChain(processingChain);
+        // Save processing chain
+        return processingService.createChain(processingChain);
     }
 
     @Test
