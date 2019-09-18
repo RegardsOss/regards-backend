@@ -18,23 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import java.util.Arrays;
 import java.util.List;
-
 import java.util.Set;
-import javax.persistence.Column;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
-
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 
 /**
  * Extra information useful for SIP submission.<br/>

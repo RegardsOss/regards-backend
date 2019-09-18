@@ -18,13 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.domain.sip;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.OAISEntity;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.UUID;
-
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -39,17 +43,9 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
-
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * System POJO for storing SIP.
@@ -200,14 +196,12 @@ public class SIPEntity extends OAISEntity {
         return true;
     }
 
-    public static SIPEntity build(String tenant, IngestMetadata metadata, SIP sip, Integer version, SIPState state,
-            EntityType entityType) {
+    public static SIPEntity build(String tenant, IngestMetadata metadata, SIP sip, Integer version, SIPState state) {
 
         SIPEntity sipEntity = new SIPEntity();
 
         UUID uuid = UUID.nameUUIDFromBytes(sip.getId().getBytes());
-        UniformResourceName urn = new UniformResourceName(OAISIdentifier.SIP, entityType, tenant, uuid, version);
-
+        UniformResourceName urn = new UniformResourceName(OAISIdentifier.SIP, sip.getIpType(), tenant, uuid, version);
         sipEntity.setProviderId(sip.getId());
         sipEntity.setSipId(urn);
         sipEntity.setCreationDate(OffsetDateTime.now());

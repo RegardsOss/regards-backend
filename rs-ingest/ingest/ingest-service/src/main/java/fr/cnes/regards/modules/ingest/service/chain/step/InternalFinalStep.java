@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -32,6 +27,8 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *

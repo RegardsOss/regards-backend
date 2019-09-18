@@ -37,6 +37,10 @@ import org.springframework.data.jpa.domain.Specification;
  */
 public class AIPEntitySpecification {
 
+    private AIPEntitySpecification() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static Specification<AIPEntity> searchAll(AIPState state, OffsetDateTime from, OffsetDateTime to,
             List<String> tags, String sessionOwner, String session, String providerId, List<String> storages,
             List<String> categories, Pageable page) {

@@ -19,8 +19,6 @@
 
 package fr.cnes.regards.modules.ingest.domain.aip;
 
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-
 /**
  * AIP lifecycle
  *

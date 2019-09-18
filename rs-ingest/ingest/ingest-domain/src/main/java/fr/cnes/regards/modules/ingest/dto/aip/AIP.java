@@ -18,17 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.dto.aip;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.validation.constraints.NotBlank;
-
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import java.util.Optional;
+import javax.validation.constraints.NotBlank;
+import org.springframework.util.Assert;
 
 /**
  *

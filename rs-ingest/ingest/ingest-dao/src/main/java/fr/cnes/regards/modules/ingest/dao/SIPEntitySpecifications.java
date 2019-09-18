@@ -36,6 +36,13 @@ import org.springframework.data.jpa.domain.Specification;
  * @author Léo Mieulet
  */
 public final class SIPEntitySpecifications {
+
+    private static final String PROVIDER_ID = "providerId";
+
+    private SIPEntitySpecifications() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * Filter on the given attributes and return result ordered by descending
      * ingestDate
@@ -67,15 +74,15 @@ public final class SIPEntitySpecifications {
                     // Use the like operator only if the providerId contains a % directly in the chain
                     if (providerId.startsWith(SpecificationUtils.LIKE_CHAR) || providerId.endsWith(SpecificationUtils.LIKE_CHAR)) {
                         if (areIdListInclusive) {
-                            providerIdPredicates.add(cb.like(root.get("providerId"), providerId));
+                            providerIdPredicates.add(cb.like(root.get(PROVIDER_ID), providerId));
                         } else {
-                            providerIdPredicates.add(cb.notLike(root.get("providerId"), providerId));
+                            providerIdPredicates.add(cb.notLike(root.get(PROVIDER_ID), providerId));
                         }
                     } else {
                         if (areIdListInclusive) {
-                            providerIdPredicates.add(cb.equal(root.get("providerId"), providerId));
+                            providerIdPredicates.add(cb.equal(root.get(PROVIDER_ID), providerId));
                         } else {
-                            providerIdPredicates.add(cb.notEqual(root.get("providerId"), providerId));
+                            providerIdPredicates.add(cb.notEqual(root.get(PROVIDER_ID), providerId));
                         }
                     }
                 }

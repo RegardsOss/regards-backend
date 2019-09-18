@@ -33,6 +33,10 @@ import org.springframework.data.jpa.domain.Specification;
  */
 public class IngestRequestSpecifications {
 
+    private IngestRequestSpecifications() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static Specification<IngestRequest> searchByRemoteStepId(String remoteStepGroupId) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();

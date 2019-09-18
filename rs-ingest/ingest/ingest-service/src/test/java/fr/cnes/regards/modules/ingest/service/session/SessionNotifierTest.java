@@ -71,7 +71,7 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
         sipEntity = SIPEntity.build(getDefaultTenant(), IngestMetadata.build(sessionOwner, session,
                 ingestChain, categories,StorageMetadata.build("AWS", "/dir1/dir2/")),
                 SIP.build(EntityType.DATA, providerId),
-                1, SIPState.INGESTED, EntityType.DATA
+                1, SIPState.INGESTED
         );
         aipEntity1 = AIPEntity.build(sipEntity, AIPState.GENERATED,
                 AIP.build(sipEntity.getSip(),

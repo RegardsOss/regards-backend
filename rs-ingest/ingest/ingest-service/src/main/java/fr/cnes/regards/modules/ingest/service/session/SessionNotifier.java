@@ -66,21 +66,6 @@ public class SessionNotifier {
     @Autowired
     private IPublisher publisher;
 
-    /**
-     * Notify single SIP state change
-     * @param metadata ingest metadata
-     * @param previousState previous state
-     * @param nextState next state
-     */
-    public void notifySIPStateChange(IngestMetadata metadata, SIPState previousState, SIPState nextState) {
-
-        // Decrement the previous state by one
-        notifyDecrementSession(metadata.getSessionOwner(), metadata.getSession(), previousState);
-
-        // Increment the next state by one
-        notifyIncrementSession(metadata.getSessionOwner(), metadata.getSession(), nextState, SessionNotificationState.OK);
-    }
-
     public void notifySIPDeleting(SIPEntity currentSIP) {
         notifyDecrementSession(currentSIP.getIngestMetadata().getSessionOwner(),
                 currentSIP.getIngestMetadata().getSession(), currentSIP.getState());

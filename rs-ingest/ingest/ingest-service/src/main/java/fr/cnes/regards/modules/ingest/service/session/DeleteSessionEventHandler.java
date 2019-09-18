@@ -27,7 +27,6 @@ import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionRequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.sessionmanager.domain.event.DeleteSessionEvent;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
