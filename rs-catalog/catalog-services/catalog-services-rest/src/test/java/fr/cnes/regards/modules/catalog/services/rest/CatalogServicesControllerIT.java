@@ -40,7 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
@@ -52,12 +51,13 @@ import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -65,6 +65,7 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.catalog.services.dao.ILinkPluginsDatasetsRepository;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
@@ -75,10 +76,8 @@ import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDataset
 /**
  * @author Sylvain Vissiere-Guerinet
  */
-@DirtiesContext
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { CatalogServicesITConfiguration.class })
-@MultitenantTransactional
 public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(CatalogServicesControllerIT.class);
@@ -97,6 +96,15 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
     @Autowired
     private ILinkPluginsDatasetsService linkService;
 
+    @Autowired
+    private ILinkPluginsDatasetsRepository linkDsRepo;
+
+    @Autowired
+    private IPluginConfigurationRepository pluginConfRepo;
+
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+
     private PluginConfiguration conf;
 
     private PluginConfiguration samplePlgConf;
@@ -106,8 +114,15 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         return LOG;
     }
 
+    private void clearDb() {
+        linkDsRepo.deleteAll();
+        pluginConfRepo.deleteAll();
+    }
+
     @Before
     public void init() throws ModuleException {
+        tenantResolver.forceTenant(getDefaultTenant());
+        this.clearDb();
         LOG.info("--------------------> Initialization <-------------------------------------");
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build("para", "never used").dynamic());
         final PluginMetaData metaData = new PluginMetaData();
