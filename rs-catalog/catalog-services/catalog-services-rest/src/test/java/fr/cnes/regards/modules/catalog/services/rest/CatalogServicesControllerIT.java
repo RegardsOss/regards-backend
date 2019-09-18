@@ -18,11 +18,40 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -42,32 +71,6 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -106,9 +109,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
     @Before
     public void init() throws ModuleException {
         LOG.info("--------------------> Initialization <-------------------------------------");
-        Set<IPluginParam> parameters = IPluginParam.set(
-                IPluginParam.build("para", "never used").dynamic()
-        );
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build("para", "never used").dynamic());
         final PluginMetaData metaData = new PluginMetaData();
         metaData.setPluginId("tata");
         metaData.setAuthor("toto");
@@ -126,9 +127,9 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         }
         // 2. second one
         if (!pluginService.findPluginConfigurationByLabel(PLUGIN_CONF_LABEL_1).isPresent()) {
-            parameters = IPluginParam.set(
-                    IPluginParam.build(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON).dynamic()
-            );
+            parameters = IPluginParam.set(IPluginParam
+                    .build(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON)
+                    .dynamic());
             samplePlgConf = new PluginConfiguration(PluginUtils.createPluginMetaData(SampleServicePlugin.class),
                     PLUGIN_CONF_LABEL_1, parameters);
             pluginService.savePluginConfiguration(samplePlgConf);
@@ -146,9 +147,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         metaData2.getInterfaceNames().add(IService.class.getName());
         metaData2.setPluginClassName(TestService.class.getName());
 
-        parameters = IPluginParam.set(
-                IPluginParam.build(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON).dynamic()
-        );
+        parameters = IPluginParam.set(IPluginParam
+                .build(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON).dynamic());
         PluginConfiguration samplePlgConf2 = new PluginConfiguration(
                 PluginUtils.createPluginMetaData(SampleServicePlugin.class), PLUGIN_CONF_LABEL_2, parameters);
         pluginService.savePluginConfiguration(samplePlgConf2);
@@ -224,7 +224,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addHeaders(getHeadersToApply());
         ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
                 + CatalogServicesController.PATH_SERVICE_NAME, parameters, requestBuilderCustomizer,
-                                                         "there should not be any error", conf.getId());
+                                                         "there should not be any error", conf.getBusinessId());
         validateTestPluginResponse(resultActions, new File("src/test/resources/result.json"));
     }
 
@@ -274,7 +274,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addHeaders(getHeadersToApply());
         ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
                 + CatalogServicesController.PATH_SERVICE_NAME, parameters, requestBuilderCustomizer,
-                                                         "there should not be any error", conf.getId());
+                                                         "there should not be any error", conf.getBusinessId());
         validateTestPluginResponse(resultActions, new File("src/test/resources/result_empty.json"));
     }
 
