@@ -65,7 +65,7 @@ public interface IAIPService {
     /**
      * Remove all {@link AIPEntity} linked to an {@link SIPEntity#getSipId()}
      */
-    void deleteIrrevocably(String sipId);
+    void processDeletion(String sipId, boolean deleteIrrevocably);
 
     /**
      * Save AIP

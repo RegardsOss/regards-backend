@@ -79,22 +79,22 @@ public class IngestStorageListener implements IStorageRequestListener {
 
     @Override
     public void onReferenceSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
-        ingestRequestService.handleRemoteStoreSuccess(request, success, FileRequestType.REFERENCE);
+        ingestRequestService.handleRemoteReferenceSuccess(request, success);
     }
 
     @Override
     public void onReferenceError(RequestInfo request, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
-        ingestRequestService.handleRemoteStoreError(request, success, errors, FileRequestType.REFERENCE);
+        ingestRequestService.handleRemoteReferenceError(request, success, errors);
     }
 
     @Override
     public void onStoreSuccess(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success) {
-        ingestRequestService.handleRemoteStoreSuccess(requestInfo, success, FileRequestType.STORAGE);
+        ingestRequestService.handleRemoteStoreSuccess(requestInfo, success);
     }
 
     @Override
     public void onStoreError(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
-        ingestRequestService.handleRemoteStoreError(requestInfo, success, errors, FileRequestType.STORAGE);
+        ingestRequestService.handleRemoteStoreError(requestInfo, success, errors);
     }
 
     @Override

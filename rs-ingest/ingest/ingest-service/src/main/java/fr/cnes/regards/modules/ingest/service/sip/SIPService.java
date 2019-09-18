@@ -42,7 +42,6 @@ import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
@@ -104,23 +103,29 @@ public class SIPService implements ISIPService {
         // Update AIPs state as deleted and retrieve events to delete associated files and AIPs
         String deleteRequestId = aipService.scheduleAIPEntityDeletion(sipEntity.getSipId());
 
+        sessionNotifier.notifySIPDeleting(sipEntity);
         sipEntity.setState(SIPState.DELETED);
         save(sipEntity);
 
         // Save the request id sent to storage
         StorageDeletionRequest sdr = StorageDeletionRequest.build(deleteRequestId, sipEntity.getSipId(), deletionMode);
         storageDeletionRequest.save(sdr);
-
-        sessionNotifier.notifySIPDeleting(sipEntity);
     }
 
     @Override
-    public void deleteIrrevocably(String sipId) {
+    public void processDeletion(String sipId, boolean deleteIrrevocably) {
         Optional<SIPEntity> optionalSIPEntity = sipRepository.findOneBySipId(sipId);
         if (optionalSIPEntity.isPresent()) {
             SIPEntity sipEntity = optionalSIPEntity.get();
             sessionNotifier.notifySIPDeleted(sipEntity);
-            sipRepository.delete(sipEntity);
+            if (!deleteIrrevocably) {
+                // Mark the SIP correctly deleted
+                sipEntity.setState(SIPState.DELETED);
+                sipEntity.setErrors(null);
+                save(sipEntity);
+            } else {
+                sipRepository.delete(sipEntity);
+            }
         }
     }
 

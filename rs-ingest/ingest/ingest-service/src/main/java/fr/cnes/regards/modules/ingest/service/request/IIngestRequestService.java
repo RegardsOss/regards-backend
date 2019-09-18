@@ -91,12 +91,22 @@ public interface IIngestRequestService {
     /**
      * Handle remote storage success
      */
-    void handleRemoteStoreSuccess(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success,
-            FileRequestType requestType);
+    void handleRemoteStoreSuccess(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success);
 
     /**
      * Handle remote storage error
      */
     void handleRemoteStoreError(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success,
-            Collection<RequestResultInfoDTO> errors, FileRequestType requestType);
+            Collection<RequestResultInfoDTO> errors);
+
+    /**
+     * Handle remote reference success
+     */
+    void handleRemoteReferenceSuccess(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success);
+
+    /**
+     * Handle remote reference error
+     */
+    void handleRemoteReferenceError(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success,
+            Collection<RequestResultInfoDTO> errors);
 }

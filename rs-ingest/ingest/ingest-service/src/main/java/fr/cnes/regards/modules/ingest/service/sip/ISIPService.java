@@ -29,7 +29,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
@@ -67,8 +66,9 @@ public interface ISIPService {
     /**
      * Delete the SIPEntity using its {@link SIPEntity#getSipId()}.
      * @param sipId
+     * @param deleteIrrevocably
      */
-    void deleteIrrevocably(String sipId);
+    void processDeletion(String sipId, boolean deleteIrrevocably);
 
     /**
      * Update the last update date of the {@link SIPEntity} and save it in DAO,

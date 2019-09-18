@@ -226,6 +226,9 @@ public class AIPService implements IAIPService {
         // Retrieve all AIP relative to this SIP id
         Set<AIPEntity> aipsRelatedToSip = aipRepository.findBySipSipId(sipId);
 
+        // Mark these entities as deleted
+        sessionNotifier.notifyAIPDeleting(aipsRelatedToSip);
+
         for (AIPEntity aipEntity : aipsRelatedToSip) {
             // Retrieve all files linked to this AIP
             for (ContentInformation ci : aipEntity.getAip().getProperties().getContentInformations()) {
@@ -249,8 +252,6 @@ public class AIPService implements IAIPService {
             aipEntity.setState(AIPState.DELETED);
             aipRepository.save(aipEntity);
         }
-        // Mark this entity as deleting
-        sessionNotifier.notifyAIPDeleting(aipsRelatedToSip);
 
         // Publish event to delete AIP files and AIPs itself
         RequestInfo deleteRequestInfo = storageClient.delete(filesToDelete);
@@ -258,14 +259,21 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void deleteIrrevocably(String sipId) {
+    public void processDeletion(String sipId, boolean deleteIrrevocably) {
         // Retrieve all AIP relative to this SIP id
         Set<AIPEntity> aipsRelatedToSip = aipRepository.findBySipSipId(sipId);
-
         sessionNotifier.notifyAIPDeleted(aipsRelatedToSip);
+        if (!deleteIrrevocably) {
+            for (AIPEntity aipEntity : aipsRelatedToSip) {
+                aipEntity.setErrors(null);
+                aipEntity.setState(AIPState.DELETED);
+                save(aipEntity);
+            }
+        } else {
+            // Delete them
+            aipRepository.deleteAll(aipsRelatedToSip);
+        }
 
-        // Delete them
-        aipRepository.deleteAll(aipsRelatedToSip);
     }
 
     @Override

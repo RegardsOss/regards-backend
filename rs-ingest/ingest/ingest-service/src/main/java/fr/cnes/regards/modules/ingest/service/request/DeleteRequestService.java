@@ -28,8 +28,8 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.service.aip.AIPService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
@@ -62,6 +62,9 @@ public class DeleteRequestService implements IDeleteRequestService {
     @Autowired
     private ISIPService sipService;
 
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
     @Override
     public void handleRemoteDeleteError(RequestInfo request, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
         Optional<StorageDeletionRequest> storageRequestOptional = storageDeletionRequestRepo.findOneByRequestId(request.getGroupId());
@@ -82,6 +85,7 @@ public class DeleteRequestService implements IDeleteRequestService {
                 SIPEntity sipEntity = sipService.getEntity(deletionRequest.getSipId());
                 sipEntity.setState(SIPState.ERROR);
                 sipEntity.setErrors(oaisEntityError);
+                sessionNotifier.notifySIPDeletionFailed(sipEntity);
                 sipService.save(sipEntity);
                 // Update AIP with error
                 Set<AIPEntity> aipEntities = aipService.getAips(deletionRequest.getSipId());
@@ -90,6 +94,7 @@ public class DeleteRequestService implements IDeleteRequestService {
                     aipEntity.setState(AIPState.ERROR);
                     aipService.save(aipEntity);
                 }
+                sessionNotifier.notifyAIPDeletionFailed(aipEntities);
             } catch (EntityNotFoundException e) {
                 LOGGER.debug("Can't mark SIPEntity with sidId[{}] with error: {}", deletionRequest.getSipId(), e.getMessage());
             }
@@ -102,29 +107,9 @@ public class DeleteRequestService implements IDeleteRequestService {
         Optional<StorageDeletionRequest> storageRequestOptional = storageDeletionRequestRepo.findOneByRequestId(request.getGroupId());
         if (storageRequestOptional.isPresent()) {
             StorageDeletionRequest deletionRequest = storageRequestOptional.get();
-            if (deletionRequest.getDeletionMode() == SessionDeletionMode.IRREVOCABLY) {
-                aipService.deleteIrrevocably(deletionRequest.getSipId());
-                sipService.deleteIrrevocably(deletionRequest.getSipId());
-            } else {
-                try {
-                    // Mark the SIP correctly deleted
-                    SIPEntity sipEntity = sipService.getEntity(deletionRequest.getSipId());
-                    sipEntity.setState(SIPState.DELETED);
-                    sipEntity.setErrors(null);
-                    sipService.save(sipEntity);
-                    // Mark the AIP correctly deleted
-                    Set<AIPEntity> aipEntities = aipService.getAips(deletionRequest.getSipId());
-                    for (AIPEntity aipEntity : aipEntities) {
-                        if (aipEntity.getState() == AIPState.ERROR) {
-                            aipEntity.setErrors(null);
-                            aipEntity.setState(AIPState.DELETED);
-                            aipService.save(aipEntity);
-                        }
-                    }
-                } catch (EntityNotFoundException e) {
-                    LOGGER.debug("Can't mark SIPEntity with sidId[{}] successfully deleted: {}", deletionRequest.getSipId(), e.getMessage());
-                }
-            }
+            boolean deleteIrrevocably = deletionRequest.getDeletionMode() == SessionDeletionMode.IRREVOCABLY;
+            aipService.processDeletion(deletionRequest.getSipId(), deleteIrrevocably);
+            sipService.processDeletion(deletionRequest.getSipId(), deleteIrrevocably);
             storageDeletionRequestRepo.delete(deletionRequest);
         }
     }
