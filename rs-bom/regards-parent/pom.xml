@@ -103,17 +103,12 @@
         </dependencies>
     </dependencyManagement>
 
-	<distributionManagement>
-		<snapshotRepository>
-			<uniqueVersion>true</uniqueVersion>
-			<id>nexus-maven-regards</id>
-			<name>Nexus Maven Repository for regards artifacts</name>
-			<url>https://172.26.46.158:8443/repository/nexus-maven-regards/</url>
-		</snapshotRepository>
-		<repository>
+
+        <distributionManagement>
+                <repository>
                         <uniqueVersion>true</uniqueVersion>
-                        <id>nexus-maven-regards-release</id>
-                        <name>Nexus Maven Repository for regards release artifacts</name>
+                        <id>nexus-maven-regards</id>
+                        <name>Nexus Maven Repository for regards artifacts</name>
                         <url>https://172.26.46.158:8443/repository/nexus-maven-regards/</url>
                 </repository>
 	</distributionManagement>
