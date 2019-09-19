@@ -39,6 +39,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -76,6 +77,7 @@ import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDataset
 /**
  * @author Sylvain Vissiere-Guerinet
  */
+@AutoConfigureMockMvc(printOnlyOnFailure = true)
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { CatalogServicesITConfiguration.class })
 public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT {
