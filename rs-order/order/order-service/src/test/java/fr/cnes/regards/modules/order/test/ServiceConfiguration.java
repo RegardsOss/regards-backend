@@ -19,9 +19,6 @@
 package fr.cnes.regards.modules.order.test;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.Collections;
 
 import org.mockito.Mockito;
@@ -42,11 +39,6 @@ import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
-import fr.cnes.regards.modules.storage.client.IAipClient;
-import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
-import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
-import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
-import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
 
 /**
  * @author oroussel
@@ -83,6 +75,8 @@ public class ServiceConfiguration {
         return Mockito.mock(IAttributeModelClient.class);
     }
 
+    /**
+     * TODO : Replace by new storage client
     @Bean
     public IAipClient mockAipClient() {
         final AipClientProxy aipClientProxy = new AipClientProxy(publisher);
@@ -94,9 +88,10 @@ public class ServiceConfiguration {
             }
             return null;
         };
-        return (IAipClient) Proxy
-                .newProxyInstance(IAipClient.class.getClassLoader(), new Class<?>[] { IAipClient.class }, handler);
+        return (IAipClient) Proxy.newProxyInstance(IAipClient.class.getClassLoader(),
+                                                   new Class<?>[] { IAipClient.class }, handler);
     }
+    */
 
     @Bean
     public IAuthenticationResolver mockAuthResolver() {
@@ -108,14 +103,16 @@ public class ServiceConfiguration {
         return Mockito.mock(IEmailClient.class);
     }
 
+    /**
+     * TODO : Replace by new storage client
     private class AipClientProxy {
-
+    
         private final IPublisher publisher;
-
+    
         public AipClientProxy(IPublisher publisher) {
             this.publisher = publisher;
         }
-
+    
         @SuppressWarnings("unused")
         public ResponseEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
             for (String checksum : availabilityRequest.getChecksums()) {
@@ -125,11 +122,10 @@ public class ServiceConfiguration {
                     publisher.publish(new DataFileEvent(DataFileEventState.ERROR, checksum));
                 }
             }
-            return ResponseEntity.ok(new AvailabilityResponse(Collections.emptySet(),
-                                                              Collections.emptySet(),
-                                                              Collections.emptySet()));
+            return ResponseEntity.ok(new AvailabilityResponse(Collections.emptySet(), Collections.emptySet(),
+                    Collections.emptySet()));
         }
-
+    
         @SuppressWarnings("unused")
         public Response downloadFile(String aipId, String checksum) {
             Response mockResp = Mockito.mock(Response.class);
@@ -141,7 +137,8 @@ public class ServiceConfiguration {
             }
             return mockResp;
         }
-
+    
     }
+    */
 
 }

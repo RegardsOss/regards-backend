@@ -127,7 +127,6 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
-import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.templates.service.TemplateService;
 import freemarker.template.TemplateException;
 
@@ -165,9 +164,6 @@ public class OrderService implements IOrderService {
 
     @Autowired
     private IComplexSearchClient searchClient;
-
-    @Autowired
-    private IAipClient aipClient;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -727,7 +723,8 @@ public class OrderService implements IOrderService {
                     dataFile.setDownloadError(null);
                     Response response = null;
                     try {
-                        response = aipClient.downloadFile(aip, dataFile.getChecksum());
+                        // TODO : Replace by new storage  client
+                        // response = aipClient.downloadFile(aip, dataFile.getChecksum());
                     } catch (RuntimeException e) {
                         LOGGER.error("Error while downloading file from Archival Storage", e);
                         StringWriter sw = new StringWriter();

@@ -62,7 +62,6 @@ import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
-import fr.cnes.regards.modules.storage.client.IAipClient;
 
 /**
  * @author oroussel
@@ -75,9 +74,6 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Autowired
     private IOrderDataFileRepository repos;
-
-    @Autowired
-    private IAipClient aipClient;
 
     @Autowired
     private IOrderJobService orderJobService;
@@ -125,8 +121,8 @@ public class OrderDataFileService implements IOrderDataFileService {
         FilesTask filesTask = filesTasksRepository.findDistinctByFilesIn(dataFile);
         // In case FilesTask does not yet exist
         if (filesTask != null) {
-            if (filesTask.getFiles().stream().allMatch(f -> f.getState() == FileState.DOWNLOADED
-                    || f.getState() == FileState.ERROR || f.getState() == FileState.DOWNLOAD_ERROR)) {
+            if (filesTask.getFiles().stream().allMatch(f -> (f.getState() == FileState.DOWNLOADED)
+                    || (f.getState() == FileState.ERROR) || (f.getState() == FileState.DOWNLOAD_ERROR))) {
                 filesTask.setEnded(true);
             }
             // ...and if it is waiting for user
@@ -149,8 +145,8 @@ public class OrderDataFileService implements IOrderDataFileService {
         Long orderId = null;
         // Update all these FileTasks
         for (FilesTask filesTask : filesTasks) {
-            if (filesTask.getFiles().stream().allMatch(f -> f.getState() == FileState.DOWNLOADED
-                    || f.getState() == FileState.ERROR || f.getState() == FileState.DOWNLOAD_ERROR)) {
+            if (filesTask.getFiles().stream().allMatch(f -> (f.getState() == FileState.DOWNLOADED)
+                    || (f.getState() == FileState.ERROR) || (f.getState() == FileState.DOWNLOAD_ERROR))) {
                 filesTask.setEnded(true);
             }
             // Save order id for later
@@ -214,14 +210,15 @@ public class OrderDataFileService implements IOrderDataFileService {
             }
         } else {
             try {
-                response = aipClient.downloadFile(dataFile.getIpId().toString(), dataFile.getChecksum());
+                // TODO : Replace by new storage access files
+                // response = aipClient.downloadFile(dataFile.getIpId().toString(), dataFile.getChecksum());
             } catch (RuntimeException e) {
                 LOGGER.error("Error while downloading file from Archival Storage", e);
                 StringWriter sw = new StringWriter();
                 e.printStackTrace(new PrintWriter(sw));
                 dataFile.setDownloadError("Error while downloading file from Archival Storage\n" + sw.toString());
             }
-            error = response == null || response.status() != HttpStatus.OK.value();
+            error = (response == null) || (response.status() != HttpStatus.OK.value());
             if (!error) {
                 try (InputStream is = response.body().asInputStream()) {
                     long copiedBytes = ByteStreams.copy(is, os);

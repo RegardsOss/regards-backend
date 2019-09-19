@@ -65,10 +65,6 @@
 			<artifactId>search-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.storage</groupId>
-			<artifactId>storage-client</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.dam</groupId>
 			<artifactId>dam-domain</artifactId>
 		</dependency>
