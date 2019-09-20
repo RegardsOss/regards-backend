@@ -9,7 +9,8 @@
         ],
         "storages": [
             {
-                "storage": "disk"
+                "pluginBusinessId": "disk",
+                "targetTypes": []
             }
         ]
     },

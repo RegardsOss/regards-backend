@@ -262,11 +262,14 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         String prefixStorages = "content[].content.ingestMetadata.storages[].";
 
-        fields.add(constrainedFields.withPath(prefixStorages + "storage", "storage", "Destination storage identifier")
+        fields.add(constrainedFields.withPath(prefixStorages + "pluginBusinessId", "pluginBusinessId", "Destination storage identifier")
                 .type(JSON_STRING_TYPE));
 
         fields.add(constrainedFields.withPath(prefixStorages + "storePath", "storePath", "Optional path identifying the base directory in which to store related files")
                 .type(JSON_STRING_TYPE).optional());
+
+        fields.add(constrainedFields.withPath(prefixStorages + "targetTypes", "targetTypes", "List of data object types accepted by this storage location (when storing AIPs)")
+                .type(JSON_ARRAY_TYPE).optional());
 
 
         return fields;

@@ -125,7 +125,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         lfd.add(fields.withPath("metadata.session", "The ingestion session name"));
         lfd.add(fields.withPath("metadata.sessionOwner", "The ingestion session source"));
         lfd.add(fields.withPath("metadata.storages", "Target storages"));
-        lfd.add(fields.withPath("metadata.storages[].storage", "Storage identifier"));
+        lfd.add(fields.withPath("metadata.storages[].pluginBusinessId", "Storage identifier"));
+        lfd.add(fields.withPath("metadata.storages[].targetTypes", "List of data object types accepted by this storage location (when storing AIPs)"));
 
         lfd.add(fields.withPath("type", "Feature collection"));
 
