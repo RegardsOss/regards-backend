@@ -164,8 +164,9 @@ public class FileCacheRequestService {
      * @param checksums
      * @param expirationDate availability expiration date.
      * @param groupId
+     * @return Number of availability requests created.
      */
-    public void makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate, String groupId) {
+    public int makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate, String groupId) {
 
         Set<FileReference> onlines = Sets.newHashSet();
         Set<FileReference> offlines = Sets.newHashSet();
@@ -224,6 +225,7 @@ public class FileCacheRequestService {
         if (nearlines.isEmpty() || (nbRequests == 0)) {
             reqGrpService.checkRequestsGroupDone(groupId, FileRequestType.AVAILABILITY);
         }
+        return nbRequests;
     }
 
     /**
@@ -244,7 +246,7 @@ public class FileCacheRequestService {
      * @return scheduled {@link JobInfo}s
      */
     public Collection<JobInfo> scheduleJobs(FileRequestStatus status) {
-        LOGGER.trace("... scheduling cache jobs");
+        LOGGER.debug("[CACHE REQUESTS] Scheduling Cache jobs ...");
         long start = System.currentTimeMillis();
         Collection<JobInfo> jobList = Lists.newArrayList();
         Set<String> allStorages = repository.findStoragesByStatus(status);
@@ -263,7 +265,7 @@ public class FileCacheRequestService {
                 page = filesPage.nextPageable();
             } while (filesPage.hasNext());
         }
-        LOGGER.trace("...{} cache jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
+        LOGGER.debug("[CACHE REQUESTS] {} jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
         return jobList;
     }
 

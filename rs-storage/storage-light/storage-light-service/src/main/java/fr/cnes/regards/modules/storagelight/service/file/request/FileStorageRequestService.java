@@ -272,7 +272,7 @@ public class FileStorageRequestService {
                 ? allStorages.stream().filter(storages::contains).collect(Collectors.toSet())
                 : allStorages;
         long start = System.currentTimeMillis();
-        LOGGER.info("[STORAGE REQUESTS] Scheduling storage jobs ...");
+        LOGGER.debug("[STORAGE REQUESTS] Scheduling storage jobs ...");
         for (String storage : storagesToSchedule) {
             Page<FileStorageRequest> filesPage;
             Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by("id"));
@@ -293,8 +293,8 @@ public class FileStorageRequestService {
                 // page = filesPage.nextPageable();
             } while (filesPage.hasContent());
         }
-        LOGGER.info("[STORAGE REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
-                    System.currentTimeMillis() - start);
+        LOGGER.debug("[STORAGE REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
+                     System.currentTimeMillis() - start);
         return jobList;
     }
 

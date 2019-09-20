@@ -76,7 +76,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("There should be a copy request created", oReq.isPresent());
 
         // Now run copy schedule
-        fileCopyRequestService.scheduleAvailabilityRequests(FileRequestStatus.TODO);
+        fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TODO);
 
         // There should be one availability request created
         Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
@@ -156,7 +156,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("There should be a copy request created", oReq.isPresent());
 
         // Now run copy schedule
-        fileCopyRequestService.scheduleAvailabilityRequests(FileRequestStatus.TODO);
+        fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TODO);
 
         // There should be one availability request created
         Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());

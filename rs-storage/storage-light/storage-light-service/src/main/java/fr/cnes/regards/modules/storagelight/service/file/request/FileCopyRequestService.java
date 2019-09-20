@@ -107,7 +107,9 @@ public class FileCopyRequestService {
         return request;
     }
 
-    public void scheduleAvailabilityRequests(FileRequestStatus status) {
+    public void scheduleCopyRequests(FileRequestStatus status) {
+        LOGGER.debug("[COPY REQUESTS] handling copy requests ...");
+        long start = System.currentTimeMillis();
         Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
         Page<FileCopyRequest> pageResp = null;
         OffsetDateTime expDate = OffsetDateTime.now().plusDays(1);
@@ -120,11 +122,13 @@ public class FileCopyRequestService {
                 request.setFileCacheGroupId(fileCacheGroupId);
                 request.setStatus(FileRequestStatus.PENDING);
             }
+
             if (!checksums.isEmpty()) {
                 fileCacheReqService.makeAvailable(checksums, expDate, fileCacheGroupId);
             }
             page = page.next();
         } while (pageResp.hasNext());
+        LOGGER.debug("[COPY REQUESTS] Copy requests handled in {} ms", System.currentTimeMillis() - start);
     }
 
     /**
