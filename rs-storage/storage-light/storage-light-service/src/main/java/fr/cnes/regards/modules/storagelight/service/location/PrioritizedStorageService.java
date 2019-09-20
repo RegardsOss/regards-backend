@@ -260,7 +260,7 @@ public class PrioritizedStorageService {
     /**
      * Return the actual lowest priority value for the given storage type
      */
-    private Long getLowestPriority(StorageType storageType) {
+    public Long getLowestPriority(StorageType storageType) {
         PrioritizedStorage lowestPrioritizedStorage = prioritizedStorageRepo
                 .findFirstByStorageTypeOrderByPriorityDesc(storageType);
         if (lowestPrioritizedStorage == null) {
