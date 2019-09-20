@@ -70,7 +70,7 @@ public class FileRequestScheduler {
     @Autowired
     private ILockService lockService;
 
-    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 10_000)
+    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
     @Transactional(propagation = Propagation.NEVER)
     public void handleFileStorageRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
@@ -87,7 +87,7 @@ public class FileRequestScheduler {
         }
     }
 
-    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 11_000)
+    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_100)
     @Transactional(propagation = Propagation.NEVER)
     public void handleFileCacheRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
@@ -104,7 +104,7 @@ public class FileRequestScheduler {
 
     }
 
-    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 12_000)
+    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_200)
     @Transactional(propagation = Propagation.NEVER)
     public void handleFileDeletionRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
@@ -120,7 +120,7 @@ public class FileRequestScheduler {
         }
     }
 
-    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 13_000)
+    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_300)
     @Transactional(propagation = Propagation.NEVER)
     public void handleFileCopyRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
