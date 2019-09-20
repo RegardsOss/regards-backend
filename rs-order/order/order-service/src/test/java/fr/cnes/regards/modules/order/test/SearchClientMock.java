@@ -277,6 +277,7 @@ public class SearchClientMock implements IComplexSearchClient {
                         dataFile.setDigestAlgorithm("MD5");
                         dataFile.setMimeType(file.getName().endsWith("txt") ? MediaType.TEXT_PLAIN
                                 : MediaType.APPLICATION_OCTET_STREAM);
+                        dataFile.setDataType(getDataType(file.getName()));
                         fileMultimap.put(getDataType(file.getName()), dataFile);
                     }
                     feature.setFiles(fileMultimap);

@@ -29,10 +29,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -42,6 +41,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -58,6 +60,8 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -128,7 +132,19 @@ public class OrderServiceIT {
 
     @Autowired
     private IEmailClient emailClient;
-
+    
+    @Autowired
+    private IJobService jobService;
+    
+    @Autowired
+    private IJobInfoRepository jobInfoRepo;
+    
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+    
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+    
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
     private static SimpleMailMessage mailMessage;
@@ -147,12 +163,10 @@ public class OrderServiceIT {
 
     @Before
     public void init() {
-        basketRepos.deleteAll();
-        orderRepos.deleteAll();
-        dataFileRepos.deleteAll();
-
-        jobInfoRepos.deleteAll();
-
+        clean();
+        
+        eventPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class),null,null));
+        
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
         Project project = new Project();
         project.setHost("regardsHost");
@@ -160,7 +174,6 @@ public class OrderServiceIT {
                 .thenReturn(new ResponseEntity<>(new Resource<>(project), HttpStatus.OK));
     }
 
-    @After
     public void clean() {
         basketRepos.deleteAll();
         orderRepos.deleteAll();
@@ -189,12 +202,6 @@ public class OrderServiceIT {
         item.setSelectionRequest(createBasketSelectionRequest(query));
         return item;
     }
-
-    // Reactivate this if you test template
-    //    @AfterClass
-    //    public static void cleanAfterAll() {
-    //        staticTemplateService.deleteAll();
-    //    }
 
     @Test
     public void test1() throws Exception {
@@ -285,15 +292,12 @@ public class OrderServiceIT {
         Assert.assertEquals(1, dataFiles.size());
     }
 
-    @Ignore
     @Test
     @Requirement("REGARDS_DSL_STO_CMD_050")
     @Requirement("REGARDS_DSL_STO_CMD_050")
     @Requirement("REGARDS_DSL_STO_ARC_470")
     @Requirement("REGARDS_DSL_STO_ARC_490")
     public void testBucketsJobs() throws IOException, InterruptedException {
-        AtomicInteger notifCount = new AtomicInteger(0);
-
         String user = "tulavu@qui.fr";
         Basket basket = new Basket(user);
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
@@ -307,10 +311,27 @@ public class OrderServiceIT {
         basketRepos.save(basket);
 
         Order order = orderService.createOrder(basket, "http://perdu.com");
-        // Wait for end of jobs AND update of order completion values
-        Thread.sleep(15_000);
-        // Some files are in error
+        Thread.sleep(5_000);
+        List<JobInfo> jobInfos = jobInfoRepo.findAllByStatusStatus(JobStatus.QUEUED);
+        Assert.assertEquals(2, jobInfos.size());
+        
         List<OrderDataFile> files = dataFileRepos.findAllAvailables(order.getId());
+        Assert.assertEquals(0, files.size());
+        
+        jobInfos.forEach(j -> {
+			try {
+				JobInfo ji = jobInfoRepo.findCompleteById(j.getId());
+				jobService.runJob(ji, "ORDER").get();
+				tenantResolver.forceTenant("ORDER");
+			} catch (InterruptedException | ExecutionException e) {
+				tenantResolver.forceTenant("ORDER");
+				Assert.fail(e.getMessage());
+			}
+		});
+        
+        
+        // Some files are in error
+        files = dataFileRepos.findAllAvailables(order.getId());
         int firstAvailables = files.size();
 
         // Download all available files
@@ -327,8 +348,7 @@ public class OrderServiceIT {
         Assert.assertEquals(12 - files.size() - firstAvailables, order.getFilesInErrorCount());
         // But order should be at 100 % ever
         Assert.assertEquals(100, order.getPercentCompleted());
-
-        Assert.assertEquals(1, notifCount.get());
+        Assert.assertEquals(OrderStatus.DONE, order.getStatus());
     }
 
     @Test
