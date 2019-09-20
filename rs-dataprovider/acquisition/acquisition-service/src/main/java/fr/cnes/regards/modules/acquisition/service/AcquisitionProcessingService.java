@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.ClosedByInterruptException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
@@ -39,6 +40,8 @@ import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
+import com.google.common.collect.Lists;
+import fr.cnes.regards.modules.acquisition.plugins.IFluxScanPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,6 +103,8 @@ import freemarker.template.TemplateException;
 @Service
 @MultitenantTransactional
 public class AcquisitionProcessingService implements IAcquisitionProcessingService {
+
+    private static final int BATCH_SIZE = 1000;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingService.class);
 
@@ -572,8 +577,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
+    @MultitenantTransactional(propagation = Propagation.NOT_SUPPORTED)
     public void scanAndRegisterFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
-
         // Launch file scanning for each file information
         Iterator<AcquisitionFileInfo> fileInfoIter = processingChain.getFileInfos().iterator();
         while (fileInfoIter.hasNext() && !Thread.currentThread().isInterrupted()) {
@@ -594,57 +599,115 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                         .of(OffsetDateTime.ofInstant(fileInfo.getLastModificationDate().toInstant(), ZoneOffset.UTC));
             }
 
-            // Do scan
-            List<Path> scannedFiles = scanPlugin.scan(scanningDate);
-
-            // Sort list according to last modification date
-            Collections.sort(scannedFiles, (file1, file2) -> {
-                try {
-                    return Files.getLastModifiedTime(file1).compareTo(Files.getLastModifiedTime(file2));
-                } catch (IOException e) {
-                    LOGGER.warn("Cannot read last modification date", e);
-                    return 0;
-                }
-            });
-
+            long totalCount = 0;
             long startTime = System.currentTimeMillis();
-            int fromIndex = 0;
-            int toIndex = AcquisitionProperties.WORKING_UNIT;
-            int totalCount = 0;
-            while ((toIndex <= scannedFiles.size()) && !Thread.currentThread().isInterrupted()) {
-                long transactionStartTime = System.currentTimeMillis();
-                // Do it in one transaction
-                LOGGER.debug("Trying to register {}/{} of the new file(s) scanned", toIndex, scannedFiles.size());
-                int count = self.registerFiles(scannedFiles.subList(fromIndex, toIndex), fileInfo, scanningDate);
-                totalCount += count;
-                LOGGER.debug("{}/{} new file(s) registered in {} milliseconds", count, toIndex,
-                             System.currentTimeMillis() - transactionStartTime);
-                fromIndex = toIndex;
-                toIndex = toIndex + AcquisitionProperties.WORKING_UNIT;
+            if (scanPlugin instanceof IFluxScanPlugin) {
+                totalCount = streamAndRegisterFiles(fileInfo, (IFluxScanPlugin) scanPlugin, scanningDate);
+            } else {
+                totalCount = scanAndRegisterFilesByDirectory(fileInfo, scanPlugin, scanningDate);
             }
-            // Do it in one transaction
-            long transactionStartTime = System.currentTimeMillis();
-            List<Path> remainingFiles = scannedFiles.subList(fromIndex, scannedFiles.size());
-            LOGGER.debug("Trying to register the last {} of the new file(s) scanned", remainingFiles.size());
-            int count = self.registerFiles(remainingFiles, fileInfo, scanningDate);
-            totalCount += count;
-            LOGGER.debug("{}/{} new file(s) registered in {} milliseconds", count, remainingFiles.size(),
-                         System.currentTimeMillis() - transactionStartTime);
-
             LOGGER.info("{} new file(s) registered in {} milliseconds", totalCount,
-                        System.currentTimeMillis() - startTime);
+                    System.currentTimeMillis() - startTime);
         }
 
     }
 
+    private long scanAndRegisterFilesByDirectory(AcquisitionFileInfo fileInfo, IScanPlugin scanPlugin,
+                                      Optional<OffsetDateTime> scanningDate) throws ModuleException {
+        // Do scan
+        List<Path> scannedFiles = scanPlugin.scan(scanningDate);
+
+        // Sort list according to last modification date
+        Collections.sort(scannedFiles, (file1, file2) -> {
+            try {
+                return Files.getLastModifiedTime(file1).compareTo(Files.getLastModifiedTime(file2));
+            } catch (IOException e) {
+                LOGGER.warn("Cannot read last modification date", e);
+                return 0;
+            }
+        });
+
+        int fromIndex = 0;
+        int toIndex = AcquisitionProperties.WORKING_UNIT;
+        long totalCount = 0;
+        while ((toIndex <= scannedFiles.size()) && !Thread.currentThread().isInterrupted()) {
+            long transactionStartTime = System.currentTimeMillis();
+            // Do it in one transaction
+            LOGGER.debug("Trying to register {}/{} of the new file(s) scanned", toIndex, scannedFiles.size());
+            int count = self.registerFiles(scannedFiles.subList(fromIndex, toIndex), fileInfo, scanningDate, true);
+            totalCount += count;
+            LOGGER.debug("{}/{} new file(s) registered in {} milliseconds", count, toIndex,
+                    System.currentTimeMillis() - transactionStartTime);
+            fromIndex = toIndex;
+            toIndex = toIndex + AcquisitionProperties.WORKING_UNIT;
+        }
+        // Do it in one transaction
+        long transactionStartTime = System.currentTimeMillis();
+        List<Path> remainingFiles = scannedFiles.subList(fromIndex, scannedFiles.size());
+        LOGGER.debug("Trying to register the last {} of the new file(s) scanned", remainingFiles.size());
+        int count = self.registerFiles(remainingFiles, fileInfo, scanningDate, true);
+        totalCount += count;
+        LOGGER.debug("{}/{} new file(s) registered in {} milliseconds", count, remainingFiles.size(),
+                System.currentTimeMillis() - transactionStartTime);
+        return totalCount;
+    }
+
+    private long streamAndRegisterFiles(AcquisitionFileInfo fileInfo, IFluxScanPlugin scanPlugin,
+                                        Optional<OffsetDateTime> scanningDate) throws ModuleException {
+        long totalCount = 0;
+
+        try {
+            List<DirectoryStream<Path>> streams = scanPlugin.stream(scanningDate);
+            Iterator<DirectoryStream<Path>> streamsIt = streams.iterator();
+            while (streamsIt.hasNext() && !Thread.currentThread().isInterrupted()) {
+                DirectoryStream<Path> stream = streamsIt.next();
+                int filesCount = 0;
+                long totalTime = 0;
+                Iterator<Path> it = stream.iterator();
+                List<Path> files = Lists.newArrayList();
+                OffsetDateTime lastModificationDate = null;
+                if (fileInfo.getLastModificationDate() != null) {
+                    lastModificationDate = fileInfo.getLastModificationDate();
+                }
+                while (it.hasNext() && !Thread.currentThread().isInterrupted()) {
+                    Path filePath = it.next();
+                    files.add(filePath);
+                    OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(),
+                            ZoneOffset.UTC);
+                    if (lastModificationDate == null || lastModificationDate.isBefore(lmd)) {
+                        lastModificationDate = lmd;
+                    }
+                    if (!it.hasNext() || (files.size() >= AcquisitionProcessingService.BATCH_SIZE)) {
+                        long transactionStartTime = System.currentTimeMillis();
+                        totalCount += self.registerFiles(files, fileInfo, scanningDate, false);
+                        LOGGER.debug("{} new file(s) registered in {} milliseconds", files.size(),
+                                System.currentTimeMillis() - transactionStartTime);
+                        filesCount += AcquisitionProcessingService.BATCH_SIZE;
+                        totalTime += System.currentTimeMillis() - transactionStartTime;
+                        LOGGER.debug("{} total files registered in {}", filesCount, totalTime / 1000);
+                        files.clear();
+                    }
+                }
+                if (!Thread.currentThread().isInterrupted()) {
+                    fileInfo.setLastModificationDate(lastModificationDate);
+                    fileInfoRepository.save(fileInfo);
+                }
+            }
+        } catch (IOException e) {
+            throw new ModuleException(e);
+        }
+        return totalCount;
+    }
+
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public int registerFiles(List<Path> filePaths, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate)
+    public int registerFiles(List<Path> filePaths, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate,
+                             boolean updateFileInfo)
             throws ModuleException {
         int countRegistered = 0;
         Iterator<Path> filePathIter = filePaths.iterator();
         while (filePathIter.hasNext() && !Thread.currentThread().isInterrupted()) {
-            if (registerFile(filePathIter.next(), info, scanningDate)) {
+            if (registerFile(filePathIter.next(), info, scanningDate, updateFileInfo)) {
                 countRegistered++;
             }
         }
@@ -652,7 +715,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public boolean registerFile(Path filePath, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate)
+    public boolean registerFile(Path filePath, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate,
+                                boolean updateFileInfo)
             throws ModuleException {
 
         // Initialize new file
@@ -681,8 +745,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 }
             }
 
-            info.setLastModificationDate(lmd);
-            fileInfoRepository.save(info);
+            if (updateFileInfo) {
+                info.setLastModificationDate(lmd);
+                fileInfoRepository.save(info);
+            }
         } catch (ClosedByInterruptException e) {
             // This exception happens when you try to access files while thread has been interrupted.
             // In this case lets ignore the file and act as we did not scanned it.

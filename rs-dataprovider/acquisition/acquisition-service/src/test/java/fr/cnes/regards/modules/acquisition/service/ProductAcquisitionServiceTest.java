@@ -23,13 +23,26 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Set;
 
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.acquisition.service.plugins.*;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
@@ -53,10 +66,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
-import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
+import org.springframework.util.MimeTypeUtils;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link Product} workflow
@@ -66,6 +76,8 @@ import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_product" })
 public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTest {
+    @SpyBean
+    INotificationClient notificationClient;
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionServiceTest.class);
@@ -85,6 +97,18 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
     @Autowired
     private IAcquisitionFileService fileService;
+
+    @Autowired
+    IPluginConfigurationRepository pluginConfigurationRepository;
+
+    @Autowired
+    private ApplicationEventPublisher springPublisher;
+
+    @Before
+    public void cleanBefore() {
+        simulateApplicationStartedEvent();
+        pluginConfigurationRepository.deleteAll();
+    }
 
     @After
     public void cleanAfter() {
@@ -144,17 +168,85 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         return processingService.createChain(processingChain);
     }
 
-    //    @Test
-    //    public void scanTest() throws ModuleException {
-    //
-    //        AcquisitionProcessingChain processingChain = createProcessingChain(Paths.get("src", "test", "resources", "data",
-    //                                                                                     "plugins", "scan"));
-    //        processingService.scanAndRegisterFiles(processingChain);
-    //
-    //        processingService.scanAndRegisterFiles(processingChain);
-    //
-    //        processingService.scanAndRegisterFiles(processingChain);
-    //    }
+    public AcquisitionProcessingChain createProcessingChainWithStream(Path searchDir) throws ModuleException {
+
+        // Create a processing chain
+        AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
+        processingChain.setLabel("Product streamed");
+        processingChain.setActive(Boolean.TRUE);
+        processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
+        processingChain.setIngestChain("DefaultIngestChain");
+
+        // Create an acquisition file info
+        AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
+        fileInfo.setMandatory(Boolean.TRUE);
+        fileInfo.setComment("A streamed comment");
+        fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
+        fileInfo.setDataType(DataType.RAWDATA);
+
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(GlobDiskStreamScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
+
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskStreamScanning.class);
+        scanPlugin.setIsActive(true);
+        scanPlugin.setLabel("Scan streamed plugin");
+        fileInfo.setScanPlugin(scanPlugin);
+
+        processingChain.addFileInfo(fileInfo);
+
+        // Validation
+        PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
+                SWHFileValidation.class);
+        validationPlugin.setIsActive(true);
+        validationPlugin.setLabel("Validation streamed plugin");
+        processingChain.setValidationPluginConf(validationPlugin);
+
+        // Product
+        PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
+                DefaultProductPlugin.class);
+        productPlugin.setIsActive(true);
+        productPlugin.setLabel("Product streamed plugin");
+        processingChain.setProductPluginConf(productPlugin);
+
+        // SIP generation
+        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
+                DefaultSIPGeneration.class);
+        sipGenPlugin.setIsActive(true);
+        sipGenPlugin.setLabel("SIP generation streamed plugin");
+        processingChain.setGenerateSipPluginConf(sipGenPlugin);
+
+        // SIP post processing
+        // Not required
+
+        // Save processing chain
+        return processingService.createChain(processingChain);
+    }
+
+
+    @Test
+    public void acquisitionByStreamWorkflowTest() throws ModuleException {
+        AcquisitionProcessingChain processingChain = createProcessingChainWithStream(Paths.get("/home/akito/generatedFiles"));
+        processingService.scanAndRegisterFiles(processingChain);
+        processingService.manageRegisteredFiles(processingChain);
+
+        ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
+
+        Mockito.verify(
+            notificationClient,
+            Mockito.times(20)).notify(argumentCaptor.capture(),
+            Mockito.eq("Acquisition invalid files report"),
+            Mockito.eq(NotificationLevel.WARNING),
+            Mockito.eq(MimeTypeUtils.TEXT_HTML),
+            Mockito.eq(DefaultRole.PROJECT_ADMIN));
+
+        Mockito.verify(
+                notificationClient,
+                Mockito.times(1)).notify(argumentCaptor.capture(),
+                Mockito.eq("There was a problem when collecting the preview image for the SIP generation"),
+                Mockito.eq(NotificationLevel.WARNING),
+                Mockito.eq(MimeTypeUtils.TEXT_HTML),
+                Mockito.eq(DefaultRole.PROJECT_ADMIN));
+    }
 
     @Test
     public void acquisitionWorkflowTest() throws ModuleException {
