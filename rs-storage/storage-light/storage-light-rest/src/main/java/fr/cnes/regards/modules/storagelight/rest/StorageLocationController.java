@@ -99,23 +99,23 @@ public class StorageLocationController implements IResourceController<StorageLoc
             switch (location.getType()) {
                 case NEALINE:
                     if (!location.getConfiguration().getPriority().equals(PrioritizedStorage.HIGHEST_PRIORITY)) {
-                        resourceService.addLink(resource, this.getClass(), "increaseDataStoragePriority", "up",
+                        resourceService.addLink(resource, this.getClass(), "increaseStorageLocationPriority", "up",
                                                 MethodParamFactory.build(String.class, location.getId()));
                     }
                     if (!location.getConfiguration().getPriority()
                             .equals(prioriterizedStorageService.getLowestPriority(StorageType.NEARLINE))) {
-                        resourceService.addLink(resource, this.getClass(), "decreaseDataStoragePriority", "down",
+                        resourceService.addLink(resource, this.getClass(), "decreaseStorageLocationPriority", "down",
                                                 MethodParamFactory.build(String.class, location.getId()));
                     }
                     break;
                 case ONLINE:
                     if (!location.getConfiguration().getPriority().equals(PrioritizedStorage.HIGHEST_PRIORITY)) {
-                        resourceService.addLink(resource, this.getClass(), "increaseDataStoragePriority", "up",
+                        resourceService.addLink(resource, this.getClass(), "increaseStorageLocationPriority", "up",
                                                 MethodParamFactory.build(String.class, location.getId()));
                     }
                     if (!location.getConfiguration().getPriority()
                             .equals(prioriterizedStorageService.getLowestPriority(StorageType.ONLINE))) {
-                        resourceService.addLink(resource, this.getClass(), "decreaseDataStoragePriority", "down",
+                        resourceService.addLink(resource, this.getClass(), "decreaseStorageLocationPriority", "down",
                                                 MethodParamFactory.build(String.class, location.getId()));
                     }
                     break;
