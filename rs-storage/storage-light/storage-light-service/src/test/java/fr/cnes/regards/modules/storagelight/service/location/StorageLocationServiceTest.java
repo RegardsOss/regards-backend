@@ -38,7 +38,6 @@ import fr.cnes.regards.modules.storagelight.dao.IStorageMonitoringRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
-import fr.cnes.regards.modules.storagelight.service.location.StorageLocationService;
 
 /**
  * @author sbinda
@@ -77,8 +76,7 @@ public class StorageLocationServiceTest extends AbstractMultitenantServiceTest {
                 MediaType.APPLICATION_OCTET_STREAM);
         FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/" + checksum);
         try {
-            fileRefService.reference("someone", fileMetaInfo, location,
-                                         Sets.newHashSet(UUID.randomUUID().toString()));
+            fileRefService.reference("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
         } catch (ModuleException e) {
             Assert.fail(e.getMessage());
         }
@@ -115,7 +113,5 @@ public class StorageLocationServiceTest extends AbstractMultitenantServiceTest {
                             storageLocationService.search(storage).get().getTotalSizeOfReferencedFiles().longValue());
         Assert.assertEquals("Total number of files on STAF storage invalid", 5L,
                             storageLocationService.search(storage).get().getNumberOfReferencedFiles().longValue());
-
     }
-
 }

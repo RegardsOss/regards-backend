@@ -51,4 +51,6 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
     Page<FileStorageRequest> findAllByStorageAndStatusAndOwnersIn(String storage, FileRequestStatus status,
             Collection<String> owners, Pageable page);
 
+    Long countByStorageAndStatus(String storage, FileRequestStatus status);
+
 }

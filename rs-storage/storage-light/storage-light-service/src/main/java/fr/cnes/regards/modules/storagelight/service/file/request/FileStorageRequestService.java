@@ -210,6 +210,11 @@ public class FileStorageRequestService {
         return fileStorageRequestRepo.findByStorage(destinationStorage, pageable);
     }
 
+    @Transactional(readOnly = true)
+    public Long count(String storage, FileRequestStatus status) {
+        return fileStorageRequestRepo.countByStorageAndStatus(storage, status);
+    }
+
     /**
      * Delete a {@link FileStorageRequest}
      * @param fileStorageRequest to delete

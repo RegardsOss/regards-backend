@@ -74,8 +74,8 @@ public class PrioritizedStorageService {
         return prioritizedStorageRepo.findAllByStorageTypeOrderByPriorityAsc(type);
     }
 
-    public Optional<PrioritizedStorage> search(String label) {
-        return prioritizedStorageRepo.findByStorageConfigurationLabel(label);
+    public Optional<PrioritizedStorage> search(String businessId) {
+        return prioritizedStorageRepo.findByStorageConfigurationBusinessId(businessId);
     }
 
     /**
@@ -227,34 +227,17 @@ public class PrioritizedStorageService {
         if (toDeleteOpt.isPresent()) {
             // first we need to increase all the priorities of those which are less prioritized than the one to delete
             PrioritizedStorage toDelete = toDeleteOpt.get();
-            if (canDelete(toDelete)) {
-                Set<PrioritizedStorage> lessPrioritizeds = prioritizedStorageRepo
-                        .findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(toDelete.getStorageType(),
-                                                                                      toDelete.getPriority());
-                prioritizedStorageRepo.delete(toDelete);
-                pluginService.deletePluginConfiguration(toDelete.getStorageConfiguration().getBusinessId());
-                em.flush();
-                for (PrioritizedStorage lessPrioritized : lessPrioritizeds) {
-                    lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);
-                }
-                prioritizedStorageRepo.saveAll(lessPrioritizeds);
-            } else {
-                String msg = String
-                        .format("[STORAGE LOCATION] Data storage %s could not be deleted because it contains files",
-                                toDelete.getStorageConfiguration().getLabel());
-                LOG.error(msg);
-                throw new EntityOperationForbiddenException(msg);
+            Set<PrioritizedStorage> lessPrioritizeds = prioritizedStorageRepo
+                    .findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(toDelete.getStorageType(),
+                                                                                  toDelete.getPriority());
+            prioritizedStorageRepo.delete(toDelete);
+            pluginService.deletePluginConfiguration(toDelete.getStorageConfiguration().getBusinessId());
+            em.flush();
+            for (PrioritizedStorage lessPrioritized : lessPrioritizeds) {
+                lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);
             }
+            prioritizedStorageRepo.saveAll(lessPrioritizeds);
         }
-    }
-
-    /**
-     * Does the given {@link PrioritizedStorage} can be deleted ?
-     * @return boolean
-     */
-    public boolean canDelete(PrioritizedStorage prioritizedDataStorage) {
-        return fileRefereceRepository
-                .countByLocationStorage(prioritizedDataStorage.getStorageConfiguration().getLabel()) == 0L;
     }
 
     /**

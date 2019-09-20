@@ -20,7 +20,11 @@ package fr.cnes.regards.modules.storagelight.service.location;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,18 +34,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storagelight.dao.IStorageLocationRepository;
 import fr.cnes.regards.modules.storagelight.dao.IStorageMonitoringRepository;
+import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoring;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationType;
+import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileDeletionRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**
  * @author Sébastien Binda
@@ -67,6 +81,15 @@ public class StorageLocationService {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private FileStorageRequestService storageReqService;
+
+    @Autowired
+    private FileDeletionRequestService deletionReqService;
+
+    @Autowired
+    private PrioritizedStorageService pStorageService;
+
     @Value("${regards.storage.data.storage.threshold.percent:70}")
     private Integer threshold;
 
@@ -75,6 +98,75 @@ public class StorageLocationService {
 
     public Optional<StorageLocation> search(String storage) {
         return storageLocationRepo.findByName(storage);
+    }
+
+    /**
+     * Retrieve all known storage locations with there monitoring informations.
+     * TODO : Handle size limit for configured storages.
+     * @return {@link StorageLocationDTO}s
+     */
+    public Set<StorageLocationDTO> getAllLocations() {
+
+        Set<StorageLocationDTO> locationsDto = Sets.newHashSet();
+        // Get all monitored locations
+        Map<String, StorageLocation> monitoredLocations = storageLocationRepo.findAll().stream()
+                .collect(Collectors.toMap(l -> l.getName(), l -> l));
+
+        // Get all non monitored locations
+        List<PrioritizedStorage> onlines = pStorageService.search(StorageType.ONLINE);
+        List<PrioritizedStorage> nearlines = pStorageService.search(StorageType.NEARLINE);
+
+        // Handle all online storage configured
+        for (PrioritizedStorage online : onlines) {
+            Long nbStorageError = storageReqService.count(online.getStorageConfiguration().getLabel(),
+                                                          FileRequestStatus.ERROR);
+            Long nbDeletionError = deletionReqService.count(online.getStorageConfiguration().getLabel(),
+                                                            FileRequestStatus.ERROR);
+            StorageLocation monitored = monitoredLocations.get(online.getStorageConfiguration().getBusinessId());
+            if (monitored != null) {
+                locationsDto.add(StorageLocationDTO
+                        .build(online.getStorageConfiguration().getBusinessId(), StorageLocationType.ONLINE,
+                               monitored.getNumberOfReferencedFiles(), monitored.getTotalSizeOfReferencedFiles(), null,
+                               nbStorageError, nbDeletionError, online));
+                monitoredLocations.remove(monitored.getName());
+            } else {
+                locationsDto.add(StorageLocationDTO.build(online.getStorageConfiguration().getBusinessId(),
+                                                          StorageLocationType.ONLINE, null, null, null, nbStorageError,
+                                                          nbDeletionError, online));
+            }
+        }
+
+        // Handle all nearlines storage configured
+        for (PrioritizedStorage nearline : nearlines) {
+            Long nbStorageError = storageReqService.count(nearline.getStorageConfiguration().getLabel(),
+                                                          FileRequestStatus.ERROR);
+            Long nbDeletionError = deletionReqService.count(nearline.getStorageConfiguration().getLabel(),
+                                                            FileRequestStatus.ERROR);
+            StorageLocation monitored = monitoredLocations.get(nearline.getStorageConfiguration().getBusinessId());
+            if (monitored != null) {
+                locationsDto.add(StorageLocationDTO
+                        .build(nearline.getStorageConfiguration().getBusinessId(), StorageLocationType.NEALINE,
+                               monitored.getNumberOfReferencedFiles(), monitored.getTotalSizeOfReferencedFiles(), null,
+                               nbStorageError, nbDeletionError, nearline));
+                monitoredLocations.remove(monitored.getName());
+            } else {
+                locationsDto.add(StorageLocationDTO.build(nearline.getStorageConfiguration().getBusinessId(),
+                                                          StorageLocationType.NEALINE, null, null, null, nbStorageError,
+                                                          nbDeletionError, nearline));
+            }
+        }
+
+        // Handle not configured storage as OFFLINE ones
+        for (StorageLocation monitored : monitoredLocations.values()) {
+            Long nbStorageError = 0L;
+            Long nbDeletionError = 0L;
+            locationsDto.add(StorageLocationDTO
+                    .build(monitored.getName(), StorageLocationType.OFFLINE, monitored.getNumberOfReferencedFiles(),
+                           monitored.getTotalSizeOfReferencedFiles(), null, nbStorageError, nbDeletionError, null));
+        }
+
+        return locationsDto;
+
     }
 
     public void monitorDataStorages() {
@@ -136,6 +228,24 @@ public class StorageLocationService {
 
     private void notifyAdmins(String title, String message, NotificationLevel type, MimeType mimeType) {
         notificationClient.notify(message, title, type, mimeType, DefaultRole.ADMIN);
+    }
+
+    public void increasePriority(String storageLocationId) throws EntityNotFoundException {
+        Optional<PrioritizedStorage> pStorage = pStorageService.search(storageLocationId);
+        if (pStorage.isPresent()) {
+            pStorageService.increasePriority(pStorage.get().getId());
+        } else {
+            throw new EntityNotFoundException(storageLocationId, PrioritizedStorage.class);
+        }
+    }
+
+    public void decreasePriority(String storageLocationId) throws EntityNotFoundException {
+        Optional<PrioritizedStorage> pStorage = pStorageService.search(storageLocationId);
+        if (pStorage.isPresent()) {
+            pStorageService.decreasePriority(pStorage.get().getId());
+        } else {
+            throw new EntityNotFoundException(storageLocationId, PrioritizedStorage.class);
+        }
     }
 
 }

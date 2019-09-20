@@ -316,9 +316,11 @@ public class FileDeletionRequestService {
         return fileDeletionRequestRepo.findByFileReferenceId(fileReference.getId());
     }
 
-    /**
-     *
-     */
+    @Transactional(readOnly = true)
+    public Long count(String storage, FileRequestStatus status) {
+        return fileDeletionRequestRepo.countByStorageAndStatus(storage, status);
+    }
+
     public void handleError(FileDeletionRequest fileDeletionRequest, String errorCause) {
         FileReference fileRef = fileDeletionRequest.getFileReference();
         if (!fileDeletionRequest.isForceDelete()) {

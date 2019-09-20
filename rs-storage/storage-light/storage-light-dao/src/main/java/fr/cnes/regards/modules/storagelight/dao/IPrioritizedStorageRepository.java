@@ -52,5 +52,5 @@ public interface IPrioritizedStorageRepository extends JpaRepository<Prioritized
 
     Set<PrioritizedStorage> findByStorageConfigurationLabelIn(Collection<String> confLabels);
 
-    Optional<PrioritizedStorage> findByStorageConfigurationLabel(String label);
+    Optional<PrioritizedStorage> findByStorageConfigurationBusinessId(String businessId);
 }

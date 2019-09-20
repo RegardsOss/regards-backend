@@ -48,10 +48,10 @@ import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageS
  * @author Sylvain VISSIERE-GUERINET
  */
 @RestController
-@RequestMapping(PrioritizedStorageController.BASE_PATH)
-public class PrioritizedStorageController implements IResourceController<PrioritizedStorage> {
+@RequestMapping(PioriterizedStorageController.BASE_PATH)
+public class PioriterizedStorageController implements IResourceController<PrioritizedStorage> {
 
-    public static final String BASE_PATH = "/storages";
+    public static final String BASE_PATH = "/storages/configuration";
 
     public static final String ID_PATH = "/{id}";
 
@@ -131,10 +131,8 @@ public class PrioritizedStorageController implements IResourceController<Priorit
         resourceService.addLink(resource, this.getClass(), "updatePrioritizedStorage", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, prioritizedStorage.getId()),
                                 MethodParamFactory.build(PrioritizedStorage.class));
-        if (prioriterizedStorageService.canDelete(prioritizedStorage)) {
-            resourceService.addLink(resource, this.getClass(), "deletePrioritizedStorage", LinkRels.DELETE,
-                                    MethodParamFactory.build(Long.class, prioritizedStorage.getId()));
-        }
+        resourceService.addLink(resource, this.getClass(), "deletePrioritizedStorage", LinkRels.DELETE,
+                                MethodParamFactory.build(Long.class, prioritizedStorage.getId()));
         if (!prioritizedStorage.getPriority().equals(PrioritizedStorage.HIGHEST_PRIORITY)) {
             resourceService.addLink(resource, this.getClass(), "increaseDataStoragePriority", "up",
                                     MethodParamFactory.build(Long.class, prioritizedStorage.getId()));
