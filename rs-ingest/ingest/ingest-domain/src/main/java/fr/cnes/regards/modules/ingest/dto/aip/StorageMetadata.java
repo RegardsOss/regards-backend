@@ -92,6 +92,7 @@ public class StorageMetadata {
         StorageMetadata m = new StorageMetadata();
         m.setPluginBusinessId(pluginBusinessId);
         m.setStorePath(storePath);
+        m.setTargetTypes(targetTypes);
         return m;
     }
 
