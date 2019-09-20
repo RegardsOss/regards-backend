@@ -19,11 +19,12 @@
 package fr.cnes.regards.modules.storagelight.service.file.request;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
 
@@ -64,18 +65,13 @@ public class FileRequestScheduler {
     private FileCacheRequestService fileCacheRequestService;
 
     @Autowired
-    private FileCopyRequestService FileCopyRequestService;
+    private FileCopyRequestService fileCopyRequestService;
 
     @Autowired
     private ILockService lockService;
 
-    /**
-     * Number of created AIPs processed on each iteration by project
-     */
-    @Value("${regards.storage.aips.iteration.limit:100}")
-    private Integer aipIterationLimit;
-
-    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
+    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 10_000)
+    @Transactional(propagation = Propagation.NEVER)
     public void handleFileStorageRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
@@ -91,7 +87,8 @@ public class FileRequestScheduler {
         }
     }
 
-    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
+    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 11_000)
+    @Transactional(propagation = Propagation.NEVER)
     public void handleFileCacheRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
@@ -107,7 +104,8 @@ public class FileRequestScheduler {
 
     }
 
-    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
+    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 12_000)
+    @Transactional(propagation = Propagation.NEVER)
     public void handleFileDeletionRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
@@ -122,13 +120,14 @@ public class FileRequestScheduler {
         }
     }
 
-    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
+    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 13_000)
+    @Transactional(propagation = Propagation.NEVER)
     public void handleFileCopyRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             if (obtainLock()) {
                 try {
-                    FileCopyRequestService.scheduleAvailabilityRequests(FileRequestStatus.TODO);
+                    fileCopyRequestService.scheduleAvailabilityRequests(FileRequestStatus.TODO);
                 } finally {
                     releaseLock();
                     runtimeTenantResolver.clearTenant();
@@ -142,7 +141,7 @@ public class FileRequestScheduler {
      * @return
      */
     private boolean obtainLock() {
-        return lockService.obtainLockOrSkip(this.getClass().getName(), this, 60_000);
+        return lockService.obtainLockOrSkip(this.getClass().getName(), this, 60L);
     }
 
     /**
