@@ -90,7 +90,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
     private static final String SESSION = "session";
 
-    private static final StorageMetadata STORAGE_METADATA = StorageMetadata.build("disk", null);
+    private static final StorageMetadata STORAGE_METADATA = StorageMetadata.build("disk");
 
     private static final HashSet<String> CATEGORIES = Sets.newHashSet("cat 1");
 

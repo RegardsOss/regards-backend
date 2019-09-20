@@ -18,8 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.dto.aip;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import java.util.Set;
 import javax.validation.constraints.NotBlank;
 
+import javax.validation.constraints.NotNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -33,24 +37,32 @@ public class StorageMetadata {
 
     private static final String MISSING_STORAGE_ERROR = "Storage identifier is required";
 
+    private static final String MISSING_TARGET_TYPES = "Data type list should be provided";
+
     /**
      * Storage identifier.
      * To use a plugin from storage, this identifier must match a plugin configuration business identifier.
      */
     @NotBlank(message = MISSING_STORAGE_ERROR)
-    private String storage;
+    private String pluginBusinessId;
 
     /**
      * Optional path identifying the base directory in which to store related files
      */
     private String storePath;
 
-    public String getStorage() {
-        return storage;
+    /**
+     * List of data object types accepted by this storage location (when storing AIPs)
+     */
+    @NotNull(message = MISSING_TARGET_TYPES)
+    private Set<DataType> targetTypes;
+
+    public String getPluginBusinessId() {
+        return pluginBusinessId;
     }
 
-    public void setStorage(String storage) {
-        this.storage = storage;
+    public void setPluginBusinessId(String pluginBusinessId) {
+        this.pluginBusinessId = pluginBusinessId;
     }
 
     public String getStorePath() {
@@ -61,16 +73,39 @@ public class StorageMetadata {
         this.storePath = storePath;
     }
 
+    public Set<DataType> getTargetTypes() {
+        return targetTypes;
+    }
+
+    public void setTargetTypes(Set<DataType> targetTypes) {
+        this.targetTypes = targetTypes;
+    }
+
     /**
      * Build storage metadata
-     * @param storage storage identifier
+     * @param pluginBusinessId storage identifier
      * @param storePath path to the directory in which files have to be stored
+     * @param targetTypes list of data type this storage will handle
      */
-    public static StorageMetadata build(String storage, @Nullable String storePath) {
-        Assert.hasLength(storage, MISSING_STORAGE_ERROR);
+    public static StorageMetadata build(String pluginBusinessId, @Nullable String storePath, Set<DataType> targetTypes) {
+        Assert.hasLength(pluginBusinessId, MISSING_STORAGE_ERROR);
         StorageMetadata m = new StorageMetadata();
-        m.setStorage(storage);
+        m.setPluginBusinessId(pluginBusinessId);
         m.setStorePath(storePath);
+        return m;
+    }
+
+
+    /**
+     * Build storage metadata with empty target types and storage path
+     * @param pluginBusinessId storage identifier
+     */
+    public static StorageMetadata build(String pluginBusinessId) {
+        Assert.hasLength(pluginBusinessId, MISSING_STORAGE_ERROR);
+        StorageMetadata m = new StorageMetadata();
+        m.setPluginBusinessId(pluginBusinessId);
+        m.setStorePath(null);
+        m.setTargetTypes(Sets.newHashSet());
         return m;
     }
 

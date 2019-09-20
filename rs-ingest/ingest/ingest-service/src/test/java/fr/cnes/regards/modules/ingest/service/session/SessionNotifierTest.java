@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -69,7 +70,7 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
     @Before
     public void init() {
         sipEntity = SIPEntity.build(getDefaultTenant(), IngestMetadata.build(sessionOwner, session,
-                ingestChain, categories,StorageMetadata.build("AWS", "/dir1/dir2/")),
+                ingestChain, categories,StorageMetadata.build("AWS", "/dir1/dir2/", new HashSet<>())),
                 SIP.build(EntityType.DATA, providerId),
                 1, SIPState.INGESTED
         );

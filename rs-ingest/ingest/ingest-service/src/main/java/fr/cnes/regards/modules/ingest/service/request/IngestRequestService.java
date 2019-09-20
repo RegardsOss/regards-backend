@@ -258,11 +258,16 @@ public class IngestRequestService implements IIngestRequestService {
                     if (l.getStorage() == null) {
                         // Storage is empty for this dataobject, create a storage request for each storage
                         for (StorageMetadata storage : storages) {
-                            filesToStore.add(FileStorageRequestDTO
-                                    .build(dataObject.getFilename(), dataObject.getChecksum(), dataObject.getAlgorithm(),
-                                            ci.getRepresentationInformation().getSyntax().getMimeType().toString(),
-                                            aip.getId().toString(), l.getUrl(), storage.getStorage(),
-                                            Optional.ofNullable(storage.getStorePath())));
+                            // Check if this storage contains this target type or is empty, which means
+                            // this storage accepts everything
+                            if (storage.getTargetTypes().isEmpty() ||
+                                    storage.getTargetTypes().contains(dataObject.getRegardsDataType())) {
+                                filesToStore.add(FileStorageRequestDTO
+                                        .build(dataObject.getFilename(), dataObject.getChecksum(), dataObject.getAlgorithm(),
+                                                ci.getRepresentationInformation().getSyntax().getMimeType().toString(),
+                                                aip.getId().toString(), l.getUrl(), storage.getPluginBusinessId(),
+                                                Optional.ofNullable(storage.getStorePath())));
+                            }
                         }
                     } else {
                         // Create a storage reference
@@ -415,8 +420,6 @@ public class IngestRequestService implements IIngestRequestService {
                     // Exclude from the location list any null storage
                     Set<OAISDataObjectLocation> newLocations = dataObject.getLocations().stream()
                             .filter(l -> l.getStorage() != null).collect(Collectors.toSet());
-                    // TODO what is the file link to save in AIP?
-
                     newLocations.add(OAISDataObjectLocation.build(storeRequestInfo.getResultFile().getLocation().getUrl(),
                             storeRequestInfo.getRequestStorage()));
                     dataObject.setLocations(newLocations);

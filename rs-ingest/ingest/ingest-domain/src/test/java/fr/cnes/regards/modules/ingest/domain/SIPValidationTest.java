@@ -18,12 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.oais.InformationPackageProperties;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPReference;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,20 +52,6 @@ import org.springframework.util.MimeType;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
-
-import com.google.common.collect.Lists;
-
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.oais.InformationPackageProperties;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPReference;
 
 /**
  *
@@ -223,7 +220,7 @@ public class SIPValidationTest {
     public void validateSIPCollection() {
 
         SIPCollection collection = SIPCollection.build(IngestMetadataDto.build("sessionOwner", "session", "ingestChain",
-                Sets.newHashSet("cat 1"), StorageMetadata.build("test", null)));
+                Sets.newHashSet("cat 1"), StorageMetadata.build("test")));
 
         validator.validate(collection, errors);
         if (errors.hasErrors()) {

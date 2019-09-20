@@ -114,7 +114,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner, session,
                 IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                 Sets.newHashSet(categories),
-                StorageMetadata.build(storage, null));
+                StorageMetadata.build(storage));
         ingestServiceTest.sendIngestRequestEvent(sip, mtd);
     }
 

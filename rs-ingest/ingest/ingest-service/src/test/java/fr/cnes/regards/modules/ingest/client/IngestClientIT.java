@@ -80,7 +80,7 @@ public class IngestClientIT extends IngestMultitenantServiceTest {
         RequestInfo clientInfo = ingestClient.ingest(IngestMetadataDto
                 .build("sessionOwner", "session", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                         Sets.newHashSet("cat 1"),
-                       StorageMetadata.build("disk", null)), create(providerId));
+                       StorageMetadata.build("disk")), create(providerId));
         ingestServiceTest.waitForIngestion(1, FIVE_SECONDS, SIPState.STORED);
 
         ArgumentCaptor<RequestInfo> grantedInfo = ArgumentCaptor.forClass(RequestInfo.class);

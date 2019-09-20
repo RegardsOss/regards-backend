@@ -137,7 +137,7 @@ public class AIPService implements IAIPService {
             for (StorageMetadata storage : storages) {
                 files.add(FileStorageRequestDTO.build(aip.getId().toString(), checksum, MD5_ALGORITHM,
                                                       MediaType.APPLICATION_JSON_UTF8_VALUE, aip.getId().toString(),
-                                                      originUrl.toString(), storage.getStorage(),
+                                                      originUrl.toString(), storage.getPluginBusinessId(),
                                                       Optional.ofNullable(storage.getStorePath())));
             }
         } catch (URISyntaxException | IOException e) {
@@ -245,7 +245,7 @@ public class AIPService implements IAIPService {
             // Add the AIP itself (on each storage) to the file list to remove
             for (StorageMetadata storage: aipEntity.getIngestMetadata().getStorages()) {
                 filesToDelete.add(FileDeletionRequestDTO.build(aipEntity.getChecksum(),
-                        storage.getStorage(), aipEntity.getAipId(), false));
+                        storage.getPluginBusinessId(), aipEntity.getAipId(), false));
             }
 
             // Mark the AIP as deleted

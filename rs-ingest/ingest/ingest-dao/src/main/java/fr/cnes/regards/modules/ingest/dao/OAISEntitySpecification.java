@@ -54,7 +54,7 @@ public final class OAISEntitySpecification {
                                 cb.function(
                                         CustomPostgresDialect.JSONB_LITERAL,
                                         String.class,
-                                        cb.literal("[{\"storage\": \"" + storage + "\"}]")
+                                        cb.literal("[{\"pluginBusinessId\": \"" + storage + "\"}]")
                                 )
                         )
                 ));

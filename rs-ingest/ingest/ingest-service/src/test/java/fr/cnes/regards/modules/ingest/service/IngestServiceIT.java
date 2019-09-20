@@ -89,7 +89,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         SIPCollection sips = SIPCollection
                 .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                         Sets.newHashSet("CAT"),
-                        StorageMetadata.build("disk", null)));
+                        StorageMetadata.build("disk")));
 
         sips.add(SIP.build(EntityType.DATA, providerId)
                 .withDataObject(DataType.RAWDATA, Paths.get("sip1.xml"), checksum).withSyntax(MediaType.APPLICATION_XML)

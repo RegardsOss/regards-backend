@@ -19,27 +19,22 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
 import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
-
-import com.google.common.collect.Lists;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:ingest_dao" })
 public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
@@ -75,7 +70,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip1.setCreationDate(OffsetDateTime.now());
         sip1.setLastUpdate(OffsetDateTime.now());
         sip1.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN, CATEGORIES,
-                                                    StorageMetadata.build("store", null)));
+                                                    StorageMetadata.build("store")));
         sip1.setState(SIPState.INGESTED);
         sip1.setVersion(1);
         sip1.setChecksum("1234567890");
@@ -90,7 +85,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip2.setCreationDate(OffsetDateTime.now().minusHours(6));
         sip2.setLastUpdate(OffsetDateTime.now().minusHours(6));
         sip2.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN, CATEGORIES,
-                                                    StorageMetadata.build("store", null)));
+                                                    StorageMetadata.build("store")));
         sip2.setState(SIPState.INGESTED);
         sip2.setVersion(1);
         sip2.setChecksum("12345678902");
@@ -105,7 +100,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip3.setCreationDate(OffsetDateTime.now().minusHours(6));
         sip3.setLastUpdate(OffsetDateTime.now().minusHours(6));
         sip3.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN, CATEGORIES,
-                                                    StorageMetadata.build("store", null)));
+                                                    StorageMetadata.build("store")));
         sip3.setState(SIPState.INGESTED);
         sip3.setVersion(1);
         sip3.setChecksum("12345678903");
@@ -121,7 +116,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
         sip4.setLastUpdate(OffsetDateTime.now().minusHours(6));
         sip4.setIngestMetadata(IngestMetadata.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN2, CATEGORIES,
-                                                    StorageMetadata.build("store", null)));
+                                                    StorageMetadata.build("store")));
         sip4.setState(SIPState.INGESTED);
         sip4.setVersion(2);
         sip4.setChecksum("123456789032");

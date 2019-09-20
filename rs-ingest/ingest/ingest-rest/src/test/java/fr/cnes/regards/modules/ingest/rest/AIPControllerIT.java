@@ -109,7 +109,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // Create event
         IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner, session,
                 IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, categories,
-                StorageMetadata.build(storage, null));
+                StorageMetadata.build(storage));
 
         ingestServiceTest.sendIngestRequestEvent(sip, mtd);
     }

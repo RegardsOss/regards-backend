@@ -81,7 +81,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Set<String> CATEGORIES = Sets.newHashSet("CAT");
 
-    private static final StorageMetadata STORAGE_METADATA = StorageMetadata.build("disk", null);
+    private static final StorageMetadata STORAGE_METADATA = StorageMetadata.build("disk");
 
     @Override
     protected Logger getLogger() {
