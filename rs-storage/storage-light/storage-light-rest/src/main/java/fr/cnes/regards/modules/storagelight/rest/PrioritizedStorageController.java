@@ -48,8 +48,8 @@ import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageS
  * @author Sylvain VISSIERE-GUERINET
  */
 @RestController
-@RequestMapping(PrioritizedDataStorageController.BASE_PATH)
-public class PrioritizedDataStorageController implements IResourceController<PrioritizedStorage> {
+@RequestMapping(PrioritizedStorageController.BASE_PATH)
+public class PrioritizedStorageController implements IResourceController<PrioritizedStorage> {
 
     public static final String BASE_PATH = "/storages";
 
@@ -67,14 +67,14 @@ public class PrioritizedDataStorageController implements IResourceController<Pri
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "send list of prioritized data storage of a type")
-    public ResponseEntity<List<Resource<PrioritizedStorage>>> retrievePrioritizedDataStorages(
+    public ResponseEntity<List<Resource<PrioritizedStorage>>> retrievePrioritizedStorages(
             @RequestParam(name = "type") StorageType type) throws ModuleException {
         return new ResponseEntity<>(toResources(prioriterizedStorageService.search(type)), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "create a prioritized data storage thanks to the wrapped plugin configuration")
-    public ResponseEntity<Resource<PrioritizedStorage>> createPrioritizedDataStorage(
+    public ResponseEntity<Resource<PrioritizedStorage>> createPrioritizedStorage(
             @Valid @RequestBody PrioritizedStorage toBeCreated) throws ModuleException {
         return new ResponseEntity<>(
                 toResource(prioriterizedStorageService.create(toBeCreated.getStorageConfiguration())),
@@ -83,7 +83,7 @@ public class PrioritizedDataStorageController implements IResourceController<Pri
 
     @RequestMapping(method = RequestMethod.GET, path = ID_PATH)
     @ResourceAccess(description = "retrieve a prioritized data storage thanks to its id")
-    public ResponseEntity<Resource<PrioritizedStorage>> retrievePrioritizedDataStorage(@PathVariable Long id)
+    public ResponseEntity<Resource<PrioritizedStorage>> retrievePrioritizedStorage(@PathVariable Long id)
             throws ModuleException {
         return new ResponseEntity<>(toResource(prioriterizedStorageService.retrieve(id)), HttpStatus.OK);
     }
@@ -91,14 +91,14 @@ public class PrioritizedDataStorageController implements IResourceController<Pri
     @RequestMapping(method = RequestMethod.DELETE, path = ID_PATH)
     @ResourceAccess(
             description = "delete a prioritized data storage, and the subsequent plugin configuration, thanks to its id")
-    public ResponseEntity<Void> deletePrioritizedDataStorage(@PathVariable Long id) throws ModuleException {
+    public ResponseEntity<Void> deletePrioritizedStorage(@PathVariable Long id) throws ModuleException {
         prioriterizedStorageService.delete(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = ID_PATH)
     @ResourceAccess(description = "update a prioritized data storage by updating the subsequent plugin configuration")
-    public ResponseEntity<Resource<PrioritizedStorage>> updatePrioritizedDataStorage(@PathVariable(name = "id") Long id,
+    public ResponseEntity<Resource<PrioritizedStorage>> updatePrioritizedStorage(@PathVariable(name = "id") Long id,
             @Valid @RequestBody PrioritizedStorage updated) throws ModuleException {
         return new ResponseEntity<>(toResource(prioriterizedStorageService.update(id, updated)), HttpStatus.OK);
     }
@@ -120,29 +120,29 @@ public class PrioritizedDataStorageController implements IResourceController<Pri
     }
 
     @Override
-    public Resource<PrioritizedStorage> toResource(PrioritizedStorage prioritizedDataStorage, Object... extras) {
-        Resource<PrioritizedStorage> resource = new Resource<>(prioritizedDataStorage);
-        resourceService.addLink(resource, this.getClass(), "retrievePrioritizedDataStorages", LinkRels.LIST,
+    public Resource<PrioritizedStorage> toResource(PrioritizedStorage prioritizedStorage, Object... extras) {
+        Resource<PrioritizedStorage> resource = new Resource<>(prioritizedStorage);
+        resourceService.addLink(resource, this.getClass(), "retrievePrioritizedStorages", LinkRels.LIST,
                                 MethodParamFactory.build(StorageType.class));
-        resourceService.addLink(resource, this.getClass(), "createPrioritizedDataStorage", LinkRels.CREATE,
+        resourceService.addLink(resource, this.getClass(), "createPrioritizedStorage", LinkRels.CREATE,
                                 MethodParamFactory.build(PrioritizedStorage.class));
-        resourceService.addLink(resource, this.getClass(), "retrievePrioritizedDataStorage", LinkRels.SELF,
-                                MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()));
-        resourceService.addLink(resource, this.getClass(), "updatePrioritizedDataStorage", LinkRels.UPDATE,
-                                MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()),
+        resourceService.addLink(resource, this.getClass(), "retrievePrioritizedStorage", LinkRels.SELF,
+                                MethodParamFactory.build(Long.class, prioritizedStorage.getId()));
+        resourceService.addLink(resource, this.getClass(), "updatePrioritizedStorage", LinkRels.UPDATE,
+                                MethodParamFactory.build(Long.class, prioritizedStorage.getId()),
                                 MethodParamFactory.build(PrioritizedStorage.class));
-        if (prioriterizedStorageService.canDelete(prioritizedDataStorage)) {
-            resourceService.addLink(resource, this.getClass(), "deletePrioritizedDataStorage", LinkRels.DELETE,
-                                    MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()));
+        if (prioriterizedStorageService.canDelete(prioritizedStorage)) {
+            resourceService.addLink(resource, this.getClass(), "deletePrioritizedStorage", LinkRels.DELETE,
+                                    MethodParamFactory.build(Long.class, prioritizedStorage.getId()));
         }
-        if (!prioritizedDataStorage.getPriority().equals(PrioritizedStorage.HIGHEST_PRIORITY)) {
+        if (!prioritizedStorage.getPriority().equals(prioritizedStorage.HIGHEST_PRIORITY)) {
             resourceService.addLink(resource, this.getClass(), "increaseDataStoragePriority", "up",
-                                    MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()));
+                                    MethodParamFactory.build(Long.class, prioritizedStorage.getId()));
         }
-        if (!prioritizedDataStorage.getPriority()
-                .equals(prioriterizedStorageService.getLowestPriority(prioritizedDataStorage.getStorageType()))) {
+        if (!prioritizedStorage.getPriority()
+                .equals(prioriterizedStorageService.getLowestPriority(prioritizedStorage.getStorageType()))) {
             resourceService.addLink(resource, this.getClass(), "decreaseDataStoragePriority", "down",
-                                    MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()));
+                                    MethodParamFactory.build(Long.class, prioritizedStorage.getId()));
         }
         return resource;
     }
