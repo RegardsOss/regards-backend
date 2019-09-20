@@ -28,6 +28,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -185,8 +186,8 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         // Not required
 
         List<StorageMetadataProvider> storages = new ArrayList<>();
-        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file"));
-        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file"));
+        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file", new HashSet<>()));
+        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file", new HashSet<>()));
         processingChain.setStorages(storages);
 
         // we need to set up a fake ProductAcquisitionJob to fill its attributes

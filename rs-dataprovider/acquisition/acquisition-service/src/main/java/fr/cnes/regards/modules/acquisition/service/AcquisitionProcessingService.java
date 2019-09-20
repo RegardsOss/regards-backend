@@ -29,6 +29,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -268,8 +269,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         List<StorageMetadataProvider> storages = new ArrayList<>();
-        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file"));
-        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file"));
+        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file", new HashSet<>()));
+        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file", new HashSet<>()));
         processingChain.setStorages(storages);
 
         // Save new chain

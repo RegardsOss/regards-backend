@@ -18,8 +18,16 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import java.util.Set;
+import javax.persistence.Column;
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
 
 /**
  * Storage information
@@ -33,33 +41,60 @@ public class StorageMetadataProvider {
 
     private static final String MISSING_STORAGE = "Destination location cannot be null";
 
+    private static final String MISSING_TARGET_TYPES = "Data type list should be provided";
+
+    /**
+     * Storage identifier.
+     * To use a plugin from storage, this identifier must match a plugin configuration business identifier.
+     */
     @NotBlank(message = StorageMetadataProvider.MISSING_STORAGE)
     @Size(min=1, max= STORAGE_MAX_LENGTH)
-    private String storage;
+    private String pluginBusinessId;
 
-    @Size(min=1, max= URL_MAX_LENGTH)
-    private String storageSubDirectory;
+    /**
+     * Optional path identifying the base directory in which to store related files
+     */
+    @Size(max= URL_MAX_LENGTH)
+    private String storePath;
 
-    public String getStorage() {
-        return storage;
+    /**
+     * List of data object types accepted by this storage location (when storing AIPs)
+     */
+    @Valid
+    @NotNull(message = MISSING_TARGET_TYPES)
+    @Column(columnDefinition = "jsonb")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String" ) })
+    private Set<DataType> targetTypes;
+
+    public String getPluginBusinessId() {
+        return pluginBusinessId;
     }
 
-    public void setStorage(String storage) {
-        this.storage = storage;
+    public void setPluginBusinessId(String pluginBusinessId) {
+        this.pluginBusinessId = pluginBusinessId;
     }
 
-    public String getStorageSubDirectory() {
-        return storageSubDirectory;
+    public String getStorePath() {
+        return storePath;
     }
 
-    public void setStorageSubDirectory(String storageSubDirectory) {
-        this.storageSubDirectory = storageSubDirectory;
+    public void setStorePath(String storePath) {
+        this.storePath = storePath;
     }
 
-    public static StorageMetadataProvider build(String storage, String storageSubDirectory) {
+    public Set<DataType> getTargetTypes() {
+        return targetTypes;
+    }
+
+    public void setTargetTypes(Set<DataType> targetTypes) {
+        this.targetTypes = targetTypes;
+    }
+
+    public static StorageMetadataProvider build(String storage, String storageSubDirectory, Set<DataType> targetTypes) {
         StorageMetadataProvider storageMetadata = new StorageMetadataProvider();
-        storageMetadata.setStorage(storage);
-        storageMetadata.setStorageSubDirectory(storageSubDirectory);
+        storageMetadata.setPluginBusinessId(storage);
+        storageMetadata.setStorePath(storageSubDirectory);
+        storageMetadata.setTargetTypes(targetTypes);
         return storageMetadata;
     }
 }
