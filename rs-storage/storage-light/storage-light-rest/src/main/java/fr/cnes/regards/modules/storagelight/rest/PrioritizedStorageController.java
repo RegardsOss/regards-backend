@@ -135,7 +135,7 @@ public class PrioritizedStorageController implements IResourceController<Priorit
             resourceService.addLink(resource, this.getClass(), "deletePrioritizedStorage", LinkRels.DELETE,
                                     MethodParamFactory.build(Long.class, prioritizedStorage.getId()));
         }
-        if (!prioritizedStorage.getPriority().equals(prioritizedStorage.HIGHEST_PRIORITY)) {
+        if (!prioritizedStorage.getPriority().equals(PrioritizedStorage.HIGHEST_PRIORITY)) {
             resourceService.addLink(resource, this.getClass(), "increaseDataStoragePriority", "up",
                                     MethodParamFactory.build(Long.class, prioritizedStorage.getId()));
         }
