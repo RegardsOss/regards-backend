@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.junit.Assert;
@@ -136,8 +137,8 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
         // SIP post processing
         // Not required
         List<StorageMetadataProvider> storages = new ArrayList<>();
-        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file"));
-        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file"));
+        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file", new HashSet<>()));
+        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file", new HashSet<>()));
         processingChain.setStorages(storages);
 
         // Validate

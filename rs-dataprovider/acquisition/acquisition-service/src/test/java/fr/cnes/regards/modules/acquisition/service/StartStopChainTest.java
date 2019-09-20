@@ -46,6 +46,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -149,8 +150,8 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
 
 
         List<StorageMetadataProvider> storages = new ArrayList<>();
-        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file"));
-        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file"));
+        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file", new HashSet<>()));
+        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file", new HashSet<>()));
         processingChain.setStorages(storages);
 
         // Save processing chain

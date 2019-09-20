@@ -97,8 +97,8 @@ public class AcquisitionTestUtils {
 
 
         List<StorageMetadataProvider> storages = new ArrayList<>();
-        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file"));
-        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file"));
+        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file", new HashSet<>()));
+        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file", new HashSet<>()));
         processingChain.setStorages(storages);
 
         return processingChain;

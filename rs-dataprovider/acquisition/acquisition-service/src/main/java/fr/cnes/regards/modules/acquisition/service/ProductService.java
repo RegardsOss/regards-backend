@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import com.google.common.collect.Lists;
 import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
 import fr.cnes.regards.modules.acquisition.service.session.SessionChangingStateProbe;
@@ -138,7 +137,8 @@ public class ProductService implements IProductService {
 
         List<StorageMetadata> storageList = new ArrayList<>();
         for(StorageMetadataProvider storage: acquisitionChain.getStorages()) {
-            storageList.add(StorageMetadata.build(storage.getStorage(), storage.getStorageSubDirectory()));
+            storageList.add(StorageMetadata.build(storage.getPluginBusinessId(), storage.getStorePath(),
+                    storage.getTargetTypes()));
         }
 
         IngestMetadataDto ingestMetadata = IngestMetadataDto
