@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.request;
 
-import java.util.concurrent.Semaphore;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -32,16 +30,22 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 
 /**
- * Scheduler to periodically handle bulk requests for storage and deletion on storage locations.<br />
- * Those requests are <ul>
+ * Scheduler to periodically handle bulk requests :<br />
  * <li> {@link FileStorageRequest} for storage</li>
  * <li> {@link FileDeletionRequest} for deletion</li>
+ * <li> {@link FileCopyRequest} for copy</li>
+ * <li> {@link FileCacheRequest} for availability</li>
  * </ul>
+ *
+ * NOTE : Number of parallel schedule execution is defined by spring configuration property regards.scheduler.pool.size.
+ *
  * @author Sébastien Binda
  */
 @Component()
@@ -70,95 +74,64 @@ public class FileRequestScheduler {
     @Autowired
     private ILockService lockService;
 
-    private final Semaphore semaphore = new Semaphore(1);
-
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
     public void handleFileStorageRequests() throws ModuleException {
-        try {
-            semaphore.acquire();
-            for (String tenant : tenantResolver.getAllActiveTenants()) {
-                try {
-                    runtimeTenantResolver.forceTenant(tenant);
-                    if (obtainLock()) {
-                        fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(),
-                                                               Sets.newHashSet());
-                    }
-                } finally {
-                    releaseLock();
-                    runtimeTenantResolver.clearTenant();
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                if (obtainLock()) {
+                    fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(),
+                                                           Sets.newHashSet());
                 }
+            } finally {
+                releaseLock();
+                runtimeTenantResolver.clearTenant();
             }
-        } catch (InterruptedException e) {
-            throw new ModuleException(e.getMessage(), e);
-        } finally {
-            semaphore.release();
         }
     }
 
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_100)
     public void handleFileCacheRequests() throws ModuleException {
-        try {
-            semaphore.acquire();
-            for (String tenant : tenantResolver.getAllActiveTenants()) {
-                runtimeTenantResolver.forceTenant(tenant);
-                if (obtainLock()) {
-                    try {
-                        fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
-                    } finally {
-                        releaseLock();
-                        runtimeTenantResolver.clearTenant();
-                    }
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            if (obtainLock()) {
+                try {
+                    fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+                } finally {
+                    releaseLock();
+                    runtimeTenantResolver.clearTenant();
                 }
             }
-        } catch (InterruptedException e) {
-            throw new ModuleException(e.getMessage(), e);
-        } finally {
-            semaphore.release();
         }
-
     }
 
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_200)
     public void handleFileDeletionRequests() throws ModuleException {
-        try {
-            semaphore.acquire();
-            for (String tenant : tenantResolver.getAllActiveTenants()) {
-                runtimeTenantResolver.forceTenant(tenant);
-                if (obtainLock()) {
-                    try {
-                        fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet());
-                    } finally {
-                        releaseLock();
-                        runtimeTenantResolver.clearTenant();
-                    }
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            if (obtainLock()) {
+                try {
+                    fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet());
+                } finally {
+                    releaseLock();
+                    runtimeTenantResolver.clearTenant();
                 }
             }
-        } catch (InterruptedException e) {
-            throw new ModuleException(e.getMessage(), e);
-        } finally {
-            semaphore.release();
         }
     }
 
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_300)
     public void handleFileCopyRequests() throws ModuleException {
-        try {
-            semaphore.acquire();
-            for (String tenant : tenantResolver.getAllActiveTenants()) {
-                runtimeTenantResolver.forceTenant(tenant);
-                if (obtainLock()) {
-                    try {
-                        fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TODO);
-                    } finally {
-                        releaseLock();
-                        runtimeTenantResolver.clearTenant();
-                    }
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            if (obtainLock()) {
+                try {
+                    fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TODO);
+                } finally {
+                    releaseLock();
+                    runtimeTenantResolver.clearTenant();
                 }
             }
-        } catch (InterruptedException e) {
-            throw new ModuleException(e.getMessage(), e);
-        } finally {
-            semaphore.release();
         }
     }
 
