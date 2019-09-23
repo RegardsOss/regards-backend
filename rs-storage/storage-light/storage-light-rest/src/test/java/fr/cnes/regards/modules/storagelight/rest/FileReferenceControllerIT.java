@@ -108,8 +108,8 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
         String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(filePath.toFile()), algorithm);
         FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum, algorithm,
                 filePath.getFileName().toString(), null, MediaType.APPLICATION_OCTET_STREAM);
-        storeReqService.handleRequest("rest-test", metaInfo, filePath.toAbsolutePath().toUri().toURL().toString(), TARGET_STORAGE,
-                                      Optional.of("/sub/dir/1/"), UUID.randomUUID().toString());
+        storeReqService.handleRequest("rest-test", metaInfo, filePath.toAbsolutePath().toUri().toURL().toString(),
+                                      TARGET_STORAGE, Optional.of("/sub/dir/1/"), UUID.randomUUID().toString());
         Thread.sleep(5_000);
         storedFileChecksum = checksum;
     }
@@ -141,8 +141,8 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, TARGET_STORAGE, parameters, 0);
             dataStorageConf.setIsActive(true);
+            dataStorageConf.setBusinessId(TARGET_STORAGE);
             prioritizedDataStorageService.create(dataStorageConf);
-            // storagePlgConfHandler.refresh();
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }
