@@ -10,6 +10,8 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Type;
+
 /**
 *
 * Class Configuration
@@ -36,6 +38,7 @@ public class Configuration {
      */
     @NotNull
     @Column(nullable = false)
+    @Type(type = "text")
     private String configuration;
 
     @NotNull
