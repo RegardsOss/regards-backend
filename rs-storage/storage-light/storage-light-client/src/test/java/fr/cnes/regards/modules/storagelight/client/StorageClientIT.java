@@ -481,6 +481,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                          IPluginParam.build(SimpleOnlineTestClient.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, ONLINE_CONF, parameters, 0);
             dataStorageConf.setIsActive(true);
+            dataStorageConf.setBusinessId(ONLINE_CONF);
             return prioritizedDataStorageService.create(dataStorageConf);
         } catch (IOException | ModuleException e) {
             Assert.fail(e.getMessage());
@@ -502,6 +503,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
+            dataStorageConf.setBusinessId(label);
             return prioritizedDataStorageService.create(dataStorageConf);
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);

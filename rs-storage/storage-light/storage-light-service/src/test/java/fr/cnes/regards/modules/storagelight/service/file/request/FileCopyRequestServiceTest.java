@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.flow.CopyFlowItem;
-import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
+import fr.cnes.regards.modules.storagelight.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
 
 /**

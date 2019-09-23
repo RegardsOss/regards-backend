@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service.file;
+package fr.cnes.regards.modules.storagelight.service;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -72,6 +72,9 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.cache.CacheService;
+import fr.cnes.regards.modules.storagelight.service.file.FileDownloadService;
+import fr.cnes.regards.modules.storagelight.service.file.FileReferenceEventPublisher;
+import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.handler.FileReferenceEventHandler;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCopyRequestService;

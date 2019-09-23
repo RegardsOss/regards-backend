@@ -41,7 +41,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
+import fr.cnes.regards.modules.storagelight.service.AbstractStorageTest;
 
 /**
  * @author sbinda

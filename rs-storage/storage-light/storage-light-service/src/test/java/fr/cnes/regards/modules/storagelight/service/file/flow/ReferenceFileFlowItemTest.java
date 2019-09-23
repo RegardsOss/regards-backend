@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.storagelight.domain.dto.request.FileReferenceRequ
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
-import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
+import fr.cnes.regards.modules.storagelight.service.AbstractStorageTest;
 
 /**
  *

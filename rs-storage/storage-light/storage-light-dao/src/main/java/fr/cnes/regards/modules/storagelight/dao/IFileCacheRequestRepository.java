@@ -61,4 +61,6 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
 
     boolean existsByGroupIdAndStatusNot(String groupId, FileRequestStatus error);
 
+    void deleteByStorage(String storageLocationId);
+
 }

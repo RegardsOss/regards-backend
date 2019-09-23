@@ -58,7 +58,7 @@ import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
-import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
+import fr.cnes.regards.modules.storagelight.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storagelight.service.file.flow.AvailabilityFlowItemHandler;
 import fr.cnes.regards.modules.storagelight.service.file.flow.DeletionFlowHandler;
 import fr.cnes.regards.modules.storagelight.service.file.flow.ReferenceFlowItemHandler;

@@ -75,10 +75,23 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @Autowired
     private IResourceService resourceService;
 
+    /**
+     * TODO :
+     * - Delete request in errors
+     * - Update storage configuration
+     * - Create storage configuration
+     */
+
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
     public ResponseEntity<List<Resource<StorageLocationDTO>>> retrieve() throws ModuleException {
         return new ResponseEntity<>(toResources(service.getAllLocations()), HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = ID_PATH)
+    @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
+    public ResponseEntity<Resource<StorageLocationDTO>> retrieve(String storageId) throws ModuleException {
+        return new ResponseEntity<>(toResource(service.getById(storageId)), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.DELETE)

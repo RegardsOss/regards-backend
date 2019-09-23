@@ -546,4 +546,12 @@ public class FileStorageRequestService {
         return Optional.ofNullable(updatedFileRef);
     }
 
+    /**
+     * Delete all requests for the given storage identifier
+     * @param storageLocationId
+     */
+    public void deleteByStorage(String storageLocationId) {
+        fileStorageRequestRepo.deleteByStorage(storageLocationId);
+    }
+
 }

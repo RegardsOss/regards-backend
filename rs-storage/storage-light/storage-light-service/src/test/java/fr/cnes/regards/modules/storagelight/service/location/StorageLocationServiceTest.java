@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storagelight.service.location;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -30,13 +31,16 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IStorageLocationRepository;
 import fr.cnes.regards.modules.storagelight.dao.IStorageMonitoringRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationType;
+import fr.cnes.regards.modules.storagelight.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 
 /**
@@ -46,7 +50,7 @@ import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRe
 @ActiveProfiles("noscheduler")
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache" })
-public class StorageLocationServiceTest extends AbstractMultitenantServiceTest {
+public class StorageLocationServiceTest extends AbstractStorageTest {
 
     @Autowired
     private StorageLocationService storageLocationService;
@@ -64,10 +68,11 @@ public class StorageLocationServiceTest extends AbstractMultitenantServiceTest {
     private FileReferenceRequestService fileRefService;
 
     @Before
-    public void init() throws ModuleException {
+    public void initialize() throws ModuleException {
         fileRefRepo.deleteAll();
         storageLocationRepo.deleteAll();
         storageMonitorRepo.deleteAll();
+        super.init();
     }
 
     private void createFileReference(String storage, Long fileSize) {
@@ -113,5 +118,123 @@ public class StorageLocationServiceTest extends AbstractMultitenantServiceTest {
                             storageLocationService.search(storage).get().getTotalSizeOfReferencedFiles().longValue());
         Assert.assertEquals("Total number of files on STAF storage invalid", 5L,
                             storageLocationService.search(storage).get().getNumberOfReferencedFiles().longValue());
+    }
+
+    @Test
+    public void retrieveOne() throws EntityNotFoundException {
+        String storage = "STAF";
+        createFileReference(storage, 2L);
+        createFileReference(storage, 2L);
+        storageLocationService.monitorDataStorages();
+        StorageLocationDTO loc = storageLocationService.getById(storage);
+        Assert.assertNotNull("A location should be retrieved", loc);
+        Assert.assertNull("No configuration should be set for the location", loc.getConfiguration());
+        Assert.assertEquals("There should be 2 files referenced", 2L, loc.getNbFilesStored().longValue());
+        Assert.assertEquals("The total size should be 4ko", 4L, loc.getTotalStoredFilesSizeKo().longValue());
+        Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
+        Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
+        Assert.assertEquals("The storage location should be typed as OFFLINE", StorageLocationType.OFFLINE,
+                            loc.getType());
+    }
+
+    @Test
+    public void retrieveAll() throws EntityNotFoundException {
+        String storage = "STAF";
+        createFileReference(storage, 2L);
+        createFileReference(storage, 2L);
+        String storage2 = "HPSS";
+        createFileReference(storage2, 4L);
+        createFileReference(storage2, 4L);
+        createFileReference(storage2, 4L);
+        createFileReference(storage2, 4L);
+        createFileReference(storage2, 4L);
+        storageLocationService.monitorDataStorages();
+        Set<StorageLocationDTO> locs = storageLocationService.getAllLocations();
+        Assert.assertNotNull("Locations should be retrieved", locs);
+        Assert.assertEquals("There should be 4 locations", 4, locs.size());
+        Assert.assertEquals("Location one is missing", 1L,
+                            locs.stream().filter(l -> l.getId().equals(storage)).count());
+        locs.stream().filter(l -> l.getId().equals(storage)).forEach(loc -> {
+            Assert.assertNull("No configuration should be set for the location", loc.getConfiguration());
+            Assert.assertEquals("There should be 2 files referenced", 2L, loc.getNbFilesStored().longValue());
+            Assert.assertEquals("The total size should be 4ko", 4L, loc.getTotalStoredFilesSizeKo().longValue());
+            Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
+            Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
+            Assert.assertEquals("The storage location should be typed as OFFLINE", StorageLocationType.OFFLINE,
+                                loc.getType());
+        });
+        Assert.assertEquals("Location two is missing", 1L,
+                            locs.stream().filter(l -> l.getId().equals(storage2)).count());
+        locs.stream().filter(l -> l.getId().equals(storage2)).forEach(loc -> {
+            Assert.assertNull("No configuration should be set for the location", loc.getConfiguration());
+            Assert.assertEquals("There should be 5 files referenced", 5L, loc.getNbFilesStored().longValue());
+            Assert.assertEquals("The total size should be 20ko", 20L, loc.getTotalStoredFilesSizeKo().longValue());
+            Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
+            Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
+            Assert.assertEquals("The storage location should be typed as OFFLINE", StorageLocationType.OFFLINE,
+                                loc.getType());
+        });
+        Assert.assertEquals("Location three is missing", 1L,
+                            locs.stream().filter(l -> l.getId().equals(ONLINE_CONF_LABEL)).count());
+        locs.stream().filter(l -> l.getId().equals(ONLINE_CONF_LABEL)).forEach(loc -> {
+            Assert.assertNotNull("A configuration should be set for the location", loc.getConfiguration());
+            Assert.assertEquals("There should be 0 files referenced", 0L, loc.getNbFilesStored().longValue());
+            Assert.assertEquals("The total size should be 20ko", 0L, loc.getTotalStoredFilesSizeKo().longValue());
+            Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
+            Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
+            Assert.assertEquals("The storage location should be typed as OFFLINE", StorageLocationType.ONLINE,
+                                loc.getType());
+        });
+        Assert.assertEquals("Location four is missing", 1L,
+                            locs.stream().filter(l -> l.getId().equals(NEARLINE_CONF_LABEL)).count());
+        locs.stream().filter(l -> l.getId().equals(NEARLINE_CONF_LABEL)).forEach(loc -> {
+            Assert.assertNotNull("A configuration should be set for the location", loc.getConfiguration());
+            Assert.assertEquals("There should be 0 files referenced", 0L, loc.getNbFilesStored().longValue());
+            Assert.assertEquals("The total size should be 20ko", 0L, loc.getTotalStoredFilesSizeKo().longValue());
+            Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
+            Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
+            Assert.assertEquals("The storage location should be typed as OFFLINE", StorageLocationType.NEALINE,
+                                loc.getType());
+        });
+    }
+
+    @Test
+    public void delete_with_files() throws ModuleException {
+        String storage = "STAF";
+        createFileReference(storage, 2L);
+        createFileReference(storage, 2L);
+        storageLocationService.monitorDataStorages();
+        Assert.assertNotNull("Location should exists", storageLocationService.getById(storage));
+        storageLocationService.delete(storage);
+        try {
+            Assert.assertNull("Location should exists", storageLocationService.getById(storage));
+            Assert.fail("Location should not exists anymore");
+        } catch (EntityNotFoundException e) {
+            // Nothing to do
+        }
+        // As files as referenced after monitoring location should be recreated
+        storageLocationService.monitorDataStorages();
+        Assert.assertNotNull("Location should exists", storageLocationService.getById(storage));
+    }
+
+    @Test
+    public void delete_without_files() throws ModuleException {
+        storageLocationService.monitorDataStorages();
+        Assert.assertNotNull("Location should exists", storageLocationService.getById(ONLINE_CONF_LABEL));
+        storageLocationService.delete(ONLINE_CONF_LABEL);
+        try {
+            Assert.assertNull("Location should exists", storageLocationService.getById(ONLINE_CONF_LABEL));
+            Assert.fail("Location should not exists anymore");
+        } catch (EntityNotFoundException e) {
+            // Nothing to do
+        }
+        // As no files as referenced after monitoring location should not be recreated
+        storageLocationService.monitorDataStorages();
+        try {
+            Assert.assertNull("Location should exists", storageLocationService.getById(ONLINE_CONF_LABEL));
+            Assert.fail("Location should not exists anymore");
+        } catch (EntityNotFoundException e) {
+            // Nothing to do
+        }
     }
 }

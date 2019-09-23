@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
+import fr.cnes.regards.modules.storagelight.service.AbstractStorageTest;
 
 /**
  * @author Sébastien Binda

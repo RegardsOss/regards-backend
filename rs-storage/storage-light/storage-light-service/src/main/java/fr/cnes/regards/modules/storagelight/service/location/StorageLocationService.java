@@ -58,11 +58,14 @@ import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationType;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCopyRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**
+ * Service to handle actions on {@link StorageLocation}s
+ *
  * @author Sébastien Binda
  */
 @Service
@@ -102,6 +105,9 @@ public class StorageLocationService {
     private FileDeletionRequestService deletionReqService;
 
     @Autowired
+    private FileCacheRequestService cacheReqService;
+
+    @Autowired
     private PrioritizedStorageService pStorageService;
 
     @Value("${regards.storage.data.storage.threshold.percent:70}")
@@ -115,21 +121,51 @@ public class StorageLocationService {
     }
 
     /**
+     * Retrieve one {@link StorageLocation} by its id
+     * @param storageId
+     * @return
+     * @throws EntityNotFoundException
+     */
+    public StorageLocationDTO getById(String storageId) throws EntityNotFoundException {
+        Optional<StorageLocation> oLoc = storageLocationRepo.findByName(storageId);
+        Optional<PrioritizedStorage> oConf = pStorageService.search(storageId);
+        Long nbStorageError = storageReqService.count(storageId, FileRequestStatus.ERROR);
+        Long nbDeletionError = deletionReqService.count(storageId, FileRequestStatus.ERROR);
+        if (oConf.isPresent() && oLoc.isPresent()) {
+            PrioritizedStorage conf = oConf.get();
+            StorageLocation loc = oLoc.get();
+            StorageLocationType type = conf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
+                    : StorageLocationType.NEALINE;
+            return StorageLocationDTO.build(conf.getStorageConfiguration().getBusinessId(), type,
+                                            loc.getNumberOfReferencedFiles(), loc.getTotalSizeOfReferencedFiles(), null,
+                                            nbStorageError, nbDeletionError, conf);
+        } else if (oConf.isPresent()) {
+            PrioritizedStorage conf = oConf.get();
+            StorageLocationType type = conf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
+                    : StorageLocationType.NEALINE;
+            return StorageLocationDTO.build(conf.getStorageConfiguration().getBusinessId(), type, null, null, null,
+                                            nbStorageError, nbDeletionError, conf);
+        } else if (oLoc.isPresent()) {
+            StorageLocation loc = oLoc.get();
+            return StorageLocationDTO.build(storageId, StorageLocationType.OFFLINE, loc.getNumberOfReferencedFiles(),
+                                            loc.getTotalSizeOfReferencedFiles(), null, 0L, 0L, null);
+        } else {
+            throw new EntityNotFoundException(storageId, StorageLocation.class);
+        }
+    }
+
+    /**
      * Retrieve all known storage locations with there monitoring informations.
-     * TODO : Handle size limit for configured storages.
      * @return {@link StorageLocationDTO}s
      */
     public Set<StorageLocationDTO> getAllLocations() {
-
         Set<StorageLocationDTO> locationsDto = Sets.newHashSet();
         // Get all monitored locations
         Map<String, StorageLocation> monitoredLocations = storageLocationRepo.findAll().stream()
                 .collect(Collectors.toMap(l -> l.getName(), l -> l));
-
         // Get all non monitored locations
         List<PrioritizedStorage> onlines = pStorageService.search(StorageType.ONLINE);
         List<PrioritizedStorage> nearlines = pStorageService.search(StorageType.NEARLINE);
-
         // Handle all online storage configured
         for (PrioritizedStorage online : onlines) {
             Long nbStorageError = storageReqService.count(online.getStorageConfiguration().getLabel(),
@@ -145,11 +181,10 @@ public class StorageLocationService {
                 monitoredLocations.remove(monitored.getName());
             } else {
                 locationsDto.add(StorageLocationDTO.build(online.getStorageConfiguration().getBusinessId(),
-                                                          StorageLocationType.ONLINE, null, null, null, nbStorageError,
+                                                          StorageLocationType.ONLINE, 0L, 0L, null, nbStorageError,
                                                           nbDeletionError, online));
             }
         }
-
         // Handle all nearlines storage configured
         for (PrioritizedStorage nearline : nearlines) {
             Long nbStorageError = storageReqService.count(nearline.getStorageConfiguration().getLabel(),
@@ -165,11 +200,10 @@ public class StorageLocationService {
                 monitoredLocations.remove(monitored.getName());
             } else {
                 locationsDto.add(StorageLocationDTO.build(nearline.getStorageConfiguration().getBusinessId(),
-                                                          StorageLocationType.NEALINE, null, null, null, nbStorageError,
+                                                          StorageLocationType.NEALINE, 0L, 0L, null, nbStorageError,
                                                           nbDeletionError, nearline));
             }
         }
-
         // Handle not configured storage as OFFLINE ones
         for (StorageLocation monitored : monitoredLocations.values()) {
             Long nbStorageError = 0L;
@@ -178,11 +212,12 @@ public class StorageLocationService {
                     .build(monitored.getName(), StorageLocationType.OFFLINE, monitored.getNumberOfReferencedFiles(),
                            monitored.getTotalSizeOfReferencedFiles(), null, nbStorageError, nbDeletionError, null));
         }
-
         return locationsDto;
-
     }
 
+    /**
+     * Monitor all storage locations to calculate informations about stored files.
+     */
     public void monitorDataStorages() {
         OffsetDateTime monitoringDate = OffsetDateTime.now();
         // Retrieve last monitoring process
@@ -244,6 +279,11 @@ public class StorageLocationService {
         notificationClient.notify(message, title, type, mimeType, DefaultRole.ADMIN);
     }
 
+    /**
+     * Up (if possible), the priority of the given storage location configuration
+     * @param storageLocationId
+     * @throws EntityNotFoundException
+     */
     public void increasePriority(String storageLocationId) throws EntityNotFoundException {
         Optional<PrioritizedStorage> pStorage = pStorageService.search(storageLocationId);
         if (pStorage.isPresent()) {
@@ -253,6 +293,11 @@ public class StorageLocationService {
         }
     }
 
+    /**
+     * Down (if possible), the priority of the given storage location configuration
+     * @param storageLocationId
+     * @throws EntityNotFoundException
+     */
     public void decreasePriority(String storageLocationId) throws EntityNotFoundException {
         Optional<PrioritizedStorage> pStorage = pStorageService.search(storageLocationId);
         if (pStorage.isPresent()) {
@@ -262,26 +307,53 @@ public class StorageLocationService {
         }
     }
 
+    /**
+     * Delete the given storage location informations. <br/>
+     * Files reference are not deleted, to do so, use {@link this#deleteFiles(String, Boolean)}
+     * @param storageLocationId
+     * @throws EntityNotFoundException
+     */
     public void delete(String storageLocationId) throws ModuleException {
         // Delete storage location plugin configuration
         Optional<PrioritizedStorage> pStorageLocation = pStorageService.search(storageLocationId);
         if (pStorageLocation.isPresent()) {
+            // If a storage configuration is associated, delete it.
             pStorageService.delete(pStorageLocation.get().getId());
-        } else {
-            throw new EntityNotFoundException(storageLocationId, PrioritizedStorage.class);
         }
         // Delete informations in storage locations
         storageLocationRepo.deleteByName(storageLocationId);
+        storageMonitoringRepo.deleteAll();
+        // Delete requests
+        storageReqService.deleteByStorage(storageLocationId);
+        deletionReqService.deleteByStorage(storageLocationId);
+        cacheReqService.deleteByStorage(storageLocationId);
     }
 
+    /**
+     * Delete all referenced files of the give storage location
+     * @param storageLocationId
+     * @param forceDelete remove reference if physical file deletion fails.
+     */
     public void deleteFiles(String storageLocationId, Boolean forceDelete) {
         deletionService.scheduleJob(storageLocationId, forceDelete);
     }
 
+    /**
+     * Copy files of a directory from one storage to an other
+     * @param storageLocationId
+     * @param destinationStorageId
+     * @param pathToCopy
+     */
     public void copyFiles(String storageLocationId, String destinationStorageId, String pathToCopy) {
         copyService.scheduleJob(storageLocationId, destinationStorageId, pathToCopy);
     }
 
+    /**
+     * Retry all requests in error for the given storage location.
+     * @param storageLocationId
+     * @param type
+     * @throws EntityOperationForbiddenException
+     */
     public void retryErrors(String storageLocationId, FileRequestType type) throws EntityOperationForbiddenException {
         switch (type) {
             case DELETION:

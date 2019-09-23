@@ -378,4 +378,12 @@ public class FileDeletionRequestService {
                     storageLocationId, forceDelete);
         return jobInfo;
     }
+
+    /**
+     * Delete all requests for the given storage identifier
+     * @param storageLocationId
+     */
+    public void deleteByStorage(String storageLocationId) {
+        fileDeletionRequestRepo.deleteByStorage(storageLocationId);
+    }
 }

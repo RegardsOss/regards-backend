@@ -477,4 +477,12 @@ public class FileCacheRequestService {
             reqGrpService.requestSuccess(groupId, FileRequestType.AVAILABILITY, checksum, storage, fileRef);
         }
     }
+
+    /**
+     * Delete all requests for the given storage identifier
+     * @param storageLocationId
+     */
+    public void deleteByStorage(String storageLocationId) {
+        repository.deleteByStorage(storageLocationId);
+    }
 }
