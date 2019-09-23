@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDt
  */
 public final class PluginServiceDto {
 
-    private final String configId;
+    private final Long configId;
 
     private final String label;
 
@@ -55,7 +55,7 @@ public final class PluginServiceDto {
      * @param entityTypes
      * @param type
      */
-    private PluginServiceDto(String configId, String label, String iconUrl, Set<ServiceScope> applicationModes,
+    private PluginServiceDto(Long configId, String label, String iconUrl, Set<ServiceScope> applicationModes,
             Set<EntityType> entityTypes, PluginServiceType type) {
         super();
         Assert.notNull(configId, "Plugin configuration is mandatory to create a PluginServiceDTO");
@@ -82,7 +82,7 @@ public final class PluginServiceDto {
             iconUrl = pluginConfigurationDto.getIconUrl().toString();
         }
 
-        return new PluginServiceDto(pluginConfigurationDto.getBusinessId(), pluginConfigurationDto.getLabel(), iconUrl,
+        return new PluginServiceDto(pluginConfigurationDto.getId(), pluginConfigurationDto.getLabel(), iconUrl,
                 appModes, entTypes, PluginServiceType.CATALOG);
     }
 
@@ -92,7 +92,7 @@ public final class PluginServiceDto {
      * @return the new instance
      */
     public static final PluginServiceDto fromUIPluginConfiguration(UIPluginConfiguration uiPluginConfiguration) {
-        return new PluginServiceDto(String.valueOf(uiPluginConfiguration.getId()), uiPluginConfiguration.getLabel(),
+        return new PluginServiceDto(uiPluginConfiguration.getId(), uiPluginConfiguration.getLabel(),
                 uiPluginConfiguration.getPluginDefinition().getIconUrl(),
                 uiPluginConfiguration.getPluginDefinition().getApplicationModes(),
                 uiPluginConfiguration.getPluginDefinition().getEntityTypes(), PluginServiceType.UI);
@@ -101,7 +101,7 @@ public final class PluginServiceDto {
     /**
      * @return the configId
      */
-    public String getConfigId() {
+    public Long getConfigId() {
         return configId;
     }
 
