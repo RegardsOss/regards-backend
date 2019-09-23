@@ -27,11 +27,18 @@ import org.springframework.test.context.TestPropertySource;
  * and run the
  * test.<br/>
  * A SQL script should be created in target.
+ *
+ * Maybe you want to initialize database with other FLYWAY modules.<br/>
+ * To do that, annotate your class with following code. After initialization, comment these lines to run HBM2DDL engine.
+ * <code>
+ * &#64;TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=public",
+ * "regards.jpa.multitenant.migrationTool=FLYWAYDB" })
+ * </code>
  * @author Marc Sordi
  */
-@TestPropertySource(
-        properties = { "regards.jpa.multitenant.migrationTool=HBM2DDL", "regards.jpa.multitenant.embedded=false",
-                "regards.jpa.multitenant.outputFile=target/project_script.sql" })
+@TestPropertySource(properties = { "regards.jpa.multitenant.migrationTool=HBM2DDL",
+        "regards.jpa.multitenant.embedded=false", "regards.jpa.multitenant.outputFile=target/project_script.sql",
+        "spring.jpa.properties.hibernate.default_schema:sql_generator" })
 public abstract class AbstractScriptGeneratorTest extends AbstractDaoTest {
 
     @Test

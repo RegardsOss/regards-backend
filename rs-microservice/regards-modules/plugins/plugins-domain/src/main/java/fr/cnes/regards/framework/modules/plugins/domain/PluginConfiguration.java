@@ -22,45 +22,53 @@ package fr.cnes.regards.framework.modules.plugins.domain;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Set;
+import java.util.UUID;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 
 /**
  * Plugin configuration contains a unique Id, plugin meta-data and parameters.
  * @author cmertz
  * @author oroussel
  */
+@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
-@Table(name = "t_plugin_configuration", indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
-        @Index(name = "idx_plugin_configuration_label", columnList = "label") },
-        uniqueConstraints = @UniqueConstraint(name = "uk_plugin_configuration_label", columnNames = { "label" }))
+@Table(name = "t_plugin_configuration",
+        indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
+                @Index(name = "idx_plugin_configuration_label", columnList = "label"),
+                @Index(name = "idx_plugin_configuration_bid", columnList = "bid") },
+        uniqueConstraints = @UniqueConstraint(name = "uk_plugin_bid", columnNames = { "bid" }))
 @SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "seq_plugin_conf")
 public class PluginConfiguration implements IIdentifiable<Long> {
 
@@ -74,6 +82,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     private static final int MAX_STRING_LENGTH = 255;
 
+    public static final String BID_REGEXP = "[0-9a-zA-Z_-]*";
+
     /**
      * Unique id
      */
@@ -81,6 +91,10 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pluginConfSequence")
     private Long id;
+
+    @GsonIgnore
+    @Transient
+    private PluginMetaData metaData;
 
     /**
      * Unique identifier of the plugin. This id is the id defined in the "@Plugin" annotation of the plugin
@@ -99,6 +113,14 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     private String label;
 
     /**
+     * A serialized {@link UUID} for business identifier
+     */
+    @Pattern(regexp = BID_REGEXP,
+            message = "Business identifier must conform to regular expression \"" + BID_REGEXP + "\".")
+    @Column(name = "bid", length = 36, nullable = false, updatable = false)
+    private String businessId;
+
+    /**
      * Version of the plugin configuration. Is set with the plugin version. This attribute is used to check if the saved
      * configuration plugin version differs from the loaded plugin.
      * <b>DO NOT SET @NotNull even if version must not be null. Validation is done between front and back but at
@@ -110,7 +132,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Priority order of the plugin.
      */
-    @NotNull(message = "the priorityOrder cannot be null")
+    @NotNull(message = "the priority order cannot be null")
     @Column(nullable = false, updatable = true)
     private Integer priorityOrder = 0;
 
@@ -120,23 +142,13 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     private Boolean active = true;
 
     /**
-     * The plugin class name
-     */
-    private String pluginClassName;
-
-    /**
-     * The interfaces, that implements {@link PluginInterface}, implemented by the pluginClassName
-     */
-    @Column(columnDefinition = "text")
-    @Convert(converter = SetStringCsvConverter.class)
-    private Set<String> interfaceNames = Sets.newHashSet();
-
-    /**
      * Configuration parameters of the plugin
      */
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    @JoinColumn(name = "parent_conf_id", foreignKey = @ForeignKey(name = "fk_plg_conf_param_id"))
-    private final Set<PluginParameter> parameters = Sets.newHashSet();
+    @Valid
+    @Column(columnDefinition = "jsonb")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+            value = "fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam") })
+    private final Set<IPluginParam> parameters = Sets.newHashSet();
 
     /**
      * Icon of the plugin. It must be an URL to a svg file.
@@ -161,33 +173,13 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     }
 
     /**
-     * A constructor with {@link PluginMetaData} and list of {@link PluginParameter}.
+     * A constructor with {@link PluginMetaData} and list of {@link AbstractPluginParam}.
      * @param metaData the plugin's metadata
      * @param label the label
      * @param parameters the list of parameters
      */
-    public PluginConfiguration(PluginMetaData metaData, String label, Set<PluginParameter> parameters) {
+    public PluginConfiguration(PluginMetaData metaData, String label, Set<IPluginParam> parameters) {
         this(metaData, label, parameters, 0);
-    }
-
-    /**
-     * A constructor with {@link PluginMetaData} and list of {@link PluginParameter}.
-     * @param metaData the plugin's metadata
-     * @param label the label
-     * @param parameters the list of parameters
-     * @param order the order
-     */
-    public PluginConfiguration(PluginMetaData metaData, String label, Collection<PluginParameter> parameters,
-            int order) {
-        super();
-        this.setMetaData(metaData);
-        if (parameters != null) {
-            this.parameters.addAll(parameters);
-        }
-        priorityOrder = order;
-        this.label = label;
-
-        active = Boolean.TRUE;
     }
 
     /**
@@ -201,39 +193,44 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     }
 
     /**
-     * Constructor initializing a new plugin configuration from an other one
-     * @param other
+     * A constructor with {@link PluginMetaData} and list of {@link AbstractPluginParam}.
+     * @param metaData the plugin's metadata
+     * @param label the label
+     * @param parameters the list of parameters
+     * @param order the order
      */
-    public PluginConfiguration(PluginConfiguration other) {
-        active = other.active;
-        id = other.id;
-        interfaceNames = Sets.newHashSet(other.interfaceNames);
-        label = other.label;
-        if (other.parameters != null) {
-            parameters.addAll(other.parameters);
+    public PluginConfiguration(PluginMetaData metaData, String label, Collection<IPluginParam> parameters, int order) {
+        super();
+        generateBusinessIdIfNotSet();
+        this.setMetaData(metaData);
+        this.version = metaData.getVersion();
+        if (parameters != null) {
+            this.parameters.addAll(parameters);
         }
-        pluginClassName = other.pluginClassName;
-        pluginId = other.pluginId;
-        priorityOrder = other.priorityOrder;
-        version = other.version;
-        iconUrl = other.iconUrl;
+        priorityOrder = order;
+        this.label = label;
+        active = Boolean.TRUE;
+    }
+
+    public PluginMetaData getMetaData() {
+        return metaData;
     }
 
     public final void setMetaData(PluginMetaData metaData) {
+        // For serialization
         pluginId = metaData.getPluginId();
-        version = metaData.getVersion();
-        pluginClassName = metaData.getPluginClassName();
-        interfaceNames = Sets.newHashSet(metaData.getInterfaceNames());
+        // Transient information only useful at runtime
+        this.metaData = metaData;
     }
 
     /**
-     * Return the {@link PluginParameter} of a specific parameter
-     * @param parameterName the parameter to get the value
-     * @return {@link PluginParameter}
+     * Return the {@link IPluginParam} of a specific parameter
+     * @param name the parameter to get the value
+     * @return {@link IPluginParam} or null
      */
-    public PluginParameter getParameter(String parameterName) {
-        for (PluginParameter p : parameters) {
-            if ((p != null) && p.getName().equals(parameterName)) {
+    public IPluginParam getParameter(String name) {
+        for (IPluginParam p : parameters) {
+            if ((p != null) && p.getName().equals(name)) {
                 return p;
             }
         }
@@ -241,59 +238,33 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     }
 
     /**
-     * Return the value of a specific parameter
-     * @param parameterName the parameter to get the value
-     * @return {@link String}
+     * @param name parameter name
+     * @return its value or null
      */
-    public String getParameterValue(String parameterName) {
-        PluginParameter param;
-        return ((param = getParameter(parameterName)) == null ? null : param.getValue());
+    public Object getParameterValue(String name) {
+        for (IPluginParam p : parameters) {
+            if ((p != null) && p.getName().equals(name)) {
+                return p.getValue();
+            }
+        }
+        return null;
     }
 
     /**
-     * @param parameterName the parameter to get the value
-     * @return the stripped value (no enclosing quotes)
-     */
-    public String getStripParameterValue(String parameterName) {
-        PluginParameter param;
-        return ((param = getParameter(parameterName)) == null ? null : param.getStripParameterValue());
-    }
-
-    /**
-     * Return the value of a specific {@link PluginConfiguration} parameter
-     * @param parameterName the parameter to get the value
-     * @return {@link PluginConfiguration}
-     */
-    public PluginConfiguration getParameterConfiguration(String parameterName) {
-        PluginParameter param;
-        return ((param = getParameter(parameterName)) == null ? null : param.getPluginConfiguration());
-    }
-
-    /**
-     * Log the {@link PluginParameter} of the {@link PluginConfiguration}.
+     * Log the {@link AbstractPluginParam} of the {@link PluginConfiguration}.
      */
     public void logParams() {
         LOGGER.info("===> parameters <===");
-        LOGGER.info(
-                "  ---> number of dynamic parameters : " + getParameters().stream().filter(PluginParameter::isDynamic).count());
+        LOGGER.info("  ---> number of dynamic parameters : "
+                + getParameters().stream().filter(IPluginParam::isDynamic).count());
 
-        getParameters().stream().filter(PluginParameter::isDynamic).forEach(p -> logParam(p, "  ---> dynamic parameter : "));
+        getParameters().stream().filter(IPluginParam::isDynamic)
+                .forEach(p -> LOGGER.info("  ---> dynamic parameter : {}-def val: {}", p.getName(), p.toString()));
 
-        LOGGER.info("  ---> number of no dynamic parameters : " + getParameters().stream().filter(p -> !p.isDynamic())
-                .count());
-        getParameters().stream().filter(p -> !p.isDynamic()).forEach(p -> logParam(p, "  ---> parameter : "));
-    }
-
-    /**
-     * Log a {@link PluginParameter}.
-     * @param pParam the {@link PluginParameter} to log
-     * @param pPrefix a prefix to set in the log
-     */
-    private void logParam(PluginParameter pParam, String pPrefix) {
-        LOGGER.info(pPrefix + pParam.getName() + "-def val:" + pParam.getValue());
-        if (!pParam.getDynamicsValuesAsString().isEmpty()) {
-            pParam.getDynamicsValuesAsString().forEach(v -> LOGGER.info("     --> val=" + v));
-        }
+        LOGGER.info("  ---> number of no dynamic parameters : "
+                + getParameters().stream().filter(p -> !p.isDynamic()).count());
+        getParameters().stream().filter(p -> !p.isDynamic())
+                .forEach(p -> LOGGER.info("  ---> parameter : {}-def val: {}", p.getName(), p.toString()));
     }
 
     public String getLabel() {
@@ -308,10 +279,6 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return version;
     }
 
-    /**
-     * This setter <b>must</b> only be used while TESTING
-     * @param version
-     */
     public void setVersion(String version) {
         this.version = version;
     }
@@ -332,11 +299,11 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         priorityOrder = order;
     }
 
-    public Set<PluginParameter> getParameters() {
+    public Set<IPluginParam> getParameters() {
         return parameters;
     }
 
-    public void setParameters(Set<PluginParameter> parameters) {
+    public void setParameters(Set<IPluginParam> parameters) {
         this.parameters.clear();
         if ((parameters != null) && !parameters.isEmpty()) {
             this.parameters.addAll(parameters);
@@ -351,27 +318,12 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         active = pIsActive;
     }
 
-    public void setPluginClassName(String pluginClassName) {
-        this.pluginClassName = pluginClassName;
-    }
-
     public String getPluginClassName() {
-        return pluginClassName;
+        return metaData.getPluginClassName();
     }
 
-    /**
-     * @return the interface names
-     */
     public Set<String> getInterfaceNames() {
-        return interfaceNames;
-    }
-
-    /**
-     * Set the interface names
-     * @param interfaceNames
-     */
-    public void setInterfaceNames(Set<String> interfaceNames) {
-        this.interfaceNames = interfaceNames;
+        return metaData.getInterfaceNames();
     }
 
     @Override
@@ -397,12 +349,36 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         iconUrl = pIconUrl;
     }
 
+    public void generateBusinessIdIfNotSet() {
+        if (this.businessId == null) {
+            this.businessId = UUID.randomUUID().toString();
+        }
+    }
+
+    public void resetBusinessId() {
+        this.businessId = null;
+    }
+
+    public String getBusinessId() {
+        return businessId;
+    }
+
+    public void setBusinessId(String businessId) {
+        this.businessId = businessId;
+    }
+
+    @Override
+    public String toString() {
+        return "PluginConfiguration [id=" + id + ", business id=" + businessId + ", pluginId=" + pluginId + ", label="
+                + label + ", version=" + version + ", priorityOrder=" + priorityOrder + ", active=" + active + "]";
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + ((label == null) ? 0 : label.hashCode());
-        result = (prime * result) + ((pluginId == null) ? 0 : pluginId.hashCode());
+        result = (prime * result) + (businessId == null ? 0 : businessId.hashCode());
+        result = (prime * result) + (pluginId == null ? 0 : pluginId.hashCode());
         return result;
     }
 
@@ -418,24 +394,20 @@ public class PluginConfiguration implements IIdentifiable<Long> {
             return false;
         }
         PluginConfiguration other = (PluginConfiguration) obj;
-        if (label == null) {
-            if (other.label != null) {
+        if (businessId == null) {
+            if (other.businessId != null) {
                 return false;
             }
-        } else if (!label.equals(other.label)) {
+        } else if (!businessId.equals(other.businessId)) {
             return false;
         }
         if (pluginId == null) {
-            return other.pluginId == null;
-        } else {
-            return pluginId.equals(other.pluginId);
+            if (other.pluginId != null) {
+                return false;
+            }
+        } else if (!pluginId.equals(other.pluginId)) {
+            return false;
         }
-    }
-
-    @Override
-    public String toString() {
-        return "PluginConfiguration [id=" + id + ", pluginId=" + pluginId + ", label=" + label + ", version=" + version
-                + ", priorityOrder=" + priorityOrder + ", active=" + active + ", pluginClassName=" + pluginClassName
-                + ", interfaceName=" + interfaceNames + "]";
+        return true;
     }
 }

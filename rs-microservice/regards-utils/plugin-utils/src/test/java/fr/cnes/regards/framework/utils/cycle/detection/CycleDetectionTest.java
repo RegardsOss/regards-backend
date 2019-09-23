@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.utils.cycle.detection;
 
+import com.google.gson.Gson;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -26,15 +27,21 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTest;
+import fr.cnes.regards.framework.utils.plugins.basic.SamplePlugin;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
@@ -46,6 +53,11 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 public class CycleDetectionTest {
 
     private static final String PLUGIN_PACKAGE = "fr.cnes.regards.framework.utils.plugins";
+
+    @Before
+    public void doInit() {
+        PluginParameterTransformer.setup(new Gson());
+    }
 
     @Test
     public void cycleDetectionOK() throws NotAvailablePluginConfigurationException {
@@ -63,14 +75,12 @@ public class CycleDetectionTest {
         pojoParam.addIntValues(3);
         pojoParam.addIntValues(4);
 
-        /*
-         * Set all parameters
-         */
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_ACTIVE, true)
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_COEF, 12345)
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParam)
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "chris_test_1").getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
+                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_COEF, 12345),
+                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO,
+                                        PluginParameterTransformer.toJson(pojoParam)),
+                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "chris_test_1"));
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_PACKAGE);
@@ -124,13 +134,11 @@ public class CycleDetectionTest {
         pojoParent.setChild(pojoChild);
         pojoChild.setParent(otherPojoParent);
 
-        /*
-         * Set all parameters
-         */
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_ACTIVE, true)
-                .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_COEF, 12345)
-                .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_POJO, pojoParent).getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
+                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_COEF, 12345),
+                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO,
+                                        PluginParameterTransformer.toJson(pojoParent)));
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_PACKAGE);
@@ -152,14 +160,12 @@ public class CycleDetectionTest {
         pojoParent.addChild(pojoChild);
         pojoChild.addPojo(pojoParam);
 
-        /*
-         * Set all parameters
-         */
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_ACTIVE, true)
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_COEF, 12345)
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParent)
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "suffix").getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
+                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_COEF, 12345),
+                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO,
+                                        PluginParameterTransformer.toJson(pojoParent)),
+                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "suffix"));
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_PACKAGE);
@@ -216,14 +222,11 @@ public class CycleDetectionTest {
         pojoParent.setChild(pojoChild);
         pojoChild.setParent(otherPojoParent);
 
-        /*
-         * Set all parameters
-         */
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_ACTIVE, true)
-                .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_COEF, 12345)
-                .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_POJO, pojoGrandParent)
-                .getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
+                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_COEF, 12345),
+                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO,
+                                        PluginParameterTransformer.toJson(pojoGrandParent)));
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_PACKAGE);

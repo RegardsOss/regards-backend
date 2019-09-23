@@ -1,5 +1,7 @@
 package fr.cnes.regards.framework.modules.locks.dao;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,5 +13,5 @@ import fr.cnes.regards.framework.modules.locks.domain.Lock;
 @Repository
 public interface ILockRepository extends JpaRepository<Lock, Long> {
 
-    Lock findByLockingClassNameAndLockName(String lockingClassName, String lockName);
+    Optional<Lock> findByLockingClassNameAndLockName(String lockingClassName, String lockName);
 }

@@ -16,10 +16,4 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-
-/**
- * TODO Description
- */
 package fr.cnes.regards.framework.modules.plugins.annotations;
-
-

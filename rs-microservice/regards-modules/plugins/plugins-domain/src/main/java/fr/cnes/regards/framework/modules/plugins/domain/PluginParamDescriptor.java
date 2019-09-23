@@ -25,11 +25,13 @@ import java.util.Map;
 
 import org.springframework.util.Assert;
 
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
+
 /**
  * Plugin parameter type
  * @author Christophe Mertz
  */
-public class PluginParameterType {
+public class PluginParamDescriptor {
 
     /**
      * The parameter's name used as a key for database registration
@@ -58,19 +60,14 @@ public class PluginParameterType {
     private String markdown;
 
     /**
-     * The JAVA parameter's type
-     */
-    private String type;
-
-    /**
      * Argument parameter types for parameterized types
      */
     private String[] parameterizedSubTypes;
 
     /**
-     * The parameters's type {@link ParamType}.
+     * The parameters's type {@link PluginParamType}.
      */
-    private ParamType paramType;
+    private PluginParamType type;
 
     /**
      * A default value for the paramater
@@ -90,12 +87,12 @@ public class PluginParameterType {
     /**
      * The parameters of the plugin
      */
-    private List<PluginParameterType> parameters = new ArrayList<>();
+    private List<PluginParamDescriptor> parameters;
 
     private Boolean unconfigurable;
 
     /**
-     * {@link PluginParameterType} builder.<br/>
+     * {@link PluginParamDescriptor} builder.<br/>
      * Additional setter can be used :
      * <ul>
      * <li>{@link #setDefaultValue(String)}</li>
@@ -106,14 +103,13 @@ public class PluginParameterType {
      * @param name parameter's name used as a key for database registration
      * @param label a required human readable information
      * @param description an optional further human readable information if the label is not explicit enough!
-     * @param clazz The JAVA class
-     * @param paramType {@link ParamType}
+     * @param paramType {@link PluginParamType}
      * @param optional true if parameter is optional
-     * @return {@link PluginParameterType}
+     * @return {@link PluginParamDescriptor}
      */
-    public static PluginParameterType create(String name, String label, String description, Class<?> clazz,
-            ParamType paramType, Boolean optional, Boolean onlyDynamic, Boolean sensitive) {
-        PluginParameterType ppt = new PluginParameterType();
+    public static PluginParamDescriptor create(String name, String label, String description, PluginParamType paramType,
+            Boolean optional, Boolean onlyDynamic, Boolean sensitive) {
+        PluginParamDescriptor ppt = new PluginParamDescriptor();
 
         // Validate and set
         Assert.hasText(name, "Name is required");
@@ -124,11 +120,8 @@ public class PluginParameterType {
 
         ppt.setDescription(description);
 
-        Assert.notNull(clazz, "Class is required");
-        ppt.setType(clazz.getName());
-
         Assert.notNull(paramType, "Parameter type is required");
-        ppt.setParamType(paramType);
+        ppt.setType(paramType);
 
         Assert.notNull(optional, "Optional value is required");
         ppt.setOptional(optional);
@@ -148,20 +141,12 @@ public class PluginParameterType {
         this.name = pName;
     }
 
-    public String getType() {
+    public PluginParamType getType() {
         return type;
     }
 
-    private void setType(String pType) {
-        this.type = pType;
-    }
-
-    public ParamType getParamType() {
-        return paramType;
-    }
-
-    private void setParamType(ParamType pParamType) {
-        this.paramType = pParamType;
+    private void setType(PluginParamType type) {
+        this.type = type;
     }
 
     public String getDefaultValue() {
@@ -181,11 +166,11 @@ public class PluginParameterType {
         this.optional = optional;
     }
 
-    public List<PluginParameterType> getParameters() {
+    public List<PluginParamDescriptor> getParameters() {
         return parameters;
     }
 
-    public void addAllParameters(List<PluginParameterType> parameterTypes) {
+    public void addAllParameters(List<PluginParamDescriptor> parameterTypes) {
         if (parameterTypes != null) {
             if (parameters == null) {
                 parameters = new ArrayList<>();
@@ -251,32 +236,32 @@ public class PluginParameterType {
         this.sensitive = sensitive;
     }
 
-    /**
-     * An enumeration with PRIMITIVE and PLUGIN defaultValue
-     * @author Christophe Mertz
-     */
-    public enum ParamType {
-
-        /**
-         * Parameter type {@link Map}
-         */
-        MAP,
-        /**
-         * Parameter type {@link java.util.Collection}
-         */
-        COLLECTION,
-        /**
-         * Object type (not parameterized)
-         */
-        OBJECT,
-        /**
-         * Parameter type primitif
-         */
-        PRIMITIVE,
-        /**
-         * Parameter type plugin
-         */
-        PLUGIN
-
-    }
+    //    /**
+    //     * An enumeration with PRIMITIVE and PLUGIN defaultValue
+    //     * @author Christophe Mertz
+    //     */
+    //    public enum ParamType {
+    //
+    //        /**
+    //         * Parameter type {@link Map}
+    //         */
+    //        MAP,
+    //        /**
+    //         * Parameter type {@link java.util.Collection}
+    //         */
+    //        COLLECTION,
+    //        /**
+    //         * Object type (not parameterized)
+    //         */
+    //        OBJECT,
+    //        /**
+    //         * Parameter type primitif
+    //         */
+    //        PRIMITIVE,
+    //        /**
+    //         * Parameter type plugin
+    //         */
+    //        PLUGIN
+    //
+    //    }
 }

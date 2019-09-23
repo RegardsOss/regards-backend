@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.framework.utils.plugins.free;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -27,8 +25,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.framework.utils.plugins.generics.PluginWithBoolean;
@@ -45,19 +42,15 @@ public class PluginFreeTest {
     @Test
     public void stringTest() throws NotAvailablePluginConfigurationException {
 
-        // Configure as dynamic parameter
-        List<String> availableValues = Arrays.asList("string1", "string2");
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addDynamicParameter(PluginWithBoolean.FIELD_NAME_STRING, "string", availableValues).getParameters();
+        String expected = "string1";
 
-        // Pass a dynamic parameter
-        PluginParametersFactory dynParametersFactory = PluginParametersFactory.build();
-        dynParametersFactory.addParameter(PluginWithBoolean.FIELD_NAME_STRING, "string1");
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(PluginWithBoolean.FIELD_NAME_STRING, "string").dynamic(expected, "string2"));
 
         PluginUtils.setup(this.getClass().getPackage().getName());
         IFreePlugin plugin = PluginUtils.getPlugin(parameters, FreePluginWithString.class, null,
-                                                   dynParametersFactory.asArray());
+                                                   IPluginParam.build(PluginWithBoolean.FIELD_NAME_STRING, expected));
         Assert.assertNotNull(plugin);
-        plugin.doIt();
+        Assert.assertEquals(expected, plugin.doIt());
     }
 }

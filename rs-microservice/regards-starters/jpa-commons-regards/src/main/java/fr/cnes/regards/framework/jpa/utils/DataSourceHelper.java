@@ -103,7 +103,7 @@ public final class DataSourceHelper {
     }
 
     /**
-     * @deprecated use {@link DataSourceHelper#createHikariDataSource(String, String, String, String, String, Integer, Integer, String)} instead.
+     * @deprecated use {@link DataSourceHelper#createHikariDataSource(String, String, String, String, String, Integer, Integer, String, String)} instead.
      *
      * Create a pooled {@link DataSource} using {@link ComboPooledDataSource}.
      * @param pTenant related tenant, only useful for login purpose
@@ -136,7 +136,7 @@ public final class DataSourceHelper {
     }
 
     public static DataSource createHikariDataSource(String tenant, String url, String driverClassName, String userName,
-            String password, Integer minPoolSize, Integer maxPoolSize, String preferredTestQuery) throws IOException {
+            String password, Integer minPoolSize, Integer maxPoolSize, String preferredTestQuery, String schemaIdentifier) throws IOException {
 
         LOGGER.info("\n{}\nCreating a HIKARI CP datasource for tenant {} with url {}\n{}", HR, tenant, url, HR);
 
@@ -153,6 +153,8 @@ public final class DataSourceHelper {
         config.setMaximumPoolSize(maxPoolSize);
         config.setPoolName(String.format("Hikari-Pool-%s", tenant));
         config.setIdleTimeout(30000L);
+        // Postgres schema configuration
+        config.setConnectionInitSql("SET search_path to " + schemaIdentifier);
 
         return new HikariDataSource(config);
     }

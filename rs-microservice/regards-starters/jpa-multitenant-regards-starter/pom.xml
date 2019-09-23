@@ -61,6 +61,10 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>encryption-starter</artifactId>
         </dependency>
+		<dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>gson-regards-starter</artifactId>
+        </dependency>
         <!-- REGARDS -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>

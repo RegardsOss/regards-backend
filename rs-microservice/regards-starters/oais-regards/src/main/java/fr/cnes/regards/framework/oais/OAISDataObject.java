@@ -18,15 +18,18 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.net.URL;
-import java.util.Set;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.validator.ValidOAISDataObject;
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
+import org.springframework.util.MimeType;
 
 /**
  * OAIS data object
@@ -43,17 +46,11 @@ public class OAISDataObject {
     private DataType regardsDataType;
 
     /**
-     * Required flag to indicate a data file is just a reference (whether physical file is managed externally or not)
-     * ie not managed by Regards if true, false otherwise
+     * File locations (a file can be stored at several locations)
      */
-    @NotNull(message = "Reference flag is required")
-    private Boolean reference;
-
-    /**
-     * File urls (a file can be stored at several locations)
-     */
-    @NotEmpty(message = "At least one Data file URL is required")
-    private Set<URL> urls;
+    @Valid
+    @NotEmpty(message = "At least one location is required")
+    private Set<OAISDataObjectLocation> locations = new HashSet<>();
 
     /**
      * The file name
@@ -105,18 +102,16 @@ public class OAISDataObject {
         this.regardsDataType = regardsDataType;
     }
 
-    /**
-     * @return the url
-     */
-    public Set<URL> getUrls() {
-        return urls;
+    public Set<OAISDataObjectLocation> getLocations() {
+        return locations;
     }
 
-    /**
-     * Set the url
-     */
-    public void setUrls(Set<URL> urls) {
-        this.urls = urls;
+    public void setLocations(Set<OAISDataObjectLocation> locations) {
+        this.locations = locations;
+    }
+
+    public void addLocation(OAISDataObjectLocation location) {
+        this.locations.add(location);
     }
 
     /**
@@ -161,16 +156,16 @@ public class OAISDataObject {
         this.fileSize = fileSize;
     }
 
-    public Boolean getReference() {
-        return reference;
-    }
-
-    public Boolean isReference() {
-        return reference;
-    }
-
-    public void setReference(Boolean reference) {
-        this.reference = reference;
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (algorithm == null ? 0 : algorithm.hashCode());
+        result = prime * result + (checksum == null ? 0 : checksum.hashCode());
+        result = prime * result + (fileSize == null ? 0 : fileSize.hashCode());
+        result = prime * result + (filename == null ? 0 : filename.hashCode());
+        result = prime * result + (regardsDataType == null ? 0 : regardsDataType.hashCode());
+        return result;
     }
 
     @Override
@@ -199,47 +194,9 @@ public class OAISDataObject {
         } else if (!checksum.equals(other.checksum)) {
             return false;
         }
-        if (fileSize == null) {
-            if (other.fileSize != null) {
-                return false;
-            }
-        } else if (!fileSize.equals(other.fileSize)) {
-            return false;
-        }
-        if (filename == null) {
-            if (other.filename != null) {
-                return false;
-            }
-        } else if (!filename.equals(other.filename)) {
-            return false;
-        }
-        if (reference == null) {
-            if (other.reference != null) {
-                return false;
-            }
-        } else if (!reference.equals(other.reference)) {
-            return false;
-        }
         if (regardsDataType != other.regardsDataType) {
             return false;
         }
-        if (urls == null) {
-            return other.urls == null;
-        } else
-            return urls.equals(other.urls);
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = (prime * result) + ((algorithm == null) ? 0 : algorithm.hashCode());
-        result = (prime * result) + ((checksum == null) ? 0 : checksum.hashCode());
-        result = (prime * result) + ((fileSize == null) ? 0 : fileSize.hashCode());
-        result = (prime * result) + ((filename == null) ? 0 : filename.hashCode());
-        result = (prime * result) + ((reference == null) ? 0 : reference.hashCode());
-        result = (prime * result) + ((regardsDataType == null) ? 0 : regardsDataType.hashCode());
-        result = (prime * result) + ((urls == null) ? 0 : urls.hashCode());
-        return result;
+        return true;
     }
 }

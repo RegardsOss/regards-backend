@@ -1,0 +1,23 @@
+{
+  "businessId": "@ref@",
+  "label": "Plugin configuration with pojo",
+  "active": true,
+  "pluginId": "APLuginId",
+  "version": "1.0.0",
+  "priorityOrder": 2,
+  "parameters": [
+    {
+      "value": "Panthere",
+      "type": "STRING",
+      "name": "toto"
+    },
+    {
+      "value": {
+        "name": "simple"
+      },
+      "clazz": "fr.cnes.regards.framework.modules.plugins.service.gson.SimplePojo",
+      "name": "simple",
+      "type": "POJO"
+    }
+  ]
+}

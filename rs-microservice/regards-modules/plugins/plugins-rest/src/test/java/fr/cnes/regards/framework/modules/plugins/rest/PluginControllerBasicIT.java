@@ -18,13 +18,11 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -45,18 +43,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.geojson.PluginConfigurationFieldDescriptors;
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
 /**
  * Test class for REST endpoints to manage plugin entities.
@@ -67,6 +64,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
         "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678" })
 public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
 
+    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginControllerBasicIT.class);
 
     private static final String VERSION = "12345-6789-11";
@@ -84,7 +82,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
      */
     private static String token = "";
 
-    private Set<PluginParameter> pluginParameters;
+    private Set<IPluginParam> pluginParameters;
 
     @Autowired
     private IPluginService pluginService;
@@ -99,9 +97,9 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
     public void init() {
         tenantResolver.forceTenant(getDefaultTenant());
 
-        pluginParameters = PluginParametersFactory.build()
-                .addDynamicParameter("param31", "value31", Arrays.asList("red", "green", "blue"))
-                .addParameter("param32", "value32").addParameter("isActive", "true").getParameters();
+        pluginParameters = IPluginParam.set(IPluginParam.build("param31", "value31").dynamic("red", "green", "blue"),
+                                            IPluginParam.build("param32", "value32"),
+                                            IPluginParam.build("isActive", "true"));
 
         manageDefaultSecurity(PluginController.PLUGINS, RequestMethod.GET);
 
@@ -170,6 +168,16 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
+    public void getPluginMetadata() {
+        String pluginId = "ParamTestPlugin";
+
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+
+        performGet(PluginController.PLUGINS_PLUGINID, token, customizer,
+                   String.format("unable to load plugin id <%s>", pluginId), pluginId);
+    }
+
+    @Test
     @Requirement("REGARDS_DSL_CMP_PLG_400")
     @Purpose("The system allows to list all the plugin's type of a microservice")
     public void getAllPluginTypes() {
@@ -202,7 +210,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
                            .expectToHaveToString("$..content.active", "[true]")
                            .expectToHaveToString("$..content.parameters[?(@.name == 'param31')].dynamic", "[true]")
                            .expectToHaveToString("$..content.parameters[?(@.name == 'param32')].dynamic", "[false]"),
-                   "unable to load a plugin configuration", aPluginConfiguration.getId());
+                   "unable to load a plugin configuration", aPluginConfiguration.getBusinessId());
     }
 
     @Test
@@ -275,7 +283,8 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
                         .pathParameters(RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_PLUGIN_ID)
                                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                                 .description("Plugin identifier"),
-                                        RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_CONFIG_ID)
+                                        RequestDocumentation
+                                                .parameterWithName(PluginController.REQUEST_PARAM_BUSINESS_ID)
                                                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
                                                         .value(JSON_NUMBER_TYPE))
                                                 .description("Plugin configuration identifier")));
@@ -285,7 +294,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
         // Update the added PluginConfiguration
         performPut(PluginController.PLUGINS_PLUGINID_CONFIGID, token, aPluginConfiguration, customizer,
                    "unable to update a plugin configuration", aPluginConfiguration.getPluginId(),
-                   aPluginConfiguration.getId());
+                   aPluginConfiguration.getBusinessId());
     }
 
     @Test
@@ -372,12 +381,13 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
                         .pathParameters(RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_PLUGIN_ID)
                                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                                 .description("Plugin identifier"),
-                                        RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_CONFIG_ID)
+                                        RequestDocumentation
+                                                .parameterWithName(PluginController.REQUEST_PARAM_BUSINESS_ID)
                                                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                        .value(JSON_NUMBER_TYPE))
+                                                        .value(JSON_STRING_TYPE))
                                                 .description("Plugin configuration identifier"))),
                       "unable to delete a plugin configuration", aPluginConfiguration.getPluginId(),
-                      aPluginConfiguration.getId());
+                      aPluginConfiguration.getBusinessId());
     }
 
     @Test
@@ -406,8 +416,6 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
                 pluginParameters, 0);
         aPluginConfiguration.setIconUrl(new URL("http://google.fr/svg/logo.svg"));
         PluginConfiguration savedPluginConf = pluginService.savePluginConfiguration(aPluginConfiguration);
-        // to avoid issue with hibernate and allow pluginParameters to be considered new each time, lets remove ids from plugin parameters
-        pluginParameters.forEach(p->p.setId(null));
         return savedPluginConf;
     }
 

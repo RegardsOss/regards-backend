@@ -30,8 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -60,9 +59,8 @@ public final class PluginInterfaceBeanFactoryTest extends PluginUtilsTestConstan
         SampleBeanFactoryPlugin samplePlugin = null;
         Assert.assertNotNull(sampleBeanService);
 
-        final Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SampleBeanFactoryPlugin.FIELD_NAME_SUFFIX, "chris_test_1").getParameters();
-        // instantiate plugin
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(SampleBeanFactoryPlugin.FIELD_NAME_SUFFIX, "chris_test_1"));
 
         PluginUtils.setup("fr.cnes.regards.plugins.utils.bean");
         samplePlugin = PluginUtils.getPlugin(parameters, SampleBeanFactoryPlugin.class, new HashMap<>());

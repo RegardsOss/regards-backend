@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,12 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.utils.plugins.bean;
+package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
 /**
- * @author Christophe Mertz
+ * Supported plugin parameter.<br/>
+ * Nested plugin param keeps the reference to another plugin configuration. Business key has to be used.
+ *
+ * @author Marc SORDI
+ *
  */
-public interface IPluginUtilsBean {
+public class NestedPluginParam extends AbstractPluginParam<String> {
 
-    <T> void processAutowiredBean(final T pPluginInstance);
+    public NestedPluginParam() {
+        super(PluginParamType.PLUGIN);
+    }
+
+    @Override
+    public void value(String value) {
+        this.setValue(value);
+    }
+
 }

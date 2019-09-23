@@ -24,8 +24,11 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
+import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 
@@ -91,10 +94,16 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
 
     private final IEncryptionService encryptionService;
 
+    /**
+     * JPA Configuration
+     */
+    private JpaProperties jpaProperties;
+
     public MultitenantJpaEventHandler(String microserviceName, Map<String, DataSource> dataSources,
             MultitenantDaoProperties daoProperties, IDatasourceSchemaHelper datasourceSchemaHelper,
             IInstanceSubscriber instanceSubscriber, ITenantConnectionResolver multitenantResolver,
-            MultitenantJpaEventPublisher localPublisher, IEncryptionService encryptionService) {
+            MultitenantJpaEventPublisher localPublisher, IEncryptionService encryptionService,
+            JpaProperties jpaProperties) {
         this.microserviceName = microserviceName;
         this.dataSources = dataSources;
         this.daoProperties = daoProperties;
@@ -103,6 +112,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
         this.multitenantResolver = multitenantResolver;
         this.localPublisher = localPublisher;
         this.encryptionService = encryptionService;
+        this.jpaProperties = jpaProperties;
     }
 
     @Override
@@ -128,10 +138,12 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 // Trying to connect data source
                 updateConnectionState(tenantConnection.getTenant(), TenantConnectionState.CONNECTING, Optional.empty());
 
+                // Retrieve schema name
+                String schemaIdentifier = jpaProperties.getProperties().get(Environment.DEFAULT_SCHEMA);
                 // Init data source
                 // before initiating data source, lets decrypt password
                 tenantConnection.setPassword(encryptionService.decrypt(tenantConnection.getPassword()));
-                DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection);
+                DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection, schemaIdentifier);
                 // Remove existing one
                 DataSource oldDataSource = dataSources.remove(tenantConnection.getTenant());
                 if (oldDataSource != null) {

@@ -27,5 +27,5 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 @PluginInterface(description = "Test contract for free testing")
 public interface IFreePlugin {
 
-    void doIt();
+    String doIt();
 }
