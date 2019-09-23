@@ -60,7 +60,7 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
 
     @Test
     public void makeAvailable() throws InterruptedException, ExecutionException {
-        FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test");
+        FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test", Optional.empty());
         fileCacheRequestService.makeAvailable(Sets.newHashSet(fileRef.getMetaInfo().getChecksum()),
                                               OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
         Assert.assertTrue("A cache request should be created",
@@ -99,11 +99,11 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
                              OffsetDateTime.now().minusDays(1), cacheRequestsGroupId);
 
         // Reference 5 files of 1ko each
-        FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test");
-        FileReference fileRef2 = this.generateRandomStoredNearlineFileReference("file-nl-2.test");
-        FileReference fileRef3 = this.generateRandomStoredNearlineFileReference("file-nl-3.test");
-        FileReference fileRef4 = this.generateRandomStoredNearlineFileReference("file-nl-4.test");
-        FileReference fileRef5 = this.generateRandomStoredNearlineFileReference("file-nl-5.test");
+        FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test", Optional.empty());
+        FileReference fileRef2 = this.generateRandomStoredNearlineFileReference("file-nl-2.test", Optional.empty());
+        FileReference fileRef3 = this.generateRandomStoredNearlineFileReference("file-nl-3.test", Optional.empty());
+        FileReference fileRef4 = this.generateRandomStoredNearlineFileReference("file-nl-4.test", Optional.empty());
+        FileReference fileRef5 = this.generateRandomStoredNearlineFileReference("file-nl-5.test", Optional.empty());
         fileCacheRequestService.makeAvailable(Sets
                 .newHashSet(fileRef.getMetaInfo().getChecksum(), fileRef2.getMetaInfo().getChecksum(),
                             fileRef3.getMetaInfo().getChecksum(), fileRef4.getMetaInfo().getChecksum(),
@@ -145,7 +145,8 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
 
     @Test
     public void makeAvailable_plugin_restoration_error() throws InterruptedException, ExecutionException {
-        FileReference fileRef = this.generateRandomStoredNearlineFileReference("restoError.file1.test");
+        FileReference fileRef = this.generateRandomStoredNearlineFileReference("restoError.file1.test",
+                                                                               Optional.empty());
         fileCacheRequestService.makeAvailable(Sets.newHashSet(fileRef.getMetaInfo().getChecksum()),
                                               OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
         Assert.assertTrue("A cache request should be created",
@@ -163,10 +164,10 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
 
     @Test
     public void restoreMultiple() throws InterruptedException, ExecutionException {
-        FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test");
-        FileReference fileRef2 = this.generateRandomStoredNearlineFileReference("file-nl-2.test");
-        FileReference fileRef3 = this.generateRandomStoredNearlineFileReference("file-nl-3.test");
-        FileReference fileRef4 = this.generateRandomStoredNearlineFileReference("file-nl-4.test");
+        FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test", Optional.empty());
+        FileReference fileRef2 = this.generateRandomStoredNearlineFileReference("file-nl-2.test", Optional.empty());
+        FileReference fileRef3 = this.generateRandomStoredNearlineFileReference("file-nl-3.test", Optional.empty());
+        FileReference fileRef4 = this.generateRandomStoredNearlineFileReference("file-nl-4.test", Optional.empty());
         fileCacheRequestService.makeAvailable(Sets
                 .newHashSet(fileRef.getMetaInfo().getChecksum(), fileRef2.getMetaInfo().getChecksum(),
                             fileRef3.getMetaInfo().getChecksum(), fileRef4.getMetaInfo().getChecksum()),

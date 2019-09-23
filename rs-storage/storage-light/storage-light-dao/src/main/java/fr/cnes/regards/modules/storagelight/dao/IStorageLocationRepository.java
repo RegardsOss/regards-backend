@@ -34,4 +34,6 @@ public interface IStorageLocationRepository
 
     Optional<StorageLocation> findByName(String name);
 
+    void deleteByName(String name);
+
 }

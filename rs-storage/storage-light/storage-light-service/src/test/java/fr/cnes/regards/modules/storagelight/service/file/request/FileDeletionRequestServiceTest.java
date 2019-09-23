@@ -28,6 +28,7 @@ import org.apache.commons.compress.utils.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -41,6 +42,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletion
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
 
 /**
@@ -56,6 +58,23 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
     @Override
     public void init() throws ModuleException {
         super.init();
+    }
+
+    @Test
+    public void deleteAll() throws InterruptedException, ExecutionException {
+        String owner = "first-owner";
+        Long nbFiles = 20L;
+        for (int i = 0; i < nbFiles; i++) {
+            generateStoredFileReference(UUID.randomUUID().toString(), owner, String.format("file-%d.test", i),
+                                        ONLINE_CONF_LABEL, Optional.empty());
+        }
+        JobInfo ji = fileDeletionRequestService.scheduleJob(ONLINE_CONF_LABEL, false);
+        Assert.assertNotNull("A job should be created", ji);
+        Mockito.reset(publisher);
+        jobService.runJob(ji, getDefaultTenant()).get();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        // A deletion request should be created for each file
+        Mockito.verify(publisher, Mockito.times(20)).publish(Mockito.any(DeletionFlowItem.class));
     }
 
     @Test
@@ -106,7 +125,7 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
         String fileChecksum = "file-1";
         String firstOwner = "first-owner";
         FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "delErr.file1.test",
-                                                            ONLINE_CONF_LABEL);
+                                                            ONLINE_CONF_LABEL, Optional.empty());
         Assert.assertNotNull("File reference should have been created", fileRef);
         Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
 
@@ -142,7 +161,8 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
         String fileChecksum = "file-1";
         String firstOwner = "first-owner";
         String secondOwner = "second-owner";
-        FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "file.test", ONLINE_CONF_LABEL);
+        FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "file.test", ONLINE_CONF_LABEL,
+                                                            Optional.empty());
         Assert.assertNotNull("File reference should have been created", fileRef);
         Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
         Optional<FileReference> oFileRef = generateStoredFileReferenceAlreadyReferenced(fileChecksum,

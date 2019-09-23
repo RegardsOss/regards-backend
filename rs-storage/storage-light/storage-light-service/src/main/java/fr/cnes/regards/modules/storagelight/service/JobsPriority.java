@@ -24,13 +24,15 @@ package fr.cnes.regards.modules.storagelight.service;
  */
 public enum JobsPriority {
 
-    FILE_STORAGE_JOB(50),
+    FILE_STORAGE_JOB(40),
 
-    FILE_REFERENCE_JOB(60),
+    FILE_REFERENCE_JOB(50),
 
-    FILE_DELETION_JOB(70),
+    FILE_DELETION_JOB(60),
 
-    FILE_CACHE_JOB(80),
+    FILE_CACHE_JOB(70),
+
+    FILE_COPY_JOB(80),
 
     CACHE_VERIFICATION(90),
 

@@ -34,11 +34,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
@@ -52,8 +55,10 @@ import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAgg
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationType;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileCopyRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
@@ -68,6 +73,15 @@ public class StorageLocationService {
 
     @Autowired
     private FileReferenceService fileReferenceService;
+
+    @Autowired
+    private FileDeletionRequestService deletionService;
+
+    @Autowired
+    private FileStorageRequestService storageService;
+
+    @Autowired
+    private FileCopyRequestService copyService;
 
     @Autowired
     private IStorageLocationRepository storageLocationRepo;
@@ -245,6 +259,44 @@ public class StorageLocationService {
             pStorageService.decreasePriority(pStorage.get().getId());
         } else {
             throw new EntityNotFoundException(storageLocationId, PrioritizedStorage.class);
+        }
+    }
+
+    public void delete(String storageLocationId) throws ModuleException {
+        // Delete storage location plugin configuration
+        Optional<PrioritizedStorage> pStorageLocation = pStorageService.search(storageLocationId);
+        if (pStorageLocation.isPresent()) {
+            pStorageService.delete(pStorageLocation.get().getId());
+        } else {
+            throw new EntityNotFoundException(storageLocationId, PrioritizedStorage.class);
+        }
+        // Delete informations in storage locations
+        storageLocationRepo.deleteByName(storageLocationId);
+    }
+
+    public void deleteFiles(String storageLocationId, Boolean forceDelete) {
+        deletionService.scheduleJob(storageLocationId, forceDelete);
+    }
+
+    public void copyFiles(String storageLocationId, String destinationStorageId, String pathToCopy) {
+        copyService.scheduleJob(storageLocationId, destinationStorageId, pathToCopy);
+    }
+
+    public void retryErrors(String storageLocationId, FileRequestType type) throws EntityOperationForbiddenException {
+        switch (type) {
+            case DELETION:
+                deletionReqService.scheduleJobs(FileRequestStatus.ERROR, Lists.newArrayList(storageLocationId));
+                break;
+            case STORAGE:
+                storageService.scheduleJobs(FileRequestStatus.ERROR, Lists.newArrayList(storageLocationId),
+                                            Lists.newArrayList());
+                break;
+            case AVAILABILITY:
+            case COPY:
+            case REFERENCE:
+            default:
+                throw new EntityOperationForbiddenException(storageLocationId, StorageLocation.class,
+                        String.format("Retry for type %s is forbidden", type));
         }
     }
 

@@ -44,7 +44,7 @@ public class FileCopyRequestDTO {
      * Storage location where to copy the file
      */
     private String storage;
-    
+
     /**
      * Sub directory where to store file in the storage location
      */
@@ -59,8 +59,8 @@ public class FileCopyRequestDTO {
     }
 
     public String getSubDirectory() {
-		return subDirectory;
-	}
+        return subDirectory;
+    }
 
     public static FileCopyRequestDTO build(String checksum, String storage) {
         FileCopyRequestDTO request = new FileCopyRequestDTO();
@@ -72,8 +72,8 @@ public class FileCopyRequestDTO {
         request.storage = storage;
         return request;
     }
-    
-    public static FileCopyRequestDTO build(String checksum, String storage, String subDirectory, String owner) {
+
+    public static FileCopyRequestDTO build(String checksum, String storage, String subDirectory) {
         FileCopyRequestDTO request = new FileCopyRequestDTO();
 
         Assert.notNull(checksum, "Checksum is mandatory.");

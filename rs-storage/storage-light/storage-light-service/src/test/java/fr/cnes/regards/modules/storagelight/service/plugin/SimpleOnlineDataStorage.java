@@ -95,7 +95,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
 
     private final String doNotHandlePattern = "doNotHandle.*";
 
-    private final static String BASE_URL = "target/storage-online";
+    public final static String BASE_URL = "target/storage-online";
 
     /**
      * Plugin init method

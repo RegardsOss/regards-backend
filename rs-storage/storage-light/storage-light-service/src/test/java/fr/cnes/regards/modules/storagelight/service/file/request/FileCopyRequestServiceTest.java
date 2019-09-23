@@ -47,7 +47,9 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestS
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storagelight.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
+import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
 
 /**
  * @author sbinda
@@ -65,8 +67,31 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
     }
 
     @Test
+    public void copyPath() throws InterruptedException, ExecutionException {
+        String owner = "first-owner";
+        String pathToCopy = "/rep/one";
+        Long nbFiles = 20L;
+        for (int i = 0; i < nbFiles; i++) {
+            generateStoredFileReference(UUID.randomUUID().toString(), owner, String.format("file-%d.test", i),
+                                        ONLINE_CONF_LABEL, Optional.of(pathToCopy));
+        }
+        for (int i = 0; i < 5; i++) {
+            generateStoredFileReference(UUID.randomUUID().toString(), owner, String.format("file-%d.test", i),
+                                        ONLINE_CONF_LABEL, Optional.of("/rep/two"));
+        }
+        JobInfo ji = fileCopyRequestService.scheduleJob(ONLINE_CONF_LABEL, NEARLINE_CONF_LABEL,
+                                                        SimpleOnlineDataStorage.BASE_URL + pathToCopy);
+        Assert.assertNotNull("A job should be created", ji);
+        Mockito.reset(publisher);
+        jobService.runJob(ji, getDefaultTenant()).get();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        // A copy event should be sent for all files in /rep/one
+        Mockito.verify(publisher, Mockito.times(20)).publish(Mockito.any(CopyFlowItem.class));
+    }
+
+    @Test
     public void copyFile() throws InterruptedException, ExecutionException {
-        FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test");
+        FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test", Optional.empty());
         Set<FileCopyRequestDTO> requests = Sets
                 .newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL));
         fileCopyRequestService.handle(requests, UUID.randomUUID().toString());

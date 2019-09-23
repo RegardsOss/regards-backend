@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.service.file.flow;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -46,7 +47,6 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.AbstractStorageTest;
-import fr.cnes.regards.modules.storagelight.service.file.flow.DeletionFlowHandler;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
@@ -159,7 +159,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
     public void deleteFlowItemStored() throws InterruptedException, ExecutionException {
         String checksum = UUID.randomUUID().toString();
         String owner = "owner";
-        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL);
+        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL,
+                                                                 Optional.empty());
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
@@ -204,8 +205,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
     public void deleteFlowItemStoredError() throws InterruptedException, ExecutionException {
         String checksum = UUID.randomUUID().toString();
         String owner = "owner";
-        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "delErr.file.test",
-                                                                 ONLINE_CONF_LABEL);
+        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "delErr.file.test", ONLINE_CONF_LABEL,
+                                                                 Optional.empty());
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
@@ -250,8 +251,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
     public void deleteFlowItemStoredErrorWithForce() throws InterruptedException, ExecutionException {
         String checksum = UUID.randomUUID().toString();
         String owner = "owner";
-        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "delErr.file.test",
-                                                                 ONLINE_CONF_LABEL);
+        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "delErr.file.test", ONLINE_CONF_LABEL,
+                                                                 Optional.empty());
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, true),

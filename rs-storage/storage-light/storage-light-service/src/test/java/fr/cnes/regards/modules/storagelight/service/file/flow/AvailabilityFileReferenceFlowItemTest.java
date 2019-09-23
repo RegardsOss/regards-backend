@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -86,19 +87,21 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
     public void availabilityFlowItem() throws InterruptedException, ExecutionException {
 
         // Simulate storage of 3 files in a near line location
-        FileReference file1 = this.generateRandomStoredNearlineFileReference("file.nearline.1.test");
-        FileReference file2 = this.generateRandomStoredNearlineFileReference("file.nearline.2.test");
-        FileReference file3 = this.generateRandomStoredNearlineFileReference("file.nearline.3.test");
+        FileReference file1 = this.generateRandomStoredNearlineFileReference("file.nearline.1.test", Optional.empty());
+        FileReference file2 = this.generateRandomStoredNearlineFileReference("file.nearline.2.test", Optional.empty());
+        FileReference file3 = this.generateRandomStoredNearlineFileReference("file.nearline.3.test", Optional.empty());
         // Simulate storage of 2 files in an online location
-        FileReference file4 = this.generateRandomStoredOnlineFileReference("file.online.1.test");
-        FileReference file5 = this.generateRandomStoredOnlineFileReference("file.online.2.test");
+        FileReference file4 = this.generateRandomStoredOnlineFileReference("file.online.1.test", Optional.empty());
+        FileReference file5 = this.generateRandomStoredOnlineFileReference("file.online.2.test", Optional.empty());
         // Simulate reference of 2 files offline
         FileReference file6 = this.referenceRandomFile("owner", "file", "file.offline.1.test", "somewhere").get();
         FileReference file7 = this.referenceRandomFile("owner", "file", "file.offline.2.test", "somewhere-else").get();
         // Simulate storage of a file in two locations near line and online
         String checksum = UUID.randomUUID().toString();
-        this.generateStoredFileReference(checksum, "owner", "file.online.nealine.test", ONLINE_CONF_LABEL);
-        this.generateStoredFileReference(checksum, "owner", "file.online.nealine.test", NEARLINE_CONF_LABEL);
+        this.generateStoredFileReference(checksum, "owner", "file.online.nealine.test", ONLINE_CONF_LABEL,
+                                         Optional.empty());
+        this.generateStoredFileReference(checksum, "owner", "file.online.nealine.test", NEARLINE_CONF_LABEL,
+                                         Optional.empty());
 
         Set<String> checksums = Sets.newHashSet(file1.getMetaInfo().getChecksum(), file2.getMetaInfo().getChecksum(),
                                                 file3.getMetaInfo().getChecksum(), file4.getMetaInfo().getChecksum(),
@@ -158,7 +161,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
     @Test
     public void availabilityWithCacheFile() throws InterruptedException, ExecutionException, MalformedURLException {
         // Simulate file storage on a near line location
-        FileReference file1 = this.generateRandomStoredNearlineFileReference("file.nearline.1.test");
+        FileReference file1 = this.generateRandomStoredNearlineFileReference("file.nearline.1.test", Optional.empty());
         // Simulate file in cache
         cacheService.addFile(file1.getMetaInfo().getChecksum(), 123L,
                              new URL("file", null, "target/cache/test/file.nearline.1.test"),
@@ -187,10 +190,10 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
     public void availability() throws InterruptedException, ExecutionException {
 
         // Simulate storage of 3 files in a near line location with restore error
-        FileReference file1 = this.generateRandomStoredNearlineFileReference("restoError.file1.test");
-        FileReference file2 = this.generateRandomStoredNearlineFileReference("restoError.file1.test");
-        FileReference file3 = this.generateRandomStoredNearlineFileReference("restoError.file1.test");
-        FileReference file4 = this.generateRandomStoredNearlineFileReference("file4.test");
+        FileReference file1 = this.generateRandomStoredNearlineFileReference("restoError.file1.test", Optional.empty());
+        FileReference file2 = this.generateRandomStoredNearlineFileReference("restoError.file1.test", Optional.empty());
+        FileReference file3 = this.generateRandomStoredNearlineFileReference("restoError.file1.test", Optional.empty());
+        FileReference file4 = this.generateRandomStoredNearlineFileReference("file4.test", Optional.empty());
         Mockito.clearInvocations(publisher);
 
         Set<String> checksums = Sets.newHashSet(file1.getMetaInfo().getChecksum(), file2.getMetaInfo().getChecksum(),

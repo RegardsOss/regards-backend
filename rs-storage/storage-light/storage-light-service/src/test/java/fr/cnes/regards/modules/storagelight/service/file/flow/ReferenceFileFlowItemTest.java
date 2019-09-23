@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.flow;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -103,7 +104,8 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
     public void addFileRefFlowItemAlreadyExists() throws InterruptedException, ExecutionException {
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
-        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL);
+        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL,
+                                                                 Optional.empty());
         String storage = fileRef.getLocation().getStorage();
         // One store event should be sent
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -138,7 +140,7 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
         String storage = "aStorage";
-        this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL);
+        this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL, Optional.empty());
         // Create a new bus message File reference request
         ReferenceFlowItem item = ReferenceFlowItem
                 .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,

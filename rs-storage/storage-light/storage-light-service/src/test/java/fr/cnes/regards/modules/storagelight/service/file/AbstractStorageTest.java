@@ -215,6 +215,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
+            dataStorageConf.setBusinessId(label);
             return prioritizedDataStorageService.create(dataStorageConf);
         } catch (IOException | URISyntaxException e) {
             throw new ModuleException(e.getMessage(), e);
@@ -234,6 +235,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
+            dataStorageConf.setBusinessId(label);
             return prioritizedDataStorageService.create(dataStorageConf);
         } catch (IOException | URISyntaxException e) {
             throw new ModuleException(e.getMessage(), e);
@@ -252,22 +254,24 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     }
 
     protected FileReference generateRandomStoredOnlineFileReference() throws InterruptedException, ExecutionException {
-        return this.generateRandomStoredOnlineFileReference("file.test");
+        return this.generateRandomStoredOnlineFileReference("file.test", Optional.empty());
     }
 
-    protected FileReference generateRandomStoredOnlineFileReference(String fileName)
+    protected FileReference generateRandomStoredOnlineFileReference(String fileName, Optional<String> subDir)
             throws InterruptedException, ExecutionException {
-        return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", fileName, ONLINE_CONF_LABEL);
+        return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", fileName, ONLINE_CONF_LABEL,
+                                                subDir);
     }
 
     protected FileReference generateRandomStoredNearlineFileReference()
             throws InterruptedException, ExecutionException {
-        return this.generateRandomStoredNearlineFileReference("file.test");
+        return this.generateRandomStoredNearlineFileReference("file.test", Optional.empty());
     }
 
-    protected FileReference generateRandomStoredNearlineFileReference(String fileName)
+    protected FileReference generateRandomStoredNearlineFileReference(String fileName, Optional<String> subDir)
             throws InterruptedException, ExecutionException {
-        return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", fileName, NEARLINE_CONF_LABEL);
+        return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", fileName, NEARLINE_CONF_LABEL,
+                                                subDir);
     }
 
     protected Optional<FileReference> generateStoredFileReferenceAlreadyReferenced(String checksum, String storage,
@@ -280,14 +284,13 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
 
     }
 
-    protected FileReference generateStoredFileReference(String checksum, String owner, String fileName, String storage)
-            throws InterruptedException, ExecutionException {
+    protected FileReference generateStoredFileReference(String checksum, String owner, String fileName, String storage,
+            Optional<String> subDir) throws InterruptedException, ExecutionException {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 1024L,
                 MediaType.APPLICATION_OCTET_STREAM);
         FileLocation destination = new FileLocation(storage, "/in/this/directory");
         // Run file reference creation.
-        stoReqService.handleRequest(owner, fileMetaInfo, originUrl, storage, Optional.empty(),
-                                    UUID.randomUUID().toString());
+        stoReqService.handleRequest(owner, fileMetaInfo, originUrl, storage, subDir, UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), checksum);
         Optional<FileStorageRequest> oFileRefReq = stoReqService.search(destination.getStorage(), checksum);

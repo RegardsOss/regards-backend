@@ -70,7 +70,7 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         String fileRefChecksum = "file-ref-1";
         String fileRefOwner = "first-owner";
         FileReference fileRef = this.generateStoredFileReference(fileRefChecksum, fileRefOwner, "file.test",
-                                                                 ONLINE_CONF_LABEL);
+                                                                 ONLINE_CONF_LABEL, Optional.empty());
         String fileRefStorage = fileRef.getLocation().getStorage();
 
         // Remove all his owners

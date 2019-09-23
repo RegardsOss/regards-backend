@@ -1,0 +1,101 @@
+/*
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.modules.storagelight.service.file.job;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Paths;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.flow.CopyFlowItem;
+import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
+
+/**
+ * @author sbinda
+ *
+ */
+public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
+
+    public static final String STORAGE_LOCATION_SOURCE_ID = "source";
+
+    public static final String STORAGE_LOCATION_DESTINATION_ID = "dest";
+
+    public static final String PATH_TO_COPY = "path";
+
+    private static final int PAGE_BULK_SIZE = 500;
+
+    @Autowired
+    private IPublisher publisher;
+
+    @Autowired
+    private FileReferenceService fileRefService;
+
+    /**
+     * The job parameters as a map
+     */
+    protected Map<String, JobParameter> parameters;
+
+    @Override
+    public void setParameters(Map<String, JobParameter> parameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
+        this.parameters = parameters;
+    }
+
+    @Override
+    public void run() {
+        String storageLocationSourceId = parameters.get(STORAGE_LOCATION_SOURCE_ID).getValue();
+        String storageLocationDestinationId = parameters.get(STORAGE_LOCATION_DESTINATION_ID).getValue();
+        String pathToCopy = parameters.get(PATH_TO_COPY).getValue();
+
+        Pageable pageRequest = PageRequest.of(0, PAGE_BULK_SIZE);
+        Page<FileReference> pageResults;
+        do {
+            pageResults = fileRefService.search(storageLocationSourceId, pageRequest);
+            for (FileReference fileRef : pageResults.getContent()) {
+                String filePath;
+                try {
+                    filePath = Paths.get((new URL(fileRef.getLocation().getUrl())).getPath()).getParent().toString();
+                    if (filePath.startsWith(pathToCopy)) {
+
+                        publisher.publish(CopyFlowItem.build(FileCopyRequestDTO
+                                .build(fileRef.getMetaInfo().getChecksum(), storageLocationDestinationId, filePath),
+                                                             UUID.randomUUID().toString()));
+                    }
+                } catch (MalformedURLException e) {
+                    LOGGER.error("Unable to handle file reference {} for copy from {} to {}. Cause {}",
+                                 fileRef.getLocation().getUrl(), storageLocationSourceId, storageLocationDestinationId);
+                }
+            }
+        } while (pageResults.hasNext());
+    }
+
+}

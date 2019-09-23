@@ -62,6 +62,7 @@ import fr.cnes.regards.modules.storagelight.service.JobsPriority;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.job.FileDeletionRequestJob;
+import fr.cnes.regards.modules.storagelight.service.file.job.FileDeletionRequestsCreatorJob;
 import fr.cnes.regards.modules.storagelight.service.file.job.FileStorageRequestJob;
 import fr.cnes.regards.modules.storagelight.service.location.StoragePluginConfigurationHandler;
 
@@ -360,5 +361,21 @@ public class FileDeletionRequestService {
         reqGroupService.requestSuccess(fileDeletionRequest.getGroupId(), FileRequestType.DELETION,
                                        deletedFileRef.getMetaInfo().getChecksum(),
                                        deletedFileRef.getLocation().getStorage(), null);
+    }
+
+    /**
+     * Schedule a job to create deletion requests for all files matching the given criterion.
+     * @param storageLocationId
+     * @param forceDelete
+     */
+    public JobInfo scheduleJob(String storageLocationId, Boolean forceDelete) {
+        Set<JobParameter> parameters = Sets.newHashSet();
+        parameters.add(new JobParameter(FileDeletionRequestsCreatorJob.STORAGE_LOCATION_ID, storageLocationId));
+        parameters.add(new JobParameter(FileDeletionRequestsCreatorJob.FORCE_DELETE, forceDelete));
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_DELETION_JOB.getPriority(),
+                parameters, authResolver.getUser(), FileDeletionRequestsCreatorJob.class.getName()));
+        LOGGER.info("[DELETION REQUESTS] Job scheduled to delete all files from storage location {} (force={}).",
+                    storageLocationId, forceDelete);
+        return jobInfo;
     }
 }

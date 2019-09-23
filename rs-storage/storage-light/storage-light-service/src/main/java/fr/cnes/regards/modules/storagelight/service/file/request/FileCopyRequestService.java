@@ -19,7 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -32,9 +36,11 @@ import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDT
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
+import fr.cnes.regards.modules.storagelight.service.JobsPriority;
 import fr.cnes.regards.modules.storagelight.service.cache.CacheService;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.job.FileCopyRequestsCreatorJob;
 
 /**
  * Service to handle {@link FileCopyRequest}s.
@@ -69,7 +75,13 @@ public class FileCopyRequestService {
     private FileCacheRequestService fileCacheReqService;
 
     @Autowired
+    private IJobInfoService jobInfoService;
+
+    @Autowired
     private RequestsGroupService reqGrpService;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     public Optional<FileCopyRequest> handle(FileCopyRequestDTO requestDto, String groupId) {
         // Check a same request already exists
@@ -211,5 +223,25 @@ public class FileCopyRequestService {
 
     public FileCopyRequest update(FileCopyRequest request) {
         return copyRepository.save(request);
+    }
+
+    /**
+     * Schedule a job to create {@link FileCopyRequest}s for the given criterion
+     * @param storageLocationId
+     * @param destinationStorageId
+     * @param pathToCopy
+     * @return
+     */
+    public JobInfo scheduleJob(String storageLocationId, String destinationStorageId, String pathToCopy) {
+        Set<JobParameter> parameters = Sets.newHashSet();
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_SOURCE_ID, storageLocationId));
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_DESTINATION_ID,
+                destinationStorageId));
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.PATH_TO_COPY, pathToCopy));
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_COPY_JOB.getPriority(),
+                parameters, authResolver.getUser(), FileCopyRequestsCreatorJob.class.getName()));
+        LOGGER.info("[COPY REQUESTS] Job scheduled to copy files from {} to {} for path {}.", storageLocationId,
+                    destinationStorageId, pathToCopy);
+        return jobInfo;
     }
 }
