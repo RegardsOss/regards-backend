@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.rest.plugin.SimpleOnlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageService;
@@ -84,9 +85,62 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     }
 
     @Test
-    public void retreive() {
+    public void retreiveAll() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         performDefaultGet(StorageLocationController.BASE_PATH, requestBuilderCustomizer, "Expect ok status.");
+    }
+
+    @Test
+    public void retreiveOne() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        performDefaultGet(StorageLocationController.BASE_PATH + StorageLocationController.ID_PATH,
+                          requestBuilderCustomizer, "Expect ok status.", TARGET_STORAGE);
+    }
+
+    @Test
+    public void retryErrors() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        performDefaultGet(StorageLocationController.BASE_PATH + StorageLocationController.ID_PATH
+                + StorageLocationController.FILES + StorageLocationController.RETRY, requestBuilderCustomizer,
+                          "Expect ok status.", TARGET_STORAGE, FileRequestType.STORAGE.toString());
+    }
+
+    @Test
+    public void copyFiles() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.addParameter(StorageLocationController.PATH_COPY_PARAM, "/dir/one");
+        requestBuilderCustomizer.addParameter(StorageLocationController.COPY_LOCATION_DEST_PARAM, "somewhere");
+        performDefaultGet(StorageLocationController.BASE_PATH + StorageLocationController.ID_PATH
+                + StorageLocationController.FILES + StorageLocationController.COPY, requestBuilderCustomizer,
+                          "Expect ok status.", TARGET_STORAGE);
+    }
+
+    @Test
+    public void delete() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        performDefaultDelete(StorageLocationController.BASE_PATH + StorageLocationController.ID_PATH,
+                             requestBuilderCustomizer, "Expect ok status.", TARGET_STORAGE);
+    }
+
+    @Test
+    public void deleteFiles() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        performDefaultDelete(StorageLocationController.BASE_PATH + StorageLocationController.ID_PATH
+                + StorageLocationController.FILES, requestBuilderCustomizer, "Expect ok status.", TARGET_STORAGE);
+    }
+
+    @Test
+    public void increasePriority() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        performDefaultPut(StorageLocationController.BASE_PATH + StorageLocationController.UP_PATH, null,
+                          requestBuilderCustomizer, "Expect ok status.", TARGET_STORAGE);
+    }
+
+    @Test
+    public void decreasePriority() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        performDefaultPut(StorageLocationController.BASE_PATH + StorageLocationController.DOWN_PATH, null,
+                          requestBuilderCustomizer, "Expect ok status.", TARGET_STORAGE);
     }
 
     private void initDataStoragePluginConfiguration() throws ModuleException {

@@ -58,13 +58,17 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     public static final String ID_PATH = "/{id}";
 
-    public static final String COPY = "/copy/{pathToCopy}";
+    public static final String COPY = "/copy";
 
     public static final String RETRY = "retry/{type}";
 
     public static final String UP_PATH = ID_PATH + "/up";
 
     public static final String DOWN_PATH = ID_PATH + "/down";
+
+    public static final String PATH_COPY_PARAM = "pathToCopy";
+
+    public static final String COPY_LOCATION_DEST_PARAM = "destination";
 
     @Autowired
     private StorageLocationService service;
@@ -75,12 +79,19 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @Autowired
     private IResourceService resourceService;
 
-    /**
-     * TODO :
-     * - Delete request in errors
-     * - Update storage configuration
-     * - Create storage configuration
-     */
+    @RequestMapping(method = RequestMethod.POST)
+    @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
+    public ResponseEntity<Resource<StorageLocationDTO>> configureLocation(StorageLocationDTO storageLocation)
+            throws ModuleException {
+        return new ResponseEntity<>(toResource(service.configureLocation(storageLocation)), HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.PUT, path = ID_PATH)
+    @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
+    public ResponseEntity<Resource<StorageLocationDTO>> updateLocationConfiguration(StorageLocationDTO storageLocation)
+            throws ModuleException {
+        return new ResponseEntity<>(toResource(service.updateLocationConfiguration(storageLocation)), HttpStatus.OK);
+    }
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
@@ -90,13 +101,14 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     @RequestMapping(method = RequestMethod.GET, path = ID_PATH)
     @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
-    public ResponseEntity<Resource<StorageLocationDTO>> retrieve(String storageId) throws ModuleException {
+    public ResponseEntity<Resource<StorageLocationDTO>> retrieve(@PathVariable(name = "id") String storageId)
+            throws ModuleException {
         return new ResponseEntity<>(toResource(service.getById(storageId)), HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.DELETE)
+    @RequestMapping(method = RequestMethod.DELETE, path = ID_PATH)
     @ResourceAccess(description = "Delete storage location", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> delete(String storageLocationId) throws ModuleException {
+    public ResponseEntity<Void> delete(@PathVariable(name = "id") String storageLocationId) throws ModuleException {
         service.delete(storageLocationId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -104,8 +116,12 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @RequestMapping(method = RequestMethod.DELETE, path = ID_PATH + FILES)
     @ResourceAccess(description = "Delete all files of the storage location", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> deleteFiles(@PathVariable(name = "id") String storageLocationId,
-            @RequestParam(name = "force") Boolean forceDelete) throws ModuleException {
-        service.deleteFiles(storageLocationId, forceDelete);
+            @RequestParam(name = "force", required = false) Boolean forceDelete) throws ModuleException {
+        if (forceDelete != null) {
+            service.deleteFiles(storageLocationId, forceDelete);
+        } else {
+            service.deleteFiles(storageLocationId, false);
+        }
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -113,8 +129,8 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @ResourceAccess(description = "Copy files for a given path of a storage location to an other one",
             role = DefaultRole.ADMIN)
     public ResponseEntity<Void> copyFiles(@PathVariable(name = "id") String storageLocationId,
-            @RequestParam(name = "pathToCopy") String pathToCopy,
-            @RequestParam(name = "destination") String destinationStorageId) throws ModuleException {
+            @RequestParam(name = PATH_COPY_PARAM) String pathToCopy,
+            @RequestParam(name = COPY_LOCATION_DEST_PARAM) String destinationStorageId) throws ModuleException {
         service.copyFiles(storageLocationId, destinationStorageId, pathToCopy);
         return new ResponseEntity<>(HttpStatus.OK);
     }

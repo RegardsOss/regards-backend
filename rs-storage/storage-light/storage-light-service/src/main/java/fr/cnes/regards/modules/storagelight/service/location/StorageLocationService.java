@@ -372,4 +372,25 @@ public class StorageLocationService {
         }
     }
 
+    public StorageLocationDTO configureLocation(StorageLocationDTO storageLocation) throws ModuleException {
+        PrioritizedStorage newConf = pStorageService
+                .create(storageLocation.getConfiguration().getStorageConfiguration());
+        StorageLocationType type = newConf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
+                : StorageLocationType.NEALINE;
+        return StorageLocationDTO.build(storageLocation.getId(), type, 0L, 0L, 0L, 0L, 0L, newConf);
+    }
+
+    /**
+     * @param storageLocation
+     * @return
+     * @throws ModuleException
+     */
+    public StorageLocationDTO updateLocationConfiguration(StorageLocationDTO storageLocation) throws ModuleException {
+        PrioritizedStorage newConf = pStorageService.update(storageLocation.getConfiguration().getId(),
+                                                            storageLocation.getConfiguration());
+        StorageLocationType type = newConf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
+                : StorageLocationType.NEALINE;
+        return StorageLocationDTO.build(storageLocation.getId(), type, 0L, 0L, 0L, 0L, 0L, newConf);
+    }
+
 }
