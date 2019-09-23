@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -39,7 +38,7 @@ public class ConfigurationControllerIT extends AbstractRegardsTransactionalIT {
 	@Test
     public void getNonExistingConfiguration() {
         performDefaultGet("/configuration/{applicationId}", 
-        		customizer().expectStatusNotFound(), "Error message", DEFAULT_APPLICATION_ID);
+        		customizer().expectStatusNoContent(), "Error message", DEFAULT_APPLICATION_ID);
     }
 	
 	@Test
@@ -59,53 +58,27 @@ public class ConfigurationControllerIT extends AbstractRegardsTransactionalIT {
 		toAdd.setId(1L);
 		toAdd.setConfiguration(CONFIGURATION_VALUE);
 		toAdd.setApplicationId(DEFAULT_APPLICATION_ID);
-        performDefaultPost("/configuration/{applicationId}", toAdd,
+        performDefaultPost("/configuration/{applicationId}", CONFIGURATION_VALUE,
         		customizer().expectStatusOk(), "Error message", DEFAULT_APPLICATION_ID);
         assertEquals(toAdd, configurationRepo.findAll().get(0));
     }
-	
-	/**
-	 * 
-	 * Two post on adding method we will expect an error
-	 */
-	@Test
-    public void addTwoConfigurations() {
-		Configuration toAdd = new Configuration();
-		toAdd.setId(1L);
-		toAdd.setConfiguration(CONFIGURATION_VALUE);
-		toAdd.setApplicationId(DEFAULT_APPLICATION_ID);
-		// the first should work
-        performDefaultPost("/configuration/{applicationId}", toAdd,
-        		customizer().expectStatusOk(), "Error message", DEFAULT_APPLICATION_ID);
-        // the second should fail
-        performDefaultPost("/configuration/{applicationId}", toAdd,
-        		customizer().expectStatus(HttpStatus.INTERNAL_SERVER_ERROR), "Error message", DEFAULT_APPLICATION_ID);
-    }
-	
+
 	@Test
     public void updateConfiguration() {
-		Configuration toAdd = new Configuration();
-		toAdd.setId(1L);
-		toAdd.setConfiguration(CONFIGURATION_VALUE);
-		toAdd.setApplicationId(DEFAULT_APPLICATION_ID);
-		performDefaultPost("/configuration/{applicationId}", toAdd,
+		performDefaultPost("/configuration/{applicationId}", CONFIGURATION_VALUE,
         		customizer().expectStatusOk(), "Error message", DEFAULT_APPLICATION_ID);
 		
 		Configuration toUpdate = this.configurationRepo.findByApplicationId(DEFAULT_APPLICATION_ID).get(0);
 		toUpdate.setConfiguration(CONFIGURATION_VALUE + CONFIGURATION_VALUE);
 
-        performDefaultPut("/configuration/{applicationId}", toUpdate,
+        performDefaultPut("/configuration/{applicationId}", CONFIGURATION_VALUE + CONFIGURATION_VALUE,
         		customizer().expectStatusOk(), "Error message", DEFAULT_APPLICATION_ID);
         assertEquals(toUpdate, configurationRepo.findAll().get(0));
     }
 	
 	@Test
     public void updateNonExistingConfiguration() {
-		Configuration toUpdate= new Configuration();
-		toUpdate.setId(1L);
-		toUpdate.setConfiguration(CONFIGURATION_VALUE);
-		toUpdate.setApplicationId(DEFAULT_APPLICATION_ID);
-		performDefaultPut("/configuration/{applicationId}", toUpdate,
-        		customizer().expectStatusNotFound(), "Error message", DEFAULT_APPLICATION_ID);
+		performDefaultPut("/configuration/{applicationId}", CONFIGURATION_VALUE,
+        		customizer().expectStatusNoContent(), "Error message", DEFAULT_APPLICATION_ID);
     }
 }
