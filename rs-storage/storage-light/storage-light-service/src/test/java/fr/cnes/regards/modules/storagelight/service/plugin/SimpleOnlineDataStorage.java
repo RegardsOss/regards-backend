@@ -220,9 +220,4 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
         return true;
     }
 
-    @Override
-    public Long getTotalSpaceInMo() {
-        return 10_000_000L;
-    }
-
 }

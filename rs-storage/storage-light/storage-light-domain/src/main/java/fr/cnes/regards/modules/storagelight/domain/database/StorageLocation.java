@@ -60,9 +60,6 @@ public class StorageLocation {
     @Column(name = "total_size")
     private Long totalSizeOfReferencedFiles = 0L;
 
-    @Column(name = "allowed_size")
-    private Long allowedSize = 0L;
-
     @Column(name = "last_update_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastUpdateDate;
@@ -119,13 +116,6 @@ public class StorageLocation {
     }
 
     /**
-     * @return the allowedSize
-     */
-    public Long getAllowedSize() {
-        return allowedSize;
-    }
-
-    /**
      * @return the lastUpdateDate
      */
     public OffsetDateTime getLastUpdateDate() {
@@ -144,13 +134,6 @@ public class StorageLocation {
      */
     public void setTotalSizeOfReferencedFiles(Long totalSizeOfReferencedFiles) {
         this.totalSizeOfReferencedFiles = totalSizeOfReferencedFiles;
-    }
-
-    /**
-     * @param allowedSize the allowedSize to set
-     */
-    public void setAllowedSize(Long allowedSize) {
-        this.allowedSize = allowedSize;
     }
 
     /**

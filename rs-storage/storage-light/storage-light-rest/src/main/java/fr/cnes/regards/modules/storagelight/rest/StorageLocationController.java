@@ -37,11 +37,11 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
+import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
-import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageService;
+import fr.cnes.regards.modules.storagelight.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storagelight.service.location.StorageLocationService;
 
 /**
@@ -74,7 +74,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
     private StorageLocationService service;
 
     @Autowired
-    private PrioritizedStorageService prioriterizedStorageService;
+    private StorageLocationConfigurationService prioriterizedStorageService;
 
     @Autowired
     private IResourceService resourceService;
@@ -181,7 +181,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     private Resource<StorageLocationDTO> toResourceNearline(StorageLocationDTO location, Object... extras) {
         Resource<StorageLocationDTO> resource = new Resource<>(location);
-        if (!location.getConfiguration().getPriority().equals(PrioritizedStorage.HIGHEST_PRIORITY)) {
+        if (!location.getConfiguration().getPriority().equals(StorageLocationConfiguration.HIGHEST_PRIORITY)) {
             resourceService.addLink(resource, this.getClass(), "increaseStorageLocationPriority", "up",
                                     MethodParamFactory.build(String.class, location.getId()));
         }
@@ -201,7 +201,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     private Resource<StorageLocationDTO> toResourceOnline(StorageLocationDTO location, Object... extras) {
         Resource<StorageLocationDTO> resource = new Resource<>(location);
-        if (!location.getConfiguration().getPriority().equals(PrioritizedStorage.HIGHEST_PRIORITY)) {
+        if (!location.getConfiguration().getPriority().equals(StorageLocationConfiguration.HIGHEST_PRIORITY)) {
             resourceService.addLink(resource, this.getClass(), "increaseStorageLocationPriority", "up",
                                     MethodParamFactory.build(String.class, location.getId()));
         }

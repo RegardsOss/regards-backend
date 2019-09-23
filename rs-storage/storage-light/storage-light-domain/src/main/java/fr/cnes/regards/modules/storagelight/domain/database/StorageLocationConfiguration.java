@@ -27,9 +27,11 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_prioritized_storage", uniqueConstraints = { @UniqueConstraint(name = "uk_priotitized_storage",
-        columnNames = { PrioritizedStorage.STORAGE_TYPE_COLUMN_NAME, PrioritizedStorage.PRIORITY_COLUMN_NAME }) })
-public class PrioritizedStorage implements Comparable<PrioritizedStorage> {
+@Table(name = "t_storage_location_conf",
+        uniqueConstraints = { @UniqueConstraint(name = "uk_priotitized_storage",
+                columnNames = { StorageLocationConfiguration.STORAGE_TYPE_COLUMN_NAME,
+                        StorageLocationConfiguration.PRIORITY_COLUMN_NAME }) })
+public class StorageLocationConfiguration implements Comparable<StorageLocationConfiguration> {
 
     public static final String STORAGE_TYPE_COLUMN_NAME = "storage_type";
 
@@ -58,15 +60,18 @@ public class PrioritizedStorage implements Comparable<PrioritizedStorage> {
     @Column(name = PRIORITY_COLUMN_NAME)
     private Long priority;
 
+    @Column(name = "allocated_size_ko")
+    private Long allocatedSizeInKo;
+
     /**
      * Default constructor to be used only by serialization process or JPA
      */
     @SuppressWarnings("unused")
-    private PrioritizedStorage() {
+    private StorageLocationConfiguration() {
     }
 
-    public PrioritizedStorage(PluginConfiguration dataStorageConfiguration, Long priority,
-            StorageType dataStorageType) {
+    public StorageLocationConfiguration(PluginConfiguration dataStorageConfiguration, Long priority,
+            Long allocatedSizeInKo, StorageType dataStorageType) {
         this.storageConfiguration = dataStorageConfiguration;
         this.priority = priority;
         this.storageType = dataStorageType;
@@ -104,6 +109,14 @@ public class PrioritizedStorage implements Comparable<PrioritizedStorage> {
         this.storageType = storageType;
     }
 
+    public Long getAllocatedSizeInKo() {
+        return allocatedSizeInKo;
+    }
+
+    public void setAllocatedSizeInKo(Long allocatedSizeInKo) {
+        this.allocatedSizeInKo = allocatedSizeInKo;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -113,7 +126,7 @@ public class PrioritizedStorage implements Comparable<PrioritizedStorage> {
             return false;
         }
 
-        PrioritizedStorage that = (PrioritizedStorage) o;
+        StorageLocationConfiguration that = (StorageLocationConfiguration) o;
 
         return storageConfiguration != null ? storageConfiguration.equals(that.storageConfiguration)
                 : that.storageConfiguration == null;
@@ -125,7 +138,7 @@ public class PrioritizedStorage implements Comparable<PrioritizedStorage> {
     }
 
     @Override
-    public int compareTo(PrioritizedStorage o) {
+    public int compareTo(StorageLocationConfiguration o) {
         // we implement a strict order on priorities so just to keep coherence with equals,
         // if we compare to ourselves compareTo returns 0
         if (this.equals(o)) {

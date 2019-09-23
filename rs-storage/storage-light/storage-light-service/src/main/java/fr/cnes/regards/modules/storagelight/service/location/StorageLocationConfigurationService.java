@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IPrioritizedStorageRepository;
-import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
+import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
@@ -36,9 +35,9 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
  */
 @Service
 @RegardsTransactional
-public class PrioritizedStorageService {
+public class StorageLocationConfigurationService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PrioritizedStorageService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StorageLocationConfigurationService.class);
 
     @Autowired
     private IPluginService pluginService;
@@ -49,10 +48,8 @@ public class PrioritizedStorageService {
     @Autowired
     private IFileReferenceRepository fileRefereceRepository;
 
-    @Autowired
-    private EntityManager em;
-
-    public PrioritizedStorage create(PluginConfiguration toBeCreated) throws ModuleException {
+    public StorageLocationConfiguration create(PluginConfiguration toBeCreated, Long allocatedSizeInKo)
+            throws ModuleException {
         PluginConfiguration storageConf = pluginService.savePluginConfiguration(toBeCreated);
         StorageType storageType;
         if (storageConf.getInterfaceNames().contains(IOnlineStorageLocation.class.getName())) {
@@ -66,15 +63,15 @@ public class PrioritizedStorageService {
                             INearlineStorageLocation.class.getName()));
         }
         Long actualLowestPriority = getLowestPriority(storageType);
-        return prioritizedStorageRepo.save(new PrioritizedStorage(storageConf,
-                actualLowestPriority == null ? 0 : actualLowestPriority + 1, storageType));
+        return prioritizedStorageRepo.save(new StorageLocationConfiguration(storageConf,
+                actualLowestPriority == null ? 0 : actualLowestPriority + 1, allocatedSizeInKo, storageType));
     }
 
-    public List<PrioritizedStorage> search(StorageType type) {
+    public List<StorageLocationConfiguration> search(StorageType type) {
         return prioritizedStorageRepo.findAllByStorageTypeOrderByPriorityAsc(type);
     }
 
-    public Optional<PrioritizedStorage> search(String businessId) {
+    public Optional<StorageLocationConfiguration> search(String businessId) {
         return prioritizedStorageRepo.findByStorageConfigurationBusinessId(businessId);
     }
 
@@ -82,15 +79,16 @@ public class PrioritizedStorageService {
      * Return the highest prioritized storage location for the given storage location list and the given type.
      * This method can return an empty optional value in case no configuration match the given storage location list.
      */
-    public Optional<PrioritizedStorage> searchActiveHigherPriority(Collection<String> confLabels, StorageType type) {
-        Optional<PrioritizedStorage> storage = Optional.empty();
-        Set<PrioritizedStorage> confs;
+    public Optional<StorageLocationConfiguration> searchActiveHigherPriority(Collection<String> confLabels,
+            StorageType type) {
+        Optional<StorageLocationConfiguration> storage = Optional.empty();
+        Set<StorageLocationConfiguration> confs;
         if (type != null) {
             confs = prioritizedStorageRepo.findByStorageTypeAndStorageConfigurationLabelIn(type, confLabels);
         } else {
             confs = prioritizedStorageRepo.findByStorageConfigurationLabelIn(confLabels);
         }
-        for (PrioritizedStorage c : confs) {
+        for (StorageLocationConfiguration c : confs) {
             if (c.getStorageConfiguration().isActive()
                     && (!storage.isPresent() || (c.getPriority() < storage.get().getPriority()))) {
                 storage = Optional.of(c);
@@ -103,12 +101,12 @@ public class PrioritizedStorageService {
      * Return the highest prioritized storage location for the given storage location list.
      * This method can return an empty optional value in case no configuration match the given storage location list.
      */
-    public Optional<PrioritizedStorage> searchActiveHigherPriority(Set<String> confLabels) {
+    public Optional<StorageLocationConfiguration> searchActiveHigherPriority(Set<String> confLabels) {
         return this.searchActiveHigherPriority(confLabels, null);
     }
 
     @Nullable
-    public PrioritizedStorage getFirstActive(StorageType storageType) {
+    public StorageLocationConfiguration getFirstActive(StorageType storageType) {
         return prioritizedStorageRepo.findFirstByStorageTypeAndStorageConfigurationActiveOrderByPriorityAsc(storageType,
                                                                                                             true);
     }
@@ -119,9 +117,9 @@ public class PrioritizedStorageService {
      * @throws EntityNotFoundException
      */
     public void increasePriority(Long prioritizedDataStorageId) throws EntityNotFoundException {
-        PrioritizedStorage actual = retrieve(prioritizedDataStorageId);
-        PrioritizedStorage other = prioritizedStorageRepo.findOneByStorageTypeAndPriority(actual.getStorageType(),
-                                                                                          actual.getPriority() - 1);
+        StorageLocationConfiguration actual = retrieve(prioritizedDataStorageId);
+        StorageLocationConfiguration other = prioritizedStorageRepo
+                .findOneByStorageTypeAndPriority(actual.getStorageType(), actual.getPriority() - 1);
         // is there someone which has a greater priority?
         if (other != null) {
             Long actualPriority = actual.getPriority();
@@ -142,9 +140,9 @@ public class PrioritizedStorageService {
      * @throws EntityNotFoundException
      */
     public void decreasePriority(Long prioritizedDataStorageId) throws EntityNotFoundException {
-        PrioritizedStorage actual = retrieve(prioritizedDataStorageId);
-        PrioritizedStorage other = prioritizedStorageRepo.findOneByStorageTypeAndPriority(actual.getStorageType(),
-                                                                                          actual.getPriority() + 1);
+        StorageLocationConfiguration actual = retrieve(prioritizedDataStorageId);
+        StorageLocationConfiguration other = prioritizedStorageRepo
+                .findOneByStorageTypeAndPriority(actual.getStorageType(), actual.getPriority() + 1);
         // is there someone which has a lower priority?
         if (other != null) {
             Long actualPriority = actual.getPriority();
@@ -160,30 +158,30 @@ public class PrioritizedStorageService {
     }
 
     /**
-     * Retrieve a {@link PrioritizedStorage} by id.
+     * Retrieve a {@link StorageLocationConfiguration} by id.
      * @param id
-     * @return {@link PrioritizedStorage}
+     * @return {@link StorageLocationConfiguration}
      * @throws EntityNotFoundException
      */
-    public PrioritizedStorage retrieve(Long id) throws EntityNotFoundException {
-        Optional<PrioritizedStorage> actual = prioritizedStorageRepo.findById(id);
+    public StorageLocationConfiguration retrieve(Long id) throws EntityNotFoundException {
+        Optional<StorageLocationConfiguration> actual = prioritizedStorageRepo.findById(id);
         if (!actual.isPresent()) {
-            throw new EntityNotFoundException(id, PrioritizedStorage.class);
+            throw new EntityNotFoundException(id, StorageLocationConfiguration.class);
         }
         return actual.get();
     }
 
     /**
-     * Update a {@link PrioritizedStorage} by id.
+     * Update a {@link StorageLocationConfiguration} by id.
      * @param id existing conf id
-     * @param {@link PrioritizedStorage} new conf
-     * @return {@link PrioritizedStorage}
+     * @param {@link StorageLocationConfiguration} new conf
+     * @return {@link StorageLocationConfiguration}
      * @throws EntityNotFoundException
      */
-    public PrioritizedStorage update(Long id, PrioritizedStorage updated) throws ModuleException {
-        PrioritizedStorage oldOne = retrieve(id);
+    public StorageLocationConfiguration update(Long id, StorageLocationConfiguration updated) throws ModuleException {
+        StorageLocationConfiguration oldOne = retrieve(id);
         if (!id.equals(updated.getId())) {
-            throw new EntityInconsistentIdentifierException(id, updated.getId(), PrioritizedStorage.class);
+            throw new EntityInconsistentIdentifierException(id, updated.getId(), StorageLocationConfiguration.class);
         }
 
         PluginConfUpdatable updatable = null;
@@ -213,27 +211,26 @@ public class PrioritizedStorageService {
             return prioritizedStorageRepo.save(oldOne);
         } else {
             throw new EntityOperationForbiddenException(oldOne.getStorageConfiguration().getLabel(),
-                    PrioritizedStorage.class, updatable.getUpdateNotAllowedReason());
+                    StorageLocationConfiguration.class, updatable.getUpdateNotAllowedReason());
         }
     }
 
     /**
-     * Delete a {@link PrioritizedStorage} by id.
+     * Delete a {@link StorageLocationConfiguration} by id.
      * @param id
      * @throws ModuleException
      */
     public void delete(Long pluginConfId) throws ModuleException {
-        Optional<PrioritizedStorage> toDeleteOpt = prioritizedStorageRepo.findById(pluginConfId);
+        Optional<StorageLocationConfiguration> toDeleteOpt = prioritizedStorageRepo.findById(pluginConfId);
         if (toDeleteOpt.isPresent()) {
             // first we need to increase all the priorities of those which are less prioritized than the one to delete
-            PrioritizedStorage toDelete = toDeleteOpt.get();
-            Set<PrioritizedStorage> lessPrioritizeds = prioritizedStorageRepo
+            StorageLocationConfiguration toDelete = toDeleteOpt.get();
+            Set<StorageLocationConfiguration> lessPrioritizeds = prioritizedStorageRepo
                     .findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(toDelete.getStorageType(),
                                                                                   toDelete.getPriority());
             prioritizedStorageRepo.delete(toDelete);
             pluginService.deletePluginConfiguration(toDelete.getStorageConfiguration().getBusinessId());
-            em.flush();
-            for (PrioritizedStorage lessPrioritized : lessPrioritizeds) {
+            for (StorageLocationConfiguration lessPrioritized : lessPrioritizeds) {
                 lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);
             }
             prioritizedStorageRepo.saveAll(lessPrioritizeds);
@@ -244,7 +241,7 @@ public class PrioritizedStorageService {
      * Return the actual lowest priority value for the given storage type
      */
     public Long getLowestPriority(StorageType storageType) {
-        PrioritizedStorage lowestPrioritizedStorage = prioritizedStorageRepo
+        StorageLocationConfiguration lowestPrioritizedStorage = prioritizedStorageRepo
                 .findFirstByStorageTypeOrderByPriorityDesc(storageType);
         if (lowestPrioritizedStorage == null) {
             // in case there is no one yet, lets give it the highest priority

@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.dto;
 
-import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
+import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 
 /**
  * @author sbinda
@@ -40,11 +40,11 @@ public class StorageLocationDTO {
 
     private Long nbDeletionError;
 
-    private PrioritizedStorage configuration;
+    private StorageLocationConfiguration configuration;
 
     public static StorageLocationDTO build(String id, StorageLocationType type, Long nbFilesStored,
             Long totalStoredFilesSizeKo, Long sizeLimitKo, Long nbStorageError, Long nbDeletionError,
-            PrioritizedStorage configuration) {
+            StorageLocationConfiguration configuration) {
         StorageLocationDTO dto = new StorageLocationDTO();
         dto.id = id;
         dto.type = type;
@@ -85,7 +85,7 @@ public class StorageLocationDTO {
         return nbDeletionError;
     }
 
-    public PrioritizedStorage getConfiguration() {
+    public StorageLocationConfiguration getConfiguration() {
         return configuration;
     }
 

@@ -46,12 +46,12 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.storagelight.domain.DownloadableFile;
 import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
+import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.cache.CacheService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheRequestService;
-import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageService;
+import fr.cnes.regards.modules.storagelight.service.location.StorageLocationConfigurationService;
 
 /**
  * @author sbinda
@@ -64,7 +64,7 @@ public class FileDownloadService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDownloadService.class);
 
     @Autowired
-    private PrioritizedStorageService prioritizedStorageService;
+    private StorageLocationConfigurationService prioritizedStorageService;
 
     @Autowired
     private IPluginService pluginService;
@@ -82,7 +82,7 @@ public class FileDownloadService {
      * Download a file thanks to its checksum. If the file is stored in multiple storage location,
      * this method decide which one to retrieve by : <ul>
      *  <li>Only Files on an {@link IOnlineStorageLocation} location can be download</li>
-     *  <li>Use the {@link PrioritizedStorage} configuration with the highest priority</li>
+     *  <li>Use the {@link StorageLocationConfiguration} configuration with the highest priority</li>
      * </ul>
      *
      * @param checksum Checksum of the file to download
@@ -98,7 +98,7 @@ public class FileDownloadService {
         Map<String, FileReference> storages = fileRefs.stream()
                 .collect(Collectors.toMap(f -> f.getLocation().getStorage(), f -> f));
         // 2. get the storage location with the higher priority
-        Optional<PrioritizedStorage> storageLocation = prioritizedStorageService
+        Optional<StorageLocationConfiguration> storageLocation = prioritizedStorageService
                 .searchActiveHigherPriority(storages.keySet());
         if (storageLocation.isPresent()) {
             PluginConfiguration conf = storageLocation.get().getStorageConfiguration();
@@ -122,7 +122,7 @@ public class FileDownloadService {
      */
     @Transactional(noRollbackFor = { EntityNotFoundException.class })
     public InputStream downloadFileReference(FileReference fileToDownload) throws ModuleException {
-        Optional<PrioritizedStorage> conf = prioritizedStorageService.search(fileToDownload.getLocation().getStorage());
+        Optional<StorageLocationConfiguration> conf = prioritizedStorageService.search(fileToDownload.getLocation().getStorage());
         if (conf.isPresent()) {
             switch (conf.get().getStorageType()) {
                 case NEARLINE:
@@ -147,7 +147,7 @@ public class FileDownloadService {
      * @throws ModuleException
      */
     @Transactional(readOnly = true)
-    private InputStream downloadOnline(FileReference fileToDownload, PrioritizedStorage storagePluginConf)
+    private InputStream downloadOnline(FileReference fileToDownload, StorageLocationConfiguration storagePluginConf)
             throws ModuleException {
         try {
             IOnlineStorageLocation plugin = pluginService

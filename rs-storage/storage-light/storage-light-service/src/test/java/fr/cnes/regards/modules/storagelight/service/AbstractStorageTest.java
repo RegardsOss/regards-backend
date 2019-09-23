@@ -66,7 +66,7 @@ import fr.cnes.regards.modules.storagelight.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
+import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
@@ -81,7 +81,7 @@ import fr.cnes.regards.modules.storagelight.service.file.request.FileCopyRequest
 import fr.cnes.regards.modules.storagelight.service.file.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
-import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageService;
+import fr.cnes.regards.modules.storagelight.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storagelight.service.location.StoragePluginConfigurationHandler;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
@@ -97,6 +97,8 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected static final String ONLINE_CONF_LABEL = "target";
 
     protected static final String NEARLINE_CONF_LABEL = "NL_target";
+
+    private static final Long ALLOCATED_SIZE_IN_KO = 1_000_000L;
 
     @SpyBean
     protected FileReferenceEventPublisher fileEventPublisher;
@@ -162,7 +164,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected IGroupRequestInfoRepository grpReqInfoRepo;
 
     @Autowired
-    protected PrioritizedStorageService prioritizedDataStorageService;
+    protected StorageLocationConfigurationService prioritizedDataStorageService;
 
     protected String originUrl = "file://in/this/directory/file.test";
 
@@ -206,7 +208,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
 
     }
 
-    protected PrioritizedStorage initDataStoragePluginConfiguration(String label) throws ModuleException {
+    protected StorageLocationConfiguration initDataStoragePluginConfiguration(String label) throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
             Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
@@ -219,13 +221,13 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
             dataStorageConf.setBusinessId(label);
-            return prioritizedDataStorageService.create(dataStorageConf);
+            return prioritizedDataStorageService.create(dataStorageConf, ALLOCATED_SIZE_IN_KO);
         } catch (IOException | URISyntaxException e) {
             throw new ModuleException(e.getMessage(), e);
         }
     }
 
-    protected PrioritizedStorage initDataStorageNLPluginConfiguration(String label) throws ModuleException {
+    protected StorageLocationConfiguration initDataStorageNLPluginConfiguration(String label) throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleNearlineDataStorage.class);
             Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
@@ -239,14 +241,14 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
             dataStorageConf.setBusinessId(label);
-            return prioritizedDataStorageService.create(dataStorageConf);
+            return prioritizedDataStorageService.create(dataStorageConf, ALLOCATED_SIZE_IN_KO);
         } catch (IOException | URISyntaxException e) {
             throw new ModuleException(e.getMessage(), e);
         }
     }
 
     protected void updatePluginConfForError(String newErrorPattern) throws ModuleException {
-        PrioritizedStorage conf = prioritizedDataStorageService.getFirstActive(StorageType.ONLINE);
+        StorageLocationConfiguration conf = prioritizedDataStorageService.getFirstActive(StorageType.ONLINE);
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                                         getBaseStorageLocation().toString()),

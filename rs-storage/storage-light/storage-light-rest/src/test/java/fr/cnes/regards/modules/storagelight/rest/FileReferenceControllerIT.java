@@ -51,7 +51,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.rest.plugin.SimpleOnlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
-import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageService;
+import fr.cnes.regards.modules.storagelight.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storagelight.service.location.StoragePluginConfigurationHandler;
 
 /**
@@ -69,7 +69,7 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
     private FileStorageRequestService storeReqService;
 
     @Autowired
-    private PrioritizedStorageService prioritizedDataStorageService;
+    private StorageLocationConfigurationService prioritizedDataStorageService;
 
     @Autowired
     protected StoragePluginConfigurationHandler storagePlgConfHandler;
@@ -142,7 +142,7 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, TARGET_STORAGE, parameters, 0);
             dataStorageConf.setIsActive(true);
             dataStorageConf.setBusinessId(TARGET_STORAGE);
-            prioritizedDataStorageService.create(dataStorageConf);
+            prioritizedDataStorageService.create(dataStorageConf, 1_000_000L);
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }

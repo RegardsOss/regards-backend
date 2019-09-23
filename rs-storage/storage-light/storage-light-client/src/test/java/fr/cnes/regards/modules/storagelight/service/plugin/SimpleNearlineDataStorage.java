@@ -250,10 +250,4 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     public boolean allowPhysicalDeletion() {
         return true;
     }
-
-    @Override
-    public Long getTotalSpaceInMo() {
-        return 10_000_000L;
-    }
-
 }

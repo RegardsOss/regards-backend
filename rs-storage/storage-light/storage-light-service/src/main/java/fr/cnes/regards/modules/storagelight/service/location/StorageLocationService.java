@@ -48,8 +48,8 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storagelight.dao.IStorageLocationRepository;
 import fr.cnes.regards.modules.storagelight.dao.IStorageMonitoringRepository;
-import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocation;
+import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoring;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
@@ -108,7 +108,7 @@ public class StorageLocationService {
     private FileCacheRequestService cacheReqService;
 
     @Autowired
-    private PrioritizedStorageService pStorageService;
+    private StorageLocationConfigurationService pLocationConfService;
 
     @Value("${regards.storage.data.storage.threshold.percent:70}")
     private Integer threshold;
@@ -128,11 +128,11 @@ public class StorageLocationService {
      */
     public StorageLocationDTO getById(String storageId) throws EntityNotFoundException {
         Optional<StorageLocation> oLoc = storageLocationRepo.findByName(storageId);
-        Optional<PrioritizedStorage> oConf = pStorageService.search(storageId);
+        Optional<StorageLocationConfiguration> oConf = pLocationConfService.search(storageId);
         Long nbStorageError = storageReqService.count(storageId, FileRequestStatus.ERROR);
         Long nbDeletionError = deletionReqService.count(storageId, FileRequestStatus.ERROR);
         if (oConf.isPresent() && oLoc.isPresent()) {
-            PrioritizedStorage conf = oConf.get();
+            StorageLocationConfiguration conf = oConf.get();
             StorageLocation loc = oLoc.get();
             StorageLocationType type = conf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
                     : StorageLocationType.NEALINE;
@@ -140,7 +140,7 @@ public class StorageLocationService {
                                             loc.getNumberOfReferencedFiles(), loc.getTotalSizeOfReferencedFiles(), null,
                                             nbStorageError, nbDeletionError, conf);
         } else if (oConf.isPresent()) {
-            PrioritizedStorage conf = oConf.get();
+            StorageLocationConfiguration conf = oConf.get();
             StorageLocationType type = conf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
                     : StorageLocationType.NEALINE;
             return StorageLocationDTO.build(conf.getStorageConfiguration().getBusinessId(), type, null, null, null,
@@ -164,10 +164,10 @@ public class StorageLocationService {
         Map<String, StorageLocation> monitoredLocations = storageLocationRepo.findAll().stream()
                 .collect(Collectors.toMap(l -> l.getName(), l -> l));
         // Get all non monitored locations
-        List<PrioritizedStorage> onlines = pStorageService.search(StorageType.ONLINE);
-        List<PrioritizedStorage> nearlines = pStorageService.search(StorageType.NEARLINE);
+        List<StorageLocationConfiguration> onlines = pLocationConfService.search(StorageType.ONLINE);
+        List<StorageLocationConfiguration> nearlines = pLocationConfService.search(StorageType.NEARLINE);
         // Handle all online storage configured
-        for (PrioritizedStorage online : onlines) {
+        for (StorageLocationConfiguration online : onlines) {
             Long nbStorageError = storageReqService.count(online.getStorageConfiguration().getLabel(),
                                                           FileRequestStatus.ERROR);
             Long nbDeletionError = deletionReqService.count(online.getStorageConfiguration().getLabel(),
@@ -186,7 +186,7 @@ public class StorageLocationService {
             }
         }
         // Handle all nearlines storage configured
-        for (PrioritizedStorage nearline : nearlines) {
+        for (StorageLocationConfiguration nearline : nearlines) {
             Long nbStorageError = storageReqService.count(nearline.getStorageConfiguration().getLabel(),
                                                           FileRequestStatus.ERROR);
             Long nbDeletionError = deletionReqService.count(nearline.getStorageConfiguration().getLabel(),
@@ -237,6 +237,7 @@ public class StorageLocationService {
             storage.setLastUpdateDate(monitoringDate);
             storage.setTotalSizeOfReferencedFiles(storage.getTotalSizeOfReferencedFiles() + agg.getUsedSize());
             storage.setNumberOfReferencedFiles(storage.getNumberOfReferencedFiles() + agg.getNumberOfFileReference());
+
             if ((storageMonitoring.getLastFileReferenceIdMonitored() == null)
                     || (storageMonitoring.getLastFileReferenceIdMonitored() < agg.getLastFileReferenceId())) {
                 storageMonitoring.setLastFileReferenceIdMonitored(agg.getLastFileReferenceId());
@@ -244,9 +245,11 @@ public class StorageLocationService {
             storageLocationRepo.save(storage);
 
             // Check for occupation ratio limit reached
-            if (storage.getAllowedSize() > 0) {
-                Double ratio = (Double.valueOf(storage.getTotalSizeOfReferencedFiles()) / storage.getAllowedSize())
-                        * 100;
+            Optional<StorageLocationConfiguration> conf = pLocationConfService.search(agg.getStorage());
+            if (conf.isPresent() && (conf.get().getAllocatedSizeInKo() != null)
+                    && (conf.get().getAllocatedSizeInKo() > 0L)) {
+                Double ratio = (Double.valueOf(storage.getTotalSizeOfReferencedFiles())
+                        / (conf.get().getAllocatedSizeInKo() * 1024L)) * 100;
                 if (ratio >= criticalThreshold) {
                     String message = String
                             .format("Storage location %s has reach its disk usage critical threshold. %nActual occupation: %.2f%%, critical threshold: %s%%",
@@ -285,11 +288,11 @@ public class StorageLocationService {
      * @throws EntityNotFoundException
      */
     public void increasePriority(String storageLocationId) throws EntityNotFoundException {
-        Optional<PrioritizedStorage> pStorage = pStorageService.search(storageLocationId);
+        Optional<StorageLocationConfiguration> pStorage = pLocationConfService.search(storageLocationId);
         if (pStorage.isPresent()) {
-            pStorageService.increasePriority(pStorage.get().getId());
+            pLocationConfService.increasePriority(pStorage.get().getId());
         } else {
-            throw new EntityNotFoundException(storageLocationId, PrioritizedStorage.class);
+            throw new EntityNotFoundException(storageLocationId, StorageLocationConfiguration.class);
         }
     }
 
@@ -299,11 +302,11 @@ public class StorageLocationService {
      * @throws EntityNotFoundException
      */
     public void decreasePriority(String storageLocationId) throws EntityNotFoundException {
-        Optional<PrioritizedStorage> pStorage = pStorageService.search(storageLocationId);
+        Optional<StorageLocationConfiguration> pStorage = pLocationConfService.search(storageLocationId);
         if (pStorage.isPresent()) {
-            pStorageService.decreasePriority(pStorage.get().getId());
+            pLocationConfService.decreasePriority(pStorage.get().getId());
         } else {
-            throw new EntityNotFoundException(storageLocationId, PrioritizedStorage.class);
+            throw new EntityNotFoundException(storageLocationId, StorageLocationConfiguration.class);
         }
     }
 
@@ -315,10 +318,10 @@ public class StorageLocationService {
      */
     public void delete(String storageLocationId) throws ModuleException {
         // Delete storage location plugin configuration
-        Optional<PrioritizedStorage> pStorageLocation = pStorageService.search(storageLocationId);
+        Optional<StorageLocationConfiguration> pStorageLocation = pLocationConfService.search(storageLocationId);
         if (pStorageLocation.isPresent()) {
             // If a storage configuration is associated, delete it.
-            pStorageService.delete(pStorageLocation.get().getId());
+            pLocationConfService.delete(pStorageLocation.get().getId());
         }
         // Delete informations in storage locations
         storageLocationRepo.deleteByName(storageLocationId);
@@ -373,8 +376,9 @@ public class StorageLocationService {
     }
 
     public StorageLocationDTO configureLocation(StorageLocationDTO storageLocation) throws ModuleException {
-        PrioritizedStorage newConf = pStorageService
-                .create(storageLocation.getConfiguration().getStorageConfiguration());
+        StorageLocationConfiguration newConf = pLocationConfService
+                .create(storageLocation.getConfiguration().getStorageConfiguration(),
+                        storageLocation.getConfiguration().getAllocatedSizeInKo());
         StorageLocationType type = newConf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
                 : StorageLocationType.NEALINE;
         return StorageLocationDTO.build(storageLocation.getId(), type, 0L, 0L, 0L, 0L, 0L, newConf);
@@ -386,8 +390,8 @@ public class StorageLocationService {
      * @throws ModuleException
      */
     public StorageLocationDTO updateLocationConfiguration(StorageLocationDTO storageLocation) throws ModuleException {
-        PrioritizedStorage newConf = pStorageService.update(storageLocation.getConfiguration().getId(),
-                                                            storageLocation.getConfiguration());
+        StorageLocationConfiguration newConf = pLocationConfService.update(storageLocation.getConfiguration().getId(),
+                                                                           storageLocation.getConfiguration());
         StorageLocationType type = newConf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
                 : StorageLocationType.NEALINE;
         return StorageLocationDTO.build(storageLocation.getId(), type, 0L, 0L, 0L, 0L, 0L, newConf);

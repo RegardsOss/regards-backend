@@ -43,7 +43,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.rest.plugin.SimpleOnlineDataStorage;
-import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageService;
+import fr.cnes.regards.modules.storagelight.service.location.StorageLocationConfigurationService;
 
 /**
  * @author sbinda
@@ -58,7 +58,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     private static final String STORAGE_PATH = "target/ONLINE-STORAGE";
 
     @Autowired
-    private PrioritizedStorageService prioritizedDataStorageService;
+    private StorageLocationConfigurationService prioritizedDataStorageService;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -156,8 +156,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, TARGET_STORAGE, parameters, 0);
             dataStorageConf.setBusinessId(TARGET_STORAGE);
             dataStorageConf.setIsActive(true);
-            prioritizedDataStorageService.create(dataStorageConf);
-            // storagePlgConfHandler.refresh();
+            prioritizedDataStorageService.create(dataStorageConf, 1_000_000L);
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }

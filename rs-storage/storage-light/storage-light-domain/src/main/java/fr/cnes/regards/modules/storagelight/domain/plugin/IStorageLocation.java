@@ -78,12 +78,6 @@ public interface IStorageLocation {
     boolean allowPhysicalDeletion();
 
     /**
-     * Return the application limit size of files stored in the current storage location.
-     * @return
-     */
-    Long getTotalSpaceInMo();
-
-    /**
      * Method called before each configuration update of this plugin to know if the modification is allowed or not.
      * The plugin implementation of this method should ensure that already stored files will always be accessible after
      * the modification.

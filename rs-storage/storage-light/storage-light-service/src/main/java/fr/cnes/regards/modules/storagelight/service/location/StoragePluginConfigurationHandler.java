@@ -39,12 +39,12 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
+import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 
 /**
- * This component handle the pool of {@link IStorageLocation} plugins configuration as known as {@link PrioritizedStorage}.
+ * This component handle the pool of {@link IStorageLocation} plugins configuration as known as {@link StorageLocationConfiguration}.
  *
  * @author Sébastien Binda
  */

@@ -47,7 +47,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
+import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileReferenceRequestDTO;
@@ -56,7 +56,7 @@ import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
-import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageService;
+import fr.cnes.regards.modules.storagelight.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineTestClient;
 
@@ -81,7 +81,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private PrioritizedStorageService prioritizedDataStorageService;
+    private StorageLocationConfigurationService prioritizedDataStorageService;
 
     private Path fileToStore;
 
@@ -469,7 +469,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         });
     }
 
-    private PrioritizedStorage initDataStoragePluginConfiguration() {
+    private StorageLocationConfiguration initDataStoragePluginConfiguration() {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineTestClient.class);
             Files.createDirectories(Paths.get("target/online-storage/"));
@@ -482,14 +482,14 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, ONLINE_CONF, parameters, 0);
             dataStorageConf.setIsActive(true);
             dataStorageConf.setBusinessId(ONLINE_CONF);
-            return prioritizedDataStorageService.create(dataStorageConf);
+            return prioritizedDataStorageService.create(dataStorageConf, 1_000_000L);
         } catch (IOException | ModuleException e) {
             Assert.fail(e.getMessage());
             return null;
         }
     }
 
-    private PrioritizedStorage initDataStorageNLPluginConfiguration(String label, String storageDirectory)
+    private StorageLocationConfiguration initDataStorageNLPluginConfiguration(String label, String storageDirectory)
             throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleNearlineDataStorage.class);
@@ -504,7 +504,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
             dataStorageConf.setBusinessId(label);
-            return prioritizedDataStorageService.create(dataStorageConf);
+            return prioritizedDataStorageService.create(dataStorageConf, 1_000_000L);
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }

@@ -58,7 +58,7 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.storagelight.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
+import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
@@ -71,7 +71,7 @@ import fr.cnes.regards.modules.storagelight.service.cache.CacheService;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.job.FileCacheRequestJob;
-import fr.cnes.regards.modules.storagelight.service.location.PrioritizedStorageService;
+import fr.cnes.regards.modules.storagelight.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storagelight.service.location.StoragePluginConfigurationHandler;
 
 /**
@@ -122,7 +122,7 @@ public class FileCacheRequestService {
     private FileReferenceService fileRefService;
 
     @Autowired
-    private PrioritizedStorageService pStorageService;
+    private StorageLocationConfigurationService pStorageService;
 
     @Transactional(readOnly = true)
     public Optional<FileCacheRequest> search(String checksum) {
@@ -179,7 +179,7 @@ public class FileCacheRequestService {
                 .index(refs, f -> f.getLocation().getStorage());
         Set<String> remainingStorages = Sets.newHashSet(filesByStorage.keySet());
 
-        Optional<PrioritizedStorage> storage = pStorageService.searchActiveHigherPriority(remainingStorages);
+        Optional<StorageLocationConfiguration> storage = pStorageService.searchActiveHigherPriority(remainingStorages);
         // Handle storage by priority
         while (storage.isPresent() && !remainingStorages.isEmpty() && !remainingChecksums.isEmpty()) {
             // For each storage dispatch files in online, near line and not available

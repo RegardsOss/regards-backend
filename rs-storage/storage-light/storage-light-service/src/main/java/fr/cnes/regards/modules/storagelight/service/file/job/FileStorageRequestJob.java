@@ -98,6 +98,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
                 fileRefRequestService, this);
         // lets instantiate the plugin to use
         String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
+        // Find associated StorageLocation
         FileStorageWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         int nbRequestToHandle = workingSubset.getFileReferenceRequests().size();
         LOGGER.info("[STORAGE JOB] Runing storage job for {} storage requests", nbRequestToHandle);
