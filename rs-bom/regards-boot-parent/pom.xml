@@ -96,7 +96,8 @@
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
                     <version>5.2.1</version>
-                    <configuration>
+		    <configuration>
+			<skip>true</skip>
                         <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
                         <suppressionFiles>
                             <!-- This file is located into regards-suppress-cve dependency -->
