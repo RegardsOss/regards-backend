@@ -45,7 +45,9 @@ import fr.cnes.regards.modules.storagelight.service.location.StorageLocationConf
 import fr.cnes.regards.modules.storagelight.service.location.StorageLocationService;
 
 /**
- * @author sbinda
+ * Controller to access REST Actions on storage locations.
+ *
+ * @author Sébastien Binda
  *
  */
 @RestController

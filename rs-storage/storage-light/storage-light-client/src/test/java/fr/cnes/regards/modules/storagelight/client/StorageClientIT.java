@@ -34,12 +34,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -99,8 +104,44 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
 
     private final Set<String> referenceFileChecksums = Sets.newHashSet();
 
+    @Autowired(required = false)
+    private IAmqpAdmin amqpAdmin;
+
+    @Autowired(required = false)
+    private IRabbitVirtualHostAdmin vhostAdmin;
+
+    /**
+     * Internal method to clean AMQP queues, if actives
+     */
+    private void cleanAMQPQueues() {
+        if (vhostAdmin != null) {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            // Re-set tenant because above simulation clear it!
+
+            // Purge event queue
+            try {
+                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(FileReferenceEventHandler.class,
+                                                                        Target.ONE_PER_MICROSERVICE_TYPE),
+                                     false);
+
+                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(FileReferenceUpdateEventHandler.class,
+                                                                        Target.ONE_PER_MICROSERVICE_TYPE),
+                                     false);
+                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(FileRequestGroupEventHandler.class,
+                                                                        Target.ONE_PER_MICROSERVICE_TYPE),
+                                     false);
+            } catch (AmqpIOException e) {
+                //todo
+            } finally {
+                vhostAdmin.unbind();
+            }
+        }
+    }
+
     @Before
     public void init() throws IOException, ModuleException {
+        cleanAMQPQueues();
         simulateApplicationReadyEvent();
         fileToStore = Paths.get("target/file-to-store.test");
         if (!Files.exists(fileToStore)) {
@@ -160,9 +201,20 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
 
         RequestInfo info = client.store(files);
 
-        Thread.sleep(7_000);
+        int loopCounter = 0;
+        while (!listener.getGranted().contains(info) && (loopCounter <= 15)) {
+            Thread.sleep(2_000);
+        }
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        loopCounter = 0;
+        while (!listener.getSuccess().containsKey(info) && (loopCounter <= 15)) {
+            Thread.sleep(2_000);
+        }
         Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
+        loopCounter = 0;
+        while ((listener.getSuccess().get(info).size() < 4) && (loopCounter <= 15)) {
+            Thread.sleep(2_000);
+        }
         Assert.assertEquals("Group request should contains 4 success request", 4,
                             listener.getSuccess().get(info).size());
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
