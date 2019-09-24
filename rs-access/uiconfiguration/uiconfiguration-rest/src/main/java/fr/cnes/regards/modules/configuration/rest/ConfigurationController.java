@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.Configuration;
+import fr.cnes.regards.modules.configuration.domain.ConfigurationDTO;
 import fr.cnes.regards.modules.configuration.service.IConfigurationService;
 
 /**
@@ -33,7 +34,7 @@ import fr.cnes.regards.modules.configuration.service.IConfigurationService;
  */
 @RestController
 @RequestMapping("/configuration")
-public class ConfigurationController implements IResourceController<String> {
+public class ConfigurationController implements IResourceController<ConfigurationDTO> {
 
 	@Autowired
 	private IConfigurationService configurationService;
@@ -51,16 +52,15 @@ public class ConfigurationController implements IResourceController<String> {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve Configuration for the given applicationId",
             role = DefaultRole.PUBLIC)
-    public HttpEntity<Resource<String>> retrieveConfiguration(@PathVariable("applicationId") final String applicationId) {
+    public HttpEntity<Resource<ConfigurationDTO>> retrieveConfiguration(@PathVariable("applicationId") final String applicationId) {
         String conf;
 		try {
 			conf = configurationService.retrieveConfiguration(applicationId);
-	        final Resource<String> resource = toResource(conf, new Object[]{applicationId});
+	        final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), new Object[]{applicationId});
 	        return new ResponseEntity<>(resource, HttpStatus.OK);
 		} catch (EntityNotFoundException e) {
 	        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		}
-
     }
     
     /**
@@ -73,10 +73,10 @@ public class ConfigurationController implements IResourceController<String> {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to add a Configuration",
             role = DefaultRole.ADMIN)
-    public HttpEntity<Resource<String>> addConfiguration(@PathVariable("applicationId") final String applicationId, 
+    public HttpEntity<Resource<ConfigurationDTO>> addConfiguration(@PathVariable("applicationId") final String applicationId, 
     		@Valid @RequestBody String toAdd) {
         final String conf = configurationService.addConfiguration(toAdd, applicationId);
-        final Resource<String> resource = toResource(conf, new Object[]{applicationId});
+        final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), new Object[]{applicationId});
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
     
@@ -90,22 +90,21 @@ public class ConfigurationController implements IResourceController<String> {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update a Configuration",
             role = DefaultRole.ADMIN)
-    public HttpEntity<Resource<String>> updateConfiguration(@PathVariable("applicationId") final String applicationId, 
+    public HttpEntity<Resource<ConfigurationDTO>> updateConfiguration(@PathVariable("applicationId") final String applicationId, 
     		@Valid @RequestBody String toAdd) {
         String conf;
 		try {
 			conf = configurationService.updateConfiguration(toAdd, applicationId);
-	        final Resource<String> resource = toResource(conf, new Object[]{applicationId});
+	        final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), new Object[]{applicationId});
 	        return new ResponseEntity<>(resource, HttpStatus.OK);
 		} catch (EntityNotFoundException e) {
 	        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		}
-
     }
     
 	@Override
-    public Resource<String> toResource(final String element, final Object... extras) {
-        final Resource<String> resource = resourceService.toResource(element);
+    public Resource<ConfigurationDTO> toResource(final ConfigurationDTO element, final Object... extras) {
+        final Resource<ConfigurationDTO> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveConfiguration", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, String.valueOf(extras[0])));
         resourceService.addLink(resource, this.getClass(), "addConfiguration", LinkRels.CREATE,
