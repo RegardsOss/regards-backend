@@ -21,30 +21,29 @@ public interface IConfigurationService {
 	 * Retrieve configuration for Front
 	 * 
 	 * @param applicationId application id
-     * @return String representation of configuration
+     * @return {@link Configuration}
 	 * @throws EntityNotFoundException if no configuration is found on database
 	 */
-	public String retrieveConfiguration(String applicationId) throws EntityNotFoundException;
+	public Configuration retrieveConfiguration(String applicationId) throws EntityNotFoundException;
 	
 	/**
 	 * 
 	 * Add a configuration to the database if none exist 
 	 * 
 	 * @param configuration configuration to add
-	 * @param applicationId 
-     * @return String representation of configuration
+     * @return {@link Configuration}
+	 * @throws ModuleException if a configuration already exists in database
 	 */
-	public String addConfiguration(String configuration, String applicationId);
+	public Configuration addConfiguration(Configuration configuration) throws ModuleException;
 	
 	/**
 	 * 
 	 * Update the existing configuration
 	 * 
 	 * @param configuration configuration to update
-	 * @param applicationId 
-     * @return String representation of configuration
+     * @return {@link Configuration}
 	 * @throws EntityNotFoundException if we try to update a non existing configuration in database
 	 */
-	public String updateConfiguration(String configuration, String applicationId) throws EntityNotFoundException;
+	public Configuration updateConfiguration(Configuration configuration) throws EntityNotFoundException;
 	
 }

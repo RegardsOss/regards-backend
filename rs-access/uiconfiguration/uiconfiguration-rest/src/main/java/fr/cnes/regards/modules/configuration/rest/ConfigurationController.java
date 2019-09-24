@@ -20,10 +20,10 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.Configuration;
-import fr.cnes.regards.modules.configuration.domain.ConfigurationDTO;
 import fr.cnes.regards.modules.configuration.service.IConfigurationService;
 
 /**
@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.configuration.service.IConfigurationService;
  */
 @RestController
 @RequestMapping("/configuration")
-public class ConfigurationController implements IResourceController<ConfigurationDTO> {
+public class ConfigurationController implements IResourceController<Configuration> {
 
 	@Autowired
 	private IConfigurationService configurationService;
@@ -47,20 +47,17 @@ public class ConfigurationController implements IResourceController<Configuratio
      * @param applicationId
      *
      * @return {@link Configuration}
+     * @throws EntityNotFoundException
      */
     @RequestMapping(value = "/{applicationId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve Configuration for the given applicationId",
             role = DefaultRole.PUBLIC)
-    public HttpEntity<Resource<ConfigurationDTO>> retrieveConfiguration(@PathVariable("applicationId") final String applicationId) {
-        String conf;
-		try {
-			conf = configurationService.retrieveConfiguration(applicationId);
-	        final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), new Object[]{applicationId});
-	        return new ResponseEntity<>(resource, HttpStatus.OK);
-		} catch (EntityNotFoundException e) {
-	        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-		}
+    public HttpEntity<Resource<Configuration>> retrieveConfiguration(@PathVariable("applicationId") final String applicationId)
+            throws EntityNotFoundException {
+        final Configuration layout = configurationService.retrieveConfiguration(applicationId);
+        final Resource<Configuration> resource = toResource(layout);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
     
     /**
@@ -68,15 +65,17 @@ public class ConfigurationController implements IResourceController<Configuratio
      * @param applicationId
      *
      * @return {@link Configuration}
+     * @throws ModuleException
      */
     @RequestMapping(value = "/{applicationId}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to add a Configuration",
             role = DefaultRole.ADMIN)
-    public HttpEntity<Resource<ConfigurationDTO>> addConfiguration(@PathVariable("applicationId") final String applicationId, 
-    		@Valid @RequestBody ConfigurationDTO toAdd) {
-        final String conf = configurationService.addConfiguration(toAdd.getConfiguration(), applicationId);
-        final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), new Object[]{applicationId});
+    public HttpEntity<Resource<Configuration>> addConfiguration(@PathVariable("applicationId") final String applicationId, 
+    		@Valid @RequestBody Configuration toAdd)
+            throws ModuleException {
+        final Configuration conf = configurationService.addConfiguration(toAdd);
+        final Resource<Configuration> resource = toResource(conf);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
     
@@ -85,34 +84,31 @@ public class ConfigurationController implements IResourceController<Configuratio
      * @param applicationId
      *
      * @return {@link Configuration}
+     * @throws ModuleException
      */
     @RequestMapping(value = "/{applicationId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update a Configuration",
             role = DefaultRole.ADMIN)
-    public HttpEntity<Resource<ConfigurationDTO>> updateConfiguration(@PathVariable("applicationId") final String applicationId, 
-    		@Valid @RequestBody ConfigurationDTO toAdd) {
-        String conf;
-		try {
-			conf = configurationService.updateConfiguration(toAdd.getConfiguration(), applicationId);
-	        final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), new Object[]{applicationId});
-	        return new ResponseEntity<>(resource, HttpStatus.OK);
-		} catch (EntityNotFoundException e) {
-	        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-		}
+    public HttpEntity<Resource<Configuration>> updateConfiguration(@PathVariable("applicationId") final String applicationId, 
+    		@Valid @RequestBody Configuration toAdd)
+            throws ModuleException {
+        final Configuration conf = configurationService.updateConfiguration(toAdd);
+        final Resource<Configuration> resource = toResource(conf);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
     
 	@Override
-    public Resource<ConfigurationDTO> toResource(final ConfigurationDTO element, final Object... extras) {
-        final Resource<ConfigurationDTO> resource = resourceService.toResource(element);
+    public Resource<Configuration> toResource(final Configuration element, final Object... extras) {
+        final Resource<Configuration> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveConfiguration", LinkRels.SELF,
-                                MethodParamFactory.build(String.class, String.valueOf(extras[0])));
+                                MethodParamFactory.build(String.class, element.getApplicationId()));
         resourceService.addLink(resource, this.getClass(), "addConfiguration", LinkRels.CREATE,
-                MethodParamFactory.build(String.class, String.valueOf(extras[0])),
-                MethodParamFactory.build(ConfigurationDTO.class));
+                MethodParamFactory.build(String.class, element.getApplicationId()),
+                MethodParamFactory.build(Configuration.class));
         resourceService.addLink(resource, this.getClass(), "updateConfiguration", LinkRels.UPDATE,
-                                MethodParamFactory.build(String.class, String.valueOf(extras[0])),
-                                		MethodParamFactory.build(ConfigurationDTO.class));
+                                MethodParamFactory.build(String.class, element.getApplicationId()),
+                                		MethodParamFactory.build(Configuration.class));
         return resource;
     }
 
