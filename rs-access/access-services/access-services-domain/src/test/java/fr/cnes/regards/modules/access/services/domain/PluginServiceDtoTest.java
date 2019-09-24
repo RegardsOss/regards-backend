@@ -47,8 +47,6 @@ public class PluginServiceDtoTest {
 
     private static final Long ID = 0L;
 
-    private static final String BUSINESS_ID = "539b4e83-20b1-4e35-93e4-9b217619cf90";
-
     private static final String LABEL = "the label";
 
     private static URL ICON_URL;
@@ -71,7 +69,7 @@ public class PluginServiceDtoTest {
         pluginMetaData.setPluginClassName("fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin");
 
         PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetaData, LABEL);
-        pluginConfiguration.setBusinessId(BUSINESS_ID);
+        pluginConfiguration.setId(ID);
         pluginConfiguration.setIconUrl(ICON_URL);
 
         PluginConfigurationDto pluginConfigurationDto = new PluginConfigurationDto(pluginConfiguration);
@@ -79,7 +77,6 @@ public class PluginServiceDtoTest {
         PluginServiceDto pluginServiceDto = PluginServiceDto.fromPluginConfigurationDto(pluginConfigurationDto);
 
         checkDto(pluginServiceDto);
-        Assert.assertEquals(BUSINESS_ID, pluginServiceDto.getConfigId());
         Assert.assertEquals(PluginServiceType.CATALOG, pluginServiceDto.getType());
     }
 
@@ -101,7 +98,6 @@ public class PluginServiceDtoTest {
         PluginServiceDto dto = PluginServiceDto.fromUIPluginConfiguration(pluginConfiguration);
 
         checkDto(dto);
-        Assert.assertEquals(String.valueOf(ID), dto.getConfigId());
         Assert.assertEquals(PluginServiceType.UI, dto.getType());
     }
 
@@ -110,6 +106,7 @@ public class PluginServiceDtoTest {
      * @param pPluginServiceDto
      */
     private void checkDto(PluginServiceDto pPluginServiceDto) {
+        Assert.assertEquals(ID, pPluginServiceDto.getConfigId());
         Assert.assertEquals(LABEL, pPluginServiceDto.getLabel());
         Assert.assertEquals(ICON_URL.toString(), pPluginServiceDto.getIconUrl());
         Assert.assertEquals(APPLICATION_MODES, pPluginServiceDto.getApplicationModes());
