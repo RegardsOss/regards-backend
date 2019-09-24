@@ -558,4 +558,21 @@ public class CatalogSearchService implements ICatalogSearchService {
         });
         return bounds;
     }
+
+	@Override
+	public boolean hasAccess(UniformResourceName urn) throws EntityNotFoundException  {
+		AbstractEntity<?> entity;
+		try {
+			entity = get(urn);
+		} catch (EntityOperationForbiddenException e) {
+			return false;
+		}
+		boolean hasRights = true;
+        if (entity instanceof DataObject) {
+            hasRights = ((DataObject) entity).getFiles().containsKey(DataType.RAWDATA);
+        }
+        // in the plugin catalog-security-delegation there was a treatment to verify if the user has admin rights 
+        // we will not check it here
+        return hasRights;
+	}
 }
