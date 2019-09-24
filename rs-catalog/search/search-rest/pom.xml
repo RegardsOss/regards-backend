@@ -104,6 +104,10 @@
 			<artifactId>rome-modules</artifactId>
 			<version>1.10.0</version>
 		</dependency>
+		<dependency>
+		    <groupId>fr.cnes.regards.modules.storage-light</groupId>
+		    <artifactId>storage-light-client</artifactId>
+	    </dependency>
 
 
 		<!-- Test -->
