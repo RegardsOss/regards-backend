@@ -178,6 +178,7 @@ public interface ICatalogSearchService {
      * Know if we have acces to file for the given urn
      * @param urn {@link UniformResourceName} to access
      * @return if we have access
+     * @throws EntityNotFoundException 
      */
-    boolean hasAccess(UniformResourceName urn);
+    boolean hasAccess(UniformResourceName urn) throws EntityNotFoundException;
 }

@@ -560,11 +560,11 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
 	@Override
-	public boolean hasAccess(UniformResourceName urn)  {
+	public boolean hasAccess(UniformResourceName urn) throws EntityNotFoundException  {
 		AbstractEntity<?> entity;
 		try {
 			entity = get(urn);
-		} catch (EntityOperationForbiddenException | EntityNotFoundException e) {
+		} catch (EntityOperationForbiddenException e) {
 			return false;
 		}
 		boolean hasRights = true;

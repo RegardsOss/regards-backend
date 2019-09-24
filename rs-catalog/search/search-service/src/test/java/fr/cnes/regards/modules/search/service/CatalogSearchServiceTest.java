@@ -247,4 +247,18 @@ public class CatalogSearchServiceTest {
     	Mockito.doReturn(toReturn).when(mock).get((Mockito.any(UniformResourceName.class)));
     	assertFalse(mock.hasAccess(urn));
     }
+    
+    /**
+     * Test of the method hasAccess with the throwing of a EntityNotFoundException
+     * @throws EntityNotFoundException 
+     * @throws EntityOperationForbiddenException 
+     * @throws OpenSearchUnknownParameter
+     */
+    @Test(expected = EntityNotFoundException.class)
+    public void testHasAccessNotFound() throws EntityOperationForbiddenException, EntityNotFoundException  {
+    	UniformResourceName urn = Mockito.mock(UniformResourceName.class);
+    	CatalogSearchService mock = Mockito.spy(catalogSearchService);
+    	Mockito.doThrow(new EntityNotFoundException("")).when(mock).get((Mockito.any(UniformResourceName.class)));
+    	assertFalse(mock.hasAccess(urn));
+    }
 }
