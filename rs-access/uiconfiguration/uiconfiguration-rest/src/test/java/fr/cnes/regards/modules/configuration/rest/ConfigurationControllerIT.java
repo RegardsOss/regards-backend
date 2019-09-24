@@ -11,6 +11,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.configuration.dao.ConfigurationRepository;
 import fr.cnes.regards.modules.configuration.domain.Configuration;
+import fr.cnes.regards.modules.configuration.domain.ConfigurationDTO;
 
 /**
 *
@@ -58,27 +59,27 @@ public class ConfigurationControllerIT extends AbstractRegardsTransactionalIT {
 		toAdd.setId(1L);
 		toAdd.setConfiguration(CONFIGURATION_VALUE);
 		toAdd.setApplicationId(DEFAULT_APPLICATION_ID);
-        performDefaultPost("/configuration/{applicationId}", CONFIGURATION_VALUE,
+        performDefaultPost("/configuration/{applicationId}", new ConfigurationDTO(CONFIGURATION_VALUE),
         		customizer().expectStatusOk(), "Error message", DEFAULT_APPLICATION_ID);
         assertEquals(toAdd, configurationRepo.findAll().get(0));
     }
 
 	@Test
     public void updateConfiguration() {
-		performDefaultPost("/configuration/{applicationId}", CONFIGURATION_VALUE,
+		performDefaultPost("/configuration/{applicationId}", new ConfigurationDTO(CONFIGURATION_VALUE),
         		customizer().expectStatusOk(), "Error message", DEFAULT_APPLICATION_ID);
 		
 		Configuration toUpdate = this.configurationRepo.findByApplicationId(DEFAULT_APPLICATION_ID).get(0);
 		toUpdate.setConfiguration(CONFIGURATION_VALUE + CONFIGURATION_VALUE);
 
-        performDefaultPut("/configuration/{applicationId}", CONFIGURATION_VALUE + CONFIGURATION_VALUE,
+        performDefaultPut("/configuration/{applicationId}", new ConfigurationDTO(CONFIGURATION_VALUE + CONFIGURATION_VALUE),
         		customizer().expectStatusOk(), "Error message", DEFAULT_APPLICATION_ID);
         assertEquals(toUpdate, configurationRepo.findAll().get(0));
     }
 	
 	@Test
     public void updateNonExistingConfiguration() {
-		performDefaultPut("/configuration/{applicationId}", CONFIGURATION_VALUE,
+		performDefaultPut("/configuration/{applicationId}", new ConfigurationDTO(CONFIGURATION_VALUE),
         		customizer().expectStatusNoContent(), "Error message", DEFAULT_APPLICATION_ID);
     }
 }
