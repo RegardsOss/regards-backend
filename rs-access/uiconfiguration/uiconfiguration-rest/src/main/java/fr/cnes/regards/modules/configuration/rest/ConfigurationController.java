@@ -109,10 +109,10 @@ public class ConfigurationController implements IResourceController<Configuratio
                                 MethodParamFactory.build(String.class, String.valueOf(extras[0])));
         resourceService.addLink(resource, this.getClass(), "addConfiguration", LinkRels.CREATE,
                 MethodParamFactory.build(String.class, String.valueOf(extras[0])),
-                MethodParamFactory.build(Configuration.class));
+                MethodParamFactory.build(ConfigurationDTO.class));
         resourceService.addLink(resource, this.getClass(), "updateConfiguration", LinkRels.UPDATE,
                                 MethodParamFactory.build(String.class, String.valueOf(extras[0])),
-                                		MethodParamFactory.build(Configuration.class));
+                                		MethodParamFactory.build(ConfigurationDTO.class));
         return resource;
     }
 
