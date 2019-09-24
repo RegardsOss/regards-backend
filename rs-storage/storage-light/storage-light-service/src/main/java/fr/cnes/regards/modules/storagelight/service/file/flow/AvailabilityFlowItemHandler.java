@@ -42,8 +42,10 @@ import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheReques
 import fr.cnes.regards.modules.storagelight.service.file.request.RequestsGroupService;
 
 /**
- * @author sbinda
+ * Handler of bus message events {@link AvailabilityFlowItem}s.<br>
+ * Each message is saved in a concurrent list to handle availability request by bulk.
  *
+ * @author Sébastien Binda
  */
 @Component
 public class AvailabilityFlowItemHandler

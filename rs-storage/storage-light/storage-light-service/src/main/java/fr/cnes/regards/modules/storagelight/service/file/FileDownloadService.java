@@ -54,8 +54,9 @@ import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheReques
 import fr.cnes.regards.modules.storagelight.service.location.StorageLocationConfigurationService;
 
 /**
- * @author sbinda
+ * Service to handle files download.<br>
  *
+ * @author Sébastien Binda
  */
 @Service
 @MultitenantTransactional
@@ -122,7 +123,8 @@ public class FileDownloadService {
      */
     @Transactional(noRollbackFor = { EntityNotFoundException.class })
     public InputStream downloadFileReference(FileReference fileToDownload) throws ModuleException {
-        Optional<StorageLocationConfiguration> conf = prioritizedStorageService.search(fileToDownload.getLocation().getStorage());
+        Optional<StorageLocationConfiguration> conf = prioritizedStorageService
+                .search(fileToDownload.getLocation().getStorage());
         if (conf.isPresent()) {
             switch (conf.get().getStorageType()) {
                 case NEARLINE:

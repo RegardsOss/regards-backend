@@ -133,6 +133,8 @@ public class FileReferenceEventHandler
 
     /**
      * After a deletion success, we can schedule the file reference request delayed. Those request was waiting for deletion ends.
+     * @param fileRefChecksum
+     * @param fileRefStorage
      */
     private void scheduleDelayedFileRefRequests(String fileRefChecksum, String fileRefStorage) {
         Optional<FileStorageRequest> oRequest = fileReferenceRequestService.search(fileRefStorage, fileRefChecksum);
@@ -146,7 +148,7 @@ public class FileReferenceEventHandler
                 }
             }
             FileStorageRequest request = oRequest.get();
-            request.setStatus(FileRequestStatus.TODO);
+            request.setStatus(FileRequestStatus.TO_DO);
             fileReferenceRequestService.update(request);
         }
     }
@@ -251,7 +253,7 @@ public class FileReferenceEventHandler
         Optional<FileStorageRequest> request = fileStorageRequestService
                 .create(fileAvailableEvent.getOwners(), copyRequest.getMetaInfo(),
                         fileAvailableEvent.getLocation().getUrl(), copyRequest.getStorage(),
-                        Optional.ofNullable(copyRequest.getStorageSubDirectory()), FileRequestStatus.TODO,
+                        Optional.ofNullable(copyRequest.getStorageSubDirectory()), FileRequestStatus.TO_DO,
                         storageGroupId);
         if (request.isPresent()) {
             copyRequest.setFileStorageGroupId(storageGroupId);

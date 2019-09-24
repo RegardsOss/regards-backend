@@ -122,7 +122,7 @@ public class FileDeletionRequestService {
     }
 
     /**
-     * Update all {@link FileDeletionRequest} in error status to change status to todo.
+     * Update all {@link FileDeletionRequest} in error status to change status to {@link FileRequestStatus#TO_DO}.
      */
     public void retry() {
         Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by(Direction.ASC, "id"));
@@ -130,7 +130,7 @@ public class FileDeletionRequestService {
         do {
             results = fileDeletionRequestRepo.findByStatus(FileRequestStatus.ERROR, page);
             for (FileDeletionRequest request : results) {
-                request.setStatus(FileRequestStatus.TODO);
+                request.setStatus(FileRequestStatus.TO_DO);
                 request.setErrorCause(null);
                 fileDeletionRequestRepo.save(request);
             }

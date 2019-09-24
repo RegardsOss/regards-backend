@@ -32,12 +32,18 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 
 /**
- * @author sbinda
+ * JOB to handle deletion requests on many {@link FileReference}s.<br>
+ * This jobs requests database to retrieve {@link FileReference}s with search criterion and for each, send a {@link DeletionFlowItem} event.<br>
+ * Events can be handled by the first available storage microservice to create associated {@link FileDeletionRequest}.<br>
+ * NOTE : Be careful that the {@link this#run()} stays not transactional.
+ *
+ * @author Sébastien Binda
  *
  */
 public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
@@ -72,8 +78,10 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
         Pageable pageRequest = PageRequest.of(0, PAGE_BULK_SIZE);
         Page<FileReference> pageResults;
         do {
+            // Search for all file references of the given storage location
             pageResults = fileRefService.search(storage, pageRequest);
             for (FileReference fileRef : pageResults.getContent()) {
+                // For each send a deletion event for each owner.
                 for (String owner : fileRef.getOwners()) {
                     publisher.publish(DeletionFlowItem.build(FileDeletionRequestDTO
                             .build(fileRef.getMetaInfo().getChecksum(), storage, owner, forceDelete),

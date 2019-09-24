@@ -101,7 +101,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("There should be a copy request created", oReq.isPresent());
 
         // Now run copy schedule
-        fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TODO);
+        fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
 
         // There should be one availability request created
         Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
@@ -112,7 +112,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("There should be a copy request in pending state",
                           oReq.get().getStatus() == FileRequestStatus.PENDING);
 
-        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
         // Cache file should be restored
@@ -144,7 +144,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
 
         // Run storage job
         Mockito.reset(publisher);
-        jobs = stoReqService.scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(), Lists.newArrayList());
+        jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, Lists.newArrayList(), Lists.newArrayList());
         runAndWaitJob(jobs);
         Optional<FileStorageRequest> oFileRefReq = stoReqService.search(ONLINE_CONF_LABEL,
                                                                         fileRef.getMetaInfo().getChecksum());
@@ -181,7 +181,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("There should be a copy request created", oReq.isPresent());
 
         // Now run copy schedule
-        fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TODO);
+        fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
 
         // There should be one availability request created
         Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
@@ -192,7 +192,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("There should be a copy request in pending state",
                           oReq.get().getStatus() == FileRequestStatus.PENDING);
 
-        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
         oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());

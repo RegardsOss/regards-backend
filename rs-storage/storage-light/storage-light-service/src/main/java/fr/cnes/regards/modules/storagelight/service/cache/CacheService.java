@@ -36,7 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -92,17 +91,10 @@ public class CacheService {
     private INotificationClient notificationClient;
 
     @Autowired
-    @Lazy
-    private CacheService self;
-
-    /**
-     * {@link ICacheFileRepository} instance
-     */
-    @Autowired
     private ICacheFileRepository cachedFileRepository;
 
     /**
-     * Cache path origine for all tenants.
+     * Cache path origin for all tenants.
      */
     @Value("${regards.storage.cache.path}")
     private String globalCachePath;
@@ -147,7 +139,7 @@ public class CacheService {
     }
 
     /**
-     * TODO Add rest endpoint to access this or schedule periodic job.
+     * Check coherence between database and physical files in cache location.
      * @throws IOException
      */
     public void checkDiskDBCoherence() throws IOException {
@@ -189,6 +181,10 @@ public class CacheService {
         } while (availableFiles.hasNext());
     }
 
+    /**
+     * Run cache file system initialization when a tenant is ready (database connection is available)
+     * @param event {@link TenantConnectionReady}
+     */
     @Transactional(propagation = Propagation.SUPPORTS)
     @EventListener
     public void processEvent(TenantConnectionReady event) {

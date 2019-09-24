@@ -43,8 +43,9 @@ import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequ
 import fr.cnes.regards.modules.storagelight.service.file.request.RequestsGroupService;
 
 /**
- * Handler to handle {@link ReferenceFlowItem} AMQP messages.<br/>
- * Those messages are sent to create new file reference.
+ * Handler to handle {@link ReferenceFlowItem} AMQP messages.<br>
+ * Those messages are sent to create new file reference.<br>
+ * Each message is saved in a concurrent list to handle availability request by bulk.
  *
  * @author Sébastien Binda
  */

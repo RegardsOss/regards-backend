@@ -30,7 +30,7 @@ public enum FileRequestStatus {
     /**
      * Request can be handled.
      */
-    TODO,
+    TO_DO,
 
     /**
      * Request has been handled.

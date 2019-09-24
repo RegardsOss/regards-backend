@@ -87,7 +87,7 @@ public class FileRequestScheduler {
                 try {
                     runtimeTenantResolver.forceTenant(tenant);
                     if (obtainLock()) {
-                        fileStorageRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(),
+                        fileStorageRequestService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet(),
                                                                Sets.newHashSet());
                     }
                 } finally {
@@ -110,7 +110,7 @@ public class FileRequestScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 if (obtainLock()) {
                     try {
-                        fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+                        fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
                     } finally {
                         releaseLock();
                         runtimeTenantResolver.clearTenant();
@@ -133,7 +133,7 @@ public class FileRequestScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 if (obtainLock()) {
                     try {
-                        fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet());
+                        fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet());
                     } finally {
                         releaseLock();
                         runtimeTenantResolver.clearTenant();
@@ -155,7 +155,7 @@ public class FileRequestScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 if (obtainLock()) {
                     try {
-                        fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TODO);
+                        fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
                     } finally {
                         releaseLock();
                         runtimeTenantResolver.clearTenant();

@@ -40,8 +40,17 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storagelight.domain.flow.FlowItemStatus;
 
 /**
- * @author sbinda
+ * Service to handle actions on requests group.<br>
+ * A requests group is an business association between many FileRequests of the same type.<br>
+ * All requests of a same groups are associated thanks to a group identifier.<br>
+ * When all requests of a group has been handled by the associated service, then a {@link FileRequestsGroupEvent} is published
+ *  with {@link FlowItemStatus#GRANTED} status.<br>
+ * When all requests of a group has been rejected by the associated service, then a {@link FileRequestsGroupEvent} is published
+ *  with {@link FlowItemStatus#DENIED} status.<br>
+ * When all requests of a group are done (successfully or with errors), a {@link FileRequestsGroupEvent} is published
+ * with {@link FlowItemStatus#DONE} or with {@link FlowItemStatus#ERROR} status.<br>
  *
+ * @author Sébastien Binda
  */
 @Component
 public class RequestsGroupService {

@@ -33,8 +33,9 @@ import fr.cnes.regards.modules.storagelight.service.file.FileReferenceEventPubli
 import fr.cnes.regards.modules.storagelight.service.file.request.FileDeletionRequestService;
 
 /**
- * Progress manager class to handle {@link FileDeletionRequestJob} advancement.
- * This progress manager should be used by all storage plugin to inform a deletion success or a deletion error.
+ * Progress manager class to handle {@link FileDeletionRequestJob} advancement.<br>
+ * This progress manager should be used by all storage plugin to inform a deletion success or a deletion error.<br>
+ * This manager is used by storage plugins to inform {@link FileDeletionRequestJob}s progression.<br>
  *
  * @author Sébastien Binda
  */

@@ -117,7 +117,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
         // The file stored in two locations online and near line does not need to be restored
         // as its available online.
         Assert.assertEquals("There should be 5 cache requests created", 5,
-                            fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TODO).size());
+                            fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TO_DO).size());
         Assert.assertTrue("A cache request should be done for near line file 1",
                           fileCacheRequestService.search(file1.getMetaInfo().getChecksum()).isPresent());
         Assert.assertTrue("A cache request should be done for near line file 2",
@@ -127,7 +127,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
         Assert.assertFalse("A cache request should not be done for near line file 4 as it is online too",
                            fileCacheRequestService.search(checksum).isPresent());
 
-        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
         // there should be 2 notification error for availability of offline files
@@ -205,14 +205,14 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
         Assert.assertEquals("There should be 4 cache requests created", 4,
-                            fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TODO).size());
+                            fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TO_DO).size());
 
-        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
-        Assert.assertEquals("There should be 0 cache requests in TODO", 0,
-                            fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TODO).size());
+        Assert.assertEquals("There should be 0 cache requests in TO_DO", 0,
+                            fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TO_DO).size());
         Assert.assertEquals("There should be 3 cache requests in ERROR", 3,
                             fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.ERROR).size());
         Assert.assertEquals("There should be 1 file cache requests", 1, cacheFileRepo
@@ -240,7 +240,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
 
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
         Assert.assertEquals("There should be 3 cache requests in TODO", 3,
-                            fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TODO).size());
+                            fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TO_DO).size());
         Assert.assertEquals("There should be 0 cache requests in ERROR", 0,
                             fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.ERROR).size());
     }

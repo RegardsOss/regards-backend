@@ -39,8 +39,9 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManage
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheRequestService;
 
 /**
- * Implementation of {@link IStorageProgressManager} used by {@link IStorageLocation} plugins.<br/>
- * This implementation notify the system thanks to the AMQP publisher.
+ * Implementation of {@link IStorageProgressManager} used by {@link IStorageLocation} plugins.<br>
+ * This implementation notify the system thanks to the AMQP publisher.<br>
+ * This manager is used by storage plugins to inform {@link FileCacheRequestJob}s progression.
  *
  * @author Sébastien Binda
  */

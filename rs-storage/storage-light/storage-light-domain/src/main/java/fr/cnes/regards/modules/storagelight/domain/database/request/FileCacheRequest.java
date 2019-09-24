@@ -87,7 +87,7 @@ public class FileCacheRequest {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private FileRequestStatus status = FileRequestStatus.TODO;
+    private FileRequestStatus status = FileRequestStatus.TO_DO;
 
     @Column(name = "error_cause", length = 512)
     private String errorCause;

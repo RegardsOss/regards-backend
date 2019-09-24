@@ -89,8 +89,8 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
             Assert.assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
                                 NEARLINE_CONF_LABEL, oReq.get().getStorage());
             Assert.assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
-                                FileRequestStatus.TODO, oReq.get().getStatus());
-            Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+                                FileRequestStatus.TO_DO, oReq.get().getStatus());
+            Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
             runAndWaitJob(jobs);
 
             Optional<CacheFile> oCf = cacheService.search(fileRef.getMetaInfo().getChecksum());

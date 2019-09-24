@@ -99,8 +99,9 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
 
         // SImulate job schedule
-        Collection<JobInfo> jobs = stoReqService
-                .scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList(owner));
+        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                              Lists.newArrayList(ONLINE_CONF_LABEL),
+                                                              Lists.newArrayList(owner));
         runAndWaitJob(jobs);
         Assert.assertTrue("File should be referenced", fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         Assert.assertFalse("File request should be deleted",
@@ -148,7 +149,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
 
         // Simulate job schedule
         Collection<JobInfo> jobs = stoReqService
-                .scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList());
+                .scheduleJobs(FileRequestStatus.TO_DO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList());
         runAndWaitJob(jobs);
         Assert.assertTrue("File should be referenced", fileRefService.search(ONLINE_CONF_LABEL, cs1).isPresent());
         Assert.assertTrue("File should be referenced", fileRefService.search(ONLINE_CONF_LABEL, cs2).isPresent());
@@ -215,7 +216,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
 
         // Simulate job schedule
         Collection<JobInfo> jobs = stoReqService
-                .scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList());
+                .scheduleJobs(FileRequestStatus.TO_DO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList());
         runAndWaitJob(jobs);
 
         Assert.assertFalse("File should not be referenced",
@@ -238,9 +239,9 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
-        // Only one file reference request in db, with status in todo, to allow retry
+        // Only one file reference request in db, with status in {@link FileRequestStatus#TO_DO}, to allow retry
         Assert.assertTrue("File request still present", stoReqService.search(ONLINE_CONF_LABEL, checksum).isPresent());
-        Assert.assertEquals("File request in TODO state", FileRequestStatus.TODO,
+        Assert.assertEquals("File request in TO_DO state", FileRequestStatus.TO_DO,
                             stoReqService.search(ONLINE_CONF_LABEL, checksum).get().getStatus());
     }
 
@@ -274,12 +275,12 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         retryHandler.handle(retryWrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
-        // Check request in todo
-        requests = fileStorageRequestRepo.findByOwnersInAndStatus(Lists.newArrayList(owner), FileRequestStatus.TODO,
+        // Check request in {@link FileRequestStatus#TO_DO}
+        requests = fileStorageRequestRepo.findByOwnersInAndStatus(Lists.newArrayList(owner), FileRequestStatus.TO_DO,
                                                                   PageRequest.of(0, 1_000));
-        Assert.assertEquals("The 3 requests should be in TODO", 3, requests.getTotalElements());
+        Assert.assertEquals("The 3 requests should be in TO_DO", 3, requests.getTotalElements());
 
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(),
+        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, Lists.newArrayList(),
                                                               Lists.newArrayList());
         runAndWaitJob(jobs);
 
@@ -319,12 +320,12 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         retryHandler.handle(retryWrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
-        // Check request in todo
-        requests = fileStorageRequestRepo.findByOwnersInAndStatus(owners, FileRequestStatus.TODO,
+        // Check request in {@link FileRequestStatus#TO_DO}
+        requests = fileStorageRequestRepo.findByOwnersInAndStatus(owners, FileRequestStatus.TO_DO,
                                                                   PageRequest.of(0, 1_000));
-        Assert.assertEquals("The 3 requests should be in TODO", 3, requests.getTotalElements());
+        Assert.assertEquals("The 3 requests should be in TO_DO", 3, requests.getTotalElements());
 
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(),
+        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, Lists.newArrayList(),
                                                               Lists.newArrayList());
         runAndWaitJob(jobs);
 

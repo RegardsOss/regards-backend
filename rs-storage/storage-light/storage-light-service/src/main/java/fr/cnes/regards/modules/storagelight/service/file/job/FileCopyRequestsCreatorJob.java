@@ -35,13 +35,18 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 
 /**
- * @author sbinda
+ * JOB to handle copy requests on many {@link FileReference}s.<br>
+ * This jobs requests database to retrieve {@link FileReference}s with search criterion and for each, send a {@link CopyFlowItem} events.<br>
+ * Events can be then handled by the first available storage microservice to create associated {@link FileCopyRequest}.<br>
+ * NOTE : Be careful that the {@link this#run()} stays not transactional.
  *
+ * @author Sébastien Binda
  */
 public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
@@ -79,13 +84,14 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         Pageable pageRequest = PageRequest.of(0, PAGE_BULK_SIZE);
         Page<FileReference> pageResults;
         do {
+            // Search for all file references matching the given storage location.
             pageResults = fileRefService.search(storageLocationSourceId, pageRequest);
             for (FileReference fileRef : pageResults.getContent()) {
                 String filePath;
                 try {
                     filePath = Paths.get((new URL(fileRef.getLocation().getUrl())).getPath()).getParent().toString();
                     if (filePath.startsWith(pathToCopy)) {
-
+                        // For each file reference located in the given path, send a copy request to the destination storage location.
                         publisher.publish(CopyFlowItem.build(FileCopyRequestDTO
                                 .build(fileRef.getMetaInfo().getChecksum(), storageLocationDestinationId, filePath),
                                                              UUID.randomUUID().toString()));

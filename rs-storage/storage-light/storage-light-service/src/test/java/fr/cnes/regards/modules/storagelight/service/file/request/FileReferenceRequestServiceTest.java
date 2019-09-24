@@ -122,11 +122,11 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         runtimeTenantResolver.forceTenant(tenant);
         frr = stoReqService.search(fileRefStorage, fileRefChecksum);
         Assert.assertTrue("File storage request still exists", frr.isPresent());
-        Assert.assertEquals("File storage request still exists with TODO status", FileRequestStatus.TODO,
+        Assert.assertEquals("File storage request still exists with TO_DO status", FileRequestStatus.TO_DO,
                             frr.get().getStatus());
 
-        // Now the deletion job is ended, the file reference request is in todo state.
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TODO,
+        // Now the deletion job is ended, the file reference request is in {@link FileRequestStatus#TO_DO} state.
+        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
                                                               Lists.newArrayList(fileRefStorage), Lists.newArrayList());
         runAndWaitJob(jobs);
 

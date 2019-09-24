@@ -66,7 +66,7 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("A cache request should be created",
                           fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
 
-        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
         Assert.assertTrue("file should be restored in cache",
@@ -120,24 +120,24 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("A cache request should be created",
                           fileCacheRequestService.search(fileRef5.getMetaInfo().getChecksum()).isPresent());
 
-        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
         // Only 2 files can be restored in cache
-        // There should remains 3 cache  request in todo state
-        Assert.assertEquals("There should remains 3 cache  request in todo state", 3, fileCacheReqRepo.count());
+        // There should remains 3 cache  request in {@link FileRequestStatus#TO_DO} state
+        Assert.assertEquals("There should remains 3 cache  request in TO_DO state", 3, fileCacheReqRepo.count());
 
         Assert.assertEquals("There should be 10 files in cache", 10, cacheFileRepo.count());
 
         // Simulate cache  purge. One  file is expired so one  file should be  removed from cache
         cacheService.purge();
 
-        jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
         // One new file can be restored
-        // There should remains 2 cache  request in todo state
-        Assert.assertEquals("There should remains 2 cache  request in todo state", 2, fileCacheReqRepo.count());
+        // There should remains 2 cache  request in {@link FileRequestStatus#TO_DO} state
+        Assert.assertEquals("There should remains 2 cache  request in TO_DO state", 2, fileCacheReqRepo.count());
 
         Assert.assertEquals("There should be 10 files in cache", 10, cacheFileRepo.count());
 
@@ -152,7 +152,7 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("A cache request should be created",
                           fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
 
-        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
         Assert.assertFalse("file should be restored in cache",
@@ -181,7 +181,7 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("A cache request should be created",
                           fileCacheRequestService.search(fileRef4.getMetaInfo().getChecksum()).isPresent());
 
-        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TODO);
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
         Assert.assertTrue("file should be restored in cache",

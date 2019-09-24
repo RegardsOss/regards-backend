@@ -288,12 +288,7 @@ public class StorageLocationService {
      * @throws EntityNotFoundException
      */
     public void increasePriority(String storageLocationId) throws EntityNotFoundException {
-        Optional<StorageLocationConfiguration> pStorage = pLocationConfService.search(storageLocationId);
-        if (pStorage.isPresent()) {
-            pLocationConfService.increasePriority(pStorage.get().getId());
-        } else {
-            throw new EntityNotFoundException(storageLocationId, StorageLocationConfiguration.class);
-        }
+        pLocationConfService.increasePriority(storageLocationId);
     }
 
     /**
@@ -302,12 +297,7 @@ public class StorageLocationService {
      * @throws EntityNotFoundException
      */
     public void decreasePriority(String storageLocationId) throws EntityNotFoundException {
-        Optional<StorageLocationConfiguration> pStorage = pLocationConfService.search(storageLocationId);
-        if (pStorage.isPresent()) {
-            pLocationConfService.decreasePriority(pStorage.get().getId());
-        } else {
-            throw new EntityNotFoundException(storageLocationId, StorageLocationConfiguration.class);
-        }
+        pLocationConfService.decreasePriority(storageLocationId);
     }
 
     /**
@@ -375,6 +365,12 @@ public class StorageLocationService {
         }
     }
 
+    /**
+     * Creates a new configuration for the given storage location.
+     * @param storageLocation
+     * @return
+     * @throws ModuleException
+     */
     public StorageLocationDTO configureLocation(StorageLocationDTO storageLocation) throws ModuleException {
         StorageLocationConfiguration newConf = pLocationConfService
                 .create(storageLocation.getConfiguration().getStorageConfiguration(),
@@ -385,6 +381,7 @@ public class StorageLocationService {
     }
 
     /**
+     * Update the configuration of the given storage location.
      * @param storageLocation
      * @return
      * @throws ModuleException

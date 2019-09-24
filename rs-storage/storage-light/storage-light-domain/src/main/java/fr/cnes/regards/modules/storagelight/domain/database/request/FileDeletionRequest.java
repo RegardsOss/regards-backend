@@ -69,7 +69,7 @@ public class FileDeletionRequest {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private FileRequestStatus status = FileRequestStatus.TODO;
+    private FileRequestStatus status = FileRequestStatus.TO_DO;
 
     @Column(nullable = false, length = FileLocation.STORAGE_MAX_LENGTH)
     private String storage;

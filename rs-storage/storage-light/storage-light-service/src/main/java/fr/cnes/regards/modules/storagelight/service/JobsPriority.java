@@ -19,7 +19,9 @@
 package fr.cnes.regards.modules.storagelight.service;
 
 /**
- * @author sbinda
+ * Centralize the storage jobs priorities.
+ *
+ * @author Sébastien Binda
  *
  */
 public enum JobsPriority {

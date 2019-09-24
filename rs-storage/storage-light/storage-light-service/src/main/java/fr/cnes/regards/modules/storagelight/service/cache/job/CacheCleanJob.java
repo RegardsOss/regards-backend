@@ -24,7 +24,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.modules.storagelight.service.cache.CacheService;
 
 /**
- * Cache purge job.
+ * Cache purge job.<br>
+ * Job to delete expired files from cache system.
  *
  * @author Sébastien Binda
  *

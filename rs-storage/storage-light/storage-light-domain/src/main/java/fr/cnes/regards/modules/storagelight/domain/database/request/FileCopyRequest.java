@@ -61,7 +61,7 @@ public class FileCopyRequest {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private FileRequestStatus status = FileRequestStatus.TODO;
+    private FileRequestStatus status = FileRequestStatus.TO_DO;
 
     @Column(name = "error_cause", length = 512)
     private String errorCause;
@@ -81,7 +81,7 @@ public class FileCopyRequest {
         this.metaInfo = metaInfo;
         this.storageSubDirectory = storageSubDirectory;
         this.storage = storage;
-        this.status = FileRequestStatus.TODO;
+        this.status = FileRequestStatus.TO_DO;
         this.creationDate = OffsetDateTime.now();
     }
 

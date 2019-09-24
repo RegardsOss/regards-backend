@@ -34,6 +34,9 @@ import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheReques
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**
+ * Handler of bus message events {@link RetryFlowItem}s.<br>
+ * Each message is saved in a concurrent list to handle availability request by bulk.
+ *
  * @author Sébastien Binda
  */
 @Component

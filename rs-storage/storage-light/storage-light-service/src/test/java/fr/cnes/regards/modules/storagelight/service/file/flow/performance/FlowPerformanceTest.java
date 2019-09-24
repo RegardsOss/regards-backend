@@ -209,7 +209,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
                 .getTotalElements());
         long start = System.currentTimeMillis();
         Collection<JobInfo> jobs = stoReqService
-                .scheduleJobs(FileRequestStatus.TODO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList());
+                .scheduleJobs(FileRequestStatus.TO_DO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList());
         Thread.sleep(10_000);
         start = System.currentTimeMillis();
         runAndWaitJob(jobs);

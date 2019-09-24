@@ -46,8 +46,9 @@ import fr.cnes.regards.modules.storagelight.service.file.request.FileDeletionReq
 import fr.cnes.regards.modules.storagelight.service.file.request.RequestsGroupService;
 
 /**
- * Handler to handle {@link DeletionFlowItem} AMQP messages.<br/>
- * Those messages are sent to delete a file reference for one owner.
+ * Handler to handle {@link DeletionFlowItem} AMQP messages.<br>
+ * Those messages are sent to delete a file reference for one owner.<br>
+ * Each message is saved in a concurrent list to handle availability request by bulk.
  *
  * @author Sébastien Binda
  */

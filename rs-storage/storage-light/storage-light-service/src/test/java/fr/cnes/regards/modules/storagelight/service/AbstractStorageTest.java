@@ -301,10 +301,10 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         Optional<FileStorageRequest> oFileRefReq = stoReqService.search(destination.getStorage(), checksum);
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
-        Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TODO,
+        Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TO_DO,
                             oFileRefReq.get().getStatus());
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TODO, null, null);
+        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         runAndWaitJob(jobs);
@@ -351,10 +351,10 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
         // only the configured storage can be used for storage. Otherwise the request should be set in eroor.
         if (storageDestination.equals(ONLINE_CONF_LABEL) || storageDestination.equals(NEARLINE_CONF_LABEL)) {
-            Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TODO,
+            Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TO_DO,
                                 oFileRefReq.get().getStatus());
             // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-            Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TODO, Sets.newHashSet(),
+            Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet(),
                                                                   Sets.newHashSet());
             Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
             // Run Job and wait for end

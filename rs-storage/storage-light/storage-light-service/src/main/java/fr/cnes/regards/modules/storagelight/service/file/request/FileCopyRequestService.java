@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.storagelight.service.file.request;
 
 import java.time.OffsetDateTime;
@@ -16,6 +34,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
 
@@ -83,6 +102,16 @@ public class FileCopyRequestService {
     @Autowired
     private IAuthenticationResolver authResolver;
 
+    /**
+     * Handle a {@link FileCopyRequestDTO}.<br>
+     * If a copy request with the same parameters already exists, this method does not creates a new one.<br>
+     * If the file to copy is well referenced, then a new copy request is created.<br>
+     * The copy request should be handled next by the {@link FileRequestScheduler#handleFileCopyRequests()} method.
+     *
+     * @param requestDto {@link FileCopyRequestDTO} to handle.
+     * @param groupId request group identifier.
+     * @return {@link FileCopyRequest} created if any.
+     */
     public Optional<FileCopyRequest> handle(FileCopyRequestDTO requestDto, String groupId) {
         // Check a same request already exists
         Optional<FileCopyRequest> request = copyRepository.findOneByMetaInfoChecksumAndStorage(requestDto.getChecksum(),
@@ -109,16 +138,27 @@ public class FileCopyRequestService {
         return request;
     }
 
+    /**
+     * Handle the case of a copy requests already exists.<br>
+     * @param requestDto {@link FileCopyRequestDTO} new request to handle.
+     * @param request {@link FileCopyRequest} existing request.
+     * @param newGroupId New request group idenfitier.
+     * @return updated {@link FileCopyRequest}
+     */
     private FileCopyRequest handleAlreadyExists(FileCopyRequestDTO requestDto, FileCopyRequest request,
             String newGroupId) {
         if (request.getStatus() == FileRequestStatus.ERROR) {
-            request.setStatus(FileRequestStatus.TODO);
+            request.setStatus(FileRequestStatus.TO_DO);
             request.setFileCacheGroupId(newGroupId);
             return update(request);
         }
         return request;
     }
 
+    /**
+     * Schedule availability requests for all copy requests.<br>
+     * @param status status of copy requests to schedule.
+     */
     public void scheduleCopyRequests(FileRequestStatus status) {
         LOGGER.debug("[COPY REQUESTS] handling copy requests ...");
         long start = System.currentTimeMillis();
@@ -154,6 +194,11 @@ public class FileCopyRequestService {
         }
     }
 
+    /**
+     * Handle copy request success.
+     * @param request {@link FileCopyRequest} succeeded request.
+     * @param newFileRef {@link FileReference} new file reference. Copy of the original file reference.
+     */
     public void handleSuccess(FileCopyRequest request, FileReference newFileRef) {
         String successMessage = String.format("File %s (checksum: %s) successfully copied in %s storage location",
                                               request.getMetaInfo().getFileName(), request.getMetaInfo().getChecksum(),
@@ -176,6 +221,11 @@ public class FileCopyRequestService {
                                      request.getStorage(), newFileRef);
     }
 
+    /**
+     * Handle copy request error.
+     * @param request {@link FileCopyRequest} error request.
+     * @param errorCause
+     */
     public void handleError(FileCopyRequest request, String errorCause) {
         LOGGER.error("[COPY ERROR] Error copying file {} (checksum: {}) to {} storage location. Cause : {}",
                      request.getMetaInfo().getFileName(), request.getMetaInfo().getChecksum(), request.getStorage(),
@@ -189,11 +239,22 @@ public class FileCopyRequestService {
                                    request.getStorage(), errorCause);
     }
 
+    /**
+     * Search for a {@link FileCopyRequest} for the given checksum and given storage copy destination.
+     * @param checksum
+     * @param storage
+     * @return {@link FileCopyRequest} if any
+     */
     @Transactional(readOnly = true)
     public Optional<FileCopyRequest> search(String checksum, String storage) {
         return copyRepository.findOneByMetaInfoChecksumAndStorage(checksum, storage);
     }
 
+    /**
+     * Search for a {@link FileCopyRequest} associated to the given {@link FileReferenceEvent}.
+     * @param event
+     * @return {@link FileCopyRequest} if any
+     */
     public Optional<FileCopyRequest> search(FileReferenceEvent event) {
         Optional<FileCopyRequest> req = Optional.empty();
         Iterator<String> it;
@@ -221,7 +282,14 @@ public class FileCopyRequestService {
         return req;
     }
 
+    /**
+     * Update in database the given {@link FileCopyRequest}.
+     * @param request
+     * @return
+     */
     public FileCopyRequest update(FileCopyRequest request) {
+        Assert.notNull(request, "FileCopyRequest to update can not be null.");
+        Assert.notNull(request.getId(), "FileCopyRequestto update. Identifier can not be null.");
         return copyRepository.save(request);
     }
 

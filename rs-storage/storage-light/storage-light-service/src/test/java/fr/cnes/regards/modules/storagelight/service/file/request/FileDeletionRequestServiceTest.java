@@ -143,7 +143,7 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("File deletion request should be created", oDeletionRequest.isPresent());
 
         // Now schedule deletion jobs
-        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO,
+        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
                                                                            Lists.newArrayList());
         runAndWaitJob(jobs);
 
@@ -203,7 +203,7 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("File deletion request should be created", oDeletionRequest.isPresent());
 
         // Now schedule deletion jobs
-        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO,
+        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
                                                                            Lists.newArrayList());
         runAndWaitJob(jobs);
 

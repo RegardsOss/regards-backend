@@ -13,7 +13,7 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public interface IPrioritizedStorageRepository extends JpaRepository<StorageLocationConfiguration, Long> {
+public interface IStorageLocationConfigurationRepostory extends JpaRepository<StorageLocationConfiguration, Long> {
 
     /**
      * We want the {@link StorageLocationConfiguration} with the lowest priority, which means the highest value of the

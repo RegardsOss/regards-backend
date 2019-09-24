@@ -36,8 +36,9 @@ import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRe
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**
- * Progress manager class to handle {@link FileStorageRequestJob} advancement.
- * This progress manager should be used by all storage plugin to inform a storage success or a storage error.
+ * Progress manager class to handle {@link FileStorageRequestJob} advancement.<br>
+ * This progress manager should be used by all storage plugin to inform a storage success or a storage error.<br>
+ * This manager is used by storage plugins to inform {@link FileStorageRequestJob}s progression.
  *
  * @author Sébastien Binda
  */
@@ -86,7 +87,6 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
                     storageRequestService.handleError(request, errorCause);
                 }
             }
-
             handledRequest.add(request);
         }
     }
@@ -101,6 +101,11 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
         handledRequest.add(request);
     }
 
+    /**
+     * Does the given requests has been handled by the current job ?
+     * @param req {@link FileStorageRequest} to check for
+     * @return
+     */
     public boolean isHandled(FileStorageRequest req) {
         return this.handledRequest.contains(req);
     }

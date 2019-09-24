@@ -125,9 +125,13 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
             LOGGER.info("[STORAGE JOB] storage job handled in {}ms for {} storage requests",
                         System.currentTimeMillis() - start, nbRequestToHandle);
         }
-
     }
 
+    /**
+     * Calculate dimensions of the given file to store.<br>
+     * This methods do the calculation only if the mimeType of the file is compatible with <image/*> type.
+     * @param fileRefRequest to calculate for image dimension
+     */
     private void calculateImageDimension(FileStorageRequest fileRefRequest) {
         try {
             if (((fileRefRequest.getMetaInfo().getHeight() == null)

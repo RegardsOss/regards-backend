@@ -186,7 +186,7 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
         stoReqService.handleRequest(owner, fileMetaInfo, origin.toString(), ONLINE_CONF_LABEL,
                                     Optional.of("/in/this/directory"), UUID.randomUUID().toString());
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TODO, null, null);
+        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         runAndWaitJob(jobs);
@@ -228,7 +228,7 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
         stoReqService.handleRequest(owner, fileMetaInfo, originUrl, ONLINE_CONF_LABEL,
                                     Optional.of("/in/this/directory"), UUID.randomUUID().toString());
 
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TODO, null, null);
+        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         runAndWaitJob(jobs);

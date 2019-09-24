@@ -174,7 +174,7 @@ public class FileStorageRequestService {
             return handleAlreadyExists(fileRef.get(), request, groupId);
         } else {
             create(Sets.newHashSet(request.getOwner()), request.buildMetaInfo(), request.getOriginUrl(),
-                   request.getStorage(), request.getSubDirectory(), FileRequestStatus.TODO, groupId);
+                   request.getStorage(), request.getSubDirectory(), FileRequestStatus.TO_DO, groupId);
             return Optional.empty();
         }
     }
@@ -224,20 +224,20 @@ public class FileStorageRequestService {
     }
 
     /**
-     * Update all {@link FileStorageRequest} in error status to change status to todo.
+     * Update all {@link FileStorageRequest} in error status to change status to {@link FileRequestStatus#TO_DO}.
      * @param groupId request business identifier to retry
      */
     public void retryRequest(String groupId) {
         for (FileStorageRequest request : fileStorageRequestRepo.findByGroupIdsAndStatus(groupId,
                                                                                          FileRequestStatus.ERROR)) {
-            request.setStatus(FileRequestStatus.TODO);
+            request.setStatus(FileRequestStatus.TO_DO);
             request.setErrorCause(null);
             update(request);
         }
     }
 
     /**
-     * Update all {@link FileStorageRequest} in error status to change status to todo for the given owners.
+     * Update all {@link FileStorageRequest} in error status to change status to {@link FileRequestStatus#TO_DO} for the given owners.
      */
     public void retry(Collection<String> owners) {
         Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by(Direction.ASC, "id"));
@@ -245,7 +245,7 @@ public class FileStorageRequestService {
         do {
             results = fileStorageRequestRepo.findByOwnersInAndStatus(owners, FileRequestStatus.ERROR, page);
             for (FileStorageRequest request : results) {
-                request.setStatus(FileRequestStatus.TODO);
+                request.setStatus(FileRequestStatus.TO_DO);
                 request.setErrorCause(null);
                 update(request);
             }
@@ -387,9 +387,10 @@ public class FileStorageRequestService {
     }
 
     /**
-     * Method to update a {@link FileStorageRequest} when a new request is sent for the same associated {@link FileReference}.<br/>
-     * If the existing file request is in error state, update the state to todo to allow store request retry.<br/>
+     * Method to update a {@link FileStorageRequest} when a new request is sent for the same associated {@link FileReference}.<br>
+     * If the existing file request is in error state, update the state to {@link FileRequestStatus#TO_DO} to allow store request retry.<br>
      * The existing request is also updated to add new owners of the future stored and referenced {@link FileReference}.
+     *
      * @param fileStorageRequest
      * @param newMetaInfo
      * @param owners
@@ -408,12 +409,12 @@ public class FileStorageRequestService {
         switch (fileStorageRequest.getStatus()) {
             case ERROR:
                 // Allows storage retry.
-                fileStorageRequest.setStatus(FileRequestStatus.TODO);
+                fileStorageRequest.setStatus(FileRequestStatus.TO_DO);
                 break;
             case PENDING:
                 // A storage is already in progress for this request.
             case DELAYED:
-            case TODO:
+            case TO_DO:
             default:
                 // Request has not been handled yet, we can update it.
                 break;

@@ -41,8 +41,9 @@ import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAgg
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 
 /**
- * @author sbinda
+ * Service to handle actions on {@link FileReference}s entities.
  *
+ * @author Sébastien Binda
  */
 @Service
 @MultitenantTransactional
@@ -122,31 +123,64 @@ public class FileReferenceService {
         fileRefEventPublisher.deletionForOwnerSuccess(fileReference, owner, message, groupId);
     }
 
+    /**
+     * Search for all {@link FileReference}s associated to the given storage location.
+     * @param storage
+     * @param pageable
+     * @return {@link FileReference}s
+     */
     @Transactional(readOnly = true)
     public Page<FileReference> search(String storage, Pageable pageable) {
         return fileRefRepo.findByLocationStorage(storage, pageable);
     }
 
+    /**
+     * Search for a {@link FileReference} associated to the given storage location and matching the given checksum.
+     * @param storage
+     * @param checksum
+     * @return
+     */
     @Transactional(readOnly = true)
     public Optional<FileReference> search(String storage, String checksum) {
         return fileRefRepo.findByLocationStorageAndMetaInfoChecksum(storage, checksum);
     }
 
+    /**
+     * Search for all {@link FileReference}s associated to the given checksums.
+     * @param checksums
+     * @return {@link FileReference}s
+     */
     @Transactional(readOnly = true)
     public Set<FileReference> search(Collection<String> checksums) {
         return fileRefRepo.findByMetaInfoChecksumIn(checksums);
     }
 
+    /**
+     * Search for all {@link FileReference}s associated to the given checksum.
+     * @param checksums
+     * @return {@link FileReference}s
+     */
     @Transactional(readOnly = true)
     public Set<FileReference> search(String checksum) {
         return fileRefRepo.findByMetaInfoChecksum(checksum);
     }
 
+    /**
+     * Search for all {@link FileReference}s.
+     * @param pageable
+     * @return {@link FileReference}s
+     */
     @Transactional(readOnly = true)
     public Page<FileReference> search(Pageable pageable) {
         return fileRefRepo.findAll(pageable);
     }
 
+    /**
+     * Search for all {@link FileReference}s matching the given criterion.
+     * @param spec criterion
+     * @param page
+     * @return {@link FileReference}s
+     */
     @Transactional(readOnly = true)
     public Page<FileReference> search(Specification<FileReference> spec, Pageable page) {
         return fileRefRepo.findAll(spec, page);

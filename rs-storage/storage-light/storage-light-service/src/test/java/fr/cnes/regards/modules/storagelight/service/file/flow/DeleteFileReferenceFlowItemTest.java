@@ -178,12 +178,12 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         // A new File deletion request should be sent
         Assert.assertTrue("A file deletion request should be created",
                           fileDeletionRequestService.search(fileRef).isPresent());
-        Assert.assertEquals("A file deletion request should be created in TODO state", FileRequestStatus.TODO,
+        Assert.assertEquals("A file deletion request should be created in TO_DO state", FileRequestStatus.TO_DO,
                             fileDeletionRequestService.search(fileRef).get().getStatus());
         Mockito.clearInvocations(publisher);
 
         // Now schedule deletion jobs
-        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO,
+        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
                                                                            Lists.newArrayList());
         runAndWaitJob(jobs);
 
@@ -224,12 +224,12 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         // A new File deletion request should be sent
         Assert.assertTrue("A file deletion request should be created",
                           fileDeletionRequestService.search(fileRef).isPresent());
-        Assert.assertEquals("A file deletion request should be created in TODO state", FileRequestStatus.TODO,
+        Assert.assertEquals("A file deletion request should be created in TO_DO state", FileRequestStatus.TO_DO,
                             fileDeletionRequestService.search(fileRef).get().getStatus());
         Mockito.clearInvocations(publisher);
 
         // Now schedule deletion jobs
-        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO,
+        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
                                                                            Lists.newArrayList());
         runAndWaitJob(jobs);
 
@@ -270,12 +270,12 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         // A new File deletion request should be sent
         Assert.assertTrue("A file deletion request should be created",
                           fileDeletionRequestService.search(fileRef).isPresent());
-        Assert.assertEquals("A file deletion request should be created in TODO state", FileRequestStatus.TODO,
+        Assert.assertEquals("A file deletion request should be created in TO_DO state", FileRequestStatus.TO_DO,
                             fileDeletionRequestService.search(fileRef).get().getStatus());
         Mockito.clearInvocations(publisher);
 
         // Now schedule deletion jobs
-        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TODO,
+        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
                                                                            Lists.newArrayList());
         runAndWaitJob(jobs);
 

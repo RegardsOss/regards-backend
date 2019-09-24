@@ -124,6 +124,11 @@ public class FileCacheRequestService {
     @Autowired
     private StorageLocationConfigurationService pStorageService;
 
+    /**
+     * Search for a {@link FileCacheRequest} on the file given checksum.
+     * @param checksum
+     * @return {@link FileCacheRequest}
+     */
     @Transactional(readOnly = true)
     public Optional<FileCacheRequest> search(String checksum) {
         return repository.findByChecksum(checksum);
@@ -150,7 +155,7 @@ public class FileCacheRequestService {
         } else {
             request = oFcr.get();
             if (request.getStatus() == FileRequestStatus.ERROR) {
-                request.setStatus(FileRequestStatus.TODO);
+                request.setStatus(FileRequestStatus.TO_DO);
                 request = repository.save(request);
             }
             LOGGER.trace("File {} (checksum {}) is already requested for cache.",
@@ -229,12 +234,12 @@ public class FileCacheRequestService {
     }
 
     /**
-     * Update all {@link FileCacheRequest} in error status to change status to todo.
+     * Update all {@link FileCacheRequest} in error status to change status to {@link FileRequestStatus#TO_DO}.
      * @param groupId request business identifier to retry
      */
     public void retryRequest(String groupId) {
         for (FileCacheRequest request : repository.findByGroupIdAndStatus(groupId, FileRequestStatus.ERROR)) {
-            request.setStatus(FileRequestStatus.TODO);
+            request.setStatus(FileRequestStatus.TO_DO);
             request.setErrorCause(null);
             repository.save(request);
         }
