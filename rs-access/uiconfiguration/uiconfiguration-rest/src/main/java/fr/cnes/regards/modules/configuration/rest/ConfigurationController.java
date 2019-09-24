@@ -74,8 +74,8 @@ public class ConfigurationController implements IResourceController<Configuratio
     @ResourceAccess(description = "Endpoint to add a Configuration",
             role = DefaultRole.ADMIN)
     public HttpEntity<Resource<ConfigurationDTO>> addConfiguration(@PathVariable("applicationId") final String applicationId, 
-    		@Valid @RequestBody String toAdd) {
-        final String conf = configurationService.addConfiguration(toAdd, applicationId);
+    		@Valid @RequestBody ConfigurationDTO toAdd) {
+        final String conf = configurationService.addConfiguration(toAdd.getConfiguration(), applicationId);
         final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), new Object[]{applicationId});
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
@@ -91,10 +91,10 @@ public class ConfigurationController implements IResourceController<Configuratio
     @ResourceAccess(description = "Endpoint to update a Configuration",
             role = DefaultRole.ADMIN)
     public HttpEntity<Resource<ConfigurationDTO>> updateConfiguration(@PathVariable("applicationId") final String applicationId, 
-    		@Valid @RequestBody String toAdd) {
+    		@Valid @RequestBody ConfigurationDTO toAdd) {
         String conf;
 		try {
-			conf = configurationService.updateConfiguration(toAdd, applicationId);
+			conf = configurationService.updateConfiguration(toAdd.getConfiguration(), applicationId);
 	        final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), new Object[]{applicationId});
 	        return new ResponseEntity<>(resource, HttpStatus.OK);
 		} catch (EntityNotFoundException e) {
