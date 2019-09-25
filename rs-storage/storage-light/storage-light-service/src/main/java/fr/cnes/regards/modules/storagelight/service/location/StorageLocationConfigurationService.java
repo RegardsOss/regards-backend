@@ -29,16 +29,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.storagelight.dao.IStorageLocationConfigurationRepostory;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
-import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 
 /**
@@ -69,26 +67,20 @@ public class StorageLocationConfigurationService {
     public StorageLocationConfiguration create(String name, PluginConfiguration toBeCreated, Long allocatedSizeInKo)
             throws ModuleException {
         PluginConfiguration pluginConf = null;
-        StorageType storageType = StorageType.OFFLINE;
+        if (storageLocConfRepo.existsByName(name)) {
+            throw new EntityAlreadyExistsException(
+                    String.format("Storage location configuration %s, already exists.", name));
+        }
         if (toBeCreated != null) {
             toBeCreated.setBusinessId(name);
             pluginConf = pluginService.savePluginConfiguration(toBeCreated);
-            if (pluginConf.getInterfaceNames().contains(IOnlineStorageLocation.class.getName())) {
-                storageType = StorageType.ONLINE;
-            } else if (pluginConf.getInterfaceNames().contains(INearlineStorageLocation.class.getName())) {
-                storageType = StorageType.NEARLINE;
-            } else {
-                throw new EntityInvalidException(String
-                        .format("Given plugin configuration(label: %s) is not a configuration for an online or nearline data storage (respectfully %s or %s)!",
-                                pluginConf.getLabel(), IOnlineStorageLocation.class.getName(),
-                                INearlineStorageLocation.class.getName()));
-            }
-        } else {
-
         }
-        Long actualLowestPriority = getLowestPriority(storageType);
-        return storageLocConfRepo.save(new StorageLocationConfiguration(name, pluginConf,
-                actualLowestPriority == null ? 0 : actualLowestPriority + 1, allocatedSizeInKo, storageType));
+
+        StorageLocationConfiguration conf = new StorageLocationConfiguration(name, pluginConf, allocatedSizeInKo);
+        // Calculate priority
+        Long actualLowestPriority = getLowestPriority(conf.getStorageType());
+        conf.setPriority(actualLowestPriority == null ? 0 : actualLowestPriority + 1);
+        return storageLocConfRepo.save(conf);
     }
 
     /**
@@ -269,17 +261,18 @@ public class StorageLocationConfigurationService {
     public void delete(Long pluginConfId) throws ModuleException {
         Optional<StorageLocationConfiguration> toDeleteOpt = storageLocConfRepo.findById(pluginConfId);
         if (toDeleteOpt.isPresent()) {
-            // first we need to increase all the priorities of those which are less prioritized than the one to delete
+            // Delete conf and plugin conf associated
             StorageLocationConfiguration toDelete = toDeleteOpt.get();
-            Set<StorageLocationConfiguration> lessPrioritizeds = storageLocConfRepo
-                    .findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(toDelete.getStorageType(),
-                                                                                  toDelete.getPriority());
             storageLocConfRepo.delete(toDelete);
             if (toDelete.getPluginConfiguration() != null) {
                 pluginService.deletePluginConfiguration(toDelete.getPluginConfiguration().getBusinessId());
-                for (StorageLocationConfiguration lessPrioritized : lessPrioritizeds) {
-                    lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);
-                }
+            }
+            // Increase all the priorities of those which are less prioritized than the one to delete
+            Set<StorageLocationConfiguration> lessPrioritizeds = storageLocConfRepo
+                    .findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(toDelete.getStorageType(),
+                                                                                  toDelete.getPriority());
+            for (StorageLocationConfiguration lessPrioritized : lessPrioritizeds) {
+                lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);
             }
             storageLocConfRepo.saveAll(lessPrioritizeds);
         }

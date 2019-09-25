@@ -56,7 +56,6 @@ import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAgg
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCopyRequestService;
@@ -160,42 +159,21 @@ public class StorageLocationService {
         Map<String, StorageLocation> monitoredLocations = storageLocationRepo.findAll().stream()
                 .collect(Collectors.toMap(l -> l.getName(), l -> l));
         // Get all non monitored locations
-        List<StorageLocationConfiguration> onlines = pLocationConfService.search(StorageType.ONLINE);
-        List<StorageLocationConfiguration> nearlines = pLocationConfService.search(StorageType.NEARLINE);
+        List<StorageLocationConfiguration> confs = pLocationConfService.searchAll();
         // Handle all online storage configured
-        for (StorageLocationConfiguration online : onlines) {
-            Long nbStorageError = storageReqService.count(online.getPluginConfiguration().getLabel(),
-                                                          FileRequestStatus.ERROR);
-            Long nbDeletionError = deletionReqService.count(online.getPluginConfiguration().getLabel(),
-                                                            FileRequestStatus.ERROR);
-            StorageLocation monitored = monitoredLocations.get(online.getPluginConfiguration().getBusinessId());
+        for (StorageLocationConfiguration conf : confs) {
+
+            Long nbStorageError = storageReqService.count(conf.getName(), FileRequestStatus.ERROR);
+            Long nbDeletionError = deletionReqService.count(conf.getName(), FileRequestStatus.ERROR);
+            StorageLocation monitored = monitoredLocations.get(conf.getName());
             if (monitored != null) {
-                locationsDto.add(StorageLocationDTO.build(online.getPluginConfiguration().getBusinessId(),
-                                                          monitored.getNumberOfReferencedFiles(),
+                locationsDto.add(StorageLocationDTO.build(conf.getName(), monitored.getNumberOfReferencedFiles(),
                                                           monitored.getTotalSizeOfReferencedFiles(), null,
-                                                          nbStorageError, nbDeletionError, online));
+                                                          nbStorageError, nbDeletionError, conf));
                 monitoredLocations.remove(monitored.getName());
             } else {
-                locationsDto.add(StorageLocationDTO.build(online.getPluginConfiguration().getBusinessId(), 0L, 0L, null,
-                                                          nbStorageError, nbDeletionError, online));
-            }
-        }
-        // Handle all nearlines storage configured
-        for (StorageLocationConfiguration nearline : nearlines) {
-            Long nbStorageError = storageReqService.count(nearline.getPluginConfiguration().getLabel(),
-                                                          FileRequestStatus.ERROR);
-            Long nbDeletionError = deletionReqService.count(nearline.getPluginConfiguration().getLabel(),
-                                                            FileRequestStatus.ERROR);
-            StorageLocation monitored = monitoredLocations.get(nearline.getPluginConfiguration().getBusinessId());
-            if (monitored != null) {
-                locationsDto.add(StorageLocationDTO.build(nearline.getPluginConfiguration().getBusinessId(),
-                                                          monitored.getNumberOfReferencedFiles(),
-                                                          monitored.getTotalSizeOfReferencedFiles(), null,
-                                                          nbStorageError, nbDeletionError, nearline));
-                monitoredLocations.remove(monitored.getName());
-            } else {
-                locationsDto.add(StorageLocationDTO.build(nearline.getPluginConfiguration().getBusinessId(), 0L, 0L,
-                                                          null, nbStorageError, nbDeletionError, nearline));
+                locationsDto.add(StorageLocationDTO.build(conf.getName(), 0L, 0L, conf.getAllocatedSizeInKo(),
+                                                          nbStorageError, nbDeletionError, conf));
             }
         }
         // Handle not configured storage as OFFLINE ones

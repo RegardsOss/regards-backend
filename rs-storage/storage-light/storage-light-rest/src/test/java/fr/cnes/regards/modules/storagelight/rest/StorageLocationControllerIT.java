@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -43,8 +44,10 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.rest.plugin.SimpleOnlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.location.StorageLocationConfigurationService;
+import fr.cnes.regards.modules.storagelight.service.location.StorageLocationService;
 
 /**
  * @author sbinda
@@ -64,14 +67,17 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
+    @Autowired
+    private StorageLocationService storageLocService;
+
     private void clear() throws IOException {
-        storageLocationConfService.searchAll().forEach(c -> {
+        for (StorageLocationConfiguration loc : storageLocationConfService.searchAll()) {
             try {
-                storageLocationConfService.delete(c.getId());
+                storageLocationConfService.delete(loc.getId());
             } catch (ModuleException e) {
                 Assert.fail(e.getMessage());
             }
-        });
+        }
         if (Files.exists(Paths.get("target/storage"))) {
             FileUtils.deleteDirectory(Paths.get(STORAGE_PATH).toFile());
         }
@@ -86,17 +92,75 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     }
 
     @Test
-    public void configureLocation() {
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+    public void configureLocation() throws IOException {
+        String name = "plop";
+
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated()
+                .expectValue("content.name", name).expectValue("content.nbFilesStored", 0)
+                .expectValue("content.totalStoredFilesSizeKo", 0).expectValue("content.nbStorageError", 0)
+                .expectValue("content.configuration.name", name)
+                .expectValue("content.configuration.storageType", StorageType.OFFLINE.toString());
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           StorageLocationDTO.build("plop", null, null, null, null, null,
-                                                    new StorageLocationConfiguration("plop", null, null, null, null)),
+                           StorageLocationDTO.build(name, null, null, null, null, null,
+                                                    new StorageLocationConfiguration(name, null, null)),
+                           requestBuilderCustomizer, "Should be created");
+
+        name = "plop2";
+        requestBuilderCustomizer = customizer().expectStatusCreated().expectValue("content.name", name)
+                .expectValue("content.nbFilesStored", 0).expectValue("content.totalStoredFilesSizeKo", 0)
+                .expectValue("content.nbStorageError", 0).expectValue("content.configuration.name", name)
+                .expectValue("content.configuration.storageType", StorageType.ONLINE.toString());
+        performDefaultPost(StorageLocationController.BASE_PATH,
+                           StorageLocationDTO
+                                   .build("plop2", null, null, null, null, null,
+                                          new StorageLocationConfiguration("plop2", getPluginConf("plop2"), 10_000L)),
                            requestBuilderCustomizer, "Should be created");
     }
 
     @Test
+    public void configureLocation_alreadyExists() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+        performDefaultPost(StorageLocationController.BASE_PATH,
+                           StorageLocationDTO.build("plop", null, null, null, null, null,
+                                                    new StorageLocationConfiguration("plop", null, null)),
+                           requestBuilderCustomizer, "Should be created");
+
+        requestBuilderCustomizer = customizer().expectStatusConflict();
+        performDefaultPost(StorageLocationController.BASE_PATH,
+                           StorageLocationDTO.build("plop", null, null, null, null, null,
+                                                    new StorageLocationConfiguration("plop", null, null)),
+                           requestBuilderCustomizer, "Should not be created");
+    }
+
+    @Test
+    public void updateLocation() throws IOException, EntityNotFoundException {
+        String name = "name";
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated()
+                .expectValue("content.configuration.allocatedSizeInKo", 0);
+        performDefaultPost(StorageLocationController.BASE_PATH,
+                           StorageLocationDTO
+                                   .build(name, null, null, null, null, null,
+                                          new StorageLocationConfiguration(name, getPluginConf(name), 10_000L)),
+                           requestBuilderCustomizer, "Should be created");
+
+        tenantResolver.forceTenant(getDefaultTenant());
+        StorageLocationDTO loc = storageLocService.getById(name);
+        loc.getConfiguration().setAllocatedSizeInKo(10_000L);
+        requestBuilderCustomizer = customizer().expectStatusOk().expectValue("content.configuration.allocatedSizeInKo",
+                                                                             10_000L);
+        performDefaultPut(StorageLocationController.BASE_PATH + StorageLocationController.ID_PATH, loc,
+                          requestBuilderCustomizer, "Location should be updated", name);
+    }
+
+    @Test
     public void retreiveAll() {
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+        performDefaultPost(StorageLocationController.BASE_PATH,
+                           StorageLocationDTO.build("plop", null, null, null, null, null,
+                                                    new StorageLocationConfiguration("plop", null, null)),
+                           requestBuilderCustomizer, "Should be created");
+
+        requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$").expectToHaveSize("$", 2);
         performDefaultGet(StorageLocationController.BASE_PATH, requestBuilderCustomizer, "Expect ok status.");
     }
 
@@ -140,31 +204,76 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     }
 
     @Test
-    public void increasePriority() {
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+    public void increasePriority() throws IOException {
+        // Create a second ONLINE configuration
+        String name = "name";
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated()
+                .expectValue("content.configuration.allocatedSizeInKo", 0)
+                .expectValue("content.configuration.priority", 1);
+        performDefaultPost(StorageLocationController.BASE_PATH,
+                           StorageLocationDTO
+                                   .build(name, null, null, null, null, null,
+                                          new StorageLocationConfiguration(name, getPluginConf(name), 10_000L)),
+                           requestBuilderCustomizer, "Should be created");
+
+        // Ask for priority up
+        requestBuilderCustomizer = customizer().expectStatusOk();
         performDefaultPut(StorageLocationController.BASE_PATH + StorageLocationController.UP_PATH, null,
+                          requestBuilderCustomizer, "Expect ok status.", name);
+
+        // Check new conf priority increase from 1 to 0
+        requestBuilderCustomizer = customizer().expectStatusOk().expectValue("content.configuration.priority", 0);
+        performDefaultGet(StorageLocationController.BASE_PATH + StorageLocationController.ID_PATH,
+                          requestBuilderCustomizer, "Expect ok status.", name);
+
+        // Check old conf priority decrease from 0 to 1
+        requestBuilderCustomizer = customizer().expectStatusOk().expectValue("content.configuration.priority", 1);
+        performDefaultGet(StorageLocationController.BASE_PATH + StorageLocationController.ID_PATH,
                           requestBuilderCustomizer, "Expect ok status.", TARGET_STORAGE);
     }
 
     @Test
-    public void decreasePriority() {
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+    public void decreasePriority() throws IOException {
+        // Create a second ONLINE configuration
+        String name = "name";
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated()
+                .expectValue("content.configuration.allocatedSizeInKo", 0)
+                .expectValue("content.configuration.priority", 1);
+        performDefaultPost(StorageLocationController.BASE_PATH,
+                           StorageLocationDTO
+                                   .build(name, null, null, null, null, null,
+                                          new StorageLocationConfiguration(name, getPluginConf(name), 10_000L)),
+                           requestBuilderCustomizer, "Should be created");
+
+        // Ask for priority down on previous conf
+        requestBuilderCustomizer = customizer().expectStatusOk();
         performDefaultPut(StorageLocationController.BASE_PATH + StorageLocationController.DOWN_PATH, null,
                           requestBuilderCustomizer, "Expect ok status.", TARGET_STORAGE);
+
+        // Check new conf priority increase from 1 to 0
+        requestBuilderCustomizer = customizer().expectStatusOk().expectValue("content.configuration.priority", 0);
+        performDefaultGet(StorageLocationController.BASE_PATH + StorageLocationController.ID_PATH,
+                          requestBuilderCustomizer, "Expect ok status.", name);
+
+        // Check old conf priority decrease from 0 to 1
+        requestBuilderCustomizer = customizer().expectStatusOk().expectValue("content.configuration.priority", 1);
+        performDefaultGet(StorageLocationController.BASE_PATH + StorageLocationController.ID_PATH,
+                          requestBuilderCustomizer, "Expect ok status.", TARGET_STORAGE);
+    }
+
+    private PluginConfiguration getPluginConf(String name) throws IOException {
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
+        // Files.createDirectories(Paths.get(STORAGE_PATH));
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, STORAGE_PATH),
+                     IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
+                     IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
+        return new PluginConfiguration(dataStoMeta, name, parameters, 0);
     }
 
     private void initDataStoragePluginConfiguration() throws ModuleException {
         try {
-            PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
-            Files.createDirectories(Paths.get(STORAGE_PATH));
-
-            Set<IPluginParam> parameters = IPluginParam
-                    .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                            STORAGE_PATH),
-                         IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
-                         IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, TARGET_STORAGE, parameters, 0);
-            storageLocationConfService.create(TARGET_STORAGE, dataStorageConf, 1_000_000L);
+            storageLocationConfService.create(TARGET_STORAGE, getPluginConf(TARGET_STORAGE), 1_000_000L);
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }

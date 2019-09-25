@@ -36,6 +36,8 @@ import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 
 /**
@@ -75,25 +77,31 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
 
     @Enumerated(EnumType.STRING)
     @Column(name = STORAGE_TYPE_COLUMN_NAME)
-    private StorageType storageType;
+    private StorageType storageType = StorageType.OFFLINE;
 
     @Min(HIGHEST_PRIORITY)
     @Column(name = PRIORITY_COLUMN_NAME)
     private Long priority;
 
     @Column(name = "allocated_size_ko")
-    private Long allocatedSizeInKo;
+    private Long allocatedSizeInKo = 0L;
 
     @SuppressWarnings("unused")
     private StorageLocationConfiguration() {
     }
 
-    public StorageLocationConfiguration(String name, PluginConfiguration dataStorageConfiguration, Long priority,
-            Long allocatedSizeInKo, StorageType dataStorageType) {
+    public StorageLocationConfiguration(String name, PluginConfiguration pluginConf, Long allocatedSizeInKo) {
         this.name = name;
-        this.pluginConfiguration = dataStorageConfiguration;
-        this.priority = priority;
-        this.storageType = dataStorageType;
+        this.pluginConfiguration = pluginConf;
+        if (pluginConf != null) {
+            if (pluginConf.getInterfaceNames().contains(IOnlineStorageLocation.class.getName())) {
+                storageType = StorageType.ONLINE;
+            } else if (pluginConf.getInterfaceNames().contains(INearlineStorageLocation.class.getName())) {
+                storageType = StorageType.NEARLINE;
+            } else {
+                storageType = StorageType.OFFLINE;
+            }
+        }
     }
 
     public PluginConfiguration getPluginConfiguration() {
@@ -134,6 +142,10 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
 
     public void setAllocatedSizeInKo(Long allocatedSizeInKo) {
         this.allocatedSizeInKo = allocatedSizeInKo;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override

@@ -53,4 +53,6 @@ public interface IStorageLocationConfigurationRepostory extends JpaRepository<St
     Set<StorageLocationConfiguration> findByNameIn(Collection<String> confLabels);
 
     Optional<StorageLocationConfiguration> findByName(String businessId);
+
+    boolean existsByName(String name);
 }

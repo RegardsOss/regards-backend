@@ -88,7 +88,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
     public ResponseEntity<Resource<StorageLocationDTO>> configureLocation(
             @Valid @RequestBody StorageLocationDTO storageLocation) throws ModuleException {
-        return new ResponseEntity<>(toResource(service.configureLocation(storageLocation)), HttpStatus.OK);
+        return new ResponseEntity<>(toResource(service.configureLocation(storageLocation)), HttpStatus.CREATED);
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = ID_PATH)
@@ -171,7 +171,6 @@ public class StorageLocationController implements IResourceController<StorageLoc
         Resource<StorageLocationDTO> resource = new Resource<>(location);
         StorageType type = location.getConfiguration() != null ? location.getConfiguration().getStorageType()
                 : StorageType.OFFLINE;
-
         switch (type) {
             case NEARLINE:
                 return toResourceNearline(location, extras);
@@ -182,7 +181,6 @@ public class StorageLocationController implements IResourceController<StorageLoc
             default:
                 break;
         }
-
         return resource;
     }
 
