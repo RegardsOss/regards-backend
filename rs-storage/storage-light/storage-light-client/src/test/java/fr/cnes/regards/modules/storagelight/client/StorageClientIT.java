@@ -204,16 +204,19 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         int loopCounter = 0;
         while (!listener.getGranted().contains(info) && (loopCounter <= 15)) {
             Thread.sleep(2_000);
+            loopCounter++;
         }
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         loopCounter = 0;
         while (!listener.getSuccess().containsKey(info) && (loopCounter <= 15)) {
             Thread.sleep(2_000);
+            loopCounter++;
         }
         Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
         loopCounter = 0;
         while ((listener.getSuccess().get(info).size() < 4) && (loopCounter <= 15)) {
             Thread.sleep(2_000);
+            loopCounter++;
         }
         Assert.assertEquals("Group request should contains 4 success request", 4,
                             listener.getSuccess().get(info).size());
@@ -483,9 +486,17 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         Set<FileCopyRequestDTO> requests = restorableFileChecksums.stream()
                 .map(f -> FileCopyRequestDTO.build(f, NEARLINE_CONF_2)).collect(Collectors.toSet());
         RequestInfo info = client.copy(requests);
-        Thread.sleep(15_000);
-
+        int loopCounter = 0;
+        while (!listener.getGranted().contains(info) && (loopCounter <= 15)) {
+            Thread.sleep(2_000);
+            loopCounter++;
+        }
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        loopCounter = 0;
+        while (!listener.getSuccess().containsKey(info) && (loopCounter <= 15)) {
+            Thread.sleep(2_000);
+            loopCounter++;
+        }
         Assert.assertTrue(String.format("Request should be successful for request id %s", info.getGroupId()),
                           listener.getSuccess().containsKey(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
@@ -532,16 +543,14 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                          IPluginParam.build(SimpleOnlineTestClient.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleOnlineTestClient.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, ONLINE_CONF, parameters, 0);
-            dataStorageConf.setIsActive(true);
-            dataStorageConf.setBusinessId(ONLINE_CONF);
-            return prioritizedDataStorageService.create(dataStorageConf, 1_000_000L);
+            return prioritizedDataStorageService.create(ONLINE_CONF, dataStorageConf, 1_000_000L);
         } catch (IOException | ModuleException e) {
             Assert.fail(e.getMessage());
             return null;
         }
     }
 
-    private StorageLocationConfiguration initDataStorageNLPluginConfiguration(String label, String storageDirectory)
+    private StorageLocationConfiguration initDataStorageNLPluginConfiguration(String name, String storageDirectory)
             throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleNearlineDataStorage.class);
@@ -553,10 +562,8 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_RESTORATION_ERROR_FILE_PATTERN,
                                             "restoError.*"),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
-            dataStorageConf.setIsActive(true);
-            dataStorageConf.setBusinessId(label);
-            return prioritizedDataStorageService.create(dataStorageConf, 1_000_000L);
+            PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, name, parameters, 0);
+            return prioritizedDataStorageService.create(name, dataStorageConf, 1_000_000L);
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }
