@@ -40,6 +40,7 @@ ALTER TABLE t_aip ADD COLUMN last_update TIMESTAMP NOT NULL;
 alter table t_aip add column categories jsonb not null;
 alter table t_aip add column tags jsonb;
 alter table t_aip drop column error_message;
+alter table t_aip rename column aipId to aip_id;
 
 CREATE INDEX idx_search_aip ON t_aip (session_owner, session_name, state, last_update);
 

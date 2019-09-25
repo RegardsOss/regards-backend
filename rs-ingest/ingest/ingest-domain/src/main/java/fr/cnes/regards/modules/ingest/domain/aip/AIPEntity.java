@@ -46,7 +46,7 @@ import org.hibernate.annotations.TypeDefs;
 
 @Entity
 @Table(name = "t_aip",
-        indexes = { @Index(name = "idx_aip_id", columnList = "id,aipId,sip_id"),
+        indexes = { @Index(name = "idx_aip_id", columnList = "id,aip_id,sip_id"),
             @Index(name = "idx_search_aip", columnList = "session_owner,session_name,state,last_update"),
             @Index(name = "idx_aip_provider_id", columnList = "provider_id"),
             @Index(name = "idx_aip_ingest_chain", columnList = "ingest_chain"),
@@ -67,7 +67,7 @@ public class AIPEntity extends AbstractOAISEntity {
      * versions
      */
     @NotBlank(message = "AIP URN is required")
-    @Column(name = "aipId", length = SIPEntity.MAX_URN_SIZE)
+    @Column(name = "aip_id", length = SIPEntity.MAX_URN_SIZE)
     private String aipId;
 
     /**

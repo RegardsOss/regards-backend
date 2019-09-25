@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -83,13 +84,20 @@ public interface IAIPService {
     /**
      * Retrieve all {@link AIPEntity}s matching parameters.
      */
-    Page<AIPEntity> search(SearchAIPsParameters parameters, Pageable pageable);
+    Page<AIPEntity> search(SearchAIPsParameters filters, Pageable pageable);
 
     /**
      * Compute the checksum of the AIP and save it
      * @param aipEntity
      */
     void computeAndSaveChecksum(AIPEntity aipEntity) throws ModuleException;
+
+    /**
+     * Retrieve all tags used by a set of AIPS, using query filters or a list of AIP id
+     * @param filters REST query
+     * @return Tags
+     */
+    List<String> searchTags(SearchFacetsAIPsParameters filters);
 
     void setAipToStored(UniformResourceName aipId, AIPState state);
 

@@ -45,7 +45,7 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=deletion_job",
         "regards.amqp.enabled=true" })
 @ActiveProfiles(value={"testAmqp", "StorageClientMock"})
-public class DeletionJobIT extends IngestMultitenantServiceTest {
+public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private StorageClientMock storageClient;

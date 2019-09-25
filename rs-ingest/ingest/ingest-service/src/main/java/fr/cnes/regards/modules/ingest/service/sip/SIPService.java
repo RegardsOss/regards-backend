@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.request.StorageDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -82,7 +83,7 @@ public class SIPService implements ISIPService {
     public Page<SIPEntity> search(String providerId, String sessionOwner, String session, OffsetDateTime from,
             List<SIPState> state, String ingestChain, Pageable page) {
         return sipRepository
-                .loadAll(SIPEntitySpecifications.search(providerId == null ? null : Lists.newArrayList(providerId),
+                .loadAll(SIPEntitySpecifications.search(providerId == null ? null : Sets.newHashSet(providerId),
                                                         null, sessionOwner, session, from, state, ingestChain,
                         true, null, null, null, page),
                          page);

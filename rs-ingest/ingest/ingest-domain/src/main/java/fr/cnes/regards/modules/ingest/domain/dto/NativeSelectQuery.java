@@ -1,0 +1,128 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.modules.ingest.domain.dto;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.Sets;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Holds info about a query to run (with named parameters)
+ * @author Léo Mieulet
+ */
+public class NativeSelectQuery {
+
+    /**
+     * SQL select part
+     */
+    private String selectClause;
+
+    /**
+     * SQL where part
+     */
+    private String whereClause;
+
+    /**
+     * Predicates
+     */
+    private Set<String> predicates;
+
+    /**
+     * Named parameters
+     */
+    private Map<String, String> params;
+
+    /**
+     * Date named parameters
+     */
+    private Map<String, Date> dateParams;
+
+    public NativeSelectQuery(String selectClause, String whereClause) {
+        this.selectClause = selectClause;
+        this.whereClause = whereClause;
+        params = new HashMap<>();
+        dateParams = new HashMap<>();
+        predicates = new HashSet<>();
+    }
+
+    /**
+     * @return the SQL to execute
+     */
+    public String getSQL() {
+        StringBuilder request = new StringBuilder("SELECT ").append(selectClause).append(" FROM ")
+                .append(whereClause);
+
+        if (!predicates.isEmpty()) {
+            request.append(" WHERE ");
+            Joiner.on(" AND ").appendTo(request, predicates);
+        };
+        return request.toString();
+    }
+
+
+    public void andPredicate(String predicate, String paramName, String paramValue) {
+        params.put(paramName, paramValue);
+        predicates.add(predicate);
+    }
+
+    public void andPredicate(String predicate, String paramName, Date date) {
+        dateParams.put(paramName, date);
+        predicates.add(predicate);
+    }
+
+    public void andListPredicate(String predicateStart, String predicateStop, String rootParamName, Set<String> paramValues) {
+        Set<String> preparedPredicates = Sets.newHashSet();
+        int i = 0;
+        for (Object paramValue : paramValues) {
+            String paramName = rootParamName + i;
+            preparedPredicates.add(":" + paramName);
+            this.params.put(paramName, paramValue.toString());
+            i = i + 1;
+        }
+        predicates.add(predicateStart + String.join(" , ", preparedPredicates) + predicateStop);
+    }
+
+    public void addOneOf(String predicateStart, String predicateStop, String rootParamName, Set<String> paramValues) {
+        Set<String> internalPredicates = Sets.newHashSet();
+        int i = 0;
+        for (Object paramValue : paramValues) {
+            String paramName = rootParamName + i;
+            internalPredicates.add(predicateStart + ":" + paramName + predicateStop);
+            this.params.put(paramName, paramValue.toString());
+            i = i + 1;
+        }
+        String oneOf = Joiner.on(" OR ").join(internalPredicates);
+        predicates.add("(" + oneOf + ")");
+    }
+
+    /**
+     * @return params to inject after the prepare statement
+     */
+    public Map<String, String> getParams() {
+        return params;
+    }
+
+    public Map<String, Date> getDateParams() {
+        return dateParams;
+    }
+}

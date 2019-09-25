@@ -18,9 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import java.time.OffsetDateTime;
 import java.util.List;
-
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -30,15 +40,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-
-import com.google.common.collect.Lists;
-
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow", "spring.jpa.show-sql=true",
         "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100" })
@@ -149,6 +150,54 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
                 .withSessionOwner(SESSION_OWNER_1).withSession(SESSION_1).withStorages(STORAGE_2)
                 .withCategories(CATEGORIES_2), PageRequest.of(0, 100));
         Assert.assertEquals(1, results.getTotalElements());
+    }
+
+
+    @Test
+    public void testSearchAIPTags() throws InterruptedException {
+        long nbSIP = 7;
+        publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create("provider 2", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_1, CATEGORIES_1);
+        publishSIPEvent(create("provider 3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORIES_1);
+        publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_2);
+        publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create("provider 7", TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+        // Wait
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 1000);
+
+        Page<AIPEntity> allAips = aipService.search(SearchAIPsParameters.build(), PageRequest.of(0, 100));
+        Set<String> aipIds = allAips.stream().map(aip -> aip.getAipId()).collect(Collectors.toSet());
+
+        List<String> results = aipService.searchTags(SearchFacetsAIPsParameters.build().
+                withState(AIPState.GENERATED).withTags(TAG_0));
+        Assert.assertEquals(2, results.size());
+
+        // Full test (with all attributes)
+        SearchFacetsAIPsParameters filters = SearchFacetsAIPsParameters.build()
+                .withState(AIPState.GENERATED)
+                .withTags(TAG_0)
+                .withProviderId("provider 1")
+                .withFrom(OffsetDateTime.now().minusHours(5))
+                .withTo(OffsetDateTime.now().plusDays(6))
+                .withAIPIds(aipIds)
+                .withCategories(Sets.newHashSet(CATEGORIES_0))
+                .withStorages(Sets.newLinkedHashSet(STORAGE_0))
+                .withSession(SESSION_0)
+                .withSessionOwner(SESSION_OWNER_0);
+        results = aipService.searchTags(filters);
+        Assert.assertEquals(2, results.size());
+
+        // Test the aipIdsExcluded
+        filters.withAIPIdsExcluded(aipIds);
+        results = aipService.searchTags(filters);
+        Assert.assertEquals(0, results.size());
+
+        // Test only session
+        filters = SearchFacetsAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0)
+                .withProviderId("provider%");
+        results = aipService.searchTags(filters);
+        Assert.assertEquals(3, results.size());
     }
 
 }

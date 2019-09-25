@@ -18,13 +18,27 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.ConstrainedFields;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.test.IngestServiceTest;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -43,22 +57,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.ConstrainedFields;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.test.IngestServiceTest;
 
 /**
 * {@link AIPEntity} REST API testing
@@ -133,6 +131,33 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(documentResultingAIPEntity()));
 
         performDefaultGet(AIPController.TYPE_MAPPING, requestBuilderCustomizer, "Should retrieve AIPEntity");
+    }
+
+
+    @Test
+    public void searchAIPTags() {
+
+        // Create AIP
+        String session = OffsetDateTime.now().toString();
+        String sessionOwner = "ESA";
+        createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner,
+                session, "NAS #1");
+
+        // Wait for ingestion finished
+        ingestServiceTest.waitForIngestion(1, 10000);
+
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        documentRequestParameters(requestBuilderCustomizer);
+
+        List<FieldDescriptor> fields = new ArrayList<>();
+        fields.add(new ConstrainedFields(List.class).withPath("[]", "List of tags")
+                .type(JSON_ARRAY_TYPE));
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(fields));
+
+        SearchFacetsAIPsParameters body = SearchFacetsAIPsParameters.build().withSessionOwner(sessionOwner)
+                .withSession(session);
+
+        performDefaultPost(AIPController.TYPE_MAPPING + AIPController.TAG_SEARCH_PATH, body, requestBuilderCustomizer, "Should retrieve AIP tags");
     }
 
     private void documentRequestParameters(RequestBuilderCustomizer requestBuilderCustomizer) {

@@ -18,6 +18,20 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
+import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
+import fr.cnes.regards.modules.ingest.dao.AIPQueryGenerator;
+import fr.cnes.regards.modules.ingest.dao.ICustomAIPRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
+import fr.cnes.regards.modules.storagelight.client.IStorageClient;
+import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,25 +66,14 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
-import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
-import fr.cnes.regards.modules.storagelight.client.IStorageClient;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
 
 /**
  * AIP service management
@@ -96,6 +99,9 @@ public class AIPService implements IAIPService {
 
     @Autowired
     private IAIPRepository aipRepository;
+
+    @Autowired
+    private ICustomAIPRepository customAIPRepository;
 
     @Autowired
     private IStorageClient storageClient;
@@ -162,12 +168,17 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Page<AIPEntity> search(SearchAIPsParameters parameters, Pageable pageable) {
+    public Page<AIPEntity> search(SearchAIPsParameters filters, Pageable pageable) {
 
-        return aipRepository.findAll(AIPEntitySpecification.searchAll(parameters, pageable), pageable);
+        return aipRepository.findAll(AIPEntitySpecification.searchAll(filters, pageable), pageable);
     }
 
     @Override
+    public List<String> searchTags(SearchFacetsAIPsParameters filters) {
+        return customAIPRepository.getDistinctTags(AIPQueryGenerator
+                .searchAipTagsUsingSQL(filters));
+    }
+
     public void downloadAIP(UniformResourceName aipId, HttpServletResponse response) throws ModuleException {
 
         // Find AIP

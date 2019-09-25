@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.CustomPostgresDialect;
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
@@ -24,7 +25,7 @@ public final class OAISEntitySpecification {
     }
 
     public static Set<Predicate> buildCommonPredicate(Root<?> root, CriteriaBuilder cb,List<String> tags,
-            String sessionOwner, String session, String providerId, List<String> storages, List<String> categories) {
+            String sessionOwner, String session, String providerId, Set<String> storages, Set<String> categories) {
 
         Set<Predicate> predicates = Sets.newHashSet();
         if (tags != null && !tags.isEmpty()) {
@@ -64,7 +65,7 @@ public final class OAISEntitySpecification {
         }
         if (categories != null && !categories.isEmpty()) {
             Path<Object> attributeRequeted = root.get(INGEST_METADATA).get("categories");
-            predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingElements(attributeRequeted, categories, cb));
+            predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingElements(attributeRequeted, Lists.newArrayList(categories), cb));
         }
         return predicates;
     }

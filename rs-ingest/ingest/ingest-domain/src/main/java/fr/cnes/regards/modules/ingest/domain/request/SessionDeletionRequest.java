@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.domain.request;
 
 import java.util.List;
 
+import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -82,14 +83,14 @@ public class SessionDeletionRequest extends AbstractRequest {
      */
     @Column(columnDefinition = "jsonb")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
-    private List<String> sipIds;
+    private Set<String> sipIds;
 
     /**
      * Provider id(s) of the SIP to preserve or remove in the specified session (according to {@link #selectionMode})
      */
     @Column(columnDefinition = "jsonb")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
-    private List<String> providerIds;
+    private Set<String> providerIds;
 
     public Long getId() {
         return id;
@@ -131,19 +132,19 @@ public class SessionDeletionRequest extends AbstractRequest {
         this.selectionMode = selectionMode;
     }
 
-    public List<String> getSipIds() {
+    public Set<String> getSipIds() {
         return sipIds;
     }
 
-    public void setSipIds(List<String> sipIds) {
+    public void setSipIds(Set<String> sipIds) {
         this.sipIds = sipIds;
     }
 
-    public List<String> getProviderIds() {
+    public Set<String> getProviderIds() {
         return providerIds;
     }
 
-    public void setProviderIds(List<String> providerIds) {
+    public void setProviderIds(Set<String> providerIds) {
         this.providerIds = providerIds;
     }
 

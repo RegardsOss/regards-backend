@@ -42,22 +42,22 @@ public final class AIPEntitySpecification {
         throw new IllegalStateException("Utility class");
     }
 
-    public static Specification<AIPEntity> searchAll(SearchAIPsParameters parameters, Pageable page) {
+    public static Specification<AIPEntity> searchAll(SearchAIPsParameters filters, Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            if (parameters.getState() != null) {
-                predicates.add(cb.equal(root.get("state"), parameters.getState()));
+            if (filters.getState() != null) {
+                predicates.add(cb.equal(root.get("state"), filters.getState()));
             }
-            if (parameters.getFrom() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), parameters.getFrom()));
+            if (filters.getFrom() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), filters.getFrom()));
             }
-            if (parameters.getTo() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("lastUpdate"), parameters.getTo()));
+            if (filters.getTo() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("lastUpdate"), filters.getTo()));
             }
             predicates.addAll(OAISEntitySpecification
-                    .buildCommonPredicate(root, cb, parameters.getTags(), parameters.getSessionOwner(),
-                                          parameters.getSession(), parameters.getProviderId(), parameters.getStorages(),
-                                          parameters.getCategories()));
+                    .buildCommonPredicate(root, cb, filters.getTags(), filters.getSessionOwner(),
+                                          filters.getSession(), filters.getProviderId(), filters.getStorages(),
+                                          filters.getCategories()));
             query.orderBy(cb.desc(root.get("creationDate")));
 
             // Add order

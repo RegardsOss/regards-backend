@@ -51,7 +51,7 @@ import org.springframework.data.domain.Sort;
  *
  * @author Léo Mieulet
  */
-public class SessionDeletionJob extends AbstractJob<Void> {
+public class OAISEntityDeletionJob extends AbstractJob<Void> {
 
     public static final String ID = "ID";
 

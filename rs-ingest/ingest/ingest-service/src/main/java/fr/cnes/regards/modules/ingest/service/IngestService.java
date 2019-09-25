@@ -68,7 +68,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
-import fr.cnes.regards.modules.ingest.service.job.SessionDeletionJob;
+import fr.cnes.regards.modules.ingest.service.job.OAISEntityDeletionJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
 /**
@@ -187,7 +187,8 @@ public class IngestService implements IIngestService {
         // Check submission limit / If there are more features than configurated bulk max size, reject request!
         if (sips.getFeatures().size() > confProperties.getMaxBulkSize()) {
             throw new EntityInvalidException(
-                    String.format("Invalid request due to ingest configuration max bulk size set to %s."));
+                    String.format("Invalid request due to ingest configuration max bulk size set to %s.",
+                            confProperties.getMaxBulkSize()));
         }
 
         // Validate and transform ingest metadata
@@ -316,9 +317,9 @@ public class IngestService implements IIngestService {
 
         // Schedule deletion job
         Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(SessionDeletionJob.ID, deletionRequest.getId()));
+        jobParameters.add(new JobParameter(OAISEntityDeletionJob.ID, deletionRequest.getId()));
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.SESSION_DELETION_JOB_PRIORITY.getPriority(),
-                jobParameters, authResolver.getUser(), SessionDeletionJob.class.getName());
+                jobParameters, authResolver.getUser(), OAISEntityDeletionJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
 
         // Switch request status (same transaction)

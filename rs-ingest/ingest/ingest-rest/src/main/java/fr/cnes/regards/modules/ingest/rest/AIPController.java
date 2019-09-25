@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import java.io.IOException;
 
+import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
@@ -37,6 +39,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -89,6 +92,16 @@ public class AIPController implements IResourceController<AIPEntity> {
     public static final String AIP_DOWNLOAD_PATH = "/{" + AIP_ID_PATH_PARAM + "}/download";
 
     /**
+     * Controller path to manage tags of multiple AIPs
+     */
+    public static final String TAG_MANAGEMENT_PATH = "/tags";
+
+    /**
+     * Controller path to search used tags by multiple AIPs
+     */
+    public static final String TAG_SEARCH_PATH = TAG_MANAGEMENT_PATH + "/search";
+
+    /**
      * {@link IResourceService} instance
      */
     @Autowired
@@ -98,15 +111,8 @@ public class AIPController implements IResourceController<AIPEntity> {
     private IAIPService aipService;
 
     /**
-     * Retrieve a page of aip metadata according to the given parameters
-     * @param state state the aips should be in
-     * @param from date(UTC) after which the aip should have been added to the system
-     * @param to date(UTC) before which the aip should have been added to the system
-     * @param tags
-     * @param providerId
-     * @param sessionOwner
-     * @param session {@link String}
-     * @param storages
+     * Retrieve a page of aip metadata according to the given filters
+     * @param filters
      * @param pageable
      * @param assembler
      * @return page of aip metadata respecting the constraints
@@ -115,11 +121,23 @@ public class AIPController implements IResourceController<AIPEntity> {
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Return a page of AIPs")
-    public ResponseEntity<PagedResources<Resource<AIPEntity>>> searchAIPs(SearchAIPsParameters parameters,
+    public ResponseEntity<PagedResources<Resource<AIPEntity>>> searchAIPs(SearchAIPsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AIPEntity> assembler) throws ModuleException {
-        Page<AIPEntity> aips = aipService.search(parameters, pageable);
+        Page<AIPEntity> aips = aipService.search(filters, pageable);
         return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
+    }
+
+    /**
+     * Retrieve common tags from a list of aips
+     * @param filters
+     * @return tags
+     */
+    @RequestMapping(value = TAG_SEARCH_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "Search tags used by aips")
+    public ResponseEntity<List<String>> retrieveAIPTags(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
+        List<String> aipTags = aipService.searchTags(filters);
+        return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 
     @RequestMapping(value = AIP_DOWNLOAD_PATH, method = RequestMethod.GET,

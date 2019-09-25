@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.dto.aip;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
+import java.util.Set;
 import org.apache.commons.compress.utils.Lists;
-
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 
 /**
  * @author sbinda
@@ -46,9 +47,9 @@ public class SearchAIPsParameters {
 
     private String session;
 
-    private List<String> storages = Lists.newArrayList();
+    private Set<String> storages = Sets.newHashSet();
 
-    private List<String> categories = Lists.newArrayList();
+    private Set<String> categories = Sets.newHashSet();
 
     public static SearchAIPsParameters build() {
         return new SearchAIPsParameters();
@@ -75,9 +76,7 @@ public class SearchAIPsParameters {
     }
 
     public SearchAIPsParameters withTags(String... tags) {
-        for (String tag : tags) {
-            this.tags.add(tag);
-        }
+        this.tags.addAll(Arrays.asList(tags));
         return this;
     }
 
@@ -107,9 +106,7 @@ public class SearchAIPsParameters {
     }
 
     public SearchAIPsParameters withStorages(String... storages) {
-        for (String storage : storages) {
-            this.storages.add(storage);
-        }
+        this.storages.addAll(Arrays.asList(storages));
         return this;
     }
 
@@ -124,9 +121,7 @@ public class SearchAIPsParameters {
     }
 
     public SearchAIPsParameters withCategories(String... categories) {
-        for (String category : categories) {
-            this.categories.add(category);
-        }
+        this.categories.addAll(Arrays.asList(categories));
         return this;
     }
 
@@ -191,19 +186,19 @@ public class SearchAIPsParameters {
         this.session = session;
     }
 
-    public List<String> getStorages() {
+    public Set<String> getStorages() {
         return storages;
     }
 
-    public void setStorages(List<String> storages) {
+    public void setStorages(Set<String> storages) {
         this.storages = storages;
     }
 
-    public List<String> getCategories() {
+    public Set<String> getCategories() {
         return categories;
     }
 
-    public void setCategories(List<String> categories) {
+    public void setCategories(Set<String> categories) {
         this.categories = categories;
     }
 

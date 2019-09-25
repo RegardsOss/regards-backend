@@ -56,9 +56,9 @@ public final class SIPEntitySpecifications {
      * @param areIdListInclusive true when sipIds and providerIds should be include in the request, otherwise these
      * @param page
      */
-    public static Specification<SIPEntity> search(List<String> providerIds, List<String> sipIds, String sessionOwner, String session,
+    public static Specification<SIPEntity> search(Set<String> providerIds, Set<String> sipIds, String sessionOwner, String session,
             OffsetDateTime from, List<SIPState> states, String ingestChain, boolean areIdListInclusive,
-            List<String> tags, List<String> storages, List<String> categories, Pageable page) {
+            List<String> tags, Set<String> storages, Set<String> categories, Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (states != null && !states.isEmpty()) {
