@@ -18,20 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.util.List;
+
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +31,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -52,6 +42,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 
 /**
  * This controller manages AIP.
@@ -68,13 +67,21 @@ public class AIPController implements IResourceController<AIPEntity> {
     public static final String TYPE_MAPPING = "/aips";
 
     public static final String REQUEST_PARAM_STATE = "state";
+
     public static final String REQUEST_PARAM_FROM = "from";
+
     public static final String REQUEST_PARAM_TO = "to";
+
     public static final String REQUEST_PARAM_TAGS = "tags";
+
     public static final String REQUEST_PARAM_PROVIDER_ID = "providerId";
+
     public static final String REQUEST_PARAM_SESSION_OWNER = "sessionOwner";
+
     public static final String REQUEST_PARAM_SESSION = "session";
+
     public static final String REQUEST_PARAM_CATEGORIES = "categories";
+
     public static final String REQUEST_PARAM_STORAGES = "storages";
 
     public static final String AIP_ID_PATH_PARAM = "aip_id";
@@ -89,6 +96,7 @@ public class AIPController implements IResourceController<AIPEntity> {
 
     @Autowired
     private IAIPService aipService;
+
     /**
      * Retrieve a page of aip metadata according to the given parameters
      * @param state state the aips should be in
@@ -107,22 +115,10 @@ public class AIPController implements IResourceController<AIPEntity> {
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Return a page of AIPs")
-    public ResponseEntity<PagedResources<Resource<AIPEntity>>> searchAIPs(
-            @RequestParam(name = REQUEST_PARAM_STATE, required = false) AIPState state,
-            @RequestParam(name = REQUEST_PARAM_FROM,
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @RequestParam(name = REQUEST_PARAM_TO,
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
-            @RequestParam(name = REQUEST_PARAM_TAGS, required = false) List<String> tags,
-            @RequestParam(name = REQUEST_PARAM_PROVIDER_ID, required = false) String providerId,
-            @RequestParam(name = REQUEST_PARAM_SESSION_OWNER, required = false) String sessionOwner,
-            @RequestParam(name = REQUEST_PARAM_SESSION, required = false) String session,
-            @RequestParam(name = REQUEST_PARAM_STORAGES, required = false) List<String> storages,
-            @RequestParam(name = REQUEST_PARAM_CATEGORIES, required = false) List<String> categories,
+    public ResponseEntity<PagedResources<Resource<AIPEntity>>> searchAIPs(SearchAIPsParameters parameters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AIPEntity> assembler) throws ModuleException {
-        Page<AIPEntity> aips = aipService.search(state, from, to, tags, sessionOwner, session, providerId,
-                storages, categories, pageable);
+        Page<AIPEntity> aips = aipService.search(parameters, pageable);
         return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
     }
 

@@ -18,17 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
-import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
-import fr.cnes.regards.modules.storagelight.client.IStorageClient;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,13 +52,25 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
+import fr.cnes.regards.modules.storagelight.client.IStorageClient;
+import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
 
 /**
  * AIP service management
@@ -120,9 +121,9 @@ public class AIPService implements IAIPService {
         return aipRepository.save(entity);
     }
 
-
-    public Collection<FileStorageRequestDTO> buildAIPStorageRequest(AIP aip, String checksum, List<StorageMetadata> storages)
-            throws ModuleException {
+    @Override
+    public Collection<FileStorageRequestDTO> buildAIPStorageRequest(AIP aip, String checksum,
+            List<StorageMetadata> storages) throws ModuleException {
 
         // Build file storage requests
         Collection<FileStorageRequestDTO> files = new ArrayList<>();
@@ -151,23 +152,22 @@ public class AIPService implements IAIPService {
 
     private String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException {
         // TODO @msordi si t'as des idées
-//        try (PipedInputStream in = new PipedInputStream(); PipedOutputStream out = new PipedOutputStream(in)) {
-//            writeAip(aip, out);
-//            return ChecksumUtils.computeHexChecksum(in, MD5_ALGORITHM);
-//        }
+        //        try (PipedInputStream in = new PipedInputStream(); PipedOutputStream out = new PipedOutputStream(in)) {
+        //            writeAip(aip, out);
+        //            return ChecksumUtils.computeHexChecksum(in, MD5_ALGORITHM);
+        //        }
         String jsonSip = gson.toJson(aip);
         InputStream inputStream = new ByteArrayInputStream(jsonSip.getBytes());
         return ChecksumUtils.computeHexChecksum(inputStream, MD5_ALGORITHM);
     }
 
     @Override
-    public Page<AIPEntity> search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, String sessionOwner,
-            String session, String providerId, List<String> storages, List<String> categories, Pageable pageable) {
+    public Page<AIPEntity> search(SearchAIPsParameters parameters, Pageable pageable) {
 
-        return aipRepository.findAll(AIPEntitySpecification.searchAll(state, from, to, tags, sessionOwner, session,
-                providerId, storages, categories, pageable), pageable);
+        return aipRepository.findAll(AIPEntitySpecification.searchAll(parameters, pageable), pageable);
     }
 
+    @Override
     public void downloadAIP(UniformResourceName aipId, HttpServletResponse response) throws ModuleException {
 
         // Find AIP
@@ -199,11 +199,11 @@ public class AIPService implements IAIPService {
      * Write AIP in specified {@link OutputStream}
      */
     private void writeAip(AIP aip, OutputStream out) throws IOException {
-//        try () {
-            JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, UTF8_ENCODING));
-            writer.setIndent(JSON_INDENT);
-            gson.toJson(aip, AIP.class, writer);
-//        }
+        //        try () {
+        JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, UTF8_ENCODING));
+        writer.setIndent(JSON_INDENT);
+        gson.toJson(aip, AIP.class, writer);
+        //        }
     }
 
     @Override
@@ -217,7 +217,6 @@ public class AIPService implements IAIPService {
             aipRepository.save(aip);
         }
     }
-
 
     @Override
     public String scheduleAIPEntityDeletion(String sipId) {
@@ -236,16 +235,16 @@ public class AIPService implements IAIPService {
                 for (OAISDataObjectLocation location : dataObject.getLocations()) {
                     if (location.getStorage() != null) {
                         // Create the storage delete event
-                        filesToDelete.add(FileDeletionRequestDTO.build(dataObject.getChecksum(),
-                                location.getStorage(), aipEntity.getAipId(), false));
+                        filesToDelete.add(FileDeletionRequestDTO.build(dataObject.getChecksum(), location.getStorage(),
+                                                                       aipEntity.getAipId(), false));
                     }
                 }
             }
 
             // Add the AIP itself (on each storage) to the file list to remove
-            for (StorageMetadata storage: aipEntity.getIngestMetadata().getStorages()) {
-                filesToDelete.add(FileDeletionRequestDTO.build(aipEntity.getChecksum(),
-                        storage.getPluginBusinessId(), aipEntity.getAipId(), false));
+            for (StorageMetadata storage : aipEntity.getIngestMetadata().getStorages()) {
+                filesToDelete.add(FileDeletionRequestDTO.build(aipEntity.getChecksum(), storage.getPluginBusinessId(),
+                                                               aipEntity.getAipId(), false));
             }
 
             // Mark the AIP as deleted
@@ -298,6 +297,5 @@ public class AIPService implements IAIPService {
             throw new ModuleException(message, e);
         }
     }
-
 
 }

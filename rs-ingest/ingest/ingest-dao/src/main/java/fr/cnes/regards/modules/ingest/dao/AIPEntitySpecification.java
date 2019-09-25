@@ -18,18 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Set;
+
 import javax.persistence.criteria.Predicate;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 
 /**
  * Specification class to filter DAO searches on {@link AIPEntity} entities
@@ -41,22 +42,22 @@ public final class AIPEntitySpecification {
         throw new IllegalStateException("Utility class");
     }
 
-    public static Specification<AIPEntity> searchAll(AIPState state, OffsetDateTime from, OffsetDateTime to,
-            List<String> tags, String sessionOwner, String session, String providerId, List<String> storages,
-            List<String> categories, Pageable page) {
+    public static Specification<AIPEntity> searchAll(SearchAIPsParameters parameters, Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            if (state != null) {
-                predicates.add(cb.equal(root.get("state"), state));
+            if (parameters.getState() != null) {
+                predicates.add(cb.equal(root.get("state"), parameters.getState()));
             }
-            if (from != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), from));
+            if (parameters.getFrom() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), parameters.getFrom()));
             }
-            if (to != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("lastUpdate"), to));
+            if (parameters.getTo() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("lastUpdate"), parameters.getTo()));
             }
-            predicates.addAll(OAISEntitySpecification.buildCommonPredicate(root, cb, tags,
-                    sessionOwner, session, providerId, storages, categories));
+            predicates.addAll(OAISEntitySpecification
+                    .buildCommonPredicate(root, cb, parameters.getTags(), parameters.getSessionOwner(),
+                                          parameters.getSession(), parameters.getProviderId(), parameters.getStorages(),
+                                          parameters.getCategories()));
             query.orderBy(cb.desc(root.get("creationDate")));
 
             // Add order
