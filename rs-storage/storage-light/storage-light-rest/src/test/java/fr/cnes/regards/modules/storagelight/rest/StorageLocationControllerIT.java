@@ -154,9 +154,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, TARGET_STORAGE, parameters, 0);
-            dataStorageConf.setBusinessId(TARGET_STORAGE);
-            dataStorageConf.setIsActive(true);
-            prioritizedDataStorageService.create(dataStorageConf, 1_000_000L);
+            prioritizedDataStorageService.create(TARGET_STORAGE, dataStorageConf, 1_000_000L);
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }
