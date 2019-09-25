@@ -104,8 +104,8 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
         String label = "updateConf label";
         StorageLocationConfiguration pds = createPrioritizedDataStorage(label);
         PluginConfiguration updatedConf = getPluginConf(label);
-        updatedConf.setId(pds.getStorageConfiguration().getId());
-        updatedConf.setBusinessId(pds.getStorageConfiguration().getBusinessId());
+        updatedConf.setId(pds.getPluginConfiguration().getId());
+        updatedConf.setBusinessId(pds.getPluginConfiguration().getBusinessId());
         StorageLocationConfiguration upds = new StorageLocationConfiguration(updatedConf, 0L, 1_000_000L,
                 StorageType.ONLINE);
         upds.setId(pds.getId());
@@ -122,8 +122,8 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
         StorageLocationConfiguration pds = createPrioritizedDataStorage(label);
 
         PluginConfiguration updatedConf = getPluginConf(label);
-        updatedConf.setBusinessId(pds.getStorageConfiguration().getBusinessId());
-        updatedConf.setId(pds.getStorageConfiguration().getId());
+        updatedConf.setBusinessId(pds.getPluginConfiguration().getBusinessId());
+        updatedConf.setId(pds.getPluginConfiguration().getId());
         updatedConf.getParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME)
                 .value(newbaseStorageLocation.toString());
 

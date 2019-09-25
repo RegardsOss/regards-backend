@@ -188,7 +188,7 @@ public class FileCacheRequestService {
         // Handle storage by priority
         while (storage.isPresent() && !remainingStorages.isEmpty() && !remainingChecksums.isEmpty()) {
             // For each storage dispatch files in online, near line and not available
-            PluginConfiguration conf = storage.get().getStorageConfiguration();
+            PluginConfiguration conf = storage.get().getPluginConfiguration();
             String storageName = conf.getLabel();
             ImmutableList<FileReference> storageFiles = filesByStorage.get(storageName);
             // Calculate remaining files to make available for the current storage

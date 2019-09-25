@@ -136,14 +136,14 @@ public class StorageLocationService {
             StorageLocation loc = oLoc.get();
             StorageLocationType type = conf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
                     : StorageLocationType.NEALINE;
-            return StorageLocationDTO.build(conf.getStorageConfiguration().getBusinessId(), type,
+            return StorageLocationDTO.build(conf.getPluginConfiguration().getBusinessId(), type,
                                             loc.getNumberOfReferencedFiles(), loc.getTotalSizeOfReferencedFiles(), null,
                                             nbStorageError, nbDeletionError, conf);
         } else if (oConf.isPresent()) {
             StorageLocationConfiguration conf = oConf.get();
             StorageLocationType type = conf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
                     : StorageLocationType.NEALINE;
-            return StorageLocationDTO.build(conf.getStorageConfiguration().getBusinessId(), type, null, null, null,
+            return StorageLocationDTO.build(conf.getPluginConfiguration().getBusinessId(), type, null, null, null,
                                             nbStorageError, nbDeletionError, conf);
         } else if (oLoc.isPresent()) {
             StorageLocation loc = oLoc.get();
@@ -168,38 +168,38 @@ public class StorageLocationService {
         List<StorageLocationConfiguration> nearlines = pLocationConfService.search(StorageType.NEARLINE);
         // Handle all online storage configured
         for (StorageLocationConfiguration online : onlines) {
-            Long nbStorageError = storageReqService.count(online.getStorageConfiguration().getLabel(),
+            Long nbStorageError = storageReqService.count(online.getPluginConfiguration().getLabel(),
                                                           FileRequestStatus.ERROR);
-            Long nbDeletionError = deletionReqService.count(online.getStorageConfiguration().getLabel(),
+            Long nbDeletionError = deletionReqService.count(online.getPluginConfiguration().getLabel(),
                                                             FileRequestStatus.ERROR);
-            StorageLocation monitored = monitoredLocations.get(online.getStorageConfiguration().getBusinessId());
+            StorageLocation monitored = monitoredLocations.get(online.getPluginConfiguration().getBusinessId());
             if (monitored != null) {
                 locationsDto.add(StorageLocationDTO
-                        .build(online.getStorageConfiguration().getBusinessId(), StorageLocationType.ONLINE,
+                        .build(online.getPluginConfiguration().getBusinessId(), StorageLocationType.ONLINE,
                                monitored.getNumberOfReferencedFiles(), monitored.getTotalSizeOfReferencedFiles(), null,
                                nbStorageError, nbDeletionError, online));
                 monitoredLocations.remove(monitored.getName());
             } else {
-                locationsDto.add(StorageLocationDTO.build(online.getStorageConfiguration().getBusinessId(),
+                locationsDto.add(StorageLocationDTO.build(online.getPluginConfiguration().getBusinessId(),
                                                           StorageLocationType.ONLINE, 0L, 0L, null, nbStorageError,
                                                           nbDeletionError, online));
             }
         }
         // Handle all nearlines storage configured
         for (StorageLocationConfiguration nearline : nearlines) {
-            Long nbStorageError = storageReqService.count(nearline.getStorageConfiguration().getLabel(),
+            Long nbStorageError = storageReqService.count(nearline.getPluginConfiguration().getLabel(),
                                                           FileRequestStatus.ERROR);
-            Long nbDeletionError = deletionReqService.count(nearline.getStorageConfiguration().getLabel(),
+            Long nbDeletionError = deletionReqService.count(nearline.getPluginConfiguration().getLabel(),
                                                             FileRequestStatus.ERROR);
-            StorageLocation monitored = monitoredLocations.get(nearline.getStorageConfiguration().getBusinessId());
+            StorageLocation monitored = monitoredLocations.get(nearline.getPluginConfiguration().getBusinessId());
             if (monitored != null) {
                 locationsDto.add(StorageLocationDTO
-                        .build(nearline.getStorageConfiguration().getBusinessId(), StorageLocationType.NEALINE,
+                        .build(nearline.getPluginConfiguration().getBusinessId(), StorageLocationType.NEALINE,
                                monitored.getNumberOfReferencedFiles(), monitored.getTotalSizeOfReferencedFiles(), null,
                                nbStorageError, nbDeletionError, nearline));
                 monitoredLocations.remove(monitored.getName());
             } else {
-                locationsDto.add(StorageLocationDTO.build(nearline.getStorageConfiguration().getBusinessId(),
+                locationsDto.add(StorageLocationDTO.build(nearline.getPluginConfiguration().getBusinessId(),
                                                           StorageLocationType.NEALINE, 0L, 0L, null, nbStorageError,
                                                           nbDeletionError, nearline));
             }
@@ -373,7 +373,7 @@ public class StorageLocationService {
      */
     public StorageLocationDTO configureLocation(StorageLocationDTO storageLocation) throws ModuleException {
         StorageLocationConfiguration newConf = pLocationConfService
-                .create(storageLocation.getConfiguration().getStorageConfiguration(),
+                .create(storageLocation.getConfiguration().getPluginConfiguration(),
                         storageLocation.getConfiguration().getAllocatedSizeInKo());
         StorageLocationType type = newConf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
                 : StorageLocationType.NEALINE;

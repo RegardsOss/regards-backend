@@ -80,6 +80,9 @@ public class StorageLocationConfigurationService {
      */
     public StorageLocationConfiguration create(PluginConfiguration toBeCreated, Long allocatedSizeInKo)
             throws ModuleException {
+        if (toBeCreated.getBusinessId() == null) {
+            toBeCreated.setBusinessId(toBeCreated.getLabel());
+        }
         PluginConfiguration storageConf = pluginService.savePluginConfiguration(toBeCreated);
         StorageType storageType;
         if (storageConf.getInterfaceNames().contains(IOnlineStorageLocation.class.getName())) {
@@ -132,7 +135,7 @@ public class StorageLocationConfigurationService {
             confs = storageLocConfRepo.findByStorageConfigurationLabelIn(storageIds);
         }
         for (StorageLocationConfiguration c : confs) {
-            if (c.getStorageConfiguration().isActive()
+            if (c.getPluginConfiguration().isActive()
                     && (!storage.isPresent() || (c.getPriority() < storage.get().getPriority()))) {
                 storage = Optional.of(c);
             }
@@ -160,7 +163,7 @@ public class StorageLocationConfigurationService {
     @Nullable
     public StorageLocationConfiguration getFirstActive(StorageType storageType) {
         return storageLocConfRepo.findFirstByStorageTypeAndStorageConfigurationActiveOrderByPriorityAsc(storageType,
-                                                                                                            true);
+                                                                                                        true);
     }
 
     /**
@@ -247,8 +250,8 @@ public class StorageLocationConfigurationService {
         }
 
         PluginConfUpdatable updatable = null;
-        boolean oldConfActive = oldOne.getStorageConfiguration().isActive();
-        String storageLabel = oldOne.getStorageConfiguration().getLabel();
+        boolean oldConfActive = oldOne.getPluginConfiguration().isActive();
+        String storageLabel = oldOne.getPluginConfiguration().getLabel();
 
         if (oldConfActive) {
             // Count number of files stored by the plugin configuration
@@ -256,9 +259,9 @@ public class StorageLocationConfigurationService {
 
             // Ask plugin if the update is allowed
             try {
-                IStorageLocation plugin = pluginService.getPlugin(oldOne.getStorageConfiguration().getBusinessId());
-                updatable = plugin.allowConfigurationUpdate(updated.getStorageConfiguration(),
-                                                            oldOne.getStorageConfiguration(), nbfilesAlreadyStored > 0);
+                IStorageLocation plugin = pluginService.getPlugin(oldOne.getPluginConfiguration().getBusinessId());
+                updatable = plugin.allowConfigurationUpdate(updated.getPluginConfiguration(),
+                                                            oldOne.getPluginConfiguration(), nbfilesAlreadyStored > 0);
             } catch (NotAvailablePluginConfigurationException e) {
                 LOG.error(e.getMessage(), e);
                 throw new EntityOperationForbiddenException(e.getMessage());
@@ -268,11 +271,11 @@ public class StorageLocationConfigurationService {
         // if oldConfActive is true, updatable cannot be null
         if (!oldConfActive || updatable.isUpdateAllowed()) {
             PluginConfiguration updatedConf = pluginService
-                    .updatePluginConfiguration(updated.getStorageConfiguration());
-            oldOne.setStorageConfiguration(updatedConf);
+                    .updatePluginConfiguration(updated.getPluginConfiguration());
+            oldOne.setPluginConfiguration(updatedConf);
             return storageLocConfRepo.save(oldOne);
         } else {
-            throw new EntityOperationForbiddenException(oldOne.getStorageConfiguration().getLabel(),
+            throw new EntityOperationForbiddenException(oldOne.getPluginConfiguration().getLabel(),
                     StorageLocationConfiguration.class, updatable.getUpdateNotAllowedReason());
         }
     }
@@ -291,7 +294,7 @@ public class StorageLocationConfigurationService {
                     .findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(toDelete.getStorageType(),
                                                                                   toDelete.getPriority());
             storageLocConfRepo.delete(toDelete);
-            pluginService.deletePluginConfiguration(toDelete.getStorageConfiguration().getBusinessId());
+            pluginService.deletePluginConfiguration(toDelete.getPluginConfiguration().getBusinessId());
             for (StorageLocationConfiguration lessPrioritized : lessPrioritizeds) {
                 lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);
             }

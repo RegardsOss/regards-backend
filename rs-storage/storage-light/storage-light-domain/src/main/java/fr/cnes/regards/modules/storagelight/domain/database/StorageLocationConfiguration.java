@@ -46,8 +46,8 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
     @Valid
     @OneToOne
     @MapsId
-    @JoinColumn(name = "storage_conf_id", foreignKey = @ForeignKey(name = "fk_prioritized_storage_plugin_conf"))
-    private PluginConfiguration storageConfiguration;
+    @JoinColumn(name = "plugin_conf_id", foreignKey = @ForeignKey(name = "fk_prioritized_storage_plugin_conf"))
+    private PluginConfiguration pluginConfiguration;
 
     @Enumerated(EnumType.STRING)
     @Column(name = STORAGE_TYPE_COLUMN_NAME)
@@ -72,17 +72,17 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
 
     public StorageLocationConfiguration(PluginConfiguration dataStorageConfiguration, Long priority,
             Long allocatedSizeInKo, StorageType dataStorageType) {
-        this.storageConfiguration = dataStorageConfiguration;
+        this.pluginConfiguration = dataStorageConfiguration;
         this.priority = priority;
         this.storageType = dataStorageType;
     }
 
-    public PluginConfiguration getStorageConfiguration() {
-        return storageConfiguration;
+    public PluginConfiguration getPluginConfiguration() {
+        return pluginConfiguration;
     }
 
-    public void setStorageConfiguration(PluginConfiguration dataStorageConfiguration) {
-        this.storageConfiguration = dataStorageConfiguration;
+    public void setPluginConfiguration(PluginConfiguration dataStorageConfiguration) {
+        this.pluginConfiguration = dataStorageConfiguration;
     }
 
     public Long getPriority() {
@@ -128,13 +128,13 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
 
         StorageLocationConfiguration that = (StorageLocationConfiguration) o;
 
-        return storageConfiguration != null ? storageConfiguration.equals(that.storageConfiguration)
-                : that.storageConfiguration == null;
+        return pluginConfiguration != null ? pluginConfiguration.equals(that.pluginConfiguration)
+                : that.pluginConfiguration == null;
     }
 
     @Override
     public int hashCode() {
-        return storageConfiguration != null ? storageConfiguration.hashCode() : 0;
+        return pluginConfiguration != null ? pluginConfiguration.hashCode() : 0;
     }
 
     @Override

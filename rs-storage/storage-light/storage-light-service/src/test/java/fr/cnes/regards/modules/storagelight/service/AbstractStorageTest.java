@@ -254,7 +254,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                                         getBaseStorageLocation().toString()),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, newErrorPattern),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-        conf.getStorageConfiguration().setParameters(parameters);
+        conf.getPluginConfiguration().setParameters(parameters);
         prioritizedDataStorageService.update(conf.getId(), conf);
     }
 

@@ -102,7 +102,7 @@ public class FileDownloadService {
         Optional<StorageLocationConfiguration> storageLocation = prioritizedStorageService
                 .searchActiveHigherPriority(storages.keySet());
         if (storageLocation.isPresent()) {
-            PluginConfiguration conf = storageLocation.get().getStorageConfiguration();
+            PluginConfiguration conf = storageLocation.get().getPluginConfiguration();
             FileReference fileToDownload = storages.get(conf.getLabel());
             return new DownloadableFile(downloadFileReference(fileToDownload),
                     fileToDownload.getMetaInfo().getFileSize(), fileToDownload.getMetaInfo().getFileName(),
@@ -153,7 +153,7 @@ public class FileDownloadService {
             throws ModuleException {
         try {
             IOnlineStorageLocation plugin = pluginService
-                    .getPlugin(storagePluginConf.getStorageConfiguration().getBusinessId());
+                    .getPlugin(storagePluginConf.getPluginConfiguration().getBusinessId());
             return plugin.retrieve(fileToDownload);
         } catch (NotAvailablePluginConfigurationException e) {
             throw new ModuleException(String
