@@ -40,8 +40,9 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
+import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.rest.plugin.SimpleOnlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.location.StorageLocationConfigurationService;
 
@@ -58,15 +59,15 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     private static final String STORAGE_PATH = "target/ONLINE-STORAGE";
 
     @Autowired
-    private StorageLocationConfigurationService prioritizedDataStorageService;
+    private StorageLocationConfigurationService storageLocationConfService;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
     private void clear() throws IOException {
-        prioritizedDataStorageService.search(StorageType.ONLINE).forEach(c -> {
+        storageLocationConfService.searchAll().forEach(c -> {
             try {
-                prioritizedDataStorageService.delete(c.getId());
+                storageLocationConfService.delete(c.getId());
             } catch (ModuleException e) {
                 Assert.fail(e.getMessage());
             }
@@ -82,6 +83,15 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
         tenantResolver.forceTenant(getDefaultTenant());
         clear();
         initDataStoragePluginConfiguration();
+    }
+
+    @Test
+    public void configureLocation() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        performDefaultPost(StorageLocationController.BASE_PATH,
+                           StorageLocationDTO.build("plop", null, null, null, null, null,
+                                                    new StorageLocationConfiguration("plop", null, null, null, null)),
+                           requestBuilderCustomizer, "Should be created");
     }
 
     @Test
@@ -154,7 +164,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, TARGET_STORAGE, parameters, 0);
-            prioritizedDataStorageService.create(TARGET_STORAGE, dataStorageConf, 1_000_000L);
+            storageLocationConfService.create(TARGET_STORAGE, dataStorageConf, 1_000_000L);
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }

@@ -28,8 +28,6 @@ public class StorageLocationDTO {
 
     private String name;
 
-    private StorageLocationType type;
-
     private Long nbFilesStored;
 
     private Long totalStoredFilesSizeKo;
@@ -42,12 +40,10 @@ public class StorageLocationDTO {
 
     private StorageLocationConfiguration configuration;
 
-    public static StorageLocationDTO build(String name, StorageLocationType type, Long nbFilesStored,
-            Long totalStoredFilesSizeKo, Long sizeLimitKo, Long nbStorageError, Long nbDeletionError,
-            StorageLocationConfiguration configuration) {
+    public static StorageLocationDTO build(String name, Long nbFilesStored, Long totalStoredFilesSizeKo,
+            Long sizeLimitKo, Long nbStorageError, Long nbDeletionError, StorageLocationConfiguration configuration) {
         StorageLocationDTO dto = new StorageLocationDTO();
         dto.name = name;
-        dto.type = type;
         dto.nbFilesStored = nbFilesStored;
         dto.totalStoredFilesSizeKo = totalStoredFilesSizeKo;
         dto.sizeLimitKo = sizeLimitKo;
@@ -59,10 +55,6 @@ public class StorageLocationDTO {
 
     public String getName() {
         return name;
-    }
-
-    public StorageLocationType getType() {
-        return type;
     }
 
     public Long getNbFilesStored() {

@@ -27,5 +27,6 @@ package fr.cnes.regards.modules.storagelight.domain.plugin;
 public enum StorageType {
 
     NEARLINE,
-    ONLINE;
+    ONLINE,
+    OFFLINE;
 }

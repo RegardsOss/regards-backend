@@ -55,7 +55,6 @@ import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoring;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationType;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
@@ -135,20 +134,16 @@ public class StorageLocationService {
         if (oConf.isPresent() && oLoc.isPresent()) {
             StorageLocationConfiguration conf = oConf.get();
             StorageLocation loc = oLoc.get();
-            StorageLocationType type = conf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
-                    : StorageLocationType.NEALINE;
-            return StorageLocationDTO.build(conf.getPluginConfiguration().getBusinessId(), type,
+            return StorageLocationDTO.build(conf.getPluginConfiguration().getBusinessId(),
                                             loc.getNumberOfReferencedFiles(), loc.getTotalSizeOfReferencedFiles(), null,
                                             nbStorageError, nbDeletionError, conf);
         } else if (oConf.isPresent()) {
             StorageLocationConfiguration conf = oConf.get();
-            StorageLocationType type = conf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
-                    : StorageLocationType.NEALINE;
-            return StorageLocationDTO.build(conf.getPluginConfiguration().getBusinessId(), type, null, null, null,
+            return StorageLocationDTO.build(conf.getPluginConfiguration().getBusinessId(), null, null, null,
                                             nbStorageError, nbDeletionError, conf);
         } else if (oLoc.isPresent()) {
             StorageLocation loc = oLoc.get();
-            return StorageLocationDTO.build(storageId, StorageLocationType.OFFLINE, loc.getNumberOfReferencedFiles(),
+            return StorageLocationDTO.build(storageId, loc.getNumberOfReferencedFiles(),
                                             loc.getTotalSizeOfReferencedFiles(), null, 0L, 0L, null);
         } else {
             throw new EntityNotFoundException(storageId, StorageLocation.class);
@@ -175,15 +170,14 @@ public class StorageLocationService {
                                                             FileRequestStatus.ERROR);
             StorageLocation monitored = monitoredLocations.get(online.getPluginConfiguration().getBusinessId());
             if (monitored != null) {
-                locationsDto.add(StorageLocationDTO
-                        .build(online.getPluginConfiguration().getBusinessId(), StorageLocationType.ONLINE,
-                               monitored.getNumberOfReferencedFiles(), monitored.getTotalSizeOfReferencedFiles(), null,
-                               nbStorageError, nbDeletionError, online));
+                locationsDto.add(StorageLocationDTO.build(online.getPluginConfiguration().getBusinessId(),
+                                                          monitored.getNumberOfReferencedFiles(),
+                                                          monitored.getTotalSizeOfReferencedFiles(), null,
+                                                          nbStorageError, nbDeletionError, online));
                 monitoredLocations.remove(monitored.getName());
             } else {
-                locationsDto.add(StorageLocationDTO.build(online.getPluginConfiguration().getBusinessId(),
-                                                          StorageLocationType.ONLINE, 0L, 0L, null, nbStorageError,
-                                                          nbDeletionError, online));
+                locationsDto.add(StorageLocationDTO.build(online.getPluginConfiguration().getBusinessId(), 0L, 0L, null,
+                                                          nbStorageError, nbDeletionError, online));
             }
         }
         // Handle all nearlines storage configured
@@ -194,24 +188,23 @@ public class StorageLocationService {
                                                             FileRequestStatus.ERROR);
             StorageLocation monitored = monitoredLocations.get(nearline.getPluginConfiguration().getBusinessId());
             if (monitored != null) {
-                locationsDto.add(StorageLocationDTO
-                        .build(nearline.getPluginConfiguration().getBusinessId(), StorageLocationType.NEALINE,
-                               monitored.getNumberOfReferencedFiles(), monitored.getTotalSizeOfReferencedFiles(), null,
-                               nbStorageError, nbDeletionError, nearline));
+                locationsDto.add(StorageLocationDTO.build(nearline.getPluginConfiguration().getBusinessId(),
+                                                          monitored.getNumberOfReferencedFiles(),
+                                                          monitored.getTotalSizeOfReferencedFiles(), null,
+                                                          nbStorageError, nbDeletionError, nearline));
                 monitoredLocations.remove(monitored.getName());
             } else {
-                locationsDto.add(StorageLocationDTO.build(nearline.getPluginConfiguration().getBusinessId(),
-                                                          StorageLocationType.NEALINE, 0L, 0L, null, nbStorageError,
-                                                          nbDeletionError, nearline));
+                locationsDto.add(StorageLocationDTO.build(nearline.getPluginConfiguration().getBusinessId(), 0L, 0L,
+                                                          null, nbStorageError, nbDeletionError, nearline));
             }
         }
         // Handle not configured storage as OFFLINE ones
         for (StorageLocation monitored : monitoredLocations.values()) {
             Long nbStorageError = 0L;
             Long nbDeletionError = 0L;
-            locationsDto.add(StorageLocationDTO
-                    .build(monitored.getName(), StorageLocationType.OFFLINE, monitored.getNumberOfReferencedFiles(),
-                           monitored.getTotalSizeOfReferencedFiles(), null, nbStorageError, nbDeletionError, null));
+            locationsDto.add(StorageLocationDTO.build(monitored.getName(), monitored.getNumberOfReferencedFiles(),
+                                                      monitored.getTotalSizeOfReferencedFiles(), null, nbStorageError,
+                                                      nbDeletionError, null));
         }
         return locationsDto;
     }
@@ -379,9 +372,7 @@ public class StorageLocationService {
         StorageLocationConfiguration newConf = pLocationConfService
                 .create(storageLocation.getName(), storageLocation.getConfiguration().getPluginConfiguration(),
                         storageLocation.getConfiguration().getAllocatedSizeInKo());
-        StorageLocationType type = newConf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
-                : StorageLocationType.NEALINE;
-        return StorageLocationDTO.build(storageLocation.getName(), type, 0L, 0L,
+        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L,
                                         storageLocation.getConfiguration().getAllocatedSizeInKo(), 0L, 0L, newConf);
     }
 
@@ -397,9 +388,7 @@ public class StorageLocationService {
         Assert.notNull(storageLocation.getConfiguration(), "Storage location / Configuration can not be null");
         StorageLocationConfiguration newConf = pLocationConfService.update(storageLocation.getConfiguration().getId(),
                                                                            storageLocation.getConfiguration());
-        StorageLocationType type = newConf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
-                : StorageLocationType.NEALINE;
-        return StorageLocationDTO.build(storageLocation.getName(), type, 0L, 0L,
+        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L,
                                         storageLocation.getConfiguration().getAllocatedSizeInKo(), 0L, 0L, newConf);
     }
 

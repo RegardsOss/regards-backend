@@ -68,21 +68,26 @@ public class StorageLocationConfigurationService {
      */
     public StorageLocationConfiguration create(String name, PluginConfiguration toBeCreated, Long allocatedSizeInKo)
             throws ModuleException {
-        toBeCreated.setBusinessId(name);
-        PluginConfiguration storageConf = pluginService.savePluginConfiguration(toBeCreated);
-        StorageType storageType;
-        if (storageConf.getInterfaceNames().contains(IOnlineStorageLocation.class.getName())) {
-            storageType = StorageType.ONLINE;
-        } else if (storageConf.getInterfaceNames().contains(INearlineStorageLocation.class.getName())) {
-            storageType = StorageType.NEARLINE;
+        PluginConfiguration pluginConf = null;
+        StorageType storageType = StorageType.OFFLINE;
+        if (toBeCreated != null) {
+            toBeCreated.setBusinessId(name);
+            pluginConf = pluginService.savePluginConfiguration(toBeCreated);
+            if (pluginConf.getInterfaceNames().contains(IOnlineStorageLocation.class.getName())) {
+                storageType = StorageType.ONLINE;
+            } else if (pluginConf.getInterfaceNames().contains(INearlineStorageLocation.class.getName())) {
+                storageType = StorageType.NEARLINE;
+            } else {
+                throw new EntityInvalidException(String
+                        .format("Given plugin configuration(label: %s) is not a configuration for an online or nearline data storage (respectfully %s or %s)!",
+                                pluginConf.getLabel(), IOnlineStorageLocation.class.getName(),
+                                INearlineStorageLocation.class.getName()));
+            }
         } else {
-            throw new EntityInvalidException(String
-                    .format("Given plugin configuration(label: %s) is not a configuration for an online or nearline data storage (respectfully %s or %s)!",
-                            storageConf.getLabel(), IOnlineStorageLocation.class.getName(),
-                            INearlineStorageLocation.class.getName()));
+
         }
         Long actualLowestPriority = getLowestPriority(storageType);
-        return storageLocConfRepo.save(new StorageLocationConfiguration(name, storageConf,
+        return storageLocConfRepo.save(new StorageLocationConfiguration(name, pluginConf,
                 actualLowestPriority == null ? 0 : actualLowestPriority + 1, allocatedSizeInKo, storageType));
     }
 
@@ -93,6 +98,15 @@ public class StorageLocationConfigurationService {
      */
     public List<StorageLocationConfiguration> search(StorageType type) {
         return storageLocConfRepo.findAllByStorageTypeOrderByPriorityAsc(type);
+    }
+
+    /**
+     * Search for all storage location configuration of the given storage type.
+     * @param type {@link StorageType}
+     * @return
+     */
+    public List<StorageLocationConfiguration> searchAll() {
+        return storageLocConfRepo.findAll();
     }
 
     /**
@@ -261,9 +275,11 @@ public class StorageLocationConfigurationService {
                     .findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(toDelete.getStorageType(),
                                                                                   toDelete.getPriority());
             storageLocConfRepo.delete(toDelete);
-            pluginService.deletePluginConfiguration(toDelete.getPluginConfiguration().getBusinessId());
-            for (StorageLocationConfiguration lessPrioritized : lessPrioritizeds) {
-                lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);
+            if (toDelete.getPluginConfiguration() != null) {
+                pluginService.deletePluginConfiguration(toDelete.getPluginConfiguration().getBusinessId());
+                for (StorageLocationConfiguration lessPrioritized : lessPrioritizeds) {
+                    lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);
+                }
             }
             storageLocConfRepo.saveAll(lessPrioritizeds);
         }

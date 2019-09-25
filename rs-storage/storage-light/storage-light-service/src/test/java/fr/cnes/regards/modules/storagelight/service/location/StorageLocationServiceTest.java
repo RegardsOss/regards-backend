@@ -39,7 +39,6 @@ import fr.cnes.regards.modules.storagelight.dao.IStorageMonitoringRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationType;
 import fr.cnes.regards.modules.storagelight.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 
@@ -133,8 +132,6 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         Assert.assertEquals("The total size should be 4ko", 4L, loc.getTotalStoredFilesSizeKo().longValue());
         Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
         Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
-        Assert.assertEquals("The storage location should be typed as OFFLINE", StorageLocationType.OFFLINE,
-                            loc.getType());
     }
 
     @Test
@@ -160,8 +157,6 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
             Assert.assertEquals("The total size should be 4ko", 4L, loc.getTotalStoredFilesSizeKo().longValue());
             Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
             Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
-            Assert.assertEquals("The storage location should be typed as OFFLINE", StorageLocationType.OFFLINE,
-                                loc.getType());
         });
         Assert.assertEquals("Location two is missing", 1L,
                             locs.stream().filter(l -> l.getName().equals(storage2)).count());
@@ -171,8 +166,6 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
             Assert.assertEquals("The total size should be 20ko", 20L, loc.getTotalStoredFilesSizeKo().longValue());
             Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
             Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
-            Assert.assertEquals("The storage location should be typed as OFFLINE", StorageLocationType.OFFLINE,
-                                loc.getType());
         });
         Assert.assertEquals("Location three is missing", 1L,
                             locs.stream().filter(l -> l.getName().equals(ONLINE_CONF_LABEL)).count());
@@ -182,8 +175,6 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
             Assert.assertEquals("The total size should be 20ko", 0L, loc.getTotalStoredFilesSizeKo().longValue());
             Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
             Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
-            Assert.assertEquals("The storage location should be typed as OFFLINE", StorageLocationType.ONLINE,
-                                loc.getType());
         });
         Assert.assertEquals("Location four is missing", 1L,
                             locs.stream().filter(l -> l.getName().equals(NEARLINE_CONF_LABEL)).count());
@@ -193,8 +184,6 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
             Assert.assertEquals("The total size should be 20ko", 0L, loc.getTotalStoredFilesSizeKo().longValue());
             Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
             Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
-            Assert.assertEquals("The storage location should be typed as OFFLINE", StorageLocationType.NEALINE,
-                                loc.getType());
         });
     }
 

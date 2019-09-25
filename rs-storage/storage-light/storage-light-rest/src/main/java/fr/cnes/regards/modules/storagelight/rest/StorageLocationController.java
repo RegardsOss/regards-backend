@@ -169,18 +169,20 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @Override
     public Resource<StorageLocationDTO> toResource(StorageLocationDTO location, Object... extras) {
         Resource<StorageLocationDTO> resource = new Resource<>(location);
-        if (location.getConfiguration() != null) {
-            switch (location.getType()) {
-                case NEALINE:
-                    return toResourceNearline(location, extras);
-                case ONLINE:
-                    return toResourceOnline(location, extras);
-                case OFFLINE:
-                    return toResourceOffline(location, extras);
-                default:
-                    break;
-            }
+        StorageType type = location.getConfiguration() != null ? location.getConfiguration().getStorageType()
+                : StorageType.OFFLINE;
+
+        switch (type) {
+            case NEARLINE:
+                return toResourceNearline(location, extras);
+            case ONLINE:
+                return toResourceOnline(location, extras);
+            case OFFLINE:
+                return toResourceOffline(location, extras);
+            default:
+                break;
         }
+
         return resource;
     }
 
@@ -196,9 +198,11 @@ public class StorageLocationController implements IResourceController<StorageLoc
                                     MethodParamFactory.build(String.class, location.getName()));
         }
         resourceService.addLink(resource, this.getClass(), "copyFiles", "copy",
-                                MethodParamFactory.build(String.class, location.getName()));
+                                MethodParamFactory.build(String.class, location.getName()),
+                                MethodParamFactory.build(String.class), MethodParamFactory.build(String.class));
         resourceService.addLink(resource, this.getClass(), "deleteFiles", "deleteFiles",
-                                MethodParamFactory.build(String.class, location.getName()));
+                                MethodParamFactory.build(String.class, location.getName()),
+                                MethodParamFactory.build(Boolean.class));
         resourceService.addLink(resource, this.getClass(), "delete", "delete",
                                 MethodParamFactory.build(String.class, location.getName()));
         return resource;
@@ -216,9 +220,11 @@ public class StorageLocationController implements IResourceController<StorageLoc
                                     MethodParamFactory.build(String.class, location.getName()));
         }
         resourceService.addLink(resource, this.getClass(), "copyFiles", "copy",
-                                MethodParamFactory.build(String.class, location.getName()));
+                                MethodParamFactory.build(String.class, location.getName()),
+                                MethodParamFactory.build(String.class), MethodParamFactory.build(String.class));
         resourceService.addLink(resource, this.getClass(), "deleteFiles", "deleteFiles",
-                                MethodParamFactory.build(String.class, location.getName()));
+                                MethodParamFactory.build(String.class, location.getName()),
+                                MethodParamFactory.build(Boolean.class));
         resourceService.addLink(resource, this.getClass(), "delete", "delete",
                                 MethodParamFactory.build(String.class, location.getName()));
         return resource;
