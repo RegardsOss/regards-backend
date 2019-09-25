@@ -65,7 +65,7 @@ public class FileDownloadService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDownloadService.class);
 
     @Autowired
-    private StorageLocationConfigurationService prioritizedStorageService;
+    private StorageLocationConfigurationService storageLocationConfService;
 
     @Autowired
     private IPluginService pluginService;
@@ -99,7 +99,7 @@ public class FileDownloadService {
         Map<String, FileReference> storages = fileRefs.stream()
                 .collect(Collectors.toMap(f -> f.getLocation().getStorage(), f -> f));
         // 2. get the storage location with the higher priority
-        Optional<StorageLocationConfiguration> storageLocation = prioritizedStorageService
+        Optional<StorageLocationConfiguration> storageLocation = storageLocationConfService
                 .searchActiveHigherPriority(storages.keySet());
         if (storageLocation.isPresent()) {
             PluginConfiguration conf = storageLocation.get().getPluginConfiguration();
@@ -123,7 +123,7 @@ public class FileDownloadService {
      */
     @Transactional(noRollbackFor = { EntityNotFoundException.class })
     public InputStream downloadFileReference(FileReference fileToDownload) throws ModuleException {
-        Optional<StorageLocationConfiguration> conf = prioritizedStorageService
+        Optional<StorageLocationConfiguration> conf = storageLocationConfService
                 .search(fileToDownload.getLocation().getStorage());
         if (conf.isPresent()) {
             switch (conf.get().getStorageType()) {

@@ -73,72 +73,38 @@ public class StorageLocation {
         super();
     }
 
-    /**
-     * @return the id
-     */
     public Long getId() {
         return id;
     }
 
-    /**
-     * @param id the id to set
-     */
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    /**
-     * @return the name
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * @param name the name to set
-     */
     public void setName(String name) {
         this.name = name;
     }
 
-    /**
-     * @return the numberOfReferencedFiles
-     */
     public Long getNumberOfReferencedFiles() {
         return numberOfReferencedFiles;
     }
 
-    /**
-     * @return the totalSizeOfReferencedFiles
-     */
     public Long getTotalSizeOfReferencedFiles() {
         return totalSizeOfReferencedFiles;
     }
 
-    /**
-     * @return the lastUpdateDate
-     */
     public OffsetDateTime getLastUpdateDate() {
         return lastUpdateDate;
     }
 
-    /**
-     * @param lastUpdateDate the lastUpdateDate to set
-     */
     public void setLastUpdateDate(OffsetDateTime lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    /**
-     * @param totalSizeOfReferencedFiles the totalSizeOfReferencedFiles to set
-     */
     public void setTotalSizeOfReferencedFiles(Long totalSizeOfReferencedFiles) {
         this.totalSizeOfReferencedFiles = totalSizeOfReferencedFiles;
     }
 
-    /**
-     * @param numberOfReferencedFiles the numberOfReferencedFiles to set
-     */
     public void setNumberOfReferencedFiles(Long numberOfReferencedFiles) {
         this.numberOfReferencedFiles = numberOfReferencedFiles;
     }

@@ -13,24 +13,23 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 
 /**
- * Wrapper used to prioritize {@link IStorageLocation} configurations.
- * As a wrapper, its database identifier is the same than the wrapped {@link PluginConfiguration}.
- * This wrapper is strictly ordered on priority.
+ * Storage location configuration.
  *
- * @author Sylvain VISSIERE-GUERINET
+ * @author Sébastien Binda
  */
 @Entity
 @Table(name = "t_storage_location_conf",
-        uniqueConstraints = { @UniqueConstraint(name = "uk_priotitized_storage",
-                columnNames = { StorageLocationConfiguration.STORAGE_TYPE_COLUMN_NAME,
-                        StorageLocationConfiguration.PRIORITY_COLUMN_NAME }) })
+        uniqueConstraints = { @UniqueConstraint(name = "uk_storage_loc_name", columnNames = { "name" }),
+                @UniqueConstraint(name = "uk_storage_loc_conf_type_priority",
+                        columnNames = { StorageLocationConfiguration.STORAGE_TYPE_COLUMN_NAME,
+                                StorageLocationConfiguration.PRIORITY_COLUMN_NAME }) })
 public class StorageLocationConfiguration implements Comparable<StorageLocationConfiguration> {
 
     public static final String STORAGE_TYPE_COLUMN_NAME = "storage_type";
@@ -43,6 +42,10 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
     @ConfigIgnore
     private Long id;
 
+    @Column(length = 128)
+    @NotNull
+    private String name;
+
     @Valid
     @OneToOne
     @MapsId
@@ -53,9 +56,6 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
     @Column(name = STORAGE_TYPE_COLUMN_NAME)
     private StorageType storageType;
 
-    /**
-     * Priority of this data storage.
-     */
     @Min(HIGHEST_PRIORITY)
     @Column(name = PRIORITY_COLUMN_NAME)
     private Long priority;
@@ -63,15 +63,13 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
     @Column(name = "allocated_size_ko")
     private Long allocatedSizeInKo;
 
-    /**
-     * Default constructor to be used only by serialization process or JPA
-     */
     @SuppressWarnings("unused")
     private StorageLocationConfiguration() {
     }
 
-    public StorageLocationConfiguration(PluginConfiguration dataStorageConfiguration, Long priority,
+    public StorageLocationConfiguration(String name, PluginConfiguration dataStorageConfiguration, Long priority,
             Long allocatedSizeInKo, StorageType dataStorageType) {
+        this.name = name;
         this.pluginConfiguration = dataStorageConfiguration;
         this.priority = priority;
         this.storageType = dataStorageType;

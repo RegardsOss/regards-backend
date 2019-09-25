@@ -34,7 +34,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -54,14 +53,14 @@ import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStora
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache" })
 @ActiveProfiles({ "noscheduler" })
-public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServiceTest {
+public class StorageLocationConfigurationServiceTest extends AbstractMultitenantServiceTest {
 
     private static final String PDS_LABEL = "PrioritizedDataStorageServiceIT";
 
     private final String targetPath = "target/PrioritizedDataStorageServiceIT";
 
     @Autowired
-    private StorageLocationConfigurationService prioritizedDataStorageService;
+    private StorageLocationConfigurationService storageLocationConfService;
 
     @Autowired
     private IPluginService pluginService;
@@ -80,9 +79,9 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
         fileRefRepo.deleteAll();
         fileRefRequestRepo.deleteAll();
         jobInfoRepo.deleteAll();
-        prioritizedDataStorageService.search(StorageType.ONLINE).forEach(c -> {
+        storageLocationConfService.search(StorageType.ONLINE).forEach(c -> {
             try {
-                prioritizedDataStorageService.delete(c.getId());
+                storageLocationConfService.delete(c.getId());
             } catch (ModuleException e) {
                 Assert.fail(e.getMessage());
             }
@@ -91,8 +90,8 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
 
     @Test
     public void testDelete() throws ModuleException, IOException, URISyntaxException {
-        StorageLocationConfiguration pds = createPrioritizedDataStorage(PDS_LABEL);
-        prioritizedDataStorageService.delete(pds.getId());
+        StorageLocationConfiguration pds = createStorageLocationConf(PDS_LABEL);
+        storageLocationConfService.delete(pds.getId());
         // lets check that the plugin configuration has been deleted too
         Optional<PluginConfiguration> optConf = pluginService.findPluginConfigurationByLabel(PDS_LABEL);
         Assert.assertFalse("Prioritized data storage deletion did not deleted corresponding plugin configuration",
@@ -101,36 +100,11 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
 
     @Test
     public void testUpdate() throws ModuleException, IOException, URISyntaxException {
-        String label = "updateConf label";
-        StorageLocationConfiguration pds = createPrioritizedDataStorage(label);
-        PluginConfiguration updatedConf = getPluginConf(label);
-        updatedConf.setId(pds.getPluginConfiguration().getId());
-        updatedConf.setBusinessId(pds.getPluginConfiguration().getBusinessId());
-        StorageLocationConfiguration upds = new StorageLocationConfiguration(updatedConf, 0L, 1_000_000L,
-                StorageType.ONLINE);
-        upds.setId(pds.getId());
-        prioritizedDataStorageService.update(upds.getId(), upds);
-    }
-
-    @Test(expected = EntityOperationForbiddenException.class)
-    public void testUpdateForbidden() throws ModuleException, IOException, URISyntaxException {
-        String label = "updateConf label";
-
-        URL newbaseStorageLocation = new URL("file", "",
-                Paths.get(targetPath, "/update/conf").toFile().getAbsolutePath());
-
-        StorageLocationConfiguration pds = createPrioritizedDataStorage(label);
-
-        PluginConfiguration updatedConf = getPluginConf(label);
-        updatedConf.setBusinessId(pds.getPluginConfiguration().getBusinessId());
-        updatedConf.setId(pds.getPluginConfiguration().getId());
-        updatedConf.getParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME)
-                .value(newbaseStorageLocation.toString());
-
-        StorageLocationConfiguration upds = new StorageLocationConfiguration(updatedConf, 0L, 1_000_000L,
-                StorageType.ONLINE);
-        upds.setId(pds.getId());
-        prioritizedDataStorageService.update(upds.getId(), upds);
+        String name = "updateConf";
+        StorageLocationConfiguration pds = createStorageLocationConf(name);
+        pds.setAllocatedSizeInKo(0L);
+        StorageLocationConfiguration updated = storageLocationConfService.update(pds.getId(), pds);
+        Assert.assertEquals(0L, updated.getAllocatedSizeInKo().longValue());
     }
 
     private PluginConfiguration getPluginConf(String label) throws IOException, URISyntaxException {
@@ -146,9 +120,9 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
         return new PluginConfiguration(dataStoMeta, label, parameters, 0);
     }
 
-    private StorageLocationConfiguration createPrioritizedDataStorage(String label)
+    private StorageLocationConfiguration createStorageLocationConf(String name)
             throws IOException, URISyntaxException, ModuleException {
-        PluginConfiguration dataStorageConf = getPluginConf(label);
-        return prioritizedDataStorageService.create(dataStorageConf, 1_000_000L);
+        PluginConfiguration dataStorageConf = getPluginConf(name);
+        return storageLocationConfService.create(name, dataStorageConf, 1_000_000L);
     }
 }

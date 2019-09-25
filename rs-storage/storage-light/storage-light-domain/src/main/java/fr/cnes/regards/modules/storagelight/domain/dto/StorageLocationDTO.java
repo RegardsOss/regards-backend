@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfi
  */
 public class StorageLocationDTO {
 
-    private String id;
+    private String name;
 
     private StorageLocationType type;
 
@@ -42,11 +42,11 @@ public class StorageLocationDTO {
 
     private StorageLocationConfiguration configuration;
 
-    public static StorageLocationDTO build(String id, StorageLocationType type, Long nbFilesStored,
+    public static StorageLocationDTO build(String name, StorageLocationType type, Long nbFilesStored,
             Long totalStoredFilesSizeKo, Long sizeLimitKo, Long nbStorageError, Long nbDeletionError,
             StorageLocationConfiguration configuration) {
         StorageLocationDTO dto = new StorageLocationDTO();
-        dto.id = id;
+        dto.name = name;
         dto.type = type;
         dto.nbFilesStored = nbFilesStored;
         dto.totalStoredFilesSizeKo = totalStoredFilesSizeKo;
@@ -57,8 +57,8 @@ public class StorageLocationDTO {
         return dto;
     }
 
-    public String getId() {
-        return id;
+    public String getName() {
+        return name;
     }
 
     public StorageLocationType getType() {

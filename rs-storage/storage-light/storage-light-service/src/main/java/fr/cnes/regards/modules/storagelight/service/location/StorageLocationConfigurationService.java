@@ -34,18 +34,14 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IStorageLocationConfigurationRepostory;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
-import fr.cnes.regards.modules.storagelight.domain.plugin.PluginConfUpdatable;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 
 /**
@@ -78,11 +74,9 @@ public class StorageLocationConfigurationService {
      * @return
      * @throws ModuleException
      */
-    public StorageLocationConfiguration create(PluginConfiguration toBeCreated, Long allocatedSizeInKo)
+    public StorageLocationConfiguration create(String name, PluginConfiguration toBeCreated, Long allocatedSizeInKo)
             throws ModuleException {
-        if (toBeCreated.getBusinessId() == null) {
-            toBeCreated.setBusinessId(toBeCreated.getLabel());
-        }
+        toBeCreated.setBusinessId(name);
         PluginConfiguration storageConf = pluginService.savePluginConfiguration(toBeCreated);
         StorageType storageType;
         if (storageConf.getInterfaceNames().contains(IOnlineStorageLocation.class.getName())) {
@@ -96,7 +90,7 @@ public class StorageLocationConfigurationService {
                             INearlineStorageLocation.class.getName()));
         }
         Long actualLowestPriority = getLowestPriority(storageType);
-        return storageLocConfRepo.save(new StorageLocationConfiguration(storageConf,
+        return storageLocConfRepo.save(new StorageLocationConfiguration(name, storageConf,
                 actualLowestPriority == null ? 0 : actualLowestPriority + 1, allocatedSizeInKo, storageType));
     }
 
@@ -115,7 +109,7 @@ public class StorageLocationConfigurationService {
      * @return {@link StorageLocationConfiguration}
      */
     public Optional<StorageLocationConfiguration> search(String storageId) {
-        return storageLocConfRepo.findByStorageConfigurationBusinessId(storageId);
+        return storageLocConfRepo.findByName(storageId);
     }
 
     /**
@@ -130,9 +124,9 @@ public class StorageLocationConfigurationService {
         Optional<StorageLocationConfiguration> storage = Optional.empty();
         Set<StorageLocationConfiguration> confs;
         if (type != null) {
-            confs = storageLocConfRepo.findByStorageTypeAndStorageConfigurationLabelIn(type, storageIds);
+            confs = storageLocConfRepo.findByStorageTypeAndNameIn(type, storageIds);
         } else {
-            confs = storageLocConfRepo.findByStorageConfigurationLabelIn(storageIds);
+            confs = storageLocConfRepo.findByNameIn(storageIds);
         }
         for (StorageLocationConfiguration c : confs) {
             if (c.getPluginConfiguration().isActive()
@@ -162,8 +156,8 @@ public class StorageLocationConfigurationService {
      */
     @Nullable
     public StorageLocationConfiguration getFirstActive(StorageType storageType) {
-        return storageLocConfRepo.findFirstByStorageTypeAndStorageConfigurationActiveOrderByPriorityAsc(storageType,
-                                                                                                        true);
+        return storageLocConfRepo.findFirstByStorageTypeAndPluginConfigurationActiveOrderByPriorityAsc(storageType,
+                                                                                                       true);
     }
 
     /**
@@ -249,35 +243,16 @@ public class StorageLocationConfigurationService {
             throw new EntityInconsistentIdentifierException(id, updated.getId(), StorageLocationConfiguration.class);
         }
 
-        PluginConfUpdatable updatable = null;
-        boolean oldConfActive = oldOne.getPluginConfiguration().isActive();
-        String storageLabel = oldOne.getPluginConfiguration().getLabel();
-
-        if (oldConfActive) {
-            // Count number of files stored by the plugin configuration
-            Long nbfilesAlreadyStored = fileRefereceRepository.countByLocationStorage(storageLabel);
-
-            // Ask plugin if the update is allowed
-            try {
-                IStorageLocation plugin = pluginService.getPlugin(oldOne.getPluginConfiguration().getBusinessId());
-                updatable = plugin.allowConfigurationUpdate(updated.getPluginConfiguration(),
-                                                            oldOne.getPluginConfiguration(), nbfilesAlreadyStored > 0);
-            } catch (NotAvailablePluginConfigurationException e) {
-                LOG.error(e.getMessage(), e);
-                throw new EntityOperationForbiddenException(e.getMessage());
+        if (oldOne.getPluginConfiguration() != null) {
+            if (updated.getPluginConfiguration() == null) {
+                pluginService.deletePluginConfiguration(oldOne.getPluginConfiguration().getBusinessId());
+            } else {
+                pluginService.updatePluginConfiguration(updated.getPluginConfiguration());
             }
-        }
-
-        // if oldConfActive is true, updatable cannot be null
-        if (!oldConfActive || updatable.isUpdateAllowed()) {
-            PluginConfiguration updatedConf = pluginService
-                    .updatePluginConfiguration(updated.getPluginConfiguration());
-            oldOne.setPluginConfiguration(updatedConf);
-            return storageLocConfRepo.save(oldOne);
         } else {
-            throw new EntityOperationForbiddenException(oldOne.getPluginConfiguration().getLabel(),
-                    StorageLocationConfiguration.class, updatable.getUpdateNotAllowedReason());
+            pluginService.savePluginConfiguration(updated.getPluginConfiguration());
         }
+        return storageLocConfRepo.save(updated);
     }
 
     /**

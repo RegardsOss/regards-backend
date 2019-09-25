@@ -27,8 +27,8 @@ public interface IStorageLocationConfigurationRepostory extends JpaRepository<St
     @Override
     Optional<StorageLocationConfiguration> findById(Long pluginConfId);
 
-    Set<StorageLocationConfiguration> findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(StorageType storageType,
-            Long priority);
+    Set<StorageLocationConfiguration> findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(
+            StorageType storageType, Long priority);
 
     List<StorageLocationConfiguration> findAllByStorageTypeOrderByPriorityAsc(StorageType storageType);
 
@@ -40,17 +40,17 @@ public interface IStorageLocationConfigurationRepostory extends JpaRepository<St
      * @param pluginConfActivity the plugin configuration activeness
      * @return the most prioritized
      */
-    StorageLocationConfiguration findFirstByStorageTypeAndStorageConfigurationActiveOrderByPriorityAsc(StorageType storageType,
-            boolean pluginConfActivity);
+    StorageLocationConfiguration findFirstByStorageTypeAndPluginConfigurationActiveOrderByPriorityAsc(
+            StorageType storageType, boolean pluginConfActivity);
 
     StorageLocationConfiguration findOneByStorageTypeAndPriority(StorageType storageType, long priority);
 
     Set<StorageLocationConfiguration> findAllByIdIn(Collection<Long> allIdUsedByAipInQuery);
 
-    Set<StorageLocationConfiguration> findByStorageTypeAndStorageConfigurationLabelIn(StorageType storageType,
+    Set<StorageLocationConfiguration> findByStorageTypeAndNameIn(StorageType storageType,
             Collection<String> confLabels);
 
-    Set<StorageLocationConfiguration> findByStorageConfigurationLabelIn(Collection<String> confLabels);
+    Set<StorageLocationConfiguration> findByNameIn(Collection<String> confLabels);
 
-    Optional<StorageLocationConfiguration> findByStorageConfigurationBusinessId(String businessId);
+    Optional<StorageLocationConfiguration> findByName(String businessId);
 }

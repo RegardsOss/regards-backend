@@ -185,19 +185,19 @@ public class StorageLocationController implements IResourceController<StorageLoc
         Resource<StorageLocationDTO> resource = new Resource<>(location);
         if (!location.getConfiguration().getPriority().equals(StorageLocationConfiguration.HIGHEST_PRIORITY)) {
             resourceService.addLink(resource, this.getClass(), "increaseStorageLocationPriority", "up",
-                                    MethodParamFactory.build(String.class, location.getId()));
+                                    MethodParamFactory.build(String.class, location.getName()));
         }
         if (!location.getConfiguration().getPriority()
                 .equals(prioriterizedStorageService.getLowestPriority(StorageType.NEARLINE))) {
             resourceService.addLink(resource, this.getClass(), "decreaseStorageLocationPriority", "down",
-                                    MethodParamFactory.build(String.class, location.getId()));
+                                    MethodParamFactory.build(String.class, location.getName()));
         }
         resourceService.addLink(resource, this.getClass(), "copyFiles", "copy",
-                                MethodParamFactory.build(String.class, location.getId()));
+                                MethodParamFactory.build(String.class, location.getName()));
         resourceService.addLink(resource, this.getClass(), "deleteFiles", "deleteFiles",
-                                MethodParamFactory.build(String.class, location.getId()));
+                                MethodParamFactory.build(String.class, location.getName()));
         resourceService.addLink(resource, this.getClass(), "delete", "delete",
-                                MethodParamFactory.build(String.class, location.getId()));
+                                MethodParamFactory.build(String.class, location.getName()));
         return resource;
     }
 
@@ -205,26 +205,26 @@ public class StorageLocationController implements IResourceController<StorageLoc
         Resource<StorageLocationDTO> resource = new Resource<>(location);
         if (!location.getConfiguration().getPriority().equals(StorageLocationConfiguration.HIGHEST_PRIORITY)) {
             resourceService.addLink(resource, this.getClass(), "increaseStorageLocationPriority", "up",
-                                    MethodParamFactory.build(String.class, location.getId()));
+                                    MethodParamFactory.build(String.class, location.getName()));
         }
         if (!location.getConfiguration().getPriority()
                 .equals(prioriterizedStorageService.getLowestPriority(StorageType.ONLINE))) {
             resourceService.addLink(resource, this.getClass(), "decreaseStorageLocationPriority", "down",
-                                    MethodParamFactory.build(String.class, location.getId()));
+                                    MethodParamFactory.build(String.class, location.getName()));
         }
         resourceService.addLink(resource, this.getClass(), "copyFiles", "copy",
-                                MethodParamFactory.build(String.class, location.getId()));
+                                MethodParamFactory.build(String.class, location.getName()));
         resourceService.addLink(resource, this.getClass(), "deleteFiles", "deleteFiles",
-                                MethodParamFactory.build(String.class, location.getId()));
+                                MethodParamFactory.build(String.class, location.getName()));
         resourceService.addLink(resource, this.getClass(), "delete", "delete",
-                                MethodParamFactory.build(String.class, location.getId()));
+                                MethodParamFactory.build(String.class, location.getName()));
         return resource;
     }
 
     private Resource<StorageLocationDTO> toResourceOffline(StorageLocationDTO location, Object... extras) {
         Resource<StorageLocationDTO> resource = new Resource<>(location);
         resourceService.addLink(resource, this.getClass(), "delete", "delete",
-                                MethodParamFactory.build(String.class, location.getId()));
+                                MethodParamFactory.build(String.class, location.getName()));
         return resource;
     }
 }

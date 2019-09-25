@@ -153,8 +153,8 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         Assert.assertNotNull("Locations should be retrieved", locs);
         Assert.assertEquals("There should be 4 locations", 4, locs.size());
         Assert.assertEquals("Location one is missing", 1L,
-                            locs.stream().filter(l -> l.getId().equals(storage)).count());
-        locs.stream().filter(l -> l.getId().equals(storage)).forEach(loc -> {
+                            locs.stream().filter(l -> l.getName().equals(storage)).count());
+        locs.stream().filter(l -> l.getName().equals(storage)).forEach(loc -> {
             Assert.assertNull("No configuration should be set for the location", loc.getConfiguration());
             Assert.assertEquals("There should be 2 files referenced", 2L, loc.getNbFilesStored().longValue());
             Assert.assertEquals("The total size should be 4ko", 4L, loc.getTotalStoredFilesSizeKo().longValue());
@@ -164,8 +164,8 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
                                 loc.getType());
         });
         Assert.assertEquals("Location two is missing", 1L,
-                            locs.stream().filter(l -> l.getId().equals(storage2)).count());
-        locs.stream().filter(l -> l.getId().equals(storage2)).forEach(loc -> {
+                            locs.stream().filter(l -> l.getName().equals(storage2)).count());
+        locs.stream().filter(l -> l.getName().equals(storage2)).forEach(loc -> {
             Assert.assertNull("No configuration should be set for the location", loc.getConfiguration());
             Assert.assertEquals("There should be 5 files referenced", 5L, loc.getNbFilesStored().longValue());
             Assert.assertEquals("The total size should be 20ko", 20L, loc.getTotalStoredFilesSizeKo().longValue());
@@ -175,8 +175,8 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
                                 loc.getType());
         });
         Assert.assertEquals("Location three is missing", 1L,
-                            locs.stream().filter(l -> l.getId().equals(ONLINE_CONF_LABEL)).count());
-        locs.stream().filter(l -> l.getId().equals(ONLINE_CONF_LABEL)).forEach(loc -> {
+                            locs.stream().filter(l -> l.getName().equals(ONLINE_CONF_LABEL)).count());
+        locs.stream().filter(l -> l.getName().equals(ONLINE_CONF_LABEL)).forEach(loc -> {
             Assert.assertNotNull("A configuration should be set for the location", loc.getConfiguration());
             Assert.assertEquals("There should be 0 files referenced", 0L, loc.getNbFilesStored().longValue());
             Assert.assertEquals("The total size should be 20ko", 0L, loc.getTotalStoredFilesSizeKo().longValue());
@@ -186,8 +186,8 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
                                 loc.getType());
         });
         Assert.assertEquals("Location four is missing", 1L,
-                            locs.stream().filter(l -> l.getId().equals(NEARLINE_CONF_LABEL)).count());
-        locs.stream().filter(l -> l.getId().equals(NEARLINE_CONF_LABEL)).forEach(loc -> {
+                            locs.stream().filter(l -> l.getName().equals(NEARLINE_CONF_LABEL)).count());
+        locs.stream().filter(l -> l.getName().equals(NEARLINE_CONF_LABEL)).forEach(loc -> {
             Assert.assertNotNull("A configuration should be set for the location", loc.getConfiguration());
             Assert.assertEquals("There should be 0 files referenced", 0L, loc.getNbFilesStored().longValue());
             Assert.assertEquals("The total size should be 20ko", 0L, loc.getTotalStoredFilesSizeKo().longValue());

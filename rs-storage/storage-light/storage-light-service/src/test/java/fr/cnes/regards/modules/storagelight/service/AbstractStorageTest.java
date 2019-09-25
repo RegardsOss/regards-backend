@@ -220,8 +220,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
-            dataStorageConf.setBusinessId(label);
-            return prioritizedDataStorageService.create(dataStorageConf, ALLOCATED_SIZE_IN_KO);
+            return prioritizedDataStorageService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
         } catch (IOException | URISyntaxException e) {
             throw new ModuleException(e.getMessage(), e);
         }
@@ -240,8 +239,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
-            dataStorageConf.setBusinessId(label);
-            return prioritizedDataStorageService.create(dataStorageConf, ALLOCATED_SIZE_IN_KO);
+            return prioritizedDataStorageService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
         } catch (IOException | URISyntaxException e) {
             throw new ModuleException(e.getMessage(), e);
         }

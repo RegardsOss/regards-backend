@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
@@ -372,12 +373,16 @@ public class StorageLocationService {
      * @throws ModuleException
      */
     public StorageLocationDTO configureLocation(StorageLocationDTO storageLocation) throws ModuleException {
+        Assert.notNull(storageLocation, "Storage location to configure can not be null");
+        Assert.notNull(storageLocation.getName(), "Storage location name to configure can not be null");
+        Assert.notNull(storageLocation.getConfiguration(), "Storage location / Configuration can not be null");
         StorageLocationConfiguration newConf = pLocationConfService
-                .create(storageLocation.getConfiguration().getPluginConfiguration(),
+                .create(storageLocation.getName(), storageLocation.getConfiguration().getPluginConfiguration(),
                         storageLocation.getConfiguration().getAllocatedSizeInKo());
         StorageLocationType type = newConf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
                 : StorageLocationType.NEALINE;
-        return StorageLocationDTO.build(storageLocation.getId(), type, 0L, 0L, 0L, 0L, 0L, newConf);
+        return StorageLocationDTO.build(storageLocation.getName(), type, 0L, 0L,
+                                        storageLocation.getConfiguration().getAllocatedSizeInKo(), 0L, 0L, newConf);
     }
 
     /**
@@ -387,11 +392,15 @@ public class StorageLocationService {
      * @throws ModuleException
      */
     public StorageLocationDTO updateLocationConfiguration(StorageLocationDTO storageLocation) throws ModuleException {
+        Assert.notNull(storageLocation, "Storage location to configure can not be null");
+        Assert.notNull(storageLocation.getName(), "Storage location name to update can not be null");
+        Assert.notNull(storageLocation.getConfiguration(), "Storage location / Configuration can not be null");
         StorageLocationConfiguration newConf = pLocationConfService.update(storageLocation.getConfiguration().getId(),
                                                                            storageLocation.getConfiguration());
         StorageLocationType type = newConf.getStorageType() == StorageType.ONLINE ? StorageLocationType.ONLINE
                 : StorageLocationType.NEALINE;
-        return StorageLocationDTO.build(storageLocation.getId(), type, 0L, 0L, 0L, 0L, 0L, newConf);
+        return StorageLocationDTO.build(storageLocation.getName(), type, 0L, 0L,
+                                        storageLocation.getConfiguration().getAllocatedSizeInKo(), 0L, 0L, newConf);
     }
 
 }
