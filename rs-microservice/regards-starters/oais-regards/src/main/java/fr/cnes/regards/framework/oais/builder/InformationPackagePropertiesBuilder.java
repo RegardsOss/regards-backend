@@ -125,15 +125,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     }
 
     /**
-     * Add misc information to the information package thanks to the given parameters
-     */
-    public void addMiscInformation(String key, Object value) {
-        Assert.hasLength(key, "Misc information key is required");
-        Assert.notNull(value, "Misc information value is required");
-        miscInformation.put(key, value);
-    }
-
-    /**
      * Add description information to the information package thanks to the given parameters which can be null
      */
     public void addNullDescriptiveInformation(String key, Object value) {
