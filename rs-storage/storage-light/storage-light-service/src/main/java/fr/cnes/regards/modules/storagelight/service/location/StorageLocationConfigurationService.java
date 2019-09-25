@@ -25,8 +25,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +35,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IStorageLocationConfigurationRepostory;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
@@ -56,16 +53,11 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 @RegardsTransactional
 public class StorageLocationConfigurationService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(StorageLocationConfigurationService.class);
-
     @Autowired
     private IPluginService pluginService;
 
     @Autowired
     private IStorageLocationConfigurationRepostory storageLocConfRepo;
-
-    @Autowired
-    private IFileReferenceRepository fileRefereceRepository;
 
     /**
      * Creates a new configuration for a storage location.

@@ -20,11 +20,14 @@ package fr.cnes.regards.modules.storagelight.rest;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -83,15 +86,15 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
-    public ResponseEntity<Resource<StorageLocationDTO>> configureLocation(StorageLocationDTO storageLocation)
-            throws ModuleException {
+    public ResponseEntity<Resource<StorageLocationDTO>> configureLocation(
+            @Valid @RequestBody StorageLocationDTO storageLocation) throws ModuleException {
         return new ResponseEntity<>(toResource(service.configureLocation(storageLocation)), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = ID_PATH)
     @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
-    public ResponseEntity<Resource<StorageLocationDTO>> updateLocationConfiguration(StorageLocationDTO storageLocation)
-            throws ModuleException {
+    public ResponseEntity<Resource<StorageLocationDTO>> updateLocationConfiguration(
+            @Valid @RequestBody StorageLocationDTO storageLocation) throws ModuleException {
         return new ResponseEntity<>(toResource(service.updateLocationConfiguration(storageLocation)), HttpStatus.OK);
     }
 
