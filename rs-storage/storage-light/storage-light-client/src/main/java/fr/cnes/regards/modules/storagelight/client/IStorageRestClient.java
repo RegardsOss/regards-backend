@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.modules.storagelight.client;
 
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 
 /**
@@ -46,6 +47,6 @@ public interface IStorageRestClient {
      */
     @RequestMapping(path = DOWNLOAD_PATH, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public Response downloadFile(@PathVariable("checksum") String checksum);
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("checksum") String checksum);
 
 }
