@@ -169,6 +169,15 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      * @param key information key
      * @param value information value
      */
+    public void addNullDescriptiveInformation(String key, Object value) {
+        ipPropertiesBuilder.addNullDescriptiveInformation(key, value);
+    }
+
+    /**
+     * Add descriptive information to the current information package.
+     * @param key information key
+     * @param value information value
+     */
     public void addDescriptiveInformation(String key, Object value) {
         ipPropertiesBuilder.addDescriptiveInformation(key, value);
     }
