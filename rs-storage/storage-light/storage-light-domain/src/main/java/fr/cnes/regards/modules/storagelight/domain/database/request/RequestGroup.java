@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.database.request;
 
+import java.time.OffsetDateTime;
+
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -26,6 +29,7 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 
 /**
@@ -43,10 +47,15 @@ public class RequestGroup {
     @Enumerated(EnumType.STRING)
     private FileRequestType type;
 
+    @Column(name = "creation_date", nullable = false)
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime creationDate;
+
     public static RequestGroup build(String groupId, FileRequestType type) {
         RequestGroup grp = new RequestGroup();
         grp.id = groupId;
         grp.type = type;
+        grp.creationDate = OffsetDateTime.now();
         return grp;
     }
 
@@ -64,6 +73,10 @@ public class RequestGroup {
 
     public void setType(FileRequestType type) {
         this.type = type;
+    }
+
+    public OffsetDateTime getCreationDate() {
+        return creationDate;
     }
 
 }
