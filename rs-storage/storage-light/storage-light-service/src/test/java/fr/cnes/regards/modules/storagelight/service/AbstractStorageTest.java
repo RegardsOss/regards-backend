@@ -166,7 +166,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected IGroupRequestInfoRepository grpReqInfoRepo;
 
     @Autowired
-    protected StorageLocationConfigurationService prioritizedDataStorageService;
+    protected StorageLocationConfigurationService storageLocationConfService;
 
     protected String originUrl = "file://in/this/directory/file.test";
 
@@ -190,16 +190,16 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         cacheFileRepo.deleteAll();
         fileRefRepo.deleteAll();
         jobInfoRepo.deleteAll();
-        prioritizedDataStorageService.search(StorageType.ONLINE).forEach(c -> {
+        storageLocationConfService.search(StorageType.ONLINE).forEach(c -> {
             try {
-                prioritizedDataStorageService.delete(c.getId());
+                storageLocationConfService.delete(c.getId());
             } catch (ModuleException e) {
                 Assert.fail(e.getMessage());
             }
         });
-        prioritizedDataStorageService.search(StorageType.NEARLINE).forEach(c -> {
+        storageLocationConfService.search(StorageType.NEARLINE).forEach(c -> {
             try {
-                prioritizedDataStorageService.delete(c.getId());
+                storageLocationConfService.delete(c.getId());
             } catch (ModuleException e) {
                 Assert.fail(e.getMessage());
             }
@@ -223,7 +223,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
-            return prioritizedDataStorageService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
+            return storageLocationConfService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
         } catch (IOException | URISyntaxException e) {
             throw new ModuleException(e.getMessage(), e);
         }
@@ -242,21 +242,21 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
-            return prioritizedDataStorageService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
+            return storageLocationConfService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
         } catch (IOException | URISyntaxException e) {
             throw new ModuleException(e.getMessage(), e);
         }
     }
 
     protected void updatePluginConfForError(String newErrorPattern) throws ModuleException {
-        StorageLocationConfiguration conf = prioritizedDataStorageService.getFirstActive(StorageType.ONLINE);
+        StorageLocationConfiguration conf = storageLocationConfService.getFirstActive(StorageType.ONLINE);
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                                         getBaseStorageLocation().toString()),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, newErrorPattern),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
         conf.getPluginConfiguration().setParameters(parameters);
-        prioritizedDataStorageService.update(conf.getId(), conf);
+        storageLocationConfService.update(conf.getName(), conf);
     }
 
     protected FileReference generateRandomStoredOnlineFileReference() throws InterruptedException, ExecutionException {

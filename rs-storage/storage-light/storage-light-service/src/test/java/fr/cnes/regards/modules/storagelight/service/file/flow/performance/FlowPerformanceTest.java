@@ -99,11 +99,11 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         fileStorageRequestRepo.deleteAll();
         fileCacheReqRepo.deleteAll();
         jobInfoRepo.deleteAll();
-        if (!prioritizedDataStorageService.search(ONLINE_CONF_LABEL).isPresent()) {
+        if (!storageLocationConfService.search(ONLINE_CONF_LABEL).isPresent()) {
             initDataStoragePluginConfiguration(ONLINE_CONF_LABEL);
         }
 
-        if (!prioritizedDataStorageService.search(NEARLINE_CONF_LABEL).isPresent()) {
+        if (!storageLocationConfService.search(NEARLINE_CONF_LABEL).isPresent()) {
             initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
         }
         storagePlgConfHandler.refresh();

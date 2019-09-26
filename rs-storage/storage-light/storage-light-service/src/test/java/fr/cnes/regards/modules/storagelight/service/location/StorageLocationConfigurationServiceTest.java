@@ -108,7 +108,7 @@ public class StorageLocationConfigurationServiceTest extends AbstractMultitenant
         String name = "updateConf";
         StorageLocationConfiguration pds = createStorageLocationConf(name);
         pds.setAllocatedSizeInKo(0L);
-        StorageLocationConfiguration updated = storageLocationConfService.update(pds.getId(), pds);
+        StorageLocationConfiguration updated = storageLocationConfService.update(name, pds);
         Assert.assertEquals(0L, updated.getAllocatedSizeInKo().longValue());
     }
 

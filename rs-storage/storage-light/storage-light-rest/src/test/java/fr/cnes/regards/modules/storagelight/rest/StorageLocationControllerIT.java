@@ -136,11 +136,10 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     public void updateLocation() throws IOException, EntityNotFoundException {
         String name = "name";
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated()
-                .expectValue("content.configuration.allocatedSizeInKo", 0);
+                .expectValue("content.configuration.allocatedSizeInKo", 100L);
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           StorageLocationDTO
-                                   .build(name, null, null, null, null,
-                                          new StorageLocationConfiguration(name, getPluginConf(name), 10_000L)),
+                           StorageLocationDTO.build(name, null, null, null, null,
+                                                    new StorageLocationConfiguration(name, getPluginConf(name), 100L)),
                            requestBuilderCustomizer, "Should be created");
 
         tenantResolver.forceTenant(getDefaultTenant());
@@ -208,7 +207,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
         // Create a second ONLINE configuration
         String name = "name";
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated()
-                .expectValue("content.configuration.allocatedSizeInKo", 0)
+                .expectValue("content.configuration.allocatedSizeInKo", 10_000L)
                 .expectValue("content.configuration.priority", 1);
         performDefaultPost(StorageLocationController.BASE_PATH,
                            StorageLocationDTO
@@ -237,7 +236,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
         // Create a second ONLINE configuration
         String name = "name";
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated()
-                .expectValue("content.configuration.allocatedSizeInKo", 0)
+                .expectValue("content.configuration.allocatedSizeInKo", 10_000L)
                 .expectValue("content.configuration.priority", 1);
         performDefaultPost(StorageLocationController.BASE_PATH,
                            StorageLocationDTO
