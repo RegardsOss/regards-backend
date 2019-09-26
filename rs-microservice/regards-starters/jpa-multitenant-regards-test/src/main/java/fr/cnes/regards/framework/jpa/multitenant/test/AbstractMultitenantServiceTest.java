@@ -113,4 +113,5 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
     protected void simulateApplicationStartedEvent() {
         springPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null));
     }
+
 }
