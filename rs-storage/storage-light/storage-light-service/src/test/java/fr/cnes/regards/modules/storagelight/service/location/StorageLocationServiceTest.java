@@ -91,7 +91,7 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         Long totalSize = 0L;
         String storage = "STAF";
         Assert.assertFalse("0. There not have file referenced yet", storageLocationService.search(storage).isPresent());
-        storageLocationService.monitorDataStorages();
+        storageLocationService.monitorStorageLocations(false);
         Assert.assertFalse("1. There not have file referenced yet", storageLocationService.search(storage).isPresent());
         createFileReference(storage, 1L);
         totalSize++;
@@ -101,7 +101,7 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         totalSize++;
         createFileReference(storage, 1L);
         totalSize++;
-        storageLocationService.monitorDataStorages();
+        storageLocationService.monitorStorageLocations(false);
         Assert.assertTrue("There should be file referenced for STAF storage",
                           storageLocationService.search(storage).isPresent());
         Assert.assertEquals("Total size on STAF storage is invalid", totalSize.longValue(),
@@ -110,7 +110,7 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
                             storageLocationService.search(storage).get().getNumberOfReferencedFiles().longValue());
         createFileReference(storage, 3L);
         totalSize += 3;
-        storageLocationService.monitorDataStorages();
+        storageLocationService.monitorStorageLocations(false);
         Assert.assertTrue("There should be file referenced for STAF storage",
                           storageLocationService.search(storage).isPresent());
         Assert.assertEquals("Total size on STAF storage is invalid", totalSize.longValue(),
@@ -124,7 +124,7 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         String storage = "STAF";
         createFileReference(storage, 2L);
         createFileReference(storage, 2L);
-        storageLocationService.monitorDataStorages();
+        storageLocationService.monitorStorageLocations(false);
         StorageLocationDTO loc = storageLocationService.getById(storage);
         Assert.assertNotNull("A location should be retrieved", loc);
         Assert.assertNull("No configuration should be set for the location", loc.getConfiguration());
@@ -145,7 +145,7 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         createFileReference(storage2, 4L);
         createFileReference(storage2, 4L);
         createFileReference(storage2, 4L);
-        storageLocationService.monitorDataStorages();
+        storageLocationService.monitorStorageLocations(false);
         Set<StorageLocationDTO> locs = storageLocationService.getAllLocations();
         Assert.assertNotNull("Locations should be retrieved", locs);
         Assert.assertEquals("There should be 4 locations", 4, locs.size());
@@ -192,7 +192,7 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         String storage = "STAF";
         createFileReference(storage, 2L);
         createFileReference(storage, 2L);
-        storageLocationService.monitorDataStorages();
+        storageLocationService.monitorStorageLocations(false);
         Assert.assertNotNull("Location should exists", storageLocationService.getById(storage));
         storageLocationService.delete(storage);
         try {
@@ -202,13 +202,13 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
             // Nothing to do
         }
         // As files as referenced after monitoring location should be recreated
-        storageLocationService.monitorDataStorages();
+        storageLocationService.monitorStorageLocations(false);
         Assert.assertNotNull("Location should exists", storageLocationService.getById(storage));
     }
 
     @Test
     public void delete_without_files() throws ModuleException {
-        storageLocationService.monitorDataStorages();
+        storageLocationService.monitorStorageLocations(false);
         Assert.assertNotNull("Location should exists", storageLocationService.getById(ONLINE_CONF_LABEL));
         storageLocationService.delete(ONLINE_CONF_LABEL);
         try {
@@ -218,7 +218,7 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
             // Nothing to do
         }
         // As no files as referenced after monitoring location should not be recreated
-        storageLocationService.monitorDataStorages();
+        storageLocationService.monitorStorageLocations(false);
         try {
             Assert.assertNull("Location should exists", storageLocationService.getById(ONLINE_CONF_LABEL));
             Assert.fail("Location should not exists anymore");

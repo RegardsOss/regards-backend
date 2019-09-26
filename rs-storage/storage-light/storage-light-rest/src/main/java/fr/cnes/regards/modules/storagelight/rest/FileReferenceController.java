@@ -54,8 +54,15 @@ public class FileReferenceController {
     @Autowired
     private FileDownloadService downloadService;
 
+    /**
+     * End-point to Download a file referenced by a storage location with the given checksum.
+     * @param checksum checksum of the file to download
+     * @return {@link InputStreamResource}
+     * @throws ModuleException
+     * @throws IOException
+     */
     @RequestMapping(path = DOWNLOAD_PATH, method = RequestMethod.GET, produces = MediaType.ALL_VALUE)
-    @ResourceAccess(description = "download one file by checksum.", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("checksum") String checksum)
             throws ModuleException, IOException {
         DownloadableFile downloadFile = downloadService.downloadFile(checksum);

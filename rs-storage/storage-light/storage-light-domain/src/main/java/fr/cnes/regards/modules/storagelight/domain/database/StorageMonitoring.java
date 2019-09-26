@@ -65,60 +65,40 @@ public class StorageMonitoring {
         this.lastMonitoringDuration = lastMonitoringDuration;
     }
 
-    /**
-     * @return the running
-     */
     public boolean isRunning() {
         return running;
     }
 
-    /**
-     * @param running the running to set
-     */
     public void setRunning(boolean running) {
         this.running = running;
     }
 
-    /**
-     * @return the lastMonitoringDate
-     */
     public OffsetDateTime getLastMonitoringDate() {
         return lastMonitoringDate;
     }
 
-    /**
-     * @param lastMonitoringDate the lastMonitoringDate to set
-     */
     public void setLastMonitoringDate(OffsetDateTime lastMonitoringDate) {
         this.lastMonitoringDate = lastMonitoringDate;
     }
 
-    /**
-     * @return the lastFileReferenceIdMonitored
-     */
     public Long getLastFileReferenceIdMonitored() {
         return lastFileReferenceIdMonitored;
     }
 
-    /**
-     * @param lastFileReferenceIdMonitored the lastFileReferenceIdMonitored to set
-     */
     public void setLastFileReferenceIdMonitored(Long lastFileReferenceIdMonitored) {
         this.lastFileReferenceIdMonitored = lastFileReferenceIdMonitored;
     }
 
-    /**
-     * @return the lastMonitoringDuration
-     */
     public Long getLastMonitoringDuration() {
         return lastMonitoringDuration;
     }
 
-    /**
-     * @param lastMonitoringDuration the lastMonitoringDuration to set
-     */
     public void setLastMonitoringDuration(Long lastMonitoringDuration) {
         this.lastMonitoringDuration = lastMonitoringDuration;
+    }
+
+    public Long getId() {
+        return id;
     }
 
 }

@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.request;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -50,10 +53,12 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageR
  *
  * @author Sébastien Binda
  */
-@Component()
+@Component
 @Profile("!noscheduler")
 @EnableScheduling
 public class FileRequestScheduler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileRequestScheduler.class);
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -81,89 +86,52 @@ public class FileRequestScheduler {
 
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
     public void handleFileStorageRequests() throws ModuleException {
-        try {
-            semaphore.acquire();
-            for (String tenant : tenantResolver.getAllActiveTenants()) {
-                try {
-                    runtimeTenantResolver.forceTenant(tenant);
-                    if (obtainLock()) {
-                        fileStorageRequestService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet(),
-                                                               Sets.newHashSet());
-                    }
-                } finally {
-                    releaseLock();
-                    runtimeTenantResolver.clearTenant();
-                }
-            }
-        } catch (InterruptedException e) {
-            throw new ModuleException(e.getMessage(), e);
-        } finally {
-            semaphore.release();
-        }
+        schedule("handleFileStorageRequests", () -> {
+            fileStorageRequestService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet(), Sets.newHashSet());
+            return null;
+        });
     }
 
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_100)
     public void handleFileCacheRequests() throws ModuleException {
-        try {
-            semaphore.acquire();
-            for (String tenant : tenantResolver.getAllActiveTenants()) {
-                runtimeTenantResolver.forceTenant(tenant);
-                if (obtainLock()) {
-                    try {
-                        fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
-                    } finally {
-                        releaseLock();
-                        runtimeTenantResolver.clearTenant();
-                    }
-                }
-            }
-        } catch (InterruptedException e) {
-            throw new ModuleException(e.getMessage(), e);
-        } finally {
-            semaphore.release();
-        }
-
+        schedule("handleFileCacheRequests", () -> {
+            fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
+            return null;
+        });
     }
 
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_200)
     public void handleFileDeletionRequests() throws ModuleException {
-        try {
-            semaphore.acquire();
-            for (String tenant : tenantResolver.getAllActiveTenants()) {
-                runtimeTenantResolver.forceTenant(tenant);
-                if (obtainLock()) {
-                    try {
-                        fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet());
-                    } finally {
-                        releaseLock();
-                        runtimeTenantResolver.clearTenant();
-                    }
-                }
-            }
-        } catch (InterruptedException e) {
-            throw new ModuleException(e.getMessage(), e);
-        } finally {
-            semaphore.release();
-        }
+        schedule("handleFileDeletionRequests", () -> {
+            fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet());
+            return null;
+        });
     }
 
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_300)
     public void handleFileCopyRequests() throws ModuleException {
+        schedule("handleFileCopyRequests", () -> {
+            fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
+            return null;
+        });
+    }
+
+    private void schedule(String taskName, Callable<Void> func) {
         try {
             semaphore.acquire();
             for (String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
                 if (obtainLock()) {
                     try {
-                        fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
+                        func.call();
                     } finally {
                         releaseLock();
                         runtimeTenantResolver.clearTenant();
                     }
                 }
             }
-        } catch (InterruptedException e) {
-            throw new ModuleException(e.getMessage(), e);
+        } catch (Exception e) {
+            LOGGER.error("Error runing scheduling task {}. Cause : {}", taskName, e.getMessage());
         } finally {
             semaphore.release();
         }
@@ -174,13 +142,14 @@ public class FileRequestScheduler {
      * @return
      */
     private boolean obtainLock() {
-        return lockService.obtainLockOrSkip(this.getClass().getName(), this, 60L);
+        return true;
+        // return lockService.obtainLockOrSkip(this.getClass().getName(), this, 60L);
     }
 
     /**
      * Release lock
      */
     private void releaseLock() {
-        lockService.releaseLock(this.getClass().getName(), this);
+        // lockService.releaseLock(this.getClass().getName(), this);
     }
 }

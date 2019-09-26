@@ -25,7 +25,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.request.RequestResultInfo;
 
 /**
- * @author sbinda
+ * JPA Repository to handle access to {@link RequestResultInfo} entities.
+ *
+ * @author Sébatien Binda
  *
  */
 public interface IGroupRequestInfoRepository extends JpaRepository<RequestResultInfo, Long> {

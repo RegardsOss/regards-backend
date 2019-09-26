@@ -63,7 +63,7 @@ public class StorageLocationScheduler {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             long startTime = System.currentTimeMillis();
-            storageLocationService.monitorDataStorages();
+            storageLocationService.monitorStorageLocations(false);
             LOGGER.trace("Data storages monitoring done in {}ms", System.currentTimeMillis() - startTime);
             runtimeTenantResolver.clearTenant();
         }

@@ -21,18 +21,25 @@ package fr.cnes.regards.modules.storagelight.dao;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.persistence.LockModeType;
+import javax.persistence.QueryHint;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 
 /**
- * @author sbinda
+ * JPA Repository to handle access to {@link FileCacheRequest} entities.
+ *
+ * @author Sébatien Binda
  *
  */
 public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequest, Long> {
@@ -46,21 +53,24 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
 
     Page<FileCacheRequest> findAllByStorageAndStatus(String storage, FileRequestStatus status, Pageable page);
 
+    Set<FileCacheRequest> findByGroupId(String groupId);
+
+    Set<FileCacheRequest> findByGroupIdAndStatus(String groupId, FileRequestStatus error);
+
+    void deleteByStorage(String storageLocationId);
+
+    /**
+     * Lock is mandatory as many requests can end at the same time and ask for status of all other requests of the same group
+     */
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    @QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value = "30000") })
+    boolean existsByGroupIdAndStatusNot(String groupId, FileRequestStatus error);
+
     @Modifying
     @Query("update FileCacheRequest fcr set fcr.status = :status where fcr.id = :id")
     int updateStatus(@Param("status") FileRequestStatus status, @Param("id") Long id);
 
     @Query("select coalesce(sum(fcr.fileSize),0) from FileCacheRequest fcr where fcr.status = 'PENDING'")
     Long getPendingFileSize();
-
-    boolean existsByGroupId(String groupId);
-
-    Set<FileCacheRequest> findByGroupId(String groupId);
-
-    Set<FileCacheRequest> findByGroupIdAndStatus(String groupId, FileRequestStatus error);
-
-    boolean existsByGroupIdAndStatusNot(String groupId, FileRequestStatus error);
-
-    void deleteByStorage(String storageLocationId);
 
 }

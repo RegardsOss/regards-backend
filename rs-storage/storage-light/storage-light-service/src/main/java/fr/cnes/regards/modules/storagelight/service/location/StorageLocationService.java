@@ -190,11 +190,15 @@ public class StorageLocationService {
     /**
      * Monitor all storage locations to calculate informations about stored files.
      */
-    public void monitorDataStorages() {
+    public void monitorStorageLocations(Boolean reset) {
         OffsetDateTime monitoringDate = OffsetDateTime.now();
         // Retrieve last monitoring process
         StorageMonitoring storageMonitoring = storageMonitoringRepo.findById(0L)
                 .orElse(new StorageMonitoring(true, null, null, null));
+        if (reset && (storageMonitoring.getId() != null)) {
+            storageMonitoringRepo.delete(storageMonitoring);
+            storageMonitoring = new StorageMonitoring(true, null, null, null);
+        }
         storageMonitoring.setRunning(true);
         storageMonitoringRepo.save(storageMonitoring);
 

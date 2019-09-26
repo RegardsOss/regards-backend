@@ -5,13 +5,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.persistence.LockModeType;
+import javax.persistence.QueryHint;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.QueryHints;
 
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 
 /**
- * @author Sylvain VISSIERE-GUERINET
+ * JPA Repository to handle access to {@link StorageLocationConfiguration} entities.
+ *
+ * @author Sébatien Binda
+ *
  */
 public interface IStorageLocationConfigurationRepostory extends JpaRepository<StorageLocationConfiguration, Long> {
 
@@ -23,9 +31,6 @@ public interface IStorageLocationConfigurationRepostory extends JpaRepository<St
      * @return the less prioritized
      */
     StorageLocationConfiguration findFirstByStorageTypeOrderByPriorityDesc(StorageType storageType);
-
-    @Override
-    Optional<StorageLocationConfiguration> findById(Long pluginConfId);
 
     Set<StorageLocationConfiguration> findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(
             StorageType storageType, Long priority);
@@ -45,8 +50,6 @@ public interface IStorageLocationConfigurationRepostory extends JpaRepository<St
 
     StorageLocationConfiguration findOneByStorageTypeAndPriority(StorageType storageType, long priority);
 
-    Set<StorageLocationConfiguration> findAllByIdIn(Collection<Long> allIdUsedByAipInQuery);
-
     Set<StorageLocationConfiguration> findByStorageTypeAndNameIn(StorageType storageType,
             Collection<String> confLabels);
 
@@ -54,5 +57,10 @@ public interface IStorageLocationConfigurationRepostory extends JpaRepository<St
 
     Optional<StorageLocationConfiguration> findByName(String businessId);
 
+    /**
+     * Lock is mandatory as many requests can end at the same time and ask for status of all other requests of the same group
+     */
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    @QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value = "30000") })
     boolean existsByName(String name);
 }

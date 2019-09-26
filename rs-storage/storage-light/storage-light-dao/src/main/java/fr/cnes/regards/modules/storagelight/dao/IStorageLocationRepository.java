@@ -26,7 +26,9 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocation;
 
 /**
- * @author sbinda
+ * JPA Repository to handle access to {@link StorageLocation} entities.
+ *
+ * @author Sébatien Binda
  *
  */
 public interface IStorageLocationRepository

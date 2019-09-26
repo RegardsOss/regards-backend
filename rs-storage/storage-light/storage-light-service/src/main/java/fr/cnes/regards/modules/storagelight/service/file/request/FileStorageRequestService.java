@@ -121,6 +121,7 @@ public class FileStorageRequestService {
     public void handle(Collection<FileStorageRequestDTO> requests, String groupId) {
         int flushCount = 0;
         // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
+        LOGGER.debug("[STORAGE REQUESTS] Handling {} requests ...", requests.size());
         Set<FileReference> existingOnes = fileRefService
                 .search(requests.stream().map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet()));
         for (FileStorageRequestDTO request : requests) {

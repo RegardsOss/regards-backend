@@ -23,7 +23,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoring;
 
 /**
- * @author sbinda
+ * JPA Repository to handle access to {@link StorageMonitoring} entities.
+ *
+ * @author Sébatien Binda
  *
  */
 public interface IStorageMonitoringRepository extends JpaRepository<StorageMonitoring, Long> {

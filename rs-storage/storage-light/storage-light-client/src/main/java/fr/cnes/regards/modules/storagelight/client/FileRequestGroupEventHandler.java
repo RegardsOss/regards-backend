@@ -65,7 +65,7 @@ public class FileRequestGroupEventHandler
         FileRequestsGroupEvent event = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            LOGGER.info("Handling {}", event.toString());
+            LOGGER.info("[{} EVENT RECEIVED] {}", event.getType().toString(), event.toString());
             handle(event);
         } finally {
             runtimeTenantResolver.clearTenant();

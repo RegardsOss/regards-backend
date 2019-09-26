@@ -40,7 +40,6 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
@@ -52,7 +51,6 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.IDeletionProgressManag
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IRestorationProgressManager;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
-import fr.cnes.regards.modules.storagelight.domain.plugin.PluginConfUpdatable;
 
 /**
  * @author Binda sébastien
@@ -199,22 +197,6 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                 progressManager.deletionSucceed(request);
             }
         });
-    }
-
-    @Override
-    public PluginConfUpdatable allowConfigurationUpdate(PluginConfiguration newConfiguration,
-            PluginConfiguration currentConfiguration, boolean filesAlreadyStored) {
-        // Only the baseStorageDirectory cannot be changed
-        String currentLocation = (String) currentConfiguration
-                .getParameterValue(BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME);
-        String newLocation = (String) newConfiguration.getParameterValue(BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME);
-        if (!currentLocation.equals(newLocation)) {
-            return PluginConfUpdatable.preventUpdate(String
-                    .format("Files are already stored in the base location %s. You can't modify this parameter. Maybe you want to create a new configuration for the %s location?",
-                            currentLocation, newLocation));
-        } else {
-            return PluginConfUpdatable.allowUpdate();
-        }
     }
 
     @Override

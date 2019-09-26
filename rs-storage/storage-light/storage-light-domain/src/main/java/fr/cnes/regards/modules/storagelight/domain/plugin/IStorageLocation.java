@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.storagelight.domain.plugin;
 import java.util.Collection;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
@@ -76,17 +75,5 @@ public interface IStorageLocation {
      * @return boolean
      */
     boolean allowPhysicalDeletion();
-
-    /**
-     * Method called before each configuration update of this plugin to know if the modification is allowed or not.
-     * The plugin implementation of this method should ensure that already stored files will always be accessible after
-     * the modification.
-     * @param newConfiguration {@link PluginConfiguration} with the new parameters for update
-     * @param currentConfiguration {@link PluginConfiguration} with the current parameters before update.
-     * @param filesAlreadyStored {@link boolean} Does files has been already stored with the current configuration ?
-     * @return {@link PluginConfUpdatable} true if the plugin allows the modification. If not updatable contains the rejection cause
-     */
-    PluginConfUpdatable allowConfigurationUpdate(PluginConfiguration newConfiguration,
-            PluginConfiguration currentConfiguration, boolean filesAlreadyStored);
 
 }
