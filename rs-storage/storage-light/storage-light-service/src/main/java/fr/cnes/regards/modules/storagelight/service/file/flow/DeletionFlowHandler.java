@@ -99,14 +99,13 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
                 items.put(tenant, new ConcurrentLinkedQueue<>());
             }
             items.get(tenant).add(item);
-            reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
         }
     }
 
     public void handleSync(TenantWrapper<DeletionFlowItem> wrapper) {
         DeletionFlowItem item = wrapper.getContent();
-        reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
         delete(Lists.newArrayList(item));
+        reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
     }
 
     /**
@@ -154,6 +153,7 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
     public void delete(Collection<DeletionFlowItem> items) {
         for (DeletionFlowItem item : items) {
             fileDelReqService.handle(item.getFiles(), item.getGroupId());
+            reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
         }
     }
 

@@ -21,15 +21,10 @@ package fr.cnes.regards.modules.storagelight.dao;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.persistence.LockModeType;
-import javax.persistence.QueryHint;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.QueryHints;
 
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
@@ -59,11 +54,6 @@ public interface IFileCopyRequestRepository
 
     Set<FileCopyRequest> findByGroupId(String groupId);
 
-    /**
-     * Lock is mandatory as many requests can end at the same time and ask for status of all other requests of the same group
-     */
-    @Lock(LockModeType.PESSIMISTIC_READ)
-    @QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value = "30000") })
     boolean existsByGroupIdAndStatusNot(String groupId, FileRequestStatus error);
 
 }

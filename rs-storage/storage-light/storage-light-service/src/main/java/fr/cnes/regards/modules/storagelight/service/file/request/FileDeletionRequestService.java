@@ -271,7 +271,6 @@ public class FileDeletionRequestService {
                                                request.getStorage(), oFileRef.orElse(null));
             }
         }
-        reqGroupService.checkRequestsGroupDone(groupId, FileRequestType.DELETION);
     }
 
     /**

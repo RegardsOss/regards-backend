@@ -97,7 +97,6 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
                 items.put(tenant, new ConcurrentLinkedQueue<>());
             }
             items.get(tenant).add(item);
-            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size());
         }
     }
 
@@ -109,9 +108,9 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
         String tenant = wrapper.getTenant();
         StorageFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
-        reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size());
         try {
             fileStorageReqService.handle(item.getFiles(), item.getGroupId());
+            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size());
         } finally {
             runtimeTenantResolver.clearTenant();
         }
@@ -158,6 +157,7 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
     private void store(List<StorageFlowItem> list) {
         for (StorageFlowItem item : list) {
             fileStorageReqService.handle(item.getFiles(), item.getGroupId());
+            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size());
         }
     }
 }

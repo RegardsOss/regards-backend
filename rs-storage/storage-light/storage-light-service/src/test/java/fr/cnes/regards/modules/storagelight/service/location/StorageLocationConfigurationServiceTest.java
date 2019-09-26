@@ -43,6 +43,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
+import fr.cnes.regards.modules.storagelight.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
@@ -69,6 +70,9 @@ public class StorageLocationConfigurationServiceTest extends AbstractMultitenant
     private IFileReferenceRepository fileRefRepo;
 
     @Autowired
+    private IGroupRequestInfoRepository requInfoRepo;
+
+    @Autowired
     private IFileStorageRequestRepository fileRefRequestRepo;
 
     @Autowired
@@ -76,6 +80,7 @@ public class StorageLocationConfigurationServiceTest extends AbstractMultitenant
 
     @Before
     public void init() {
+        requInfoRepo.deleteAll();
         fileRefRepo.deleteAll();
         fileRefRequestRepo.deleteAll();
         jobInfoRepo.deleteAll();

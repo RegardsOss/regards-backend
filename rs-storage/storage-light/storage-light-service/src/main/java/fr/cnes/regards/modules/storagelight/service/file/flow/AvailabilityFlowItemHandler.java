@@ -93,7 +93,6 @@ public class AvailabilityFlowItemHandler
                 items.put(tenant, new ConcurrentLinkedQueue<>());
             }
             items.get(tenant).add(item);
-            reqGroupService.granted(item.getGroupId(), FileRequestType.AVAILABILITY, item.getChecksums().size());
         }
     }
 
@@ -102,6 +101,7 @@ public class AvailabilityFlowItemHandler
         try {
             AvailabilityFlowItem item = wrapper.getContent();
             fileCacheReqService.makeAvailable(item.getChecksums(), item.getExpirationDate(), item.getGroupId());
+            reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getChecksums().size());
         } finally {
             runtimeTenantResolver.clearTenant();
         }
@@ -146,7 +146,10 @@ public class AvailabilityFlowItemHandler
     }
 
     public void makeAvailable(Collection<AvailabilityFlowItem> items) {
-        items.forEach(i -> fileCacheReqService.makeAvailable(i.getChecksums(), i.getExpirationDate(), i.getGroupId()));
+        items.forEach(i -> {
+            fileCacheReqService.makeAvailable(i.getChecksums(), i.getExpirationDate(), i.getGroupId());
+            reqGroupService.granted(i.getGroupId(), FileRequestType.AVAILABILITY, i.getChecksums().size());
+        });
     }
 
 }

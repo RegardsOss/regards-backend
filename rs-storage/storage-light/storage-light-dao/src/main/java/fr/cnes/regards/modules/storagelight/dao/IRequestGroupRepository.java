@@ -18,24 +18,14 @@
  */
 package fr.cnes.regards.modules.storagelight.dao;
 
-import java.util.Set;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.storagelight.domain.database.request.RequestResultInfo;
+import fr.cnes.regards.modules.storagelight.domain.database.request.RequestGroup;
 
 /**
- * JPA Repository to handle access to {@link RequestResultInfo} entities.
- *
- * @author Sébatien Binda
+ * @author sbinda
  *
  */
-public interface IGroupRequestInfoRepository extends JpaRepository<RequestResultInfo, Long> {
-
-    Set<RequestResultInfo> findByGroupIdAndError(String groupId, boolean error);
-
-    void deleteByResultFileId(Long fileId);
-
-    void deleteByGroupId(String groupId);
+public interface IRequestGroupRepository extends JpaRepository<RequestGroup, String> {
 
 }

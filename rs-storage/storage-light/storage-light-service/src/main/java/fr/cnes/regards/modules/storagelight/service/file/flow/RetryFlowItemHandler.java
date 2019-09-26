@@ -29,9 +29,11 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.flow.RetryFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.RequestsGroupService;
 
 /**
  * Handler of bus message events {@link RetryFlowItem}s.<br>
@@ -56,6 +58,9 @@ public class RetryFlowItemHandler implements ApplicationListener<ApplicationRead
     @Autowired
     private FileCacheRequestService cacheService;
 
+    @Autowired
+    private RequestsGroupService reqGroupService;
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(RetryFlowItem.class, this);
@@ -70,6 +75,7 @@ public class RetryFlowItemHandler implements ApplicationListener<ApplicationRead
                 case STORAGE:
                     if (request.getGroupId() != null) {
                         storageService.retryRequest(request.getGroupId());
+                        reqGroupService.granted(request.getGroupId(), FileRequestType.STORAGE, 0);
                     } else {
                         storageService.retry(request.getOwners());
                     }
@@ -77,15 +83,23 @@ public class RetryFlowItemHandler implements ApplicationListener<ApplicationRead
                 case AVAILABILITY:
                     if (request.getGroupId() != null) {
                         cacheService.retryRequest(request.getGroupId());
+                        reqGroupService.granted(request.getGroupId(), FileRequestType.AVAILABILITY, 0);
                     } else {
                         LOGGER.warn("Retry action is not available for availability requests with no request id.");
+                        reqGroupService
+                                .denied(request.getGroupId(), FileRequestType.AVAILABILITY,
+                                        "Retry action is not available for availability requests with no request id.");
                     }
                     break;
                 case DELETION:
-                    LOGGER.warn("Retry action is not available for file reference requests.");
+                    LOGGER.warn("Retry action is not available for file deletion requests.");
+                    reqGroupService.denied(request.getGroupId(), FileRequestType.DELETION,
+                                           "Retry action is not available for file deletion requests.");
                     break;
                 case REFERENCE:
                     LOGGER.warn("Retry action is not available for file reference requests.");
+                    reqGroupService.denied(request.getGroupId(), FileRequestType.REFERENCE,
+                                           "Retry action is not available for file reference requests.");
                     break;
                 default:
                     LOGGER.warn("Retry action is not available for undefined requests.");
@@ -94,7 +108,6 @@ public class RetryFlowItemHandler implements ApplicationListener<ApplicationRead
         } finally {
             runtimeTenantResolver.clearTenant();
         }
-
     }
 
 }

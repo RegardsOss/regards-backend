@@ -32,6 +32,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -62,6 +64,8 @@ import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequ
         "regards.storage.cache.path=target/cache" })
 public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AvailabilityFileReferenceFlowItemTest.class);
+
     @Autowired
     private AvailabilityFlowItemHandler handler;
 
@@ -86,6 +90,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
     @Test
     public void availabilityFlowItem() throws InterruptedException, ExecutionException {
 
+        LOGGER.info("--> availabilityFlowItem");
         // Simulate storage of 3 files in a near line location
         FileReference file1 = this.generateRandomStoredNearlineFileReference("file.nearline.1.test", Optional.empty());
         FileReference file2 = this.generateRandomStoredNearlineFileReference("file.nearline.2.test", Optional.empty());
@@ -160,6 +165,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
 
     @Test
     public void availabilityWithCacheFile() throws InterruptedException, ExecutionException, MalformedURLException {
+        LOGGER.info("--> availabilityWithCacheFile");
         // Simulate file storage on a near line location
         FileReference file1 = this.generateRandomStoredNearlineFileReference("file.nearline.1.test", Optional.empty());
         // Simulate file in cache
@@ -188,7 +194,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
 
     @Test
     public void availability() throws InterruptedException, ExecutionException {
-
+        LOGGER.info("--> availability");
         // Simulate storage of 3 files in a near line location with restore error
         FileReference file1 = this.generateRandomStoredNearlineFileReference("restoError.file1.test", Optional.empty());
         FileReference file2 = this.generateRandomStoredNearlineFileReference("restoError.file1.test", Optional.empty());

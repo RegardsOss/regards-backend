@@ -4,6 +4,7 @@ create table t_file_copy_request (id int8 not null, creation_date timestamp, err
 create table t_file_deletion_request (file_reference int8 not null, creation_date timestamp, error_cause varchar(512), force_delete boolean, group_id varchar(128) not null, status varchar(255) not null, storage varchar(128) not null, primary key (file_reference));
 create table t_file_reference (id int8 not null, storage varchar(128), url varchar(2048), algorithm varchar(16) not null, checksum varchar(128) not null, fileName varchar(256) not null, fileSize int8, height int4, mime_type varchar(255) not null, type varchar(256), width int4, storageDate timestamp, primary key (id));
 create table t_file_storage_request (id int8 not null, creation_date timestamp, error_cause varchar(512), algorithm varchar(16) not null, checksum varchar(128) not null, fileName varchar(256) not null, fileSize int8, height int4, mime_type varchar(255) not null, type varchar(256), width int4, origin_url varchar(2048), status varchar(255) not null, storage varchar(128), storage_subdirectory varchar(2048), primary key (id));
+create table t_request_group (id varchar(255) not null, type varchar(255) not null, primary key (id));
 create table t_request_result_info (id int8 not null, error boolean, error_cause varchar(512), group_id varchar(128) not null, request_checksum varchar(128) not null, request_storage varchar(128), request_type varchar(255) not null, result_file_ref_id int8, primary key (id));
 create table t_storage_location (id int8 not null, last_update_date timestamp, name varchar(128), nb_ref_files int8, total_size int8, primary key (id));
 create table t_storage_location_conf (id int8 not null, allocated_size_ko int8, name varchar(128), priority int8, storage_type varchar(255), plugin_conf_id int8, primary key (id));
@@ -31,6 +32,7 @@ create index idx_file_storage_request on t_file_storage_request (storage, checks
 create index idx_file_storage_request_cs on t_file_storage_request (checksum);
 create index idx_file_storage_request_storage on t_file_storage_request (storage);
 alter table t_file_storage_request add constraint t_file_storage_request_checksum_storage unique (checksum, storage);
+create index idx_t_request_group on t_request_group (id);
 create index idx_group_id on t_request_result_info (group_id);
 alter table t_request_result_info add constraint uk_t_request_result_info unique (group_id, result_file_ref_id);
 create index idx_storage_location on t_storage_location (name);
@@ -47,7 +49,7 @@ create sequence seq_storage_location_conf start 1 increment 50;
 alter table t_file_cache_request add constraint FKmhrrlwenlm8bmtwy5laku0jvu foreign key (file_ref_id) references t_file_reference;
 alter table t_file_deletion_request add constraint FK8iyuxn10e6gx9ybs6i92mxdgq foreign key (file_reference) references t_file_reference;
 alter table t_request_result_info add constraint FKc9bxmi7kd5qm75tg4tmxfflc8 foreign key (result_file_ref_id) references t_file_reference;
-alter table t_storage_location_conf add constraint FK4fse9hhwqfm9i3tj088rpk5hr foreign key (plugin_conf_id) references t_plugin_configuration;
+alter table t_storage_location_conf add constraint fk_prioritized_storage_plugin_conf foreign key (plugin_conf_id) references t_plugin_configuration;
 alter table ta_cache_file_group_ids add constraint fk_ta_cache_file_request_ids_t_file_cache foreign key (cache_file_id) references t_cache_file;
 alter table ta_file_ref_owners add constraint fk_ta_file_ref_owners_t_file_reference foreign key (file_ref_id) references t_file_reference;
 alter table ta_file_storage_request_owners add constraint fk_ta_file_storage_request_owners_t_file_storage_request foreign key (file_storage_request_id) references t_file_storage_request;

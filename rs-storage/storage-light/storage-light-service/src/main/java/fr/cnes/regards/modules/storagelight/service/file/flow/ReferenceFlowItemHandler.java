@@ -97,7 +97,6 @@ public class ReferenceFlowItemHandler
                 items.put(tenant, new ConcurrentLinkedQueue<>());
             }
             items.get(tenant).add(item);
-            reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size());
         }
     }
 
@@ -109,9 +108,9 @@ public class ReferenceFlowItemHandler
         String tenant = wrapper.getTenant();
         ReferenceFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
-        reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size());
         try {
             fileRefReqService.reference(item.getFiles(), item.getGroupId());
+            reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size());
         } finally {
             runtimeTenantResolver.clearTenant();
         }
@@ -161,6 +160,7 @@ public class ReferenceFlowItemHandler
     private void reference(List<ReferenceFlowItem> list) {
         for (ReferenceFlowItem item : list) {
             fileRefReqService.reference(item.getFiles(), item.getGroupId());
+            reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size());
         }
     }
 }

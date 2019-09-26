@@ -100,14 +100,13 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
                 items.put(tenant, new ConcurrentLinkedQueue<>());
             }
             items.get(tenant).add(item);
-            reqGroupService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size());
         }
     }
 
     public void handleSync(TenantWrapper<CopyFlowItem> wrapper) {
         CopyFlowItem item = wrapper.getContent();
-        reqGroupService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size());
         copy(item.getFiles(), item.getGroupId());
+        reqGroupService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size());
     }
 
     /**
@@ -164,7 +163,10 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
      * @param items copy flow items
      */
     private void copy(Collection<CopyFlowItem> items) {
-        items.forEach(i -> copy(i.getFiles(), i.getGroupId()));
+        items.forEach(i -> {
+            copy(i.getFiles(), i.getGroupId());
+            reqGroupService.granted(i.getGroupId(), FileRequestType.COPY, i.getFiles().size());
+        });
     }
 
 }

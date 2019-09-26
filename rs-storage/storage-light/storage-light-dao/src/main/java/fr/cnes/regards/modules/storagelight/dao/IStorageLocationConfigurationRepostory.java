@@ -5,12 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.persistence.LockModeType;
-import javax.persistence.QueryHint;
-
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.QueryHints;
 
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
@@ -57,10 +52,5 @@ public interface IStorageLocationConfigurationRepostory extends JpaRepository<St
 
     Optional<StorageLocationConfiguration> findByName(String businessId);
 
-    /**
-     * Lock is mandatory as many requests can end at the same time and ask for status of all other requests of the same group
-     */
-    @Lock(LockModeType.PESSIMISTIC_READ)
-    @QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value = "30000") })
     boolean existsByName(String name);
 }

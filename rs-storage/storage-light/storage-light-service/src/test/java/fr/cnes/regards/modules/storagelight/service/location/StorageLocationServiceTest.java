@@ -34,6 +34,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storagelight.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storagelight.dao.IStorageLocationRepository;
 import fr.cnes.regards.modules.storagelight.dao.IStorageMonitoringRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
@@ -61,6 +62,9 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
     private IStorageLocationRepository storageLocationRepo;
 
     @Autowired
+    private IGroupRequestInfoRepository requInfoRepo;
+
+    @Autowired
     private IStorageMonitoringRepository storageMonitorRepo;
 
     @Autowired
@@ -68,6 +72,7 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
 
     @Before
     public void initialize() throws ModuleException {
+        requInfoRepo.deleteAll();
         fileRefRepo.deleteAll();
         storageLocationRepo.deleteAll();
         storageMonitorRepo.deleteAll();

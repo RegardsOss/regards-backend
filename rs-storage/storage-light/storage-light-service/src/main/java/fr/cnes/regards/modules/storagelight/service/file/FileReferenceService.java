@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storagelight.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
@@ -53,6 +54,9 @@ public class FileReferenceService {
 
     @Autowired
     private IFileReferenceRepository fileRefRepo;
+
+    @Autowired
+    private IGroupRequestInfoRepository requInfoRepo;
 
     @Autowired
     private FileReferenceEventPublisher fileRefEventPublisher;
@@ -93,6 +97,9 @@ public class FileReferenceService {
     public void delete(FileReference fileRef, String groupId) {
         Assert.notNull(fileRef, "File reference to delete cannot be null");
         Assert.notNull(fileRef.getId(), "File reference identifier to delete cannot be null");
+
+        // Check if there is request information associated
+        requInfoRepo.deleteByResultFileId(fileRef.getId());
         fileRefRepo.deleteById(fileRef.getId());
         String message = String.format("File reference %s (checksum: %s) as been completly deleted for all owners.",
                                        fileRef.getMetaInfo().getFileName(), fileRef.getMetaInfo().getChecksum());

@@ -171,6 +171,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected String originUrl = "file://in/this/directory/file.test";
 
     protected void init() throws ModuleException {
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         try {
             if (Files.exists(Paths.get("target/cache"))) {
                 FileUtils.deleteDirectory(Paths.get("target/cache").toFile());

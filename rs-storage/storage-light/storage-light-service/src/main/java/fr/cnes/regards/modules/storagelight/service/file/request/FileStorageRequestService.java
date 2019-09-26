@@ -139,8 +139,6 @@ public class FileStorageRequestService {
                 flushCount = 0;
             }
         }
-        // Check requests group status
-        reqGroupService.checkRequestsGroupDone(groupId, FileRequestType.STORAGE);
     }
 
     /**
@@ -375,7 +373,7 @@ public class FileStorageRequestService {
             fileStorageRequest.setStatus(status);
             if (!storageHandler.getConfiguredStorages().contains(storage)) {
                 // The storage destination is unknown, we can already set the request in error status
-                handleStorageNotAvailable(fileStorageRequest, false);
+                handleStorageNotAvailable(fileStorageRequest);
             } else {
                 fileStorageRequestRepo.save(fileStorageRequest);
                 LOGGER.trace("New file storage request created for file <{}> to store to {} with status {}",
@@ -432,7 +430,7 @@ public class FileStorageRequestService {
      * @param fileStorageRequests
      */
     private void handleStorageNotAvailable(Collection<FileStorageRequest> fileStorageRequests) {
-        fileStorageRequests.forEach(r -> handleStorageNotAvailable(r, true));
+        fileStorageRequests.forEach(r -> handleStorageNotAvailable(r));
     }
 
     /**
@@ -443,7 +441,7 @@ public class FileStorageRequestService {
      * </ul>
      * @param fileStorageRequest
      */
-    private void handleStorageNotAvailable(FileStorageRequest fileStorageRequest, boolean checkRequestsGroupStatus) {
+    private void handleStorageNotAvailable(FileStorageRequest fileStorageRequest) {
         // The storage destination is unknown, we can already set the request in error status
         String errorCause = String
                 .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown or disabled.",
@@ -460,7 +458,7 @@ public class FileStorageRequestService {
         for (String groupId : fileStorageRequest.getGroupIds()) {
             reqGroupService.requestError(groupId, FileRequestType.STORAGE,
                                          fileStorageRequest.getMetaInfo().getChecksum(),
-                                         fileStorageRequest.getStorage(), errorCause, checkRequestsGroupStatus);
+                                         fileStorageRequest.getStorage(), errorCause);
         }
     }
 

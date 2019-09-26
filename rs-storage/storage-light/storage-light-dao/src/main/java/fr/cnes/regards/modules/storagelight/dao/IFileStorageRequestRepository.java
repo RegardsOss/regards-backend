@@ -22,16 +22,11 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.persistence.LockModeType;
-import javax.persistence.QueryHint;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
@@ -73,11 +68,6 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     void deleteByStorage(String storageLocationId);
 
-    /**
-     * Lock is mandatory as many requests can end at the same time and ask for status of all other requests of the same group
-     */
-    @Lock(LockModeType.PESSIMISTIC_READ)
-    @QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value = "30000") })
     boolean existsByGroupIdsAndStatusNot(String groupId, FileRequestStatus error);
 
     Long countByStorageAndStatus(String storage, FileRequestStatus status);

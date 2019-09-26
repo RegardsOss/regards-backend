@@ -162,7 +162,6 @@ public class StorageLocationService {
         List<StorageLocationConfiguration> confs = pLocationConfService.searchAll();
         // Handle all online storage configured
         for (StorageLocationConfiguration conf : confs) {
-
             Long nbStorageError = storageReqService.count(conf.getName(), FileRequestStatus.ERROR);
             Long nbDeletionError = deletionReqService.count(conf.getName(), FileRequestStatus.ERROR);
             StorageLocation monitored = monitoredLocations.get(conf.getName());

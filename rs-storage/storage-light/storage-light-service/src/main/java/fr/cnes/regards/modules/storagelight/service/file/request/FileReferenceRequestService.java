@@ -91,13 +91,13 @@ public class FileReferenceRequestService {
             try {
                 FileReference fileRef = reference(file, oFileRef, Sets.newHashSet(groupId));
                 reqGrpService.requestSuccess(groupId, FileRequestType.REFERENCE, fileRef.getMetaInfo().getChecksum(),
-                                             fileRef.getLocation().getStorage(), fileRef, false);
+                                             fileRef.getLocation().getStorage(), fileRef);
             } catch (ModuleException e) {
                 LOGGER.error(e.getMessage(), e);
                 fileRefEventPublisher.storeError(file.getChecksum(), Sets.newHashSet(file.getOwner()),
                                                  file.getStorage(), e.getMessage(), Sets.newHashSet(groupId));
                 reqGrpService.requestError(groupId, FileRequestType.REFERENCE, file.getChecksum(), file.getStorage(),
-                                           e.getMessage(), false);
+                                           e.getMessage());
             }
             // Performance optimization.
             flushCount++;
@@ -107,7 +107,6 @@ public class FileReferenceRequestService {
                 flushCount = 0;
             }
         }
-        reqGrpService.done(groupId, FileRequestType.REFERENCE);
     }
 
     /**

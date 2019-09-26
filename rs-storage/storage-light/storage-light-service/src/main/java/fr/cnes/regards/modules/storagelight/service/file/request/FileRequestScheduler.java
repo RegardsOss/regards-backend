@@ -79,6 +79,9 @@ public class FileRequestScheduler {
     private FileCopyRequestService fileCopyRequestService;
 
     @Autowired
+    private RequestsGroupService reqGrpService;
+
+    @Autowired
     private ILockService lockService;
 
     // TODO : Handle lock issue.
@@ -112,6 +115,14 @@ public class FileRequestScheduler {
     public void handleFileCopyRequests() throws ModuleException {
         schedule("handleFileCopyRequests", () -> {
             fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
+            return null;
+        });
+    }
+
+    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:1000}", initialDelay = 1_400)
+    public void handleGroupRequests() throws ModuleException {
+        schedule("handleGroupRequests", () -> {
+            reqGrpService.checkRequestsGroupsDone();
             return null;
         });
     }

@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storagelight.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.rest.plugin.SimpleOnlineDataStorage;
@@ -75,6 +76,9 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
     protected StoragePluginConfigurationHandler storagePlgConfHandler;
 
     @Autowired
+    private IGroupRequestInfoRepository reqInfoRepository;
+
+    @Autowired
     protected IFileReferenceRepository fileRepo;
 
     @Autowired
@@ -83,6 +87,7 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
     private String storedFileChecksum;
 
     private void clear() throws IOException {
+        reqInfoRepository.deleteAll();
         fileRepo.deleteAll();
         prioritizedDataStorageService.search(StorageType.ONLINE).forEach(c -> {
             try {

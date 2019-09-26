@@ -226,10 +226,6 @@ public class FileCacheRequestService {
         // Handle off lines as near lines files to create new FileCacheRequests.
         nearlines.addAll(offlines);
         int nbRequests = makeAvailable(nearlines, expirationDate, groupId);
-        // If no cache requests are needed, we have to notify the end of the availability request
-        if (nearlines.isEmpty() || (nbRequests == 0)) {
-            reqGrpService.checkRequestsGroupDone(groupId, FileRequestType.AVAILABILITY);
-        }
         return nbRequests;
     }
 
@@ -461,8 +457,7 @@ public class FileCacheRequestService {
             LOGGER.debug("[AVAILABILITY SUCCESS {}] - {}", checksum, message);
             publisher.available(checksum, storage, fileRef.getLocation().getUrl(), fileRef.getOwners(), message,
                                 availabilityGroupId);
-            reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, fileRef,
-                                         false);
+            reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, fileRef);
         }
     }
 

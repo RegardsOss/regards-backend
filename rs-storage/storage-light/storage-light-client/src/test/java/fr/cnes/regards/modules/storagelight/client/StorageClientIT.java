@@ -247,9 +247,9 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         RequestInfo info = client.store(files);
         Thread.sleep(7_000);
-        Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
-        Assert.assertTrue("Request should not be successful", listener.getSuccess().containsKey(info));
-        Assert.assertEquals("Request should not be successful", 1, listener.getSuccess().get(info).size());
+        Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
+        Assert.assertEquals("Request should contains 1 success", 1, listener.getSuccess().get(info).size());
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
         Assert.assertEquals("Request should not be successful", 1, listener.getErrors().get(info).size());
     }
