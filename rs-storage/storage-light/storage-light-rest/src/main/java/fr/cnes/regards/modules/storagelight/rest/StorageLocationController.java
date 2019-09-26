@@ -112,7 +112,8 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @RequestMapping(method = RequestMethod.PUT, path = ID_PATH)
     @ResourceAccess(description = "Update a storage location configuration", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<StorageLocationDTO>> updateLocationConfiguration(
-            @Valid @RequestBody StorageLocationDTO storageLocation) throws ModuleException {
+            @PathVariable(name = "id") String storageId, @Valid @RequestBody StorageLocationDTO storageLocation)
+            throws ModuleException {
         return new ResponseEntity<>(toResource(service.updateLocationConfiguration(storageLocation)), HttpStatus.OK);
     }
 
@@ -271,6 +272,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
         // If storage location is configured so delete & edit End-point is also available
         if (location.getConfiguration().getId() != null) {
             resourceService.addLink(resource, this.getClass(), "updateLocationConfiguration", LinkRels.UPDATE,
+                                    MethodParamFactory.build(String.class, location.getName()),
                                     MethodParamFactory.build(StorageLocationDTO.class));
             resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
                                     MethodParamFactory.build(String.class, location.getName()));
