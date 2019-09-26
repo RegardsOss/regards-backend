@@ -271,7 +271,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
         // If storage location is configured so delete & edit End-point is also available
         if (location.getConfiguration().getId() != null) {
             resourceService.addLink(resource, this.getClass(), "updateLocationConfiguration", LinkRels.UPDATE,
-                                    MethodParamFactory.build(String.class, location.getName()));
+                                    MethodParamFactory.build(StorageLocationDTO.class));
             resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
                                     MethodParamFactory.build(String.class, location.getName()));
         } else {

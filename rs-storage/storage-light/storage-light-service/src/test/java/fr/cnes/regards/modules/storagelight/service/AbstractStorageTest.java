@@ -33,6 +33,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -391,9 +393,11 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                 list.add(jobService.runJob(it.next(), tenant));
             }
             for (RunnableFuture<Void> futur : list) {
-                futur.get();
+                LOGGER.info("Waiting synchronous job ...");
+                futur.get(120L, TimeUnit.SECONDS);
+                LOGGER.info("Synchronous job ends");
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             LOGGER.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
         } finally {

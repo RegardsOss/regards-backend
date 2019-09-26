@@ -134,16 +134,16 @@ public class StorageLocationService {
             StorageLocationConfiguration conf = oConf.get();
             StorageLocation loc = oLoc.get();
             return StorageLocationDTO.build(conf.getPluginConfiguration().getBusinessId(),
-                                            loc.getNumberOfReferencedFiles(), loc.getTotalSizeOfReferencedFiles(), null,
+                                            loc.getNumberOfReferencedFiles(), loc.getTotalSizeOfReferencedFiles(),
                                             nbStorageError, nbDeletionError, conf);
         } else if (oConf.isPresent()) {
             StorageLocationConfiguration conf = oConf.get();
-            return StorageLocationDTO.build(conf.getPluginConfiguration().getBusinessId(), null, null, null,
-                                            nbStorageError, nbDeletionError, conf);
+            return StorageLocationDTO.build(conf.getPluginConfiguration().getBusinessId(), null, null, nbStorageError,
+                                            nbDeletionError, conf);
         } else if (oLoc.isPresent()) {
             StorageLocation loc = oLoc.get();
             return StorageLocationDTO.build(storageId, loc.getNumberOfReferencedFiles(),
-                                            loc.getTotalSizeOfReferencedFiles(), null, 0L, 0L, null);
+                                            loc.getTotalSizeOfReferencedFiles(), 0L, 0L, null);
         } else {
             throw new EntityNotFoundException(storageId, StorageLocation.class);
         }
@@ -168,12 +168,12 @@ public class StorageLocationService {
             StorageLocation monitored = monitoredLocations.get(conf.getName());
             if (monitored != null) {
                 locationsDto.add(StorageLocationDTO.build(conf.getName(), monitored.getNumberOfReferencedFiles(),
-                                                          monitored.getTotalSizeOfReferencedFiles(), null,
-                                                          nbStorageError, nbDeletionError, conf));
+                                                          monitored.getTotalSizeOfReferencedFiles(), nbStorageError,
+                                                          nbDeletionError, conf));
                 monitoredLocations.remove(monitored.getName());
             } else {
-                locationsDto.add(StorageLocationDTO.build(conf.getName(), 0L, 0L, conf.getAllocatedSizeInKo(),
-                                                          nbStorageError, nbDeletionError, conf));
+                locationsDto
+                        .add(StorageLocationDTO.build(conf.getName(), 0L, 0L, nbStorageError, nbDeletionError, conf));
             }
         }
         // Handle not configured storage as OFFLINE ones
@@ -181,7 +181,7 @@ public class StorageLocationService {
             Long nbStorageError = 0L;
             Long nbDeletionError = 0L;
             locationsDto.add(StorageLocationDTO.build(monitored.getName(), monitored.getNumberOfReferencedFiles(),
-                                                      monitored.getTotalSizeOfReferencedFiles(), null, nbStorageError,
+                                                      monitored.getTotalSizeOfReferencedFiles(), nbStorageError,
                                                       nbDeletionError, null));
         }
         return locationsDto;
@@ -354,8 +354,7 @@ public class StorageLocationService {
         StorageLocationConfiguration newConf = pLocationConfService
                 .create(storageLocation.getName(), storageLocation.getConfiguration().getPluginConfiguration(),
                         storageLocation.getConfiguration().getAllocatedSizeInKo());
-        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L,
-                                        storageLocation.getConfiguration().getAllocatedSizeInKo(), 0L, 0L, newConf);
+        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L, 0L, 0L, newConf);
     }
 
     /**
@@ -370,8 +369,7 @@ public class StorageLocationService {
         Assert.notNull(storageLocation.getConfiguration(), "Storage location / Configuration can not be null");
         StorageLocationConfiguration newConf = pLocationConfService.update(storageLocation.getConfiguration().getId(),
                                                                            storageLocation.getConfiguration());
-        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L,
-                                        storageLocation.getConfiguration().getAllocatedSizeInKo(), 0L, 0L, newConf);
+        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L, 0L, 0L, newConf);
     }
 
 }
