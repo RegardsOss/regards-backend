@@ -93,6 +93,7 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
     public StorageLocationConfiguration(String name, PluginConfiguration pluginConf, Long allocatedSizeInKo) {
         this.name = name;
         this.pluginConfiguration = pluginConf;
+        this.allocatedSizeInKo = allocatedSizeInKo;
         if (pluginConf != null) {
             if (pluginConf.getInterfaceNames().contains(IOnlineStorageLocation.class.getName())) {
                 storageType = StorageType.ONLINE;
