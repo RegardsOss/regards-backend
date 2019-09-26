@@ -38,6 +38,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -54,7 +55,6 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
@@ -77,6 +77,7 @@ import fr.cnes.regards.modules.project.domain.Project;
 @ContextConfiguration(classes = ServiceConfigurationWithFilesNotAvailable.class)
 @ActiveProfiles("test")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@DirtiesContext
 public class OrderServiceUnvalableFilesIT {
 
     @Autowired
