@@ -254,7 +254,7 @@ public class StorageLocationConfigurationService {
             } else {
                 pluginService.updatePluginConfiguration(updated.getPluginConfiguration());
             }
-        } else {
+        } else if (updated.getPluginConfiguration() != null) {
             pluginService.savePluginConfiguration(updated.getPluginConfiguration());
         }
         return storageLocConfRepo.save(updated);
