@@ -86,7 +86,7 @@ public class RequestsGroupService {
 
     /**
      * Handle new request success for the given groupId.<br>
-     * Saves requests success results in db.<br>
+     *
      * @param groupId
      * @param type
      * @param checksum
@@ -114,6 +114,7 @@ public class RequestsGroupService {
 
     /**
      * Send a bus message to inform that the given groupId is denied.
+     *
      * @param groupId
      * @param type
      * @param denyCause
@@ -127,6 +128,7 @@ public class RequestsGroupService {
 
     /**
      * Send a bus message to inform that the given groupId is granted.
+     *
      * @param groupId
      * @param type
      * @param nbRequestInGroup
@@ -144,7 +146,7 @@ public class RequestsGroupService {
     }
 
     /**
-    *
+    * Check for all current request groups if all requests are terminated. If so send a SUCCESS or ERROR event on the bus message.
     */
     public void checkRequestsGroupsDone() {
         PageRequest page = PageRequest.of(0, 500);
@@ -210,7 +212,6 @@ public class RequestsGroupService {
 
         }
         // 4. Clear group info
-        LOGGER.info("DELETING group {}", reqGrp.getId());
         groupReqInfoRepository.deleteByGroupId(reqGrp.getId());
         reqGroupRepository.delete(reqGrp);
     }
@@ -227,7 +228,6 @@ public class RequestsGroupService {
      */
     private void requestDone(String groupId, FileRequestType type, String checksum, String storage,
             FileReference fileRef, boolean error, String errorCause) {
-        // 1. Add info in database
         RequestResultInfo gInfo = new RequestResultInfo(groupId, type, checksum, storage);
         gInfo.setResultFile(fileRef);
         gInfo.setError(error);

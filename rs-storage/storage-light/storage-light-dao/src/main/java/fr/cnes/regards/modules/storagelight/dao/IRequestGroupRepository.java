@@ -23,7 +23,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.request.RequestGroup;
 
 /**
- * @author sbinda
+ * JPA Repository to handle access to {@link RequestGroup} entities.
+ *
+ * @author Sébatien Binda
  *
  */
 public interface IRequestGroupRepository extends JpaRepository<RequestGroup, String> {
