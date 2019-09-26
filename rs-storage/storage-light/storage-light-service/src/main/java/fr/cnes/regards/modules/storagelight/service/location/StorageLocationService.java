@@ -362,11 +362,12 @@ public class StorageLocationService {
      * @return
      * @throws ModuleException
      */
-    public StorageLocationDTO updateLocationConfiguration(StorageLocationDTO storageLocation) throws ModuleException {
+    public StorageLocationDTO updateLocationConfiguration(String storageId, StorageLocationDTO storageLocation)
+            throws ModuleException {
         Assert.notNull(storageLocation, "Storage location to configure can not be null");
         Assert.notNull(storageLocation.getName(), "Storage location name to update can not be null");
         Assert.notNull(storageLocation.getConfiguration(), "Storage location / Configuration can not be null");
-        StorageLocationConfiguration newConf = pLocationConfService.update(storageLocation.getConfiguration().getId(),
+        StorageLocationConfiguration newConf = pLocationConfService.update(storageId,
                                                                            storageLocation.getConfiguration());
         return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L, 0L, 0L, newConf);
     }

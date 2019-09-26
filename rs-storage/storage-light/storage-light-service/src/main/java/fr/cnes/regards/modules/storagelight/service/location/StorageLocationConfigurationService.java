@@ -235,12 +235,19 @@ public class StorageLocationConfigurationService {
      * @return {@link StorageLocationConfiguration}
      * @throws EntityNotFoundException
      */
-    public StorageLocationConfiguration update(Long id, StorageLocationConfiguration updated) throws ModuleException {
-        StorageLocationConfiguration oldOne = retrieve(id);
-        if (!id.equals(updated.getId())) {
-            throw new EntityInconsistentIdentifierException(id, updated.getId(), StorageLocationConfiguration.class);
+    public StorageLocationConfiguration update(String storageId, StorageLocationConfiguration updated)
+            throws ModuleException {
+
+        if (!storageId.equals(updated.getName())) {
+            throw new EntityInconsistentIdentifierException(storageId, updated.getName(),
+                    StorageLocationConfiguration.class);
+        }
+        Optional<StorageLocationConfiguration> oOldOne = search(storageId);
+        if (!oOldOne.isPresent()) {
+            throw new EntityNotFoundException(storageId, StorageLocationConfiguration.class);
         }
 
+        StorageLocationConfiguration oldOne = oOldOne.get();
         if (oldOne.getPluginConfiguration() != null) {
             if (updated.getPluginConfiguration() == null) {
                 pluginService.deletePluginConfiguration(oldOne.getPluginConfiguration().getBusinessId());

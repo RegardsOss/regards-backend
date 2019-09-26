@@ -114,7 +114,8 @@ public class StorageLocationController implements IResourceController<StorageLoc
     public ResponseEntity<Resource<StorageLocationDTO>> updateLocationConfiguration(
             @PathVariable(name = "id") String storageId, @Valid @RequestBody StorageLocationDTO storageLocation)
             throws ModuleException {
-        return new ResponseEntity<>(toResource(service.updateLocationConfiguration(storageLocation)), HttpStatus.OK);
+        return new ResponseEntity<>(toResource(service.updateLocationConfiguration(storageId, storageLocation)),
+                HttpStatus.OK);
     }
 
     /**
