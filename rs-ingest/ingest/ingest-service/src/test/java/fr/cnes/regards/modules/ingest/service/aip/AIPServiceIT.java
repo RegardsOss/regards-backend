@@ -169,14 +169,19 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         Page<AIPEntity> allAips = aipService.search(SearchAIPsParameters.build(), PageRequest.of(0, 100));
         Set<String> aipIds = allAips.stream().map(aip -> aip.getAipId()).collect(Collectors.toSet());
 
-        List<String> results = aipService.searchTags(SearchFacetsAIPsParameters.build().
-                withState(AIPState.GENERATED).withTags(TAG_0));
+        SearchFacetsAIPsParameters filters = SearchFacetsAIPsParameters.build().
+                withState(AIPState.GENERATED).withTags(TAG_0);
+        List<String> results = aipService.searchTags(filters);
+        Assert.assertEquals(2, results.size());
+        // Tests categories
+        results = aipService.searchCategories(filters);
+        Assert.assertEquals(2, results.size());
+        // Tests storages
+        results = aipService.searchStorages(filters);
         Assert.assertEquals(2, results.size());
 
-        // Full test (with all attributes)
-        SearchFacetsAIPsParameters filters = SearchFacetsAIPsParameters.build()
-                .withState(AIPState.GENERATED)
-                .withTags(TAG_0)
+        // Full test (with almost all attributes)
+        filters = filters
                 .withProviderId("provider 1")
                 .withFrom(OffsetDateTime.now().minusHours(5))
                 .withTo(OffsetDateTime.now().plusDays(6))
@@ -185,19 +190,35 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
                 .withStorages(Sets.newLinkedHashSet(STORAGE_0))
                 .withSession(SESSION_0)
                 .withSessionOwner(SESSION_OWNER_0);
+        // Test tags
         results = aipService.searchTags(filters);
         Assert.assertEquals(2, results.size());
+        // Tests categories
+        results = aipService.searchCategories(filters);
+        Assert.assertEquals(1, results.size());
+        // Tests storages
+        results = aipService.searchStorages(filters);
+        Assert.assertEquals(1, results.size());
 
         // Test the aipIdsExcluded
         filters.withAIPIdsExcluded(aipIds);
         results = aipService.searchTags(filters);
         Assert.assertEquals(0, results.size());
 
-        // Test only session
+        // Test with session and all storage (which are appended to the query OR, no AIP have more than 1 storage location)
         filters = SearchFacetsAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0)
+                .withStorages(STORAGE_0, STORAGE_1, STORAGE_2)
                 .withProviderId("provider%");
         results = aipService.searchTags(filters);
         Assert.assertEquals(3, results.size());
+        // Tests categories
+        results = aipService.searchCategories(filters);
+        Assert.assertEquals(1, results.size());
+        // Tests storages
+        results = aipService.searchStorages(filters);
+        Assert.assertEquals(2, results.size());
     }
+
+
 
 }

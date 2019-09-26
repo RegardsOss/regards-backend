@@ -102,6 +102,26 @@ public class AIPController implements IResourceController<AIPEntity> {
     public static final String TAG_SEARCH_PATH = TAG_MANAGEMENT_PATH + "/search";
 
     /**
+     * Controller path to manage storage of multiple AIPs
+     */
+    public static final String STORAGE_MANAGEMENT_PATH = "/storages";
+
+    /**
+     * Controller path to search used storages by multiple AIPs
+     */
+    public static final String STORAGE_SEARCH_PATH = STORAGE_MANAGEMENT_PATH + "/search";
+
+    /**
+     * Controller path to manage storage of multiple AIPs
+     */
+    public static final String CATEGORIES_MANAGEMENT_PATH = "/categories";
+
+    /**
+     * Controller path to search used storages by multiple AIPs
+     */
+    public static final String CATEGORIES_SEARCH_PATH = CATEGORIES_MANAGEMENT_PATH + "/search";
+
+    /**
      * {@link IResourceService} instance
      */
     @Autowired
@@ -123,13 +143,13 @@ public class AIPController implements IResourceController<AIPEntity> {
     @ResourceAccess(description = "Return a page of AIPs")
     public ResponseEntity<PagedResources<Resource<AIPEntity>>> searchAIPs(SearchAIPsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<AIPEntity> assembler) throws ModuleException {
+            PagedResourcesAssembler<AIPEntity> assembler) {
         Page<AIPEntity> aips = aipService.search(filters, pageable);
         return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
     }
 
     /**
-     * Retrieve common tags from a list of aips
+     * Retrieve common tags according to the given filters
      * @param filters
      * @return tags
      */
@@ -137,6 +157,30 @@ public class AIPController implements IResourceController<AIPEntity> {
     @ResourceAccess(description = "Search tags used by aips")
     public ResponseEntity<List<String>> retrieveAIPTags(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
         List<String> aipTags = aipService.searchTags(filters);
+        return new ResponseEntity<>(aipTags, HttpStatus.OK);
+    }
+
+    /**
+     * Retrieve common storage location (pluginBusinessId) according to the given filters
+     * @param filters
+     * @return storage location
+     */
+    @RequestMapping(value = STORAGE_SEARCH_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "Search tags used by aips")
+    public ResponseEntity<List<String>> retrieveAIPStorage(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
+        List<String> aipTags = aipService.searchStorages(filters);
+        return new ResponseEntity<>(aipTags, HttpStatus.OK);
+    }
+
+    /**
+     * Retrieve common categories according to the given filters
+     * @param filters
+     * @return categories
+     */
+    @RequestMapping(value = CATEGORIES_SEARCH_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "Search categories used by aips")
+    public ResponseEntity<List<String>> retrieveAIPCategories(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
+        List<String> aipTags = aipService.searchStorages(filters);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 

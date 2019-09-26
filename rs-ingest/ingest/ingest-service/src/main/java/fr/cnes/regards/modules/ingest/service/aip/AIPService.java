@@ -175,8 +175,20 @@ public class AIPService implements IAIPService {
 
     @Override
     public List<String> searchTags(SearchFacetsAIPsParameters filters) {
-        return customAIPRepository.getDistinctTags(AIPQueryGenerator
+        return customAIPRepository.getDistinct(AIPQueryGenerator
                 .searchAipTagsUsingSQL(filters));
+    }
+
+    @Override
+    public List<String> searchStorages(SearchFacetsAIPsParameters filters) {
+        return customAIPRepository.getDistinct(AIPQueryGenerator
+                .searchAipStoragesUsingSQL(filters));
+    }
+
+    @Override
+    public List<String> searchCategories(SearchFacetsAIPsParameters filters) {
+        return customAIPRepository.getDistinct(AIPQueryGenerator
+                .searchAipCategoriesUsingSQL(filters));
     }
 
     public void downloadAIP(UniformResourceName aipId, HttpServletResponse response) throws ModuleException {

@@ -160,6 +160,58 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultPost(AIPController.TYPE_MAPPING + AIPController.TAG_SEARCH_PATH, body, requestBuilderCustomizer, "Should retrieve AIP tags");
     }
 
+    @Test
+    public void searchAIPCategories() {
+
+        // Create AIP
+        String session = OffsetDateTime.now().toString();
+        String sessionOwner = "ESA";
+        createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner,
+                session, "NAS #1");
+
+        // Wait for ingestion finished
+        ingestServiceTest.waitForIngestion(1, 10000);
+
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        documentRequestParameters(requestBuilderCustomizer);
+
+        List<FieldDescriptor> fields = new ArrayList<>();
+        fields.add(new ConstrainedFields(List.class).withPath("[]", "List of categories")
+                .type(JSON_ARRAY_TYPE));
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(fields));
+
+        SearchFacetsAIPsParameters body = SearchFacetsAIPsParameters.build().withSessionOwner(sessionOwner)
+                .withSession(session);
+
+        performDefaultPost(AIPController.TYPE_MAPPING + AIPController.CATEGORIES_SEARCH_PATH, body, requestBuilderCustomizer, "Should retrieve AIP categories");
+    }
+
+    @Test
+    public void searchAIPStorages() {
+
+        // Create AIP
+        String session = OffsetDateTime.now().toString();
+        String sessionOwner = "ESA";
+        createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner,
+                session, "NAS #1");
+
+        // Wait for ingestion finished
+        ingestServiceTest.waitForIngestion(1, 10000);
+
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        documentRequestParameters(requestBuilderCustomizer);
+
+        List<FieldDescriptor> fields = new ArrayList<>();
+        fields.add(new ConstrainedFields(List.class).withPath("[]", "List of storages location (plugin business id)")
+                .type(JSON_ARRAY_TYPE));
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(fields));
+
+        SearchFacetsAIPsParameters body = SearchFacetsAIPsParameters.build().withSessionOwner(sessionOwner)
+                .withSession(session);
+
+        performDefaultPost(AIPController.TYPE_MAPPING + AIPController.STORAGE_SEARCH_PATH, body, requestBuilderCustomizer, "Should retrieve AIP storages");
+    }
+
     private void documentRequestParameters(RequestBuilderCustomizer requestBuilderCustomizer) {
 
         StringJoiner joiner = new StringJoiner(", ");

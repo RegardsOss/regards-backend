@@ -93,11 +93,25 @@ public interface IAIPService {
     void computeAndSaveChecksum(AIPEntity aipEntity) throws ModuleException;
 
     /**
-     * Retrieve all tags used by a set of AIPS, using query filters or a list of AIP id
-     * @param filters REST query
-     * @return Tags
+     * Retrieve all tags used by a set of AIPS matching provided filters
+     * @param filters
+     * @return list of tags
      */
     List<String> searchTags(SearchFacetsAIPsParameters filters);
+
+    /**
+     * Retrieve all storages used by a set of AIPS matching provided filters
+     * @param filters
+     * @return list of storage business id
+     */
+    List<String> searchStorages(SearchFacetsAIPsParameters filters);
+
+    /**
+     * Retrieve all storages used by a set of AIPS matching provided filters
+     * @param filters
+     * @return list of storage business id
+     */
+    List<String> searchCategories(SearchFacetsAIPsParameters filters);
 
     void setAipToStored(UniformResourceName aipId, AIPState state);
 
@@ -112,4 +126,5 @@ public interface IAIPService {
      * @return
      */
     Set<AIPEntity> getAips(String sipId);
+
 }

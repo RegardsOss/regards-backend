@@ -39,7 +39,7 @@ public class CustomAIPRepository implements ICustomAIPRepository {
     private EntityManager entityManager;
 
     @Override
-    public List<String> getDistinctTags(NativeSelectQuery query) {
+    public List<String> getDistinct(NativeSelectQuery query) {
         Query q = entityManager.createNativeQuery(query.getSQL());
         // Add params
         Map<String, String> params = query.getParams();

@@ -22,7 +22,6 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.dto.NativeSelectQuery;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
@@ -51,6 +50,37 @@ public class AIPQueryGenerator {
                 filters.getSession(), filters.getProviderId(), filters.getAipIds(), filters.getAipIdsExcluded(),
                 filters.getTags(), filters.getCategories(), filters.getStorages());
 
+        // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
+        return query;
+    }
+
+    /**
+     * Return an SQL query that retrieve all storages used by a set of entities
+     * @return
+     */
+    public static NativeSelectQuery searchAipStoragesUsingSQL(SearchFacetsAIPsParameters filters) {
+        NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements(storages)->>'pluginBusinessId'",
+                "{h-schema}t_aip ");
+
+        query = generatePredicates(query, filters.getState(), filters.getFrom(), filters.getTo(), filters.getSessionOwner(),
+                filters.getSession(), filters.getProviderId(), filters.getAipIds(), filters.getAipIdsExcluded(),
+                filters.getTags(), filters.getCategories(), filters.getStorages());
+
+        // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
+        return query;
+    }
+
+    /**
+     * Return an SQL query that retrieve all categories used by a set of entities
+     * @return
+     */
+    public static NativeSelectQuery searchAipCategoriesUsingSQL(SearchFacetsAIPsParameters filters) {
+        NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(categories)",
+                "{h-schema}t_aip ");
+
+        query = generatePredicates(query, filters.getState(), filters.getFrom(), filters.getTo(), filters.getSessionOwner(),
+                filters.getSession(), filters.getProviderId(), filters.getAipIds(), filters.getAipIdsExcluded(),
+                filters.getTags(), filters.getCategories(), filters.getStorages());
 
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
         return query;
