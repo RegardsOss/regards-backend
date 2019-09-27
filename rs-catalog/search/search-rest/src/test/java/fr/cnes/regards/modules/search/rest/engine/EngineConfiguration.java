@@ -38,9 +38,9 @@ import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.models.Model;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**

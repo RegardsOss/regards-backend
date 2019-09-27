@@ -64,12 +64,12 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.models.Model;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.model.dao.IAttributeModelRepository;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
+import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.dto.properties.AttributeBuilder;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.rest.engine.AbstractEngineIT;
@@ -223,10 +223,9 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
                 department.setCreationDate(OffsetDateTime.now());
                 department.setGeometry(feature.getGeometry());
                 department.setWgs84(feature.getGeometry());
-                department.addProperty(AttributeBuilder.buildString("Code",
-                                                                    (String) feature.getProperties().get("code")));
-                department.addProperty(AttributeBuilder.buildLong("FileSize", random.nextLong()));
-                department.addProperty(AttributeBuilder.buildString("Name", name));
+                department.addProperty(IProperty.buildString("Code", (String) feature.getProperties().get("code")));
+                department.addProperty(IProperty.buildLong("FileSize", random.nextLong()));
+                department.addProperty(IProperty.buildString("Name", name));
 
                 // Attach to dataset
                 department.addTags(dataset.toString());

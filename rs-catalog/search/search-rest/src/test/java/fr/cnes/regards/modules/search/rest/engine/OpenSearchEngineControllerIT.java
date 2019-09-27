@@ -40,7 +40,7 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.model.dto.properties.AbstractAttribute;
+import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionBuilder;
@@ -292,8 +292,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                 .xpath(atomUrl + "/Parameter[@name='sun_distance' and @maxInclusive='4.48943598E9']").exists());
 
         // Check date boundaries
-        AbstractAttribute<?> startDate = mercury.getProperty("TimePeriod.startDate");
-        AbstractAttribute<?> stopDate = mercury.getProperty("TimePeriod.stopDate");
+        AbstractProperty<?> startDate = mercury.getProperty("TimePeriod.startDate");
+        AbstractProperty<?> stopDate = mercury.getProperty("TimePeriod.stopDate");
         Assert.assertNotNull(startDate);
         Assert.assertNotNull(stopDate);
 

@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
-import fr.cnes.regards.modules.model.dto.properties.AbstractAttribute;
+import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.AttributeCriterionBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterOperator;
@@ -109,10 +109,10 @@ public class GeoTimeExtension extends AbstractExtension {
     @Override
     public void applyToDescriptionParameter(OpenSearchParameter parameter, DescriptionParameter descParameter) {
         ParameterConfiguration conf = descParameter.getConfiguration();
-        if ((conf != null) && TIME_NS.equals(conf.getNamespace()) && TIME_START_PARAMETER.equals(conf.getName())) {
+        if (conf != null && TIME_NS.equals(conf.getNamespace()) && TIME_START_PARAMETER.equals(conf.getName())) {
             parameter.setValue(String.format("{%s:%s}", TIME_NS, TIME_START_PARAMETER));
         }
-        if ((conf != null) && TIME_NS.equals(conf.getNamespace()) && TIME_END_PARAMETER.equals(conf.getName())) {
+        if (conf != null && TIME_NS.equals(conf.getNamespace()) && TIME_END_PARAMETER.equals(conf.getName())) {
             parameter.setValue(String.format("{%s:%s}", TIME_NS, TIME_END_PARAMETER));
         }
     }
@@ -252,8 +252,8 @@ public class GeoTimeExtension extends AbstractExtension {
     protected boolean supportsSearchParameter(SearchParameter parameter) {
         return parameter.getName().equals(GEO_PARAMETER) || parameter.getName().equals(BOX_PARAMETER)
                 || parameter.getName().equals(LON_PARAMETER) || parameter.getName().equals(LAT_PARAMETER)
-                || parameter.getName().equals(RADIUS_PARAMETER) || ((parameter.getConfiguration() != null)
-                        && TIME_NS.equals(parameter.getConfiguration().getNamespace()));
+                || parameter.getName().equals(RADIUS_PARAMETER)
+                || parameter.getConfiguration() != null && TIME_NS.equals(parameter.getConfiguration().getNamespace());
     }
 
     private Module getAtomEntityResponseBuilder(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
@@ -266,15 +266,15 @@ public class GeoTimeExtension extends AbstractExtension {
         ParameterConfiguration timeEndParameterConf = paramConfigurations.stream()
                 .filter(c -> TIME_NS.equals(c.getNamespace()) && TIME_END_PARAMETER.equals(c.getName())).findFirst()
                 .orElse(null);
-        if ((timeStartParameterConf != null) && (timeEndParameterConf != null)) {
+        if (timeStartParameterConf != null && timeEndParameterConf != null) {
             String startDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
                     .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
             String endDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
                     .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
-            AbstractAttribute<?> startDate = entity.getProperty(startDateJsonPath);
-            AbstractAttribute<?> stopDate = entity.getProperty(endDateJsonPath);
-            if ((startDate != null) && (startDate.getValue() instanceof OffsetDateTime) && (stopDate != null)
-                    && (stopDate.getValue() instanceof OffsetDateTime)) {
+            AbstractProperty<?> startDate = entity.getProperty(startDateJsonPath);
+            AbstractProperty<?> stopDate = entity.getProperty(endDateJsonPath);
+            if (startDate != null && startDate.getValue() instanceof OffsetDateTime && stopDate != null
+                    && stopDate.getValue() instanceof OffsetDateTime) {
                 gmlMod.setStartDate((OffsetDateTime) startDate.getValue());
                 gmlMod.setStopDate((OffsetDateTime) stopDate.getValue());
             }
