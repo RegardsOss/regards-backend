@@ -79,4 +79,8 @@ public class RequestGroup {
         return creationDate;
     }
 
+    public void setCreationDate(OffsetDateTime creationDate) {
+        this.creationDate = creationDate;
+    }
+
 }

@@ -46,24 +46,29 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
     @Query("select storage from FileDeletionRequest where status = :status")
     Set<String> findStoragesByStatus(@Param("status") FileRequestStatus status);
 
-    @Modifying
-    @Query("update FileDeletionRequest fdr set fdr.status = :status where fdr.id = :id")
-    int updateStatus(@Param("status") FileRequestStatus status, @Param("id") Long id);
-
-    boolean existsByGroupId(String groupId);
-
     Set<FileDeletionRequest> findByGroupId(String groupId);
 
     Set<FileDeletionRequest> findByGroupIdAndStatus(String groupId, FileRequestStatus error);
 
     Page<FileDeletionRequest> findByStatus(FileRequestStatus status, Pageable page);
 
-    boolean existsByGroupIdAndStatusNot(String groupId, FileRequestStatus error);
-
     Page<FileDeletionRequest> findByStorageAndStatus(String storage, FileRequestStatus status, Pageable page);
+
+    boolean existsByGroupId(String groupId);
+
+    boolean existsByGroupIdAndStatusNot(String groupId, FileRequestStatus error);
 
     Long countByStorageAndStatus(String storage, FileRequestStatus status);
 
     void deleteByStorage(String storageLocationId);
+
+    @Modifying
+    @Query("update FileDeletionRequest fdr set fdr.status = :status where fdr.id = :id")
+    int updateStatus(@Param("status") FileRequestStatus status, @Param("id") Long id);
+
+    @Modifying
+    @Query("update FileDeletionRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
+    int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
+            @Param("id") Long id);
 
 }

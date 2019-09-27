@@ -18,12 +18,14 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.request;
 
+import java.time.OffsetDateTime;
 import java.util.Set;
 
 import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -83,6 +85,9 @@ public class RequestsGroupService {
 
     @Autowired
     private IRequestGroupRepository reqGroupRepository;
+
+    @Value("${regards.storage.requests.days.before.expiration:2}")
+    private Integer nbDaysBeforeExpiration;
 
     /**
      * Handle new request success for the given groupId.<br>
@@ -186,6 +191,48 @@ public class RequestsGroupService {
         // IF finished send a terminated group request event
         if (isDone) {
             groupDone(reqGrp);
+        } else {
+            checkRequestGroupExpired(reqGrp);
+        }
+
+    }
+
+    /**
+     * Check if the given requests group has expired (too old) and can be deleted.
+     * @param reqGrp to check for
+     */
+    private void checkRequestGroupExpired(RequestGroup reqGrp) {
+        if ((nbDaysBeforeExpiration > 0)
+                && reqGrp.getCreationDate().isBefore(OffsetDateTime.now().minusDays(nbDaysBeforeExpiration))) {
+            LOGGER.warn("Request group {} is expired. It will be deleted and all associated requests will be set in ERROR status");
+            String errorCause = "Associated group request expired.";
+            // If a request group is pending from more than 2 days, delete the group and set all requests in pending to error.
+            switch (reqGrp.getType()) {
+                case AVAILABILITY:
+                    cacheReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> cacheReqRepository
+                            .updateError(FileRequestStatus.ERROR, errorCause, req.getId()));
+                    break;
+                case COPY:
+                    copyReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> copyReqRepository
+                            .updateError(FileRequestStatus.ERROR, errorCause, req.getId()));
+                    break;
+                case DELETION:
+                    delReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> delReqRepository
+                            .updateError(FileRequestStatus.ERROR, errorCause, req.getId()));
+                    break;
+                case STORAGE:
+                    storageReqRepository.findByGroupIds(reqGrp.getId()).forEach(req -> storageReqRepository
+                            .updateError(FileRequestStatus.ERROR, errorCause, req.getId()));
+                    break;
+                case REFERENCE:
+                    // There is no asynchronous request for reference. If the request is referenced in db, so all requests have been handled
+                    break;
+                default:
+                    break;
+            }
+            // Clear group info
+            groupReqInfoRepository.deleteByGroupId(reqGrp.getId());
+            reqGroupRepository.delete(reqGrp);
         }
     }
 

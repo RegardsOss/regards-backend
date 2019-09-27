@@ -25,6 +25,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
@@ -55,5 +58,14 @@ public interface IFileCopyRequestRepository
     Set<FileCopyRequest> findByGroupId(String groupId);
 
     boolean existsByGroupIdAndStatusNot(String groupId, FileRequestStatus error);
+
+    @Modifying
+    @Query("update FileCopyRequest fcr set fcr.status = :status where fcr.id = :id")
+    int updateStatus(@Param("status") FileRequestStatus status, @Param("id") Long id);
+
+    @Modifying
+    @Query("update FileCopyRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
+    int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
+            @Param("id") Long id);
 
 }
