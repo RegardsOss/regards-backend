@@ -48,7 +48,7 @@ public interface IIngestRequestService {
     /**
      * Handle job error
      */
-    void handleJobError(JobEvent jobEvent);
+    void handleJobCrash(JobEvent jobEvent);
 
     /**
      * Load a collection of requests
@@ -68,13 +68,13 @@ public interface IIngestRequestService {
     /**
      * Handle request error during job processing
      */
-    void handleRequestError(IngestRequest request, SIPEntity entity);
+    void handleIngestJobFailed(IngestRequest request, SIPEntity entity);
 
     /**
      * Handle request success at the end of the job processing and launch remote storage request
      * All LOCAL {@link IngestRequestStep} successfully done.
      */
-    void handleRequestSuccess(IngestRequest request, SIPEntity sipEntity, List<AIP> aips);
+    void handleIngestJobSucceed(IngestRequest request, SIPEntity sipEntity, List<AIP> aips);
 
     /**
      * Handle request granted from storage service

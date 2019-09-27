@@ -36,15 +36,14 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
 /**
- *
+ * Listen for Jobs events
  * @author Marc SORDI
- *
  */
 @Component
-public class IngestJobEventHandler implements ApplicationListener<ApplicationReadyEvent> {
+public class JobEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
     @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestJobEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobEventHandler.class);
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -78,7 +77,7 @@ public class IngestJobEventHandler implements ApplicationListener<ApplicationRea
                 switch (jobEvent.getJobEventType()) {
                     case ABORTED:
                     case FAILED:
-                        ingestRequestService.handleJobError(jobEvent);
+                        ingestRequestService.handleJobCrash(jobEvent);
                         break;
                     default:
                         break;

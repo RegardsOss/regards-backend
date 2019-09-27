@@ -37,8 +37,6 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -238,7 +236,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         ArgumentCaptor<IngestRequest> ingestRequestCaptor = ArgumentCaptor.forClass(IngestRequest.class);
         ArgumentCaptor<SIPEntity> sipCaptor = ArgumentCaptor.forClass(SIPEntity.class);
 
-        Mockito.verify(ingestRequestService, Mockito.times(1)).handleRequestError(ingestRequestCaptor.capture(),
+        Mockito.verify(ingestRequestService, Mockito.times(1)).handleIngestJobFailed(ingestRequestCaptor.capture(),
                                                                                   sipCaptor.capture());
         Mockito.clearInvocations(ingestRequestService);
         IngestRequest request = ingestRequestCaptor.getValue();
