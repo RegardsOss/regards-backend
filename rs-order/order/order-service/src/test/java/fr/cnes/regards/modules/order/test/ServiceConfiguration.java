@@ -18,25 +18,18 @@
  */
 package fr.cnes.regards.modules.order.test;
 
-import java.io.IOException;
-import java.util.Collections;
-
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import feign.Response;
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
@@ -54,9 +47,6 @@ import fr.cnes.regards.modules.storagelight.client.IStorageFileListener;
 @PropertySource(value = { "classpath:test.properties", "classpath:test_${user.name}.properties" },
         ignoreResourceNotFound = true)
 public class ServiceConfiguration {
-
-    @Autowired
-    private IPublisher publisher;
 
     @Bean
     public IComplexSearchClient mockSearchClient() {
@@ -77,11 +67,11 @@ public class ServiceConfiguration {
     public IAttributeModelClient attributeModelClient() {
         return Mockito.mock(IAttributeModelClient.class);
     }
-    
+
     @Bean
     @Primary
     public IStorageClient storageClient(IStorageFileListener listener) {
-    	return new StorageClientMock(listener, true);
+        return new StorageClientMock(listener, true);
     }
 
     /**

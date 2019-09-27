@@ -27,9 +27,9 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
@@ -72,7 +72,7 @@ public class OrderConfiguration {
 
     /**
      * TODO : Replace by new storage client
-    
+
     @Bean
     public IAipClient aipClient() {
         AipClientProxy aipClientProxy = new AipClientProxy();
@@ -87,11 +87,11 @@ public class OrderConfiguration {
         return (IAipClient) Proxy.newProxyInstance(IAipClient.class.getClassLoader(),
                                                    new Class<?>[] { IAipClient.class }, handler);
     }
-    
+
     private class AipClientProxy {
-    
+
         Map<String, Collection<String>> headers = new HashMap<>();
-    
+
         @SuppressWarnings("unused")
         public Response downloadFile(String aipId, String checksum) {
             return Response.builder().status(200).headers(headers)
