@@ -173,4 +173,12 @@ public interface ICatalogSearchService {
      */
     List<PropertyBound<?>> retrievePropertiesBounds(Set<String> propertyNames, ICriterion parse, SearchType type)
             throws SearchException;
+    
+    /**
+     * Know if we have acces to file for the given urn
+     * @param urn {@link UniformResourceName} to access
+     * @return if we have access
+     * @throws EntityNotFoundException 
+     */
+    boolean hasAccess(UniformResourceName urn) throws EntityNotFoundException;
 }
