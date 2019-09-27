@@ -119,6 +119,8 @@
         <fr.cnes.regards.modules.uiconfiguration.version>0.5.0-SNAPSHOT
         </fr.cnes.regards.modules.uiconfiguration.version>
         <fr.cnes.regards.modules.dam.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.dam.version>
+        <fr.cnes.regards.modules.model.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.model.version>
+        <fr.cnes.regards.modules.feature.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.feature.version>
         <fr.cnes.regards.frontend-webapp.version>0.5.0-SNAPSHOT</fr.cnes.regards.frontend-webapp.version>
         <fr.cnes.regards.modules.emails.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.emails.version>
         <fr.cnes.regards.modules.notification.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.notification.version>
@@ -685,6 +687,63 @@
                 <groupId>fr.cnes.regards.modules.dam</groupId>
                 <artifactId>dam-plugins</artifactId>
                 <version>${fr.cnes.regards.modules.dam.version}</version>
+            </dependency>
+            <!-- Model -->
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-domain</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-dto</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-gson</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-dao</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-service</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-rest</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+          	<dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-client</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+            <!-- Feature -->
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.feature</groupId>
+                <artifactId>feature-domain</artifactId>
+                <version>${fr.cnes.regards.modules.feature.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.feature</groupId>
+                <artifactId>feature-dto</artifactId>
+                <version>${fr.cnes.regards.modules.feature.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.feature</groupId>
+                <artifactId>feature-dao</artifactId>
+                <version>${fr.cnes.regards.modules.feature.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.feature</groupId>
+                <artifactId>feature-service</artifactId>
+                <version>${fr.cnes.regards.modules.feature.version}</version>
             </dependency>
             <!-- Crawler -->
             <dependency>
