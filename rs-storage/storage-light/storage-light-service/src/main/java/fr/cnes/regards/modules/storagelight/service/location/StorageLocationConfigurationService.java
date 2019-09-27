@@ -73,6 +73,7 @@ public class StorageLocationConfigurationService {
         }
         if (toBeCreated != null) {
             toBeCreated.setBusinessId(name);
+            toBeCreated.setLabel(name);
             pluginConf = pluginService.savePluginConfiguration(toBeCreated);
         }
 
