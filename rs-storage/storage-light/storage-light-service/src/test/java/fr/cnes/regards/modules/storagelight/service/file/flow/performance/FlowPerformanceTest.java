@@ -167,7 +167,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         int loops = 0;
         Page<FileReference> page;
         do {
-            Thread.sleep(10_000);
+            Thread.sleep(2_000);
             page = fileRefRepo.findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
         } while ((loops < 10) && ((page.getTotalElements()) != 5000));
@@ -253,6 +253,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
     public void makeAvailableFlowItem() throws InterruptedException {
         LOGGER.info(" --------     AVAILABILITY TEST     --------- ");
         Assert.assertEquals("Invalid count of cached files", 0, cacheFileRepo.count());
+        Assert.assertTrue("There should be checksums to restore from nearline storages",nlChecksums.size() > 0);
         // Create a new bus message File reference request
         AvailabilityFlowItem item = AvailabilityFlowItem.build(nlChecksums, OffsetDateTime.now().plusDays(1),
                                                                UUID.randomUUID().toString());

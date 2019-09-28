@@ -84,7 +84,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
     private StorageLocationService service;
 
     @Autowired
-    private StorageLocationConfigurationService prioriterizedStorageService;
+    private StorageLocationConfigurationService storageLocationConfigurationService;
 
     @Autowired
     private IResourceService resourceService;
@@ -257,7 +257,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
                 resourceService.addLink(resource, this.getClass(), "increaseStorageLocationPriority", "up",
                                         MethodParamFactory.build(String.class, location.getName()));
             }
-            if (!location.getConfiguration().getPriority().equals(prioriterizedStorageService
+            if (!location.getConfiguration().getPriority().equals(storageLocationConfigurationService
                     .getLowestPriority(location.getConfiguration().getStorageType()))) {
                 resourceService.addLink(resource, this.getClass(), "decreaseStorageLocationPriority", "down",
                                         MethodParamFactory.build(String.class, location.getName()));

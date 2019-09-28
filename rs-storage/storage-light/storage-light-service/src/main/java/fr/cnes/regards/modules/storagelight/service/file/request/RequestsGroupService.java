@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.storagelight.service.file.request;
 
 import java.time.OffsetDateTime;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.List;
 
 import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
@@ -148,6 +150,21 @@ public class RequestsGroupService {
             LOGGER.error("Group request identifier already exists");
         }
         publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.GRANTED, Sets.newHashSet()));
+    }
+    
+    public void granted(Set<String> groupIds, FileRequestType type) {
+    	// Create new group request
+    	List<RequestGroup> existings = reqGroupRepository.findAllById(groupIds);
+    	List<String> existingGrpIds = existings.stream().map(RequestGroup::getId).collect(Collectors.toList());
+    	Set<RequestGroup> toSave = Sets.newHashSet();
+    	for (String groupId : groupIds) {
+	        if (!existingGrpIds.contains(groupId)) {
+	        	toSave.add(RequestGroup.build(groupId, type));
+	        } else {
+	            LOGGER.error("Group request identifier already exists");
+	        }
+    	}
+        reqGroupRepository.saveAll(toSave);
     }
 
     /**

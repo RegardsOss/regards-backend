@@ -143,7 +143,7 @@ public class ReferenceFlowItemHandler
                     }
                     LOGGER.info("[REFERENCE FLOW HANDLER] Bulk saving {} AddFileRefFlowItem...", list.size());
                     long start = System.currentTimeMillis();
-                    reference(list);
+                    fileRefReqService.reference(list);
                     LOGGER.info("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem handled in {} ms", list.size(),
                                 System.currentTimeMillis() - start);
                     list.clear();
@@ -154,13 +154,5 @@ public class ReferenceFlowItemHandler
         }
     }
 
-    /**
-     * @param list
-     */
-    private void reference(List<ReferenceFlowItem> list) {
-        for (ReferenceFlowItem item : list) {
-            fileRefReqService.reference(item.getFiles(), item.getGroupId());
-            reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size());
-        }
-    }
+   
 }

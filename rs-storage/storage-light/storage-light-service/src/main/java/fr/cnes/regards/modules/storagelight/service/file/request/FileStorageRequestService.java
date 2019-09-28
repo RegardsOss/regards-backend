@@ -24,8 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +49,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
@@ -59,6 +58,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestS
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.JobsPriority;
@@ -110,20 +110,44 @@ public class FileStorageRequestService {
 
     @Autowired
     private FileDeletionRequestService fileDelReqService;
-
-    @Autowired
-    private EntityManager em;
+    
+    /**
+     * Initialize new storage requests from Flow items.
+     * @param list
+     */
+    public void store(List<StorageFlowItem> list) {
+    	Set<FileReference> existingOnes = fileRefService
+                .search(list.stream().map(StorageFlowItem::getFiles).flatMap(Set::stream).map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet()));
+    	Set<String> groupsToGrant = Sets.newHashSet();
+        for (StorageFlowItem item : list) {
+            store(item.getFiles(), item.getGroupId(), existingOnes);
+            groupsToGrant.add(item.getGroupId());
+        }
+        reqGroupService.granted(groupsToGrant, FileRequestType.STORAGE);
+    }
+    
+    /**
+     * Initialize new storage requests for a given group identifier
+     * @param requests
+     * @param groupId
+     */
+    public void store(Collection<FileStorageRequestDTO> requests, String groupId) {
+    	Set<FileReference> existingOnes = fileRefService
+                .search(requests.stream().map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet()));
+    	store(requests, groupId, existingOnes);
+    }
 
     /**
-     * Handle many {@link FileStorageRequestDTO} to store files to a given storage location.
-     * @param items storage flow items
+     * Initialize new storage requests for a given group identifier. Parameter existingOnes is passed to improve performance in bulk creation to
+     * avoid requesting {@link IFileReferenceRepository} on each request.
+     * @param requests
+     * @param groupId
+     * @param existingOnes
      */
-    public void handle(Collection<FileStorageRequestDTO> requests, String groupId) {
-        int flushCount = 0;
+    public void store(Collection<FileStorageRequestDTO> requests, String groupId, Collection<FileReference> existingOnes) {
         // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
         LOGGER.debug("[STORAGE REQUESTS] Handling {} requests ...", requests.size());
-        Set<FileReference> existingOnes = fileRefService
-                .search(requests.stream().map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet()));
+        
         for (FileStorageRequestDTO request : requests) {
             // Check if the file already exists for the storage destination
             Optional<FileReference> oFileRef = existingOnes.stream()
@@ -131,13 +155,6 @@ public class FileStorageRequestService {
                             && f.getLocation().getStorage().contentEquals(request.getStorage()))
                     .findFirst();
             handleRequest(request, oFileRef, groupId);
-            // Performance optimization.
-            flushCount++;
-            if (flushCount > 100) {
-                em.flush();
-                em.clear();
-                flushCount = 0;
-            }
         }
     }
 
@@ -343,8 +360,6 @@ public class FileStorageRequestService {
                 .updateStatus(FileRequestStatus.PENDING, fileStorageRequest.getId()));
         JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_STORAGE_JOB.getPriority(),
                 parameters, authResolver.getUser(), FileStorageRequestJob.class.getName()));
-        em.flush();
-        em.clear();
         LOGGER.info("[STORAGE REQUESTS] Job scheduled for {} requests on storage {}",
                     workingSubset.getFileReferenceRequests().size(), storage);
         return jobInfo;

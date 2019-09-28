@@ -19,11 +19,10 @@
 package fr.cnes.regards.modules.storagelight.service.file.request;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +34,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
@@ -69,19 +69,42 @@ public class FileReferenceRequestService {
 
     @Autowired
     private FileReferenceService fileRefService;
-
-    @Autowired
-    private EntityManager em;
-
+    
     /**
-     * Call {@link #addFileReference(ReferenceFlowItem)} method for each item.
-     * @param items
+     * Initialize new reference requests from Flow items.
+     * @param list
+     */
+    public void reference(List<ReferenceFlowItem> list) {
+    	Set<FileReference> existingOnes = fileRefService
+                .search(list.stream().map(ReferenceFlowItem::getFiles).flatMap(Set::stream).map(FileReferenceRequestDTO::getChecksum).collect(Collectors.toSet()));
+    	Set<String> groupsToGrant = Sets.newHashSet();
+        for (ReferenceFlowItem item : list) {
+            reference(item.getFiles(), item.getGroupId(), existingOnes);
+            groupsToGrant.add(item.getGroupId());
+        }
+        reqGrpService.granted(groupsToGrant, FileRequestType.REFERENCE);
+    }
+    
+    /**
+     * Initialize new reference requests for a given group identifier
+     * @param requests
+     * @param groupId
      */
     public void reference(Collection<FileReferenceRequestDTO> requests, String groupId) {
-        int flushCount = 0;
-        // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
-        Set<FileReference> existingOnes = fileRefService
+    	// Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
+    	Set<FileReference> existingOnes = fileRefService
                 .search(requests.stream().map(FileReferenceRequestDTO::getChecksum).collect(Collectors.toSet()));
+    	reference(requests, groupId, existingOnes);
+    }
+
+   /**
+    * Initialize new reference requests for a given group identifier. Parameter existingOnes is passed to improve performance in bulk creation to
+    * avoid requesting {@link IFileReferenceRepository} on each request.
+    * @param requests
+    * @param groupId
+    * @param existingOnes
+    */
+    public void reference(Collection<FileReferenceRequestDTO> requests, String groupId, Collection<FileReference> existingOnes) {
         for (FileReferenceRequestDTO file : requests) {
             // Check if the file already exists for the storage destination
             Optional<FileReference> oFileRef = existingOnes.stream()
@@ -98,13 +121,6 @@ public class FileReferenceRequestService {
                                                  file.getStorage(), e.getMessage(), Sets.newHashSet(groupId));
                 reqGrpService.requestError(groupId, FileRequestType.REFERENCE, file.getChecksum(), file.getStorage(),
                                            e.getMessage());
-            }
-            // Performance optimization.
-            flushCount++;
-            if (flushCount > 100) {
-                em.flush();
-                em.clear();
-                flushCount = 0;
             }
         }
     }

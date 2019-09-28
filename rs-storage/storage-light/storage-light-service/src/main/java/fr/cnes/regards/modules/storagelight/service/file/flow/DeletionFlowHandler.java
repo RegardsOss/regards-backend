@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.storagelight.service.file.flow;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -104,7 +103,7 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
 
     public void handleSync(TenantWrapper<DeletionFlowItem> wrapper) {
         DeletionFlowItem item = wrapper.getContent();
-        delete(Lists.newArrayList(item));
+        fileDelReqService.handle(Lists.newArrayList(item));
         reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
     }
 
@@ -135,7 +134,7 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
                     }
                     LOGGER.info("[DELETION FLOW HANDLER] Bulk saving {} DeleteFileRefFlowItem...", list.size());
                     long start = System.currentTimeMillis();
-                    delete(list);
+                    fileDelReqService.handle(list);
                     LOGGER.info("[DELETION FLOW HANDLER] {} DeleteFileRefFlowItem handled in {} ms", list.size(),
                                 System.currentTimeMillis() - start);
                     list.clear();
@@ -143,17 +142,6 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
-        }
-    }
-
-    /**
-     * Handle the given {@link DeletionFlowItem}s.
-     * @param items
-     */
-    public void delete(Collection<DeletionFlowItem> items) {
-        for (DeletionFlowItem item : items) {
-            fileDelReqService.handle(item.getFiles(), item.getGroupId());
-            reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
         }
     }
 

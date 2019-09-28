@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.service.file.request;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -51,11 +52,13 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storagelight.dao.IFileDeletetionRequestRepository;
+import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileDeletionWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.JobsPriority;
@@ -256,10 +259,41 @@ public class FileDeletionRequestService {
         Assert.notNull(fileDeletionRequest.getId(), "File deletion request to delete identifier cannot be null");
         fileDeletionRequestRepo.deleteById(fileDeletionRequest.getId());
     }
-
+    
+    /**
+     * Initialize new deletion requests from Flow items.
+     * @param list
+     */
+    public void handle(List<DeletionFlowItem> list) {
+    	Set<FileReference> existingOnes = fileRefService
+                .search(list.stream().map(DeletionFlowItem::getFiles).flatMap(Set::stream).map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet()));
+    	Set<String> groupsToGrant = Sets.newHashSet();
+        for (DeletionFlowItem item : list) {
+        	handle(item.getFiles(), item.getGroupId(), existingOnes);
+            groupsToGrant.add(item.getGroupId());
+        }
+        reqGroupService.granted(groupsToGrant, FileRequestType.DELETION);
+    }
+    
+    /**
+     * Initialize new deletion requests for a given group identifier
+     * @param requests
+     * @param groupId
+     */
     public void handle(Collection<FileDeletionRequestDTO> requests, String groupId) {
-        Set<FileReference> existingOnes = fileRefService
+    	Set<FileReference> existingOnes = fileRefService
                 .search(requests.stream().map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet()));
+    	handle(requests, groupId, existingOnes);
+    }
+
+    /**
+     * Initialize new deletion requests for a given group identifier. Parameter existingOnes is passed to improve performance in bulk creation to
+     * avoid requesting {@link IFileReferenceRepository} on each request.
+     * @param requests
+     * @param groupId
+     * @param existingOnes
+     */
+    public void handle(Collection<FileDeletionRequestDTO> requests, String groupId, Collection<FileReference> existingOnes) {
         for (FileDeletionRequestDTO request : requests) {
             Optional<FileReference> oFileRef = existingOnes.stream()
                     .filter(f -> f.getLocation().getStorage().contentEquals(request.getStorage())).findFirst();

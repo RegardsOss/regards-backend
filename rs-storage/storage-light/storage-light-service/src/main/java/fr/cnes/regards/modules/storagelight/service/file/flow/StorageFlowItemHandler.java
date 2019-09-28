@@ -109,7 +109,7 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
         StorageFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            fileStorageReqService.handle(item.getFiles(), item.getGroupId());
+            fileStorageReqService.store(item.getFiles(), item.getGroupId());
             reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size());
         } finally {
             runtimeTenantResolver.clearTenant();
@@ -143,7 +143,7 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
                     }
                     LOGGER.info("[STORAGE FLOW HANDLER] Bulk saving {} StorageFlowItem...", list.size());
                     long start = System.currentTimeMillis();
-                    store(list);
+                    fileStorageReqService.store(list);
                     LOGGER.info("[STORAGE FLOW HANDLER] {} StorageFlowItem handled in {} ms", list.size(),
                                 System.currentTimeMillis() - start);
                     list.clear();
@@ -151,13 +151,6 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
-        }
-    }
-
-    private void store(List<StorageFlowItem> list) {
-        for (StorageFlowItem item : list) {
-            fileStorageReqService.handle(item.getFiles(), item.getGroupId());
-            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size());
         }
     }
 }
