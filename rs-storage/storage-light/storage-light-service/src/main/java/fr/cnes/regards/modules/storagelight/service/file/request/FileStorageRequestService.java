@@ -414,8 +414,9 @@ public class FileStorageRequestService {
             Collection<String> owners, String newGroupId) {
         fileStorageRequest.getOwners().addAll(owners);
         fileStorageRequest.getGroupIds().add(newGroupId);
-        if (newMetaInfo.equals(fileStorageRequest.getMetaInfo())) {
-            LOGGER.warn("Existing file meta information differs from new meta information. Previous ones are maintained");
+        if (!newMetaInfo.equals(fileStorageRequest.getMetaInfo())) {
+            LOGGER.warn("New storage request received for the same file {} but meta informations differs. using new  ones.");
+            fileStorageRequest.setMetaInfo(newMetaInfo);
         }
 
         LOGGER.trace("Storage request already exists for file {}", newMetaInfo.getFileName());
@@ -547,16 +548,13 @@ public class FileStorageRequestService {
                 // Delete not running deletion request to add the new owner
                 fileDelReqService.delete(deletionRequest.get());
             }
-            if (!fileReference.getMetaInfo().equals(request.buildMetaInfo())) {
-                LOGGER.warn("Existing referenced file meta information differs "
-                        + "from new reference meta information. Previous ones are maintained");
-            }
             String message = String
                     .format("New owner <%s> added to existing referenced file <%s> at <%s> (checksum: %s) ",
                             request.getOwner(), fileReference.getMetaInfo().getFileName(),
                             fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
             eventPublisher.storeSuccess(fileReference, message, Sets.newHashSet(groupId));
             updatedFileRef = fileRefService.addOwner(fileReference, request.getOwner());
+            reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE, request.getChecksum(), request.getStorage(), updatedFileRef);
         }
         return Optional.ofNullable(updatedFileRef);
     }

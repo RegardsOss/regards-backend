@@ -68,7 +68,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     public static final String COPY = "/copy";
 
-    public static final String RETRY = "retry/{type}";
+    public static final String RETRY = "/retry/{type}";
 
     public static final String UP_PATH = ID_PATH + "/up";
 

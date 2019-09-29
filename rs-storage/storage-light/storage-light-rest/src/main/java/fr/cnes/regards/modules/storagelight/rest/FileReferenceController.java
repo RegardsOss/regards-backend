@@ -19,6 +19,9 @@
 package fr.cnes.regards.modules.storagelight.rest;
 
 import java.io.IOException;
+import java.util.Collection;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -28,16 +31,21 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storagelight.domain.DownloadableFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.FileDownloadService;
+import fr.cnes.regards.modules.storagelight.service.file.flow.StorageFlowItemHandler;
 
 /**
  * Controller to access {@link FileReference} by rest API.
@@ -50,9 +58,17 @@ public class FileReferenceController {
     public static final String FILE_PATH = "/files";
 
     public static final String DOWNLOAD_PATH = "/{checksum}/download";
+    
+    public static final String STORE_PATH = "/store";
 
     @Autowired
     private FileDownloadService downloadService;
+    
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+    
+    @Autowired
+    private StorageFlowItemHandler storageHandler;
 
     /**
      * End-point to Download a file referenced by a storage location with the given checksum.
@@ -72,6 +88,13 @@ public class FileReferenceController {
         headers.setContentType(asMediaType(downloadFile.getMimeType()));
         headers.setContentDispositionFormData("attachement;filename=", downloadFile.getFileName());
         return new ResponseEntity<>(isr, headers, HttpStatus.OK);
+    }
+    
+    @RequestMapping(method = RequestMethod.POST, path= FILE_PATH + STORE_PATH)
+    @ResourceAccess(description = "Configure a storage location by his name", role = DefaultRole.PROJECT_ADMIN)
+    public  ResponseEntity<Void> store(@Valid @RequestBody Collection<StorageFlowItem> items) {
+    	items.stream().map(i -> new TenantWrapper<>(i, tenantResolver.getTenant())).forEach(storageHandler::handle);
+    	return new ResponseEntity<>(HttpStatus.OK);
     }
 
     private static MediaType asMediaType(MimeType mimeType) {
