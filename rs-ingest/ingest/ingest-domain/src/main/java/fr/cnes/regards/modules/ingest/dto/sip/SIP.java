@@ -22,15 +22,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.security.MessageDigest;
-import java.util.List;
 
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
-
-import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.ContentInformation;
