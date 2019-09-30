@@ -74,13 +74,13 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     public static final String RETRY = "/retry/{type}";
 
+    private static final String REQUESTS_PATH = "/requests/{type}";
+
     public static final String UP_PATH = ID_PATH + "/up";
 
     public static final String DOWN_PATH = ID_PATH + "/down";
 
     public static final String RESET_PARAM = "reset";
-
-    private static final String REQUESTS_PATH = "requests/{type}";
 
     @Autowired
     private StorageLocationService service;
@@ -166,8 +166,9 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @RequestMapping(method = RequestMethod.DELETE, path = ID_PATH + REQUESTS_PATH)
     @ResourceAccess(description = "Delete storage location", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> deleteRequests(@PathVariable(name = "id") String storageLocationId,
-            @PathVariable(name = "type") FileRequestType type) throws ModuleException {
-        service.deleteRequests(storageLocationId, type, Optional.of(FileRequestStatus.ERROR));
+            @PathVariable(name = "type") FileRequestType type,
+            @RequestParam(name = "status", required = false) FileRequestStatus status) throws ModuleException {
+        service.deleteRequests(storageLocationId, type, Optional.ofNullable(status));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
