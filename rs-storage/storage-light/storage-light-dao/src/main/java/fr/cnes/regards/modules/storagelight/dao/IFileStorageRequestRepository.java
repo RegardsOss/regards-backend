@@ -73,6 +73,8 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     void deleteByStorage(String storageLocationId);
 
+    void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus fileRequestStatus);
+
     boolean existsByGroupIdsAndStatusNot(String groupId, FileRequestStatus error);
 
     Long countByStorageAndStatus(String storage, FileRequestStatus status);

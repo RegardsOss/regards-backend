@@ -68,4 +68,8 @@ public interface IFileCopyRequestRepository
     int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
             @Param("id") Long id);
 
+    void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus status);
+
+    void deleteByStorage(String storageLocationId);
+
 }

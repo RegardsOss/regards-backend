@@ -568,8 +568,12 @@ public class FileStorageRequestService {
      * Delete all requests for the given storage identifier
      * @param storageLocationId
      */
-    public void deleteByStorage(String storageLocationId) {
-        fileStorageRequestRepo.deleteByStorage(storageLocationId);
+    public void deleteByStorage(String storageLocationId, Optional<FileRequestStatus> status) {
+        if (status.isPresent()) {
+            fileStorageRequestRepo.deleteByStorageAndStatus(storageLocationId, status.get());
+        } else {
+            fileStorageRequestRepo.deleteByStorage(storageLocationId);
+        }
     }
 
 }

@@ -314,4 +314,15 @@ public class FileCopyRequestService {
                     storageLocationId, sourcePath, destinationStorageId, destinationPath.orElse(""));
         return jobInfo;
     }
+
+    /**
+     * @param storageLocationId
+     */
+    public void deleteByStorage(String storageLocationId, Optional<FileRequestStatus> status) {
+        if (status.isPresent()) {
+            copyRepository.deleteByStorageAndStatus(storageLocationId, status.get());
+        } else {
+            copyRepository.deleteByStorage(storageLocationId);
+        }
+    }
 }

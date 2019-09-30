@@ -44,6 +44,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.dto.CopyFilesParametersDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
@@ -78,6 +79,8 @@ public class StorageLocationController implements IResourceController<StorageLoc
     public static final String DOWN_PATH = ID_PATH + "/down";
 
     public static final String RESET_PARAM = "reset";
+
+    private static final String REQUESTS_PATH = "requests/{type}";
 
     @Autowired
     private StorageLocationService service;
@@ -155,9 +158,23 @@ public class StorageLocationController implements IResourceController<StorageLoc
     }
 
     /**
+     * End-point to delete a storage location configuration
+     * @param storageLocationId storage location name to delete
+     * @return Void
+     * @throws ModuleException
+     */
+    @RequestMapping(method = RequestMethod.DELETE, path = ID_PATH + REQUESTS_PATH)
+    @ResourceAccess(description = "Delete storage location", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Void> deleteRequests(@PathVariable(name = "id") String storageLocationId,
+            @PathVariable(name = "type") FileRequestType type) throws ModuleException {
+        service.deleteRequests(storageLocationId, type, Optional.of(FileRequestStatus.ERROR));
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
      * End-point to delete all files referenced in a storage location
      * @param storageLocationId storage location name
-     * @param forceDelete If true, files are unrefereneced even if the physical files canot be deleted.
+     * @param forceDelete If true, files are unreferenced even if the physical files cannot be deleted.
      * @return
      * @throws ModuleException
      */

@@ -50,9 +50,11 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
 
     Set<FileCacheRequest> findByGroupId(String groupId);
 
-    Set<FileCacheRequest> findByGroupIdAndStatus(String groupId, FileRequestStatus error);
+    Set<FileCacheRequest> findByGroupIdAndStatus(String groupId, FileRequestStatus status);
 
     void deleteByStorage(String storageLocationId);
+
+    void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus status);
 
     boolean existsByGroupIdAndStatusNot(String groupId, FileRequestStatus error);
 

@@ -482,7 +482,11 @@ public class FileCacheRequestService {
      * Delete all requests for the given storage identifier
      * @param storageLocationId
      */
-    public void deleteByStorage(String storageLocationId) {
-        repository.deleteByStorage(storageLocationId);
+    public void deleteByStorage(String storageLocationId, Optional<FileRequestStatus> status) {
+        if (status.isPresent()) {
+            repository.deleteByStorageAndStatus(storageLocationId, status.get());
+        } else {
+            repository.deleteByStorage(storageLocationId);
+        }
     }
 }

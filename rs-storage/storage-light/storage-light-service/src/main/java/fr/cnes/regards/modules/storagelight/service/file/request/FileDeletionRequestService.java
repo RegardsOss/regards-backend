@@ -259,31 +259,31 @@ public class FileDeletionRequestService {
         Assert.notNull(fileDeletionRequest.getId(), "File deletion request to delete identifier cannot be null");
         fileDeletionRequestRepo.deleteById(fileDeletionRequest.getId());
     }
-    
+
     /**
      * Initialize new deletion requests from Flow items.
      * @param list
      */
     public void handle(List<DeletionFlowItem> list) {
-    	Set<FileReference> existingOnes = fileRefService
-                .search(list.stream().map(DeletionFlowItem::getFiles).flatMap(Set::stream).map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet()));
-    	Set<String> groupsToGrant = Sets.newHashSet();
+        Set<FileReference> existingOnes = fileRefService.search(list.stream().map(DeletionFlowItem::getFiles)
+                .flatMap(Set::stream).map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet()));
+        Set<String> groupsToGrant = Sets.newHashSet();
         for (DeletionFlowItem item : list) {
-        	handle(item.getFiles(), item.getGroupId(), existingOnes);
+            handle(item.getFiles(), item.getGroupId(), existingOnes);
             groupsToGrant.add(item.getGroupId());
         }
         reqGroupService.granted(groupsToGrant, FileRequestType.DELETION);
     }
-    
+
     /**
      * Initialize new deletion requests for a given group identifier
      * @param requests
      * @param groupId
      */
     public void handle(Collection<FileDeletionRequestDTO> requests, String groupId) {
-    	Set<FileReference> existingOnes = fileRefService
+        Set<FileReference> existingOnes = fileRefService
                 .search(requests.stream().map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet()));
-    	handle(requests, groupId, existingOnes);
+        handle(requests, groupId, existingOnes);
     }
 
     /**
@@ -293,7 +293,8 @@ public class FileDeletionRequestService {
      * @param groupId
      * @param existingOnes
      */
-    public void handle(Collection<FileDeletionRequestDTO> requests, String groupId, Collection<FileReference> existingOnes) {
+    public void handle(Collection<FileDeletionRequestDTO> requests, String groupId,
+            Collection<FileReference> existingOnes) {
         for (FileDeletionRequestDTO request : requests) {
             Optional<FileReference> oFileRef = existingOnes.stream()
                     .filter(f -> f.getLocation().getStorage().contentEquals(request.getStorage())).findFirst();
@@ -416,7 +417,11 @@ public class FileDeletionRequestService {
      * Delete all requests for the given storage identifier
      * @param storageLocationId
      */
-    public void deleteByStorage(String storageLocationId) {
-        fileDeletionRequestRepo.deleteByStorage(storageLocationId);
+    public void deleteByStorage(String storageLocationId, Optional<FileRequestStatus> status) {
+        if (status.isPresent()) {
+            fileDeletionRequestRepo.deleteByStorageAndStatus(storageLocationId, status.get());
+        } else {
+            fileDeletionRequestRepo.deleteByStorage(storageLocationId);
+        }
     }
 }

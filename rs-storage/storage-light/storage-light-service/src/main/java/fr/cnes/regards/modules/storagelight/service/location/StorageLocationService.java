@@ -292,9 +292,9 @@ public class StorageLocationService {
         storageLocationRepo.deleteByName(storageLocationId);
         storageMonitoringRepo.deleteAll();
         // Delete requests
-        storageReqService.deleteByStorage(storageLocationId);
-        deletionReqService.deleteByStorage(storageLocationId);
-        cacheReqService.deleteByStorage(storageLocationId);
+        storageReqService.deleteByStorage(storageLocationId, Optional.empty());
+        deletionReqService.deleteByStorage(storageLocationId, Optional.empty());
+        cacheReqService.deleteByStorage(storageLocationId, Optional.empty());
     }
 
     /**
@@ -372,6 +372,31 @@ public class StorageLocationService {
         StorageLocationConfiguration newConf = pLocationConfService.update(storageId,
                                                                            storageLocation.getConfiguration());
         return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L, 0L, 0L, newConf);
+    }
+
+    /**
+     * @param storageLocationId
+     * @param type
+     */
+    public void deleteRequests(String storageLocationId, FileRequestType type, Optional<FileRequestStatus> status) {
+        switch (type) {
+            case AVAILABILITY:
+                cacheReqService.deleteByStorage(storageLocationId, status);
+                break;
+            case COPY:
+                copyService.deleteByStorage(storageLocationId, status);
+                break;
+            case DELETION:
+                deletionReqService.deleteByStorage(storageLocationId, status);
+                break;
+            case REFERENCE:
+                break;
+            case STORAGE:
+                storageReqService.deleteByStorage(storageLocationId, status);
+                break;
+            default:
+                break;
+        }
     }
 
 }
