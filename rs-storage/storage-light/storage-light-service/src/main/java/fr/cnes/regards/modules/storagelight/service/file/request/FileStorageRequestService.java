@@ -382,7 +382,7 @@ public class FileStorageRequestService {
         // Check if file storage request already exists
         Optional<FileStorageRequest> oFileRefRequest = search(storage, fileMetaInfo.getChecksum());
         if (oFileRefRequest.isPresent()) {
-            handleAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owners, groupId);
+            handleAlreadyExists(oFileRefRequest.get(), originUrl, fileMetaInfo, owners, groupId);
         } else {
             FileStorageRequest fileStorageRequest = new FileStorageRequest(owners, fileMetaInfo, originUrl, storage,
                     storageSubDirectory, groupId);
@@ -411,16 +411,19 @@ public class FileStorageRequestService {
      * @param owners
      * @param newGroupId business requests group identifier
      */
-    private void handleAlreadyExists(FileStorageRequest fileStorageRequest, FileReferenceMetaInfo newMetaInfo,
-            Collection<String> owners, String newGroupId) {
+    private void handleAlreadyExists(FileStorageRequest fileStorageRequest, String originUrl,
+            FileReferenceMetaInfo newMetaInfo, Collection<String> owners, String newGroupId) {
+        LOGGER.trace("Storage request already exists for file {}", newMetaInfo.getFileName());
         fileStorageRequest.getOwners().addAll(owners);
         fileStorageRequest.getGroupIds().add(newGroupId);
         if (!newMetaInfo.equals(fileStorageRequest.getMetaInfo())) {
             LOGGER.warn("New storage request received for the same file {} but meta informations differs. using new  ones.");
             fileStorageRequest.setMetaInfo(newMetaInfo);
         }
-
-        LOGGER.trace("Storage request already exists for file {}", newMetaInfo.getFileName());
+        if (!fileStorageRequest.getOriginUrl().equals(originUrl)) {
+            LOGGER.warn("New storage request received for the same file {} but origin url differs. using new  one.");
+            fileStorageRequest.setOriginUrl(originUrl);
+        }
 
         switch (fileStorageRequest.getStatus()) {
             case ERROR:

@@ -58,15 +58,15 @@ public class FileReferenceController {
     public static final String FILE_PATH = "/files";
 
     public static final String DOWNLOAD_PATH = "/{checksum}/download";
-    
+
     public static final String STORE_PATH = "/store";
 
     @Autowired
     private FileDownloadService downloadService;
-    
+
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
-    
+
     @Autowired
     private StorageFlowItemHandler storageHandler;
 
@@ -89,12 +89,12 @@ public class FileReferenceController {
         headers.setContentDispositionFormData("attachement;filename=", downloadFile.getFileName());
         return new ResponseEntity<>(isr, headers, HttpStatus.OK);
     }
-    
-    @RequestMapping(method = RequestMethod.POST, path= FILE_PATH + STORE_PATH)
+
+    @RequestMapping(method = RequestMethod.POST, path = STORE_PATH)
     @ResourceAccess(description = "Configure a storage location by his name", role = DefaultRole.PROJECT_ADMIN)
-    public  ResponseEntity<Void> store(@Valid @RequestBody Collection<StorageFlowItem> items) {
-    	items.stream().map(i -> new TenantWrapper<>(i, tenantResolver.getTenant())).forEach(storageHandler::handle);
-    	return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<Void> store(@Valid @RequestBody Collection<StorageFlowItem> items) {
+        items.stream().map(i -> new TenantWrapper<>(i, tenantResolver.getTenant())).forEach(storageHandler::handle);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     private static MediaType asMediaType(MimeType mimeType) {
