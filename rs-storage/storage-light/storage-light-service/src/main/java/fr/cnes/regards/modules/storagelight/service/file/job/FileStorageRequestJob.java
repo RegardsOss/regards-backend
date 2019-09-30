@@ -101,7 +101,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
         // Find associated StorageLocation
         FileStorageWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         int nbRequestToHandle = workingSubset.getFileReferenceRequests().size();
-        LOGGER.info("[STORAGE JOB] Runing storage job for {} storage requests", nbRequestToHandle);
+        LOGGER.debug("[STORAGE JOB] Runing storage job for {} storage requests", nbRequestToHandle);
         workingSubset.getFileReferenceRequests().forEach(this::calculateImageDimension);
         IStorageLocation storagePlugin;
         String errorCause = null;
@@ -122,8 +122,8 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
                                                                 req.getMetaInfo().getChecksum(), errorCause));
                 }
             }
-            LOGGER.info("[STORAGE JOB] storage job handled in {}ms for {} storage requests",
-                        System.currentTimeMillis() - start, nbRequestToHandle);
+            LOGGER.debug("[STORAGE JOB] storage job handled in {}ms for {} storage requests",
+                         System.currentTimeMillis() - start, nbRequestToHandle);
         }
     }
 

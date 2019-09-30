@@ -310,8 +310,8 @@ public class FileCopyRequestService {
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH, destinationPath.orElse("")));
         JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_COPY_JOB.getPriority(),
                 parameters, authResolver.getUser(), FileCopyRequestsCreatorJob.class.getName()));
-        LOGGER.info("[COPY REQUESTS] Job scheduled to copy files from {}(dir={}) to {}(dir={}) for path {}.",
-                    storageLocationId, sourcePath, destinationStorageId, destinationPath.orElse(""));
+        LOGGER.debug("[COPY REQUESTS] Job scheduled to copy files from {}(dir={}) to {}(dir={}) for path {}.",
+                     storageLocationId, sourcePath, destinationStorageId, destinationPath.orElse(""));
         return jobInfo;
     }
 

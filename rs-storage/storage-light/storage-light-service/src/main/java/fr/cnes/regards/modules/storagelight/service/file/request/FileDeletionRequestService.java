@@ -408,8 +408,8 @@ public class FileDeletionRequestService {
         parameters.add(new JobParameter(FileDeletionRequestsCreatorJob.FORCE_DELETE, forceDelete));
         JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_DELETION_JOB.getPriority(),
                 parameters, authResolver.getUser(), FileDeletionRequestsCreatorJob.class.getName()));
-        LOGGER.info("[DELETION REQUESTS] Job scheduled to delete all files from storage location {} (force={}).",
-                    storageLocationId, forceDelete);
+        LOGGER.debug("[DELETION REQUESTS] Job scheduled to delete all files from storage location {} (force={}).",
+                     storageLocationId, forceDelete);
         return jobInfo;
     }
 

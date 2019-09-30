@@ -134,12 +134,14 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
                             list.add(doc);
                         }
                     }
-                    LOGGER.info("[COPY FLOW HANDLER] Bulk saving {} CopyFlowItem...", list.size());
-                    long start = System.currentTimeMillis();
-                    copy(list);
-                    LOGGER.info("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms", list.size(),
-                                System.currentTimeMillis() - start);
-                    list.clear();
+                    if (!list.isEmpty()) {
+                        LOGGER.info("[COPY FLOW HANDLER] Bulk saving {} CopyFlowItem...", list.size());
+                        long start = System.currentTimeMillis();
+                        copy(list);
+                        LOGGER.info("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms", list.size(),
+                                    System.currentTimeMillis() - start);
+                        list.clear();
+                    }
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
             } finally {
                 runtimeTenantResolver.clearTenant();

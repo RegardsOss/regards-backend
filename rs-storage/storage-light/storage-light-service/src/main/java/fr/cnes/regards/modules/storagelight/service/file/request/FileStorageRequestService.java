@@ -361,8 +361,8 @@ public class FileStorageRequestService {
                 .updateStatus(FileRequestStatus.PENDING, fileStorageRequest.getId()));
         JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_STORAGE_JOB.getPriority(),
                 parameters, authResolver.getUser(), FileStorageRequestJob.class.getName()));
-        LOGGER.info("[STORAGE REQUESTS] Job scheduled for {} requests on storage {}",
-                    workingSubset.getFileReferenceRequests().size(), storage);
+        LOGGER.debug("[STORAGE REQUESTS] Job scheduled for {} requests on storage {}",
+                     workingSubset.getFileReferenceRequests().size(), storage);
         return jobInfo;
     }
 

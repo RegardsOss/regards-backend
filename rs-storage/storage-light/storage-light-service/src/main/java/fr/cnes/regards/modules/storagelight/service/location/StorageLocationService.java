@@ -242,7 +242,7 @@ public class StorageLocationService {
                                  NotificationLevel.WARNING, MimeTypeUtils.TEXT_PLAIN);
                 }
             } else {
-                LOGGER.info("[STORAGE LOCATION] Ratio calculation for {} storage disabled cause storage allowed size is not configured.",
+                LOGGER.warn("[STORAGE LOCATION] Ratio calculation for {} storage disabled cause storage allowed size is not configured.",
                             storage.getName());
             }
         }

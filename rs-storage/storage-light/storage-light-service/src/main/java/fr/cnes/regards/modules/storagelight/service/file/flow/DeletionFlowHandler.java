@@ -132,12 +132,14 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
                             list.add(doc);
                         }
                     }
-                    LOGGER.info("[DELETION FLOW HANDLER] Bulk saving {} DeleteFileRefFlowItem...", list.size());
-                    long start = System.currentTimeMillis();
-                    fileDelReqService.handle(list);
-                    LOGGER.info("[DELETION FLOW HANDLER] {} DeleteFileRefFlowItem handled in {} ms", list.size(),
-                                System.currentTimeMillis() - start);
-                    list.clear();
+                    if (!list.isEmpty()) {
+                        LOGGER.info("[DELETION FLOW HANDLER] Bulk saving {} DeleteFileRefFlowItem...", list.size());
+                        long start = System.currentTimeMillis();
+                        fileDelReqService.handle(list);
+                        LOGGER.info("[DELETION FLOW HANDLER] {} DeleteFileRefFlowItem handled in {} ms", list.size(),
+                                    System.currentTimeMillis() - start);
+                        list.clear();
+                    }
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
             } finally {
                 runtimeTenantResolver.clearTenant();

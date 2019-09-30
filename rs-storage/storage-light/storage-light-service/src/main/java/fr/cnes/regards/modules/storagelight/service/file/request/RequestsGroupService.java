@@ -273,13 +273,13 @@ public class RequestsGroupService {
         Set<RequestResultInfo> successes = groupReqInfoRepository.findByGroupIdAndError(reqGrp.getId(), false);
         // 3. Publish event
         if (errors.isEmpty()) {
-            LOGGER.info("[{} GROUP SUCCESS {}] - {} requests success.", reqGrp.getType().toString().toUpperCase(),
-                        reqGrp.getId(), successes.size());
+            LOGGER.debug("[{} GROUP SUCCESS {}] - {} requests success.", reqGrp.getType().toString().toUpperCase(),
+                         reqGrp.getId(), successes.size());
             publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(), reqGrp.getType(), FlowItemStatus.SUCCESS,
                                                            successes));
         } else {
-            LOGGER.info("[{} GROUP ERROR {}] - {} success / {} errors.", reqGrp.getType().toString().toUpperCase(),
-                        reqGrp.getId(), successes.size(), errors.size());
+            LOGGER.error("[{} GROUP ERROR {}] - {} success / {} errors.", reqGrp.getType().toString().toUpperCase(),
+                         reqGrp.getId(), successes.size(), errors.size());
             publisher.publish(FileRequestsGroupEvent.buildError(reqGrp.getId(), reqGrp.getType(), successes, errors));
 
         }

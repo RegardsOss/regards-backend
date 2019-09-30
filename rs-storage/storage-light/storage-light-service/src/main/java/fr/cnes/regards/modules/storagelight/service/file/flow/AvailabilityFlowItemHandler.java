@@ -132,12 +132,15 @@ public class AvailabilityFlowItemHandler
                             list.add(doc);
                         }
                     }
-                    LOGGER.info("[AVAILABILITY REQUESTS HANDLER] Bulk saving {} AvailabilityFlowItem...", list.size());
-                    long start = System.currentTimeMillis();
-                    makeAvailable(list);
-                    LOGGER.info("[AVAILABILITY REQUESTS HANDLER] {} AvailabilityFlowItem handled in {} ms", list.size(),
-                                System.currentTimeMillis() - start);
-                    list.clear();
+                    if (!list.isEmpty()) {
+                        LOGGER.info("[AVAILABILITY REQUESTS HANDLER] Bulk saving {} AvailabilityFlowItem...",
+                                    list.size());
+                        long start = System.currentTimeMillis();
+                        makeAvailable(list);
+                        LOGGER.info("[AVAILABILITY REQUESTS HANDLER] {} AvailabilityFlowItem handled in {} ms",
+                                    list.size(), System.currentTimeMillis() - start);
+                        list.clear();
+                    }
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
             } finally {
                 runtimeTenantResolver.clearTenant();
