@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.rest;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -26,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,6 +44,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
+import fr.cnes.regards.modules.storagelight.domain.dto.CopyFilesParametersDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
@@ -73,10 +76,6 @@ public class StorageLocationController implements IResourceController<StorageLoc
     public static final String UP_PATH = ID_PATH + "/up";
 
     public static final String DOWN_PATH = ID_PATH + "/down";
-
-    public static final String PATH_COPY_PARAM = "pathToCopy";
-
-    public static final String COPY_LOCATION_DEST_PARAM = "destination";
 
     public static final String RESET_PARAM = "reset";
 
@@ -182,13 +181,19 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @return Void
      * @throws ModuleException
      */
-    @RequestMapping(method = RequestMethod.GET, path = ID_PATH + FILES + COPY)
+    @RequestMapping(method = RequestMethod.POST, path = FILES + COPY)
     @ResourceAccess(description = "Copy files for a given path of a storage location to an other one",
             role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> copyFiles(@PathVariable(name = "id") String storageLocationId,
-            @RequestParam(name = PATH_COPY_PARAM) String pathToCopy,
-            @RequestParam(name = COPY_LOCATION_DEST_PARAM) String destinationStorageId) throws ModuleException {
-        service.copyFiles(storageLocationId, destinationStorageId, pathToCopy);
+    public ResponseEntity<Void> copyFiles(@Valid @RequestBody CopyFilesParametersDTO parameters)
+            throws ModuleException {
+        Assert.notNull(parameters, "Copy parameters can not be null");
+        Assert.notNull(parameters.getFrom(), "Source copy parameters can not be null");
+        Assert.notNull(parameters.getFrom().getStorage(), "Source storage location copy parameters can not be null");
+        Assert.notNull(parameters.getFrom().getUrl(), "Source storage url to copy parameters can not be null");
+        Assert.notNull(parameters.getTo(), "Destination copy parameters can not be null");
+        Assert.notNull(parameters.getTo().getStorage(), "Destination storage location copy parameters can not be null");
+        service.copyFiles(parameters.getFrom().getStorage(), parameters.getFrom().getUrl(),
+                          parameters.getTo().getStorage(), Optional.ofNullable(parameters.getTo().getUrl()));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

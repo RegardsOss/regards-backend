@@ -46,7 +46,7 @@ public class FileCopyRequestDTO {
     private String storage;
 
     /**
-     * Sub directory where to store file in the storage location
+     * Sub directory where to store file in the storage destination
      */
     private String subDirectory;
 

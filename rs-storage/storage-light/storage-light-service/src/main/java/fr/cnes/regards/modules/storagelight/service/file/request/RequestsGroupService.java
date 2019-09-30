@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.storagelight.service.file.request;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.List;
 
 import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
@@ -134,7 +134,7 @@ public class RequestsGroupService {
     }
 
     /**
-     * Send a bus message to inform that the given groupId is granted.
+     * Save new granted request group and send a bus message to inform that the given groupId is granted.
      *
      * @param groupId
      * @param type
@@ -151,19 +151,27 @@ public class RequestsGroupService {
         }
         publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.GRANTED, Sets.newHashSet()));
     }
-    
+
+    /**
+     * Save new granted request groups and send bus messages to inform that the given groupIds are granted.
+     *
+     * @param groupId
+     * @param type
+     */
     public void granted(Set<String> groupIds, FileRequestType type) {
-    	// Create new group request
-    	List<RequestGroup> existings = reqGroupRepository.findAllById(groupIds);
-    	List<String> existingGrpIds = existings.stream().map(RequestGroup::getId).collect(Collectors.toList());
-    	Set<RequestGroup> toSave = Sets.newHashSet();
-    	for (String groupId : groupIds) {
-	        if (!existingGrpIds.contains(groupId)) {
-	        	toSave.add(RequestGroup.build(groupId, type));
-	        } else {
-	            LOGGER.error("Group request identifier already exists");
-	        }
-    	}
+        // Create new group request
+        List<RequestGroup> existings = reqGroupRepository.findAllById(groupIds);
+        List<String> existingGrpIds = existings.stream().map(RequestGroup::getId).collect(Collectors.toList());
+        Set<RequestGroup> toSave = Sets.newHashSet();
+        for (String groupId : groupIds) {
+            if (!existingGrpIds.contains(groupId)) {
+                toSave.add(RequestGroup.build(groupId, type));
+                publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.GRANTED,
+                                                               Sets.newHashSet()));
+            } else {
+                LOGGER.error("Group request identifier already exists");
+            }
+        }
         reqGroupRepository.saveAll(toSave);
     }
 

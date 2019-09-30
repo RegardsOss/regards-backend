@@ -42,6 +42,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
+import fr.cnes.regards.modules.storagelight.domain.dto.CopyFilesParametersDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
@@ -181,11 +182,10 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     @Test
     public void copyFiles() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        requestBuilderCustomizer.addParameter(StorageLocationController.PATH_COPY_PARAM, "/dir/one");
-        requestBuilderCustomizer.addParameter(StorageLocationController.COPY_LOCATION_DEST_PARAM, "somewhere");
-        performDefaultGet(StorageLocationController.BASE_PATH + StorageLocationController.ID_PATH
-                + StorageLocationController.FILES + StorageLocationController.COPY, requestBuilderCustomizer,
-                          "Expect ok status.", TARGET_STORAGE);
+        performDefaultPost(StorageLocationController.BASE_PATH + StorageLocationController.FILES
+                + StorageLocationController.COPY,
+                           CopyFilesParametersDTO.build("somewhere", "/dir/one", "somewhere-else", null),
+                           requestBuilderCustomizer, "Expect ok status.");
     }
 
     @Test

@@ -110,31 +110,31 @@ public class FileStorageRequestService {
 
     @Autowired
     private FileDeletionRequestService fileDelReqService;
-    
+
     /**
      * Initialize new storage requests from Flow items.
      * @param list
      */
     public void store(List<StorageFlowItem> list) {
-    	Set<FileReference> existingOnes = fileRefService
-                .search(list.stream().map(StorageFlowItem::getFiles).flatMap(Set::stream).map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet()));
-    	Set<String> groupsToGrant = Sets.newHashSet();
+        Set<FileReference> existingOnes = fileRefService.search(list.stream().map(StorageFlowItem::getFiles)
+                .flatMap(Set::stream).map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet()));
+        Set<String> groupsToGrant = Sets.newHashSet();
         for (StorageFlowItem item : list) {
             store(item.getFiles(), item.getGroupId(), existingOnes);
             groupsToGrant.add(item.getGroupId());
         }
         reqGroupService.granted(groupsToGrant, FileRequestType.STORAGE);
     }
-    
+
     /**
      * Initialize new storage requests for a given group identifier
      * @param requests
      * @param groupId
      */
     public void store(Collection<FileStorageRequestDTO> requests, String groupId) {
-    	Set<FileReference> existingOnes = fileRefService
+        Set<FileReference> existingOnes = fileRefService
                 .search(requests.stream().map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet()));
-    	store(requests, groupId, existingOnes);
+        store(requests, groupId, existingOnes);
     }
 
     /**
@@ -144,10 +144,11 @@ public class FileStorageRequestService {
      * @param groupId
      * @param existingOnes
      */
-    public void store(Collection<FileStorageRequestDTO> requests, String groupId, Collection<FileReference> existingOnes) {
+    public void store(Collection<FileStorageRequestDTO> requests, String groupId,
+            Collection<FileReference> existingOnes) {
         // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
         LOGGER.debug("[STORAGE REQUESTS] Handling {} requests ...", requests.size());
-        
+
         for (FileStorageRequestDTO request : requests) {
             // Check if the file already exists for the storage destination
             Optional<FileReference> oFileRef = existingOnes.stream()
@@ -554,7 +555,8 @@ public class FileStorageRequestService {
                             fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
             eventPublisher.storeSuccess(fileReference, message, Sets.newHashSet(groupId));
             updatedFileRef = fileRefService.addOwner(fileReference, request.getOwner());
-            reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE, request.getChecksum(), request.getStorage(), updatedFileRef);
+            reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE, request.getChecksum(),
+                                           request.getStorage(), updatedFileRef);
         }
         return Optional.ofNullable(updatedFileRef);
     }

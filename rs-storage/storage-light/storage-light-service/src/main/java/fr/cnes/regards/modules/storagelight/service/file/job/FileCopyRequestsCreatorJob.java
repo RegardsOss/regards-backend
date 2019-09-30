@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storagelight.service.file.job;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.UUID;
@@ -54,7 +55,9 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     public static final String STORAGE_LOCATION_DESTINATION_ID = "dest";
 
-    public static final String PATH_TO_COPY = "path";
+    public static final String SOURCE_PATH = "sourcePath";
+
+    public static final String DESTINATION_PATH = "destinationPath";
 
     private static final int PAGE_BULK_SIZE = 500;
 
@@ -79,7 +82,14 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
     public void run() {
         String storageLocationSourceId = parameters.get(STORAGE_LOCATION_SOURCE_ID).getValue();
         String storageLocationDestinationId = parameters.get(STORAGE_LOCATION_DESTINATION_ID).getValue();
-        String pathToCopy = parameters.get(PATH_TO_COPY).getValue();
+        String sourcePath = parameters.get(SOURCE_PATH).getValue();
+        String destinationPath = parameters.get(DESTINATION_PATH).getValue();
+        if (destinationPath == null) {
+            destinationPath = "";
+        } else if (destinationPath.startsWith("/")) {
+            // Make sure destination path is relative
+            destinationPath = destinationPath.substring(1, destinationPath.length());
+        }
 
         Pageable pageRequest = PageRequest.of(0, PAGE_BULK_SIZE);
         Page<FileReference> pageResults;
@@ -87,14 +97,17 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             // Search for all file references matching the given storage location.
             pageResults = fileRefService.search(storageLocationSourceId, pageRequest);
             for (FileReference fileRef : pageResults.getContent()) {
-                String filePath;
                 try {
-                    filePath = Paths.get((new URL(fileRef.getLocation().getUrl())).getPath()).getParent().toString();
-                    if (filePath.startsWith(pathToCopy)) {
+                    URL fileUrl = new URL(fileRef.getLocation().getUrl());
+                    Path fileDirectoryPath = Paths.get(fileUrl.getPath()).getParent();
+                    String fileDir = fileDirectoryPath.toString();
+                    Path destinationSubDirPath = Paths.get(sourcePath).relativize(fileDirectoryPath);
+                    destinationPath = Paths.get(destinationPath, destinationSubDirPath.toString()).toString();
+                    if (fileDir.startsWith(sourcePath)) {
                         // For each file reference located in the given path, send a copy request to the destination storage location.
                         publisher.publish(CopyFlowItem.build(FileCopyRequestDTO
-                                .build(fileRef.getMetaInfo().getChecksum(), storageLocationDestinationId, filePath),
-                                                             UUID.randomUUID().toString()));
+                                .build(fileRef.getMetaInfo().getChecksum(), storageLocationDestinationId,
+                                       destinationSubDirPath.toString()), UUID.randomUUID().toString()));
                     }
                 } catch (MalformedURLException e) {
                     LOGGER.error("Unable to handle file reference {} for copy from {} to {}. Cause {}",

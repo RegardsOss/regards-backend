@@ -310,10 +310,12 @@ public class StorageLocationService {
      * Copy files of a directory from one storage to an other
      * @param storageLocationId
      * @param destinationStorageId
-     * @param pathToCopy
+     * @param sourcePath
+     * @param destinationPath
      */
-    public void copyFiles(String storageLocationId, String destinationStorageId, String pathToCopy) {
-        copyService.scheduleJob(storageLocationId, destinationStorageId, pathToCopy);
+    public void copyFiles(String storageLocationId, String destinationStorageId, String sourcePath,
+            Optional<String> destinationPath) {
+        copyService.scheduleJob(storageLocationId, sourcePath, destinationStorageId, destinationPath);
     }
 
     /**
