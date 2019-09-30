@@ -105,9 +105,10 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                     destinationPath = Paths.get(destinationPath, destinationSubDirPath.toString()).toString();
                     if (fileDir.startsWith(sourcePath)) {
                         // For each file reference located in the given path, send a copy request to the destination storage location.
-                        publisher.publish(CopyFlowItem.build(FileCopyRequestDTO
-                                .build(fileRef.getMetaInfo().getChecksum(), storageLocationDestinationId,
-                                       destinationSubDirPath.toString()), UUID.randomUUID().toString()));
+                        publisher.publish(CopyFlowItem
+                                .build(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+                                                                storageLocationDestinationId, destinationPath),
+                                       UUID.randomUUID().toString()));
                     }
                 } catch (MalformedURLException e) {
                     LOGGER.error("Unable to handle file reference {} for copy from {} to {}. Cause {}",
