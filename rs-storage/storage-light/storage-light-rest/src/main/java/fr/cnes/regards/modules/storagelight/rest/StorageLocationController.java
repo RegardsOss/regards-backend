@@ -268,8 +268,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
                                         MethodParamFactory.build(String.class, location.getName()));
             }
             resourceService.addLink(resource, this.getClass(), "copyFiles", "copy",
-                                    MethodParamFactory.build(String.class, location.getName()),
-                                    MethodParamFactory.build(String.class), MethodParamFactory.build(String.class));
+                                    MethodParamFactory.build(CopyFilesParametersDTO.class));
         }
         // Delete files End-point is always available.
         resourceService.addLink(resource, this.getClass(), "deleteFiles", "deleteFiles",
