@@ -258,8 +258,12 @@ public class StorageLocationConfigurationService {
         } else if (updated.getPluginConfiguration() != null) {
             pluginService.savePluginConfiguration(updated.getPluginConfiguration());
         }
-        updated.setId(oldOne.getId());
-        return storageLocConfRepo.save(updated);
+
+        // Recalculate storage information by creating a new one and setting the previous id to update.
+        StorageLocationConfiguration toUpdate = new StorageLocationConfiguration(updated.getName(),
+                updated.getPluginConfiguration(), updated.getAllocatedSizeInKo());
+        toUpdate.setId(oldOne.getId());
+        return storageLocConfRepo.save(toUpdate);
     }
 
     /**
