@@ -84,6 +84,7 @@ import fr.cnes.regards.modules.storagelight.service.file.request.FileDeletionReq
 import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 import fr.cnes.regards.modules.storagelight.service.location.StorageLocationConfigurationService;
+import fr.cnes.regards.modules.storagelight.service.location.StorageLocationService;
 import fr.cnes.regards.modules.storagelight.service.location.StoragePluginConfigurationHandler;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
@@ -168,6 +169,9 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     @Autowired
     protected StorageLocationConfigurationService storageLocationConfService;
 
+    @Autowired
+    private StorageLocationService storageLocationService;
+
     protected String originUrl = "file://in/this/directory/file.test";
 
     protected void init() throws ModuleException {
@@ -190,16 +194,10 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         cacheFileRepo.deleteAll();
         fileRefRepo.deleteAll();
         jobInfoRepo.deleteAll();
-        storageLocationConfService.search(StorageType.ONLINE).forEach(c -> {
+
+        storageLocationService.getAllLocations().forEach(f -> {
             try {
-                storageLocationConfService.delete(c.getId());
-            } catch (ModuleException e) {
-                Assert.fail(e.getMessage());
-            }
-        });
-        storageLocationConfService.search(StorageType.NEARLINE).forEach(c -> {
-            try {
-                storageLocationConfService.delete(c.getId());
+                storageLocationService.delete(f.getName());
             } catch (ModuleException e) {
                 Assert.fail(e.getMessage());
             }
