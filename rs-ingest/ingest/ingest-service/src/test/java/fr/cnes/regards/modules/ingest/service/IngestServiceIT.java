@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -129,7 +128,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         // Detect error
         ArgumentCaptor<IngestRequest> argumentCaptor = ArgumentCaptor.forClass(IngestRequest.class);
         Mockito.verify(ingestRequestService, Mockito.times(1))
-                .handleRequestError(argumentCaptor.capture(), ArgumentCaptor.forClass(SIPEntity.class).capture());
+                .handleIngestJobFailed(argumentCaptor.capture(), ArgumentCaptor.forClass(SIPEntity.class).capture());
         IngestRequest request = argumentCaptor.getValue();
         Assert.assertNotNull(request);
         Assert.assertTrue(RequestState.ERROR.equals(request.getState()));

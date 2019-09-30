@@ -34,9 +34,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -46,23 +43,18 @@ import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
-import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
+import fr.cnes.regards.modules.ingest.service.job.ingest.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
-import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -108,13 +100,13 @@ public class IngestRequestService implements IIngestRequestService {
     private IAIPService aipService;
 
     @Autowired
+    private IAIPStorageService aipStorageService;
+
+    @Autowired
     private INotificationClient notificationClient;
 
     @Autowired
     private SessionNotifier sessionNotifier;
-
-    @Autowired
-    private IStorageClient storageClient;
 
     @Override
     public void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests) {
@@ -137,7 +129,7 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void handleJobError(JobEvent jobEvent) {
+    public void handleJobCrash(JobEvent jobEvent) {
 
         JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
         if (IngestProcessingJob.class.getName().equals(jobInfo.getClassName())) {
@@ -149,7 +141,7 @@ public class IngestRequestService implements IIngestRequestService {
                 Set<Long> ids;
                 ids = IJob.getValue(jobInfo.getParametersAsMap(), IngestProcessingJob.IDS_PARAMETER, type);
                 List<IngestRequest> requests = loadByIds(ids);
-                requests.forEach(r -> handleRequestError(r, null));
+                requests.forEach(r -> handleIngestJobFailed(r, null));
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 String message = String.format("Ingest request job with id \"%s\" fails with status \"%s\"",
                                                jobEvent.getJobId(), jobEvent.getJobEventType());
@@ -189,7 +181,7 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void handleRequestError(IngestRequest request, SIPEntity entity) {
+    public void handleIngestJobFailed(IngestRequest request, SIPEntity entity) {
 
         // TODO Unlock the job when request is removed!
         // Lock job
@@ -205,7 +197,7 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void handleRequestSuccess(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
+    public void handleIngestJobSucceed(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
 
         // Save SIP entity
         sipEntity = sipService.save(sipEntity);
@@ -220,95 +212,20 @@ public class IngestRequestService implements IIngestRequestService {
         // Launch next remote step
         request.setStep(IngestRequestStep.REMOTE_STORAGE_REQUESTED, confProperties.getRemoteRequestTimeout());
 
-        // Build file storage requests
-        Collection<FileStorageRequestDTO> filesToStore = new ArrayList<>();
+        try {
+            // Send AIP files storage events, keep these events ids in a list
+            List<String> remoteStepGroupIds = aipStorageService.storeAIPFiles(aipEntities);
 
-        // Build file reference requests
-        Collection<FileReferenceRequestDTO> filesToRefer = new ArrayList<>();
+            // Register request info to identify storage callback events
+            request.setRemoteStepGroupIds(remoteStepGroupIds);
 
-        // Iterate over AIPs
-        for (AIPEntity aipEntity : aipEntities) {
-
-            AIP aip = aipEntity.getAip();
-            List<StorageMetadata> storages = aipEntity.getIngestMetadata().getStorages();
-            // Iterate over Data Objects
-            for (ContentInformation ci : aip.getProperties().getContentInformations()) {
-
-                OAISDataObject dataObject = ci.getDataObject();
-                // At this step, locations can be in 2 situations
-                // Either its storage is empty, which means it's a file that should be store on each storage location
-                // Either its storage is defined, the file should only be referenced
-
-                // Let's check if the AIP is correct, with at least 1 location of file to store/refer
-                if (dataObject.getLocations().isEmpty()) {
-                    saveAndPublishErrorRequest(request,
-                            String.format("No location provided in the AIP (location of dataobject empty)"));
-                    return;
-                }
-                // Check if the AIP have only one location to store
-                long nbLocationWithNoStorage = dataObject.getLocations().stream()
-                        .filter(l -> l.getStorage() == null).count();
-                if (nbLocationWithNoStorage > 1) {
-                    saveAndPublishErrorRequest(request,
-                            String.format("Too many files to store in a single dataobject"));
-                    return;
-                }
-
-                for (OAISDataObjectLocation l: dataObject.getLocations()) {
-                    if (l.getStorage() == null) {
-                        // Storage is empty for this dataobject, create a storage request for each storage
-                        for (StorageMetadata storage : storages) {
-                            // Check if this storage contains this target type or is empty, which means
-                            // this storage accepts everything
-                            if (storage.getTargetTypes().isEmpty() ||
-                                    storage.getTargetTypes().contains(dataObject.getRegardsDataType())) {
-                                filesToStore.add(FileStorageRequestDTO
-                                        .build(dataObject.getFilename(), dataObject.getChecksum(), dataObject.getAlgorithm(),
-                                                ci.getRepresentationInformation().getSyntax().getMimeType().toString(),
-                                                aip.getId().toString(), l.getUrl(), storage.getPluginBusinessId(),
-                                                Optional.ofNullable(storage.getStorePath())));
-                            }
-                        }
-                    } else {
-                        // Create a storage reference
-                        filesToRefer.add(FileReferenceRequestDTO.build(dataObject.getFilename(),
-                            dataObject.getChecksum(), dataObject.getAlgorithm(),
-                            ci.getRepresentationInformation().getSyntax().getMimeType().toString(),
-                            dataObject.getFileSize(), aip.getId().toString(), l.getStorage(),
-                            l.getUrl()
-                        ));
-                    }
-                }
-                // Find origin(s) URL (location without storage)
-                List<OAISDataObjectLocation> origins = dataObject.getLocations().stream()
-                        .filter(l -> l.getStorage() == null).collect(Collectors.toList());
-                if (origins.isEmpty()) {
-                    // TODO : request error! this case can be validated directly on submission!
-                    // Keep track of the error
-                    saveAndPublishErrorRequest(request,
-                                               String.format("Origin URL not found in AIP (location without storage)"));
-                    return;
-                }
-            }
+            // Keep track of the request
+            ingestRequestRepository.save(request);
+        } catch (ModuleException e) {
+            // Keep track of the error
+            saveAndPublishErrorRequest(request, String.format(
+                    "Cannot send events to store AIP files because they are malformed. Cause: %s", e.getMessage()));
         }
-        // Keep reference to requests sent to Storage
-        List<String> remoteStepGroupIds = new ArrayList<>();
-
-        // Send storage request
-        if (!filesToStore.isEmpty()) {
-            RequestInfo info = storageClient.store(filesToStore);
-            remoteStepGroupIds.add(info.getGroupId());
-        }
-        // Send reference request
-        if (!filesToRefer.isEmpty()) {
-            RequestInfo info = storageClient.reference(filesToRefer);
-            remoteStepGroupIds.add(info.getGroupId());
-        }
-        // Register request info to identify storage callback events
-        request.setRemoteStepGroupIds(remoteStepGroupIds);
-
-        // Keep track of the request
-        ingestRequestRepository.save(request);
     }
 
     /**
@@ -319,29 +236,23 @@ public class IngestRequestService implements IIngestRequestService {
         // Do not track at the moment : the ongoing request could send a success too quickly
         // and could cause unnecessary concurrent access to the database!
         LOGGER.debug("Storage request granted with id \"{}\"", requestInfo.getGroupId());
-
-        // IngestRequest request = ingestRequestRepository.findAllByRemoteStepGroupId(info.getGroupId());
-        // request.setStep(IngestRequestStep.REMOTE_STORAGE_GRANTED, confProperties.getRemoteRequestTimeout());
-        // ingestRequestRepository.save(request);
     }
 
     @Override
     public void handleRemoteRequestDenied(RequestInfo requestInfo) {
-
         // Retrieve request
         Optional<IngestRequest> requestOp = ingestRequestRepository.findOne(requestInfo.getGroupId());
         if (requestOp.isPresent()) {
             IngestRequest request = requestOp.get();
-            request.setState(RequestState.ERROR);
             switch (request.getStep()) {
                 case REMOTE_STORAGE_REQUESTED:
-                    // Request for FILEs storage
+                    // Save the request was denied at AIP files storage
                     request.setStep(IngestRequestStep.REMOTE_STORAGE_DENIED);
                     // Keep track of the error
                     saveAndPublishErrorRequest(request, String.format("Remote file storage request denied"));
                     break;
                 case REMOTE_AIP_STORAGE_REQUESTED:
-                    // Request for AIPs storage
+                    // Save the request was denied at AIP itself storage
                     request.setStep(IngestRequestStep.REMOTE_AIP_STORAGE_DENIED);
                     // Keep track of the error
                     saveAndPublishErrorRequest(request, String.format("Remote AIP storage request denied"));
@@ -365,7 +276,7 @@ public class IngestRequestService implements IIngestRequestService {
             switch (request.getStep()) {
                 case REMOTE_STORAGE_REQUESTED:
                     // Update AIPs with meta returned by storage
-                    updateAipsUsingStorageResult(request.getAips(), storeRequestInfo);
+                    aipStorageService.updateAIPsUsingStorageResult(request.getAips(), storeRequestInfo);
                     // Check if there is another storage request we're waiting for
                     List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, requestInfo);
                     if (!remoteStepGroupIds.isEmpty()) {
@@ -388,87 +299,28 @@ public class IngestRequestService implements IIngestRequestService {
         }
     }
 
-
-    /**
-     * Update provided {@link AIPEntity} aips with updated metadata from storage
-     * @param aips to update
-     * @param storeRequestInfos storage result
-     */
-    private void updateAipsUsingStorageResult(List<AIPEntity> aips, Collection<RequestResultInfoDTO> storeRequestInfos) {
-        // Iterate over AIPs
-        for (AIPEntity aipEntity : aips) {
-            // Iterate over AIP data objects
-            List<ContentInformation> contentInfos = aipEntity.getAip().getProperties().getContentInformations();
-            for (ContentInformation ci : contentInfos) {
-                OAISDataObject dataObject = ci.getDataObject();
-
-                // Filter the request result list to only keep whose referring to the current data object
-                Set<RequestResultInfoDTO> storeRequestInfosForCurrentAIP = storeRequestInfos.stream()
-                        .filter(r -> r.getRequestChecksum().equals(dataObject.getChecksum())).collect(Collectors.toSet());
-
-                // Iterate over request results
-                for (RequestResultInfoDTO storeRequestInfo : storeRequestInfosForCurrentAIP) {
-                    FileReferenceDTO resultFile = storeRequestInfo.getResultFile();
-                    // Update AIP data object metas
-                    dataObject.setFileSize(resultFile.getMetaInfo().getFileSize());
-                    // It's safe to patch the checksum here
-                    dataObject.setChecksum(resultFile.getMetaInfo().getChecksum());
-                    // Update representational info
-                    ci.getRepresentationInformation().getSyntax().setHeight(resultFile.getMetaInfo().getHeight());
-                    ci.getRepresentationInformation().getSyntax().setWidth(resultFile.getMetaInfo().getWidth());
-                    ci.getRepresentationInformation().getSyntax().setMimeType(resultFile.getMetaInfo().getMimeType());
-                    // Exclude from the location list any null storage
-                    Set<OAISDataObjectLocation> newLocations = dataObject.getLocations().stream()
-                            .filter(l -> l.getStorage() != null).collect(Collectors.toSet());
-                    newLocations.add(OAISDataObjectLocation.build(storeRequestInfo.getResultFile().getLocation().getUrl(),
-                            storeRequestInfo.getRequestStorage()));
-                    dataObject.setLocations(newLocations);
-                }
-            }
-        }
-    }
-
     private void storeAips(IngestRequest request) {
-        for (AIPEntity aipEntity : request.getAips()) {
-            // Save the checksum of the AIP
-            try {
-                aipService.computeAndSaveChecksum(aipEntity);
-            } catch (ModuleException e) {
-                // Keep track of the error
-                saveAndPublishErrorRequest(request,
-                        String.format("Cannot store AIP file for AIP %s", aipEntity.getAipId()));
-                break;
-            }
-        }
-
         // Launch next remote step
         request.setStep(IngestRequestStep.REMOTE_AIP_STORAGE_REQUESTED, confProperties.getRemoteRequestTimeout());
 
-        // Build file storage requests
-        Collection<FileStorageRequestDTO> files = new ArrayList<>();
-
-        for (AIPEntity aipEntity : request.getAips()) {
-            // Create a request for each storage
-            // TODO préciser le répertoire de sauvegarde des AIPs
-            try {
-                files.addAll(aipService.buildAIPStorageRequest(aipEntity.getAip(), aipEntity.getChecksum(),
-                                                               aipEntity.getIngestMetadata().getStorages()));
-            } catch (ModuleException e) {
-                // Keep track of the error
-                saveAndPublishErrorRequest(request,
-                                           String.format("Cannot store AIP file for AIP %s", aipEntity.getAipId()));
-                break;
+        try {
+            List<AIPEntity> aips = request.getAips();
+            for (AIPEntity aipEntity : aips) {
+                // Save the checksum of the AIP
+                aipService.computeAndSaveChecksum(aipEntity);
             }
+            String requestId = aipStorageService.storeAIPs(aips);
+
+            // TODO remove old AIP
+            // Register request info to identify storage callback events
+            request.setRemoteStepGroupIds(Lists.newArrayList(requestId));
+
+            // Keep track of the request
+            ingestRequestRepository.save(request);
+        } catch (ModuleException e) {
+            // Keep track of the error
+            saveAndPublishErrorRequest(request, "Cannot send AIP storage request");
         }
-
-        // Request storage for all AIPs of the ingest request
-        RequestInfo info = storageClient.store(files);
-        // TODO remove old AIP
-        // Register request info to identify storage callback events
-        request.setRemoteStepGroupIds(Lists.newArrayList(info.getGroupId()));
-
-        // Keep track of the request
-        ingestRequestRepository.save(request);
     }
 
     private List<String> updateRemoteStepGroupId(IngestRequest request, RequestInfo requestInfo) {
@@ -485,14 +337,15 @@ public class IngestRequestService implements IIngestRequestService {
         ingestRequestRepository.delete(request);
 
         // Change AIP state
-        for (AIPEntity aipEntity : request.getAips()) {
+        List<AIPEntity> aips = request.getAips();
+        for (AIPEntity aipEntity : aips) {
             aipEntity.setState(AIPState.STORED);
             aipService.save(aipEntity);
         }
-        sessionNotifier.notifyAIPsStored(request.getAips());
+        sessionNotifier.notifyAIPsStored(aips);
 
         // Update SIP state
-        SIPEntity sipEntity = request.getAips().get(0).getSip();
+        SIPEntity sipEntity = aips.get(0).getSip();
         sipEntity.setState(SIPState.STORED);
         sipService.save(sipEntity);
         // Publish SUCCESSFUL request
@@ -506,7 +359,6 @@ public class IngestRequestService implements IIngestRequestService {
     @Override
     public void handleRemoteStoreError(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success,
             Collection<RequestResultInfoDTO> errors) {
-
         // Retrieve request
         Optional<IngestRequest> requestOp = ingestRequestRepository.findOneWithAIPs(requestInfo.getGroupId());
 
@@ -520,7 +372,7 @@ public class IngestRequestService implements IIngestRequestService {
                     // Update AIP and SIP with current error
                     updateOAISEntitiesWithErrors(request, errors, "Error occurred while storing AIP files");
                     // Update AIPs with success response returned by storage
-                    updateAipsUsingStorageResult(request.getAips(), success);
+                    aipStorageService.updateAIPsUsingStorageResult(request.getAips(), success);
                     // Save error in request status
                     request.setStep(IngestRequestStep.REMOTE_STORAGE_ERROR);
                     // Keep track of the error
@@ -543,7 +395,6 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Override
     public void handleRemoteReferenceSuccess(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success) {
-
         // Retrieve request and related SIP & AIPs entities
         Optional<IngestRequest> requestOp = ingestRequestRepository.findOneWithAIPs(requestInfo.getGroupId());
         if (requestOp.isPresent()) {
@@ -608,19 +459,16 @@ public class IngestRequestService implements IIngestRequestService {
                 // Check using owner property if the AIP contains the file that was not properly saved
                 if (error.getResultFile().getOwners().contains(aipEntity.getAipId())) {
                     // Add the cause to this AIP
-                    aipEntity.getErrors().add(errorCause + ": " + error.getErrorCause());
                     sessionNotifier.notifyAIPStorageFailed(aipEntity);
-                    aipEntity.setState(AIPState.ERROR);
-                    aipService.save(aipEntity);
+                    String errorMessage = errorCause + ": " + error.getErrorCause();
+                    aipService.saveError(aipEntity, errorMessage);
                 }
             }
         }
-        SIPEntity sip = request.getAips().get(0).getSip();
         // Save all errors inside the SIP
         Set<String> newErrors = errors.stream().map(e -> errorCause + ": " + e.getErrorCause()).collect(Collectors.toSet());
-        sip.getErrors().addAll(newErrors);
+        SIPEntity sip = request.getAips().get(0).getSip();
+        sipService.saveErrors(sip, newErrors);
         sessionNotifier.notifySIPStorageFailed(sip);
-        sip.setState(SIPState.ERROR);
-        sipService.save(sip);
     }
 }

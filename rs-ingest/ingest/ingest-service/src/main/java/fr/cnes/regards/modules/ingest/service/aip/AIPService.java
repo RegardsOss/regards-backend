@@ -309,6 +309,13 @@ public class AIPService implements IAIPService {
     }
 
     @Override
+    public void saveError(AIPEntity aipEntity, String errorMessage) {
+        aipEntity.getErrors().add(errorMessage);
+        aipEntity.setState(AIPState.ERROR);
+        save(aipEntity);
+    }
+
+    @Override
     public void computeAndSaveChecksum(AIPEntity aipEntity) throws ModuleException {
         try {
             String checksum = calculateChecksum(aipEntity.getAip());

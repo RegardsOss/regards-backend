@@ -67,7 +67,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
-import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
+import fr.cnes.regards.modules.ingest.service.job.ingest.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.OAISEntityDeletionJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 

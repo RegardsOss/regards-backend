@@ -31,6 +31,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,6 +135,13 @@ public class SIPService implements ISIPService {
     @Override
     public boolean validatedVersionExists(String providerId) {
         return sipRepository.countByProviderIdAndStateIn(providerId) > 0;
+    }
+
+    @Override
+    public void saveErrors(SIPEntity sip, Set<String> errors) {
+        sip.getErrors().addAll(errors);
+        sip.setState(SIPState.ERROR);
+        save(sip);
     }
 
     @Override

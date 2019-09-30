@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -67,6 +68,8 @@ public interface ISIPService {
      * @param deleteIrrevocably
      */
     void processDeletion(String sipId, boolean deleteIrrevocably);
+
+    void saveErrors(SIPEntity sip, Set<String> errors);
 
     /**
      * Update the last update date of the {@link SIPEntity} and save it in DAO,

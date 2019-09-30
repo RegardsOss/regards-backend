@@ -127,4 +127,5 @@ public interface IAIPService {
      */
     Set<AIPEntity> getAips(String sipId);
 
+    void saveError(AIPEntity aipEntity, String errorMessage);
 }
