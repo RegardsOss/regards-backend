@@ -263,6 +263,7 @@ public class StorageLocationConfigurationService {
         StorageLocationConfiguration toUpdate = new StorageLocationConfiguration(updated.getName(),
                 updated.getPluginConfiguration(), updated.getAllocatedSizeInKo());
         toUpdate.setId(oldOne.getId());
+        toUpdate.setPriority(oldOne.getPriority());
         return storageLocConfRepo.save(toUpdate);
     }
 
