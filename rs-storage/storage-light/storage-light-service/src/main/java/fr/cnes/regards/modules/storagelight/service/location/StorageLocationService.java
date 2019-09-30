@@ -196,6 +196,7 @@ public class StorageLocationService {
                 .orElse(new StorageMonitoring(true, null, null, null));
         if (reset && (storageMonitoring.getId() != null)) {
             storageMonitoringRepo.delete(storageMonitoring);
+            storageLocationRepo.deleteAll();
             storageMonitoring = new StorageMonitoring(true, null, null, null);
         }
         storageMonitoring.setRunning(true);
