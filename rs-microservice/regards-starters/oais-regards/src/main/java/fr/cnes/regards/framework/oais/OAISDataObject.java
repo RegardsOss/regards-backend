@@ -29,7 +29,6 @@ import javax.validation.constraints.NotNull;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.validator.ValidOAISDataObject;
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
-import org.springframework.util.MimeType;
 
 /**
  * OAIS data object
