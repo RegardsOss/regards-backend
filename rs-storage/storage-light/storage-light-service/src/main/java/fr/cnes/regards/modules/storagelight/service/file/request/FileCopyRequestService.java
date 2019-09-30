@@ -177,6 +177,7 @@ public class FileCopyRequestService {
 
             if (!checksums.isEmpty()) {
                 fileCacheReqService.makeAvailable(checksums, expDate, fileCacheGroupId);
+                reqGrpService.granted(fileCacheGroupId, FileRequestType.REFERENCE, checksums.size(), true);
             }
             page = page.next();
         } while (pageResp.hasNext());

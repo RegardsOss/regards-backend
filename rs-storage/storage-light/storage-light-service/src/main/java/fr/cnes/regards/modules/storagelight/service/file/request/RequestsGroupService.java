@@ -139,8 +139,9 @@ public class RequestsGroupService {
      * @param groupId
      * @param type
      * @param nbRequestInGroup
+     * @param silent True to avoid sending bus message about group granted. Used internally in storage microservice.
      */
-    public void granted(String groupId, FileRequestType type, int nbRequestInGroup) {
+    public void granted(String groupId, FileRequestType type, int nbRequestInGroup, boolean silent) {
         LOGGER.debug("[{} GROUP GRANTED {}] - Group request granted with {} requests.", type.toString().toUpperCase(),
                      groupId, nbRequestInGroup);
         // Create new group request
@@ -149,7 +150,20 @@ public class RequestsGroupService {
         } else {
             LOGGER.error("Group request identifier already exists");
         }
-        publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.GRANTED, Sets.newHashSet()));
+        if (!silent) {
+            publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.GRANTED, Sets.newHashSet()));
+        }
+    }
+
+    /**
+     * Save new granted request group and send a bus message to inform that the given groupId is granted.
+     *
+     * @param groupId
+     * @param type
+     * @param nbRequestInGroup
+     */
+    public void granted(String groupId, FileRequestType type, int nbRequestInGroup) {
+        granted(groupId, type, nbRequestInGroup, false);
     }
 
     /**

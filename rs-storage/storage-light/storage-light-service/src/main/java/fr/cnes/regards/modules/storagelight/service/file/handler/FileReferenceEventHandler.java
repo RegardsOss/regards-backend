@@ -42,10 +42,12 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletion
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCopyRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.RequestsGroupService;
 
 /**
  * This handler is used internally by the storage service to update file requests when a file event is received.
@@ -77,6 +79,9 @@ public class FileReferenceEventHandler
 
     @Autowired
     private FileReferenceService fileReferenceService;
+
+    @Autowired
+    private RequestsGroupService reqGrpService;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -264,6 +269,7 @@ public class FileReferenceEventHandler
             fileCopyRequestService.handleError(copyRequest, String
                     .format("Unable to create storage request associated to successuflly restored file"));
         }
+        reqGrpService.granted(storageGroupId, FileRequestType.STORAGE, 1, true);
     }
 
 }
