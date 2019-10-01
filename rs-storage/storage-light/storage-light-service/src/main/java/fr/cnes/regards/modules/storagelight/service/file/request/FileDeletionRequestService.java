@@ -120,8 +120,16 @@ public class FileDeletionRequestService {
      * @param groupId Business identifier of the deletion request
      */
     public void create(FileReference fileReferenceToDelete, boolean forceDelete, String groupId) {
-        if (!fileDeletionRequestRepo.findByFileReferenceId(fileReferenceToDelete.getId()).isPresent()) {
+        Optional<FileDeletionRequest> existingOne = fileDeletionRequestRepo
+                .findByFileReferenceId(fileReferenceToDelete.getId());
+        if (!existingOne.isPresent()) {
+            // Create new deletion request
             fileDeletionRequestRepo.save(new FileDeletionRequest(fileReferenceToDelete, forceDelete, groupId));
+        } else if (existingOne.get().getStatus() == FileRequestStatus.ERROR) {
+            // Retry deletion
+            FileDeletionRequest req = existingOne.get();
+            req.setStatus(FileRequestStatus.TO_DO);
+            updateFileDeletionRequest(req);
         }
     }
 

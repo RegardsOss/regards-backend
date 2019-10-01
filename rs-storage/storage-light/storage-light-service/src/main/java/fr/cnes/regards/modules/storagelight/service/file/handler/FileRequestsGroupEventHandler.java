@@ -94,14 +94,14 @@ public class FileRequestsGroupEventHandler
         if (event.getState() == FlowItemStatus.ERROR) {
             storageLocationService.monitorStorageLocations(true);
             notificationClient
-                    .notify(String.format("Requests group %s is terminated with erros. {} success and {} errors.",
+                    .notify(String.format("Requests group %s is terminated with erros. %s success and %s errors.",
                                           event.getSuccess().size(), event.getErrors().size()),
                             String.format("Storage - %s process", event.getType().toString()), NotificationLevel.ERROR,
                             DefaultRole.PROJECT_ADMIN);
         } else if (event.getState() == FlowItemStatus.SUCCESS) {
             storageLocationService.monitorStorageLocations(true);
             notificationClient.notify(
-                                      String.format("Requests group %s is terminated successfully. {} files handled.",
+                                      String.format("Requests group %s is terminated successfully. %s files handled.",
                                                     event.getSuccess().size()),
                                       String.format("Storage - %s process", event.getType().toString()),
                                       NotificationLevel.INFO, DefaultRole.PROJECT_ADMIN);

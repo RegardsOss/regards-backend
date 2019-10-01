@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletion
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileDeletionRequestService;
 
 /**
  * JOB to handle deletion requests on many {@link FileReference}s.<br>
@@ -60,6 +61,9 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
     @Autowired
     private FileReferenceService fileRefService;
 
+    @Autowired
+    private FileDeletionRequestService fileDelReqService;
+
     /**
      * The job parameters as a map
      */
@@ -82,10 +86,17 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
             // Search for all file references of the given storage location
             pageResults = fileRefService.search(storage, pageRequest);
             for (FileReference fileRef : pageResults.getContent()) {
-                // For each send a deletion event for each owner.
-                for (String owner : fileRef.getOwners()) {
-                    publisher.publish(DeletionFlowItem.build(FileDeletionRequestDTO
-                            .build(fileRef.getMetaInfo().getChecksum(), storage, owner, forceDelete), requestGroupId));
+                // For each :
+                // If file is owned send a deletion event for each owner.
+                // Else create deletion request
+                if (fileRef.getOwners().isEmpty()) {
+                    fileDelReqService.create(fileRef, forceDelete, requestGroupId);
+                } else {
+                    for (String owner : fileRef.getOwners()) {
+                        publisher.publish(DeletionFlowItem.build(FileDeletionRequestDTO
+                                .build(fileRef.getMetaInfo().getChecksum(), storage, owner, forceDelete),
+                                                                 requestGroupId));
+                    }
                 }
             }
         } while (pageResults.hasNext());
