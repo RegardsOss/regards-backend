@@ -40,7 +40,7 @@ public class CopyFilesParametersDTO {
      * @param sourceStorage source storage location name
      * @param sourcePath source path recursively copy
      * @param destinationStorage destination storage location name
-     * @param destinationPath detination path to copy to
+     * @param destinationPath destination path to copy to
      * @return {@link CopyFilesParametersDTO}
      */
     public static CopyFilesParametersDTO build(String sourceStorage, String sourcePath, String destinationStorage,

@@ -298,7 +298,7 @@ public class FileDeletionRequestService {
             Collection<FileReference> existingOnes) {
         for (FileDeletionRequestDTO request : requests) {
             Optional<FileReference> oFileRef = existingOnes.stream()
-                    .filter(f -> f.getLocation().getStorage().contentEquals(request.getStorage())).findFirst();
+                    .filter(f -> f.getLocation().getStorage().equals(request.getStorage())).findFirst();
             if (oFileRef.isPresent()) {
                 removeOwner(oFileRef.get(), request.getOwner(), request.isForceDelete(), groupId);
             } else {
