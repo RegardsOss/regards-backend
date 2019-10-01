@@ -33,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -125,30 +124,21 @@ public class FileDeletionRequestService {
         if (!existingOne.isPresent()) {
             // Create new deletion request
             fileDeletionRequestRepo.save(new FileDeletionRequest(fileReferenceToDelete, forceDelete, groupId));
-        } else if (existingOne.get().getStatus() == FileRequestStatus.ERROR) {
-            // Retry deletion
-            FileDeletionRequest req = existingOne.get();
-            req.setStatus(FileRequestStatus.TO_DO);
-            updateFileDeletionRequest(req);
+        } else {
+            // Retry deletion if error
+            retry(existingOne.get());
         }
     }
 
     /**
      * Update all {@link FileDeletionRequest} in error status to change status to {@link FileRequestStatus#TO_DO}.
      */
-    public void retry() {
-        Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by(Direction.ASC, "id"));
-        Page<FileDeletionRequest> results;
-        do {
-            results = fileDeletionRequestRepo.findByStatus(FileRequestStatus.ERROR, page);
-            for (FileDeletionRequest request : results) {
-                request.setStatus(FileRequestStatus.TO_DO);
-                request.setErrorCause(null);
-                fileDeletionRequestRepo.save(request);
-            }
-            // Always retrieve the first page has we modify each element of the results.
-            // All element are handled when result is empty.
-        } while (results.hasNext());
+    private void retry(FileDeletionRequest req) {
+        if (req.getStatus() == FileRequestStatus.ERROR) {
+            req.setStatus(FileRequestStatus.TO_DO);
+            req.setErrorCause(null);
+            updateFileDeletionRequest(req);
+        }
     }
 
     /**
