@@ -100,7 +100,7 @@ public class FileReferenceService {
 
         // Check if there is request information associated
         requInfoRepo.deleteByResultFileId(fileRef.getId());
-        fileRefRepo.deleteById(fileRef.getId());
+        fileRefRepo.delete(fileRef);
         String message = String.format("File reference %s (checksum: %s) as been completly deleted for all owners.",
                                        fileRef.getMetaInfo().getFileName(), fileRef.getMetaInfo().getChecksum());
         fileRefEventPublisher.deletionSuccess(fileRef, message, groupId);

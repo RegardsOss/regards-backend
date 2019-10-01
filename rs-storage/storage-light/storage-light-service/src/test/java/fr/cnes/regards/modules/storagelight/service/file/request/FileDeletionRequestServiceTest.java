@@ -61,7 +61,7 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
     }
 
     @Test
-    public void deleteAll() throws InterruptedException, ExecutionException {
+    public void deleteAll() throws InterruptedException, ExecutionException, ModuleException {
         String owner = "first-owner";
         Long nbFiles = 20L;
         for (int i = 0; i < nbFiles; i++) {

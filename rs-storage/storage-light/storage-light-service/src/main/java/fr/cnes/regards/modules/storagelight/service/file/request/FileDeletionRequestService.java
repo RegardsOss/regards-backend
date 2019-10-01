@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -401,16 +402,23 @@ public class FileDeletionRequestService {
      * Schedule a job to create deletion requests for all files matching the given criterion.
      * @param storageLocationId
      * @param forceDelete
+     * @throws ModuleException
      */
-    public JobInfo scheduleJob(String storageLocationId, Boolean forceDelete) {
-        Set<JobParameter> parameters = Sets.newHashSet();
-        parameters.add(new JobParameter(FileDeletionRequestsCreatorJob.STORAGE_LOCATION_ID, storageLocationId));
-        parameters.add(new JobParameter(FileDeletionRequestsCreatorJob.FORCE_DELETE, forceDelete));
-        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_DELETION_JOB.getPriority(),
-                parameters, authResolver.getUser(), FileDeletionRequestsCreatorJob.class.getName()));
-        LOGGER.debug("[DELETION REQUESTS] Job scheduled to delete all files from storage location {} (force={}).",
-                     storageLocationId, forceDelete);
-        return jobInfo;
+    public JobInfo scheduleJob(String storageLocationId, Boolean forceDelete) throws ModuleException {
+        // Check if a job of deletion already exists
+        if (jobInfoService.retrieveJobsCount(FileDeletionRequestsCreatorJob.class.getName(), JobStatus.RUNNING) > 0) {
+            throw new ModuleException("Impossible to run a files deletion process as a previous one is still running");
+        } else {
+            Set<JobParameter> parameters = Sets.newHashSet();
+            parameters.add(new JobParameter(FileDeletionRequestsCreatorJob.STORAGE_LOCATION_ID, storageLocationId));
+            parameters.add(new JobParameter(FileDeletionRequestsCreatorJob.FORCE_DELETE, forceDelete));
+            JobInfo jobInfo = jobInfoService
+                    .createAsQueued(new JobInfo(false, JobsPriority.FILE_DELETION_JOB.getPriority(), parameters,
+                            authResolver.getUser(), FileDeletionRequestsCreatorJob.class.getName()));
+            LOGGER.debug("[DELETION REQUESTS] Job scheduled to delete all files from storage location {} (force={}).",
+                         storageLocationId, forceDelete);
+            return jobInfo;
+        }
     }
 
     /**

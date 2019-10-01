@@ -302,8 +302,9 @@ public class StorageLocationService {
      * Delete all referenced files of the give storage location
      * @param storageLocationId
      * @param forceDelete remove reference if physical file deletion fails.
+     * @throws ModuleException
      */
-    public void deleteFiles(String storageLocationId, Boolean forceDelete) {
+    public void deleteFiles(String storageLocationId, Boolean forceDelete) throws ModuleException {
         deletionService.scheduleJob(storageLocationId, forceDelete);
     }
 
