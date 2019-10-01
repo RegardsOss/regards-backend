@@ -264,9 +264,13 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     @RequestMapping(method = RequestMethod.GET, path = RUN_MONITORING)
     @ResourceAccess(description = "Manually run storage location monitoring.", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> runMonitoring(@RequestParam(name = RESET_PARAM) Boolean reset)
+    public ResponseEntity<Void> runMonitoring(@RequestParam(name = RESET_PARAM, required = false) Boolean reset)
             throws EntityNotFoundException {
-        service.monitorStorageLocations(reset);
+        if (reset != null) {
+            service.monitorStorageLocations(reset);
+        } else {
+            service.monitorStorageLocations(false);
+        }
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

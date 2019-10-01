@@ -51,12 +51,14 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileStorageRequestRepository;
+import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestResultDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubset;
@@ -110,6 +112,9 @@ public class FileStorageRequestService {
 
     @Autowired
     private FileDeletionRequestService fileDelReqService;
+
+    @Autowired
+    private FileReferenceRequestService fileRefReqService;
 
     /**
      * Initialize new storage requests from Flow items.
@@ -482,26 +487,44 @@ public class FileStorageRequestService {
         }
     }
 
-    /**
-     * Handle a {@link FileStorageRequest} success.
-     * <ul>
-     * <li> Delete the request from database </li>
-     * <li> Send by message information about newly stored file </li>
-     * <li> Update group with the newly stored file </li>
-     * </ul>
-     */
-    public void handleSuccess(FileStorageRequest request, FileReference fileRef, String message) {
-        try {
-            // Delete the FileRefRequest as it has been handled
-            delete(request);
-        } catch (EmptyResultDataAccessException e) {
-            LOGGER.warn(String.format("Unable to delete storage request with id %s. Cause : %s", request.getId(),
-                                      e.getMessage()),
-                        e);
+    public void handleSuccess(Collection<FileStorageRequestResultDTO> results) {
+        for (FileStorageRequestResultDTO result : results) {
+            FileStorageRequest request = result.getRequest();
+            FileReferenceMetaInfo reqMetaInfos = request.getMetaInfo();
+            for (String owner : result.getRequest().getOwners()) {
+                try {
+                    FileReferenceMetaInfo fileMeta = new FileReferenceMetaInfo(reqMetaInfos.getChecksum(),
+                            reqMetaInfos.getAlgorithm(), reqMetaInfos.getFileName(), result.getFileSize(),
+                            reqMetaInfos.getMimeType());
+                    fileMeta.setHeight(reqMetaInfos.getHeight());
+                    fileMeta.setWidth(reqMetaInfos.getWidth());
+                    FileReference fileRef = fileRefReqService
+                            .reference(owner, fileMeta, new FileLocation(request.getStorage(), result.getStoredUrl()),
+                                       request.getGroupIds());
+                    try {
+                        // Delete the FileRefRequest as it has been handled
+                        delete(request);
+                    } catch (EmptyResultDataAccessException e) {
+                        LOGGER.warn(String.format("Unable to delete storage request with id %s. Cause : %s",
+                                                  request.getId(), e.getMessage()),
+                                    e);
+                    }
+                    for (String groupId : request.getGroupIds()) {
+                        reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE,
+                                                       fileRef.getMetaInfo().getChecksum(),
+                                                       fileRef.getLocation().getStorage(), fileRef);
+                    }
+                } catch (ModuleException e) {
+                    handleError(request, e.getMessage());
+                }
+            }
         }
-        for (String groupId : request.getGroupIds()) {
-            reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE, fileRef.getMetaInfo().getChecksum(),
-                                           fileRef.getLocation().getStorage(), fileRef);
+
+    }
+
+    public void handleError(Collection<FileStorageRequestResultDTO> results) {
+        for (FileStorageRequestResultDTO result : results) {
+            handleError(result.getRequest(), result.getErrorCause());
         }
     }
 
@@ -513,7 +536,7 @@ public class FileStorageRequestService {
      * <li> Update group with the error request </li>
      * </ul>
      */
-    public void handleError(FileStorageRequest request, String errorCause) {
+    private void handleError(FileStorageRequest request, String errorCause) {
         // The file is not really referenced so handle reference error by modifying request to be retry later
         request.setStatus(FileRequestStatus.ERROR);
         request.setErrorCause(errorCause);

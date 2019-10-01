@@ -66,24 +66,25 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     @Autowired
     private FileReferenceService fileRefService;
-
-    /**
-     * The job parameters as a map
-     */
-    protected Map<String, JobParameter> parameters;
+    
+    private String storageLocationSourceId;
+    private String storageLocationDestinationId;
+    private String sourcePath;
+    private String destinationPath;
+    private int totalPages=0;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        this.parameters = parameters;
+    	storageLocationSourceId = parameters.get(STORAGE_LOCATION_SOURCE_ID).getValue();
+        storageLocationDestinationId = parameters.get(STORAGE_LOCATION_DESTINATION_ID).getValue();
+        sourcePath = parameters.get(SOURCE_PATH).getValue();
+        destinationPath = parameters.get(DESTINATION_PATH).getValue();
     }
 
     @Override
     public void run() {
-        String storageLocationSourceId = parameters.get(STORAGE_LOCATION_SOURCE_ID).getValue();
-        String storageLocationDestinationId = parameters.get(STORAGE_LOCATION_DESTINATION_ID).getValue();
-        String sourcePath = parameters.get(SOURCE_PATH).getValue();
-        String destinationPath = parameters.get(DESTINATION_PATH).getValue();
+        
         if (destinationPath == null) {
             destinationPath = "";
         } else if (destinationPath.startsWith("/")) {
@@ -96,6 +97,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         do {
             // Search for all file references matching the given storage location.
             pageResults = fileRefService.search(storageLocationSourceId, pageRequest);
+            totalPages=pageResults.getTotalPages();
             for (FileReference fileRef : pageResults.getContent()) {
                 try {
                     URL fileUrl = new URL(fileRef.getLocation().getUrl());
@@ -114,8 +116,14 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                     LOGGER.error("Unable to handle file reference {} for copy from {} to {}. Cause {}",
                                  fileRef.getLocation().getUrl(), storageLocationSourceId, storageLocationDestinationId);
                 }
+                this.advanceCompletion();
             }
         } while (pageResults.hasNext());
     }
+
+	@Override
+	public int getCompletionCount() {
+		return totalPages;
+	}
 
 }

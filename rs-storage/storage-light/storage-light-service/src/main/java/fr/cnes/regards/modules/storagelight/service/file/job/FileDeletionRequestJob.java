@@ -72,6 +72,8 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
      */
     protected Map<String, JobParameter> parameters;
 
+    private int nbRequestToHandle = 0;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
@@ -87,7 +89,7 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
         // lets instantiate the plugin to use
         String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         FileDeletionWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
-        int nbRequestToHandle = workingSubset.getFileDeletionRequests().size();
+        nbRequestToHandle = workingSubset.getFileDeletionRequests().size();
         LOGGER.debug("[DELETION JOB] Runing deletion job for {} deletion requests", nbRequestToHandle);
         String errorCause = null;
         try {
@@ -116,5 +118,10 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
             LOGGER.debug("[DELETION JOB] Deletion job handled in {}ms for {} deletion requests",
                          System.currentTimeMillis() - start, nbRequestToHandle);
         }
+    }
+
+    @Override
+    public int getCompletionCount() {
+        return nbRequestToHandle > 0 ? nbRequestToHandle : super.getCompletionCount();
     }
 }

@@ -26,7 +26,6 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -71,7 +70,7 @@ import fr.cnes.regards.modules.storagelight.service.file.flow.StorageFlowItemHan
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_perf_tests",
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-local.properties" })
-@Ignore("Performances tests")
+// @Ignore("Performances tests")
 public class FlowPerformanceTest extends AbstractStorageTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceTest.class);
@@ -253,7 +252,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
     public void makeAvailableFlowItem() throws InterruptedException {
         LOGGER.info(" --------     AVAILABILITY TEST     --------- ");
         Assert.assertEquals("Invalid count of cached files", 0, cacheFileRepo.count());
-        Assert.assertTrue("There should be checksums to restore from nearline storages",nlChecksums.size() > 0);
+        Assert.assertTrue("There should be checksums to restore from nearline storages", nlChecksums.size() > 0);
         // Create a new bus message File reference request
         AvailabilityFlowItem item = AvailabilityFlowItem.build(nlChecksums, OffsetDateTime.now().plusDays(1),
                                                                UUID.randomUUID().toString());

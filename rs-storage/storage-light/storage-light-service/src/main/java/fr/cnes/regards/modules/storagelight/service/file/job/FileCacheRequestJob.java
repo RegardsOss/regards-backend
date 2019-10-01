@@ -65,15 +65,19 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
-    /**
-     * The job parameters as a map
-     */
-    protected Map<String, JobParameter> parameters;
+    private int nbRequestToHandle = 0;
+
+    private String plgBusinessId;
+
+    private FileRestorationWorkingSubset workingSubset;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        this.parameters = parameters;
+        // lets instantiate the plugin to use
+        plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
+        workingSubset = parameters.get(WORKING_SUB_SET).getValue();
+        nbRequestToHandle = workingSubset.getFileRestorationRequests().size();
     }
 
     @Override
@@ -81,10 +85,6 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
         long start = System.currentTimeMillis();
         // Initiate the job progress manager
         FileCacheJobProgressManager progressManager = new FileCacheJobProgressManager(fileCacheRequestService, this);
-        // lets instantiate the plugin to use
-        String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
-        FileRestorationWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
-        int nbRequestToHandle = workingSubset.getFileRestorationRequests().size();
         LOGGER.debug("[AVAILABILITY JOB] Runing availability job for {} cache requests", nbRequestToHandle);
         INearlineStorageLocation storagePlugin;
         String errorCause = null;
@@ -109,5 +109,10 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
             LOGGER.debug("[AVAILABILITY JOB] Availability job handled in {} ms for {} cache requests",
                          System.currentTimeMillis() - start, nbRequestToHandle);
         }
+    }
+
+    @Override
+    public int getCompletionCount() {
+        return nbRequestToHandle > 0 ? nbRequestToHandle : super.getCompletionCount();
     }
 }

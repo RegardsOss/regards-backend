@@ -69,42 +69,45 @@ public class FileReferenceRequestService {
 
     @Autowired
     private FileReferenceService fileRefService;
-    
+
     /**
      * Initialize new reference requests from Flow items.
      * @param list
      */
     public void reference(List<ReferenceFlowItem> list) {
-    	Set<FileReference> existingOnes = fileRefService
-                .search(list.stream().map(ReferenceFlowItem::getFiles).flatMap(Set::stream).map(FileReferenceRequestDTO::getChecksum).collect(Collectors.toSet()));
-    	Set<String> groupsToGrant = Sets.newHashSet();
+        Set<FileReference> existingOnes = fileRefService.search(list.stream().map(ReferenceFlowItem::getFiles)
+                .flatMap(Set::stream).map(FileReferenceRequestDTO::getChecksum).collect(Collectors.toSet()));
+        Set<String> groupsToGrant = Sets.newHashSet();
         for (ReferenceFlowItem item : list) {
             reference(item.getFiles(), item.getGroupId(), existingOnes);
             groupsToGrant.add(item.getGroupId());
         }
         reqGrpService.granted(groupsToGrant, FileRequestType.REFERENCE);
     }
-    
+
     /**
      * Initialize new reference requests for a given group identifier
      * @param requests
      * @param groupId
      */
     public void reference(Collection<FileReferenceRequestDTO> requests, String groupId) {
-    	// Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
-    	Set<FileReference> existingOnes = fileRefService
+        // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
+        Set<FileReference> existingOnes = fileRefService
                 .search(requests.stream().map(FileReferenceRequestDTO::getChecksum).collect(Collectors.toSet()));
-    	reference(requests, groupId, existingOnes);
+        reference(requests, groupId, existingOnes);
     }
 
-   /**
+    /**
     * Initialize new reference requests for a given group identifier. Parameter existingOnes is passed to improve performance in bulk creation to
     * avoid requesting {@link IFileReferenceRepository} on each request.
     * @param requests
     * @param groupId
     * @param existingOnes
+    * @return referenced files
     */
-    public void reference(Collection<FileReferenceRequestDTO> requests, String groupId, Collection<FileReference> existingOnes) {
+    private Collection<FileReference> reference(Collection<FileReferenceRequestDTO> requests, String groupId,
+            Collection<FileReference> existingOnes) {
+        Set<FileReference> fileRefs = Sets.newHashSet();
         for (FileReferenceRequestDTO file : requests) {
             // Check if the file already exists for the storage destination
             Optional<FileReference> oFileRef = existingOnes.stream()
@@ -115,6 +118,7 @@ public class FileReferenceRequestService {
                 FileReference fileRef = reference(file, oFileRef, Sets.newHashSet(groupId));
                 reqGrpService.requestSuccess(groupId, FileRequestType.REFERENCE, fileRef.getMetaInfo().getChecksum(),
                                              fileRef.getLocation().getStorage(), fileRef);
+                fileRefs.add(fileRef);
             } catch (ModuleException e) {
                 LOGGER.error(e.getMessage(), e);
                 fileRefEventPublisher.storeError(file.getChecksum(), Sets.newHashSet(file.getOwner()),
@@ -123,6 +127,7 @@ public class FileReferenceRequestService {
                                            e.getMessage());
             }
         }
+        return fileRefs;
     }
 
     /**

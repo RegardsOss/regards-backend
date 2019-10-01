@@ -20,19 +20,17 @@ package fr.cnes.regards.modules.storagelight.service.file.job;
 
 import java.net.URL;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
-import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestResultDTO;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**
@@ -48,57 +46,48 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
 
     private final IJob<?> job;
 
-    private final FileReferenceRequestService fileRefReqService;
-
     private final FileStorageRequestService storageRequestService;
 
-    private final Set<FileStorageRequest> handledRequest = Sets.newHashSet();
+    private final Set<FileStorageRequestResultDTO> handledRequest = Sets.newHashSet();
 
-    public FileStorageJobProgressManager(FileReferenceRequestService fileRefReqService,
-            FileStorageRequestService storageRequestService, IJob<?> job) {
+    public FileStorageJobProgressManager(FileStorageRequestService storageRequestService, IJob<?> job) {
         this.job = job;
-        this.fileRefReqService = fileRefReqService;
         this.storageRequestService = storageRequestService;
     }
 
     @Override
     public void storageSucceed(FileStorageRequest request, URL storedUrl, Long fileSize) {
+        // We do not save the new successfully stored file to avoid performance leak by committing files one by one in the database.
+        // Files are saved in one transaction thanks to the bulkSave method.
         if (storedUrl == null) {
-            this.storageFailed(request, String
+            storageFailed(request, String
                     .format("File {} has been successully stored, nevertheless plugin <%> does not provide the new file location",
                             request.getStorage(), request.getMetaInfo().getFileName()));
         } else {
-            FileLocation newLocation = new FileLocation(request.getStorage(), storedUrl.toString());
-            String message = String.format("Store success for file %s (id=%s)in %s (checksum: %s).",
-                                           request.getMetaInfo().getFileName(), request.getId(), newLocation,
-                                           request.getMetaInfo().getChecksum());
-            LOG.debug("[STORE SUCCESS {}] - {}.", request.getMetaInfo().getChecksum(), message);
+            LOG.debug("[STORE SUCCESS {}] - {}.", request.getMetaInfo().getChecksum());
+            handledRequest.add(FileStorageRequestResultDTO.build(request, storedUrl.toString(), fileSize));
             job.advanceCompletion();
-            request.getMetaInfo().setFileSize(fileSize);
-            for (String owner : request.getOwners()) {
-                try {
-                    FileReference fileRef = fileRefReqService.reference(owner, request.getMetaInfo(), newLocation,
-                                                                        request.getGroupIds());
-                    storageRequestService.handleSuccess(request, fileRef, message);
-                } catch (ModuleException e) {
-                    LOG.error(e.getMessage(), e);
-                    String errorCause = String.format("Unable to save new file reference for file %s",
-                                                      request.getStorage());
-                    storageRequestService.handleError(request, errorCause);
-                }
-            }
-            handledRequest.add(request);
         }
     }
 
     @Override
     public void storageFailed(FileStorageRequest request, String cause) {
+        // We do not save the new error stored file to avoid performance leak by committing files one by one in the database.
+        // Files are saved in one transaction thanks to the bulkSave method.
         LOG.error("[STORE ERROR {}] - Store error for file {} (id={})in {}. Cause : {}",
                   request.getMetaInfo().getFileName(), request.getId(), request.getStorage(),
                   request.getMetaInfo().getChecksum(), cause);
+        handledRequest.add(FileStorageRequestResultDTO.build(request, null, null).error(cause));
         job.advanceCompletion();
-        storageRequestService.handleError(request, cause);
-        handledRequest.add(request);
+    }
+
+    public void bulkSave() {
+        long start = System.currentTimeMillis();
+        storageRequestService
+                .handleSuccess(handledRequest.stream().filter(r -> !r.isError()).collect(Collectors.toSet()));
+        storageRequestService.handleError(handledRequest.stream().filter(r -> r.isError()).collect(Collectors.toSet()));
+        LOG.info("[STORAGE JOB] finalized in {} ms for {} requests", System.currentTimeMillis() - start,
+                 handledRequest.size());
     }
 
     /**
@@ -107,6 +96,6 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
      * @return
      */
     public boolean isHandled(FileStorageRequest req) {
-        return this.handledRequest.contains(req);
+        return this.handledRequest.stream().filter(f -> f.getRequest().equals(req)).findFirst().isPresent();
     }
 }

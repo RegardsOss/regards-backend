@@ -42,7 +42,6 @@ import fr.cnes.regards.framework.utils.file.CommonFileUtils;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
-import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
 /**
@@ -68,10 +67,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
     public static final String WORKING_SUB_SET = "wss";
 
     @Autowired
-    private FileReferenceRequestService fileReferenceService;
-
-    @Autowired
-    private FileStorageRequestService fileRefRequestService;
+    private FileStorageRequestService fileStorageReqService;
 
     @Autowired
     private IPluginService pluginService;
@@ -79,30 +75,32 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
-    /**
-     * The job parameters as a map
-     */
-    protected Map<String, JobParameter> parameters;
+    private FileStorageWorkingSubset workingSubset;
+
+    private String plgBusinessId;
+
+    private int nbRequestToHandle = 0;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        this.parameters = parameters;
+        plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
+        workingSubset = parameters.get(WORKING_SUB_SET).getValue();
+        nbRequestToHandle = workingSubset.getFileReferenceRequests().size();
     }
 
     @Override
     public void run() {
         long start = System.currentTimeMillis();
         // Initiate the job progress manager
-        FileStorageJobProgressManager progressManager = new FileStorageJobProgressManager(fileReferenceService,
-                fileRefRequestService, this);
-        // lets instantiate the plugin to use
-        String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
-        // Find associated StorageLocation
-        FileStorageWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
-        int nbRequestToHandle = workingSubset.getFileReferenceRequests().size();
+        FileStorageJobProgressManager progressManager = new FileStorageJobProgressManager(fileStorageReqService, this);
+
+        nbRequestToHandle = workingSubset.getFileReferenceRequests().size();
         LOGGER.debug("[STORAGE JOB] Runing storage job for {} storage requests", nbRequestToHandle);
+        // Calculates if needed image dimensions
         workingSubset.getFileReferenceRequests().forEach(this::calculateImageDimension);
+
+        // lets instantiate the plugin to use
         IStorageLocation storagePlugin;
         String errorCause = null;
         try {
@@ -122,9 +120,15 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
                                                                 req.getMetaInfo().getChecksum(), errorCause));
                 }
             }
+            progressManager.bulkSave();
             LOGGER.debug("[STORAGE JOB] storage job handled in {}ms for {} storage requests",
                          System.currentTimeMillis() - start, nbRequestToHandle);
         }
+    }
+
+    @Override
+    public int getCompletionCount() {
+        return nbRequestToHandle > 0 ? nbRequestToHandle : super.getCompletionCount();
     }
 
     /**
