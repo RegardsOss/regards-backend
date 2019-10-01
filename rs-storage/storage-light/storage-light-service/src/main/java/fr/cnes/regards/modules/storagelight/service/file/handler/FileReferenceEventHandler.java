@@ -133,7 +133,6 @@ public class FileReferenceEventHandler
         } finally {
             runtimeTenantResolver.clearTenant();
         }
-
     }
 
     /**

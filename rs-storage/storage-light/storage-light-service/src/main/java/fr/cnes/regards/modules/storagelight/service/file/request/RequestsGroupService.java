@@ -295,7 +295,6 @@ public class RequestsGroupService {
             LOGGER.error("[{} GROUP ERROR {}] - {} success / {} errors.", reqGrp.getType().toString().toUpperCase(),
                          reqGrp.getId(), successes.size(), errors.size());
             publisher.publish(FileRequestsGroupEvent.buildError(reqGrp.getId(), reqGrp.getType(), successes, errors));
-
         }
         // 4. Clear group info
         groupReqInfoRepository.deleteByGroupId(reqGrp.getId());

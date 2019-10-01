@@ -77,6 +77,7 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
         Boolean forceDelete = parameters.get(FORCE_DELETE).getValue();
         Pageable pageRequest = PageRequest.of(0, PAGE_BULK_SIZE);
         Page<FileReference> pageResults;
+        String requestGroupId = String.format("DELETION-%s", UUID.randomUUID().toString());
         do {
             // Search for all file references of the given storage location
             pageResults = fileRefService.search(storage, pageRequest);
@@ -84,8 +85,7 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
                 // For each send a deletion event for each owner.
                 for (String owner : fileRef.getOwners()) {
                     publisher.publish(DeletionFlowItem.build(FileDeletionRequestDTO
-                            .build(fileRef.getMetaInfo().getChecksum(), storage, owner, forceDelete),
-                                                             UUID.randomUUID().toString()));
+                            .build(fileRef.getMetaInfo().getChecksum(), storage, owner, forceDelete), requestGroupId));
                 }
             }
         } while (pageResults.hasNext());

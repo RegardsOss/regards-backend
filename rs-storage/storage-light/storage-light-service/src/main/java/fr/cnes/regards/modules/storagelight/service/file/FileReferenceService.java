@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storagelight.service.location.StorageLocationService;
 
 /**
  * Service to handle actions on {@link FileReference}s entities.
@@ -57,6 +58,9 @@ public class FileReferenceService {
 
     @Autowired
     private IGroupRequestInfoRepository requInfoRepo;
+
+    @Autowired
+    private StorageLocationService storageLocService;
 
     @Autowired
     private FileReferenceEventPublisher fileRefEventPublisher;
