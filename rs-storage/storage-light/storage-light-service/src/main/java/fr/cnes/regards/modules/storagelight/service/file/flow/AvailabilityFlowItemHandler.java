@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -51,9 +52,7 @@ import fr.cnes.regards.modules.storagelight.service.file.request.RequestsGroupSe
 public class AvailabilityFlowItemHandler
         implements ApplicationListener<ApplicationReadyEvent>, IHandler<AvailabilityFlowItem> {
 
-    /**
-     * Bulk size limit to handle messages
-     */
+    @Value("${regards.storage.availability.items.bulk.size:100}")
     private static final int BULK_SIZE = 100;
 
     @Autowired

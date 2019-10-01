@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -57,7 +58,8 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
     /**
      * Bulk size limit to handle messages
      */
-    private static final int BULK_SIZE = 1_000;
+    @Value("${regards.storage.store.items.bulk.size:100}")
+    private int BULK_SIZE;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -127,7 +129,7 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
                 ConcurrentLinkedQueue<StorageFlowItem> tenantItems = entry.getValue();
                 List<StorageFlowItem> list = new ArrayList<>();
                 do {
-                    // Build a 10_000 (at most) documents bulk request
+                    // Build a 100 (at most) documents bulk request
                     for (int i = 0; i < BULK_SIZE; i++) {
                         StorageFlowItem doc = tenantItems.poll();
                         if (doc == null) {
