@@ -126,17 +126,18 @@ public class FileDeletionRequestService {
             fileDeletionRequestRepo.save(new FileDeletionRequest(fileReferenceToDelete, forceDelete, groupId));
         } else {
             // Retry deletion if error
-            retry(existingOne.get());
+            retry(existingOne.get(), forceDelete);
         }
     }
 
     /**
      * Update all {@link FileDeletionRequest} in error status to change status to {@link FileRequestStatus#TO_DO}.
      */
-    private void retry(FileDeletionRequest req) {
+    private void retry(FileDeletionRequest req, boolean forceDelete) {
         if (req.getStatus() == FileRequestStatus.ERROR) {
             req.setStatus(FileRequestStatus.TO_DO);
             req.setErrorCause(null);
+            req.setForceDelete(forceDelete);
             updateFileDeletionRequest(req);
         }
     }
