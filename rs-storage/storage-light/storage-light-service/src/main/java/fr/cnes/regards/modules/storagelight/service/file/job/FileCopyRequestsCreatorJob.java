@@ -119,7 +119,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     @Override
     public int getCompletionCount() {
-        return totalPages;
+        return totalPages > 0 ? totalPages : super.getCompletionCount();
     }
 
     /**
