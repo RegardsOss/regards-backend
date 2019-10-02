@@ -23,14 +23,14 @@ import org.springframework.test.context.TestPropertySource;
 
 /**
  * Generate the diff between already existing SQL migration scripts and content of your model.<br/>
- * Extends this test class in dao layer and ensure the <b>public schema is empty</b> on the target database.
+ * Extends this test class in dao layer and ensure the <b>public schema is empty (or not existing)</b> on the target database.
  * Then you can safely run the test : <br/>
  * 1] To do that, annotate your class with following code.
  * <code>
  * @TestPropertySource(properties = {"regards.jpa.multitenant.migrationTool=FLYWAYDB"})
  * </code>
  * Then execute your test. It should execute FLYWAY migration (all SQL files in your module) against the public schema.
- * 2] Comment the annotation you added above your class and execute another time the migration (this time using HBM2DDL).
+ * 2] Comment the annotation you added above your class and execute another time the test (this time using HBM2DDL).
  * You can now find in the target folder the SQL diff that you can use to complete your FLYWAY migration.
  *
  * @author Marc Sordi
