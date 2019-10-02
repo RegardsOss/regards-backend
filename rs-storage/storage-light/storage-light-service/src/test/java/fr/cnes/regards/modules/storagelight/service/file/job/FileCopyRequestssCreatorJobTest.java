@@ -25,6 +25,8 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+
 /**
  * Tests for creation of copy requests
  *
@@ -34,7 +36,7 @@ import org.junit.Test;
 public class FileCopyRequestssCreatorJobTest {
 
     @Test
-    public void calculateCopyPath() throws MalformedURLException {
+    public void calculateCopyPath() throws MalformedURLException, ModuleException {
         Optional<Path> filePath = FileCopyRequestsCreatorJob
                 .getDestinationFilePath("file:/regards-input/storages/local/e1/f3/42/a1/123456789132456789",
                                         "/regards-input/storages/local/e1", "copied");
