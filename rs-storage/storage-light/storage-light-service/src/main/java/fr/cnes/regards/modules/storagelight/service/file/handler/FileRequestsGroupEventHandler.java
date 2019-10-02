@@ -102,7 +102,7 @@ public class FileRequestsGroupEventHandler
             storageLocationService.monitorStorageLocations(true);
             notificationClient.notify(
                                       String.format("Requests group %s is terminated successfully. %s files handled.",
-                                                    event.getSuccess().size()),
+                                                    event.getGroupId(), event.getSuccess().size()),
                                       String.format("Storage - %s process", event.getType().toString()),
                                       NotificationLevel.INFO, DefaultRole.PROJECT_ADMIN);
         }

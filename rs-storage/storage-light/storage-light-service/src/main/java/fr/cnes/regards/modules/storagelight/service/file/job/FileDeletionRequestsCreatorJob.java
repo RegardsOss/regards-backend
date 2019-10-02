@@ -106,6 +106,7 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
                     }
                 }
             }
+            pageRequest = pageRequest.next();
         } while (pageResults.hasNext());
         if (nbREquests > 0) {
             reqGrpService.granted(requestGroupId, FileRequestType.DELETION, nbREquests);
