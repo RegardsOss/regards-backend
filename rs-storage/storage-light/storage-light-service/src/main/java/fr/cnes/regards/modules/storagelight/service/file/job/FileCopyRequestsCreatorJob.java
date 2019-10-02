@@ -23,6 +23,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +32,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
@@ -66,17 +69,21 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     @Autowired
     private FileReferenceService fileRefService;
-    
+
     private String storageLocationSourceId;
+
     private String storageLocationDestinationId;
+
     private String sourcePath;
+
     private String destinationPath;
-    private int totalPages=0;
+
+    private int totalPages = 0;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-    	storageLocationSourceId = parameters.get(STORAGE_LOCATION_SOURCE_ID).getValue();
+        storageLocationSourceId = parameters.get(STORAGE_LOCATION_SOURCE_ID).getValue();
         storageLocationDestinationId = parameters.get(STORAGE_LOCATION_DESTINATION_ID).getValue();
         sourcePath = parameters.get(SOURCE_PATH).getValue();
         destinationPath = parameters.get(DESTINATION_PATH).getValue();
@@ -84,35 +91,24 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        
-        if (destinationPath == null) {
-            destinationPath = "";
-        } else if (destinationPath.startsWith("/")) {
-            // Make sure destination path is relative
-            destinationPath = destinationPath.substring(1, destinationPath.length());
-        }
 
         Pageable pageRequest = PageRequest.of(0, PAGE_BULK_SIZE);
         Page<FileReference> pageResults;
         do {
             // Search for all file references matching the given storage location.
             pageResults = fileRefService.search(storageLocationSourceId, pageRequest);
-            totalPages=pageResults.getTotalPages();
+            totalPages = pageResults.getTotalPages();
             for (FileReference fileRef : pageResults.getContent()) {
                 try {
-                    URL fileUrl = new URL(fileRef.getLocation().getUrl());
-                    Path fileDirectoryPath = Paths.get(fileUrl.getPath()).getParent();
-                    String fileDir = fileDirectoryPath.toString();
-                    Path destinationSubDirPath = Paths.get(sourcePath).relativize(fileDirectoryPath);
-                    destinationPath = Paths.get(destinationPath, destinationSubDirPath.toString()).toString();
-                    if (fileDir.startsWith(sourcePath)) {
+                    Optional<Path> desinationFilePath = getDestinationFilePath(fileRef.getLocation().getUrl(),
+                                                                               sourcePath, destinationPath);
+                    if (desinationFilePath.isPresent()) {
                         // For each file reference located in the given path, send a copy request to the destination storage location.
-                        publisher.publish(CopyFlowItem
-                                .build(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
-                                                                storageLocationDestinationId, destinationPath),
-                                       UUID.randomUUID().toString()));
+                        publisher.publish(CopyFlowItem.build(FileCopyRequestDTO
+                                .build(fileRef.getMetaInfo().getChecksum(), storageLocationDestinationId,
+                                       desinationFilePath.get().toString()), UUID.randomUUID().toString()));
                     }
-                } catch (MalformedURLException e) {
+                } catch (MalformedURLException | ModuleException e) {
                     LOGGER.error("Unable to handle file reference {} for copy from {} to {}. Cause {}",
                                  fileRef.getLocation().getUrl(), storageLocationSourceId, storageLocationDestinationId);
                 }
@@ -121,9 +117,47 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         } while (pageResults.hasNext());
     }
 
-	@Override
-	public int getCompletionCount() {
-		return totalPages;
-	}
+    @Override
+    public int getCompletionCount() {
+        return totalPages;
+    }
+
+    /**
+     * Check if the given file is in the path to copy. If it is, calculate the relative destination path.
+     * @param fileUrl
+     * @param sourcePathToCopy
+     * @param destinationPath
+     * @return
+     * @throws MalformedURLException
+     * @throws ModuleException
+     */
+    public static Optional<Path> getDestinationFilePath(String fileUrl, String sourcePathToCopy, String destinationPath)
+            throws MalformedURLException, ModuleException {
+        String destinationFilePath = "";
+        if (destinationPath == null) {
+            destinationFilePath = "";
+        } else if (destinationPath.startsWith("/")) {
+            // Make sure destination path is relative
+            destinationFilePath = destinationPath.substring(1, destinationPath.length());
+        } else {
+            destinationFilePath = destinationPath;
+        }
+        URL url = new URL(fileUrl);
+        Path fileDirectoryPath = Paths.get(url.getPath()).getParent();
+        String fileDir = fileDirectoryPath.toString();
+        if (fileDir.startsWith(sourcePathToCopy)) {
+            Path destinationSubDirPath = Paths.get(sourcePathToCopy).relativize(fileDirectoryPath);
+            destinationFilePath = Paths.get(destinationPath, destinationSubDirPath.toString()).toString();
+            if (destinationFilePath.length() > FileLocation.URL_MAX_LENGTH) {
+                throw new ModuleException(String
+                        .format("Destination path <%s> legnth is too long (> %d). fileUrl=%s,sourcePathToCopy=%s,destinationPath=%s",
+                                destinationFilePath.toString(), FileLocation.URL_MAX_LENGTH, fileUrl, sourcePathToCopy,
+                                destinationPath));
+            }
+            return Optional.of(Paths.get(destinationFilePath));
+        } else {
+            return Optional.empty();
+        }
+    }
 
 }

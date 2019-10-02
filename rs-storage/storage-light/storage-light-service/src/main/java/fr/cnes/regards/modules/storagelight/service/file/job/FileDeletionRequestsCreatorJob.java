@@ -34,9 +34,11 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileDeletionRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.request.RequestsGroupService;
 
 /**
  * JOB to handle deletion requests on many {@link FileReference}s.<br>
@@ -64,6 +66,9 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
     @Autowired
     private FileDeletionRequestService fileDelReqService;
 
+    @Autowired
+    private RequestsGroupService reqGrpService;
+
     /**
      * The job parameters as a map
      */
@@ -82,6 +87,7 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
         Pageable pageRequest = PageRequest.of(0, PAGE_BULK_SIZE);
         Page<FileReference> pageResults;
         String requestGroupId = String.format("DELETION-%s", UUID.randomUUID().toString());
+        int nbREquests = 0;
         do {
             // Search for all file references of the given storage location
             pageResults = fileRefService.search(storage, pageRequest);
@@ -91,6 +97,7 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
                 // Else create deletion request
                 if (fileRef.getOwners().isEmpty()) {
                     fileDelReqService.create(fileRef, forceDelete, requestGroupId);
+                    nbREquests++;
                 } else {
                     for (String owner : fileRef.getOwners()) {
                         publisher.publish(DeletionFlowItem.build(FileDeletionRequestDTO
@@ -100,6 +107,9 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
                 }
             }
         } while (pageResults.hasNext());
+        if (nbREquests > 0) {
+            reqGrpService.granted(requestGroupId, FileRequestType.DELETION, nbREquests);
+        }
     }
 
 }
