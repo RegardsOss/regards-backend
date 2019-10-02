@@ -60,7 +60,6 @@ import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.entities.Document;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.service.IIndexerService;
@@ -505,9 +504,6 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                 break;
             case DATASET:
                 entity = new Dataset(model, getDefaultTenant(), label, label);
-                break;
-            case DOCUMENT:
-                entity = new Document(model, getDefaultTenant(), label, label);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown entity type " + model.getType());

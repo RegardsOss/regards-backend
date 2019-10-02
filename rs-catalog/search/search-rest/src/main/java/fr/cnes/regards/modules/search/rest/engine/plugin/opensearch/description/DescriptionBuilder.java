@@ -430,8 +430,6 @@ public class DescriptionBuilder {
                 return EntityType.DATA;
             case DATASETS:
                 return EntityType.DATASET;
-            case DOCUMENTS:
-                return EntityType.DOCUMENT;
             case ALL:
             case DATAOBJECTS_RETURN_DATASETS:
             default:
