@@ -28,7 +28,6 @@ public enum EntityType {
      * Possible model type
      */
     COLLECTION,
-    DOCUMENT,
     DATA,
     DATASET
 }
