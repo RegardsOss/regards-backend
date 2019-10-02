@@ -114,6 +114,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                 }
                 this.advanceCompletion();
             }
+            pageRequest = pageRequest.next();
         } while (pageResults.hasNext());
     }
 
