@@ -30,6 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
@@ -53,8 +56,11 @@ import fr.cnes.regards.modules.storagelight.domain.database.StorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoring;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileRequestInfoDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCacheRequestService;
@@ -399,6 +405,52 @@ public class StorageLocationService {
             default:
                 break;
         }
+    }
+
+    public Page<FileRequestInfoDTO> getRequestInfos(String storageLocationId, FileRequestType type,
+            Optional<FileRequestStatus> status, Pageable page) {
+        Page<FileRequestInfoDTO> results = Page.empty(page);
+        switch (type) {
+            case AVAILABILITY:
+                break;
+            case COPY:
+                break;
+            case DELETION:
+                Page<FileDeletionRequest> delRequests;
+                if (status.isPresent()) {
+                    delRequests = deletionReqService.search(storageLocationId, status.get(), page);
+                } else {
+                    delRequests = deletionReqService.search(storageLocationId, page);
+                }
+                results = new PageImpl<FileRequestInfoDTO>(
+                        delRequests.getContent().stream().map(this::toRequestInfosDto).collect(Collectors.toList()),
+                        page, delRequests.getTotalElements());
+                break;
+            case REFERENCE:
+                break;
+            case STORAGE:
+                Page<FileStorageRequest> requests;
+                if (status.isPresent()) {
+                    requests = storageReqService.search(storageLocationId, status.get(), page);
+                } else {
+                    requests = storageReqService.search(storageLocationId, page);
+                }
+                results = new PageImpl<FileRequestInfoDTO>(
+                        requests.getContent().stream().map(this::toRequestInfosDto).collect(Collectors.toList()), page,
+                        requests.getTotalElements());
+                break;
+            default:
+                break;
+        }
+        return results;
+    }
+
+    private FileRequestInfoDTO toRequestInfosDto(FileStorageRequest request) {
+        return FileRequestInfoDTO.build(FileRequestType.STORAGE, request.getStatus(), request.getErrorCause());
+    }
+
+    private FileRequestInfoDTO toRequestInfosDto(FileDeletionRequest request) {
+        return FileRequestInfoDTO.build(FileRequestType.DELETION, request.getStatus(), request.getErrorCause());
     }
 
 }

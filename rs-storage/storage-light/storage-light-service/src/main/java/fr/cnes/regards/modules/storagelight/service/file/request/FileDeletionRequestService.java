@@ -354,6 +354,16 @@ public class FileDeletionRequestService {
     }
 
     @Transactional(readOnly = true)
+    public Page<FileDeletionRequest> search(String storage, FileRequestStatus status, Pageable page) {
+        return fileDeletionRequestRepo.findByStorageAndStatus(storage, status, page);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<FileDeletionRequest> search(String storage, Pageable page) {
+        return fileDeletionRequestRepo.findByStorage(storage, page);
+    }
+
+    @Transactional(readOnly = true)
     public Long count(String storage, FileRequestStatus status) {
         return fileDeletionRequestRepo.countByStorageAndStatus(storage, status);
     }

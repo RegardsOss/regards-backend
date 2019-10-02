@@ -213,6 +213,17 @@ public class FileStorageRequestService {
     }
 
     /**
+     * Search for {@link FileStorageRequest}s matching the given destination storage and checksum
+     * @param destinationStorage
+     * @param checksum
+     * @return {@link FileStorageRequest}
+     */
+    @Transactional(readOnly = true)
+    public Page<FileStorageRequest> search(String destinationStorage, FileRequestStatus status, Pageable page) {
+        return fileStorageRequestRepo.findAllByStorageAndStatus(destinationStorage, status, page);
+    }
+
+    /**
      * Search for all {@link FileStorageRequest}s
      * @param pageable
      * @return {@link FileStorageRequest}s by page
