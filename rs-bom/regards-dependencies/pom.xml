@@ -726,6 +726,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-validation</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
                 <artifactId>model-rest</artifactId>
                 <version>${fr.cnes.regards.modules.model.version}</version>
             </dependency>
