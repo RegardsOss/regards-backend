@@ -68,6 +68,7 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocati
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.JobsPriority;
 import fr.cnes.regards.modules.storagelight.service.cache.CacheService;
+import fr.cnes.regards.modules.storagelight.service.file.FileDownloadService;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.job.FileCacheRequestJob;
@@ -123,6 +124,9 @@ public class FileCacheRequestService {
 
     @Autowired
     private StorageLocationConfigurationService pStorageService;
+
+    @Autowired
+    private FileDownloadService downloadService;
 
     /**
      * Search for a {@link FileCacheRequest} on the file given checksum.
@@ -455,9 +459,17 @@ public class FileCacheRequestService {
             String message = String.format("file %s (checksum %s) is available for download.",
                                            fileRef.getMetaInfo().getFileName(), checksum);
             LOGGER.debug("[AVAILABILITY SUCCESS {}] - {}", checksum, message);
-            publisher.available(checksum, storage, fileRef.getLocation().getUrl(), fileRef.getOwners(), message,
-                                availabilityGroupId);
-            reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, fileRef);
+            try {
+                // For online files we have to generate access url though storage microservice
+                String url = downloadService.generateDownloadUrl(checksum);
+                publisher.available(checksum, storage, url, fileRef.getOwners(), message, availabilityGroupId);
+                reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage,
+                                             fileRef);
+            } catch (ModuleException e) {
+                publisher.notAvailable(checksum, e.getMessage(), availabilityGroupId);
+                reqGrpService.requestError(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage,
+                                           e.getMessage());
+            }
         }
     }
 

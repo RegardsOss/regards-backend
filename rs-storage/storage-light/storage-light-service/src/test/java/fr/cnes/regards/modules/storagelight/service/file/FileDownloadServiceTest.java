@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.storagelight.service.file;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,6 +38,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.storagelight.domain.DownloadableFile;
 import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
+import fr.cnes.regards.modules.storagelight.domain.database.DownloadToken;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
@@ -47,7 +49,7 @@ import fr.cnes.regards.modules.storagelight.service.AbstractStorageTest;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_tests",
-        "regards.storage.cache.path=target/cache" })
+        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class FileDownloadServiceTest extends AbstractStorageTest {
 
     @Before
@@ -130,6 +132,19 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
         InputStream stream = downloadService.download(fileRef);
         Assert.assertNotNull(stream);
         stream.close();
+    }
+
+    @Test
+    public void testGenerateDownloadUrl() throws ModuleException {
+        Assert.assertTrue(downloadTokenRepo.findAll().isEmpty());
+        downloadService.generateDownloadUrl(UUID.randomUUID().toString());
+        Assert.assertEquals(1, downloadTokenRepo.findAll().size());
+
+        downloadTokenRepo.save(DownloadToken.build("plop", "pllip", OffsetDateTime.now().minusHours(2)));
+        Assert.assertEquals(2, downloadTokenRepo.findAll().size());
+        downloadService.purgeTokens();
+        Assert.assertEquals(1, downloadTokenRepo.findAll().size());
+
     }
 
 }

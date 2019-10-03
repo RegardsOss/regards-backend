@@ -59,6 +59,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.dao.ICacheFileRepository;
+import fr.cnes.regards.modules.storagelight.dao.IDownloadTokenRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileDeletetionRequestRepository;
@@ -172,6 +173,9 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     @Autowired
     private StorageLocationService storageLocationService;
 
+    @Autowired
+    protected IDownloadTokenRepository downloadTokenRepo;
+
     protected String originUrl = "file://in/this/directory/file.test";
 
     protected void init() throws ModuleException {
@@ -194,6 +198,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         cacheFileRepo.deleteAll();
         fileRefRepo.deleteAll();
         jobInfoRepo.deleteAll();
+        downloadTokenRepo.deleteAll();
 
         storageLocationService.getAllLocations().forEach(f -> {
             try {

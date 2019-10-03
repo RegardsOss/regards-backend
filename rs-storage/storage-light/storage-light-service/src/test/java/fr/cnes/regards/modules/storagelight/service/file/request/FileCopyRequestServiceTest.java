@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStora
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_copy_tests",
-        "regards.storage.cache.path=target/cache" })
+        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class FileCopyRequestServiceTest extends AbstractStorageTest {
 
     @Before

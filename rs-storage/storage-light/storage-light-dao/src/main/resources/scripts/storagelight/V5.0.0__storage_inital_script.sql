@@ -1,10 +1,11 @@
 create table t_cache_file (id int8 not null, checksum varchar(128), expiration_date timestamp, file_size int8, location varchar(255), primary key (id));
+create table t_donwload_token (id int8 not null, checksum varchar(255) not null, expirationDate timestamp not null, token varchar(255) not null, primary key (id));
 create table t_file_cache_request (id int8 not null, checksum varchar(128) not null, creation_date timestamp, error_cause varchar(512), expiration_date timestamp, file_size int8 not null, group_id varchar(128) not null, destination_path varchar(2048) not null, status varchar(255) not null, storage varchar(128) not null, file_ref_id int8 not null, primary key (id));
 create table t_file_copy_request (id int8 not null, creation_date timestamp, error_cause varchar(512), cache_group_id varchar(128), storage_group_id varchar(128), group_id varchar(128) not null, algorithm varchar(16) not null, checksum varchar(128) not null, fileName varchar(256) not null, fileSize int8, height int4, mime_type varchar(255) not null, type varchar(256), width int4, status varchar(255) not null, storage varchar(128), storage_subdirectory varchar(2048), primary key (id));
 create table t_file_deletion_request (file_reference int8 not null, creation_date timestamp, error_cause varchar(512), force_delete boolean, group_id varchar(128) not null, status varchar(255) not null, storage varchar(128) not null, primary key (file_reference));
 create table t_file_reference (id int8 not null, storage varchar(128), url varchar(2048), algorithm varchar(16) not null, checksum varchar(128) not null, fileName varchar(256) not null, fileSize int8, height int4, mime_type varchar(255) not null, type varchar(256), width int4, storageDate timestamp, primary key (id));
 create table t_file_storage_request (id int8 not null, creation_date timestamp, error_cause varchar(512), algorithm varchar(16) not null, checksum varchar(128) not null, fileName varchar(256) not null, fileSize int8, height int4, mime_type varchar(255) not null, type varchar(256), width int4, origin_url varchar(2048), status varchar(255) not null, storage varchar(128), storage_subdirectory varchar(2048), primary key (id));
-create table t_request_group (id varchar(255) not null, type varchar(255) not null, creation_date timestamp not null, primary key (id));
+create table t_request_group (id varchar(255) not null, creation_date timestamp not null, type varchar(255) not null, primary key (id));
 create table t_request_result_info (id int8 not null, error boolean, error_cause varchar(512), group_id varchar(128) not null, request_checksum varchar(128) not null, request_storage varchar(128), request_type varchar(255) not null, result_file_ref_id int8, primary key (id));
 create table t_storage_location (id int8 not null, last_update_date timestamp, name varchar(128), nb_ref_files int8, total_size int8, primary key (id));
 create table t_storage_location_conf (id int8 not null, allocated_size_ko int8, name varchar(128), priority int8, storage_type varchar(255), plugin_conf_id int8, primary key (id));
@@ -15,6 +16,7 @@ create table ta_file_storage_request_owners (file_storage_request_id int8 not nu
 create table ta_storage_request_group_ids (file_storage_request_id int8 not null, group_id varchar(128) not null, primary key (file_storage_request_id, group_id));
 create index idx_cache_file_checksum on t_cache_file (checksum);
 alter table t_cache_file add constraint uk_cache_file_checksum unique (checksum);
+create index idx_download_token on t_donwload_token (token, checksum);
 create index idx_file_cache_request_grp on t_file_cache_request (group_id);
 create index idx_file_cache_request_cs on t_file_cache_request (checksum);
 create index idx_file_cache_request_storage on t_file_cache_request (storage);
@@ -40,6 +42,7 @@ alter table t_storage_location add constraint uk_t_storage_location_name unique 
 alter table t_storage_location_conf add constraint uk_storage_loc_name unique (name);
 alter table t_storage_location_conf add constraint uk_storage_loc_conf_type_priority unique (storage_type, priority);
 create sequence seq_cache_file start 1 increment 50;
+create sequence seq_download_token start 1 increment 50;
 create sequence seq_file_cache_request start 1 increment 50;
 create sequence seq_file_reference start 1 increment 50;
 create sequence seq_file_storage_request start 1 increment 50;

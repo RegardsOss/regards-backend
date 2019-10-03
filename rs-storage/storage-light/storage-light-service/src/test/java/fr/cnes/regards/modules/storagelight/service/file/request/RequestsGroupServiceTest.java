@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.storagelight.service.AbstractStorageTest;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_groups_tests",
-        "regards.storage.cache.path=target/cache" })
+        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class RequestsGroupServiceTest extends AbstractStorageTest {
 
     @Autowired

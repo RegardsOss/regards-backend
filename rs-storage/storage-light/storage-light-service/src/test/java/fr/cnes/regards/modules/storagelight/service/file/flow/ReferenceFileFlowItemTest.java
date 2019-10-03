@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.storagelight.service.AbstractStorageTest;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
-        "regards.storage.cache.path=target/cache" })
+        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class ReferenceFileFlowItemTest extends AbstractStorageTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceFileFlowItemTest.class);

@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -55,7 +56,7 @@ import fr.cnes.regards.modules.storagelight.service.file.flow.StorageFlowItemHan
 @RequestMapping(FileReferenceController.FILE_PATH)
 public class FileReferenceController {
 
-    public static final String FILE_PATH = "/files";
+    public static final String FILE_PATH = FileDownloadService.FILES_PATH;
 
     public static final String DOWNLOAD_PATH = "/{checksum}/download";
 
@@ -88,6 +89,32 @@ public class FileReferenceController {
         headers.setContentType(asMediaType(downloadFile.getMimeType()));
         headers.setContentDispositionFormData("attachement;filename=", downloadFile.getFileName());
         return new ResponseEntity<>(isr, headers, HttpStatus.OK);
+    }
+
+    /**
+     * End-point to Download a file referenced by a storage location with the given checksum.
+     * @param checksum checksum of the file to download
+     * @return {@link InputStreamResource}
+     * @throws ModuleException
+     * @throws IOException
+     */
+    @RequestMapping(path = FileDownloadService.DOWNLOAD_TOKEN_PATH, method = RequestMethod.GET,
+            produces = MediaType.ALL_VALUE)
+    @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PUBLIC)
+    public ResponseEntity<InputStreamResource> downloadFileWithToken(@PathVariable("checksum") String checksum,
+            @RequestParam(name = FileDownloadService.TOKEN_PARAM, required = true) String token)
+            throws ModuleException, IOException {
+        if (downloadService.checkToken(checksum, token)) {
+            DownloadableFile downloadFile = downloadService.downloadFile(checksum);
+            InputStreamResource isr = new InputStreamResource(downloadFile.getFileInputStream());
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentLength(downloadFile.getRealFileSize());
+            headers.setContentType(asMediaType(downloadFile.getMimeType()));
+            headers.setContentDispositionFormData("attachement;filename=", downloadFile.getFileName());
+            return new ResponseEntity<>(isr, headers, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
     }
 
     @RequestMapping(method = RequestMethod.POST, path = STORE_PATH)

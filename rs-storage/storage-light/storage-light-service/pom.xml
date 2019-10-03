@@ -80,7 +80,13 @@
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.locks</groupId>
             <artifactId>locks-service</artifactId>
-        </dependency>        
+        </dependency>
+   		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>
+				spring-cloud-starter-netflix-eureka-client
+			</artifactId>
+		</dependency>
         <!-- TEST dependencies -->
 		<dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
