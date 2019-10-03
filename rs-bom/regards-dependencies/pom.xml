@@ -760,6 +760,16 @@
                 <artifactId>feature-service</artifactId>
                 <version>${fr.cnes.regards.modules.feature.version}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.feature</groupId>
+                <artifactId>feature-rest</artifactId>
+                <version>${fr.cnes.regards.modules.feature.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.feature</groupId>
+                <artifactId>feature-client</artifactId>
+                <version>${fr.cnes.regards.modules.feature.version}</version>
+            </dependency>
             <!-- Crawler -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.crawler</groupId>
