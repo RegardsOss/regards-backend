@@ -3,6 +3,8 @@ package fr.cnes.regards.framework.modules.locks.service;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -20,6 +22,8 @@ import fr.cnes.regards.framework.modules.locks.domain.Lock;
 @Service
 @RegardsTransactional
 public class LockService implements ILockService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(LockService.class);
 
     @Autowired
     private ILockService self;
@@ -73,6 +77,7 @@ public class LockService implements ILockService {
                 Thread.sleep(retry);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                LOG.error("Lock could not be acquired", e);
                 return false;
             }
         }
