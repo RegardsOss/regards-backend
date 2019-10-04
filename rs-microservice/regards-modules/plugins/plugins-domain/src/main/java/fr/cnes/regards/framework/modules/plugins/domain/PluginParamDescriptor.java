@@ -62,7 +62,7 @@ public class PluginParamDescriptor {
     /**
      * Argument parameter types for parameterized types
      */
-    private String[] parameterizedSubTypes;
+    private PluginParamType[] parameterizedSubTypes;
 
     /**
      * The parameters's type {@link PluginParamType}.
@@ -97,7 +97,7 @@ public class PluginParamDescriptor {
      * <ul>
      * <li>{@link #setDefaultValue(String)}</li>
      * <li>{@link #addAllParameters(List)}</li>
-     * <li>{@link #setParameterizedSubTypes(String...)}</li>
+     * <li>{@link #setParameterizedSubTypes(PluginParamType...)}</li>
      * <li>{@link #setKeyLabel(String)}</li>
      * </ul>
      * @param name parameter's name used as a key for database registration
@@ -195,11 +195,11 @@ public class PluginParamDescriptor {
         this.description = description;
     }
 
-    public String[] getParameterizedSubTypes() {
+    public PluginParamType[] getParameterizedSubTypes() {
         return parameterizedSubTypes;
     }
 
-    public void setParameterizedSubTypes(String... parameterizedSubTypes) {
+    public void setParameterizedSubTypes(PluginParamType... parameterizedSubTypes) {
         this.parameterizedSubTypes = parameterizedSubTypes;
     }
 
