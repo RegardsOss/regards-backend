@@ -68,8 +68,10 @@ import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineTestClien
  *
  */
 @ActiveProfiles({ "testAmqp", "storageTest" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
-        "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
+                "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true" },
+        locations = { "classpath:application-test.properties" })
 public class StorageClientIT extends AbstractMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageClientIT.class);
