@@ -83,7 +83,7 @@ public final class PluginParameterUtils {
         List<PluginParamDescriptor> parameters = new ArrayList<>();
 
         for (final Field field : ReflectionUtils.getAllDeclaredFields(pluginClass)) {
-            if (field.isAnnotationPresent(PluginParameter.class) || (isChildParameters && isToBeConsidered(field))) {
+            if (field.isAnnotationPresent(PluginParameter.class) || isChildParameters && isToBeConsidered(field)) {
                 // Initialize list of managed types for in depth scanning from root fields
                 List<String> managedTypes = new ArrayList<>();
                 if (isChildParameters) {
@@ -148,12 +148,12 @@ public final class PluginParameterUtils {
 
             // Manage markdown description
             String markdown = AnnotationUtils.loadMarkdown(pluginClass, pluginParameter.markdown());
-            if ((markdown != null) && !markdown.isEmpty()) {
+            if (markdown != null && !markdown.isEmpty()) {
                 result.setMarkdown(markdown);
             }
 
             // Manage default value
-            if ((pluginParameter.defaultValue() != null) && !pluginParameter.defaultValue().isEmpty()) {
+            if (pluginParameter.defaultValue() != null && !pluginParameter.defaultValue().isEmpty()) {
                 result.setDefaultValue(pluginParameter.defaultValue());
             }
         }
@@ -172,9 +172,10 @@ public final class PluginParameterUtils {
             ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
             // Get single parameter type
             Class<?> argType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
-            result.setParameterizedSubTypes(argType.getName());
             // Propagate discovery
-            tryPropagatingDiscovery(field.getType(), argType, alreadyManagedTypeNames, result);
+            PluginParamType subParamType = tryPropagatingDiscovery(field.getType(), argType, alreadyManagedTypeNames,
+                                                                   result);
+            result.setParameterizedSubTypes(subParamType);
         }
 
         // Do in depth discovery for MAP and register parameterized sub types
@@ -187,10 +188,12 @@ public final class PluginParameterUtils {
             // Get parameter types
             Class<?> keyType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
             Class<?> valueType = (Class<?>) parameterizedType.getActualTypeArguments()[1];
-            result.setParameterizedSubTypes(keyType.getName(), valueType.getName());
             // Propagate discovery
-            tryPropagatingDiscovery(field.getType(), keyType, alreadyManagedTypeNames, result);
-            tryPropagatingDiscovery(field.getType(), valueType, alreadyManagedTypeNames, result);
+            PluginParamType subParamType0 = tryPropagatingDiscovery(field.getType(), keyType, alreadyManagedTypeNames,
+                                                                    result);
+            PluginParamType subParamType1 = tryPropagatingDiscovery(field.getType(), valueType, alreadyManagedTypeNames,
+                                                                    result);
+            result.setParameterizedSubTypes(subParamType0, subParamType1);
         }
         return result;
     }
@@ -215,10 +218,17 @@ public final class PluginParameterUtils {
      * parameters discovery
      * @param result current {@link PluginParamDescriptor}
      */
-    private static void tryPropagatingDiscovery(Class<?> rawType, Class<?> argType,
+    private static PluginParamType tryPropagatingDiscovery(Class<?> rawType, Class<?> argType,
             List<String> alreadyManagedTypeNames, PluginParamDescriptor result) {
-        if (findPrimitiveObject(argType).isPresent() || isAnInterface(argType)) {
-            LOGGER.debug("Primitive or plugin type detected. Stop plugin parameters discovery.");
+
+        PluginParamType paramType;
+        Optional<PrimitiveObject> po = findPrimitiveObject(argType);
+        if (po.isPresent()) {
+            LOGGER.debug("Primitive type detected. Stop plugin parameters discovery.");
+            paramType = po.get().getParamType();
+        } else if (isAnInterface(argType)) {
+            LOGGER.debug("Plugin type detected. Stop plugin parameters discovery.");
+            paramType = PluginParamType.PLUGIN;
         } else if (Collection.class.isAssignableFrom(argType) || Map.class.isAssignableFrom(argType)) {
             String message = String.format("Parameterized argument of type collection or map is not supported : %s",
                                            rawType.getName());
@@ -229,7 +239,9 @@ public final class PluginParameterUtils {
             registerTypeName(alreadyManagedTypeNames, argType);
             // Propagate discovery
             result.addAllParameters(getParameters(argType, true, alreadyManagedTypeNames));
+            paramType = PluginParamType.POJO;
         }
+        return paramType;
     }
 
     /**
@@ -308,7 +320,7 @@ public final class PluginParameterUtils {
         boolean isSupportedType = false;
         Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
 
-        if ((pluginInterfaces != null) && !pluginInterfaces.isEmpty()) {
+        if (pluginInterfaces != null && !pluginInterfaces.isEmpty()) {
             isSupportedType = pluginInterfaces.stream().anyMatch(s -> s.equalsIgnoreCase(clazz.getName()));
         }
 
@@ -406,7 +418,7 @@ public final class PluginParameterUtils {
         IPluginParam staticParam = pluginConf.getParameter(parameterName);
         // Manage dynamic parameters
         // IF static parameter is not found, so the parameter can only be dynamic.
-        if ((dynamicPluginParameters != null) && (dynamicPluginParameters.length > 0)) {
+        if (dynamicPluginParameters != null && dynamicPluginParameters.length > 0) {
             // Search dynamic parameter for current parameter name
             Optional<IPluginParam> dynamicParameterOpt = Arrays.stream(dynamicPluginParameters)
                     .filter(s -> s.getName().equals(parameterName)).findFirst();
@@ -700,6 +712,7 @@ public final class PluginParameterUtils {
      * PrimitiveObject for the plugin parameters
      */
     public enum PrimitiveObject {
+
         /**
          * A primitive of {@link String}. No primitive for string! Fallback to void!
          */
