@@ -52,10 +52,13 @@ public class LockService implements ILockService {
 
         if (currentLock.isPresent()) {
             // Prevent keeping expirated lock
-            if (currentLock.get().getExpirationDate() != null
+            if ((currentLock.get().getExpirationDate() != null)
                     && currentLock.get().getExpirationDate().isBefore(OffsetDateTime.now())) {
-                // If lock has expired, lets remove it
-                lockRepository.delete(currentLock.get());
+                // If lock has expired, replace with the new one
+                Lock newLock = currentLock.get();
+                newLock.expiresIn(expiresIn);
+                lockRepository.save(newLock);
+                return true;
             } else {
                 // Skip
                 return false;
