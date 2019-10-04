@@ -47,6 +47,7 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storagelight.service.AbstractStorageTest;
+import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileStorageRequestService;
 
@@ -63,10 +64,13 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
     private DeletionFlowHandler handler;
 
     @Autowired
-    FileReferenceRequestService fileRefService;
+    FileReferenceRequestService fileRefReqService;
 
     @Autowired
-    FileStorageRequestService fileRefRequestService;
+    FileReferenceService fileRefService;
+
+    @Autowired
+    FileStorageRequestService fileStorageReqService;
 
     @Before
     public void initialize() throws ModuleException {
@@ -284,6 +288,39 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference should not belongs to owner anymore", FileReferenceEventType.FULLY_DELETED,
                             getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
+    }
+
+    @Test
+    public void testLock() throws InterruptedException, ExecutionException {
+
+        String checksum = UUID.randomUUID().toString();
+        String owner = "owner";
+        FileReference fileRef = this.generateStoredFileReference(checksum, owner, "delErr.file.test", ONLINE_CONF_LABEL,
+                                                                 Optional.empty());
+
+        Assert.assertTrue("There should be file ref created",
+                          fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
+        Mockito.clearInvocations(publisher);
+        String storage = fileRef.getLocation().getStorage();
+
+        // Simulate a lock
+        fileDeletionRequestService.lockDeletionProcess(false, 10);
+
+        DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
+                                                       UUID.randomUUID().toString());
+        TenantWrapper<DeletionFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        // Publish request
+        handler.handle(wrapper);
+        handler.handleQueue();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                                           Lists.newArrayList());
+        Assert.assertTrue("No deletion job can be scheduled yet", jobs.isEmpty());
+
+        // Simulate unlock
+        fileDeletionRequestService.releaseLock();
+        jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO, Lists.newArrayList());
+        Assert.assertFalse("Deletion jobs should be scheduled now", jobs.isEmpty());
     }
 
 }

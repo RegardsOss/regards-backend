@@ -113,6 +113,12 @@ public class FileDeletionRequest {
         this.forceDelete = forceDelete;
     }
 
+    public FileDeletionRequest(FileReference fileReference, boolean forceDelete, String groupId,
+            FileRequestStatus status) {
+        this(fileReference, forceDelete, groupId);
+        this.status = status;
+    }
+
     public Long getId() {
         return id;
     }

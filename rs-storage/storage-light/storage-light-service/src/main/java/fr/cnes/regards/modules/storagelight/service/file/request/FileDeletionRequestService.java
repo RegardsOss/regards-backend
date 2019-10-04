@@ -48,6 +48,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -112,18 +113,22 @@ public class FileDeletionRequestService {
     @Autowired
     private RequestsGroupService reqGroupService;
 
+    @Autowired
+    private ILockService lockService;
+
     /**
      * Create a new {@link FileDeletionRequest}.
      * @param fileReferenceToDelete {@link FileReference} to delete
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
      * @param groupId Business identifier of the deletion request
      */
-    public void create(FileReference fileReferenceToDelete, boolean forceDelete, String groupId) {
+    public void create(FileReference fileReferenceToDelete, boolean forceDelete, String groupId,
+            FileRequestStatus status) {
         Optional<FileDeletionRequest> existingOne = fileDeletionRequestRepo
                 .findByFileReferenceId(fileReferenceToDelete.getId());
         if (!existingOne.isPresent()) {
             // Create new deletion request
-            fileDeletionRequestRepo.save(new FileDeletionRequest(fileReferenceToDelete, forceDelete, groupId));
+            fileDeletionRequestRepo.save(new FileDeletionRequest(fileReferenceToDelete, forceDelete, groupId, status));
         } else {
             // Retry deletion if error
             retry(existingOne.get(), forceDelete);
@@ -149,29 +154,39 @@ public class FileDeletionRequestService {
      * @return {@link JobInfo}s scheduled
      */
     public Collection<JobInfo> scheduleJobs(FileRequestStatus status, Collection<String> storages) {
-        LOGGER.debug("[DELETION REQUESTS] Scheduling deletion jobs ...");
-        long start = System.currentTimeMillis();
         Collection<JobInfo> jobList = Lists.newArrayList();
-        Set<String> allStorages = fileDeletionRequestRepo.findStoragesByStatus(status);
-        Set<String> deletionToSchedule = (storages != null) && !storages.isEmpty()
-                ? allStorages.stream().filter(storages::contains).collect(Collectors.toSet())
-                : allStorages;
-        for (String storage : deletionToSchedule) {
-            Page<FileDeletionRequest> deletionRequestPage;
-            Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
-            do {
-                deletionRequestPage = fileDeletionRequestRepo.findByStorageAndStatus(storage, status, page);
-                if (storageHandler.getConfiguredStorages().contains(storage)) {
-                    jobList = scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
-                } else {
-                    handleStorageNotAvailable(deletionRequestPage.getContent());
-                }
-                page = deletionRequestPage.nextPageable();
-            } while (deletionRequestPage.hasNext());
+        if (!lockDeletionProcess(false, 30)) {
+            LOGGER.trace("[DELETION REQUESTS] Deletion process is delayed. A deletion process is already running.");
+            return jobList;
         }
-        LOGGER.debug("[DELETION REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
-                     System.currentTimeMillis() - start);
-        return jobList;
+        try {
+            LOGGER.debug("[DELETION REQUESTS] Scheduling deletion jobs ...");
+            long start = System.currentTimeMillis();
+            Set<String> allStorages = fileDeletionRequestRepo.findStoragesByStatus(status);
+            Set<String> deletionToSchedule = (storages != null) && !storages.isEmpty()
+                    ? allStorages.stream().filter(storages::contains).collect(Collectors.toSet())
+                    : allStorages;
+            for (String storage : deletionToSchedule) {
+                Page<FileDeletionRequest> deletionRequestPage;
+                Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
+                do {
+                    deletionRequestPage = fileDeletionRequestRepo.findByStorageAndStatus(storage, status, page);
+                    if (storageHandler.getConfiguredStorages().contains(storage)) {
+                        jobList = scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
+                    } else {
+                        handleStorageNotAvailable(deletionRequestPage.getContent());
+                    }
+                    page = deletionRequestPage.nextPageable();
+                } while (deletionRequestPage.hasNext());
+            }
+            if (jobList.size() > 0) {
+                LOGGER.info("[DELETION REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
+                            System.currentTimeMillis() - start);
+            }
+            return jobList;
+        } finally {
+            releaseLock();
+        }
     }
 
     /**
@@ -322,7 +337,7 @@ public class FileDeletionRequestService {
         if (fileReference.getOwners().isEmpty()) {
             if (storageHandler.getConfiguredStorages().contains(fileReference.getLocation().getStorage())) {
                 // If the file is stored on an accessible storage, create a new deletion request
-                create(fileReference, forceDelete, groupId);
+                create(fileReference, forceDelete, groupId, FileRequestStatus.TO_DO);
             } else {
                 // Else, directly delete the file reference
                 fileRefService.delete(fileReference, groupId);
@@ -442,5 +457,31 @@ public class FileDeletionRequestService {
         } else {
             fileDeletionRequestRepo.deleteByStorage(storageLocationId);
         }
+    }
+
+    /**
+     * Lock deletion process for all instance of storage microservice
+     * @param blockingMode
+     * @param expiresIn seconds
+     */
+    public boolean lockDeletionProcess(boolean blockingMode, int expiresIn) {
+        boolean lock = false;
+        if (blockingMode) {
+            lock = lockService.waitForlock(DeletionFlowItem.DELETION_LOCK, new DeletionFlowItem(), expiresIn, 30000);
+        } else {
+            lock = lockService.obtainLockOrSkip(DeletionFlowItem.DELETION_LOCK, new DeletionFlowItem(), expiresIn);
+        }
+        if (lock) {
+            LOGGER.trace("[DELETION PROCESS] Locked !");
+        }
+        return lock;
+    }
+
+    /**
+     * Release deletion process for all instance of storage microservice
+     */
+    public void releaseLock() {
+        lockService.releaseLock(DeletionFlowItem.DELETION_LOCK, new DeletionFlowItem());
+        LOGGER.trace("[DELETION PROCESS] Lock released !");
     }
 }

@@ -268,7 +268,7 @@ public class FileDownloadService {
      * Remove all expired download tokens
      */
     public void purgeTokens() {
-        downTokenRepo.deleteByExpirationDateAfter(OffsetDateTime.now());
+        downTokenRepo.deleteByExpirationDateBefore(OffsetDateTime.now());
     }
 
 }

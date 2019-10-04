@@ -60,6 +60,8 @@ public class FileRequestScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileRequestScheduler.class);
 
+    private static final String FILE_SCHEDULER_LOCK = "file-requests-scheduler-lock";
+
     @Autowired
     private ITenantResolver tenantResolver;
 
@@ -84,7 +86,6 @@ public class FileRequestScheduler {
     @Autowired
     private ILockService lockService;
 
-    // TODO : Handle lock issue.
     private final Semaphore semaphore = new Semaphore(1);
 
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
@@ -153,14 +154,13 @@ public class FileRequestScheduler {
      * @return
      */
     private boolean obtainLock() {
-        return true;
-        // return lockService.obtainLockOrSkip(this.getClass().getName(), this, 60L);
+        return lockService.obtainLockOrSkip(FILE_SCHEDULER_LOCK, this, 60L);
     }
 
     /**
      * Release lock
      */
     private void releaseLock() {
-        // lockService.releaseLock(this.getClass().getName(), this);
+        lockService.releaseLock(FILE_SCHEDULER_LOCK, this);
     }
 }

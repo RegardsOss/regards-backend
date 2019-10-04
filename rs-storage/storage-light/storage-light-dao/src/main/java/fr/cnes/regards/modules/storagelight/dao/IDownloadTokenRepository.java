@@ -31,8 +31,8 @@ import fr.cnes.regards.modules.storagelight.domain.database.DownloadToken;
  */
 public interface IDownloadTokenRepository extends JpaRepository<DownloadToken, Long> {
 
-    long deleteByExpirationDateAfter(OffsetDateTime date);
-
     boolean existsByChecksumAndTokenAndExpirationDateAfter(String checksum, String token, OffsetDateTime now);
+
+    void deleteByExpirationDateBefore(OffsetDateTime now);
 
 }

@@ -43,6 +43,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileCopyRequ
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.request.FileCopyRequestService;
 
 /**
  * JOB to handle copy requests on many {@link FileReference}s.<br>
@@ -70,6 +71,9 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
     @Autowired
     private FileReferenceService fileRefService;
 
+    @Autowired
+    private FileCopyRequestService fileCopyReqService;
+
     private String storageLocationSourceId;
 
     private String storageLocationDestinationId;
@@ -91,31 +95,49 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-
-        Pageable pageRequest = PageRequest.of(0, PAGE_BULK_SIZE);
-        Page<FileReference> pageResults;
-        do {
-            // Search for all file references matching the given storage location.
-            pageResults = fileRefService.search(storageLocationSourceId, pageRequest);
-            totalPages = pageResults.getTotalPages();
-            for (FileReference fileRef : pageResults.getContent()) {
-                try {
-                    Optional<Path> desinationFilePath = getDestinationFilePath(fileRef.getLocation().getUrl(),
-                                                                               sourcePath, destinationPath);
-                    if (desinationFilePath.isPresent()) {
-                        // For each file reference located in the given path, send a copy request to the destination storage location.
-                        publisher.publish(CopyFlowItem.build(FileCopyRequestDTO
-                                .build(fileRef.getMetaInfo().getChecksum(), storageLocationDestinationId,
-                                       desinationFilePath.get().toString()), UUID.randomUUID().toString()));
-                    }
-                } catch (MalformedURLException | ModuleException e) {
-                    LOGGER.error("Unable to handle file reference {} for copy from {} to {}. Cause {}",
-                                 fileRef.getLocation().getUrl(), storageLocationSourceId, storageLocationDestinationId);
-                }
-                this.advanceCompletion();
+        boolean locked = false;
+        try {
+            locked = fileCopyReqService.lockCopyProcess(true, 300);
+            if (!locked) {
+                LOGGER.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
+                return;
             }
-            pageRequest = pageRequest.next();
-        } while (pageResults.hasNext());
+            LOGGER.info("[COPY JOB] Calculate all files to copy from storage location {} to {} ",
+                        storageLocationSourceId, storageLocationDestinationId);
+            Pageable pageRequest = PageRequest.of(0, PAGE_BULK_SIZE);
+            Page<FileReference> pageResults;
+            long nbFilesToCopy = 0L;
+            do {
+                // Search for all file references matching the given storage location.
+                pageResults = fileRefService.search(storageLocationSourceId, pageRequest);
+                totalPages = pageResults.getTotalPages();
+                for (FileReference fileRef : pageResults.getContent()) {
+                    try {
+                        Optional<Path> desinationFilePath = getDestinationFilePath(fileRef.getLocation().getUrl(),
+                                                                                   sourcePath, destinationPath);
+                        if (desinationFilePath.isPresent()) {
+                            nbFilesToCopy++;
+                            // For each file reference located in the given path, send a copy request to the destination storage location.
+                            publisher.publish(CopyFlowItem.build(FileCopyRequestDTO
+                                    .build(fileRef.getMetaInfo().getChecksum(), storageLocationDestinationId,
+                                           desinationFilePath.get().toString()), UUID.randomUUID().toString()));
+                        }
+                    } catch (MalformedURLException | ModuleException e) {
+                        LOGGER.error("Unable to handle file reference {} for copy from {} to {}. Cause {}",
+                                     fileRef.getLocation().getUrl(), storageLocationSourceId,
+                                     storageLocationDestinationId);
+                    }
+                    this.advanceCompletion();
+                }
+                pageRequest = pageRequest.next();
+            } while (pageResults.hasNext());
+            LOGGER.info("[COPY JOB] {} files to copy from storage location {} to {} ", nbFilesToCopy,
+                        storageLocationSourceId, storageLocationDestinationId);
+        } finally {
+            if (locked) {
+                fileCopyReqService.releaseLock();
+            }
+        }
     }
 
     @Override

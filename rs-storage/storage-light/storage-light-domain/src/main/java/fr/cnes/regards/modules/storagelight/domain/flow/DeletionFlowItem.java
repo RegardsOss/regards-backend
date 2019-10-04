@@ -49,6 +49,11 @@ public class DeletionFlowItem implements ISubscribable {
     public static final int MAX_REQUEST_PER_GROUP = 100;
 
     /**
+     * Lock used to avoid running multiple deletion at the same time.
+     */
+    public static final String DELETION_LOCK = "deletion-lock";
+
+    /**
      * Files to delete information
      */
     private final Set<FileDeletionRequestDTO> files = Sets.newHashSet();

@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeletionFlowItem;
@@ -82,34 +83,51 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        String storage = parameters.get(STORAGE_LOCATION_ID).getValue();
-        Boolean forceDelete = parameters.get(FORCE_DELETE).getValue();
-        Pageable pageRequest = PageRequest.of(0, PAGE_BULK_SIZE);
-        Page<FileReference> pageResults;
-        String requestGroupId = String.format("DELETION-%s", UUID.randomUUID().toString());
-        int nbREquests = 0;
-        do {
-            // Search for all file references of the given storage location
-            pageResults = fileRefService.search(storage, pageRequest);
-            for (FileReference fileRef : pageResults.getContent()) {
-                // For each :
-                // If file is owned send a deletion event for each owner.
-                // Else create deletion request
-                if (fileRef.getOwners().isEmpty()) {
-                    fileDelReqService.create(fileRef, forceDelete, requestGroupId);
-                    nbREquests++;
-                } else {
-                    for (String owner : fileRef.getOwners()) {
-                        publisher.publish(DeletionFlowItem.build(FileDeletionRequestDTO
-                                .build(fileRef.getMetaInfo().getChecksum(), storage, owner, forceDelete),
-                                                                 requestGroupId));
+        boolean locked = false;
+        try {
+            locked = fileDelReqService.lockDeletionProcess(true, 300);
+            if (!locked) {
+                LOGGER.error("[DELETION JOB] Unable to get a lock for deletion process. Deletion job canceled");
+                return;
+            }
+            String storage = parameters.get(STORAGE_LOCATION_ID).getValue();
+            Boolean forceDelete = parameters.get(FORCE_DELETE).getValue();
+            Pageable pageRequest = PageRequest.of(0, PAGE_BULK_SIZE);
+            Page<FileReference> pageResults;
+            LOGGER.info("[DELETION JOB] Calculate all files to delete for storage location {} (forceDelete={})",
+                        storage, forceDelete);
+            String requestGroupId = String.format("DELETION-%s", UUID.randomUUID().toString());
+            int nbREquests = 0;
+            do {
+                // Search for all file references of the given storage location
+                pageResults = fileRefService.search(storage, pageRequest);
+                for (FileReference fileRef : pageResults.getContent()) {
+                    // For each :
+                    // If file is owned send a deletion event for each owner.
+                    // Else create deletion request
+                    if (fileRef.getOwners().isEmpty()) {
+                        fileDelReqService.create(fileRef, forceDelete, requestGroupId, FileRequestStatus.TO_DO);
+                        nbREquests++;
+                    } else {
+                        for (String owner : fileRef.getOwners()) {
+                            publisher.publish(DeletionFlowItem.build(FileDeletionRequestDTO
+                                    .build(fileRef.getMetaInfo().getChecksum(), storage, owner, forceDelete),
+                                                                     requestGroupId));
+                        }
                     }
                 }
+                pageRequest = pageRequest.next();
+            } while (pageResults.hasNext());
+            if (nbREquests > 0) {
+                // Send group granted request
+                reqGrpService.granted(requestGroupId, FileRequestType.DELETION, nbREquests);
             }
-            pageRequest = pageRequest.next();
-        } while (pageResults.hasNext());
-        if (nbREquests > 0) {
-            reqGrpService.granted(requestGroupId, FileRequestType.DELETION, nbREquests);
+            LOGGER.info("[DELETION JOB] {} files to delete for storage location {}", pageResults.getTotalElements(),
+                        storage);
+        } finally {
+            if (locked) {
+                fileDelReqService.releaseLock();
+            }
         }
     }
 
