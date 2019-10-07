@@ -3,9 +3,11 @@ package fr.cnes.regards.framework.modules.locks.service;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
+import org.hibernate.exception.LockAcquisitionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -42,7 +44,7 @@ public class LockService implements ILockService {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public boolean obtainLockOrSkip(String name, Object owner, long expiresIn) {
+    public boolean obtainLockOrSkipTransactional(String name, Object owner, long expiresIn) {
         Assert.hasText(name, "Lock name is required");
         Assert.notNull(owner, "Class owner is required");
         Assert.notNull(expiresIn, "Expiration time is required");
@@ -72,10 +74,20 @@ public class LockService implements ILockService {
     }
 
     @Override
+    public boolean obtainLockOrSkip(String name, Object owner, long expiresIn) {
+        try {
+            return self.obtainLockOrSkipTransactional(name, owner, expiresIn);
+        } catch (LockAcquisitionException | CannotAcquireLockException e) {
+            LOG.warn("Error getting database lock.", e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
     public boolean waitForlock(String name, Object owner, long expiresIn, long retry) {
         boolean lockByThisCall = false;
         while (!lockByThisCall) {
-            lockByThisCall = self.obtainLockOrSkip(name, owner, expiresIn);
+            lockByThisCall = obtainLockOrSkip(name, owner, expiresIn);
             try {
                 Thread.sleep(retry);
             } catch (InterruptedException e) {

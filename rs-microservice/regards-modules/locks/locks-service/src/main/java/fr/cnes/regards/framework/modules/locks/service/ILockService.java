@@ -33,4 +33,12 @@ public interface ILockService {
      * @param owner owner object of the lock
      */
     void releaseLock(String name, Object owner);
+
+    /**
+     * @param name
+     * @param owner
+     * @param expiresIn
+     * @return
+     */
+    boolean obtainLockOrSkipTransactional(String name, Object owner, long expiresIn);
 }
