@@ -80,6 +80,7 @@ import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDataset
 @AutoConfigureMockMvc(printOnlyOnFailure = true)
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { CatalogServicesITConfiguration.class })
+@Ignore("Error in spring-test dependency fixed in 5.2.0. https://github.com/spring-projects/spring-framework/issues/23460")
 public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(CatalogServicesControllerIT.class);

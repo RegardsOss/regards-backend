@@ -38,6 +38,7 @@ import fr.cnes.regards.modules.dam.client.models.IModelAttrAssocClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.storagelight.client.IStorageRestClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -100,6 +101,11 @@ public class SearchClientITConfiguration {
         Mockito.when(projectUsersClient.isAdmin(Mockito.eq(SearchClientTestUtils.ADMIN_USER_EMAIL)))
                 .thenReturn(SearchClientTestUtils.PROJECT_USERS_CLIENT_RESPONSE_ADMIN);
         return projectUsersClient;
+    }
+
+    @Bean
+    public IStorageRestClient storageRestClient() {
+        return Mockito.mock(IStorageRestClient.class);
     }
 
     @Bean
