@@ -65,6 +65,7 @@ public class RegardsExtension extends AbstractExtension {
         for (AbstractAttribute<?> property : entity.getProperties()) {
             feature.addProperty(property.getName(), property.getValue());
         }
+        feature.addProperty("tags", entity.getTags());
     }
 
     @Override
