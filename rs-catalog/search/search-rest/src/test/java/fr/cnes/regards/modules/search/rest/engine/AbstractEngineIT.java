@@ -18,7 +18,31 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
+import java.net.URI;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.UUID;
+
+import org.apache.commons.collections4.map.HashedMap;
+import org.assertj.core.util.Lists;
+import org.junit.Before;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.util.MimeType;
+import org.springframework.web.bind.annotation.RequestMethod;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -60,27 +84,6 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.ge
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.media.MediaExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
-import java.net.URI;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.UUID;
-import org.apache.commons.collections4.map.HashedMap;
-import org.assertj.core.util.Lists;
-import org.junit.Before;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.util.MimeType;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Engine common methods
@@ -276,7 +279,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                 });
 
         // - Refresh attribute factory
-        List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
+        List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null, null);
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
 
         // - Manage attribute cache
@@ -342,13 +345,17 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         engineConfiguration.setImage("http://plop/image.png");
         engineConfiguration.setEntityLastUpdateDatePropertyPath("TimePeriod.startDate");
 
-        Set<IPluginParam> parameters = IPluginParam.set(
-                IPluginParam.build(OpenSearchEngine.TIME_EXTENSION_PARAMETER, PluginParameterTransformer.toJson(geoTime)),
-                IPluginParam.build(OpenSearchEngine.REGARDS_EXTENSION_PARAMETER, PluginParameterTransformer.toJson(regardsExt)),
-                IPluginParam.build(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER, PluginParameterTransformer.toJson(mediaExt)),
-                IPluginParam.build(OpenSearchEngine.PARAMETERS_CONFIGURATION, PluginParameterTransformer.toJson(paramConfigurations)),
-                IPluginParam.build(OpenSearchEngine.ENGINE_PARAMETERS, PluginParameterTransformer.toJson(engineConfiguration))
-        );
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(OpenSearchEngine.TIME_EXTENSION_PARAMETER,
+                                        PluginParameterTransformer.toJson(geoTime)),
+                     IPluginParam.build(OpenSearchEngine.REGARDS_EXTENSION_PARAMETER,
+                                        PluginParameterTransformer.toJson(regardsExt)),
+                     IPluginParam.build(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER,
+                                        PluginParameterTransformer.toJson(mediaExt)),
+                     IPluginParam.build(OpenSearchEngine.PARAMETERS_CONFIGURATION,
+                                        PluginParameterTransformer.toJson(paramConfigurations)),
+                     IPluginParam.build(OpenSearchEngine.ENGINE_PARAMETERS,
+                                        PluginParameterTransformer.toJson(engineConfiguration)));
 
         PluginConfiguration opensearchConf = PluginUtils.getPluginConfiguration(parameters, OpenSearchEngine.class);
         openSearchPluginConf = pluginService.savePluginConfiguration(opensearchConf);
