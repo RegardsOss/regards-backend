@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import java.util.Collection;
 import java.util.List;
@@ -62,6 +63,11 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("UPDATE IngestRequest r set r.state = :state where r.id in (:ids)")
     void updateIngestRequestState(@Param("state") RequestState state, @Param("ids") Collection<Long> ids);
+
+    /**
+     * Return true if an entity exists with provided criteria
+     */
+    boolean existsByMetadataSessionOwnerAndMetadataSessionAndStepIn(String sessionOwner, String session, List<IngestRequestStep> steps);
 
     /**
      * Get request by ids

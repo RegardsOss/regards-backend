@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,38 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.job.ingest;
+package fr.cnes.regards.modules.ingest.domain.mapper;
+
+import fr.cnes.regards.modules.ingest.domain.request.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
+import org.mapstruct.Mapper;
 
 /**
- * Ingest jobs priority management
- * @author Marc Sordi
- *
+ * @author Marc SORDI
  */
-public enum IngestJobPriority {
+@Mapper(componentModel = "spring")
+public interface IOAISDeletionRequestMapper {
 
-    INGEST_PROCESSING_JOB_PRIORITY {
+    OAISDeletionRequestDto entityToDto(OAISDeletionRequest request);
 
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
-
-    SESSION_DELETION_JOB_PRIORITY {
-
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
-
-    UPDATE_AIP_SCAN_JOB_PRIORITY {
-
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    };
-
-    public abstract int getPriority();
+    OAISDeletionRequest dtoToEntity(OAISDeletionRequestDto dto);
 }

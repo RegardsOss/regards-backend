@@ -23,6 +23,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
+import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -80,6 +81,14 @@ public class IngestRequest extends AbstractRequest {
 
     @Embedded
     private IngestMetadata metadata;
+
+    @Column(name = "request_id", length = 36, nullable = false, updatable = false)
+    private String requestId;
+
+    @NotNull(message = "Ingest request state is required")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "state", length = 50, nullable = false)
+    private RequestState state;
 
     /**
      * All internal request steps including local and remote ones
@@ -188,6 +197,26 @@ public class IngestRequest extends AbstractRequest {
 
     public void setAips(List<AIPEntity> aips) {
         this.aips = aips;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
+    public RequestState getState() {
+        return state;
+    }
+
+    public void setState(RequestState state) {
+        this.state = state;
+    }
+
+    public static String generateRequestId() {
+        return UUID.randomUUID().toString();
     }
 
     public static IngestRequest build(IngestMetadata metadata, RequestState state, IngestRequestStep step, SIP sip) {

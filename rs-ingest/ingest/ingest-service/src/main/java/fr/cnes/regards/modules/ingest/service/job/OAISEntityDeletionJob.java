@@ -25,10 +25,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
-import fr.cnes.regards.modules.ingest.dao.ISessionDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
-import fr.cnes.regards.modules.ingest.domain.request.SessionDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
@@ -56,7 +56,7 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
     public static final String ID = "ID";
 
     @Autowired
-    private ISessionDeletionRequestRepository deletionRequestRepository;
+    private IOAISDeletionRequestRepository deletionRequestRepository;
 
     @Autowired
     private ISIPRepository sipRepository;
@@ -70,7 +70,7 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
     @Autowired
     private INotificationClient notificationClient;
 
-    private SessionDeletionRequest deletionRequest;
+    private OAISDeletionRequest deletionRequest;
 
     /**
      * Limit number of SIPs to retrieve in one page.
@@ -86,7 +86,7 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
 
         // Retrieve deletion request
         Long databaseId = getValue(parameters, ID);
-        Optional<SessionDeletionRequest> oDeletionRequest = deletionRequestRepository.findById(databaseId);
+        Optional<OAISDeletionRequest> oDeletionRequest = deletionRequestRepository.findById(databaseId);
 
         if (!oDeletionRequest.isPresent()) {
             throw new JobRuntimeException(String.format("Unknown deletion request with id %d", databaseId));
@@ -98,11 +98,9 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
     @Override
     public void run() {
         Pageable pageRequest = PageRequest.of(0, sipIterationLimit, Sort.Direction.ASC, "id");
-        boolean removeIrrevocably = deletionRequest.getDeletionMode() == SessionDeletionMode.IRREVOCABLY;
         List<SIPState> states = new ArrayList<>(Arrays.asList(SIPState.INGESTED, SIPState.STORED));
 
         Page<SIPEntity> sipsPage;
-
         do {
             // Page request isn't modified as the state of entities are modified
             sipsPage = sipRepository
@@ -124,6 +122,8 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
             });
             advanceCompletion();
         } while (sipsPage.hasNext());
+
+        deletionRequestRepository.delete(deletionRequest);
     }
 
     @Override

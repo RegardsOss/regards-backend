@@ -18,6 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
@@ -27,23 +32,22 @@ import fr.cnes.regards.modules.ingest.dao.ICustomAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParameters;
+import fr.cnes.regards.modules.ingest.service.job.AIPUpdateScannerJob;
+import fr.cnes.regards.modules.ingest.service.job.OAISEntityDeletionJob;
+import fr.cnes.regards.modules.ingest.service.job.ingest.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -73,7 +77,6 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 
 /**
  * AIP service management
@@ -90,12 +93,9 @@ public class AIPService implements IAIPService {
 
     private static final String UTF8_ENCODING = "UTF-8";
 
-    private static final String MD5_ALGORITHM = "MD5";
+    public static final String MD5_ALGORITHM = "MD5";
 
     private static final String JSON_INDENT = "  ";
-
-    @Autowired
-    private IngestConfigurationProperties confProperties;
 
     @Autowired
     private IAIPRepository aipRepository;
@@ -108,6 +108,12 @@ public class AIPService implements IAIPService {
 
     @Autowired
     private SessionNotifier sessionNotifier;
+
+    @Autowired
+    private IJobInfoService jobInfoService;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     @Autowired
     private Gson gson;
@@ -127,34 +133,6 @@ public class AIPService implements IAIPService {
         return aipRepository.save(entity);
     }
 
-    @Override
-    public Collection<FileStorageRequestDTO> buildAIPStorageRequest(AIP aip, String checksum,
-            List<StorageMetadata> storages) throws ModuleException {
-
-        // Build file storage requests
-        Collection<FileStorageRequestDTO> files = new ArrayList<>();
-
-        try {
-
-            // Build origin(s) URL
-            URL originUrl = new URI(confProperties.getAipDownloadTemplate()
-                    .replace(IngestConfigurationProperties.DOWNLOAD_AIP_PLACEHOLDER, aip.getId().toString())).toURL();
-
-            // Create a request for each storage
-            for (StorageMetadata storage : storages) {
-                files.add(FileStorageRequestDTO.build(aip.getId().toString(), checksum, MD5_ALGORITHM,
-                                                      MediaType.APPLICATION_JSON_UTF8_VALUE, aip.getId().toString(),
-                                                      originUrl.toString(), storage.getPluginBusinessId(),
-                                                      Optional.ofNullable(storage.getStorePath())));
-            }
-        } catch (URISyntaxException | IOException e) {
-            String message = String.format("Error with building storage request for AIP %s", aip.getId());
-            LOGGER.error(message, e);
-            throw new ModuleException(message, e);
-        }
-
-        return files;
-    }
 
     private String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException {
         // TODO @msordi si t'as des idées
@@ -278,6 +256,17 @@ public class AIPService implements IAIPService {
         // Publish event to delete AIP files and AIPs itself
         RequestInfo deleteRequestInfo = storageClient.delete(filesToDelete);
         return deleteRequestInfo.getGroupId();
+    }
+
+    @Override
+    public void scheduleAIPEntityUpdate(AIPUpdateParameters params) {
+        // Schedule deletion job
+        Set<JobParameter> jobParameters = Sets.newHashSet();
+        jobParameters.add(new JobParameter(AIPUpdateScannerJob.CRITERIA, params.getCriteria()));
+        jobParameters.add(new JobParameter(AIPUpdateScannerJob.TASK, params.getUpdateTask()));
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_SCAN_JOB_PRIORITY.getPriority(),
+                jobParameters, authResolver.getUser(), AIPUpdateScannerJob.class.getName());
+        jobInfoService.createAsQueued(jobInfo);
     }
 
     @Override

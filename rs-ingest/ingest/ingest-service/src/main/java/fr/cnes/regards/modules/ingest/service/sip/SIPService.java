@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Optional;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +39,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -73,7 +71,7 @@ public class SIPService implements ISIPService {
     private ISIPRepository sipRepository;
 
     @Autowired
-    private IStorageDeletionRequestRepository storageDeletionRequest;
+    private IStorageDeletionRequestRepository storageDeletionRequestRepo;
 
     @Autowired
     private IAIPService aipService;
@@ -111,8 +109,8 @@ public class SIPService implements ISIPService {
         save(sipEntity);
 
         // Save the request id sent to storage
-        StorageDeletionRequest sdr = StorageDeletionRequest.build(deleteRequestId, sipEntity.getSipId(), deletionMode);
-        storageDeletionRequest.save(sdr);
+        StorageDeletionRequest sdr = StorageDeletionRequest.build(deleteRequestId, sipEntity, deletionMode);
+        storageDeletionRequestRepo.save(sdr);
     }
 
     @Override

@@ -16,38 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.job.ingest;
+package fr.cnes.regards.modules.ingest.domain.request;
 
-/**
- * Ingest jobs priority management
- * @author Marc Sordi
- *
- */
-public enum IngestJobPriority {
-
-    INGEST_PROCESSING_JOB_PRIORITY {
-
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
-
-    SESSION_DELETION_JOB_PRIORITY {
-
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
-
-    UPDATE_AIP_SCAN_JOB_PRIORITY {
-
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    };
-
-    public abstract int getPriority();
+public enum InternalRequestStep {
+    /**
+     * When the request cannot be processed for now
+     */
+    BLOCKED,
+    /**
+     * When the request is running
+     */
+    RUNNING,
+    /**
+     * When the request stopped with an error
+     */
+    ERROR,
 }

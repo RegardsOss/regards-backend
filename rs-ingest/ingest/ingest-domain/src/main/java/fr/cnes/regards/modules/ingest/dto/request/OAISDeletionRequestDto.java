@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dto.request;
 
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,11 +35,11 @@ import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
  *
  * @author Marc SORDI
  */
-public class SessionDeletionRequestDto {
+public class OAISDeletionRequestDto {
 
     private String requestId;
 
-    private RequestState state;
+    private InternalRequestStep state;
 
     @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER)
     private String sessionOwner;
@@ -65,14 +66,14 @@ public class SessionDeletionRequestDto {
     /**
      * Build a new session deletion request
      */
-    public static SessionDeletionRequestDto build(String sessionOwner, String session,
+    public static OAISDeletionRequestDto build(String sessionOwner, String session,
             SessionDeletionMode deletionMode, SessionDeletionSelectionMode selectionMode) {
         Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
         Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION);
         Assert.notNull(deletionMode, IngestValidationMessages.MISSING_SESSION_DELETION_MODE);
         Assert.notNull(selectionMode, IngestValidationMessages.MISSING_SESSION_DELETION_SELECTION_MODE);
 
-        SessionDeletionRequestDto item = new SessionDeletionRequestDto();
+        OAISDeletionRequestDto item = new OAISDeletionRequestDto();
         item.setRequestId(UUID.randomUUID().toString());
         item.setSessionOwner(sessionOwner);
         item.setSession(session);
@@ -139,11 +140,11 @@ public class SessionDeletionRequestDto {
         this.requestId = requestId;
     }
 
-    public RequestState getState() {
+    public InternalRequestStep getState() {
         return state;
     }
 
-    public void setState(RequestState state) {
+    public void setState(InternalRequestStep state) {
         this.state = state;
     }
 }

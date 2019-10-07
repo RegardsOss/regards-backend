@@ -16,24 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dao;
+package fr.cnes.regards.modules.ingest.dto.request.update;
 
-import org.junit.Ignore;
-import org.springframework.test.context.TestPropertySource;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
-import org.springframework.test.context.TestPropertySource;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
- * Generate DDL with HBM2DDL
- * @author Marc Sordi
- *
+ * @author Léo Mieulet
  */
-// Use following line to launch FLYWAY on public schema (comment it to use HBM2DDL)
-//@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=public",
-//        "regards.jpa.multitenant.migrationTool=FLYWAYDB" })
-//@Ignore
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:public" })
-public class IngestSQLGenerator extends AbstractScriptGeneratorTest {
+public class AIPUpdateSimpleValueTaskDto extends AbstractAIPUpdateTaskDto {
+    private Set<String> values;
 
+    public Set<String> getValues() {
+        return values;
+    }
+
+    public void setValues(Set<String> values) {
+        this.values = values;
+    }
+
+    public static AIPUpdateSimpleValueTaskDto build(AIPUpdateTaskType type, Set<String> values) {
+        AIPUpdateSimpleValueTaskDto task = new AIPUpdateSimpleValueTaskDto();
+        task.setType(type);
+        task.setValues(values);
+        return task;
+    }
 }

@@ -19,9 +19,12 @@
 package fr.cnes.regards.modules.ingest.domain.request;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -33,23 +36,24 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
 /**
- * Entity storing info that a request have been sent to storage to remove files
+ * Storing info that a request have been sent to storage to remove files
  * To track answer about request status
  * @author Léo Mieulet
  */
 @Entity
 @Table(name = "t_deletion_storage_request",
-        indexes = {@Index(name = "idx_deletion_storage_request_id", columnList = "request_id"),
-                @Index(name = "idx_deletion_storage_request_state", columnList = "state")},
+        indexes = {@Index(name = "idx_deletion_storage_remote_step_group_id", columnList = "remote_step_group_id")},
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_deletion_storage_request_id", columnNames = {"request_id"})
+                @UniqueConstraint(name = "uk_deletion_storage_remote_step_group_id", columnNames = {"remote_step_group_id"})
         })
 @TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
-public class StorageDeletionRequest extends AbstractRequest {
+public class StorageDeletionRequest extends AbstractInternalRequest {
 
     @Id
     @SequenceGenerator(name = "storageDeletionRequestSequence", initialValue = 1, sequenceName = "seq_storage_deletion_request")
@@ -63,6 +67,12 @@ public class StorageDeletionRequest extends AbstractRequest {
     @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_MODE)
     @Column(length = 20, name = "deletion_mode", nullable = false)
     private SessionDeletionMode deletionMode;
+
+    /**
+     * Store a request id sent by the current request to propagate changes (on storage)
+     */
+    @Column(name = "remote_step_group_id", length = 36, nullable = false)
+    private String remoteStepGroupId;
 
     public Long getId() {
         return id;
@@ -88,12 +98,22 @@ public class StorageDeletionRequest extends AbstractRequest {
         this.deletionMode = deletionMode;
     }
 
-    public static StorageDeletionRequest build(String requestId, String sipId, SessionDeletionMode deletionMode) {
+    public String getRemoteStepGroupId() {
+        return remoteStepGroupId;
+    }
+
+    public void setRemoteStepGroupId(String remoteStepGroupId) {
+        this.remoteStepGroupId = remoteStepGroupId;
+    }
+
+    public static StorageDeletionRequest build(String requestId, SIPEntity sipEntity, SessionDeletionMode deletionMode) {
         StorageDeletionRequest sdr = new StorageDeletionRequest();
-        sdr.setRequestId(requestId);
-        sdr.setSipId(sipId);
+        sdr.setState(InternalRequestStep.RUNNING);
+        sdr.setRemoteStepGroupId(requestId);
+        sdr.setSipId(sipEntity.getSipId());
+        sdr.setSessionOwner(sipEntity.getIngestMetadata().getSessionOwner());
+        sdr.setSession(sipEntity.getIngestMetadata().getSession());
         sdr.setDeletionMode(deletionMode);
-        sdr.setState(RequestState.GRANTED);
         return sdr;
     }
 }

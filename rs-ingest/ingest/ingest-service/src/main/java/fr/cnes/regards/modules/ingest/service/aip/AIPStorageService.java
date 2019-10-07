@@ -22,24 +22,31 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
+import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
 /**
@@ -48,14 +55,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class AIPStorageService implements IAIPStorageService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPStorageService.class);
+
     @Autowired
     private IStorageClient storageClient;
 
     @Autowired
-    private SessionNotifier sessionNotifier;
+    private IAIPService aipService;
 
     @Autowired
-    private IAIPService aipService;
+    private IngestConfigurationProperties confProperties;
 
     @Override
     public List<String> storeAIPFiles(List<AIPEntity> aipEntities) throws ModuleException {
@@ -136,9 +145,6 @@ public class AIPStorageService implements IAIPStorageService {
         return remoteStepGroupIds;
     }
 
-
-
-
     @Override
     public void updateAIPsUsingStorageResult(List<AIPEntity> aips, Collection<RequestResultInfoDTO> storeRequestInfos) {
         // Iterate over AIPs
@@ -183,8 +189,9 @@ public class AIPStorageService implements IAIPStorageService {
         for (AIPEntity aipEntity : aips) {
             // Create a request for each storage
             // TODO préciser le répertoire de sauvegarde des AIPs
-            files.addAll(aipService.buildAIPStorageRequest(aipEntity.getAip(), aipEntity.getChecksum(),
-                    aipEntity.getIngestMetadata().getStorages()));
+            Collection<FileStorageRequestDTO> requests = buildAIPStorageRequest(aipEntity.getAip(), aipEntity.getChecksum(),
+                    aipEntity.getIngestMetadata().getStorages());
+            files.addAll(requests);
         }
 
         // Request storage for all AIPs of the ingest request
@@ -192,4 +199,39 @@ public class AIPStorageService implements IAIPStorageService {
         return info.getGroupId();
     }
 
+
+    /**
+     * Build storage request for AIP file itself!
+     */
+    private Collection<FileStorageRequestDTO> buildAIPStorageRequest(AIP aip, String checksum,
+            List<StorageMetadata> storages) throws ModuleException {
+
+        // Build file storage requests
+        Collection<FileStorageRequestDTO> files = new ArrayList<>();
+
+        try {
+
+            // Build origin(s) URL
+            URL originUrl = new URI(confProperties.getAipDownloadTemplate()
+                    .replace(IngestConfigurationProperties.DOWNLOAD_AIP_PLACEHOLDER, aip.getId().toString())).toURL();
+
+            // Create a request for each storage
+            for (StorageMetadata storage : storages) {
+
+                if (storage.getTargetTypes().isEmpty() ||
+                        storage.getTargetTypes().contains(DataType.AIP)) {
+                    files.add(FileStorageRequestDTO.build(aip.getId().toString(), checksum, AIPService.MD5_ALGORITHM,
+                            MediaType.APPLICATION_JSON_UTF8_VALUE, aip.getId().toString(),
+                            originUrl.toString(), storage.getPluginBusinessId(),
+                            Optional.ofNullable(storage.getStorePath())));
+                }
+            }
+        } catch (URISyntaxException | IOException e) {
+            String message = String.format("Error with building storage request for AIP %s", aip.getId());
+            LOGGER.error(message, e);
+            throw new ModuleException(message, e);
+        }
+
+        return files;
+    }
 }

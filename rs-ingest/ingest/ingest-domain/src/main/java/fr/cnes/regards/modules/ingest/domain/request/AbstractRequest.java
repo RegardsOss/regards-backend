@@ -47,14 +47,6 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 @MappedSuperclass
 public abstract class AbstractRequest {
 
-    @Column(name = "request_id", length = 36, nullable = false, updatable = false)
-    private String requestId;
-
-    @NotNull(message = "Ingest request state is required")
-    @Enumerated(EnumType.STRING)
-    @Column(name = "state", length = 50, nullable = false)
-    private RequestState state;
-
     @Column(columnDefinition = "jsonb", name = "errors")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> errors;
@@ -63,21 +55,6 @@ public abstract class AbstractRequest {
     @JoinColumn(name = "job_info_id", foreignKey = @ForeignKey(name = "fk_req_job_info_id"))
     private JobInfo jobInfo;
 
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
-
-    public RequestState getState() {
-        return state;
-    }
-
-    public void setState(RequestState state) {
-        this.state = state;
-    }
 
     public Set<String> getErrors() {
         return errors;
@@ -93,16 +70,11 @@ public abstract class AbstractRequest {
         }
         errors.add(error);
     }
-
     public JobInfo getJobInfo() {
         return jobInfo;
     }
 
     public void setJobInfo(JobInfo jobInfo) {
         this.jobInfo = jobInfo;
-    }
-
-    public static String generateRequestId() {
-        return UUID.randomUUID().toString();
     }
 }

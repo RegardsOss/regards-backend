@@ -41,7 +41,7 @@ public interface IAIPStorageService {
     /**
      * Store AIPs
      * @param aips
-     * @return
+     * @return group id
      * @throws ModuleException
      */
     String storeAIPs(List<AIPEntity> aips) throws ModuleException;

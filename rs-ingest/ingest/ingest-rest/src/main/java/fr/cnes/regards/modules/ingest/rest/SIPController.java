@@ -24,12 +24,11 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionRequestDto;
+import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
@@ -191,9 +190,9 @@ public class SIPController implements IResourceController<SIPEntity> {
 
     @ResourceAccess(description = "Delete by session")
     @RequestMapping(value = DELETE_PATH, method = RequestMethod.POST)
-    public ResponseEntity<SessionDeletionRequestDto> deleteBySession(
-            @Valid @RequestBody SessionDeletionRequestDto deletionRequest) throws ModuleException {
-        SessionDeletionRequestDto response = ingestService.registerSessionDeletionRequest(deletionRequest);
+    public ResponseEntity<OAISDeletionRequestDto> deleteBySession(
+            @Valid @RequestBody OAISDeletionRequestDto deletionRequest) throws ModuleException {
+        OAISDeletionRequestDto response = ingestService.registerOAISDeletionRequest(deletionRequest);
         return ResponseEntity.ok(response);
     }
 

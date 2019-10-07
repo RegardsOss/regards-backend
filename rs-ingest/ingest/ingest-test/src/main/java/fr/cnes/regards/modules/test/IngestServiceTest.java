@@ -29,7 +29,9 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.modules.ingest.client.IngestRequestEventHandler;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
@@ -62,6 +64,12 @@ public class IngestServiceTest {
     private IJobInfoRepository jobInfoRepo;
 
     @Autowired
+    private IStorageDeletionRequestRepository storageDeletionRequestRepository;
+
+    @Autowired
+    private IOAISDeletionRequestRepository deletionRequestRepository;
+
+    @Autowired
     private IPublisher publisher;
 
     @Autowired
@@ -84,6 +92,8 @@ public class IngestServiceTest {
         ingestRequestRepository.deleteAll();
         aipRepository.deleteAll();
         sipRepository.deleteAll();
+        storageDeletionRequestRepository.deleteAll();
+        deletionRequestRepository.deleteAll();
         jobInfoRepo.deleteAll();
         pluginConfRepo.deleteAll();
         cleanAMQPQueues();

@@ -334,8 +334,8 @@ public class IngestRequestService implements IIngestRequestService {
         request.setState(RequestState.SUCCESS);
 
         // Clean
-        ingestRequestRepository.delete(request);
 
+        ingestRequestRepository.delete(request);
         // Change AIP state
         List<AIPEntity> aips = request.getAips();
         for (AIPEntity aipEntity : aips) {

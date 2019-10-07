@@ -29,5 +29,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  */
 public interface IStorageDeletionRequestRepository extends JpaRepository<StorageDeletionRequest, Long> {
-    Optional<StorageDeletionRequest> findOneByRequestId(String requestId);
+    Optional<StorageDeletionRequest> findOneByRemoteStepGroupId(String requestId);
 }

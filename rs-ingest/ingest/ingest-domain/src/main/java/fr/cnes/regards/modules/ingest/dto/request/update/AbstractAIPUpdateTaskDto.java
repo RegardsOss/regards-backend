@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,20 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.mapper;
+package fr.cnes.regards.modules.ingest.dto.request.update;
 
-import org.mapstruct.Mapper;
-
-import fr.cnes.regards.modules.ingest.domain.request.SessionDeletionRequest;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionRequestDto;
+import com.google.gson.annotations.JsonAdapter;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
 
 /**
- * @author Marc SORDI
+ * @author Léo Mieulet
  */
-@Mapper(componentModel = "spring")
-public interface ISessionDeletionRequestMapper {
+@JsonAdapter(AIPUpdateTaskDtoJsonAdapterFactory.class)
+public abstract class AbstractAIPUpdateTaskDto {
+    private AIPUpdateTaskType type;
 
-    SessionDeletionRequestDto entityToDto(SessionDeletionRequest request);
+    public AIPUpdateTaskType getType() {
+        return type;
+    }
 
-    SessionDeletionRequest dtoToEntity(SessionDeletionRequestDto dto);
+    public void setType(AIPUpdateTaskType type) {
+        this.type = type;
+    }
 }

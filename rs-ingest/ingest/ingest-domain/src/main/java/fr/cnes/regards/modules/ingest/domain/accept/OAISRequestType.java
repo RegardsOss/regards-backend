@@ -16,24 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dao;
-
-import org.junit.Ignore;
-import org.springframework.test.context.TestPropertySource;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
-import org.springframework.test.context.TestPropertySource;
+package fr.cnes.regards.modules.ingest.domain.accept;
 
 /**
- * Generate DDL with HBM2DDL
- * @author Marc Sordi
- *
+ * @author Léo Mieulet
  */
-// Use following line to launch FLYWAY on public schema (comment it to use HBM2DDL)
-//@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=public",
-//        "regards.jpa.multitenant.migrationTool=FLYWAYDB" })
-//@Ignore
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:public" })
-public class IngestSQLGenerator extends AbstractScriptGeneratorTest {
-
+public enum OAISRequestType {
+    /**
+     * Add more OAIS to the index using datasources
+     */
+    INGEST,
+    /**
+     * Update AIP using search filters
+     */
+    UPDATE,
+    /**
+     * Remove some OAIS entities
+     */
+    DELETE,
+    /**
+     * TODO ? Prevent scan when index will change?
+     */
+    INDEX;
 }

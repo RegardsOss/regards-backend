@@ -25,15 +25,22 @@ import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParameters;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateSimpleValueTaskDto;
+import fr.cnes.regards.modules.ingest.dto.request.update.AbstractAIPUpdateTaskDto;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
 import java.time.OffsetDateTime;
 import java.util.List;
+import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +53,7 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=deletion_job",
         "regards.amqp.enabled=true" })
 @ActiveProfiles(value={"testAmqp", "StorageClientMock"})
-public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
+public class AIPUpdateScannerJobIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private StorageClientMock storageClient;
@@ -62,6 +69,9 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IAIPRepository aipRepository;
+
+    @Autowired
+    private IAIPService aipService;
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
     private static final List<String> CATEGORIES_1 = Lists.newArrayList("CATEGORY1");
@@ -120,39 +130,13 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
     }
 
     @Test
-    public void testDeletionJobSucceed() throws ModuleException {
+    public void testScanJob() throws ModuleException {
         storageClient.setBehavior(true, true);
         initData();
-        // delete 2 SIPs linked to SESSION_OWNER_0, SESSION_0
-        ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto.build(
-                SESSION_OWNER_0, SESSION_0, SessionDeletionMode.BY_STATE, SessionDeletionSelectionMode.INCLUDE));
-        waitUntilNbSIPStoredReach(4);
-        assertDeletedAIPs(2);
-
-        // delete 1 SIP linked to SESSION_OWNER_0, SESSION_1
-        ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto.build(
-                SESSION_OWNER_0, SESSION_1, SessionDeletionMode.BY_STATE, SessionDeletionSelectionMode.INCLUDE));
-        waitUntilNbSIPStoredReach(3);
-        assertDeletedAIPs(3);
-
-        // delete 2 SIPs linked to SESSION_OWNER_1, SESSION_1
-        ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto.build(
-                SESSION_OWNER_1, SESSION_1, SessionDeletionMode.IRREVOCABLY, SessionDeletionSelectionMode.INCLUDE));
-        waitUntilNbSIPStoredReach(1);
-        assertDeletedAIPs(3); // AIPs are deleted and not just marked deleted
-    }
-
-
-    @Test
-    public void testDeletionJobFailed() throws ModuleException {
-        storageClient.setBehavior(true, true);
-        initData();
-        storageClient.setBehavior(true, false);
-
-        // 2 SIPs linked to SESSION_OWNER_0, SESSION_0 will be marked as ERROR
-        ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto.build(
-                SESSION_OWNER_0, SESSION_0, SessionDeletionMode.IRREVOCABLY, SessionDeletionSelectionMode.INCLUDE));
-        waitUntilNbSIPStoredReach(4);
-
+        aipService.scheduleAIPEntityUpdate(AIPUpdateParameters.build(
+                SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
+                AIPUpdateSimpleValueTaskDto.build(AIPUpdateTaskType.ADD_CATEGORY,
+                        Sets.newLinkedHashSet("Cat 2"))
+        ));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,17 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dao;
+package fr.cnes.regards.modules.ingest.service.accept;
 
-import fr.cnes.regards.modules.ingest.domain.request.SessionDeletionRequest;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import fr.cnes.regards.modules.ingest.domain.accept.OAISRequestType;
 
 /**
- * {@link SessionDeletionRequest} repository
- * @author Marc SORDI
+ * @author Léo Mieulet
  */
-@Repository
-public interface ISessionDeletionRequestRepository extends JpaRepository<SessionDeletionRequest, Long> {
+public interface IOAISAcceptRequestService {
+
+    boolean acceptRequest(String sessionOwner, String session, OAISRequestType queryType);
 
 }

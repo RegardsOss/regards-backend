@@ -23,10 +23,10 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.StorageDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
@@ -67,10 +67,10 @@ public class DeleteRequestService implements IDeleteRequestService {
 
     @Override
     public void handleRemoteDeleteError(RequestInfo request, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
-        Optional<StorageDeletionRequest> storageRequestOptional = storageDeletionRequestRepo.findOneByRequestId(request.getGroupId());
+        Optional<StorageDeletionRequest> storageRequestOptional = storageDeletionRequestRepo.findOneByRemoteStepGroupId(request.getGroupId());
         if (storageRequestOptional.isPresent()) {
             StorageDeletionRequest deletionRequest = storageRequestOptional.get();
-            deletionRequest.setState(RequestState.ERROR);
+            deletionRequest.setState(InternalRequestStep.ERROR);
             Set<String> errorList = errors.stream()
                     .map(RequestResultInfoDTO::getErrorCause)
                     .collect(Collectors.toSet());
@@ -104,7 +104,7 @@ public class DeleteRequestService implements IDeleteRequestService {
 
     @Override
     public void handleRemoteDeleteSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
-        Optional<StorageDeletionRequest> storageRequestOptional = storageDeletionRequestRepo.findOneByRequestId(request.getGroupId());
+        Optional<StorageDeletionRequest> storageRequestOptional = storageDeletionRequestRepo.findOneByRemoteStepGroupId(request.getGroupId());
         if (storageRequestOptional.isPresent()) {
             StorageDeletionRequest deletionRequest = storageRequestOptional.get();
             boolean deleteIrrevocably = deletionRequest.getDeletionMode() == SessionDeletionMode.IRREVOCABLY;

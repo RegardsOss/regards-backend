@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,43 +35,25 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
-
 /**
+ * Macro request that keeps info about a "massive" suppression of OAIS entities
  * @author Marc SORDI
  */
 @Entity
 @Table(name = "t_deletion_request",
-        indexes = { @Index(name = "idx_deletion_request_id", columnList = "request_id"),
-                @Index(name = "idx_deletion_request_state", columnList = "state") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_deletion_request_id", columnNames = { "request_id" }),
-                @UniqueConstraint(name = "uk_deletion_request_by_session",
-                        columnNames = { "session_owner", "session_name" }) })
+        indexes = { @Index(name = "idx_deletion_request_search", columnList = "session_owner,session_name,state") } )
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-public class SessionDeletionRequest extends AbstractRequest {
+public class OAISDeletionRequest extends AbstractInternalRequest {
 
     @Id
     @SequenceGenerator(name = "deletionRequestSequence", initialValue = 1, sequenceName = "seq_deletion_request")
     @GeneratedValue(generator = "deletionRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
-
-    @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER)
-    @Column(length = 128, name = "session_owner", nullable = false)
-    private String sessionOwner;
-
-    @NotBlank(message = IngestValidationMessages.MISSING_SESSION)
-    @Column(length = 128, name = "session_name", nullable = false)
-    private String session;
 
     @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_MODE)
     @Column(name = "deletion_mode", nullable = false)
@@ -98,22 +83,6 @@ public class SessionDeletionRequest extends AbstractRequest {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getSessionOwner() {
-        return sessionOwner;
-    }
-
-    public void setSessionOwner(String sessionOwner) {
-        this.sessionOwner = sessionOwner;
-    }
-
-    public String getSession() {
-        return session;
-    }
-
-    public void setSession(String session) {
-        this.session = session;
     }
 
     public SessionDeletionMode getDeletionMode() {

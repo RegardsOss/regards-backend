@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.aip;
 
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
-import java.util.Collection;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParameters;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -36,8 +36,6 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
 
 /**
  * AIP Service interface. Service to handle business around {@link AIPEntity}s
@@ -54,17 +52,16 @@ public interface IAIPService {
     List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips);
 
     /**
-     * Build storage request for AIP file itself!
-     */
-    Collection<FileStorageRequestDTO> buildAIPStorageRequest(AIP aip, String checksum, List<StorageMetadata> storages)
-            throws ModuleException;
-
-    /**
      * Mark all {@link AIPEntity} linked to this {@link SIPEntity#getSipId()} as deleted and send events to remove
      * all files associated to these deleted AIPs
      * @return the request group id sent to storage
      */
     String scheduleAIPEntityDeletion(String sipId);
+
+    /**
+     *
+     */
+    void scheduleAIPEntityUpdate(AIPUpdateParameters params);
 
     /**
      * Remove all {@link AIPEntity} linked to an {@link SIPEntity#getSipId()}
@@ -121,7 +118,7 @@ public interface IAIPService {
     Optional<AIPEntity> getAip(UniformResourceName aipId);
 
     /**
-     * Retrieve
+     * Retrieve a set of aip using a sip id
      * @param sipId
      * @return
      */
