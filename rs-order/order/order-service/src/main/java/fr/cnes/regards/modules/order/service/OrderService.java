@@ -102,6 +102,7 @@ import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
+import fr.cnes.regards.modules.order.dao.OrderSpecifications;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
@@ -660,8 +661,8 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void writeAllOrdersInCsv(BufferedWriter writer) throws IOException {
-        List<Order> orders = repos.findAll(Sort.by(Sort.Direction.ASC, "id"));
+    public void writeAllOrdersInCsv(BufferedWriter writer, OrderStatus status, OffsetDateTime from, OffsetDateTime to) throws IOException {
+        List<Order> orders = repos.findAll(OrderSpecifications.search(status, from, to), Sort.by(Sort.Direction.ASC, "id"));
         writer.append("ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR");
         writer.newLine();
         for (Order order : orders) {

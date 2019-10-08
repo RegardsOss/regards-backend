@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.order.domain.Order;
@@ -19,7 +20,7 @@ import fr.cnes.regards.modules.order.domain.OrderStatus;
  * @author oroussel
  */
 @Repository
-public interface IOrderRepository extends JpaRepository<Order, Long> {
+public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
 
     /**
      * Load Order with all lazy relations
