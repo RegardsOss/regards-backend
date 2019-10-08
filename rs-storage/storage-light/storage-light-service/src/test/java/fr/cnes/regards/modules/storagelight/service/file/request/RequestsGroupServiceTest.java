@@ -38,6 +38,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.RequestGroup;
+import fr.cnes.regards.modules.storagelight.domain.database.request.RequestResultInfo;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.service.AbstractStorageTest;
 
@@ -80,6 +81,7 @@ public class RequestsGroupServiceTest extends AbstractStorageTest {
             reqGrpService.requestError(groupId, type, UUID.randomUUID().toString(), ONLINE_CONF_LABEL, null);
             // Group should be created
             Assert.assertTrue("Error during group request creation", reqGrpRepository.findById(groupId).isPresent());
+            Assert.assertEquals("There be requests infos for expired group", 2, reqInfoRepo.count());
             // Check group is terminated
             reqGrpService.checkRequestsGroupsDone();
             // Group should not exists anymore
@@ -90,6 +92,7 @@ public class RequestsGroupServiceTest extends AbstractStorageTest {
                               reqInfoRepo.findByGroupIdAndError(groupId, false).isEmpty());
             Assert.assertTrue("There should ne remaining request infos in error",
                               reqInfoRepo.findByGroupIdAndError(groupId, true).isEmpty());
+
         }
     }
 
@@ -103,18 +106,23 @@ public class RequestsGroupServiceTest extends AbstractStorageTest {
                         new FileReferenceMetaInfo(checksum, "UUID", "file.test", 0L, MediaType.APPLICATION_JSON),
                         "file://somewhere/file.test", destStorage, Optional.empty(), FileRequestStatus.PENDING,
                         groupId);
+        // Simulate response infos added for this group
+        reqInfoRepo.save(new RequestResultInfo(groupId, FileRequestType.STORAGE, checksum, destStorage));
+
         Assert.assertTrue("Request should be created", oReq.isPresent());
         Assert.assertEquals("Requests should be pending", FileRequestStatus.PENDING,
                             storageReqService.search(destStorage, checksum).get().getStatus());
         RequestGroup grp = RequestGroup.build(groupId, FileRequestType.STORAGE);
         grp.setCreationDate(OffsetDateTime.now().minusDays(3));
         reqGrpRepository.save(grp);
+        Assert.assertEquals("There not be requests infos for expired group", 1, reqInfoRepo.count());
         Assert.assertTrue("Error during group request creation", reqGrpRepository.findById(groupId).isPresent());
         reqGrpService.checkRequestsGroupsDone();
         Assert.assertFalse("Request group should be deleted as no it is expired are associated",
                            reqGrpRepository.findById(groupId).isPresent());
         Assert.assertEquals("Requests should be error", FileRequestStatus.ERROR,
                             storageReqService.search(destStorage, checksum).get().getStatus());
+        Assert.assertEquals("There not be requests infos for expired group", 0, reqInfoRepo.count());
     }
 
     @Test
