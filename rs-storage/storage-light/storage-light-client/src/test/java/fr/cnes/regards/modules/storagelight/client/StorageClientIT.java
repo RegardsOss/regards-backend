@@ -86,7 +86,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private StorageLocationConfigurationService prioritizedDataStorageService;
+    private StorageLocationConfigurationService storageLocationConfService;
 
     @Autowired
     private IFileStorageRequestRepository storageReqRepo;
@@ -125,19 +125,19 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
             Files.createFile(fileToStore);
         }
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        if (!prioritizedDataStorageService.search(ONLINE_CONF).isPresent()) {
+        if (!storageLocationConfService.search(ONLINE_CONF).isPresent()) {
             initDataStoragePluginConfiguration();
         }
-        if (!prioritizedDataStorageService.search(NEARLINE_CONF).isPresent()) {
+        if (!storageLocationConfService.search(NEARLINE_CONF).isPresent()) {
             initDataStorageNLPluginConfiguration(NEARLINE_CONF, "target/nearline-storage-1");
         }
-        if (!prioritizedDataStorageService.search(NEARLINE_CONF_2).isPresent()) {
+        if (!storageLocationConfService.search(NEARLINE_CONF_2).isPresent()) {
             initDataStorageNLPluginConfiguration(NEARLINE_CONF_2, "target/nearline-storage-2");
         }
 
-        Assert.assertTrue(prioritizedDataStorageService.search(ONLINE_CONF).isPresent());
-        Assert.assertTrue(prioritizedDataStorageService.search(NEARLINE_CONF).isPresent());
-        Assert.assertTrue(prioritizedDataStorageService.search(NEARLINE_CONF_2).isPresent());
+        Assert.assertTrue(storageLocationConfService.search(ONLINE_CONF).isPresent());
+        Assert.assertTrue(storageLocationConfService.search(NEARLINE_CONF).isPresent());
+        Assert.assertTrue(storageLocationConfService.search(NEARLINE_CONF_2).isPresent());
     }
 
     @Test
@@ -520,7 +520,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                          IPluginParam.build(SimpleOnlineTestClient.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleOnlineTestClient.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, ONLINE_CONF, parameters, 0);
-            return prioritizedDataStorageService.create(ONLINE_CONF, dataStorageConf, 1_000_000L);
+            return storageLocationConfService.create(ONLINE_CONF, dataStorageConf, 1_000_000L);
         } catch (IOException | ModuleException e) {
             Assert.fail(e.getMessage());
             return null;
@@ -540,7 +540,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                                             "restoError.*"),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, name, parameters, 0);
-            return prioritizedDataStorageService.create(name, dataStorageConf, 1_000_000L);
+            return storageLocationConfService.create(name, dataStorageConf, 1_000_000L);
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }

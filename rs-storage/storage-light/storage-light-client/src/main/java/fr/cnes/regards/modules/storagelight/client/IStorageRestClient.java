@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.modules.storagelight.client;
 
+import java.util.List;
+
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,27 +29,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
 
 /**
  * REST Client to to access storage microservice
  * @author Sébastien Binda
  */
 @RestClient(name = "rs-storage", contextId = "rs-storage.rest.client")
-@RequestMapping(value = IStorageRestClient.FILE_PATH, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IStorageRestClient {
 
     public static final String FILE_PATH = "/files";
 
     public static final String DOWNLOAD_PATH = "/{checksum}/download";
 
+    public static final String STORAGES_PATH = "/storages";
+
     /**
      * Download a file by his checksum.
      * @param checksum file to download
      * @return
      */
-    @RequestMapping(path = DOWNLOAD_PATH, method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("checksum") String checksum);
+    @RequestMapping(method = RequestMethod.GET, path = FILE_PATH + DOWNLOAD_PATH)
+    ResponseEntity<InputStreamResource> downloadFile(@PathVariable("checksum") String checksum);
+
+    @RequestMapping(method = RequestMethod.GET, path = STORAGES_PATH)
+    ResponseEntity<List<Resource<StorageLocationDTO>>> retrieve();
 
 }
