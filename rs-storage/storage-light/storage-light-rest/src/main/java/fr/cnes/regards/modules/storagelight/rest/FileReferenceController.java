@@ -18,13 +18,21 @@
  */
 package fr.cnes.regards.modules.storagelight.rest;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -46,6 +54,7 @@ import fr.cnes.regards.modules.storagelight.domain.DownloadableFile;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.FileDownloadService;
+import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.flow.StorageFlowItemHandler;
 
 /**
@@ -62,8 +71,13 @@ public class FileReferenceController {
 
     public static final String STORE_PATH = "/store";
 
+    public static final String EXPORT_PATH = "/csv";
+
     @Autowired
     private FileDownloadService downloadService;
+
+    @Autowired
+    private FileReferenceService fileRefService;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -115,6 +129,31 @@ public class FileReferenceController {
         } else {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = EXPORT_PATH)
+    @ResourceAccess(description = "Export all file referenced in csv file", role = DefaultRole.PROJECT_ADMIN)
+    public void export(HttpServletResponse response) throws IOException {
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=files.csv");
+        response.setContentType("text/csv");
+        BufferedWriter writer = new BufferedWriter(response.getWriter());
+        CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("id", "url", "storage", "owners"));
+        Pageable page = null;
+        Page<FileReference> results;
+        do {
+            if (page == null) {
+                page = PageRequest.of(0, 100);
+            } else {
+                page = page.next();
+            }
+            results = fileRefService.search(page);
+            for (FileReference fileRef : results.getContent()) {
+                printer.printRecord(fileRef.getId(), fileRef.getLocation().getUrl(), fileRef.getLocation().getStorage(),
+                                    fileRef.getOwners().stream().collect(Collectors.joining(",")));
+            }
+        } while (results.hasNext());
+        printer.close();
+        writer.close();
     }
 
     @RequestMapping(method = RequestMethod.POST, path = STORE_PATH)

@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
 
@@ -45,6 +46,8 @@ public interface IStorageRestClient {
 
     public static final String STORAGES_PATH = "/storages";
 
+    public static final String EXPORT_PATH = "/csv";
+
     /**
      * Download a file by his checksum.
      * @param checksum file to download
@@ -55,5 +58,8 @@ public interface IStorageRestClient {
 
     @RequestMapping(method = RequestMethod.GET, path = STORAGES_PATH)
     ResponseEntity<List<Resource<StorageLocationDTO>>> retrieve();
+
+    @RequestMapping(method = RequestMethod.GET, path = FILE_PATH + EXPORT_PATH)
+    Response export();
 
 }

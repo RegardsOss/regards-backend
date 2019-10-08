@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.client;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -32,11 +33,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
+import feign.Response;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -47,8 +51,12 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
+import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineTestClient;
 
@@ -79,11 +87,18 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
     @Autowired
     private StorageLocationConfigurationService storageLocationConfService;
 
+    @Autowired
+    private FileReferenceService fileRefService;
+
+    @Autowired
+    protected IFileReferenceRepository fileRepo;
+
     private static final String ONLINE_CONF = "ONLINE_CONF";
 
     @Before
     public void init() throws IOException, ModuleException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        fileRepo.deleteAll();
         client = FeignClientBuilder.build(
                                           new TokenClientProvider<>(IStorageRestClient.class,
                                                   "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
@@ -99,6 +114,28 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
     public void donwload() {
         ResponseEntity<InputStreamResource> response = client.downloadFile("huhuhuhu");
         Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    public void export() throws IOException {
+        // Create an entity for test
+        for (int i = 0; i < 100; i++) {
+            fileRefService.create(Sets.newHashSet("someone", "someone-else"),
+                                  new FileReferenceMetaInfo("123456" + i, "MD5", "file.test_" + i, 10L,
+                                          MediaType.APPLICATION_JSON_UTF8),
+                                  new FileLocation("somewhere", "file://plop/plip.file_" + i));
+        }
+        Response response = client.export();
+        Assert.assertNotNull(response);
+        Assert.assertEquals(200, response.status());
+        InputStream is = response.body().asInputStream();
+        int i;
+        char c;
+        while ((i = is.read()) != -1) {
+            c = (char) i;
+            System.out.print(c);
+        }
+        Assert.assertNotNull(response);
     }
 
     @Test
