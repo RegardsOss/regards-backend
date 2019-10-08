@@ -63,6 +63,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -660,7 +661,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public void writeAllOrdersInCsv(BufferedWriter writer) throws IOException {
-        List<Order> orders = repos.findAll();
+        List<Order> orders = repos.findAll(Sort.by(Sort.Direction.ASC, "id"));
         writer.append("ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR");
         writer.newLine();
         for (Order order : orders) {
