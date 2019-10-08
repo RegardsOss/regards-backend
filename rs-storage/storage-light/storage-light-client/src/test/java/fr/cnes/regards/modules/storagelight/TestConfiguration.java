@@ -23,6 +23,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 import org.mockito.Mockito;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +31,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
+
+import fr.cnes.regards.framework.hateoas.IResourceService;
 
 /**
  * Global test configuration for storage tests
@@ -51,5 +54,11 @@ public class TestConfiguration {
         Mockito.when(client.getInstances(Mockito.anyString())).thenReturn(response);
         return client;
 
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public IResourceService resourceService() {
+        return Mockito.mock(IResourceService.class);
     }
 }
