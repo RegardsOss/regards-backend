@@ -282,12 +282,10 @@ public class FileDeletionRequestService {
     public void handle(List<DeletionFlowItem> list) {
         Set<FileReference> existingOnes = fileRefService.search(list.stream().map(DeletionFlowItem::getFiles)
                 .flatMap(Set::stream).map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet()));
-        Set<String> groupsToGrant = Sets.newHashSet();
         for (DeletionFlowItem item : list) {
+            reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
             handle(item.getFiles(), item.getGroupId(), existingOnes);
-            groupsToGrant.add(item.getGroupId());
         }
-        reqGroupService.granted(groupsToGrant, FileRequestType.DELETION);
     }
 
     /**

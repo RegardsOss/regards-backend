@@ -63,6 +63,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheReq
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storagelight.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileRestorationWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
@@ -166,6 +167,13 @@ public class FileCacheRequestService {
                          fileRefToRestore.getMetaInfo().getFileName(), fileRefToRestore.getMetaInfo().getChecksum());
         }
         return Optional.ofNullable(request);
+    }
+
+    public void makeAvailable(Collection<AvailabilityFlowItem> items) {
+        items.forEach(i -> {
+            reqGrpService.granted(i.getGroupId(), FileRequestType.AVAILABILITY, i.getChecksums().size());
+            makeAvailable(i.getChecksums(), i.getExpirationDate(), i.getGroupId());
+        });
     }
 
     /**

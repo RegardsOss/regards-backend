@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.storagelight.service.file.flow;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -99,8 +98,8 @@ public class AvailabilityFlowItemHandler
         runtimeTenantResolver.forceTenant(wrapper.getTenant());
         try {
             AvailabilityFlowItem item = wrapper.getContent();
-            fileCacheReqService.makeAvailable(item.getChecksums(), item.getExpirationDate(), item.getGroupId());
             reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getChecksums().size());
+            fileCacheReqService.makeAvailable(item.getChecksums(), item.getExpirationDate(), item.getGroupId());
         } finally {
             runtimeTenantResolver.clearTenant();
         }
@@ -135,7 +134,7 @@ public class AvailabilityFlowItemHandler
                         LOGGER.info("[AVAILABILITY REQUESTS HANDLER] Bulk saving {} AvailabilityFlowItem...",
                                     list.size());
                         long start = System.currentTimeMillis();
-                        makeAvailable(list);
+                        fileCacheReqService.makeAvailable(list);
                         LOGGER.info("[AVAILABILITY REQUESTS HANDLER] {} AvailabilityFlowItem handled in {} ms",
                                     list.size(), System.currentTimeMillis() - start);
                         list.clear();
@@ -145,13 +144,6 @@ public class AvailabilityFlowItemHandler
                 runtimeTenantResolver.clearTenant();
             }
         }
-    }
-
-    public void makeAvailable(Collection<AvailabilityFlowItem> items) {
-        items.forEach(i -> {
-            fileCacheReqService.makeAvailable(i.getChecksums(), i.getExpirationDate(), i.getGroupId());
-            reqGroupService.granted(i.getGroupId(), FileRequestType.AVAILABILITY, i.getChecksums().size());
-        });
     }
 
 }

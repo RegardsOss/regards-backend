@@ -123,12 +123,11 @@ public class FileStorageRequestService {
     public void store(List<StorageFlowItem> list) {
         Set<FileReference> existingOnes = fileRefService.search(list.stream().map(StorageFlowItem::getFiles)
                 .flatMap(Set::stream).map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet()));
-        Set<String> groupsToGrant = Sets.newHashSet();
         for (StorageFlowItem item : list) {
+            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size());
             store(item.getFiles(), item.getGroupId(), existingOnes);
-            groupsToGrant.add(item.getGroupId());
         }
-        reqGroupService.granted(groupsToGrant, FileRequestType.STORAGE);
+
     }
 
     /**

@@ -77,12 +77,10 @@ public class FileReferenceRequestService {
     public void reference(List<ReferenceFlowItem> list) {
         Set<FileReference> existingOnes = fileRefService.search(list.stream().map(ReferenceFlowItem::getFiles)
                 .flatMap(Set::stream).map(FileReferenceRequestDTO::getChecksum).collect(Collectors.toSet()));
-        Set<String> groupsToGrant = Sets.newHashSet();
         for (ReferenceFlowItem item : list) {
+            reqGrpService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size());
             reference(item.getFiles(), item.getGroupId(), existingOnes);
-            groupsToGrant.add(item.getGroupId());
         }
-        reqGrpService.granted(groupsToGrant, FileRequestType.REFERENCE);
     }
 
     /**
