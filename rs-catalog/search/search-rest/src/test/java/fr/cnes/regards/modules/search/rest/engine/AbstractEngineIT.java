@@ -426,7 +426,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     protected DataObject createMercury(Model planetModel) {
         DataObject planet = createPlanet(planetModel, MERCURY, PLANET_TYPE_TELLURIC, 4878, 58_000_000L);
 
-        planet.setDatasetModelIds(Sets.newHashSet(99L));
+        planet.setDatasetModelNames(Sets.newHashSet(planetModel.getName()));
 
         DataFile quicklook = new DataFile();
         quicklook.setMimeType(MimeType.valueOf("application/jpg"));
