@@ -20,10 +20,13 @@ package fr.cnes.regards.framework.oais.urn;
 
 import java.util.StringJoiner;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+
+import org.springframework.lang.Nullable;
 
 /**
  * allow us to create URN
@@ -32,277 +35,301 @@ import javax.validation.constraints.NotNull;
  */
 public class AbstractUniformResourceName<T> {
 
-	public static final int MAX_SIZE = 128;
+    /**
+     * URN pattern
+     */
+    public static final String URN_PATTERN = "URN:[^:]+:[^:]+:[^:]+:[^:]+:V\\d{1,3}(,\\d+)?(:REV.+)?";
 
-	/**
-	 * URN pattern
-	 */
-	public static final String URN_PATTERN = "URN:[^:]+:[^:]+:[^:]+:[^:]+:V\\d{1,3}(,\\d+)?(:REV.+)?";
+    /**
+     * Version prefix
+     */
+    protected static final String VERSION_PREFIX = "V";
 
-	/**
-	 * Version prefix
-	 */
-	private static final String VERSION_PREFIX = "V";
+    /**
+     * Section delimiter
+     */
+    protected static final String DELIMITER = ":";
 
-	/**
-	 * Revision prefix
-	 */
-	private static final String REVISION_PREFIX = "REV";
+    /**
+     * Revision prefix
+     */
+    protected static final String REVISION_PREFIX = "REV";
 
-	/**
-	 * Version minimum value
-	 */
-	private static final int MIN_VERSION_VALUE = 1;
+    protected static final String BASE_URN_ZERO = "00000000-0000-0000-0000";
 
-	/**
-	 * Version maximum value
-	 */
-	private static final int MAX_VERSION_VALUE = 999;
+    /**
+     * Compiled pattern
+     */
+    protected static final Pattern PATTERN = Pattern.compile(URN_PATTERN);
 
-	/**
-	 * the identifier
-	 */
-	@NotNull
-	private T identifier;
+    /**
+     * Version minimum value
+     */
+    private static final int MIN_VERSION_VALUE = 1;
 
-	/**
-	 * Entity type
-	 */
-	@NotNull
-	private EntityType entityType;
+    /**
+     * Version maximum value
+     */
+    private static final int MAX_VERSION_VALUE = 999;
 
-	/**
-	 * Tenant which the entity belongs toù
-	 */
-	@NotNull
-	private String tenant;
+    /**
+     * the identifier
+     */
+    @NotNull
+    private T identifier;
 
-	/**
-	 * Entity id
-	 */
-	@NotNull
-	private UUID entityId;
+    /**
+     * Entity type
+     */
+    @NotNull
+    private EntityType entityType;
 
-	/**
-	 * Entity version number on 3 digits by specs(cf REGARDS_DSL_SYS_ARC_410)
-	 */
-	@Min(MIN_VERSION_VALUE)
-	@Max(MAX_VERSION_VALUE)
-	private int version;
+    /**
+     * Tenant which the entity belongs toù
+     */
+    @NotNull
+    private String tenant;
 
-	/**
-	 * numeric value ordering the differents AIP from a same SIP
-	 */
-	private Long order;
+    /**
+     * Entity id
+     */
+    @NotNull
+    private UUID entityId;
 
-	/**
-	 * Revision of the entity
-	 */
-	private String revision;
+    /**
+     * Entity version number on 3 digits by specs(cf REGARDS_DSL_SYS_ARC_410)
+     */
+    @Min(MIN_VERSION_VALUE)
+    @Max(MAX_VERSION_VALUE)
+    private int version;
 
-	/**
-	 * Constructor setting the given parameters as attributes
-	 */
-	public AbstractUniformResourceName(T identifier, EntityType entityType, String tenant, UUID entityId, int version) {
-		super();
-		this.identifier = identifier;
-		this.entityType = entityType;
-		this.tenant = tenant;
-		this.entityId = entityId;
-		this.version = version;
-	}
+    /**
+     * numeric value ordering the differents AIP from a same SIP
+     */
+    private Long order;
 
-	/**
-	 * Constructor setting the given parameters as attributes
-	 */
-	public AbstractUniformResourceName(T identifier, EntityType entityType, String tenant, UUID entityId, int version,
-			Long order, String revision) {
-		this(identifier, entityType, tenant, entityId, version);
-		this.order = order;
-		this.revision = revision;
-	}
+    /**
+     * Revision of the entity
+     */
+    private String revision;
 
-	/**
-	 * Constructor setting the given parameters as attributes
-	 */
-	public AbstractUniformResourceName(T identifier, EntityType entityType, String tenant, UUID entityId, int version,
-			long order) {
-		this(identifier, entityType, tenant, entityId, version);
-		this.order = order;
-	}
+    /**
+     * Constructor setting the given parameters as attributes
+     */
+    public AbstractUniformResourceName(T identifier, EntityType entityType, String tenant, UUID entityId, int version,
+            @Nullable Long order, @Nullable String revision) {
+        this.identifier = identifier;
+        this.entityType = entityType;
+        this.tenant = tenant;
+        this.entityId = entityId;
+        this.version = version;
+        this.order = order;
+        this.revision = revision;
+    }
 
-	/**
-	 * Constructor setting the given parameters as attributes
-	 */
-	public AbstractUniformResourceName(T identifier, EntityType entityType, String tenant, UUID entityId, int version,
-			String revision) {
-		this(identifier, entityType, tenant, entityId, version);
-		this.revision = revision;
-	}
+    public AbstractUniformResourceName() {
+        // for testing purpose
+    }
 
-	public AbstractUniformResourceName() {
-		// for testing purpose
-	}
+    public void build(T identifier, EntityType entityType, String tenant, UUID entityId, int version,
+            @Nullable Long order, @Nullable String revision) {
+        this.identifier = identifier;
+        this.entityType = entityType;
+        this.tenant = tenant;
+        this.entityId = entityId;
+        this.version = version;
+        this.order = order;
+        this.revision = revision;
+    }
 
-	@Override
-	public String toString() {
-		final StringJoiner urnBuilder = new StringJoiner(":", "URN:", "");
-		urnBuilder.add(identifier.toString());
-		urnBuilder.add(entityType.toString());
-		urnBuilder.add(tenant);
-		urnBuilder.add(entityId.toString());
-		String orderString = "";
-		if (order != null) {
-			orderString = "," + order;
-		}
-		// order is not added with the joiner because it is "version,order" and not
-		// "version:order"
-		urnBuilder.add(VERSION_PREFIX + version + orderString);
-		if (revision != null) {
-			urnBuilder.add(REVISION_PREFIX + revision);
-		}
-		return urnBuilder.toString();
-	}
+    /**
+     * By default UUID.randomUUID() must not be used. It is generating a true random
+     * UUID which makes it undetectable. To avoid this, pseudo random UUID is used
+     * with following format : 00000000-0000-0000-0000-&lt;random-int>
+     */
+    public boolean isRandomEntityId() {
+        return entityId.toString().startsWith(BASE_URN_ZERO);
+    }
 
-	/**
-	 * @return the identifier
-	 */
-	public T getIdentifier() {
-		return identifier;
-	}
+    /**
+     * @return whether the given string is a urn or not
+     */
+    public static boolean isValidUrn(String urn) {
+        return PATTERN.matcher(urn).matches();
+    }
 
-	/**
-	 * Set the identifier
-	 */
-	public void setIdentifier(T identifier) {
-		this.identifier = identifier;
-	}
+    @SuppressWarnings("unchecked")
+    public <U extends AbstractUniformResourceName<?>> U withOrder(Long order) {
+        this.setOrder(order);
+        return (U) this;
+    }
 
-	/**
-	 * @return the entity type
-	 */
-	public EntityType getEntityType() {
-		return entityType;
-	}
+    @SuppressWarnings("unchecked")
+    public <U extends AbstractUniformResourceName<?>> U withRevision(String revision) {
+        this.setRevision(revision);
+        return (U) this;
+    }
 
-	/**
-	 * Set the entity type
-	 */
-	public void setEntityType(EntityType entityType) {
-		this.entityType = entityType;
-	}
+    @Override
+    public String toString() {
+        final StringJoiner urnBuilder = new StringJoiner(":", "URN:", "");
+        urnBuilder.add(identifier.toString());
+        urnBuilder.add(entityType.toString());
+        urnBuilder.add(tenant);
+        urnBuilder.add(entityId.toString());
+        String orderString = "";
+        if (order != null) {
+            orderString = "," + order;
+        }
+        // order is not added with the joiner because it is "version,order" and not
+        // "version:order"
+        urnBuilder.add(VERSION_PREFIX + version + orderString);
+        if (revision != null) {
+            urnBuilder.add(REVISION_PREFIX + revision);
+        }
+        return urnBuilder.toString();
+    }
 
-	/**
-	 * @return the tenant
-	 */
-	public String getTenant() {
-		return tenant;
-	}
+    /**
+     * @return the identifier
+     */
+    public T getIdentifier() {
+        return identifier;
+    }
 
-	/**
-	 * Set the tenant
-	 */
-	public void setTenant(String tenant) {
-		this.tenant = tenant;
-	}
+    /**
+     * Set the identifier
+     */
+    public void setIdentifier(T identifier) {
+        this.identifier = identifier;
+    }
 
-	/**
-	 * @return the entity id
-	 */
-	public UUID getEntityId() {
-		return entityId;
-	}
+    /**
+     * @return the entity type
+     */
+    public EntityType getEntityType() {
+        return entityType;
+    }
 
-	/**
-	 * Set the entity id
-	 */
-	public void setEntityId(UUID entityId) {
-		this.entityId = entityId;
-	}
+    /**
+     * Set the entity type
+     */
+    public void setEntityType(EntityType entityType) {
+        this.entityType = entityType;
+    }
 
-	/**
-	 * @return the version
-	 */
-	public int getVersion() {
-		return version;
-	}
+    /**
+     * @return the tenant
+     */
+    public String getTenant() {
+        return tenant;
+    }
 
-	/**
-	 * Set the version
-	 */
-	public void setVersion(int version) {
-		this.version = version;
-	}
+    /**
+     * Set the tenant
+     */
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
+    }
 
-	/**
-	 * @return the order
-	 */
-	public Long getOrder() {
-		return order;
-	}
+    /**
+     * @return the entity id
+     */
+    public UUID getEntityId() {
+        return entityId;
+    }
 
-	/**
-	 * Set the order
-	 */
-	public void setOrder(Long order) {
-		this.order = order;
-	}
+    /**
+     * Set the entity id
+     */
+    public void setEntityId(UUID entityId) {
+        this.entityId = entityId;
+    }
 
-	/**
-	 * @return the revision
-	 */
-	public String getRevision() {
-		return revision;
-	}
+    /**
+     * @return the version
+     */
+    public int getVersion() {
+        return version;
+    }
 
-	/**
-	 * Set the revision
-	 */
-	public void setRevision(String revision) {
-		this.revision = revision;
-	}
+    /**
+     * Set the version
+     */
+    public void setVersion(int version) {
+        this.version = version;
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if ((o == null) || (getClass() != o.getClass())) {
-			return false;
-		}
+    /**
+     * @return the order
+     */
+    public Long getOrder() {
+        return order;
+    }
 
-		AbstractUniformResourceName that = (AbstractUniformResourceName) o;
+    /**
+     * Set the order
+     */
+    public void setOrder(Long order) {
+        this.order = order;
+    }
 
-		if (version != that.version) {
-			return false;
-		}
-		if (identifier != that.identifier) {
-			return false;
-		}
-		if (entityType != that.entityType) {
-			return false;
-		}
-		if (!tenant.equals(that.tenant)) {
-			return false;
-		}
-		if (!entityId.equals(that.entityId)) {
-			return false;
-		}
-		if (order != null ? !order.equals(that.order) : that.order != null) {
-			return false;
-		}
-		return revision != null ? revision.equals(that.revision) : that.revision == null;
-	}
+    /**
+     * @return the revision
+     */
+    public String getRevision() {
+        return revision;
+    }
 
-	@Override
-	public int hashCode() {
-		int result = identifier.hashCode();
-		result = (31 * result) + entityType.hashCode();
-		result = (31 * result) + tenant.hashCode();
-		result = (31 * result) + entityId.hashCode();
-		result = (31 * result) + version;
-		result = (31 * result) + (order != null ? order.hashCode() : 0);
-		result = (31 * result) + (revision != null ? revision.hashCode() : 0);
-		return result;
-	}
+    /**
+     * Set the revision
+     */
+    public void setRevision(String revision) {
+        this.revision = revision;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        @SuppressWarnings("rawtypes")
+        AbstractUniformResourceName that = (AbstractUniformResourceName) o;
+
+        if (version != that.version) {
+            return false;
+        }
+        if (identifier != that.identifier) {
+            return false;
+        }
+        if (entityType != that.entityType) {
+            return false;
+        }
+        if (!tenant.equals(that.tenant)) {
+            return false;
+        }
+        if (!entityId.equals(that.entityId)) {
+            return false;
+        }
+        if (order != null ? !order.equals(that.order) : that.order != null) {
+            return false;
+        }
+        return revision != null ? revision.equals(that.revision) : that.revision == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = identifier.hashCode();
+        result = 31 * result + entityType.hashCode();
+        result = 31 * result + tenant.hashCode();
+        result = 31 * result + entityId.hashCode();
+        result = 31 * result + version;
+        result = 31 * result + (order != null ? order.hashCode() : 0);
+        result = 31 * result + (revision != null ? revision.hashCode() : 0);
+        return result;
+    }
 }
