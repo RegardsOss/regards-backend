@@ -18,62 +18,62 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards</groupId>
-	<artifactId>regards-aggregator-parent</artifactId>
-	<version>0.5.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
+    <groupId>fr.cnes.regards</groupId>
+    <artifactId>regards-aggregator-parent</artifactId>
+    <version>0.5.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-	<name>Regards Aggregator Parent</name>
-	<description>Aggregates all microservices and the frontend</description>
-	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-	<inceptionYear>2016</inceptionYear>
-	<licenses>
-		<license>
-			<name>GNU General Public License (GNU GPL)</name>
-			<url>http://www.gnu.org/licenses/gpl.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<organization>
-		<name>CNES</name>
-		<url>https://cnes.fr/fr</url>
-	</organization>
-	<developers>
-		<developer>
-			<name>REGARDS Team</name>
-			<organization>CS Systèmes d'Information</organization>
-			<organizationUrl>http://www.c-s.fr</organizationUrl>
-		</developer>
-	</developers>
-	<distributionManagement>
-                <snapshotRepository>
-                        <uniqueVersion>true</uniqueVersion>
-                        <id>maven-snapshot-regards</id>
-                        <name>Nexus Maven Repository for regards artifacts</name>
-                        <url>https://172.26.46.158:8443/repository/maven-snapshot-regards/</url>
-                </snapshotRepository>
-                <repository>
-                        <uniqueVersion>true</uniqueVersion>
-                        <id>nexus-maven-regards</id>
-                        <name>Nexus Maven Repository for regards artifacts</name>
-                        <url>https://172.26.46.158:8443/repository/nexus-maven-regards/</url>
-                </repository>
-        </distributionManagement>
+    <name>Regards Aggregator Parent</name>
+    <description>Aggregates all microservices and the frontend</description>
+    <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+    <inceptionYear>2016</inceptionYear>
+    <licenses>
+        <license>
+            <name>GNU General Public License (GNU GPL)</name>
+            <url>http://www.gnu.org/licenses/gpl.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <organization>
+        <name>CNES</name>
+        <url>https://cnes.fr/fr</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>REGARDS Team</name>
+            <organization>CS Systèmes d'Information</organization>
+            <organizationUrl>http://www.c-s.fr</organizationUrl>
+        </developer>
+    </developers>
+    <distributionManagement>
+        <snapshotRepository>
+            <uniqueVersion>true</uniqueVersion>
+            <id>maven-snapshot-regards</id>
+            <name>Nexus Maven Repository for regards artifacts</name>
+            <url>https://172.26.46.158:8443/repository/maven-snapshot-regards/</url>
+        </snapshotRepository>
+        <repository>
+            <uniqueVersion>true</uniqueVersion>
+            <id>nexus-maven-regards</id>
+            <name>Nexus Maven Repository for regards artifacts</name>
+            <url>https://172.26.46.158:8443/repository/nexus-maven-regards/</url>
+        </repository>
+    </distributionManagement>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>com.spotify</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.4.11</version>
-				<configuration>
-					<skipDockerBuild>true</skipDockerBuild>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.4.11</version>
+                <configuration>
+                    <skipDockerBuild>true</skipDockerBuild>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
