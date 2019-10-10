@@ -27,17 +27,17 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import fr.cnes.regards.modules.acquisition.plugins.IFluxScanPlugin;
+import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.modules.acquisition.plugins.IFluxScanPlugin;
 
 /**
  * Scan directories and return detected files according to last modification date filter and glob pattern by stream.
@@ -67,7 +67,7 @@ public class GlobDiskStreamScanning implements IFluxScanPlugin {
     @Override
     public List<DirectoryStream<Path>> stream(Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
 
-        List<DirectoryStream<Path>> scannedFiles = null;
+        List<DirectoryStream<Path>> scannedFiles = Lists.newArrayList();
 
         for (String dir : directories) {
             Path dirPath = Paths.get(dir);
@@ -80,7 +80,8 @@ public class GlobDiskStreamScanning implements IFluxScanPlugin {
         return scannedFiles;
     }
 
-    private static void walk(List<DirectoryStream<Path>> paths, Path path, DirectoryStream.Filter<Path> filter) throws IOException {
+    private static void walk(List<DirectoryStream<Path>> paths, Path path, DirectoryStream.Filter<Path> filter)
+            throws IOException {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
             for (Path entry : stream) {
                 if (Files.isDirectory(entry)) {
@@ -96,18 +97,22 @@ public class GlobDiskStreamScanning implements IFluxScanPlugin {
         try {
             FileSystem fs = dirPath.getFileSystem();
             final PathMatcher matcher = fs.getPathMatcher("glob:" + glob);
-            List<DirectoryStream<Path>> paths = new ArrayList<>();
+            List<DirectoryStream<Path>> paths = Lists.newArrayList();
             DirectoryStream.Filter<Path> filter = entry -> {
                 boolean match = Files.isRegularFile(entry) && matcher.matches(entry.getFileName());
                 if (match && lastModificationDate.isPresent()) {
                     OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(entry).toInstant(),
-                            ZoneOffset.UTC);
+                                                                  ZoneOffset.UTC);
                     return lmd.isAfter(lastModificationDate.get()) || lmd.isEqual(lastModificationDate.get());
                 } else {
                     return match;
                 }
             };
+            // Add files from the root directory
+            paths.add(Files.newDirectoryStream(dirPath, filter));
+            // Walk trough sub directories
             walk(paths, dirPath, filter);
+            // Return all files matching
             return paths;
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
