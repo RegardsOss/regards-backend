@@ -21,7 +21,10 @@ package fr.cnes.regards.modules.acquisition.service;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -54,6 +57,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
@@ -113,6 +117,10 @@ public class AcquisitionFileServiceTest extends AbstractMultitenantServiceTest {
         processingChain.setPeriodicity("0 * * * * *");
         processingChain.setCategories(org.assertj.core.util.Sets.newLinkedHashSet());
 
+        List<StorageMetadataProvider> storages = new ArrayList<>();
+        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file", new HashSet<>()));
+        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file", new HashSet<>()));
+        processingChain.setStorages(storages);
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
@@ -220,7 +228,7 @@ public class AcquisitionFileServiceTest extends AbstractMultitenantServiceTest {
     @Test
     public void testSearchFiles() {
         Page<AcquisitionFile> results = fileService.search("file", null, null, null, null, PageRequest.of(0, 100));
-        Assert.assertTrue(results.getNumberOfElements() == AcquisitionFileState.values().length * 2);
+        Assert.assertTrue(results.getNumberOfElements() == (AcquisitionFileState.values().length * 2));
 
         results = fileService.search("/other", null, null, null, null, PageRequest.of(0, 100));
         Assert.assertTrue(results.getNumberOfElements() == 0);

@@ -21,6 +21,8 @@
                         "locked": false,
                         "periodicity": 10,
                         "ingestChain": "DefaultIngestChain",
+                        "categories": ["Category 1"],
+                        "storages": [],
                         "fileInfos": [
                             {
                                 "mandatory": true,

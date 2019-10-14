@@ -18,6 +18,14 @@
  */
 package fr.cnes.regards.modules.acquisition.rest;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.assertj.core.util.Sets;
+import org.springframework.http.MediaType;
+
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -30,12 +38,6 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.assertj.core.util.Sets;
-import org.springframework.http.MediaType;
 
 /**
  * Utils for product acquisition testing
@@ -94,7 +96,6 @@ public class AcquisitionTestUtils {
 
         // SIP post processing
         // Not required
-
 
         List<StorageMetadataProvider> storages = new ArrayList<>();
         storages.add(StorageMetadataProvider.build("AWS", "/path/to/file", new HashSet<>()));
