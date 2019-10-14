@@ -20,6 +20,7 @@
             "mode": "MANUAL",
             "ingestChain": "DefaultIngestChain",
             "categories": ["Category 1"],
+            "storages": [],
             "fileInfos": [
               {
                 "mandatory": true,

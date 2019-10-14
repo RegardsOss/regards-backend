@@ -104,8 +104,8 @@ public class ProductController implements IResourceController<Product> {
             @RequestParam(name = REQUEST_PARAM_SESSION, required = false) String session,
             @RequestParam(name = REQUEST_PARAM_CHAIN_ID, required = false) Long processingChainId,
             @RequestParam(name = REQUEST_PARAM_NO_SESSION, required = false) Boolean noSession,
-            @RequestParam(name = REQUEST_PARAM_FROM,
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(name = REQUEST_PARAM_FROM, required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
             @PageableDefault(sort = "lastUpdate", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<Product> assembler) {
         Page<Product> products = productService.search(state, sipState, productName, session, processingChainId, from,

@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
-import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -50,20 +45,22 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
+import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -72,12 +69,17 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskStreamScanning;
+import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link Product} workflow
@@ -88,6 +90,9 @@ import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_product" })
 public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTest {
 
+    @SpyBean
+    INotificationClient notificationClient;
+
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionServiceTest.class);
 
@@ -96,6 +101,9 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
     @Autowired
     private IAcquisitionFileRepository acqFileRepository;
+
+    @Autowired
+    private IProductRepository productRepository;
 
     @Autowired
     private IProductService productService;
@@ -108,13 +116,10 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
     private IAcquisitionFileService fileService;
 
     @Autowired
-    private IAcquisitionFileInfoRepository fileInfoRepository;
+    IPluginConfigurationRepository pluginConfigurationRepository;
 
     @Autowired
-    private IAcquisitionProcessingChainRepository acquisitionProcessingChainRepository;
-
-    @Autowired
-    private IPluginService pluginService;
+    private ITemplateService templateService;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -124,12 +129,11 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
     @Before
     public void before() throws ModuleException {
+        simulateApplicationReadyEvent();
+        pluginConfigurationRepository.deleteAll();
+        templateService.initDefaultTemplates();
         acqFileRepository.deleteAll();
-        fileInfoRepository.deleteAll();
-        acquisitionProcessingChainRepository.deleteAll();
-        for (PluginConfiguration pc : pluginService.getAllPluginConfigurations()) {
-            pluginService.deletePluginConfiguration(pc.getBusinessId());
-        }
+        productRepository.deleteAll();
     }
 
     public AcquisitionProcessingChain createProcessingChain(Path searchDir) throws ModuleException {
@@ -190,19 +194,22 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file", new HashSet<>()));
         processingChain.setStorages(storages);
 
+        // Save processing chain
+        processingChain = processingService.createChain(processingChain);
+
         // we need to set up a fake ProductAcquisitionJob to fill its attributes
         JobInfo jobInfo = new JobInfo(true);
         jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY.getPriority());
         jobInfo.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()),
-                new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, "my funky session"));
+                              new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, "my funky session"));
         jobInfo.setClassName(ProductAcquisitionJob.class.getName());
         jobInfo.setOwner("user 1");
-        jobInfoService.createAsQueued(jobInfo);
+        // Create Job as pending to avoid Job manager to run it automaticly. This test run manualy the job function
+        jobInfoService.createAsPending(jobInfo);
 
         processingChain.setLastProductAcquisitionJobInfo(jobInfo);
 
-        // Save processing chain
-        return processingService.createChain(processingChain);
+        return processingService.updateChain(processingChain);
     }
 
     //    @Test
@@ -217,12 +224,97 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
     //        processingService.scanAndRegisterFiles(processingChain);
     //    }
 
+    public AcquisitionProcessingChain createProcessingChainWithStream(Path searchDir) throws ModuleException {
+
+        // Create a processing chain
+        AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
+        processingChain.setLabel("Product streamed");
+        processingChain.setActive(Boolean.TRUE);
+        processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
+        processingChain.setIngestChain("DefaultIngestChain");
+        processingChain.setCategories(Sets.newHashSet());
+
+        // Create an acquisition file info
+        AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
+        fileInfo.setMandatory(Boolean.TRUE);
+        fileInfo.setComment("A streamed comment");
+        fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
+        fileInfo.setDataType(DataType.RAWDATA);
+
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(GlobDiskStreamScanning.FIELD_DIRS,
+                                        PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))));
+
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskStreamScanning.class);
+        scanPlugin.setIsActive(true);
+        scanPlugin.setLabel("Scan streamed plugin");
+        fileInfo.setScanPlugin(scanPlugin);
+
+        processingChain.addFileInfo(fileInfo);
+
+        // Validation
+        PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
+                                                                                  DefaultFileValidation.class);
+        validationPlugin.setIsActive(true);
+        validationPlugin.setLabel("Validation streamed plugin");
+        processingChain.setValidationPluginConf(validationPlugin);
+
+        // Product
+        PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
+                                                                               DefaultProductPlugin.class);
+        productPlugin.setIsActive(true);
+        productPlugin.setLabel("Product streamed plugin");
+        processingChain.setProductPluginConf(productPlugin);
+
+        // SIP generation
+        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
+                                                                              DefaultSIPGeneration.class);
+        sipGenPlugin.setIsActive(true);
+        sipGenPlugin.setLabel("SIP generation streamed plugin");
+        processingChain.setGenerateSipPluginConf(sipGenPlugin);
+
+        // SIP post processing
+        // Not required
+
+        List<StorageMetadataProvider> storages = new ArrayList<>();
+        storages.add(StorageMetadataProvider.build("AWS", "/path/to/file", new HashSet<>()));
+        storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file", new HashSet<>()));
+        processingChain.setStorages(storages);
+
+        // we need to set up a fake ProductAcquisitionJob to fill its attributes
+        JobInfo jobInfo = new JobInfo(true);
+        jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY.getPriority());
+        jobInfo.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()),
+                              new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, "my funky session"));
+        jobInfo.setClassName(ProductAcquisitionJob.class.getName());
+        jobInfo.setOwner("user 1");
+        jobInfoService.createAsPending(jobInfo);
+
+        processingChain.setLastProductAcquisitionJobInfo(jobInfo);
+
+        // Save processing chain
+        return processingService.createChain(processingChain);
+    }
+
     @Test
-    public void acquisitionWorkflowTest() throws ModuleException {
+    public void acquisitionByStreamWorkflowTest() throws ModuleException {
+        AcquisitionProcessingChain processingChain = createProcessingChainWithStream(Paths
+                .get("src/test/resources/data/income/stream_test"));
+        Mockito.reset(publisher);
+        processingService.scanAndRegisterFiles(processingChain);
+        processingService.manageRegisteredFiles(processingChain);
+        Assert.assertEquals("Invalid number of files registered", 5, acqFileRepository.findAll().size());
+        Assert.assertEquals("Invalid number of products", 5, productRepository.findAll().size());
+    }
+
+    @Test
+    public void acquisitionWorkflowTest() throws ModuleException, InterruptedException {
 
         AcquisitionProcessingChain processingChain = createProcessingChain(Paths.get("src", "test", "resources", "data",
                                                                                      "plugins", "scan"));
         AcquisitionFileInfo fileInfo = processingChain.getFileInfos().iterator().next();
+
+        Mockito.reset(publisher);
 
         processingService.scanAndRegisterFiles(processingChain);
 
@@ -298,16 +390,17 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
                                         Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID)));
 
         // Let's test SessionNotifier
-        ArgumentCaptor<ISubscribable> grantedInfo = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(publisher, Mockito.times(12)).publish(grantedInfo.capture());
+        ArgumentCaptor<SessionMonitoringEvent> grantedInfo = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
+        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(grantedInfo.capture());
         // Capture how many notif of each type have been sent
         Map<String, Integer> callByProperty = new HashMap<>();
-        for (ISubscribable event: grantedInfo.getAllValues()) {
+        for (ISubscribable event : grantedInfo.getAllValues()) {
             // We ignore all others types of events
             if (event instanceof SessionMonitoringEvent) {
                 SessionMonitoringEvent monitoringEvent = (SessionMonitoringEvent) event;
                 if (callByProperty.containsKey(monitoringEvent.getProperty())) {
-                    callByProperty.put(monitoringEvent.getProperty(), callByProperty.get(monitoringEvent.getProperty()) + 1);
+                    callByProperty.put(monitoringEvent.getProperty(),
+                                       callByProperty.get(monitoringEvent.getProperty()) + 1);
                 } else {
                     callByProperty.put(monitoringEvent.getProperty(), 1);
                 }

@@ -92,6 +92,8 @@ public class ProductService implements IProductService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
 
+    private static final String DEFAULT_SESSION = "Default";
+
     @Autowired
     private IPluginService pluginService;
 
@@ -124,8 +126,10 @@ public class ProductService implements IProductService {
 
     @Override
     public Product save(Product product) {
-        LOGGER.trace("Saving product \"{}\" with IP ID \"{}\" and SIP state \"{}\"", product.getProductName(),
-                     product.getIpId(), product.getSipState());
+        LOGGER.trace("Saving product \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
+                     product.getProductName(),
+                     product.getIpId(),
+                     product.getSipState());
         product.setLastUpdate(OffsetDateTime.now());
         return productRepository.save(product);
     }
@@ -340,7 +344,8 @@ public class ProductService implements IProductService {
             } catch (ModuleException e) {
                 // Continue silently but register error in database
                 String errorMessage = String.format("Error computing product name for file %s : %s",
-                                                    validFile.getFilePath().toString(), e.getMessage());
+                                                    validFile.getFilePath().toString(),
+                                                    e.getMessage());
                 LOGGER.error(errorMessage, e);
                 validFile.setError(errorMessage);
                 validFile.setState(AcquisitionFileState.ERROR);
@@ -513,9 +518,9 @@ public class ProductService implements IProductService {
     @Override
     public long countSIPGenerationJobInfoByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
             ISipState productSipState) {
-        return productRepository
-                .countDistinctLastSIPGenerationJobInfoByProcessingChainAndSipState(processingChain,
-                                                                                   productSipState.toString());
+        return productRepository.countDistinctLastSIPGenerationJobInfoByProcessingChainAndSipState(processingChain,
+                                                                                                   productSipState
+                                                                                                           .toString());
     }
 
     @Override
@@ -535,9 +540,9 @@ public class ProductService implements IProductService {
     public void stopProductJobs(AcquisitionProcessingChain processingChain) throws ModuleException {
 
         // Stop SIP generation jobs
-        Set<JobInfo> jobInfos = productRepository
-                .findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(processingChain,
-                                                                                    ProductSIPState.SCHEDULED);
+        Set<JobInfo> jobInfos = productRepository.findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(
+                processingChain,
+                ProductSIPState.SCHEDULED);
         jobInfos.forEach(j -> jobInfoService.stopJob(j.getId()));
     }
 

@@ -18,6 +18,26 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -31,24 +51,6 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link AcquisitionProcessingChain} workflow
@@ -78,7 +80,7 @@ public class AcquisitionProcessingServiceNotxTest extends AbstractMultitenantSer
     public void before() throws ModuleException {
         acquisitionFileRepository.deleteAll();
         fileInfoRepository.deleteAll();
-        for(PluginConfiguration pc: pluginService.getAllPluginConfigurations()) {
+        for (PluginConfiguration pc : pluginService.getAllPluginConfigurations()) {
             pluginService.deletePluginConfiguration(pc.getBusinessId());
         }
     }
@@ -93,7 +95,8 @@ public class AcquisitionProcessingServiceNotxTest extends AbstractMultitenantSer
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        Set<IPluginParam> param = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS, PluginParameterTransformer.toJson(new ArrayList())));
+        Set<IPluginParam> param = IPluginParam.set(IPluginParam
+                .build(GlobDiskScanning.FIELD_DIRS, PluginParameterTransformer.toJson(new ArrayList())));
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(param, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin 2");
@@ -106,7 +109,7 @@ public class AcquisitionProcessingServiceNotxTest extends AbstractMultitenantSer
         Path searchDir = Paths.get("src", "test", "resources", "data", "plugins", "scan");
         // Register file
         Path first = searchDir.resolve("CSSI_PRODUCT_01.md");
-        Assert.assertTrue(processingService.registerFile(first, fileInfo, Optional.empty()));
+        Assert.assertTrue(processingService.registerFile(first, fileInfo, Optional.empty(), true));
 
         // Register same file with its lmd
         OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(first).toInstant(), ZoneOffset.UTC);
@@ -114,7 +117,7 @@ public class AcquisitionProcessingServiceNotxTest extends AbstractMultitenantSer
         filePaths.add(first);
         filePaths.add(searchDir.resolve("CSSI_PRODUCT_02.md"));
         filePaths.add(searchDir.resolve("CSSI_PRODUCT_03.md"));
-        Assert.assertTrue(processingService.registerFiles(filePaths, fileInfo, Optional.of(lmd)) == 2);
+        Assert.assertTrue(processingService.registerFiles(filePaths, fileInfo, Optional.of(lmd), true) == 2);
 
     }
 }
