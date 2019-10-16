@@ -18,14 +18,18 @@
  */
 package fr.cnes.regards.modules.ingest.dto.aip;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
 import org.apache.commons.compress.utils.Lists;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 
 /**
  * @author sbinda
@@ -35,8 +39,10 @@ public class SearchAIPsParameters {
 
     private AIPState state;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private OffsetDateTime from;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private OffsetDateTime to;
 
     private List<String> tags = Lists.newArrayList();
