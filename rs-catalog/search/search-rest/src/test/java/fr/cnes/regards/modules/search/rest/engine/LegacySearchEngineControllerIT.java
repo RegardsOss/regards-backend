@@ -191,14 +191,14 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
         // Filter
-        customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.DATASET_MODEL_IDS + ":(99)");
+        customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.DATASET_MODEL_NAMES + ":(planet)");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
 
         // No match
         customizer = customizer().expectStatusOk();
         customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(0)));
-        customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.DATASET_MODEL_IDS + ":(999)");
+        customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.DATASET_MODEL_NAMES + ":(exoplanet)");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
@@ -236,7 +236,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         customizer.expect(MockMvcResultMatchers.jsonPath("$.length()", Matchers.equalTo(1)));
 
         // Filter
-        customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.DATASET_MODEL_IDS + ":(99)");
+        customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.DATASET_MODEL_NAMES + ":(planet)");
 
         customizer.addParameter("maxCount", "100");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_PROPERTY_VALUES,
