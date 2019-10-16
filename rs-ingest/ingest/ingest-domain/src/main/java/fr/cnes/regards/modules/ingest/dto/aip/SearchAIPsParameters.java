@@ -87,7 +87,9 @@ public class SearchAIPsParameters {
     }
 
     public SearchAIPsParameters withTags(Collection<String> tags) {
-        this.tags.addAll(tags);
+        if ((tags != null) && !tags.isEmpty()) {
+            this.tags.addAll(tags);
+        }
         return this;
     }
 
@@ -117,7 +119,9 @@ public class SearchAIPsParameters {
     }
 
     public SearchAIPsParameters withStorages(Collection<String> storages) {
-        this.storages.addAll(storages);
+        if ((storages != null) && !storages.isEmpty()) {
+            this.storages.addAll(storages);
+        }
         return this;
     }
 
@@ -132,7 +136,9 @@ public class SearchAIPsParameters {
     }
 
     public SearchAIPsParameters withCategories(Collection<String> categories) {
-        this.categories.addAll(categories);
+        if ((categories != null) && !categories.isEmpty()) {
+            this.categories.addAll(categories);
+        }
         return this;
     }
 
