@@ -18,15 +18,22 @@
  */
 package fr.cnes.regards.modules.test;
 
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpIOException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
-import fr.cnes.regards.modules.ingest.client.IngestRequestEventHandler;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
@@ -39,12 +46,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.storagelight.client.FileRequestGroupEventHandler;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.AmqpIOException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 @Component
 public class IngestServiceTest {
@@ -96,7 +97,7 @@ public class IngestServiceTest {
         deletionRequestRepository.deleteAll();
         jobInfoRepo.deleteAll();
         pluginConfRepo.deleteAll();
-        cleanAMQPQueues();
+        cleanAMQPQueues(FileRequestGroupEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
     }
 
     public void clear() {
@@ -109,21 +110,15 @@ public class IngestServiceTest {
     /**
      * Internal method to clean AMQP queues, if actives
      */
-    private void cleanAMQPQueues() {
+    public void cleanAMQPQueues(Class<? extends IHandler<?>> handler, Target target) {
         if (vhostAdmin != null) {
             // Re-set tenant because above simulation clear it!
 
             // Purge event queue
             try {
                 vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
-                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(IngestRequestEventHandler.class,
-                        Target.ONE_PER_MICROSERVICE_TYPE),
-                        false);
-
-                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(FileRequestGroupEventHandler.class,
-                        Target.ONE_PER_MICROSERVICE_TYPE),
-                        false);
-            } catch(AmqpIOException e) {
+                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
+            } catch (AmqpIOException e) {
                 //todo
             } finally {
                 vhostAdmin.unbind();
@@ -131,11 +126,9 @@ public class IngestServiceTest {
         }
     }
 
-
     public void waitForIngestion(long expectedSips) {
         waitForIngestion(expectedSips, expectedSips * 1000);
     }
-
 
     public void waitForIngestion(long expectedSips, long timeout) {
         waitForIngestion(expectedSips, timeout, null);

@@ -18,19 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
 import java.nio.file.Paths;
+
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -38,23 +29,47 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingChainService;
+import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
+import fr.cnes.regards.modules.test.IngestServiceTest;
 
 /**
  * Test asychronous ingestion client
  *
  * @author Marc SORDI
  */
+@EnableScheduling
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=ingestclient",
-                "regards.amqp.enabled=true"})
-@ActiveProfiles(value={"testAmqp", "StorageClientMock"})
-public class IngestClientIT extends IngestMultitenantServiceTest {
+        properties = { "spring.jpa.properties.hibernate.default_schema=ingestclient", "regards.amqp.enabled=true" })
+@ContextConfiguration(classes = { IngestClientIT.IngestConfiguration.class })
+@ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
+public class IngestClientIT extends AbstractRegardsWebIT {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestClientIT.class);
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private IIngestClient ingestClient;
@@ -65,12 +80,25 @@ public class IngestClientIT extends IngestMultitenantServiceTest {
     @Autowired
     private StorageClientMock storageClientMock;
 
-    @Override
-    public void doInit() throws ModuleException {
-        simulateApplicationReadyEvent();
+    @Autowired
+    private IngestServiceTest ingestServiceTest;
+
+    @Autowired
+    private IngestProcessingChainService procCahinService;
+
+    @Before
+    public void doInit() throws Exception {
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         storageClientMock.setBehavior(true, true);
+        ingestServiceTest.init();
+        procCahinService.initDefaultServiceConfiguration();
+        ingestServiceTest.cleanAMQPQueues(IngestRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+    }
+
+    @Configuration
+    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
+    static class IngestConfiguration {
     }
 
     @Test
@@ -79,9 +107,8 @@ public class IngestClientIT extends IngestMultitenantServiceTest {
         String providerId = "sipFromClient";
         RequestInfo clientInfo = ingestClient.ingest(IngestMetadataDto
                 .build("sessionOwner", "session", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                        Sets.newHashSet("cat 1"),
-                       StorageMetadata.build("disk")), create(providerId));
-        ingestServiceTest.waitForIngestion(1, FIVE_SECONDS, SIPState.STORED);
+                       Sets.newHashSet("cat 1"), StorageMetadata.build("disk")), create(providerId));
+        ingestServiceTest.waitForIngestion(1, 5_000, SIPState.STORED);
 
         ArgumentCaptor<RequestInfo> grantedInfo = ArgumentCaptor.forClass(RequestInfo.class);
         Mockito.verify(listener, Mockito.times(1)).onGranted(grantedInfo.capture());

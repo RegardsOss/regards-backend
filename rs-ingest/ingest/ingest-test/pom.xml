@@ -36,10 +36,6 @@
         <artifactId>ingest-dao</artifactId>
     </dependency>
     <dependency>
-        <groupId>fr.cnes.regards.modules.ingest</groupId>
-        <artifactId>ingest-client</artifactId>
-    </dependency>
-    <dependency>
         <groupId>fr.cnes.regards.framework.test</groupId>
         <artifactId>regards-test</artifactId>
     </dependency>
