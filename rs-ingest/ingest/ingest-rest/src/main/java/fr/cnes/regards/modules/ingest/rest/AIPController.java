@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import java.io.IOException;
-
 import java.util.List;
+
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
@@ -43,7 +42,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -53,6 +51,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 
 /**
@@ -139,7 +138,6 @@ public class AIPController implements IResourceController<AIPEntity> {
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResponseBody
     @ResourceAccess(description = "Return a page of AIPs")
     public ResponseEntity<PagedResources<Resource<AIPEntity>>> searchAIPs(SearchAIPsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
