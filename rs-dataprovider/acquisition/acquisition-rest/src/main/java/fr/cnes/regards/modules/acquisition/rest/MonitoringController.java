@@ -18,7 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.rest;
 
-import fr.cnes.regards.framework.hateoas.LinkRels;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -43,6 +45,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 
 @RestController
@@ -86,11 +89,11 @@ public class MonitoringController implements IResourceController<AcquisitionProc
             Object... pExtras) {
         Resource<AcquisitionProcessingChainMonitor> resource = resourceService.toResource(element);
         if ((element != null) && (element.getChain() != null)) {
-            if (AcquisitionProcessingChainMode.MANUAL.equals(element.getChain().getMode()) && !element.getChain()
-                    .isLocked() && element.getChain().isActive()) {
-                resourceService
-                        .addLink(resource, AcquisitionProcessingChainController.class, "startManualChain", "start",
-                                 MethodParamFactory.build(Long.class, element.getChain().getId()));
+            if (AcquisitionProcessingChainMode.MANUAL.equals(element.getChain().getMode())
+                    && !element.getChain().isLocked() && element.getChain().isActive()) {
+                resourceService.addLink(resource, AcquisitionProcessingChainController.class, "startManualChain",
+                                        "start", MethodParamFactory.build(Long.class, element.getChain().getId()),
+                                        MethodParamFactory.build(Optional.class));
             }
             if (element.isActive()) {
                 resourceService.addLink(resource, AcquisitionProcessingChainController.class, "stopChain", "stop",
@@ -98,10 +101,11 @@ public class MonitoringController implements IResourceController<AcquisitionProc
             }
             if (!element.getChain().isActive()) {
                 resourceService.addLink(resource, AcquisitionProcessingChainController.class, "delete", LinkRels.DELETE,
-                        MethodParamFactory.build(Long.class, element.getChain().getId()));
+                                        MethodParamFactory.build(Long.class, element.getChain().getId()));
             }
             resourceService.addLink(resource, AcquisitionProcessingChainController.class, "updateStateAndMode", "patch",
-                    MethodParamFactory.build(Long.class, element.getChain().getId()));
+                                    MethodParamFactory.build(Long.class, element.getChain().getId()),
+                                    MethodParamFactory.build(UpdateAcquisitionProcessingChain.class));
         }
         return resource;
     }
