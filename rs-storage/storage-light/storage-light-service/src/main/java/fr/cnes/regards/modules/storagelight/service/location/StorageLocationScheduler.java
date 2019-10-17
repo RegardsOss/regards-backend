@@ -57,7 +57,7 @@ public class StorageLocationScheduler {
     @Autowired
     private StorageLocationService storageLocationService;
 
-    @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:3600000}",
+    @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:60000}",
             initialDelay = 60 * 1000)
     public void monitorDataStorages() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
