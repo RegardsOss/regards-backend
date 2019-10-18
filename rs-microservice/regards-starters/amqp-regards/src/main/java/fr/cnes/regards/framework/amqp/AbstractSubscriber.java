@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.BatchMessageListener;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -40,6 +41,8 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.amqp.batch.RabbitBatchMessageListener;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
@@ -289,18 +292,28 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         // Init container
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
-        container.setDefaultRequeueRejected(false);
-        // container.setAdviceChain(interceptor);
+
         container.setChannelTransacted(true);
         if (!eventType.equals(NotificationEvent.class)) {
             // Do not send notification event on notification event error. (prevent infinite loop)
             container.setErrorHandler(errorHandler);
         }
 
-        MessageListenerAdapter messageListener = new MessageListenerAdapter(handler, DEFAULT_HANDLING_METHOD);
-        messageListener.setMessageConverter(messageConverter);
-        //        messageListener.setMRecoveryCallback(new NotifyNRepublishMessageRecoverer(null, null, null, null, null));
-        container.setMessageListener(messageListener);
+        if (handler instanceof IBatchHandler) {
+            IBatchHandler<?> batchHandler = (IBatchHandler<?>) handler;
+            container.setConsumerBatchEnabled(true);
+            container.setDeBatchingEnabled(true); // Required if consumer batch enabled is true
+            container.setBatchSize(batchHandler.getBatchSize());
+            container.setReceiveTimeout(batchHandler.getReceiveTimeout());
+            BatchMessageListener batchListener = new RabbitBatchMessageListener(messageConverter, batchHandler,
+                    errorHandler);
+            container.setMessageListener(batchListener);
+        } else {
+            container.setDefaultRequeueRejected(false);
+            MessageListenerAdapter messageListener = new MessageListenerAdapter(handler, DEFAULT_HANDLING_METHOD);
+            messageListener.setMessageConverter(messageConverter);
+            container.setMessageListener(messageListener);
+        }
 
         // Prevent duplicate queue
         Set<String> queueNames = new HashSet<>();
