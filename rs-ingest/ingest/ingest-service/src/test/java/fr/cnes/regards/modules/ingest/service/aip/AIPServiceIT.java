@@ -18,6 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
@@ -31,12 +38,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
@@ -44,9 +54,9 @@ import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow", "spring.jpa.show-sql=true",
-        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100",
-        "eureka.client.enabled=false" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
+        "spring.jpa.show-sql=false", "regards.amqp.enabled=true", "regards.scheduler.pool.size=4",
+        "regards.ingest.maxBulkSize=100", "eureka.client.enabled=false" })
 @ActiveProfiles("testAmqp")
 public class AIPServiceIT extends IngestMultitenantServiceTest {
 
@@ -94,6 +104,39 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
     protected void doAfter() throws Exception {
         // WARNING : clean context manually because Spring doesn't do it between tests
         subscriber.unsubscribeFrom(IngestRequestFlowItem.class);
+    }
+
+    @Test
+    public void testDownloadAIPFile() throws ModuleException, IOException, NoSuchAlgorithmException {
+        publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        ingestServiceTest.waitForIngestion(1, 20000);
+
+        Page<AIPEntity> results = aipService.search(SearchAIPsParameters.build(), PageRequest.of(0, 100));
+
+        Assert.assertEquals(1, results.getTotalElements());
+
+        AIPEntity aip = results.getContent().get(0);
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        aipService.downloadAIP(aip.getAipIdUrn(), response);
+        response.getOutputStream().flush();
+
+        OutputStreamWriter fstream = new OutputStreamWriter(new FileOutputStream(new File("target/aip.json")),
+                StandardCharsets.UTF_8);
+
+        String aipFileContent = response.getContentAsString();
+        fstream.write(aipFileContent);
+        fstream.flush();
+        fstream.close();
+
+        String cs = aipService.calculateChecksum(aip.getAip());
+        String calculatedCs = ChecksumUtils.computeHexChecksum(new FileInputStream(new File("target/aip.json")), "MD5");
+
+        Assert.assertNotNull(cs);
+        Assert.assertNotNull(calculatedCs);
+        Assert.assertEquals(cs, calculatedCs);
+
     }
 
     @Test

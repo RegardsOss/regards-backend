@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParameters;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -36,6 +36,8 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParameters;
 
 /**
  * AIP Service interface. Service to handle business around {@link AIPEntity}s
@@ -77,6 +79,15 @@ public interface IAIPService {
      * Download current AIP file related to AIP entity with specified urn
      */
     void downloadAIP(UniformResourceName aipId, HttpServletResponse response) throws ModuleException;
+
+    /**
+     * Calculate checksum of an AIP as it will be written when AIP file is downloaded
+     * @param aip
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     */
+    public String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException;
 
     /**
      * Retrieve all {@link AIPEntity}s matching parameters.

@@ -18,33 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
-import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
-import fr.cnes.regards.modules.ingest.dao.AIPQueryGenerator;
-import fr.cnes.regards.modules.ingest.dao.ICustomAIPRepository;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParameters;
-import fr.cnes.regards.modules.ingest.service.job.AIPUpdateScannerJob;
-import fr.cnes.regards.modules.ingest.service.job.OAISEntityDeletionJob;
-import fr.cnes.regards.modules.ingest.service.job.ingest.IngestJobPriority;
-import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
-import fr.cnes.regards.modules.storagelight.client.IStorageClient;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -63,20 +43,42 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
+import fr.cnes.regards.modules.ingest.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
+import fr.cnes.regards.modules.ingest.dao.ICustomAIPRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParameters;
+import fr.cnes.regards.modules.ingest.service.job.AIPUpdateScannerJob;
+import fr.cnes.regards.modules.ingest.service.job.ingest.IngestJobPriority;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
+import fr.cnes.regards.modules.storagelight.client.IStorageClient;
+import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 
 /**
  * AIP service management
@@ -90,8 +92,6 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 public class AIPService implements IAIPService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPService.class);
-
-    private static final String UTF8_ENCODING = "UTF-8";
 
     public static final String MD5_ALGORITHM = "MD5";
 
@@ -133,15 +133,11 @@ public class AIPService implements IAIPService {
         return aipRepository.save(entity);
     }
 
-
-    private String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException {
-        // TODO @msordi si t'as des idées
-        //        try (PipedInputStream in = new PipedInputStream(); PipedOutputStream out = new PipedOutputStream(in)) {
-        //            writeAip(aip, out);
-        //            return ChecksumUtils.computeHexChecksum(in, MD5_ALGORITHM);
-        //        }
-        String jsonSip = gson.toJson(aip);
-        InputStream inputStream = new ByteArrayInputStream(jsonSip.getBytes());
+    @Override
+    public String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        writeAip(aip, os);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(os.toByteArray());
         return ChecksumUtils.computeHexChecksum(inputStream, MD5_ALGORITHM);
     }
 
@@ -153,22 +149,20 @@ public class AIPService implements IAIPService {
 
     @Override
     public List<String> searchTags(SearchFacetsAIPsParameters filters) {
-        return customAIPRepository.getDistinct(AIPQueryGenerator
-                .searchAipTagsUsingSQL(filters));
+        return customAIPRepository.getDistinct(AIPQueryGenerator.searchAipTagsUsingSQL(filters));
     }
 
     @Override
     public List<String> searchStorages(SearchFacetsAIPsParameters filters) {
-        return customAIPRepository.getDistinct(AIPQueryGenerator
-                .searchAipStoragesUsingSQL(filters));
+        return customAIPRepository.getDistinct(AIPQueryGenerator.searchAipStoragesUsingSQL(filters));
     }
 
     @Override
     public List<String> searchCategories(SearchFacetsAIPsParameters filters) {
-        return customAIPRepository.getDistinct(AIPQueryGenerator
-                .searchAipCategoriesUsingSQL(filters));
+        return customAIPRepository.getDistinct(AIPQueryGenerator.searchAipCategoriesUsingSQL(filters));
     }
 
+    @Override
     public void downloadAIP(UniformResourceName aipId, HttpServletResponse response) throws ModuleException {
 
         // Find AIP
@@ -182,7 +176,7 @@ public class AIPService implements IAIPService {
         AIP aip = aipEntity.getAip();
 
         // Populate response
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + aip.getId().toString());
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + aip.getProviderId() + ".json");
         // NOTE : Do not set content type after download. It can be ignored.
         response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -199,12 +193,16 @@ public class AIPService implements IAIPService {
     /**
      * Write AIP in specified {@link OutputStream}
      */
-    private void writeAip(AIP aip, OutputStream out) throws IOException {
-        //        try () {
-        JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, UTF8_ENCODING));
+    private void writeAip(AIP aip, OutputStream os) throws IOException {
+        Writer osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+        JsonWriter writer = new JsonWriter(osw);
+        if (aip.getNormalizedGeometry() == null) {
+            aip.setNormalizedGeometry(IGeometry.unlocated());
+        }
         writer.setIndent(JSON_INDENT);
         gson.toJson(aip, AIP.class, writer);
-        //        }
+        osw.flush();
+        writer.flush();
     }
 
     @Override
