@@ -238,7 +238,7 @@ public class AIPStorageService implements IAIPStorageService {
                         e);
             }
         } else {
-            String message = "Error getting storage microservice address from eureka client";
+            String message = "Error getting ingest microservice address from eureka client";
             LOGGER.error(message);
             throw new ModuleException(message);
         }
