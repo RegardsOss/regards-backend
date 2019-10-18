@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashSet;
@@ -37,6 +34,8 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -47,9 +46,11 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
@@ -70,7 +71,8 @@ import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
  * Test class to verify {@link IngestProcessingJob}.
  * @author Sébastien Binda
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestjob" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=ingestjob", "eureka.client.enabled=false" })
 public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
@@ -155,9 +157,9 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
     @Test
     public void testDefaultProcessingChain() {
         // Init a SIP in database with state CREATED and managed with default chain
-        SIPCollection sips = SIPCollection.build(IngestMetadataDto
-                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                        CATEGORIES, STORAGE_METADATA));
+        SIPCollection sips = SIPCollection
+                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                               CATEGORIES, STORAGE_METADATA));
 
         SIP sip = SIP.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST);
         sip.withDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "sdsdfm1211vd");
@@ -187,8 +189,8 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
     @Test
     public void testProcessingChain() {
 
-        SIPCollection sips = SIPCollection
-                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST, CATEGORIES, STORAGE_METADATA));
+        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST,
+                                                                         CATEGORIES, STORAGE_METADATA));
 
         SIP sip = SIP.build(EntityType.DATA, SIP_ID_TEST);
         sip.withDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
@@ -237,7 +239,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         ArgumentCaptor<SIPEntity> sipCaptor = ArgumentCaptor.forClass(SIPEntity.class);
 
         Mockito.verify(ingestRequestService, Mockito.times(1)).handleIngestJobFailed(ingestRequestCaptor.capture(),
-                                                                                  sipCaptor.capture());
+                                                                                     sipCaptor.capture());
         Mockito.clearInvocations(ingestRequestService);
         IngestRequest request = ingestRequestCaptor.getValue();
         Assert.assertNotNull(request);
@@ -255,8 +257,8 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
     public void testProcessingChainByRef() {
 
         // Init a SIP with reference in database with state CREATED
-        SIPCollection sips = SIPCollection
-                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST, CATEGORIES, STORAGE_METADATA));
+        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST,
+                                                                         CATEGORIES, STORAGE_METADATA));
 
         SIP sip = SIP.buildReference(EntityType.DATA, SIP_REF_ID_TEST, Paths.get("src/test/resources/file_ref.xml"),
                                      "1e2d4ab665784e43243b9b07724cd483");

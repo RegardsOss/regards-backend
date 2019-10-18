@@ -41,8 +41,9 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
  * @author Marc SORDI
  *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
-        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=sipflow", "regards.amqp.enabled=true",
+                "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100", "eureka.client.enabled=false" })
 @ActiveProfiles("testAmqp")
 public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 
@@ -74,7 +75,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
         for (long i = 0; i < maxloops; i++) {
             SIP sip = create("provider" + i, null);
             // Create event
-            publishSIPEvent(sip, "fake", OffsetDateTime.now().toString(),"source", CATEGORIES);
+            publishSIPEvent(sip, "fake", OffsetDateTime.now().toString(), "source", CATEGORIES);
         }
 
         // Wait

@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
@@ -39,6 +36,8 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -47,6 +46,8 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
@@ -59,7 +60,8 @@ import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=ingest", "eureka.client.enabled=false" })
 public class IngestServiceIT extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
@@ -87,8 +89,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
     private void ingestSIP(String providerId, String checksum) throws EntityInvalidException {
         SIPCollection sips = SIPCollection
                 .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                        Sets.newHashSet("CAT"),
-                        StorageMetadata.build("disk")));
+                                               Sets.newHashSet("CAT"), StorageMetadata.build("disk")));
 
         sips.add(SIP.build(EntityType.DATA, providerId)
                 .withDataObject(DataType.RAWDATA, Paths.get("sip1.xml"), checksum).withSyntax(MediaType.APPLICATION_XML)

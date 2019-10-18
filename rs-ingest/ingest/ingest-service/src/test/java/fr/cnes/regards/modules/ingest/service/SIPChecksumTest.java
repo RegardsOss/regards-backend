@@ -41,7 +41,8 @@ import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
  * @author Marc SORDI
  *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=checksum" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=checksum", "eureka.client.enabled=false" })
 public class SIPChecksumTest extends AbstractMultitenantServiceTest {
 
     @Autowired

@@ -18,22 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
-import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -44,11 +33,26 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
+
 /**
  * FIXME refactor
  * @author Sébastien Binda
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipingest" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=sipingest", "eureka.client.enabled=false" })
 public class SIPServiceIT extends IngestMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPServiceIT.class);
@@ -81,9 +85,9 @@ public class SIPServiceIT extends IngestMultitenantServiceTest {
     @Autowired
     private IAIPService aipService;
 
-    private SIPEntity sipWithManyAIPs = null;
+    private final SIPEntity sipWithManyAIPs = null;
 
-    private SIPEntity sipWithOneAIP = null;
+    private final SIPEntity sipWithOneAIP = null;
 
     //    @Override
     //    public void doInit() throws NoSuchAlgorithmException, IOException, InterruptedException, ModuleException {
@@ -354,7 +358,6 @@ public class SIPServiceIT extends IngestMultitenantServiceTest {
     //                new PageMetadata(resources.size(), resources.size(), resources.size()));
     //        return new ResponseEntity<>(pagedRes, HttpStatus.OK);
     //    }
-
 
     /**
      * Get all simulated archival storag AIPs intialized in the test for the given SIP.

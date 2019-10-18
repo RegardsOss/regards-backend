@@ -18,7 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
@@ -32,20 +42,13 @@ import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
-import java.time.OffsetDateTime;
-import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=deletion_job",
-        "regards.amqp.enabled=true" })
-@ActiveProfiles(value={"testAmqp", "StorageClientMock"})
+        "regards.amqp.enabled=true", "eureka.client.enabled=false" })
+@ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
 
     @Autowired
@@ -64,18 +67,23 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
     private IAIPRepository aipRepository;
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
+
     private static final List<String> CATEGORIES_1 = Lists.newArrayList("CATEGORY1");
 
     private static final List<String> TAG_0 = Lists.newArrayList("toto", "tata");
+
     private static final List<String> TAG_1 = Lists.newArrayList("toto", "tutu");
 
     private static final String STORAGE_1 = "AWS";
+
     private static final String STORAGE_2 = "Azure";
 
     private static final String SESSION_OWNER_0 = "NASA";
+
     private static final String SESSION_OWNER_1 = "CNES";
 
     private static final String SESSION_0 = OffsetDateTime.now().toString();
+
     private static final String SESSION_1 = OffsetDateTime.now().minusDays(4).toString();
 
     @Override
@@ -124,24 +132,24 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
         storageClient.setBehavior(true, true);
         initData();
         // delete 2 SIPs linked to SESSION_OWNER_0, SESSION_0
-        ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto.build(
-                SESSION_OWNER_0, SESSION_0, SessionDeletionMode.BY_STATE, SessionDeletionSelectionMode.INCLUDE));
+        ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto
+                .build(SESSION_OWNER_0, SESSION_0, SessionDeletionMode.BY_STATE, SessionDeletionSelectionMode.INCLUDE));
         waitUntilNbSIPStoredReach(4);
         assertDeletedAIPs(2);
 
         // delete 1 SIP linked to SESSION_OWNER_0, SESSION_1
-        ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto.build(
-                SESSION_OWNER_0, SESSION_1, SessionDeletionMode.BY_STATE, SessionDeletionSelectionMode.INCLUDE));
+        ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto
+                .build(SESSION_OWNER_0, SESSION_1, SessionDeletionMode.BY_STATE, SessionDeletionSelectionMode.INCLUDE));
         waitUntilNbSIPStoredReach(3);
         assertDeletedAIPs(3);
 
         // delete 2 SIPs linked to SESSION_OWNER_1, SESSION_1
-        ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto.build(
-                SESSION_OWNER_1, SESSION_1, SessionDeletionMode.IRREVOCABLY, SessionDeletionSelectionMode.INCLUDE));
+        ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto.build(SESSION_OWNER_1, SESSION_1,
+                                                                               SessionDeletionMode.IRREVOCABLY,
+                                                                               SessionDeletionSelectionMode.INCLUDE));
         waitUntilNbSIPStoredReach(1);
         assertDeletedAIPs(3); // AIPs are deleted and not just marked deleted
     }
-
 
     @Test
     public void testDeletionJobFailed() throws ModuleException {
@@ -150,8 +158,9 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
         storageClient.setBehavior(true, false);
 
         // 2 SIPs linked to SESSION_OWNER_0, SESSION_0 will be marked as ERROR
-        ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto.build(
-                SESSION_OWNER_0, SESSION_0, SessionDeletionMode.IRREVOCABLY, SessionDeletionSelectionMode.INCLUDE));
+        ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto.build(SESSION_OWNER_0, SESSION_0,
+                                                                               SessionDeletionMode.IRREVOCABLY,
+                                                                               SessionDeletionSelectionMode.INCLUDE));
         waitUntilNbSIPStoredReach(4);
 
     }

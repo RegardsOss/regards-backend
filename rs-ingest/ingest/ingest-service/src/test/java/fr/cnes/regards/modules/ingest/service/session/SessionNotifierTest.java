@@ -18,7 +18,25 @@
  */
 package fr.cnes.regards.modules.ingest.service.session;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import org.assertj.core.util.Sets;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -34,24 +52,11 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import org.assertj.core.util.Sets;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.TestPropertySource;
 
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=session_notif" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=session_notif", "eureka.client.enabled=false" })
 public class SessionNotifierTest extends AbstractMultitenantServiceTest {
+
     @Autowired
     private SessionNotifier sessionNotifier;
 
@@ -59,45 +64,51 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
     private IPublisher publisher;
 
     private static String sessionOwner = "NAASA";
+
     private static String session = "session d'ingestion";
+
     private static String ingestChain = "ingest chain";
+
     private static String providerId = "provider 1";
+
     private static Set<String> categories = Sets.newLinkedHashSet("CAT 1", "CAT 2");
+
     private static SIPEntity sipEntity;
+
     private static AIPEntity aipEntity1;
+
     private static AIPEntity aipEntity2;
 
     @Before
     public void init() {
-        sipEntity = SIPEntity.build(getDefaultTenant(), IngestMetadata.build(sessionOwner, session,
-                ingestChain, categories,StorageMetadata.build("AWS", "/dir1/dir2/", new HashSet<>())),
-                SIP.build(EntityType.DATA, providerId),
-                1, SIPState.INGESTED
-        );
-        aipEntity1 = AIPEntity.build(sipEntity, AIPState.GENERATED,
-                AIP.build(sipEntity.getSip(),
-                        UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION, getDefaultTenant(), 1),
-                        Optional.ofNullable(sipEntity.getSipIdUrn()),
-                        providerId
-                ));
-        aipEntity2 = AIPEntity.build(sipEntity, AIPState.GENERATED,
-                AIP.build(sipEntity.getSip(),
-                        UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION, getDefaultTenant(), 1),
-                        Optional.ofNullable(sipEntity.getSipIdUrn()),
-                        providerId
-                ));
+        sipEntity = SIPEntity.build(getDefaultTenant(),
+                                    IngestMetadata.build(sessionOwner, session, ingestChain, categories,
+                                                         StorageMetadata.build("AWS", "/dir1/dir2/", new HashSet<>())),
+                                    SIP.build(EntityType.DATA, providerId), 1, SIPState.INGESTED);
+        aipEntity1 = AIPEntity
+                .build(sipEntity, AIPState.GENERATED,
+                       AIP.build(sipEntity.getSip(),
+                                 UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
+                                                                     getDefaultTenant(), 1),
+                                 Optional.ofNullable(sipEntity.getSipIdUrn()), providerId));
+        aipEntity2 = AIPEntity
+                .build(sipEntity, AIPState.GENERATED,
+                       AIP.build(sipEntity.getSip(),
+                                 UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
+                                                                     getDefaultTenant(), 1),
+                                 Optional.ofNullable(sipEntity.getSipIdUrn()), providerId));
         Mockito.clearInvocations(publisher);
     }
 
     private Map<String, Long> getResultUsingNotifs(List<SessionMonitoringEvent> allValues) {
         Map<String, Long> result = new HashMap<>();
         for (SessionMonitoringEvent e : allValues) {
-            if (e.getOperator() !=  SessionNotificationOperator.REPLACE) {
+            if (e.getOperator() != SessionNotificationOperator.REPLACE) {
                 Long previousValue = Optional.ofNullable(result.get(e.getProperty())).orElse(0L);
                 if (e.getOperator() == SessionNotificationOperator.INC) {
-                    result.put(e.getProperty(), previousValue + (Long)e.getValue());
+                    result.put(e.getProperty(), previousValue + (Long) e.getValue());
                 } else {
-                    result.put(e.getProperty(), previousValue - (Long)e.getValue());
+                    result.put(e.getProperty(), previousValue - (Long) e.getValue());
                 }
             }
         }
@@ -114,7 +125,6 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
         Assert.assertEquals(1, (long) result.get(SessionNotifier.PROPERTY_SIP_ERROR));
     }
-
 
     @Test
     public void testStoreFail() {
@@ -135,8 +145,6 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_AIP_GENERATED));
         Assert.assertEquals(2, (long) result.get(SessionNotifier.PROPERTY_AIP_ERROR));
     }
-
-
 
     @Test
     public void testStoreSucceed() {
@@ -195,7 +203,6 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_AIP_STORED));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_AIP_DELETING));
     }
-
 
     @Test
     public void testDeleteFailed() {

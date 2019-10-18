@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestu", "jwt.secret=123456789",
-        "regards.workspace=target/workspace" })
+        "regards.workspace=target/workspace", "eureka.client.enabled=false" })
 @ContextConfiguration(classes = { UpdateProcessingChainIT.IngestConfiguration.class })
 public class UpdateProcessingChainIT extends AbstractDaoTest {
 

@@ -18,18 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import com.google.common.collect.Lists;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,8 +34,19 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Lists;
+
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow", "spring.jpa.show-sql=true",
-        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100" })
+        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100",
+        "eureka.client.enabled=false" })
 @ActiveProfiles("testAmqp")
 public class AIPServiceIT extends IngestMultitenantServiceTest {
 
@@ -120,7 +124,8 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
                                     PageRequest.of(0, 100));
         Assert.assertEquals(4, results.getTotalElements());
 
-        results = aipService.search(SearchAIPsParameters.build().withSessionOwner(SESSION_OWNER_1), PageRequest.of(0, 100));
+        results = aipService.search(SearchAIPsParameters.build().withSessionOwner(SESSION_OWNER_1),
+                                    PageRequest.of(0, 100));
         Assert.assertEquals(3, results.getTotalElements());
 
         results = aipService
@@ -152,7 +157,6 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(1, results.getTotalElements());
     }
 
-
     @Test
     public void testSearchAIPTags() throws InterruptedException {
         long nbSIP = 7;
@@ -169,8 +173,8 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         Page<AIPEntity> allAips = aipService.search(SearchAIPsParameters.build(), PageRequest.of(0, 100));
         Set<String> aipIds = allAips.stream().map(aip -> aip.getAipId()).collect(Collectors.toSet());
 
-        SearchFacetsAIPsParameters filters = SearchFacetsAIPsParameters.build().
-                withState(AIPState.GENERATED).withTags(TAG_0);
+        SearchFacetsAIPsParameters filters = SearchFacetsAIPsParameters.build().withState(AIPState.GENERATED)
+                .withTags(TAG_0);
         List<String> results = aipService.searchTags(filters);
         Assert.assertEquals(2, results.size());
         // Tests categories
@@ -181,15 +185,10 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(2, results.size());
 
         // Full test (with almost all attributes)
-        filters = filters
-                .withProviderId("provider 1")
-                .withFrom(OffsetDateTime.now().minusHours(5))
-                .withTo(OffsetDateTime.now().plusDays(6))
-                .withAIPIds(aipIds)
-                .withCategories(Sets.newHashSet(CATEGORIES_0))
-                .withStorages(Sets.newLinkedHashSet(STORAGE_0))
-                .withSession(SESSION_0)
-                .withSessionOwner(SESSION_OWNER_0);
+        filters = filters.withProviderId("provider 1").withFrom(OffsetDateTime.now().minusHours(5))
+                .withTo(OffsetDateTime.now().plusDays(6)).withAIPIds(aipIds)
+                .withCategories(Sets.newHashSet(CATEGORIES_0)).withStorages(Sets.newLinkedHashSet(STORAGE_0))
+                .withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0);
         // Test tags
         results = aipService.searchTags(filters);
         Assert.assertEquals(2, results.size());
@@ -207,8 +206,7 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
 
         // Test with session and all storage (which are appended to the query OR, no AIP have more than 1 storage location)
         filters = SearchFacetsAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0)
-                .withStorages(STORAGE_0, STORAGE_1, STORAGE_2)
-                .withProviderId("provider%");
+                .withStorages(STORAGE_0, STORAGE_1, STORAGE_2).withProviderId("provider%");
         results = aipService.searchTags(filters);
         Assert.assertEquals(3, results.size());
         // Tests categories
@@ -218,7 +216,5 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         results = aipService.searchStorages(filters);
         Assert.assertEquals(2, results.size());
     }
-
-
 
 }

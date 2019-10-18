@@ -40,15 +40,6 @@ public class IngestConfigurationProperties {
     @Value("${regards.ingest.remote.request.timeout:5}")
     private Long remoteRequestTimeout;
 
-    public static final String DOWNLOAD_AIP_PLACEHOLDER = "@aip@";
-
-    /**
-     * Include @aip@ in your template
-     */
-    // TODO remove this bullshit !
-    @Value("${regards.ingest.aip.download.url.template:http://localhost/api/v1/ingest/aips/download/@aip@}")
-    private String aipDownloadTemplate = "";
-
     public Integer getMaxBulkSize() {
         return maxBulkSize;
     }
@@ -63,13 +54,5 @@ public class IngestConfigurationProperties {
 
     public void setRemoteRequestTimeout(Long remoteRequestTimeout) {
         this.remoteRequestTimeout = remoteRequestTimeout;
-    }
-
-    public String getAipDownloadTemplate() {
-        return aipDownloadTemplate;
-    }
-
-    public void setAipDownloadTemplate(String aipDownloadTemplate) {
-        this.aipDownloadTemplate = aipDownloadTemplate;
     }
 }
