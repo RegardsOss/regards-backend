@@ -182,14 +182,15 @@ public class AIPController implements IResourceController<AIPEntity> {
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResourceAccess(description = "Download AIP as JSON file", role = DefaultRole.PUBLIC)
     public void downloadAIP(@RequestParam(required = false) String origin,
-            @Valid @PathVariable(AIPStorageService.AIP_ID_PATH_PARAM) UniformResourceName aipId,
-            HttpServletResponse response) throws ModuleException, IOException {
+            @Valid @PathVariable(AIPStorageService.AIP_ID_PATH_PARAM) String aipId, HttpServletResponse response)
+            throws ModuleException, IOException {
 
         LOGGER.debug("Downloading AIP file for entity \"{}\"", aipId.toString());
 
         try {
-            aipService.downloadAIP(aipId, response);
+            aipService.downloadAIP(UniformResourceName.fromString(aipId), response);
         } catch (ModuleException e) {
+
             // Workaround to handle conversion of ServletErrorResponse in JSON format and
             // avoid using ContentType of file set before.
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
