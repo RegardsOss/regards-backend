@@ -43,6 +43,7 @@ import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
@@ -219,12 +220,12 @@ public class AIPStorageService implements IAIPStorageService {
      * @return
      * @throws ModuleException if the Eureka server is not reachable
      */
-    public URL generateDownloadUrl(String checksum) throws ModuleException {
+    public URL generateDownloadUrl(UniformResourceName aipId) throws ModuleException {
         Optional<ServiceInstance> instance = discoveryClient.getInstances(applicationName).stream().findFirst();
         if (instance.isPresent()) {
             String host = instance.get().getUri().toString();
             String path = Paths.get(AIPS_CONTROLLER_ROOT_PATH, AIP_DOWNLOAD_PATH).toString();
-            String p = path.toString().replace("{" + AIP_ID_PATH_PARAM + "}", checksum);
+            String p = path.toString().replace("{" + AIP_ID_PATH_PARAM + "}", aipId.toString());
             p = (p.charAt(0) == '/') ? p.replaceFirst("/", "") : p;
             // TODO : Handle security access for downloadable AIPs
             String urlStr = String.format("%s/%s?scope=%s", host, p, tenantResolver.getTenant());
@@ -254,7 +255,7 @@ public class AIPStorageService implements IAIPStorageService {
         Collection<FileStorageRequestDTO> files = new ArrayList<>();
 
         // Build origin(s) URL
-        URL originUrl = generateDownloadUrl(checksum);
+        URL originUrl = generateDownloadUrl(aip.getId());
 
         // Create a request for each storage
         for (StorageMetadata storage : storages) {
