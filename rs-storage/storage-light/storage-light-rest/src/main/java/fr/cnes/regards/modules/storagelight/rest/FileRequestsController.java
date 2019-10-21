@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
@@ -84,6 +85,16 @@ public class FileRequestsController implements IResourceController<FileRequestIn
                 toPagedResources(service.getRequestInfos(storageLocationId, type, Optional.ofNullable(status), page),
                                  assembler),
                 HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, path = STORAGE_PATH + TYPE_PATH)
+    @ResourceAccess(description = "Delete storage location", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Void> delete(@PathVariable(name = "storage") String storageLocationId,
+            @PathVariable(name = "type") FileRequestType type,
+            @RequestParam(name = STATUS_PARAM, required = false) FileRequestStatus status, Pageable page)
+            throws ModuleException {
+        service.deleteRequests(storageLocationId, type, Optional.ofNullable(status));
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
