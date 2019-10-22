@@ -23,6 +23,7 @@ import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,13 @@ public interface IJob<R> extends Runnable {
     void setWorkspace(CheckedSupplier<Path, IOException> workspaceSupplier) throws JobWorkspaceException;
 
     Path getWorkspace();
+
+    /**
+     * Inject job info id for trace.<br/>
+     * <b>Beware : do nothing by default, this method must be overridden to keep track of job info id.</b>
+     */
+    default void setJobInfoId(UUID id) {
+    }
 
     /**
      * Manage job parameters (if there are any). Job implementation has <b>to check
