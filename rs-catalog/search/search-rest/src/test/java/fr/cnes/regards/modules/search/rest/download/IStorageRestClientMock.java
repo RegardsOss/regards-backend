@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,16 +63,16 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     }
 
     @Override
-    public ResponseEntity<InputStreamResource> downloadFile(String checksum) {
+    public Response downloadFile(String checksum) {
         if (!"checksumOk".equals(checksum)) {
-            return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
+            return Response.builder().status(HttpStatus.NOT_FOUND.value()).build();
         }
         try {
             File file = new File("src/test/resources/result.json");
             InputStream stream = new FileInputStream(file);
-            return new ResponseEntity<InputStreamResource>(new InputStreamResource(stream), HttpStatus.OK);
+            return Response.builder().status(HttpStatus.OK.value()).body(stream, 150).build();
         } catch (IOException e) {
-            return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
+            return Response.builder().status(HttpStatus.NOT_FOUND.value()).build();
         }
     }
 

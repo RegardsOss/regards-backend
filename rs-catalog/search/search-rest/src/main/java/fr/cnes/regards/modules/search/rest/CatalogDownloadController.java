@@ -19,11 +19,14 @@
 package fr.cnes.regards.modules.search.rest;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
+import feign.Response;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -92,7 +96,13 @@ public class CatalogDownloadController {
         if (this.searchService.hasAccess(urn)) {
             FeignSecurityManager.asSystem();
             try {
-                return this.storageRestClient.downloadFile(checksum);
+                Response response = storageRestClient.downloadFile(checksum);
+                InputStreamResource isr = new InputStreamResource(response.body().asInputStream());
+                HttpHeaders headers = new HttpHeaders();
+                for (Entry<String, Collection<String>> h : response.headers().entrySet()) {
+                    h.getValue().forEach(v -> headers.add(h.getKey(), v));
+                }
+                return new ResponseEntity<>(isr, headers, HttpStatus.OK);
             } catch (HttpClientErrorException | HttpServerErrorException e) {
                 LOGGER.error(String.format("Error downloading file through storage microservice. Cause : %s",
                                            e.getMessage()),
