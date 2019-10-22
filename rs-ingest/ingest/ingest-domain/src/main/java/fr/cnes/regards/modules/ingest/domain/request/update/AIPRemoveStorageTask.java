@@ -31,26 +31,29 @@ import org.hibernate.annotations.TypeDefs;
 /**
  * @author Léo Mieulet
  */
-@Entity(name = "UpdateTagAIPTask")
+@Entity(name = "RemoveStorageAIPTask")
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-public class AIPUpdateTagTask extends AbstractAIPUpdateTask {
+public class AIPRemoveStorageTask extends AbstractAIPUpdateTask {
 
+    /**
+     * List of storage pluginBussinessId configurations to remove
+     */
     @Column(columnDefinition = "jsonb", name = "payload")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
-    private List<String> tags;
+    private List<String> storages;
 
-    public List<String> getTags() {
-        return tags;
+    public List<String> getStorages() {
+        return storages;
     }
 
-    public void setTags(List<String> tags) {
-        this.tags = tags;
+    public void setStorages(List<String> storages) {
+        this.storages = storages;
     }
 
-    public static AIPUpdateTagTask build(AIPUpdateTaskType type, AIPUpdateState state, List<String> tags) {
-        AIPUpdateTagTask task = new AIPUpdateTagTask();
+    public static AIPRemoveStorageTask build(AIPUpdateTaskType type, AIPUpdateState state, List<String> storages) {
+        AIPRemoveStorageTask task = new AIPRemoveStorageTask();
         task.setType(type);
-        task.setTags(tags);
+        task.setStorages(storages);
         task.setState(state);
         return task;
     }

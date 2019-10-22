@@ -4,7 +4,7 @@ DROP INDEX idx_sip_session;
 
 alter table t_sip add column session_owner varchar(128) NOT NULL;
 alter table t_sip add column session_name varchar(128) NOT NULL;
-ALTER TABLE t_sip ADD COLUMN provider_id varchar(100) NOT NULL;
+alter table t_sip RENAME column providerid to provider_id;
 alter table t_sip RENAME COLUMN processing TO ingest_chain;
 alter table t_sip RENAME COLUMN ingestDate TO creation_date;
 alter table t_sip RENAME COLUMN lastUpdateDate TO last_update;
@@ -21,7 +21,7 @@ CREATE INDEX idx_sip_storage ON t_sip USING gin (storages);
 
 
 create index idx_sip_state on t_sip (state);
-create index idx_sip_providerId on t_sip (providerId);
+create index idx_sip_providerId on t_sip (provider_id);
 create index idx_sip_creation_date on t_sip (creation_date);
 create index idx_sip_version on t_sip (version);
 
@@ -68,6 +68,7 @@ create table t_deletion_request (
   selection_mode int4 not null,
   session_name varchar(128) not null,
   session_owner varchar(128) not null,
+  creation_date timestamp not null,
   sipIds jsonb,
   providerIds jsonb,
   job_info_id uuid,
@@ -87,6 +88,7 @@ create table t_deletion_storage_request (
   state varchar(50) not null,
   session_name varchar(128) not null,
   session_owner varchar(128) not null,
+  creation_date timestamp not null,
   errors jsonb,
   job_info_id uuid,
   primary key (id)
@@ -104,6 +106,7 @@ create table t_ingest_request (
   ingest_chain varchar(100) not null,
   session_name varchar(128) not null,
   session_owner varchar(128) not null,
+  creation_date timestamp not null,
   storages jsonb,
   state varchar(20) NOT NULL,
   errors jsonb,
@@ -141,6 +144,7 @@ create table t_update_request (
     session_owner varchar(128) not null,
     state varchar(50) not null,
     job_info_id uuid,
+    creation_date timestamp not null,
     aip_id int8,
     update_task_id int8,
     primary key (id)
@@ -153,12 +157,11 @@ alter table t_update_request add constraint fk_update_request_aip foreign key (a
 
 
 create table t_update_task (
-    dtype varchar(16) not null,
+    dtype varchar(30) not null,
     id int8 not null,
-    aip_id varchar(128),
     state varchar(255),
     type varchar(255),
-    tags jsonb,
+    payload jsonb,
     primary key (id)
 );
 create sequence seq_aip_update_task start 1 increment 50;

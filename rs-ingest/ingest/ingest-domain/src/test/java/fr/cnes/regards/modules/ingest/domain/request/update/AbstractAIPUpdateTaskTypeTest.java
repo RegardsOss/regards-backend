@@ -16,23 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dto.request.update;
+package fr.cnes.regards.modules.ingest.domain.request.update;
 
-import com.google.gson.annotations.JsonAdapter;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author Léo Mieulet
  */
-@JsonAdapter(AIPUpdateTaskDtoJsonAdapterFactory.class)
-public abstract class AbstractAIPUpdateTaskDto {
-    private AIPUpdateTaskType type;
-
-    public AIPUpdateTaskType getType() {
-        return type;
-    }
-
-    public void setType(AIPUpdateTaskType type) {
-        this.type = type;
+public class AbstractAIPUpdateTaskTypeTest {
+    @Test
+    public void testOrder() {
+        Assert.assertEquals(0, AIPUpdateTaskType.ADD_CATEGORY.getOrder(AIPUpdateTaskType.ADD_TAG));
+        Assert.assertEquals(0, AIPUpdateTaskType.REMOVE_FILE_LOCATION.getOrder(AIPUpdateTaskType.REMOVE_FILE_LOCATION));
+        Assert.assertEquals(1, AIPUpdateTaskType.ADD_CATEGORY.getOrder(AIPUpdateTaskType.ADD_FILE_LOCATION));
+        Assert.assertEquals(-1, AIPUpdateTaskType.ADD_FILE_LOCATION.getOrder(AIPUpdateTaskType.REMOVE_CATEGORY));
     }
 }

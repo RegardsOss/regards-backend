@@ -19,21 +19,19 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AIPUpdateRequest;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTask;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -42,7 +40,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 /**
- * This job creates {@link AIPUpdateTask} task to update. It scans AIP and create for each modification a task
+ * This job creates {@link AbstractAIPUpdateTask} task to update. It scans AIP and create for each modification a task
  *
  * @author Léo Mieulet
  */
@@ -50,11 +48,7 @@ public class AIPUpdateScannerJob extends AbstractJob<Void> {
 
     public static final String CRITERIA = "CRITERIA";
 
-    public static final String TASK = "TASK";
-
-    private SearchAIPsParameters searchParameters;
-
-    private AIPUpdateTask updateTask;
+    private AIPUpdateParametersDto updateTaskDto;
 
     private int totalPages = 0;
 
@@ -72,10 +66,8 @@ public class AIPUpdateScannerJob extends AbstractJob<Void> {
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        // Retrieve search parameters
-        searchParameters = getValue(parameters, CRITERIA);
-        // Retrieve search parameters
-        updateTask = getValue(parameters, CRITERIA);
+        // Retrieve update task
+        updateTaskDto = getValue(parameters, CRITERIA);
     }
 
     @Override
@@ -88,17 +80,29 @@ public class AIPUpdateScannerJob extends AbstractJob<Void> {
                 pageRequest.next();
             }
             // Page request isn't modified as the state of entities are modified
-            aipsPage = aipRepository.search(searchParameters, pageRequest);
+            aipsPage = aipRepository.search(updateTaskDto.getCriteria(), pageRequest);
             // Save number of pages to publish job advancement
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();
             }
-            aipsPage.forEach(aip -> {
-                AIPUpdateRequest aipUpdateRequest = AIPUpdateRequest.build(aip, updateTask);
-                aipUpdateRequestRepository.save(aipUpdateRequest);
-            });
+            List<AIPEntity> aipsPageContent = aipsPage.getContent();
+
+            // Test if there is some AIPs referenced by some running requests
+            List<Long> aipIds = aipsPageContent.stream().map(wr -> wr.getId()).collect(Collectors.toList());
+            List<AIPUpdateRequest> runningRequests = aipUpdateRequestRepository.findRunningRequestAndAipIdIn(aipIds);
+            // Create the list of AIP id (and not aipId!)
+            List<Long> runningAIPIds = runningRequests.stream().map(wr -> wr.getAip().getId()).collect(Collectors.toList());
+
+            for (AIPEntity aip : aipsPageContent) {
+                // Create the request as pending if there is already a running request
+                boolean isPending = runningAIPIds.contains(aip.getId());
+                List<AIPUpdateRequest> requests = AIPUpdateRequest.build(aip, updateTaskDto, isPending);
+                aipUpdateRequestRepository.saveAll(requests);
+            };
             isFirstPage = false;
-            advanceCompletion();
+            if (totalPages > 0) {
+                advanceCompletion();
+            }
             pageRequest.next();
         } while (aipsPage.hasNext());
     }

@@ -20,6 +20,10 @@ package fr.cnes.regards.modules.ingest.domain.request;
 
 public enum InternalRequestStep {
     /**
+     * When the request is ready to be processed
+     */
+    CREATED,
+    /**
      * When the request cannot be processed for now
      */
     BLOCKED,

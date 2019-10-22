@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
-import fr.cnes.regards.modules.ingest.service.job.ingest.IngestJobPriority;
+import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
@@ -276,7 +276,7 @@ public class IngestRequestService implements IIngestRequestService {
             switch (request.getStep()) {
                 case REMOTE_STORAGE_REQUESTED:
                     // Update AIPs with meta returned by storage
-                    aipStorageService.updateAIPsUsingStorageResult(request.getAips(), storeRequestInfo);
+                    aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), storeRequestInfo);
                     // Check if there is another storage request we're waiting for
                     List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, requestInfo);
                     if (!remoteStepGroupIds.isEmpty()) {
@@ -372,7 +372,7 @@ public class IngestRequestService implements IIngestRequestService {
                     // Update AIP and SIP with current error
                     updateOAISEntitiesWithErrors(request, errors, "Error occurred while storing AIP files");
                     // Update AIPs with success response returned by storage
-                    aipStorageService.updateAIPsUsingStorageResult(request.getAips(), success);
+                    aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), success);
                     // Save error in request status
                     request.setStep(IngestRequestStep.REMOTE_STORAGE_ERROR);
                     // Keep track of the error

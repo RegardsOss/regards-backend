@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.aip;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 import java.util.Collection;
 import java.util.List;
@@ -47,10 +48,33 @@ public interface IAIPStorageService {
     String storeAIPs(List<AIPEntity> aips) throws ModuleException;
 
     /**
-     * Update provided {@link AIPEntity} aips with updated metadata from storage
+     * Update provided {@link AIPEntity} aips content info with files metadata
      * @param aips to update
-     * @param storeRequestInfos storage result
+     * @param storeRequestInfos storage events
      */
-    void updateAIPsUsingStorageResult(List<AIPEntity> aips, Collection<RequestResultInfoDTO> storeRequestInfos);
+    void updateAIPsContentInfosAndLocations(List<AIPEntity> aips, Collection<RequestResultInfoDTO> storeRequestInfos);
 
+    /**
+     * Update provided {@link AIPEntity} aip with a list of new file storage locations
+     * @param aip to update
+     * @param storeRequestInfos storage events
+     * @return true when aip have been impacted by these events
+     */
+    boolean addAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos);
+
+    /**
+     * Update provided {@link AIPEntity} aip with a list of removed file storage locations
+     * @param aip to update
+     * @param storeRequestInfos storage events
+     * @return true when aip have been impacted by these events
+     */
+    boolean removeAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos);
+
+    /**
+     * Remove a list of storage id from the AIP and retrieve the list of events to send
+     * @param aip
+     * @param removedStorages list of storage metadata that will be removed from the AIP
+     * @return the list of events to sent to storage, empty if nothing have been done
+     */
+    Collection<FileDeletionRequestDTO> removeStorages(AIPEntity aip, List<String> removedStorages);
 }

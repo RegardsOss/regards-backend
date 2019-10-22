@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.job.ingest;
+package fr.cnes.regards.modules.ingest.service.job;
 
 /**
  * Ingest jobs priority management
@@ -42,6 +42,14 @@ public enum IngestJobPriority {
     },
 
     UPDATE_AIP_SCAN_JOB_PRIORITY {
+
+        @Override
+        public int getPriority() {
+            return 0;
+        }
+    },
+
+    UPDATE_AIP_RUNNER_PRIORITY {
 
         @Override
         public int getPriority() {

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.test;
 
+import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +72,9 @@ public class IngestServiceTest {
     private IOAISDeletionRequestRepository deletionRequestRepository;
 
     @Autowired
+    private IAIPUpdateRequestRepository aipUpdateRequestRepository;
+
+    @Autowired
     private IPublisher publisher;
 
     @Autowired
@@ -91,6 +95,7 @@ public class IngestServiceTest {
      */
     public void init() throws Exception {
         ingestRequestRepository.deleteAll();
+        aipUpdateRequestRepository.deleteAll();
         aipRepository.deleteAll();
         sipRepository.deleteAll();
         storageDeletionRequestRepository.deleteAll();

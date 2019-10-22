@@ -51,20 +51,20 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.accept.IOAISAcceptRequestService;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
+import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.OAISEntityDeletionJob;
-import fr.cnes.regards.modules.ingest.service.job.ingest.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -336,6 +336,7 @@ public class IngestService implements IIngestService {
                     request.getSession());
             throw new ModuleException(error);
         }
+        deletionRequest.setCreationDate(OffsetDateTime.now());
         deletionRequest.setState(InternalRequestStep.RUNNING);
         // Save deletion request
         deletionRequestRepository.save(deletionRequest);

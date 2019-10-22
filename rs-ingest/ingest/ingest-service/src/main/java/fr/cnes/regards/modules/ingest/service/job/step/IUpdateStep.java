@@ -16,30 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dto.request.update;
+package fr.cnes.regards.modules.ingest.service.job.step;
 
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
+import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 
 /**
  * @author Léo Mieulet
  */
-public class AIPUpdateSimpleValueTaskDto extends AbstractAIPUpdateTaskDto {
-    private Set<String> values;
+public interface IUpdateStep {
 
-    public Set<String> getValues() {
-        return values;
-    }
-
-    public void setValues(Set<String> values) {
-        this.values = values;
-    }
-
-    public static AIPUpdateSimpleValueTaskDto build(AIPUpdateTaskType type, Set<String> values) {
-        AIPUpdateSimpleValueTaskDto task = new AIPUpdateSimpleValueTaskDto();
-        task.setType(type);
-        task.setValues(values);
-        return task;
-    }
+    AIPEntityUpdateWrapper run(AIPEntityUpdateWrapper aipWrapper, AbstractAIPUpdateTask updateTask)
+            throws ModuleException;
 }

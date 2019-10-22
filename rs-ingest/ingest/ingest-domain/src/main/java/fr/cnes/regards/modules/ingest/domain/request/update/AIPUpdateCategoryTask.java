@@ -31,26 +31,26 @@ import org.hibernate.annotations.TypeDefs;
 /**
  * @author Léo Mieulet
  */
-@Entity(name = "UpdateTagAIPTask")
+@Entity(name = "UpdateCategoryAIPTask")
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-public class AIPUpdateTagTask extends AbstractAIPUpdateTask {
+public class AIPUpdateCategoryTask extends AbstractAIPUpdateTask {
 
     @Column(columnDefinition = "jsonb", name = "payload")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
-    private List<String> tags;
+    private List<String> categories;
 
-    public List<String> getTags() {
-        return tags;
+    public List<String> getCategories() {
+        return categories;
     }
 
-    public void setTags(List<String> tags) {
-        this.tags = tags;
+    public void setCategories(List<String> categories) {
+        this.categories = categories;
     }
 
-    public static AIPUpdateTagTask build(AIPUpdateTaskType type, AIPUpdateState state, List<String> tags) {
-        AIPUpdateTagTask task = new AIPUpdateTagTask();
+    public static AIPUpdateCategoryTask build(AIPUpdateTaskType type, AIPUpdateState state, List<String> categories) {
+        AIPUpdateCategoryTask task = new AIPUpdateCategoryTask();
         task.setType(type);
-        task.setTags(tags);
+        task.setCategories(categories);
         task.setState(state);
         return task;
     }

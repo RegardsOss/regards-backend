@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.update;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import javax.persistence.Column;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -32,10 +33,7 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 
 /**
  * @author Léo Mieulet
@@ -44,19 +42,12 @@ import org.hibernate.annotations.TypeDefs;
 @Table(name = "t_update_task")
 @DiscriminatorColumn(name = "dtype", length = 16)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public abstract class AIPUpdateTask {
+public abstract class AbstractAIPUpdateTask {
 
     @Id
     @SequenceGenerator(name = "aipUpdateTaskSequence", initialValue = 1, sequenceName = "seq_aip_update_task")
     @GeneratedValue(generator = "aipUpdateTaskSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
-
-    /**
-     * The AIP Internal identifier (generated URN)
-     */
-    @NotBlank(message = "AIP URN is required")
-    @Column(name = "aip_id", length = SIPEntity.MAX_URN_SIZE)
-    private String aipId;
 
     @NotNull(message = "AIP update state is required")
     @Enumerated(EnumType.STRING)
@@ -74,14 +65,6 @@ public abstract class AIPUpdateTask {
         this.id = id;
     }
 
-    public String getAipId() {
-        return aipId;
-    }
-
-    public void setAipId(String aipId) {
-        this.aipId = aipId;
-    }
-
     public AIPUpdateState getState() {
         return state;
     }
@@ -96,5 +79,30 @@ public abstract class AIPUpdateTask {
 
     public void setType(AIPUpdateTaskType type) {
         this.type = type;
+    }
+
+    public static List<AbstractAIPUpdateTask> build(AIPUpdateParametersDto updateTaskDto) {
+        List<AbstractAIPUpdateTask> result = new ArrayList<>();
+        if (!updateTaskDto.getAddCategories().isEmpty()) {
+            result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.ADD_CATEGORY,
+                    AIPUpdateState.READY, updateTaskDto.getAddCategories()));
+        }
+        if (!updateTaskDto.getRemoveCategories().isEmpty()) {
+            result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.REMOVE_CATEGORY,
+                    AIPUpdateState.READY, updateTaskDto.getRemoveCategories()));
+        }
+        if (!updateTaskDto.getAddTags().isEmpty()) {
+            result.add(AIPUpdateTagTask.build(AIPUpdateTaskType.ADD_TAG,
+                    AIPUpdateState.READY, updateTaskDto.getAddTags()));
+        }
+        if (!updateTaskDto.getRemoveTags().isEmpty()) {
+            result.add(AIPUpdateTagTask.build(AIPUpdateTaskType.REMOVE_TAG,
+                    AIPUpdateState.READY, updateTaskDto.getRemoveTags()));
+        }
+        if (!updateTaskDto.getRemoveStorages().isEmpty()) {
+            result.add(AIPRemoveStorageTask.build(AIPUpdateTaskType.REMOVE_STORAGE,
+                    AIPUpdateState.READY, updateTaskDto.getRemoveStorages()));
+        }
+        return result;
     }
 }

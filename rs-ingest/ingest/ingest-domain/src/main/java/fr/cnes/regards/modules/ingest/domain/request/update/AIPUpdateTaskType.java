@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.update;
 
+import com.google.common.collect.Lists;
+
 /**
  * Types of AIP task update
  * @author Léo Mieulet
@@ -40,19 +42,37 @@ public enum AIPUpdateTaskType {
      */
     REMOVE_CATEGORY,
     /**
-     * Task to add a storage location
-     */
-    ADD_STORAGE,
-    /**
      * Task to remove a storage location
      */
     REMOVE_STORAGE,
     /**
-     * Task to add a file task
+     * Task to add a file location
      */
-    ADD_FILE,
+    ADD_FILE_LOCATION,
     /**
-     * Task to remove a file
+     * Task to remove a file location
      */
-    REMOVE_FILE,
+    REMOVE_FILE_LOCATION;
+
+    /**
+     * Get the comparator between two tasks, as some task must be executed before others
+     * @param otherTaskType
+     * @return
+     */
+    public int getOrder(AIPUpdateTaskType otherTaskType) {
+        // Test if the current type should be executed at the end
+        if (Lists.newArrayList(ADD_FILE_LOCATION, REMOVE_FILE_LOCATION).contains(this)) {
+            // Test for same type of task
+            if (Lists.newArrayList(ADD_FILE_LOCATION, REMOVE_FILE_LOCATION).contains(otherTaskType)) {
+                return 0;
+            }
+            // The other task should be executed before the current one
+            return -1;
+        }
+        // Test if the other task should be executed after the current one
+        if (Lists.newArrayList(ADD_FILE_LOCATION, REMOVE_FILE_LOCATION).contains(otherTaskType)) {
+            return 1;
+        }
+        return 0;
+    }
 }

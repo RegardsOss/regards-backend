@@ -18,6 +18,26 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
+import fr.cnes.regards.modules.storagelight.client.IStorageClient;
+import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileReferenceRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -27,7 +47,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,23 +55,6 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.storagelight.client.IStorageClient;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * @author Léo Mieulet
@@ -79,6 +81,9 @@ public class AIPStorageService implements IAIPStorageService {
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
+
+    @Autowired
+    private IngestConfigurationProperties confProperties;
 
     @Override
     public List<String> storeAIPFiles(List<AIPEntity> aipEntities) throws ModuleException {
@@ -159,7 +164,7 @@ public class AIPStorageService implements IAIPStorageService {
     }
 
     @Override
-    public void updateAIPsUsingStorageResult(List<AIPEntity> aips, Collection<RequestResultInfoDTO> storeRequestInfos) {
+    public void updateAIPsContentInfosAndLocations(List<AIPEntity> aips, Collection<RequestResultInfoDTO> storeRequestInfos) {
         // Iterate over AIPs
         for (AIPEntity aipEntity : aips) {
             // Iterate over AIP data objects
@@ -193,6 +198,146 @@ public class AIPStorageService implements IAIPStorageService {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean addAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos) {
+        boolean edited = false;
+        // Iterate over events (we already know they concerns the provided aip)
+        for (RequestResultInfoDTO eventInfo : storeRequestInfos) {
+            String storageLocation = eventInfo.getRequestStorage();
+            List<ContentInformation> contentInfos = aip.getAip().getProperties().getContentInformations();
+
+            // Extract from aip the ContentInfo referenced by the event, otherwise ignore the event
+            Optional<ContentInformation> ciOp = contentInfos.stream().filter(ci ->
+                    ci.getDataObject().getChecksum().equals(eventInfo.getRequestChecksum())).findFirst();
+            if (ciOp.isPresent()) {
+
+                ContentInformation ci = ciOp.get();
+                List<StorageMetadata> currentStorages = aip.getIngestMetadata().getStorages();
+
+                // Check if the AIP storage list contains the event storage location
+                boolean storageExists = currentStorages.stream().anyMatch(sm ->
+                        sm.getPluginBusinessId().equals(storageLocation));
+
+                // Add this new location to the ingestMetadata storage list
+                if (!storageExists) {
+                    edited = true;
+                    ArrayList<StorageMetadata> updatedStorages = Lists.newArrayList(currentStorages);
+                    updatedStorages.add(StorageMetadata.build(storageLocation));
+                    aip.getIngestMetadata().setStorages(updatedStorages);
+                }
+
+                // Check if the event storage location is not already existing in ContentInfo locations
+                boolean dataObjectLocationExists = ci.getDataObject().getLocations().stream().anyMatch(l ->
+                        l.getStorage().equals(storageLocation));
+
+                if (!dataObjectLocationExists) {
+                    edited = true;
+                    // Add this new location to the ContentInfo locations list
+                    ci.getDataObject().getLocations().add(OAISDataObjectLocation.build(
+                            eventInfo.getResultFile().getLocation().getUrl(),
+                            storageLocation)
+                    );
+                    aip.getAip().withEvent("update", String.format("File %s [%s] is now stored on %s.",
+                            eventInfo.getResultFile().getMetaInfo().getFileName(),
+                            eventInfo.getResultFile().getMetaInfo().getChecksum(),
+                            storageLocation));
+                }
+            }
+        }
+        return edited;
+    }
+
+    @Override
+    public boolean removeAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos) {
+        IngestMetadata ingestMetadata = aip.getIngestMetadata();
+        boolean edited = false;
+
+        // Iterate over events (we already know they concerns the provided aip)
+        for (RequestResultInfoDTO eventInfo : storeRequestInfos) {
+            String storageLocation = eventInfo.getRequestStorage();
+            List<ContentInformation> contentInfos = aip.getAip().getProperties().getContentInformations();
+
+            // Extract from aip the ContentInfo referenced by the event, otherwise ignore the event
+            Optional<ContentInformation> ciOp = contentInfos.stream().filter(ci ->
+                    ci.getDataObject().getChecksum().equals(eventInfo.getRequestChecksum())).findFirst();
+            if (ciOp.isPresent()) {
+                ContentInformation ci = ciOp.get();
+
+                // Check if the event storage location exists in ContentInfo locations
+                boolean dataObjectLocationExists = ci.getDataObject().getLocations().stream().anyMatch(l ->
+                        l.getStorage().equals(storageLocation));
+
+                if (dataObjectLocationExists) {
+                    edited = true;
+                    // Remove the location from ContentInfo locations
+                    Set<OAISDataObjectLocation> updatedDataObject = ci.getDataObject().getLocations().stream()
+                            .filter(l -> !l.getStorage().equals(storageLocation)).
+                            collect(Collectors.toSet());
+                    ci.getDataObject().setLocations(updatedDataObject);
+                    aip.getAip().withEvent("update", String.format("File %s [%s] is not stored anymore on %s.",
+                            eventInfo.getResultFile().getMetaInfo().getFileName(),
+                            eventInfo.getResultFile().getMetaInfo().getChecksum(),
+                            storageLocation));
+                }
+
+                // Check if the event storage location still appears in some file referenced by this AIP
+                boolean shouldKeepStorage = contentInfos.stream().anyMatch(contentInfo ->
+                        contentInfo.getDataObject().getLocations().stream().anyMatch(
+                                loc -> loc.getStorage().equals(storageLocation)
+                        )
+                );
+
+                // Remove the location from the ingestMetadata storage list
+                if (!shouldKeepStorage) {
+                    edited = true;
+
+                    List<StorageMetadata> updatedStorages = ingestMetadata.getStorages().stream()
+                            .filter(s -> !s.getPluginBusinessId().equals(storageLocation)).
+                                    collect(Collectors.toList());
+                    ingestMetadata.setStorages(updatedStorages);
+                }
+            }
+        }
+        return edited;
+    }
+
+    @Override
+    public Collection<FileDeletionRequestDTO> removeStorages(AIPEntity aip, List<String> removedStorages) {
+
+        // Build file reference requests
+        Collection<FileDeletionRequestDTO> filesToRemove = new ArrayList<>();
+
+        // Compute the new list of storage location
+        List<StorageMetadata> currentStorages = aip.getIngestMetadata().getStorages();
+        List<StorageMetadata> newStorages = new ArrayList<>();
+        currentStorages.forEach(s -> {
+            if (!removedStorages.contains(s.getPluginBusinessId())) {
+                newStorages.add(s);
+            }
+        });
+        // Check if some storage location have been removed
+        if (newStorages.size() < currentStorages.size()) {
+            // Update the list of storage location
+            aip.getIngestMetadata().setStorages(newStorages);
+
+            // Iterate over Data Objects
+            for (ContentInformation ci : aip.getAip().getProperties().getContentInformations()) {
+
+                OAISDataObject dataObject = ci.getDataObject();
+                // Iterate over data object localisations
+                for (OAISDataObjectLocation l: dataObject.getLocations()) {
+                    // Check if the current storage is still there
+                    if (removedStorages.contains(l.getStorage())) {
+                        // Create a storage deletion request
+                        filesToRemove.add(FileDeletionRequestDTO.build(dataObject.getChecksum(), l.getStorage(),
+                            aip.getAipId(), false));
+                    }
+                }
+            }
+        }
+        return filesToRemove;
     }
 
     @Override

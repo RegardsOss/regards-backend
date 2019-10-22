@@ -18,25 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request;
 
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
-
 import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.ForeignKey;
 import javax.persistence.JoinColumn;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
-
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
-
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 
 /**
  * Common request properties
@@ -55,6 +49,9 @@ public abstract class AbstractRequest {
     @JoinColumn(name = "job_info_id", foreignKey = @ForeignKey(name = "fk_req_job_info_id"))
     private JobInfo jobInfo;
 
+    @NotNull(message = "Creation date is required")
+    @Column(name = "creation_date", nullable = false)
+    private OffsetDateTime creationDate;
 
     public Set<String> getErrors() {
         return errors;
@@ -76,5 +73,13 @@ public abstract class AbstractRequest {
 
     public void setJobInfo(JobInfo jobInfo) {
         this.jobInfo = jobInfo;
+    }
+
+    public OffsetDateTime getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(OffsetDateTime creationDate) {
+        this.creationDate = creationDate;
     }
 }

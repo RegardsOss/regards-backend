@@ -18,13 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
+import fr.cnes.regards.modules.ingest.dto.request.RequestState;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
-
 import java.util.UUID;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -43,18 +46,11 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
-
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 import org.springframework.lang.Nullable;
-
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  *
@@ -242,6 +238,7 @@ public class IngestRequest extends AbstractRequest {
         request.setStep(step);
         request.setSip(sip);
         request.setErrors(errors);
+        request.setCreationDate(OffsetDateTime.now());
         return request;
     }
 }

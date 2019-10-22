@@ -19,7 +19,11 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.modules.ingest.domain.request.AIPUpdateRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import java.util.List;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Pageable;
 
 /**
  * {@link AIPUpdateRequest} repository
@@ -28,4 +32,22 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface IAIPUpdateRequestRepository extends JpaRepository<AIPUpdateRequest, Long> {
 
     boolean existsBySessionOwnerAndSession(String sessionOwner, String session);
+
+    default Page<AIPUpdateRequest> findWaitingRequest(Pageable pageRequest) {
+        return findAllByState(InternalRequestStep.CREATED, pageRequest);
+    }
+
+    default List<AIPUpdateRequest> findRunningRequestAndAipIdIn(List<Long> aipIds) {
+        return findAllByAipIdInAndState(aipIds, InternalRequestStep.RUNNING);
+    }
+
+    Page<AIPUpdateRequest> findAllByState(InternalRequestStep step, Pageable page);
+
+    List<AIPUpdateRequest> findAllByAipIdIn(List<Long> aipIds);
+
+
+    Page<AIPUpdateRequest> findAllByStateAndAipIdIn(InternalRequestStep step, List<Long> aipIds, Pageable page);
+
+    List<AIPUpdateRequest> findAllByAipIdInAndState(List<Long> aipIds, InternalRequestStep state);
+//   TODO List<AIPUpdateRequest> findDistinctByAipIdAndAipIdInAndState(List<Long> aipIds, InternalRequestStep state);
 }

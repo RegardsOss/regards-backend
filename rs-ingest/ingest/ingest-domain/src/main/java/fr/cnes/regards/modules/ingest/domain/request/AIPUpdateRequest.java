@@ -19,10 +19,13 @@
 package fr.cnes.regards.modules.ingest.domain.request;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTask;
-import javax.persistence.Column;
+import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
@@ -35,7 +38,6 @@ import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
@@ -55,18 +57,10 @@ public class AIPUpdateRequest extends AbstractInternalRequest {
     @GeneratedValue(generator = "updateRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER)
-    @Column(length = 128, name = "session_owner", nullable = false)
-    private String sessionOwner;
-
-    @NotBlank(message = IngestValidationMessages.MISSING_SESSION)
-    @Column(length = 128, name = "session_name", nullable = false)
-    private String session;
-
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "update_task_id", foreignKey = @ForeignKey(name = "fk_update_request_update_task_id"))
     @Valid
-    private AIPUpdateTask updateTask;
+    private AbstractAIPUpdateTask updateTask;
 
     /**
      * AIP to update
@@ -83,26 +77,6 @@ public class AIPUpdateRequest extends AbstractInternalRequest {
         this.id = id;
     }
 
-    @Override
-    public String getSessionOwner() {
-        return sessionOwner;
-    }
-
-    @Override
-    public void setSessionOwner(String sessionOwner) {
-        this.sessionOwner = sessionOwner;
-    }
-
-    @Override
-    public String getSession() {
-        return session;
-    }
-
-    @Override
-    public void setSession(String session) {
-        this.session = session;
-    }
-
     public AIPEntity getAip() {
         return aip;
     }
@@ -111,20 +85,34 @@ public class AIPUpdateRequest extends AbstractInternalRequest {
         this.aip = aip;
     }
 
-    public AIPUpdateTask getUpdateTask() {
+    public AbstractAIPUpdateTask getUpdateTask() {
         return updateTask;
     }
 
-    public void setUpdateTask(AIPUpdateTask updateTask) {
+    public void setUpdateTask(AbstractAIPUpdateTask updateTask) {
         this.updateTask = updateTask;
     }
 
-    public static AIPUpdateRequest build(AIPEntity aip, AIPUpdateTask updateTask) {
-        AIPUpdateRequest updateRequest = new  AIPUpdateRequest();
-        updateRequest.setUpdateTask(updateTask);
-        updateRequest.setAip(aip);
-        updateRequest.setSessionOwner(aip.getIngestMetadata().getSessionOwner());
-        updateRequest.setSession(aip.getIngestMetadata().getSession());
-        return updateRequest;
+    public static List<AIPUpdateRequest> build(AIPEntity aip, AIPUpdateParametersDto updateTaskDto, boolean pending) {
+        return AIPUpdateRequest.build(aip, AbstractAIPUpdateTask.build(updateTaskDto), pending);
+    }
+
+    public static List<AIPUpdateRequest> build(AIPEntity aip, List<AbstractAIPUpdateTask> updateTasks, boolean pending) {
+        List<AIPUpdateRequest> result = new ArrayList<>();
+        for (AbstractAIPUpdateTask updateTask : updateTasks) {
+            AIPUpdateRequest updateRequest = new AIPUpdateRequest();
+            updateRequest.setUpdateTask(updateTask);
+            updateRequest.setAip(aip);
+            updateRequest.setCreationDate(OffsetDateTime.now());
+            updateRequest.setSessionOwner(aip.getIngestMetadata().getSessionOwner());
+            updateRequest.setSession(aip.getIngestMetadata().getSession());
+            if (pending) {
+                updateRequest.setState(InternalRequestStep.BLOCKED);
+            } else {
+                updateRequest.setState(InternalRequestStep.CREATED);
+            }
+            result.add(updateRequest);
+        }
+        return result;
     }
 }

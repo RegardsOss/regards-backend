@@ -19,12 +19,10 @@
 package fr.cnes.regards.modules.ingest.domain.request;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import java.util.List;
+import java.time.OffsetDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -36,8 +34,6 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
@@ -114,6 +110,7 @@ public class StorageDeletionRequest extends AbstractInternalRequest {
         sdr.setSessionOwner(sipEntity.getIngestMetadata().getSessionOwner());
         sdr.setSession(sipEntity.getIngestMetadata().getSession());
         sdr.setDeletionMode(deletionMode);
+        sdr.setCreationDate(OffsetDateTime.now());
         return sdr;
     }
 }

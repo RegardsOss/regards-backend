@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.domain.request.update;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -31,27 +32,22 @@ import org.hibernate.annotations.TypeDefs;
 /**
  * @author Léo Mieulet
  */
-@Entity(name = "UpdateTagAIPTask")
+@Entity(name = "UpdateFileLocationAIPTask")
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-public class AIPUpdateTagTask extends AbstractAIPUpdateTask {
+public class AIPUpdateFileLocationTask extends AbstractAIPUpdateTask {
 
+    /**
+     * File list that were either added or removed from a storage location
+     */
     @Column(columnDefinition = "jsonb", name = "payload")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
-    private List<String> tags;
+    private List<RequestResultInfoDTO> fileLocationUpdates;
 
-    public List<String> getTags() {
-        return tags;
+    public List<RequestResultInfoDTO> getFileLocationUpdates() {
+        return fileLocationUpdates;
     }
 
-    public void setTags(List<String> tags) {
-        this.tags = tags;
-    }
-
-    public static AIPUpdateTagTask build(AIPUpdateTaskType type, AIPUpdateState state, List<String> tags) {
-        AIPUpdateTagTask task = new AIPUpdateTagTask();
-        task.setType(type);
-        task.setTags(tags);
-        task.setState(state);
-        return task;
+    public void setFileLocationUpdates(List<RequestResultInfoDTO> fileLocationUpdates) {
+        this.fileLocationUpdates = fileLocationUpdates;
     }
 }
