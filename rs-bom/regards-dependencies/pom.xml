@@ -54,6 +54,7 @@
         <gson.starter.version>0.5.0-SNAPSHOT</gson.starter.version>
         <proxy.starter.version>0.5.0-SNAPSHOT</proxy.starter.version>
         <hateoas.starter.version>0.5.0-SNAPSHOT</hateoas.starter.version>
+        <metric.starter.version>0.5.0-SNAPSHOT</metric.starter.version>
         <jpa.data.version>0.5.0-SNAPSHOT</jpa.data.version>
         <jpa.common.version>0.5.0-SNAPSHOT</jpa.common.version>
         <jpa.instance.starter.version>0.5.0-SNAPSHOT</jpa.instance.starter.version>
@@ -317,6 +318,11 @@
                 <groupId>fr.cnes.regards.framework</groupId>
                 <artifactId>hateoas-regards</artifactId>
                 <version>${hateoas.starter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>metric-regards-starter</artifactId>
+                <version>${metric.starter.version}</version>
             </dependency>
             <!-- JPA -->
             <dependency>
