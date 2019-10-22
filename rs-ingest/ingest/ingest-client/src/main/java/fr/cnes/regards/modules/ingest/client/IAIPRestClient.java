@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 
@@ -23,7 +22,6 @@ import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 public interface IAIPRestClient {
 
     @RequestMapping(method = RequestMethod.GET, path = "/aips")
-    @ResourceAccess(description = "Return a page of AIPs")
     ResponseEntity<PagedResources<Resource<AIPEntity>>> searchAIPs(@RequestParam SearchAIPsParameters filters,
             @RequestParam("page") int page, @RequestParam("size") int size);
 }
