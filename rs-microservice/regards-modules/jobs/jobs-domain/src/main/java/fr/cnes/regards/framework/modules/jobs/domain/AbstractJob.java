@@ -46,7 +46,7 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected static final String INFO_TAB = ">>>>> ";
+    protected static final String INFO_TAB = " >>>>> ";
 
     protected UUID jobInfoId;
 
