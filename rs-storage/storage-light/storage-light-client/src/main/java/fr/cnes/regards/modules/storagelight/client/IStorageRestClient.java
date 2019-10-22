@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.storagelight.client;
 
 import java.util.List;
 
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +36,6 @@ import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
  * @author Sébastien Binda
  */
 @RestClient(name = "rs-storage", contextId = "rs-storage.rest.client")
-@RequestMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IStorageRestClient {
 
     public static final String FILE_PATH = "/files";
@@ -53,13 +51,14 @@ public interface IStorageRestClient {
      * @param checksum file to download
      * @return
      */
-    @RequestMapping(method = RequestMethod.GET, path = FILE_PATH + DOWNLOAD_PATH)
-    ResponseEntity<InputStreamResource> downloadFile(@PathVariable("checksum") String checksum);
+    @RequestMapping(method = RequestMethod.GET, path = FILE_PATH + DOWNLOAD_PATH,
+            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    Response downloadFile(@PathVariable("checksum") String checksum);
 
-    @RequestMapping(method = RequestMethod.GET, path = STORAGES_PATH)
+    @RequestMapping(method = RequestMethod.GET, path = STORAGES_PATH, produces = MediaType.ALL_VALUE)
     ResponseEntity<List<Resource<StorageLocationDTO>>> retrieve();
 
-    @RequestMapping(method = RequestMethod.GET, path = FILE_PATH + EXPORT_PATH)
+    @RequestMapping(method = RequestMethod.GET, path = FILE_PATH + EXPORT_PATH, produces = MediaType.ALL_VALUE)
     Response export();
 
 }

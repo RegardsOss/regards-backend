@@ -30,7 +30,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -112,8 +111,8 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
 
     @Test
     public void donwload() {
-        ResponseEntity<InputStreamResource> response = client.downloadFile("huhuhuhu");
-        Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        Response response = client.downloadFile("huhuhuhu");
+        Assert.assertEquals(HttpStatus.NOT_FOUND, response.status());
     }
 
     @Test
