@@ -351,6 +351,7 @@ public class PluginService implements IPluginService {
         ensureOnlyOneConfIsActive(pluginConf);
 
         PluginConfiguration newConf = repos.save(pluginConf);
+        newConf.setMetaData(pluginMeta);
 
         if (oldConfActive != newConf.isActive()) {
             // For CATALOG
