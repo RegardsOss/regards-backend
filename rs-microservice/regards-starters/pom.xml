@@ -94,6 +94,7 @@
 	    <module>proxy-starter</module>
         <module>notification-regards</module>
         <module>notification-regards-starter</module>
+        <module>metric-regards-starter</module>
     </modules>
 
     <dependencies>
