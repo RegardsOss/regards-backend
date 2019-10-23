@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import java.util.Optional;
 import org.assertj.core.util.Lists;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -25,8 +26,14 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.operation.preprocess.OperationRequestPreprocessor;
 import org.springframework.restdocs.operation.preprocess.OperationResponsePreprocessor;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
+import org.springframework.restdocs.payload.RequestFieldsSnippet;
+import org.springframework.restdocs.payload.ResponseFieldsSnippet;
 import org.springframework.restdocs.request.ParameterDescriptor;
+import org.springframework.restdocs.request.PathParametersSnippet;
 import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.request.RequestParametersSnippet;
 import org.springframework.restdocs.snippet.Snippet;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -394,8 +401,10 @@ public class RequestBuilderCustomizer {
 
     /**
      * Add snippets to be used to generate specific documentation.
-     * To document request parameters you better use {@link #documentRequestParameters(ParameterDescriptor...)} <br/>
-     * To document path parameters you better use {@link #documentPathParameters(ParameterDescriptor...)} <br/>
+     * To document request parameters (aka GET params) you better use {@link #documentRequestParameters(List<ParameterDescriptor>)} <br/>
+     * To document path parameters you better use {@link #documentPathParameters(List<ParameterDescriptor>)} <br/>
+     * To document request body you better use {@link #documentRequestBody(List<FieldDescriptor>)} <br/>
+     * To document response body you better use {@link #documentResponseBody(List<FieldDescriptor>)} <br/>
      * @param snippet documentation snippet to be added.
      */
     public RequestBuilderCustomizer document(Snippet snippet) {
@@ -403,13 +412,72 @@ public class RequestBuilderCustomizer {
         return this;
     }
 
+
+    public RequestBuilderCustomizer documentRequestParameters(List<ParameterDescriptor> descriptors) {
+        return documentRequestParameters(descriptors.toArray(new ParameterDescriptor[0]));
+    }
     public RequestBuilderCustomizer documentRequestParameters(ParameterDescriptor... descriptors) {
-        docSnippets.add(RequestDocumentation.requestParameters(descriptors));
+        Optional<Snippet> optionalExistingSnippet = docSnippets.stream()
+                .filter(docSnippet -> docSnippet instanceof RequestParametersSnippet).findFirst();
+        // Check if an existing request params exists
+        if (optionalExistingSnippet.isPresent()) {
+            throw new RuntimeException("You cannot call this method several time.");
+        } else {
+            // Create another
+            docSnippets.add(RequestDocumentation.requestParameters(descriptors));
+        }
         return this;
     }
 
+    public RequestBuilderCustomizer documentRequestBody(List<FieldDescriptor> descriptors) {
+        return documentRequestBody(descriptors.toArray(new FieldDescriptor[0]));
+    }
+    public RequestBuilderCustomizer documentRequestBody(FieldDescriptor... descriptors) {
+        Optional<Snippet> optionalExistingSnippet = docSnippets.stream()
+                .filter(docSnippet -> docSnippet instanceof RequestFieldsSnippet).findFirst();
+        // Check if an existing request params exists
+        if (optionalExistingSnippet.isPresent()) {
+            throw new RuntimeException("You cannot call this method several time.");
+        } else {
+            // Create another
+            docSnippets.add(PayloadDocumentation.relaxedRequestFields(descriptors));
+        }
+        return this;
+    }
+
+    public RequestBuilderCustomizer documentPathParameters(List<ParameterDescriptor> descriptors) {
+        return documentPathParameters(descriptors.toArray(new ParameterDescriptor[0]));
+    }
     public RequestBuilderCustomizer documentPathParameters(ParameterDescriptor... descriptors) {
-        docSnippets.add(RequestDocumentation.pathParameters(descriptors));
+        Optional<Snippet> optionalExistingSnippet = docSnippets.stream()
+                .filter(docSnippet -> docSnippet instanceof PathParametersSnippet).findFirst();
+        // Check if an existing path params exists
+        if (optionalExistingSnippet.isPresent()) {
+            // Add to existing path params
+            PathParametersSnippet snippet = (PathParametersSnippet) optionalExistingSnippet.get();
+            snippet.and(descriptors);
+        } else {
+            // Create another
+            docSnippets.add(RequestDocumentation.pathParameters(descriptors));
+        }
+        return this;
+    }
+
+    public RequestBuilderCustomizer documentResponseBody(List<FieldDescriptor> descriptors) {
+        return documentResponseBody(descriptors.toArray(new FieldDescriptor[0]));
+    }
+    public RequestBuilderCustomizer documentResponseBody(FieldDescriptor... descriptors) {
+        Optional<Snippet> optionalExistingSnippet = docSnippets.stream()
+                .filter(docSnippet -> docSnippet instanceof ResponseFieldsSnippet).findFirst();
+        // Check if an existing path params exists
+        if (optionalExistingSnippet.isPresent()) {
+            // Add to existing path params
+            ResponseFieldsSnippet snippet = (ResponseFieldsSnippet) optionalExistingSnippet.get();
+            snippet.and(descriptors);
+        } else {
+            // Create another
+            docSnippets.add(PayloadDocumentation.relaxedResponseFields(descriptors));
+        }
         return this;
     }
 
