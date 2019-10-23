@@ -4,6 +4,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,7 +22,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 @RequestMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAIPRestClient {
 
-    @RequestMapping(method = RequestMethod.GET, path = "/aips")
-    ResponseEntity<PagedResources<Resource<AIPEntity>>> searchAIPs(@RequestParam SearchAIPsParameters filters,
+    @RequestMapping(method = RequestMethod.POST, path = "/aips")
+    ResponseEntity<PagedResources<Resource<AIPEntity>>> searchAIPs(@RequestBody SearchAIPsParameters filters,
             @RequestParam("page") int page, @RequestParam("size") int size);
 }
