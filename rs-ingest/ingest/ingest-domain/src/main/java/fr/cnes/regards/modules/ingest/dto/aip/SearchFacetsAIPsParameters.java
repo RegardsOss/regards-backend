@@ -83,16 +83,6 @@ public class SearchFacetsAIPsParameters extends SearchAIPsParameters {
         return this;
     }
 
-    public SearchFacetsAIPsParameters withFrom(OffsetDateTime from) {
-        super.withFrom(from);
-        return this;
-    }
-
-    public SearchFacetsAIPsParameters withTo(OffsetDateTime to) {
-        super.withTo(to);
-        return this;
-    }
-
     public SearchFacetsAIPsParameters withTag(String tag) {
         super.withTag(tag);
         return this;
@@ -150,6 +140,26 @@ public class SearchFacetsAIPsParameters extends SearchAIPsParameters {
 
     public SearchFacetsAIPsParameters withCategories(Collection<String> categories) {
         super.withCategories(categories);
+        return this;
+    }
+
+    public SearchFacetsAIPsParameters withLastUpdateFrom(OffsetDateTime from) {
+        super.withLastUpdateFrom(from);
+        return this;
+    }
+
+    public SearchFacetsAIPsParameters withLastUpdateTo(OffsetDateTime to) {
+        super.withLastUpdateTo(to);
+        return this;
+    }
+
+    public SearchFacetsAIPsParameters withProviderIds(String... providerIds) {
+        super.withProviderIds(providerIds);
+        return this;
+    }
+
+    public SearchFacetsAIPsParameters withProviderIds(Collection<String> providerIds) {
+        super.withProviderIds(providerIds);
         return this;
     }
 

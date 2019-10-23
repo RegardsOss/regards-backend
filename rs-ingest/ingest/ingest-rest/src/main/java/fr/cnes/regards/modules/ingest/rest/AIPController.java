@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import java.io.IOException;
 import java.util.List;
 
@@ -117,6 +118,11 @@ public class AIPController implements IResourceController<AIPEntity> {
     public static final String CATEGORIES_SEARCH_PATH = CATEGORIES_MANAGEMENT_PATH + "/search";
 
     /**
+     * Controller path to update multiple AIPs using criteria and modification lists
+     */
+    public static final String AIP_UPDATE_PATH = "/update";
+
+    /**
      * {@link IResourceService} instance
      */
     @Autowired
@@ -133,9 +139,9 @@ public class AIPController implements IResourceController<AIPEntity> {
      * @return page of aip metadata respecting the constraints
      * @throws ModuleException
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Return a page of AIPs")
-    public ResponseEntity<PagedResources<Resource<AIPEntity>>> searchAIPs(SearchAIPsParameters filters,
+    public ResponseEntity<PagedResources<Resource<AIPEntity>>> searchAIPs(@RequestBody SearchAIPsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AIPEntity> assembler) {
         Page<AIPEntity> aips = aipService.search(filters, pageable);
@@ -181,7 +187,7 @@ public class AIPController implements IResourceController<AIPEntity> {
     @RequestMapping(value = AIPStorageService.AIP_DOWNLOAD_PATH, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResourceAccess(description = "Download AIP as JSON file", role = DefaultRole.PUBLIC)
-    public void downloadAIP(@RequestParam(required = false) String origin,
+    public void downloadAIP(@RequestParam(required = false, name = "origin") String origin,
             @Valid @PathVariable(AIPStorageService.AIP_ID_PATH_PARAM) String aipId, HttpServletResponse response)
             throws ModuleException, IOException {
 
@@ -198,6 +204,14 @@ public class AIPController implements IResourceController<AIPEntity> {
         }
         response.getOutputStream().flush();
         response.setStatus(HttpStatus.OK.value());
+    }
+
+
+    @RequestMapping(value = AIP_UPDATE_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "Update an AIP set with provided params", role = DefaultRole.PUBLIC)
+    public void updateAips(@Valid @RequestBody AIPUpdateParametersDto params) {
+        LOGGER.debug("Received request to update AIPs");
+        aipService.scheduleAIPEntityUpdate(params);
     }
 
     @Override

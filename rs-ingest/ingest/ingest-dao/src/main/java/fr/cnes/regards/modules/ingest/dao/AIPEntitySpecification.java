@@ -48,15 +48,15 @@ public final class AIPEntitySpecification {
             if (filters.getState() != null) {
                 predicates.add(cb.equal(root.get("state"), filters.getState()));
             }
-            if (filters.getFrom() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), filters.getFrom()));
+            if (filters.getLastUpdate().getFrom() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), filters.getLastUpdate().getFrom()));
             }
-            if (filters.getTo() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("lastUpdate"), filters.getTo()));
+            if (filters.getLastUpdate().getTo() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("lastUpdate"), filters.getLastUpdate().getTo()));
             }
             predicates.addAll(OAISEntitySpecification
                     .buildCommonPredicate(root, cb, filters.getTags(), filters.getSessionOwner(),
-                                          filters.getSession(), filters.getProviderId(), filters.getStorages(),
+                                          filters.getSession(), filters.getProviderIds(), filters.getStorages(),
                                           filters.getCategories()));
             query.orderBy(cb.desc(root.get("creationDate")));
 

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -306,9 +307,9 @@ public class SIPServiceIT extends IngestMultitenantServiceTest {
     @Ignore("Contexte à revoir")
     public void searchSip() {
         // Check search by state
-        Page<SIPEntity> results = sipService.search(null, null, null, null, Lists.newArrayList(SIPState.INGESTED), null,
+        Page<SIPEntity> results = sipService.search(SearchSIPsParameters.build().withState(SIPState.INGESTED),
                                                     PageRequest.of(0, 100));
-        Assert.assertTrue("There should be only two AIPs with AIP_GEN_ERROR state", results.getTotalElements() == 2);
+        Assert.assertTrue("There should be only two AIPs with INGESTED state", results.getTotalElements() == 2);
     }
 
     @SuppressWarnings("unchecked")

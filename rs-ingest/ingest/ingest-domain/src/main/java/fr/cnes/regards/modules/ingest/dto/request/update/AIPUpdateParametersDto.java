@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.dto.request.update;
 
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import java.util.List;
+import javax.validation.Valid;
 
 /**
  * Object containing some AIP criteria and a list of tags, categories and location to add or remove from these AIPs
@@ -30,6 +31,7 @@ public class AIPUpdateParametersDto {
     /**
      * Criteria to filter AIPEntity
      */
+    @Valid
     private SearchAIPsParameters criteria;
 
     /**

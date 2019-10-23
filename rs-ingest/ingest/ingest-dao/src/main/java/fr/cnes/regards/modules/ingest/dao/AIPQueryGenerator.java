@@ -46,8 +46,8 @@ public class AIPQueryGenerator {
         NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(tags)",
                 "{h-schema}t_aip ");
 
-        query = generatePredicates(query, filters.getState(), filters.getFrom(), filters.getTo(), filters.getSessionOwner(),
-                filters.getSession(), filters.getProviderId(), filters.getAipIds(), filters.getAipIdsExcluded(),
+        query = generatePredicates(query, filters.getState(), filters.getLastUpdate().getFrom(), filters.getLastUpdate().getTo(), filters.getSessionOwner(),
+                filters.getSession(), filters.getProviderIds(), filters.getAipIds(), filters.getAipIdsExcluded(),
                 filters.getTags(), filters.getCategories(), filters.getStorages());
 
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
@@ -62,8 +62,8 @@ public class AIPQueryGenerator {
         NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements(storages)->>'pluginBusinessId'",
                 "{h-schema}t_aip ");
 
-        query = generatePredicates(query, filters.getState(), filters.getFrom(), filters.getTo(), filters.getSessionOwner(),
-                filters.getSession(), filters.getProviderId(), filters.getAipIds(), filters.getAipIdsExcluded(),
+        query = generatePredicates(query, filters.getState(), filters.getLastUpdate().getFrom(), filters.getLastUpdate().getTo(), filters.getSessionOwner(),
+                filters.getSession(), filters.getProviderIds(), filters.getAipIds(), filters.getAipIdsExcluded(),
                 filters.getTags(), filters.getCategories(), filters.getStorages());
 
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
@@ -78,8 +78,8 @@ public class AIPQueryGenerator {
         NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(categories)",
                 "{h-schema}t_aip ");
 
-        query = generatePredicates(query, filters.getState(), filters.getFrom(), filters.getTo(), filters.getSessionOwner(),
-                filters.getSession(), filters.getProviderId(), filters.getAipIds(), filters.getAipIdsExcluded(),
+        query = generatePredicates(query, filters.getState(), filters.getLastUpdate().getFrom(), filters.getLastUpdate().getTo(), filters.getSessionOwner(),
+                filters.getSession(), filters.getProviderIds(), filters.getAipIds(), filters.getAipIdsExcluded(),
                 filters.getTags(), filters.getCategories(), filters.getStorages());
 
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
@@ -87,7 +87,7 @@ public class AIPQueryGenerator {
     }
 
     private static NativeSelectQuery generatePredicates(NativeSelectQuery query, AIPState state, OffsetDateTime from, OffsetDateTime to,
-            String sessionOwner, String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded,
+            String sessionOwner, String session, Set<String> providerIds, Set<String> aipIds, Set<String> aipIdsExcluded,
             List<String> tags, Set<String> categories, Set<String> storages) {
         if (state != null) {
             query.andPredicate("(state = :state)", "state", state.toString());
@@ -112,12 +112,8 @@ public class AIPQueryGenerator {
         if (aipIdsExcluded != null && !aipIdsExcluded.isEmpty()) {
             query.andListPredicate("(aip_id not in (", "))", "aipIdExcluded", aipIdsExcluded);
         }
-        if (providerId != null && !providerId.isEmpty()) {
-            if (providerId.startsWith(SpecificationUtils.LIKE_CHAR) || providerId.endsWith(SpecificationUtils.LIKE_CHAR)) {
-                query.andPredicate("(provider_id like :providerId)", "providerId", providerId);
-            } else {
-                query.andPredicate("(provider_id = :providerId)", "providerId", providerId);
-            }
+        if (providerIds != null && !providerIds.isEmpty()) {
+            query.addOneOfStringLike("provider_id", providerIds);
         }
 
         if (tags != null && !tags.isEmpty()) {

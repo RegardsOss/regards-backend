@@ -25,7 +25,7 @@ public final class OAISEntitySpecification {
     }
 
     public static Set<Predicate> buildCommonPredicate(Root<?> root, CriteriaBuilder cb,List<String> tags,
-            String sessionOwner, String session, String providerId, Set<String> storages, Set<String> categories) {
+            String sessionOwner, String session, Set<String> providerIds, Set<String> storages, Set<String> categories) {
 
         Set<Predicate> predicates = Sets.newHashSet();
         if (tags != null && !tags.isEmpty()) {
@@ -38,12 +38,17 @@ public final class OAISEntitySpecification {
         if (session != null) {
             predicates.add(cb.equal(root.get(INGEST_METADATA).get("session"), session));
         }
-        if (providerId != null) {
-            if (providerId.startsWith(SpecificationUtils.LIKE_CHAR) || providerId.endsWith(SpecificationUtils.LIKE_CHAR)) {
-                predicates.add(cb.like(root.get("providerId"), providerId));
-            } else {
-                predicates.add(cb.equal(root.get("providerId"), providerId));
+        if (providerIds != null && !providerIds.isEmpty()) {
+            Set<Predicate> providerIdsPredicates = Sets.newHashSet();
+            for (String providerId: providerIds) {
+                if (providerId.startsWith(SpecificationUtils.LIKE_CHAR) || providerId.endsWith(SpecificationUtils.LIKE_CHAR)) {
+                    providerIdsPredicates.add(cb.like(root.get("providerId"), providerId));
+                } else {
+                    providerIdsPredicates.add(cb.equal(root.get("providerId"), providerId));
+                }
             }
+            // Use the OR operator between each storage
+            predicates.add(cb.or(providerIdsPredicates.toArray(new Predicate[providerIdsPredicates.size()])));
         }
         if (storages != null && !storages.isEmpty()) {
             Set<Predicate> storagePredicates = Sets.newHashSet();

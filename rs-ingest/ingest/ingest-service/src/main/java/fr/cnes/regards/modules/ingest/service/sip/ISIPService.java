@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
@@ -46,8 +47,7 @@ public interface ISIPService {
     /**
      * Retrieve all {@link SIPEntity}s matching parameters.
      */
-    Page<SIPEntity> search(String providerId, String sessionOwner, String session, OffsetDateTime from,
-            List<SIPState> state, String ingestChain, Pageable page);
+    Page<SIPEntity> search(SearchSIPsParameters params, Pageable page);
 
     /**
      * Retrieve one {@link SIPEntity} for the given sipId

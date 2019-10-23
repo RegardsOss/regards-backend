@@ -176,12 +176,12 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
                         PageRequest.of(0, 100));
         Assert.assertEquals(2, results.getTotalElements());
 
-        results = aipService.search(SearchAIPsParameters.build().withFrom(OffsetDateTime.now().plusDays(50)),
+        results = aipService.search(SearchAIPsParameters.build().withLastUpdateFrom(OffsetDateTime.now().plusDays(50)),
                                     PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getTotalElements());
 
-        results = aipService.search(SearchAIPsParameters.build().withFrom(OffsetDateTime.now().minusHours(5))
-                .withTo(OffsetDateTime.now().plusDays(5)), PageRequest.of(0, 100));
+        results = aipService.search(SearchAIPsParameters.build().withLastUpdateFrom(OffsetDateTime.now().minusHours(5))
+                .withLastUpdateTo(OffsetDateTime.now().plusDays(5)), PageRequest.of(0, 100));
         Assert.assertEquals(7, results.getTotalElements());
 
         results = aipService.search(SearchAIPsParameters.build().withTag("toto"), PageRequest.of(0, 100));
@@ -194,7 +194,7 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(7, results.getTotalElements());
 
         results = aipService.search(SearchAIPsParameters.build().withState(AIPState.GENERATED)
-                .withFrom(OffsetDateTime.now().minusHours(5)).withTo(OffsetDateTime.now().plusDays(5)).withTags(TAG_1)
+                .withLastUpdateFrom(OffsetDateTime.now().minusHours(5)).withLastUpdateTo(OffsetDateTime.now().plusDays(5)).withTags(TAG_1)
                 .withSessionOwner(SESSION_OWNER_1).withSession(SESSION_1).withStorages(STORAGE_2)
                 .withCategories(CATEGORIES_2), PageRequest.of(0, 100));
         Assert.assertEquals(1, results.getTotalElements());
@@ -228,8 +228,8 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(2, results.size());
 
         // Full test (with almost all attributes)
-        filters = filters.withProviderId("provider 1").withFrom(OffsetDateTime.now().minusHours(5))
-                .withTo(OffsetDateTime.now().plusDays(6)).withAIPIds(aipIds)
+        filters = filters.withProviderIds("provider 1", "provider %").withLastUpdateFrom(OffsetDateTime.now().minusHours(5))
+                .withLastUpdateTo(OffsetDateTime.now().plusDays(6)).withAIPIds(aipIds)
                 .withCategories(Sets.newHashSet(CATEGORIES_0)).withStorages(Sets.newLinkedHashSet(STORAGE_0))
                 .withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0);
         // Test tags

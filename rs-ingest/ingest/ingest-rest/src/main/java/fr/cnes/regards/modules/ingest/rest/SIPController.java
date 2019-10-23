@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
+import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import java.io.IOException;
@@ -163,19 +164,12 @@ public class SIPController implements IResourceController<SIPEntity> {
     }
 
     @ResourceAccess(description = "Search for SIPEntities with optional criterion.")
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<PagedResources<Resource<SIPEntity>>> search(
-            @RequestParam(name = REQUEST_PARAM_PROVIDER_ID, required = false) String providerId,
-            @RequestParam(name = REQUEST_PARAM_FROM,
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<SIPState> state,
-            @RequestParam(name = REQUEST_PARAM_PROCESSING, required = false) String processing,
-            @RequestParam(name = REQUEST_PARAM_SESSION_OWNER, required = false) String sessionOwner,
-            @RequestParam(name = REQUEST_PARAM_SESSION, required = false) String session,
+            @RequestBody SearchSIPsParameters params,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<SIPEntity> pAssembler) {
-        Page<SIPEntity> sipEntities = sipService.search(providerId, sessionOwner, session, from, state, processing,
-                                                        pageable);
+        Page<SIPEntity> sipEntities = sipService.search(params, pageable);
         PagedResources<Resource<SIPEntity>> resources = toPagedResources(sipEntities, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }

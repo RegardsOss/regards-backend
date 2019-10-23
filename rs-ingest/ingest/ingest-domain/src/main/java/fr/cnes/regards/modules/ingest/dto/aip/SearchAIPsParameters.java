@@ -18,12 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.dto.aip;
 
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -32,30 +35,29 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 
 /**
+ * Store AIP criteria filters to do some research against AIP repo
  * @author sbinda
- *
+ * @author Léo Mieulet
  */
 public class SearchAIPsParameters {
 
     private AIPState state;
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private OffsetDateTime from;
+    private OAISDateRange lastUpdate = new OAISDateRange();
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private OffsetDateTime to;
+    private Set<String> providerIds = Sets.newHashSet();
 
-    private List<String> tags = Lists.newArrayList();
-
-    private String providerId;
-
+    @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER)
     private String sessionOwner;
 
+    @NotBlank(message = IngestValidationMessages.MISSING_SESSION)
     private String session;
 
     private Set<String> storages = Sets.newHashSet();
 
     private Set<String> categories = Sets.newHashSet();
+
+    private List<String> tags = Lists.newArrayList();
 
     public static SearchAIPsParameters build() {
         return new SearchAIPsParameters();
@@ -66,13 +68,13 @@ public class SearchAIPsParameters {
         return this;
     }
 
-    public SearchAIPsParameters withFrom(OffsetDateTime from) {
-        this.from = from;
+    public SearchAIPsParameters withLastUpdateFrom(OffsetDateTime from) {
+        this.lastUpdate.setFrom(from);
         return this;
     }
 
-    public SearchAIPsParameters withTo(OffsetDateTime to) {
-        this.to = to;
+    public SearchAIPsParameters withLastUpdateTo(OffsetDateTime to) {
+        this.lastUpdate.setTo(to);
         return this;
     }
 
@@ -94,7 +96,19 @@ public class SearchAIPsParameters {
     }
 
     public SearchAIPsParameters withProviderId(String providerId) {
-        this.providerId = providerId;
+        this.providerIds.add(providerId);
+        return this;
+    }
+
+    public SearchAIPsParameters withProviderIds(String... providerIds) {
+        this.providerIds.addAll(Arrays.asList(providerIds));
+        return this;
+    }
+
+    public SearchAIPsParameters withProviderIds(Collection<String> providerIds) {
+        if ((providerIds != null) && !providerIds.isEmpty()) {
+            this.providerIds.addAll(providerIds);
+        }
         return this;
     }
 
@@ -150,22 +164,6 @@ public class SearchAIPsParameters {
         this.state = state;
     }
 
-    public OffsetDateTime getFrom() {
-        return from;
-    }
-
-    public void setFrom(OffsetDateTime from) {
-        this.from = from;
-    }
-
-    public OffsetDateTime getTo() {
-        return to;
-    }
-
-    public void setTo(OffsetDateTime to) {
-        this.to = to;
-    }
-
     public List<String> getTags() {
         return tags;
     }
@@ -174,12 +172,12 @@ public class SearchAIPsParameters {
         this.tags = tags;
     }
 
-    public String getProviderId() {
-        return providerId;
+    public Set<String> getProviderIds() {
+        return providerIds;
     }
 
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
+    public void setProviderIds(Set<String> providerIds) {
+        this.providerIds = providerIds;
     }
 
     public String getSessionOwner() {
@@ -214,4 +212,11 @@ public class SearchAIPsParameters {
         this.categories = categories;
     }
 
+    public OAISDateRange getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(OAISDateRange lastUpdate) {
+        this.lastUpdate = lastUpdate;
+    }
 }

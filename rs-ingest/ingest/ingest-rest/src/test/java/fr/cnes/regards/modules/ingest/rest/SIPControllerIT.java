@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.rest;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -158,14 +159,14 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
         performDefaultPost(SIPController.TYPE_MAPPING, collection, requestBuilderCustomizer,
                            "SIP collection should be submitted.");
+        // End submission requests
 
         // No SIPs is already created / Just request
         requestBuilderCustomizer = customizer().expectStatusOk()
                 .expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(0)));
-
+        SearchSIPsParameters body = SearchSIPsParameters.build();
         documentSearchSipParameters(requestBuilderCustomizer);
-
-        performDefaultGet(SIPController.TYPE_MAPPING, requestBuilderCustomizer, "Error retrieving SIPs");
+        performDefaultPost(SIPController.TYPE_MAPPING, body, requestBuilderCustomizer, "Error retrieving SIPs");
 
     }
 
