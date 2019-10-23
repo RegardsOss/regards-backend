@@ -51,7 +51,7 @@ public interface IBatchHandler<T> extends IHandler<T> {
     }
 
     /**
-     * This method is call once for each project with messages in the current batch.<br/>
+     * This method is call once for each tenant with messages in the current batch.<br/>
      * Indeed, a batch is composed of the n first messages in the queue without consideration of the tenant.
      * So the batch listener dispatches them by tenant under the hood to make a contextual call per tenant.
      * @param tenant related message tenant
