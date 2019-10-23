@@ -18,6 +18,13 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +33,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.ResponseEntity;
 
+import com.google.common.collect.Maps;
+
+import feign.Request;
+import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
@@ -33,6 +44,7 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
+import fr.cnes.regards.modules.storagelight.client.IStorageRestClient;
 
 /**
  * @author oroussel
@@ -70,12 +82,9 @@ public class OrderConfiguration {
         return Mockito.mock(ILegacySearchEngineClient.class);
     }
 
-    /**
-     * TODO : Replace by new storage client
-    
     @Bean
-    public IAipClient aipClient() {
-        AipClientProxy aipClientProxy = new AipClientProxy();
+    public IStorageRestClient storageRestClient() {
+        IStorageRestClientProxy aipClientProxy = new IStorageRestClientProxy();
         InvocationHandler handler = (proxy, method, args) -> {
             for (Method aipClientProxyMethod : aipClientProxy.getClass().getMethods()) {
                 if (aipClientProxyMethod.getName().equals(method.getName())) {
@@ -84,22 +93,21 @@ public class OrderConfiguration {
             }
             return null;
         };
-        return (IAipClient) Proxy.newProxyInstance(IAipClient.class.getClassLoader(),
-                                                   new Class<?>[] { IAipClient.class }, handler);
+        return (IStorageRestClient) Proxy.newProxyInstance(IStorageRestClient.class.getClassLoader(),
+                                                           new Class<?>[] { IStorageRestClient.class }, handler);
     }
-    
-    private class AipClientProxy {
-    
+
+    private class IStorageRestClientProxy {
+
         Map<String, Collection<String>> headers = new HashMap<>();
-    
+
         @SuppressWarnings("unused")
-        public Response downloadFile(String aipId, String checksum) {
+        public Response downloadFile(String checksum) {
             return Response.builder().status(200).headers(headers)
                     .request(Request.create(feign.Request.HttpMethod.GET, "", Maps.newHashMap(), null))
                     .body(getClass().getResourceAsStream("/files/" + checksum), 1000).build();
         }
     }
-    */
 
     @Bean
     public IProjectsClient projectsClient() {
