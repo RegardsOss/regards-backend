@@ -129,6 +129,7 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
+import fr.cnes.regards.modules.storagelight.client.IStorageRestClient;
 import fr.cnes.regards.modules.templates.service.TemplateService;
 import freemarker.template.TemplateException;
 
@@ -178,6 +179,9 @@ public class OrderService implements IOrderService {
 
     @Autowired
     private IProjectsClient projectClient;
+
+    @Autowired
+    private IStorageRestClient storageClient;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -661,8 +665,10 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void writeAllOrdersInCsv(BufferedWriter writer, OrderStatus status, OffsetDateTime from, OffsetDateTime to) throws IOException {
-        List<Order> orders = repos.findAll(OrderSpecifications.search(status, from, to), Sort.by(Sort.Direction.ASC, "id"));
+    public void writeAllOrdersInCsv(BufferedWriter writer, OrderStatus status, OffsetDateTime from, OffsetDateTime to)
+            throws IOException {
+        List<Order> orders = repos.findAll(OrderSpecifications.search(status, from, to),
+                                           Sort.by(Sort.Direction.ASC, "id"));
         writer.append("ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR");
         writer.newLine();
         for (Order order : orders) {
@@ -725,14 +731,19 @@ public class OrderService implements IOrderService {
                     dataFile.setDownloadError(null);
                     Response response = null;
                     try {
-                        // TODO : Replace by new storage  client
-                        // response = aipClient.downloadFile(aip, dataFile.getChecksum());
+                        FeignSecurityManager.asSystem();
+                        // To download through storage client we must be authentify as system.
+                        // To download file with accessrights checked, we should use catalogDownloadClient
+                        // but the accessRight have already been checked here.
+                        response = storageClient.downloadFile(dataFile.getChecksum());
                     } catch (RuntimeException e) {
                         LOGGER.error("Error while downloading file from Archival Storage", e);
                         StringWriter sw = new StringWriter();
                         e.printStackTrace(new PrintWriter(sw));
                         dataFile.setDownloadError("Error while downloading file from Archival Storage\n"
                                 + sw.toString());
+                    } finally {
+                        FeignSecurityManager.reset();
                     }
                     // Unable to download file from storage
                     if ((response == null) || (response.status() != HttpStatus.OK.value())) {
