@@ -91,25 +91,25 @@ public class NativeSelectQuery {
         predicates.add(predicate);
     }
 
-    public void andListPredicate(String predicateStart, String predicateStop, String rootParamName, Set<Object> paramValues) {
+    public void andListPredicate(String predicateStart, String predicateStop, String rootParamName, Set<String> paramValues) {
         Set<String> preparedPredicates = Sets.newHashSet();
         int i = 0;
-        for (Object paramValue : paramValues) {
+        for (String paramValue : paramValues) {
             String paramName = rootParamName + i;
             preparedPredicates.add(":" + paramName);
-            this.params.put(paramName, paramValue.toString());
+            this.params.put(paramName, paramValue);
             i = i + 1;
         }
         predicates.add(predicateStart + String.join(" , ", preparedPredicates) + predicateStop);
     }
 
-    public void addOneOf(String predicateStart, String predicateStop, String rootParamName, Set<Object> paramValues) {
+    public void addOneOf(String predicateStart, String predicateStop, String rootParamName, Set<String> paramValues) {
         Set<String> internalPredicates = Sets.newHashSet();
         int i = 0;
-        for (Object paramValue : paramValues) {
+        for (String paramValue : paramValues) {
             String paramName = rootParamName + i;
             internalPredicates.add(predicateStart + ":" + paramName + predicateStop);
-            this.params.put(paramName, paramValue.toString());
+            this.params.put(paramName, paramValue);
             i = i + 1;
         }
         String oneOf = Joiner.on(" OR ").join(internalPredicates);
@@ -117,17 +117,17 @@ public class NativeSelectQuery {
     }
 
     //TODO test
-    public void addOneOfStringLike(String rootParamName, Set<Object> paramValues) {
+    public void addOneOfStringLike(String rootParamName, Set<String> paramValues) {
         Set<String> internalPredicates = Sets.newHashSet();
         int i = 0;
-        for (Object paramValue : paramValues) {
+        for (String paramValue : paramValues) {
             String paramName = rootParamName + i;
             String operator = "=";
-            if (paramValue.toString().startsWith(SpecificationUtils.LIKE_CHAR) || paramValue.toString().endsWith(SpecificationUtils.LIKE_CHAR)) {
+            if (paramValue.startsWith(SpecificationUtils.LIKE_CHAR) || paramValue.endsWith(SpecificationUtils.LIKE_CHAR)) {
                 operator = "like";
             }
             internalPredicates.add("("+rootParamName + " " + operator + " :" + paramName + ")");
-            this.params.put(paramName, paramValue.toString());
+            this.params.put(paramName, paramValue);
             i = i + 1;
         }
         String oneOf = Joiner.on(" OR ").join(internalPredicates);
