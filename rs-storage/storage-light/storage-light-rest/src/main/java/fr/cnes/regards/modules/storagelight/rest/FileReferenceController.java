@@ -28,6 +28,8 @@ import javax.validation.Valid;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
@@ -46,6 +48,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -64,6 +67,8 @@ import fr.cnes.regards.modules.storagelight.service.file.flow.StorageFlowItemHan
 @RestController
 @RequestMapping(FileReferenceController.FILE_PATH)
 public class FileReferenceController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceController.class);
 
     public static final String FILE_PATH = FileDownloadService.FILES_PATH;
 
@@ -96,13 +101,21 @@ public class FileReferenceController {
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("checksum") String checksum)
             throws ModuleException, IOException {
-        DownloadableFile downloadFile = downloadService.downloadFile(checksum);
-        InputStreamResource isr = new InputStreamResource(downloadFile.getFileInputStream());
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentLength(downloadFile.getRealFileSize());
-        headers.setContentType(asMediaType(downloadFile.getMimeType()));
-        headers.setContentDispositionFormData("attachement;filename=", downloadFile.getFileName());
-        return new ResponseEntity<>(isr, headers, HttpStatus.OK);
+        try {
+            DownloadableFile downloadFile = downloadService.downloadFile(checksum);
+            InputStreamResource isr = new InputStreamResource(downloadFile.getFileInputStream());
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentLength(downloadFile.getRealFileSize());
+            headers.setContentType(asMediaType(downloadFile.getMimeType()));
+            headers.setContentDispositionFormData("attachement;filename=", downloadFile.getFileName());
+            return new ResponseEntity<>(isr, headers, HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            LOGGER.error(String
+                    .format("Unable to download file with checksum=%s. Cause file does not exists on any known storage location",
+                            checksum));
+            LOGGER.debug(e.getMessage(), e);
+            return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
+        }
     }
 
     /**
