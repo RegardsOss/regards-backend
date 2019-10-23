@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.Resource;
@@ -13,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import feign.Request;
+import feign.Request.Body;
 import feign.Response;
 import fr.cnes.regards.modules.storagelight.client.IStorageFileListener;
 import fr.cnes.regards.modules.storagelight.client.IStorageRestClient;
@@ -64,15 +68,20 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
 
     @Override
     public Response downloadFile(String checksum) {
+        Map<String, Collection<String>> map = new HashMap<>();
+        Request request = Request.create(Request.HttpMethod.GET, "test", map, Body.empty());
         if (!"checksumOk".equals(checksum)) {
-            return Response.builder().status(HttpStatus.NOT_FOUND.value()).build();
+            return Response.builder().status(HttpStatus.NOT_FOUND.value()).reason("not found").request(request)
+                    .headers(map).build();
         }
         try {
             File file = new File("src/test/resources/result.json");
             InputStream stream = new FileInputStream(file);
-            return Response.builder().status(HttpStatus.OK.value()).body(stream, 150).build();
+            return Response.builder().status(HttpStatus.OK.value()).body(stream, 150).request(request).headers(map)
+                    .build();
         } catch (IOException e) {
-            return Response.builder().status(HttpStatus.NOT_FOUND.value()).build();
+            return Response.builder().status(HttpStatus.NOT_FOUND.value()).reason("not found").request(request)
+                    .headers(map).build();
         }
     }
 

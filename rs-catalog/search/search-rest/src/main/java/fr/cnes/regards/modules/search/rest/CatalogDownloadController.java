@@ -97,12 +97,17 @@ public class CatalogDownloadController {
             FeignSecurityManager.asSystem();
             try {
                 Response response = storageRestClient.downloadFile(checksum);
-                InputStreamResource isr = new InputStreamResource(response.body().asInputStream());
+                InputStreamResource isr = null;
+                if (response.status() == HttpStatus.OK.value()) {
+                    isr = new InputStreamResource(response.body().asInputStream());
+                } else {
+                    LOGGER.error("Error downloading file {} from storage", checksum);
+                }
                 HttpHeaders headers = new HttpHeaders();
                 for (Entry<String, Collection<String>> h : response.headers().entrySet()) {
                     h.getValue().forEach(v -> headers.add(h.getKey(), v));
                 }
-                return new ResponseEntity<>(isr, headers, HttpStatus.OK);
+                return new ResponseEntity<>(isr, headers, HttpStatus.valueOf(response.status()));
             } catch (HttpClientErrorException | HttpServerErrorException e) {
                 LOGGER.error(String.format("Error downloading file through storage microservice. Cause : %s",
                                            e.getMessage()),
