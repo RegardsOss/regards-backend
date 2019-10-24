@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.net.URL;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -190,7 +189,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + (ipType == null ? 0 : ipType.hashCode());
+        result = (prime * result) + (ipType == null ? 0 : ipType.hashCode());
         return result;
     }
 
@@ -269,6 +268,16 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
      */
     public <T extends AbstractInformationPackage<ID>> T withDescriptiveInformation(String key, Object value) {
         properties.withDescriptiveInformation(key, value);
+        return (T) this;
+    }
+
+    /**
+     * Add <b>optional</b> descriptive information to the current information package. (repeatable)
+     * @param key information key
+     * @param value information value
+     */
+    public <T extends AbstractInformationPackage<ID>> T withNullableDescriptiveInformation(String key, Object value) {
+        properties.withNullableDescriptiveInformation(key, value);
         return (T) this;
     }
 
