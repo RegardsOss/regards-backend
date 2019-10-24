@@ -30,7 +30,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 import org.springframework.util.Assert;
 
@@ -44,9 +43,7 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
  *
  */
 @Entity
-@Table(name = "t_request_result_info", indexes = { @Index(name = "idx_group_id", columnList = "group_id") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_t_request_result_info",
-                columnNames = { "group_id", "result_file_ref_id" }) })
+@Table(name = "t_request_result_info", indexes = { @Index(name = "idx_group_id", columnList = "group_id") })
 public class RequestResultInfo {
 
     @Id

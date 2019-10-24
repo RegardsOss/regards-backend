@@ -36,7 +36,6 @@ create index idx_file_storage_request_storage on t_file_storage_request (storage
 alter table t_file_storage_request add constraint t_file_storage_request_checksum_storage unique (checksum, storage);
 create index idx_t_request_group on t_request_group (id);
 create index idx_group_id on t_request_result_info (group_id);
-alter table t_request_result_info add constraint uk_t_request_result_info unique (group_id, result_file_ref_id);
 create index idx_storage_location on t_storage_location (name);
 alter table t_storage_location add constraint uk_t_storage_location_name unique (name);
 alter table t_storage_location_conf add constraint uk_storage_loc_name unique (name);
