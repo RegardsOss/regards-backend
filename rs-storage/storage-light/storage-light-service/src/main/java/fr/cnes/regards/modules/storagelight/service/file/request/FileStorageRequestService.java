@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -252,7 +251,12 @@ public class FileStorageRequestService {
      * @param fileStorageRequest to delete
      */
     public void delete(FileStorageRequest fileStorageRequest) {
-        fileStorageRequestRepo.deleteById(fileStorageRequest.getId());
+        if (fileStorageRequestRepo.existsById(fileStorageRequest.getId())) {
+            fileStorageRequestRepo.deleteById(fileStorageRequest.getId());
+        } else {
+            LOGGER.warn("Unable to delete file storage request {} cause it does not exists",
+                        fileStorageRequest.getId());
+        }
     }
 
     /**
@@ -511,14 +515,6 @@ public class FileStorageRequestService {
                     FileReference fileRef = fileRefReqService
                             .reference(owner, fileMeta, new FileLocation(request.getStorage(), result.getStoredUrl()),
                                        request.getGroupIds());
-                    try {
-                        // Delete the FileRefRequest as it has been handled
-                        delete(request);
-                    } catch (EmptyResultDataAccessException e) {
-                        LOGGER.warn(String.format("Unable to delete storage request with id %s. Cause : %s",
-                                                  request.getId(), e.getMessage()),
-                                    e);
-                    }
                     for (String groupId : request.getGroupIds()) {
                         reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE,
                                                        fileRef.getMetaInfo().getChecksum(),
@@ -528,8 +524,9 @@ public class FileStorageRequestService {
                     handleError(request, e.getMessage());
                 }
             }
+            // Delete the FileRefRequest as it has been handled
+            delete(request);
         }
-
     }
 
     public void handleError(Collection<FileStorageRequestResultDTO> results) {

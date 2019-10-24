@@ -282,6 +282,14 @@ public class FileCacheRequestService {
         return jobList;
     }
 
+    public void delete(FileCacheRequest request) {
+        if (repository.existsById(request.getId())) {
+            repository.deleteById(request.getId());
+        } else {
+            LOGGER.warn("Unable to delete file cache request {} cause it does not exists.", request.getId());
+        }
+    }
+
     /**
      * Handle a {@link FileCacheRequest} end with success.<ul>
      *  <li> Creates the new {@link CacheFile}</li>
@@ -299,7 +307,7 @@ public class FileCacheRequestService {
             // Create the cache file associated
             cacheService.addFile(oRequest.get().getChecksum(), realFileSize, cacheLocation,
                                  oRequest.get().getExpirationDate(), fileReq.getGroupId());
-            repository.deleteById(oRequest.get().getId());
+            delete(oRequest.get());
         }
         publisher.available(fileReq.getChecksum(), "cache", cacheLocation.toString(), owners, successMessage,
                             fileReq.getGroupId());

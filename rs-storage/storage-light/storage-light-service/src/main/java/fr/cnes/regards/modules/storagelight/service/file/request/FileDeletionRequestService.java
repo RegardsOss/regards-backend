@@ -272,7 +272,12 @@ public class FileDeletionRequestService {
     public void delete(FileDeletionRequest fileDeletionRequest) {
         Assert.notNull(fileDeletionRequest, "File deletion request to delete cannot be null");
         Assert.notNull(fileDeletionRequest.getId(), "File deletion request to delete identifier cannot be null");
-        fileDeletionRequestRepo.deleteById(fileDeletionRequest.getId());
+        if (fileDeletionRequestRepo.existsById(fileDeletionRequest.getId())) {
+            fileDeletionRequestRepo.deleteById(fileDeletionRequest.getId());
+        } else {
+            LOGGER.warn("Unable to delete file deletion request {} cause it does not exists.",
+                        fileDeletionRequest.getId());
+        }
     }
 
     /**
