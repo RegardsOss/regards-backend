@@ -1,6 +1,5 @@
 package fr.cnes.regards.framework.oais;
 
-import java.net.URL;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -185,9 +184,9 @@ public class InformationPackageProperties {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (contentInformations == null ? 0 : contentInformations.hashCode());
-        result = prime * result + (descriptiveInformation == null ? 0 : descriptiveInformation.hashCode());
-        result = prime * result + (pdi == null ? 0 : pdi.hashCode());
+        result = (prime * result) + (contentInformations == null ? 0 : contentInformations.hashCode());
+        result = (prime * result) + (descriptiveInformation == null ? 0 : descriptiveInformation.hashCode());
+        result = (prime * result) + (pdi == null ? 0 : pdi.hashCode());
         return result;
     }
 
@@ -258,6 +257,15 @@ public class InformationPackageProperties {
     public InformationPackageProperties withDescriptiveInformation(String key, Object value) {
         Assert.hasLength(key, "Descriptive information key is required");
         Assert.notNull(value, "Descriptive information value is required");
+        getDescriptiveInformation().put(key, value);
+        return this;
+    }
+
+    /**
+     * Add description information to the information package thanks to the given parameters (repeatable)
+     */
+    public InformationPackageProperties withNullableDescriptiveInformation(String key, Object value) {
+        Assert.hasLength(key, "Descriptive information key is required");
         getDescriptiveInformation().put(key, value);
         return this;
     }
