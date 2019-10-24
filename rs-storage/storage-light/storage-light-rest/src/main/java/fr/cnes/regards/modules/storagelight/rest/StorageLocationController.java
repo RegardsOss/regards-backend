@@ -304,7 +304,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
             resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
                                     MethodParamFactory.build(String.class, location.getName()));
         } else {
-            resourceService.addLink(resource, this.getClass(), "configureLocation", LinkRels.CREATE,
+            resourceService.addLink(resource, this.getClass(), "configureLocation", LinkRels.UPDATE,
                                     MethodParamFactory.build(StorageLocationDTO.class));
         }
         return resource;

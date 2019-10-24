@@ -185,9 +185,10 @@ public class StorageLocationService {
         for (StorageLocation monitored : monitoredLocations.values()) {
             Long nbStorageError = 0L;
             Long nbDeletionError = 0L;
-            locationsDto.add(StorageLocationDTO.build(monitored.getName(), monitored.getNumberOfReferencedFiles(),
-                                                      monitored.getTotalSizeOfReferencedFiles(), nbStorageError,
-                                                      nbDeletionError, null));
+            locationsDto.add(StorageLocationDTO
+                    .build(monitored.getName(), monitored.getNumberOfReferencedFiles(),
+                           monitored.getTotalSizeOfReferencedFiles(), nbStorageError, nbDeletionError,
+                           new StorageLocationConfiguration(monitored.getName(), null, null)));
         }
         return locationsDto;
     }
