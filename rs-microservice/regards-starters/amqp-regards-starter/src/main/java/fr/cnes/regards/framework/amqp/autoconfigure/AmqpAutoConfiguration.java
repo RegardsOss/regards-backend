@@ -154,9 +154,10 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public MessageConverter jsonMessageConverters(@Autowired(required = false) Gson gson) {
+    public MessageConverter jsonMessageConverters(@Autowired(required = false) Gson gson,
+            IRuntimeTenantResolver runtimeTenantResolver) {
 
-        JsonMessageConverters converters = new JsonMessageConverters();
+        JsonMessageConverters converters = new JsonMessageConverters(runtimeTenantResolver);
 
         // Register Jackson
         Jackson2JsonMessageConverter jacksonConverter = new Jackson2JsonMessageConverter();
