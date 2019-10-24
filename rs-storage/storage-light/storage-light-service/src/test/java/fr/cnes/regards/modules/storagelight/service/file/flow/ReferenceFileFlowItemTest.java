@@ -94,6 +94,38 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
                             getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
     }
 
+    @Test
+    public void addFileRefFlowItemsWithSameChecksum() throws InterruptedException {
+
+        String checksum = UUID.randomUUID().toString();
+        String owner = "new-owner";
+        String storage = "somewhere";
+
+        // Create a request to reference a file with the same checksum as the one stored before but with a new owner
+        ReferenceFlowItem item = ReferenceFlowItem
+                .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
+                                                     owner, storage, "file://storage/location/file.name"),
+                       UUID.randomUUID().toString());
+
+        // Create a request to reference a file with the same checksum as the one stored before but with a new owner
+        ReferenceFlowItem item2 = ReferenceFlowItem
+                .build(FileReferenceRequestDTO.build("file.name.2", checksum, "MD5", "application/octet-stream", 10L,
+                                                     owner, storage, "file://storage/location/file.name"),
+                       UUID.randomUUID().toString());
+
+        TenantWrapper<ReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<ReferenceFlowItem> wrapper2 = new TenantWrapper<>(item2, getDefaultTenant());
+        // Publish request
+        handler.handle(wrapper);
+        handler.handle(wrapper2);
+        handler.handleQueue();
+        Thread.sleep(5_000L);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        // Check file is well referenced
+        Assert.assertTrue("File should be referenced", fileRefService.search(storage, checksum).isPresent());
+
+    }
+
     /**
      * Test request to reference a file already stored.
      * The file is not stored by the service as the origin storage and the destination storage are identical

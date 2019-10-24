@@ -117,6 +117,8 @@ public class FileReferenceRequestService {
                 reqGrpService.requestSuccess(groupId, FileRequestType.REFERENCE, fileRef.getMetaInfo().getChecksum(),
                                              fileRef.getLocation().getStorage(), fileRef);
                 fileRefs.add(fileRef);
+                // Add newly created fileRef to existing file refs in case of the requests contains multiple time the same file to reference
+                existingOnes.add(fileRef);
             } catch (ModuleException e) {
                 LOGGER.error(e.getMessage(), e);
                 fileRefEventPublisher.storeError(file.getChecksum(), Sets.newHashSet(file.getOwner()),
