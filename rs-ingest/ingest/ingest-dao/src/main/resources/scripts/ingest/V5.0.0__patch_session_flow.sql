@@ -65,6 +65,7 @@ create table t_deletion_request (
   errors jsonb,
   state varchar(50) not null,
   deletion_mode int4 not null,
+  delete_files boolean,
   selection_mode int4 not null,
   session_name varchar(128) not null,
   session_owner varchar(128) not null,
