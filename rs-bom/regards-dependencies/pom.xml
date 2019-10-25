@@ -15,7 +15,7 @@
 
     <groupId>fr.cnes.regards</groupId>
     <artifactId>regards-dependencies</artifactId>
-    <version>0.5.0-SNAPSHOT</version>
+    <version>GEODE</version>
     <packaging>pom</packaging>
 
     <name>Regards Dependencies</name>
@@ -45,124 +45,124 @@
         <!-- Dependencies versions -->
 
         <!-- Framework starters -->
-        <amqp.starter.version>0.5.0-SNAPSHOT</amqp.starter.version>
-        <authentication.starter.version>0.5.0-SNAPSHOT</authentication.starter.version>
-        <cloud.starter.version>0.5.0-SNAPSHOT</cloud.starter.version>
-        <feign.starter.version>0.5.0-SNAPSHOT</feign.starter.version>
-        <geojson.docs.version>0.5.0-SNAPSHOT</geojson.docs.version>
-        <geojson.starter.version>0.5.0-SNAPSHOT</geojson.starter.version>
-        <gson.starter.version>0.5.0-SNAPSHOT</gson.starter.version>
-        <proxy.starter.version>0.5.0-SNAPSHOT</proxy.starter.version>
-        <hateoas.starter.version>0.5.0-SNAPSHOT</hateoas.starter.version>
-        <jpa.data.version>0.5.0-SNAPSHOT</jpa.data.version>
-        <jpa.common.version>0.5.0-SNAPSHOT</jpa.common.version>
-        <jpa.instance.starter.version>0.5.0-SNAPSHOT</jpa.instance.starter.version>
-        <jpa.multitenant.starter.version>0.5.0-SNAPSHOT</jpa.multitenant.starter.version>
-        <microservice.core.version>0.5.0-SNAPSHOT</microservice.core.version>
-        <microservice.starter.version>0.5.0-SNAPSHOT</microservice.starter.version>
-        <module.starter.version>0.5.0-SNAPSHOT</module.starter.version>
-        <multitenant.starter.version>0.5.0-SNAPSHOT</multitenant.starter.version>
-        <fr.cnes.regards.framework.notification.version>0.5.0-SNAPSHOT</fr.cnes.regards.framework.notification.version>
-        <security.starter.version>0.5.0-SNAPSHOT</security.starter.version>
-        <swagger.starter.version>0.5.0-SNAPSHOT</swagger.starter.version>
-        <plugins.docs.version>0.5.0-SNAPSHOT</plugins.docs.version>
-        <oais.docs.version>0.5.0-SNAPSHOT</oais.docs.version>
-        <oais.starter.version>0.5.0-SNAPSHOT</oais.starter.version>
-        <encryption.starter.version>0.5.0-SNAPSHOT</encryption.starter.version>
+        <amqp.starter.version>GEODE</amqp.starter.version>
+        <authentication.starter.version>GEODE</authentication.starter.version>
+        <cloud.starter.version>GEODE</cloud.starter.version>
+        <feign.starter.version>GEODE</feign.starter.version>
+        <geojson.docs.version>GEODE</geojson.docs.version>
+        <geojson.starter.version>GEODE</geojson.starter.version>
+        <gson.starter.version>GEODE</gson.starter.version>
+        <proxy.starter.version>GEODE</proxy.starter.version>
+        <hateoas.starter.version>GEODE</hateoas.starter.version>
+        <jpa.data.version>GEODE</jpa.data.version>
+        <jpa.common.version>GEODE</jpa.common.version>
+        <jpa.instance.starter.version>GEODE</jpa.instance.starter.version>
+        <jpa.multitenant.starter.version>GEODE</jpa.multitenant.starter.version>
+        <microservice.core.version>GEODE</microservice.core.version>
+        <microservice.starter.version>GEODE</microservice.starter.version>
+        <module.starter.version>GEODE</module.starter.version>
+        <multitenant.starter.version>GEODE</multitenant.starter.version>
+        <fr.cnes.regards.framework.notification.version>GEODE</fr.cnes.regards.framework.notification.version>
+        <security.starter.version>GEODE</security.starter.version>
+        <swagger.starter.version>GEODE</swagger.starter.version>
+        <plugins.docs.version>GEODE</plugins.docs.version>
+        <oais.docs.version>GEODE</oais.docs.version>
+        <oais.starter.version>GEODE</oais.starter.version>
+        <encryption.starter.version>GEODE</encryption.starter.version>
 
         <!-- Bootstrap -->
-        <config.bootstrap.version>0.5.0-SNAPSHOT</config.bootstrap.version>
-        <registry.bootstrap.version>0.5.0-SNAPSHOT</registry.bootstrap.version>
-        <gateway.bootstrap.version>0.5.0-SNAPSHOT</gateway.bootstrap.version>
-        <authentication.bootstrap.version>0.5.0-SNAPSHOT</authentication.bootstrap.version>
-        <admin.instance.bootstrap.version>0.5.0-SNAPSHOT</admin.instance.bootstrap.version>
-        <admin.bootstrap.version>0.5.0-SNAPSHOT</admin.bootstrap.version>
-        <dam.bootstrap.version>0.5.0-SNAPSHOT</dam.bootstrap.version>
-        <catalog.bootstrap.version>0.5.0-SNAPSHOT</catalog.bootstrap.version>
-        <access.bootstrap.version>0.5.0-SNAPSHOT</access.bootstrap.version>
-        <accessproject.bootstrap.version>0.5.0-SNAPSHOT</accessproject.bootstrap.version>
-        <storage.bootstrap.version>0.5.0-SNAPSHOT</storage.bootstrap.version>
-        <dataprovider.bootstrap.version>0.5.0-SNAPSHOT</dataprovider.bootstrap.version>
-        <order.bootstrap.version>0.5.0-SNAPSHOT</order.bootstrap.version>
-        <ingest.bootstrap.version>0.5.0-SNAPSHOT</ingest.bootstrap.version>
-        <frontend.bootstrap.version>0.5.0-SNAPSHOT</frontend.bootstrap.version>
+        <config.bootstrap.version>GEODE</config.bootstrap.version>
+        <registry.bootstrap.version>GEODE</registry.bootstrap.version>
+        <gateway.bootstrap.version>GEODE</gateway.bootstrap.version>
+        <authentication.bootstrap.version>GEODE</authentication.bootstrap.version>
+        <admin.instance.bootstrap.version>GEODE</admin.instance.bootstrap.version>
+        <admin.bootstrap.version>GEODE</admin.bootstrap.version>
+        <dam.bootstrap.version>GEODE</dam.bootstrap.version>
+        <catalog.bootstrap.version>GEODE</catalog.bootstrap.version>
+        <access.bootstrap.version>GEODE</access.bootstrap.version>
+        <accessproject.bootstrap.version>GEODE</accessproject.bootstrap.version>
+        <storage.bootstrap.version>GEODE</storage.bootstrap.version>
+        <dataprovider.bootstrap.version>GEODE</dataprovider.bootstrap.version>
+        <order.bootstrap.version>GEODE</order.bootstrap.version>
+        <ingest.bootstrap.version>GEODE</ingest.bootstrap.version>
+        <frontend.bootstrap.version>GEODE</frontend.bootstrap.version>
 
         <!-- Tests -->
-        <regards.test.version>0.5.0-SNAPSHOT</regards.test.version>
-        <regards.integration.test.version>0.5.0-SNAPSHOT</regards.integration.test.version>
-        <regards.test.reporting.version>0.5.0-SNAPSHOT</regards.test.reporting.version>
+        <regards.test.version>GEODE</regards.test.version>
+        <regards.integration.test.version>GEODE</regards.integration.test.version>
+        <regards.test.reporting.version>GEODE</regards.test.reporting.version>
 
         <!-- Regards utils -->
-        <file.utils.version>0.5.0-SNAPSHOT</file.utils.version>
-        <spring.utils.version>0.5.0-SNAPSHOT</spring.utils.version>
-        <exception.utils.version>0.5.0-SNAPSHOT</exception.utils.version>
+        <file.utils.version>GEODE</file.utils.version>
+        <spring.utils.version>GEODE</spring.utils.version>
+        <exception.utils.version>GEODE</exception.utils.version>
 
         <!-- Regards Modules -->
-        <fr.cnes.regards.framework.modules.jobs.version>0.5.0-SNAPSHOT</fr.cnes.regards.framework.modules.jobs.version>
-        <fr.cnes.regards.framework.modules.workspace.version>0.5.0-SNAPSHOT
+        <fr.cnes.regards.framework.modules.jobs.version>GEODE</fr.cnes.regards.framework.modules.jobs.version>
+        <fr.cnes.regards.framework.modules.workspace.version>GEODE
         </fr.cnes.regards.framework.modules.workspace.version>
-        <fr.cnes.regards.framework.modules.plugins.version>0.5.0-SNAPSHOT
+        <fr.cnes.regards.framework.modules.plugins.version>GEODE
         </fr.cnes.regards.framework.modules.plugins.version>
-        <fr.cnes.regards.framework.modules.locks.version>0.5.0-SNAPSHOT
+        <fr.cnes.regards.framework.modules.locks.version>GEODE
         </fr.cnes.regards.framework.modules.locks.version>
-        <fr.cnes.regards.microservices.catalog.plugin-client.version>0.5.0-SNAPSHOT
+        <fr.cnes.regards.microservices.catalog.plugin-client.version>GEODE
         </fr.cnes.regards.microservices.catalog.plugin-client.version>
-        <fr.cnes.regards.utils.plugin-utils.version>0.5.0-SNAPSHOT</fr.cnes.regards.utils.plugin-utils.version>
-        <fr.cnes.regards.modules.project.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.project.version>
-        <fr.cnes.regards.modules.session-manager.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.session-manager.version>
-        <fr.cnes.regards.modules.crawler.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.crawler.version>
-        <fr.cnes.regards.modules.indexer.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.indexer.version>
-        <fr.cnes.regards.modules.accessrights-instance.version>0.5.0-SNAPSHOT
+        <fr.cnes.regards.utils.plugin-utils.version>GEODE</fr.cnes.regards.utils.plugin-utils.version>
+        <fr.cnes.regards.modules.project.version>GEODE</fr.cnes.regards.modules.project.version>
+        <fr.cnes.regards.modules.session-manager.version>GEODE</fr.cnes.regards.modules.session-manager.version>
+        <fr.cnes.regards.modules.crawler.version>GEODE</fr.cnes.regards.modules.crawler.version>
+        <fr.cnes.regards.modules.indexer.version>GEODE</fr.cnes.regards.modules.indexer.version>
+        <fr.cnes.regards.modules.accessrights-instance.version>GEODE
         </fr.cnes.regards.modules.accessrights-instance.version>
-        <fr.cnes.regards.modules.accessrights.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.accessrights.version>
-        <fr.cnes.regards.modules.access.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.access.version>
-        <fr.cnes.regards.modules.uiconfiguration.version>0.5.0-SNAPSHOT
+        <fr.cnes.regards.modules.accessrights.version>GEODE</fr.cnes.regards.modules.accessrights.version>
+        <fr.cnes.regards.modules.access.version>GEODE</fr.cnes.regards.modules.access.version>
+        <fr.cnes.regards.modules.uiconfiguration.version>GEODE
         </fr.cnes.regards.modules.uiconfiguration.version>
-        <fr.cnes.regards.modules.dam.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.dam.version>
-        <fr.cnes.regards.frontend-webapp.version>0.5.0-SNAPSHOT</fr.cnes.regards.frontend-webapp.version>
-        <fr.cnes.regards.modules.emails.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.emails.version>
-        <fr.cnes.regards.modules.notification.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.notification.version>
-        <fr.cnes.regards.modules.notification-instance.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.notification-instance.version>
-        <fr.cnes.regards.modules.metrics.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.metrics.version>
-        <fr.cnes.regards.modules.templates.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.templates.version>
-        <fr.cnes.regards.modules.dataprovider.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.dataprovider.version>
-        <fr.cnes.regards.modules.search.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.search.version>
-        <fr.cnes.regards.modules.opensearch.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.opensearch.version>
-        <fr.cnes.regards.modules.order.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.order.version>
-        <fr.cnes.regards.modules.ingest.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.ingest.version>
-        <fr.cnes.regards.modules.storage-light.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.storage-light.version>
-        <fr.cnes.regards.modules.catalog-services.version>0.5.0-SNAPSHOT
+        <fr.cnes.regards.modules.dam.version>GEODE</fr.cnes.regards.modules.dam.version>
+        <fr.cnes.regards.frontend-webapp.version>GEODE</fr.cnes.regards.frontend-webapp.version>
+        <fr.cnes.regards.modules.emails.version>GEODE</fr.cnes.regards.modules.emails.version>
+        <fr.cnes.regards.modules.notification.version>GEODE</fr.cnes.regards.modules.notification.version>
+        <fr.cnes.regards.modules.notification-instance.version>GEODE</fr.cnes.regards.modules.notification-instance.version>
+        <fr.cnes.regards.modules.metrics.version>GEODE</fr.cnes.regards.modules.metrics.version>
+        <fr.cnes.regards.modules.templates.version>GEODE</fr.cnes.regards.modules.templates.version>
+        <fr.cnes.regards.modules.dataprovider.version>GEODE</fr.cnes.regards.modules.dataprovider.version>
+        <fr.cnes.regards.modules.search.version>GEODE</fr.cnes.regards.modules.search.version>
+        <fr.cnes.regards.modules.opensearch.version>GEODE</fr.cnes.regards.modules.opensearch.version>
+        <fr.cnes.regards.modules.order.version>GEODE</fr.cnes.regards.modules.order.version>
+        <fr.cnes.regards.modules.ingest.version>GEODE</fr.cnes.regards.modules.ingest.version>
+        <fr.cnes.regards.modules.storage-light.version>GEODE</fr.cnes.regards.modules.storage-light.version>
+        <fr.cnes.regards.modules.catalog-services.version>GEODE
         </fr.cnes.regards.modules.catalog-services.version>
-        <fr.cnes.regards.modules.access-services.version>0.5.0-SNAPSHOT
+        <fr.cnes.regards.modules.access-services.version>GEODE
         </fr.cnes.regards.modules.access-services.version>
-        <fr.cnes.regards.modules.backend-for-frontend.version>0.5.0-SNAPSHOT
+        <fr.cnes.regards.modules.backend-for-frontend.version>GEODE
         </fr.cnes.regards.modules.backend-for-frontend.version>
 
         <!-- Regards Administration tenant resolvers -->
-        <fr.cnes.regards.microservices.administration.local-tenant-resolver.version>0.5.0-SNAPSHOT
+        <fr.cnes.regards.microservices.administration.local-tenant-resolver.version>GEODE
         </fr.cnes.regards.microservices.administration.local-tenant-resolver.version>
-        <fr.cnes.regards.microservices.administration.remote-tenant-resolver.version>0.5.0-SNAPSHOT
+        <fr.cnes.regards.microservices.administration.remote-tenant-resolver.version>GEODE
         </fr.cnes.regards.microservices.administration.remote-tenant-resolver.version>
         <!-- Regards Administration authorities provider -->
-        <fr.cnes.regards.microservices.administration.local-authorities-provider>0.5.0-SNAPSHOT
+        <fr.cnes.regards.microservices.administration.local-authorities-provider>GEODE
         </fr.cnes.regards.microservices.administration.local-authorities-provider>
-        <fr.cnes.regards.microservices.administration.remote-authorities-provider>0.5.0-SNAPSHOT
+        <fr.cnes.regards.microservices.administration.remote-authorities-provider>GEODE
         </fr.cnes.regards.microservices.administration.remote-authorities-provider>
 
-        <custom.deployment.version>0.5.0-SNAPSHOT</custom.deployment.version>
+        <custom.deployment.version>GEODE</custom.deployment.version>
 
-        <fr.cnes.regards.modules.ingest.plugins.version>0.5.0-SNAPSHOT</fr.cnes.regards.modules.ingest.plugins.version>
-        <fr.cnes.regards.modules.acquisition.plugins.version>0.5.0-SNAPSHOT
+        <fr.cnes.regards.modules.ingest.plugins.version>GEODE</fr.cnes.regards.modules.ingest.plugins.version>
+        <fr.cnes.regards.modules.acquisition.plugins.version>GEODE
         </fr.cnes.regards.modules.acquisition.plugins.version>
 
         <!-- CNES remote storages -->
-        <fr.cnes.regards.storages.version>0.5.0-SNAPSHOT</fr.cnes.regards.storages.version>
-        <fr.cnes.regards.storages.staf.version>0.5.0-SNAPSHOT</fr.cnes.regards.storages.staf.version>
-	<fr.cnes.regards.storages.hpss.version>0.5.0-SNAPSHOT</fr.cnes.regards.storages.hpss.version>
+        <fr.cnes.regards.storages.version>GEODE</fr.cnes.regards.storages.version>
+        <fr.cnes.regards.storages.staf.version>GEODE</fr.cnes.regards.storages.staf.version>
+	<fr.cnes.regards.storages.hpss.version>GEODE</fr.cnes.regards.storages.hpss.version>
 
 	<!-- CNES Acquisition plugins -->
-	<microscope.acquisition.plugins.version>0.5.0-SNAPSHOT</microscope.acquisition.plugins.version>
-	<swh.acquisition.plugins.version>0.5.0-SNAPSHOT</swh.acquisition.plugins.version>
+	<microscope.acquisition.plugins.version>GEODE</microscope.acquisition.plugins.version>
+	<swh.acquisition.plugins.version>GEODE</swh.acquisition.plugins.version>
 
         <!-- COTS -->
         <!-- Flywaydb dependency from spring-boot -->
@@ -624,39 +624,39 @@
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>db-datasource-common</artifactId>
-                <version>0.5.0-SNAPSHOT</version>
+                <version>GEODE</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>datasource-oracle-plugins</artifactId>
-                <version>0.5.0-SNAPSHOT</version>
+                <version>GEODE</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>datasource-oracle-plugins</artifactId>
-                <version>0.5.0-SNAPSHOT</version>
+                <version>GEODE</version>
                 <classifier>shaded</classifier>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>postgresql-datasource</artifactId>
-                <version>0.5.0-SNAPSHOT</version>
+                <version>GEODE</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>postgresql-datasource</artifactId>
-                <version>0.5.0-SNAPSHOT</version>
+                <version>GEODE</version>
                 <classifier>shaded</classifier>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>aip-datasource</artifactId>
-                <version>0.5.0-SNAPSHOT</version>
+                <version>GEODE</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>aip-datasource</artifactId>
-                <version>0.5.0-SNAPSHOT</version>
+                <version>GEODE</version>
                 <classifier>shaded</classifier>
             </dependency>
             <!-- DAM -->
