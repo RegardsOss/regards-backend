@@ -92,7 +92,6 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
-import fr.cnes.regards.modules.ingest.client.ISIPRestClient;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
@@ -125,9 +124,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Autowired
     private IProductService productService;
-
-    @Autowired
-    private ISIPRestClient sipRestClient;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -986,6 +982,21 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         for (AcquisitionProcessingChain chain : chains) {
             if (!chain.isLocked()) {
                 productService.deleteBySession(chain, session);
+            } else {
+                throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
+            }
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService#deleteProducts(java.lang.String)
+     */
+    @Override
+    public void deleteProducts(String processingChainLabel) throws ModuleException {
+        List<AcquisitionProcessingChain> chains = getChainsByLabel(processingChainLabel);
+        for (AcquisitionProcessingChain chain : chains) {
+            if (!chain.isLocked()) {
+                productService.deleteByProcessingChain(chain);
             } else {
                 throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
             }

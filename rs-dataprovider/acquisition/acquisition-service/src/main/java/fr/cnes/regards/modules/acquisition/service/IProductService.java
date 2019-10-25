@@ -93,8 +93,16 @@ public interface IProductService {
      * Delete products
      * @param chain
      * @param session
+     * @return number of deleted products
      */
-    public void deleteBySession(AcquisitionProcessingChain chain, String session);
+    long deleteBySession(AcquisitionProcessingChain chain, String session);
+
+    /**
+     *
+     * @param chain
+     * @return number of deleted products
+     */
+    long deleteByProcessingChain(AcquisitionProcessingChain chain);
 
     /**
      * @return page of products related to specified
@@ -231,4 +239,5 @@ public interface IProductService {
      * @return whether there is a product page remaining to managed
      */
     boolean manageUpdatedProductsByPage(AcquisitionProcessingChain processingChain);
+
 }
