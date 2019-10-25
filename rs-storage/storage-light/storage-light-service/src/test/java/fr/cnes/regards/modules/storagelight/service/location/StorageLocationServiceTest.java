@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.storagelight.dao.IStorageMonitoringRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
+import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileReferenceRequestService;
 
@@ -157,7 +158,9 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         Assert.assertEquals("Location one is missing", 1L,
                             locs.stream().filter(l -> l.getName().equals(storage)).count());
         locs.stream().filter(l -> l.getName().equals(storage)).forEach(loc -> {
-            Assert.assertNull("No configuration should be set for the location", loc.getConfiguration());
+            Assert.assertNotNull("Configuration should be set for the location", loc.getConfiguration());
+            Assert.assertEquals("Location should be offline", loc.getConfiguration().getStorageType(),
+                                StorageType.OFFLINE);
             Assert.assertEquals("There should be 2 files referenced", 2L, loc.getNbFilesStored().longValue());
             Assert.assertEquals("The total size should be 4ko", 4L, loc.getTotalStoredFilesSizeKo().longValue());
             Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
@@ -166,7 +169,9 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         Assert.assertEquals("Location two is missing", 1L,
                             locs.stream().filter(l -> l.getName().equals(storage2)).count());
         locs.stream().filter(l -> l.getName().equals(storage2)).forEach(loc -> {
-            Assert.assertNull("No configuration should be set for the location", loc.getConfiguration());
+            Assert.assertNotNull("Configuration should be set for the location", loc.getConfiguration());
+            Assert.assertEquals("Location should be offline", loc.getConfiguration().getStorageType(),
+                                StorageType.OFFLINE);
             Assert.assertEquals("There should be 5 files referenced", 5L, loc.getNbFilesStored().longValue());
             Assert.assertEquals("The total size should be 20ko", 20L, loc.getTotalStoredFilesSizeKo().longValue());
             Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
@@ -176,6 +181,8 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
                             locs.stream().filter(l -> l.getName().equals(ONLINE_CONF_LABEL)).count());
         locs.stream().filter(l -> l.getName().equals(ONLINE_CONF_LABEL)).forEach(loc -> {
             Assert.assertNotNull("A configuration should be set for the location", loc.getConfiguration());
+            Assert.assertEquals("Location should be offline", loc.getConfiguration().getStorageType(),
+                                StorageType.ONLINE);
             Assert.assertEquals("There should be 0 files referenced", 0L, loc.getNbFilesStored().longValue());
             Assert.assertEquals("The total size should be 20ko", 0L, loc.getTotalStoredFilesSizeKo().longValue());
             Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
@@ -185,6 +192,8 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
                             locs.stream().filter(l -> l.getName().equals(NEARLINE_CONF_LABEL)).count());
         locs.stream().filter(l -> l.getName().equals(NEARLINE_CONF_LABEL)).forEach(loc -> {
             Assert.assertNotNull("A configuration should be set for the location", loc.getConfiguration());
+            Assert.assertEquals("Location should be offline", loc.getConfiguration().getStorageType(),
+                                StorageType.NEARLINE);
             Assert.assertEquals("There should be 0 files referenced", 0L, loc.getNbFilesStored().longValue());
             Assert.assertEquals("The total size should be 20ko", 0L, loc.getTotalStoredFilesSizeKo().longValue());
             Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
