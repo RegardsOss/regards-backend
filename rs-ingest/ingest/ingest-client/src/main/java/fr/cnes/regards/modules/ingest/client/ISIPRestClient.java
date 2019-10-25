@@ -36,7 +36,7 @@ public interface ISIPRestClient {
 
     static final String DELETE_BY_SESSION_PATH = "/sips/delete";
 
-    @RequestMapping(value = ISIPRestClient.DELETE_BY_SESSION_PATH, method = RequestMethod.DELETE)
+    @RequestMapping(value = ISIPRestClient.DELETE_BY_SESSION_PATH, method = RequestMethod.POST)
     ResponseEntity<OAISDeletionRequestDto> deleteBySession(OAISDeletionRequestDto request);
 
 }
