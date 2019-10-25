@@ -87,7 +87,7 @@ public interface IProductService {
      * Delete one specified {@link Product}
      * @param product {@link Product} to delete
      */
-    void delete(Product product);
+    void delete(AcquisitionProcessingChain chain, Product product);
 
     /**
      * Delete products

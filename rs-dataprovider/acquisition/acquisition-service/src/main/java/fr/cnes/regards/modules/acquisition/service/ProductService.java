@@ -200,8 +200,9 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public void delete(Product product) {
+    public void delete(AcquisitionProcessingChain chain, Product product) {
         productRepository.delete(product);
+        sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
     }
 
     @Override
@@ -212,7 +213,7 @@ public class ProductService implements IProductService {
             results = productRepository.findByProcessingChainAndSession(chain, session, page);
             for (Product product : results.getContent()) {
                 acqFileRepository.deleteByProduct(product);
-                delete(product);
+                delete(chain, product);
             }
             page = page.next();
         } while (results.hasNext());
