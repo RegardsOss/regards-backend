@@ -129,7 +129,7 @@ public class SessionNotifier {
         notifyIncrementSession(product.getProcessingChain().getLabel(), product.getSession(), product.getSipState());
     }
 
-    public void notifySipSubmittingFailed(Product product) {
+    public void notifySipGenerationFailed(Product product) {
         // Remove one generated
         notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(), PROPERTY_GENERATED);
 
@@ -226,7 +226,7 @@ public class SessionNotifier {
         // Add one to the new state
         SessionMonitoringEvent event = SessionMonitoringEvent.build(sessionOwner, session, notifState,
                                                                     GLOBAL_SESSION_STEP,
-                                                                    SessionNotificationOperator.INC, property, nbItems);
+                                                                    SessionNotificationOperator.DEC, property, nbItems);
         publisher.publish(event);
     }
 
