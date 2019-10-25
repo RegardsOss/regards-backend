@@ -90,7 +90,7 @@ public class AcquisitionProcessingChainController implements IResourceController
 
     public static final String STOP_CHAIN_PATH = CHAIN_PATH + "/stop";
 
-    public static final String CHAIN_SESSION_PRODUCTS_PATH = "/{" + CHAIN_PATH_PARAM + "}/products";
+    public static final String CHAIN_SESSION_PRODUCTS_PATH = "/{chainName}/products";
 
     @Autowired
     private IAcquisitionProcessingService processingService;
