@@ -90,7 +90,7 @@ public class AcquisitionProcessingChainController implements IResourceController
 
     public static final String STOP_CHAIN_PATH = CHAIN_PATH + "/stop";
 
-    public static final String CHAIN_SESSION_PRODUCTS_PATH = "/{" + CHAIN_PATH_PARAM + "}/{session}/products";
+    public static final String CHAIN_SESSION_PRODUCTS_PATH = "/{" + CHAIN_PATH_PARAM + "}/products";
 
     @Autowired
     private IAcquisitionProcessingService processingService;
@@ -195,7 +195,7 @@ public class AcquisitionProcessingChainController implements IResourceController
     @RequestMapping(method = RequestMethod.DELETE, value = CHAIN_SESSION_PRODUCTS_PATH)
     @ResourceAccess(description = "Start a manual chain", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> deleteProducts(@PathVariable String chainName,
-            @PathVariable(required = false) String session) throws ModuleException {
+            @RequestParam(name = "session", required = false) String session) throws ModuleException {
         if (session != null) {
             processingService.deleteSessionProducts(chainName, session);
         } else {
