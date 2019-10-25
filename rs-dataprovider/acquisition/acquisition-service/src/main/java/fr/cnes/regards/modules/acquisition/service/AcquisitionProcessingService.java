@@ -177,6 +177,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         return acqChainRepository.findAll(pageable);
     }
 
+    public List<AcquisitionProcessingChain> getChainsByLabel(String label) throws ModuleException {
+        return acqChainRepository.findByLabel(label);
+    }
+
     @Override
     public AcquisitionProcessingChain getChain(Long id) throws ModuleException {
         AcquisitionProcessingChain chain = acqChainRepository.findCompleteById(id);
@@ -981,17 +985,19 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public void deleteSessionProducts(Long processingChainId, String session) throws ModuleException {
-        AcquisitionProcessingChain chain = getChain(processingChainId);
-        if (!chain.isLocked()) {
-            productService.deleteBySession(chain, session);
-            FeignSecurityManager.asSystem();
-            sipRestClient.deleteBySession(OAISDeletionRequestDto.build(chain.getLabel(), session,
-                                                                       SessionDeletionMode.IRREVOCABLY,
-                                                                       SessionDeletionSelectionMode.INCLUDE));
-            FeignSecurityManager.reset();
-        } else {
-            throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
+    public void deleteSessionProducts(String processingChainLabel, String session) throws ModuleException {
+        List<AcquisitionProcessingChain> chains = getChainsByLabel(processingChainLabel);
+        for (AcquisitionProcessingChain chain : chains) {
+            if (!chain.isLocked()) {
+                productService.deleteBySession(chain, session);
+                FeignSecurityManager.asSystem();
+                sipRestClient.deleteBySession(OAISDeletionRequestDto.build(chain.getLabel(), session,
+                                                                           SessionDeletionMode.IRREVOCABLY,
+                                                                           SessionDeletionSelectionMode.INCLUDE));
+                FeignSecurityManager.reset();
+            } else {
+                throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
+            }
         }
     }
 }

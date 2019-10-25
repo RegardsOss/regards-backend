@@ -165,11 +165,11 @@ public interface IAcquisitionProcessingService {
 
     /**
      * Delete all products of the given processing chain and session
-     * @param processingChainId
+     * @param processingChainLabel
      * @param session
      * @throws ModuleException
      */
-    void deleteSessionProducts(Long processingChainId, String session) throws ModuleException;
+    void deleteSessionProducts(String processingChainLabel, String session) throws ModuleException;
 
     /**
      * Scan and register detected files for specified {@link AcquisitionProcessingChain}
