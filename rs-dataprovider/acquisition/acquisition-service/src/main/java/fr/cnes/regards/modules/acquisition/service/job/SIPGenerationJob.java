@@ -138,7 +138,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 logger.debug(message, e);
                 product.setSipState(ProductSIPState.GENERATION_ERROR);
                 product.setError(e.getMessage());
-                sessionNotifier.notifySipSubmittingFailed(product);
+                sessionNotifier.notifySipGenerationFailed(product);
                 productService.save(product);
             }
         }
