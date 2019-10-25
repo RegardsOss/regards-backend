@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -35,6 +34,7 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
@@ -51,7 +51,8 @@ public interface IProductService {
     /**
      * After product SIP generation, save the product state and submit its SIP in the SIP data flow (within the same transaction)
      */
-    Product saveAndSubmitSIP(Product product, AcquisitionProcessingChain acquisitionChain) throws SIPGenerationException;
+    Product saveAndSubmitSIP(Product product, AcquisitionProcessingChain acquisitionChain)
+            throws SIPGenerationException;
 
     /**
      * @return all {@link Product}
@@ -87,6 +88,13 @@ public interface IProductService {
      * @param product {@link Product} to delete
      */
     void delete(Product product);
+
+    /**
+     * Delete products
+     * @param chain
+     * @param session
+     */
+    public void deleteBySession(AcquisitionProcessingChain chain, String session);
 
     /**
      * @return page of products related to specified
@@ -145,7 +153,6 @@ public interface IProductService {
      * Handle successful SIP submission
      */
     void handleIngestedSIPSuccess(RequestInfo info);
-
 
     /**
      * Handle failure SIP submission

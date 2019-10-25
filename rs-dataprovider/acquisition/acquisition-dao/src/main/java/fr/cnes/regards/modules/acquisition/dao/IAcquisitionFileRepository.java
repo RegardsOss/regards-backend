@@ -29,6 +29,7 @@ import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 
 /**
@@ -77,5 +78,10 @@ public interface IAcquisitionFileRepository
      * Count number of {@link AcquisitionFile} associated to the given {@link AcquisitionFileInfo} and checksum
      */
     long countByFileInfoAndChecksum(AcquisitionFileInfo fileInfo, String checksum);
+
+    /**
+     * @param product
+     */
+    void deleteByProduct(Product product);
 
 }

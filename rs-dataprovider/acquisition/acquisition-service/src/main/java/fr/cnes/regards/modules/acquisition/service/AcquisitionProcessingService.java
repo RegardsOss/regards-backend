@@ -92,7 +92,11 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
+import fr.cnes.regards.modules.ingest.client.ISIPRestClient;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
 
@@ -126,7 +130,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private IProductService productService;
 
     @Autowired
-    private IAcquisitionFileService acqFileService;
+    private ISIPRestClient sipRestClient;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -973,5 +977,18 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                                                                            ProductSIPState.SCHEDULED));
 
         return summary;
+    }
+
+    @Override
+    public void deleteSessionProducts(Long processingChainId, String session) throws ModuleException {
+        AcquisitionProcessingChain chain = getChain(processingChainId);
+        if (!chain.isLocked()) {
+            productService.deleteBySession(chain, session);
+            sipRestClient.deleteBySession(OAISDeletionRequestDto.build(chain.getLabel(), session,
+                                                                       SessionDeletionMode.IRREVOCABLY,
+                                                                       SessionDeletionSelectionMode.INCLUDE));
+        } else {
+            throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
+        }
     }
 }
