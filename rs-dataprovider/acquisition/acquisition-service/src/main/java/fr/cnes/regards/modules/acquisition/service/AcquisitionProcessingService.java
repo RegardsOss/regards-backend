@@ -54,7 +54,6 @@ import org.springframework.util.MimeTypeUtils;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -95,9 +94,6 @@ import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
 import fr.cnes.regards.modules.ingest.client.ISIPRestClient;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
 
@@ -990,11 +986,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         for (AcquisitionProcessingChain chain : chains) {
             if (!chain.isLocked()) {
                 productService.deleteBySession(chain, session);
-                FeignSecurityManager.asSystem();
-                sipRestClient.deleteBySession(OAISDeletionRequestDto.build(chain.getLabel(), session,
-                                                                           SessionDeletionMode.IRREVOCABLY,
-                                                                           SessionDeletionSelectionMode.INCLUDE));
-                FeignSecurityManager.reset();
             } else {
                 throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
             }
