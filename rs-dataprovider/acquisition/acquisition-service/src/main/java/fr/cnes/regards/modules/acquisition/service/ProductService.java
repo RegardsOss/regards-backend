@@ -211,7 +211,6 @@ public class ProductService implements IProductService {
             results = productRepository.findByProcessingChainAndSession(chain, session, page);
             List<Product> products = results.getContent();
             for (Product product : products) {
-                acqFileRepository.deleteByProduct(product);
                 sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
             }
             productRepository.deleteAll(products);
@@ -227,7 +226,6 @@ public class ProductService implements IProductService {
             results = productRepository.findByProcessingChain(chain, page);
             List<Product> products = results.getContent();
             for (Product product : products) {
-                acqFileRepository.deleteByProduct(product);
                 sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
             }
             productRepository.deleteAll(products);
