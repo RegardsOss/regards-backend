@@ -66,6 +66,9 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
 
     Page<Product> findByProcessingChainOrderByIdAsc(AcquisitionProcessingChain processingChain, Pageable pageable);
 
+    Page<Product> findByProcessingChainAndSession(AcquisitionProcessingChain processingChain, String session,
+            Pageable pageable);
+
     /**
      * Find all products according to specified filters
      *
@@ -111,8 +114,6 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
 
     Page<Product> findByProcessingChainAndSipStateOrderByIdAsc(AcquisitionProcessingChain processingChain,
             ProductSIPState sipState, Pageable pageable);
-
-
 
     Page<Product> findByProcessingChainAndSipStateInOrderByIdAsc(AcquisitionProcessingChain processingChain,
             List<ProductSIPState> sipState, Pageable pageable);
@@ -193,4 +194,6 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
 
     @EntityGraph("graph.product.complete")
     List<Product> findAllByIdIn(List<Long> productIds, Sort sort);
+
+    void deleteBySessionAndProcessingChain(String session, AcquisitionProcessingChain chain);
 }

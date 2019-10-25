@@ -18,6 +18,14 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.nio.file.Path;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
@@ -27,12 +35,6 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
-import java.nio.file.Path;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * Acquisition processing service interface
@@ -93,15 +95,16 @@ public interface IAcquisitionProcessingService {
      * @param payload
      * @return
      */
-    AcquisitionProcessingChain patchStateAndMode(Long chainId, UpdateAcquisitionProcessingChain payload) throws ModuleException;
-
+    AcquisitionProcessingChain patchStateAndMode(Long chainId, UpdateAcquisitionProcessingChain payload)
+            throws ModuleException;
 
     /**
      * Patch several existing processing chain with provided values for active and state
      * @param payload
      * @return
      */
-    List<AcquisitionProcessingChain> patchChainsStateAndMode(UpdateAcquisitionProcessingChains payload) throws ModuleException;
+    List<AcquisitionProcessingChain> patchChainsStateAndMode(UpdateAcquisitionProcessingChains payload)
+            throws ModuleException;
 
     /**
      * Delete an inactive processing chain according to its identifier
@@ -134,7 +137,8 @@ public interface IAcquisitionProcessingService {
      * @return started processing chain
      * @throws ModuleException if error occurs!
      */
-    AcquisitionProcessingChain startManualChain(Long processingChainId, Optional<String> session) throws ModuleException;
+    AcquisitionProcessingChain startManualChain(Long processingChainId, Optional<String> session)
+            throws ModuleException;
 
     /**
      * Stop a chain regardless of its mode.
@@ -160,6 +164,14 @@ public interface IAcquisitionProcessingService {
     AcquisitionProcessingChain stopAndCleanChain(Long processingChainId) throws ModuleException;
 
     /**
+     * Delete all products of the given processing chain and session
+     * @param processingChainId
+     * @param session
+     * @throws ModuleException
+     */
+    void deleteSessionProducts(Long processingChainId, String session) throws ModuleException;
+
+    /**
      * Scan and register detected files for specified {@link AcquisitionProcessingChain}
      * @param processingChain processing chain
      * @throws ModuleException if error occurs!
@@ -176,8 +188,7 @@ public interface IAcquisitionProcessingService {
      * @return number of registered files
      */
     int registerFiles(List<Path> filePaths, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate,
-                      boolean updateFileInfo)
-            throws ModuleException;
+            boolean updateFileInfo) throws ModuleException;
 
     /**
      * Register a new file in one transaction
@@ -189,8 +200,7 @@ public interface IAcquisitionProcessingService {
      * @return true if really registered
      */
     boolean registerFile(Path filePath, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate,
-                         boolean updateFileInfo)
-            throws ModuleException;
+            boolean updateFileInfo) throws ModuleException;
 
     /**
      * Manage new registered file : prepare or fulfill products and schedule SIP generation as soon as possible
