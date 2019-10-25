@@ -131,9 +131,9 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
         productService.saveAndSubmitSIP(product, chain);
 
         Assert.assertTrue("There should be product associated to the chain", productService.countByChain(chain) > 0);
-        processingService.deleteSessionProducts(chain.getId(), "plop");
+        processingService.deleteSessionProducts(chain.getLabel(), "plop");
         Assert.assertTrue("There should be product associated to the chain", productService.countByChain(chain) > 0);
-        processingService.deleteSessionProducts(chain.getId(), "session");
+        processingService.deleteSessionProducts(chain.getLabel(), "session");
         Assert.assertFalse("There should not be any product associated to the chain",
                            productService.countByChain(chain) > 0);
     }
