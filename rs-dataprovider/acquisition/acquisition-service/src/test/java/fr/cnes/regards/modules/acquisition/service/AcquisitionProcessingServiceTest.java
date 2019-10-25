@@ -131,6 +131,26 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
         productService.saveAndSubmitSIP(product, chain);
 
         Assert.assertTrue("There should be product associated to the chain", productService.countByChain(chain) > 0);
+        processingService.deleteProducts(chain.getLabel());
+        Assert.assertFalse("There should not be any product associated to the chain",
+                           productService.countByChain(chain) > 0);
+    }
+
+    @Test
+    public void deleteProductsWithSession() throws ModuleException {
+        AcquisitionProcessingChain chain = processingService.createChain(create());
+        // Add a product
+        Product product = new Product();
+        product.setIpId("productIpId");
+        product.setProcessingChain(chain);
+        product.setProductName("ProductName");
+        product.setSession("session");
+        product.setSip(SIP.build(EntityType.DATA, "providerId"));
+        product.setSipState(SIPState.STORED);
+        product.setState(ProductState.COMPLETED);
+        productService.saveAndSubmitSIP(product, chain);
+
+        Assert.assertTrue("There should be product associated to the chain", productService.countByChain(chain) > 0);
         processingService.deleteSessionProducts(chain.getLabel(), "plop");
         Assert.assertTrue("There should be product associated to the chain", productService.countByChain(chain) > 0);
         processingService.deleteSessionProducts(chain.getLabel(), "session");

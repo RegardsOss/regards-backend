@@ -93,8 +93,6 @@ public class ProductService implements IProductService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
 
-    private static final String DEFAULT_SESSION = "Default";
-
     @Autowired
     private IPluginService pluginService;
 
@@ -206,7 +204,7 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public void deleteBySession(AcquisitionProcessingChain chain, String session) {
+    public long deleteBySession(AcquisitionProcessingChain chain, String session) {
         Pageable page = PageRequest.of(0, 500);
         Page<Product> results;
         do {
@@ -217,6 +215,22 @@ public class ProductService implements IProductService {
             }
             page = page.next();
         } while (results.hasNext());
+        return results.getTotalElements();
+    }
+
+    @Override
+    public long deleteByProcessingChain(AcquisitionProcessingChain chain) {
+        Pageable page = PageRequest.of(0, 500);
+        Page<Product> results;
+        do {
+            results = productRepository.findByProcessingChain(chain, page);
+            for (Product product : results.getContent()) {
+                acqFileRepository.deleteByProduct(product);
+                delete(chain, product);
+            }
+            page = page.next();
+        } while (results.hasNext());
+        return results.getTotalElements();
     }
 
     @Override
@@ -393,8 +407,6 @@ public class ProductService implements IProductService {
                 // The product is now managed by another session
                 currentProduct.setSession(session);
             }
-            // Keep the current product state to send the notif
-            ProductState oldState = currentProduct.getState();
 
             // Fulfill product with new valid acquired files
             fulfillProduct(validFilesByProductName.get(productName), currentProduct);

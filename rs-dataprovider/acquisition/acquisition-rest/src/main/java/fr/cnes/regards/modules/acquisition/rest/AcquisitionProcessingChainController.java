@@ -194,9 +194,13 @@ public class AcquisitionProcessingChainController implements IResourceController
 
     @RequestMapping(method = RequestMethod.DELETE, value = CHAIN_SESSION_PRODUCTS_PATH)
     @ResourceAccess(description = "Start a manual chain", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> deleteProducts(@PathVariable String chainName, @PathVariable String session)
-            throws ModuleException {
-        processingService.deleteSessionProducts(chainName, session);
+    public ResponseEntity<Void> deleteProducts(@PathVariable String chainName,
+            @PathVariable(required = false) String session) throws ModuleException {
+        if (session != null) {
+            processingService.deleteSessionProducts(chainName, session);
+        } else {
+            processingService.deleteProducts(chainName);
+        }
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
