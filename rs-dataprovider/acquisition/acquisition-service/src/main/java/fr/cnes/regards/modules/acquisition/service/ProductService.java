@@ -209,10 +209,12 @@ public class ProductService implements IProductService {
         Page<Product> results;
         do {
             results = productRepository.findByProcessingChainAndSession(chain, session, page);
-            for (Product product : results.getContent()) {
+            List<Product> products = results.getContent();
+            for (Product product : products) {
                 acqFileRepository.deleteByProduct(product);
-                delete(chain, product);
+                sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
             }
+            productRepository.deleteAll(products);
             page = page.next();
         } while (results.hasNext());
         return results.getTotalElements();
