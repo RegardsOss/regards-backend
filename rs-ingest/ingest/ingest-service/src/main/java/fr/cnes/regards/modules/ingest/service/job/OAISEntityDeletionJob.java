@@ -116,7 +116,8 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
             sipsPage.forEach(sip -> {
                 // Mark SIP and AIP deleted
                 // Send events for files deletion
-                sipService.scheduleDeletion(sip, deletionRequest.getDeletionMode());
+                sipService.scheduleDeletion(sip, deletionRequest.getDeletionMode(),
+                                            deletionRequest.getDeletePhysicalFiles());
             });
             advanceCompletion();
         } while (sipsPage.hasNext());

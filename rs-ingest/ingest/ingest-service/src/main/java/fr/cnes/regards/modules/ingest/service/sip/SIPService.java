@@ -18,9 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
@@ -35,19 +49,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -79,12 +80,10 @@ public class SIPService implements ISIPService {
 
     @Override
     public Page<SIPEntity> search(SearchSIPsParameters params, Pageable page) {
-        return sipRepository
-                .loadAll(SIPEntitySpecifications.search(params.getProviderIds(),
-                        null, params.getSessionOwner(), params.getSession(),
-                        params.getFrom(), params.getStates(), params.getProcessing(),
-                        true, params.getTags(), params.getStorages(), params.getCategories(), page),
-                        page);
+        return sipRepository.loadAll(SIPEntitySpecifications
+                .search(params.getProviderIds(), null, params.getSessionOwner(), params.getSession(), params.getFrom(),
+                        params.getStates(), params.getProcessing(), true, params.getTags(), params.getStorages(),
+                        params.getCategories(), page), page);
     }
 
     @Override
@@ -98,17 +97,22 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public void scheduleDeletion(SIPEntity sipEntity, SessionDeletionMode deletionMode) {
+    public void scheduleDeletion(SIPEntity sipEntity, SessionDeletionMode deletionMode, Boolean deleteFiles) {
         // Update AIPs state as deleted and retrieve events to delete associated files and AIPs
-        String deleteRequestId = aipService.scheduleAIPEntityDeletion(sipEntity.getSipId());
+        if (deleteFiles) {
+            String deleteRequestId = aipService.scheduleAIPEntityDeletion(sipEntity.getSipId());
 
-        sessionNotifier.notifySIPDeleting(sipEntity);
-        sipEntity.setState(SIPState.DELETED);
-        save(sipEntity);
+            sessionNotifier.notifySIPDeleting(sipEntity);
+            sipEntity.setState(SIPState.DELETED);
+            save(sipEntity);
 
-        // Save the request id sent to storage
-        StorageDeletionRequest sdr = StorageDeletionRequest.build(deleteRequestId, sipEntity, deletionMode);
-        storageDeletionRequestRepo.save(sdr);
+            // Save the request id sent to storage
+            StorageDeletionRequest sdr = StorageDeletionRequest.build(deleteRequestId, sipEntity, deletionMode);
+            storageDeletionRequestRepo.save(sdr);
+        } else {
+            aipService.processDeletion(sipEntity.getSipId(), deletionMode == SessionDeletionMode.IRREVOCABLY);
+            processDeletion(sipEntity.getSipId(), deletionMode == SessionDeletionMode.IRREVOCABLY);
+        }
     }
 
     @Override

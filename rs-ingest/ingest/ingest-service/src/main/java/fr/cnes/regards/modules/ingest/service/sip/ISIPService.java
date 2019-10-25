@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Set;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -59,8 +59,9 @@ public interface ISIPService {
      * as deleted. This methods also send events to remove all files linked to these AIPs
      * @param sipEntity entity to remove
      * @param removeIrrevocably mode of removal
+     * @param deleteFiles
      */
-    void scheduleDeletion(SIPEntity sipEntity, SessionDeletionMode removeIrrevocably);
+    void scheduleDeletion(SIPEntity sipEntity, SessionDeletionMode removeIrrevocably, Boolean deleteFiles);
 
     /**
      * Delete the SIPEntity using its {@link SIPEntity#getSipId()}.

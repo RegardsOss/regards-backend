@@ -18,12 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
 import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -32,13 +28,18 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
 
 /**
  * Macro request that keeps info about a "massive" suppression of OAIS entities
@@ -46,7 +47,7 @@ import org.hibernate.annotations.TypeDefs;
  */
 @Entity
 @Table(name = "t_deletion_request",
-        indexes = { @Index(name = "idx_deletion_request_search", columnList = "session_owner,session_name,state") } )
+        indexes = { @Index(name = "idx_deletion_request_search", columnList = "session_owner,session_name,state") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class OAISDeletionRequest extends AbstractInternalRequest {
 
@@ -62,6 +63,9 @@ public class OAISDeletionRequest extends AbstractInternalRequest {
     @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_SELECTION_MODE)
     @Column(name = "selection_mode", nullable = false)
     private SessionDeletionSelectionMode selectionMode;
+
+    @Column(name = "delete_files")
+    private Boolean deletePhysicalFiles = true;
 
     /**
      * URN of the SIP(s) to preserve or remove in the specified session (according to {@link #selectionMode})
@@ -115,6 +119,14 @@ public class OAISDeletionRequest extends AbstractInternalRequest {
 
     public void setProviderIds(Set<String> providerIds) {
         this.providerIds = providerIds;
+    }
+
+    public Boolean getDeletePhysicalFiles() {
+        return deletePhysicalFiles;
+    }
+
+    public void setDeletePhysicalFiles(Boolean deletePhysicalFiles) {
+        this.deletePhysicalFiles = deletePhysicalFiles;
     }
 
 }

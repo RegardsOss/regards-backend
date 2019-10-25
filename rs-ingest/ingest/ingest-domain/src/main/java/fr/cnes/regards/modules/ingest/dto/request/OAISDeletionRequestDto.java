@@ -18,17 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.dto.request;
 
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.UUID;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 
 /**
  * Session deletion request
@@ -53,6 +53,8 @@ public class OAISDeletionRequestDto {
     @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_SELECTION_MODE)
     private SessionDeletionSelectionMode selectionMode;
 
+    private Boolean deletePhysicalFiles = true;
+
     /**
      * URN of the SIP(s) to preserve or remove in the specified session (according to {@link #selectionMode})
      */
@@ -66,8 +68,8 @@ public class OAISDeletionRequestDto {
     /**
      * Build a new session deletion request
      */
-    public static OAISDeletionRequestDto build(String sessionOwner, String session,
-            SessionDeletionMode deletionMode, SessionDeletionSelectionMode selectionMode) {
+    public static OAISDeletionRequestDto build(String sessionOwner, String session, SessionDeletionMode deletionMode,
+            SessionDeletionSelectionMode selectionMode) {
         Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
         Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION);
         Assert.notNull(deletionMode, IngestValidationMessages.MISSING_SESSION_DELETION_MODE);
@@ -147,4 +149,13 @@ public class OAISDeletionRequestDto {
     public void setState(InternalRequestStep state) {
         this.state = state;
     }
+
+    public Boolean getDeletePhysicalFiles() {
+        return deletePhysicalFiles;
+    }
+
+    public void setDeletePhysicalFiles(Boolean deletePhysicalFiles) {
+        this.deletePhysicalFiles = deletePhysicalFiles;
+    }
+
 }
