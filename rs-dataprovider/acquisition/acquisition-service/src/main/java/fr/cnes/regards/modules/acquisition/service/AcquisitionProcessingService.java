@@ -54,6 +54,7 @@ import org.springframework.util.MimeTypeUtils;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -461,7 +462,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                         jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
                     }
 
-                    productService.delete(product);
+                    productService.delete(processingChain, product);
                 }
             }
         } while (products.hasNext());
@@ -984,9 +985,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         AcquisitionProcessingChain chain = getChain(processingChainId);
         if (!chain.isLocked()) {
             productService.deleteBySession(chain, session);
+            FeignSecurityManager.asSystem();
             sipRestClient.deleteBySession(OAISDeletionRequestDto.build(chain.getLabel(), session,
                                                                        SessionDeletionMode.IRREVOCABLY,
                                                                        SessionDeletionSelectionMode.INCLUDE));
+            FeignSecurityManager.reset();
         } else {
             throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
         }
