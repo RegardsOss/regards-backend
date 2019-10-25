@@ -18,6 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -31,20 +44,8 @@ import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
 import fr.cnes.regards.modules.ingest.domain.request.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 /**
  * This job handles session deletion requests
@@ -103,14 +104,11 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
         Page<SIPEntity> sipsPage;
         do {
             // Page request isn't modified as the state of entities are modified
-            sipsPage = sipRepository
-                    .loadAll(
-                            SIPEntitySpecifications.search(deletionRequest.getProviderIds(),
-                                    deletionRequest.getSipIds(), deletionRequest.getSessionOwner(),
-                                    deletionRequest.getSession(), null, states, null,
-                                    deletionRequest.getSelectionMode() == SessionDeletionSelectionMode.INCLUDE,
-                                    null, null, null, pageRequest),
-                            pageRequest);
+            sipsPage = sipRepository.loadAll(SIPEntitySpecifications
+                    .search(deletionRequest.getProviderIds(), deletionRequest.getSipIds(),
+                            deletionRequest.getSessionOwner(), deletionRequest.getSession(), null, states, null,
+                            deletionRequest.getSelectionMode() == SessionDeletionSelectionMode.INCLUDE, null, null,
+                            null, pageRequest), pageRequest);
             // Save number of pages to publish job advancement
             if (totalPages < sipsPage.getTotalPages()) {
                 totalPages = sipsPage.getTotalPages();
@@ -128,7 +126,8 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
 
     @Override
     public int getCompletionCount() {
-        return totalPages;
+        // Do not return 0 value. Completion must be a positive integer.
+        return totalPages > 0 ? totalPages : 1;
     }
 
 }
