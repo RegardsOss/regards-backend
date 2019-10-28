@@ -493,7 +493,7 @@ public class InformationPackageProperties {
      * Set syntax representation
      * @param mimeType MIME type
      */
-    public InformationPackageProperties withSyntaxAndDimension(MimeType mimeType, Integer width, Integer height) {
+    public InformationPackageProperties withSyntaxAndDimension(MimeType mimeType, Double width, Double height) {
         getUnderConstruction().withSyntaxAndDimension(mimeType, width, height);
         return this;
     }

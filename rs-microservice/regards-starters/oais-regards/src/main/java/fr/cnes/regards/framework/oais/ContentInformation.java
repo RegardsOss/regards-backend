@@ -231,7 +231,7 @@ public class ContentInformation {
      * @param mimeType MIME type
      */
     public ContentInformation withSyntax(@Nullable String mimeName, @Nullable String mimeDescription, MimeType mimeType,
-            @Nullable Integer width, @Nullable Integer height) {
+            @Nullable Double width, @Nullable Double height) {
         Assert.notNull(mimeType, "Mime type cannot be null");
         Assert.hasLength(mimeType.getType(), "Mime type type cannot be null");
         Assert.hasLength(mimeType.getSubtype(), "Mime type subtype cannot be null");
@@ -260,7 +260,7 @@ public class ContentInformation {
      * Set syntax representation
      * @param mimeType MIME type
      */
-    public ContentInformation withSyntaxAndDimension(MimeType mimeType, Integer width, Integer height) {
+    public ContentInformation withSyntaxAndDimension(MimeType mimeType, Double width, Double height) {
         return withSyntax(null, null, mimeType, width, height);
     }
 

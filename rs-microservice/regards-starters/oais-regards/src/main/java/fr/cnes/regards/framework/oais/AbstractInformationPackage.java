@@ -510,8 +510,8 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
      * Set syntax representation
      * @param mimeType MIME type
      */
-    public <T extends AbstractInformationPackage<ID>> T withSyntaxAndDimension(MimeType mimeType, Integer width,
-            Integer Height) {
+    public <T extends AbstractInformationPackage<ID>> T withSyntaxAndDimension(MimeType mimeType, Double width,
+            Double Height) {
         properties.withSyntaxAndDimension(mimeType, width, Height);
         return (T) this;
     }
