@@ -145,17 +145,18 @@ public class SessionService implements ISessionService {
             if (previousValueAsObject instanceof String) {
                 previousValue = 0L;
             } else {
-                previousValue = getLongValue(sessionToUpdate
-                        .getStepPropertyValue(sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty()));
+                previousValue = getLongValue(sessionToUpdate.getStepPropertyValue(sessionMonitoringEvent.getStep(),
+                                                                                  sessionMonitoringEvent.getProperty()))
+                                                                                          .orElse(0L);
             }
             Long updatedValue;
             switch (sessionMonitoringEvent.getOperator()) {
                 case INC:
-                    updatedValue = previousValue + getLongValue(sessionMonitoringEvent.getValue());
+                    updatedValue = previousValue + getLongValue(sessionMonitoringEvent.getValue()).orElse(0L);
                     break;
                 case DEC:
                 default:
-                    updatedValue = previousValue - getLongValue(sessionMonitoringEvent.getValue());
+                    updatedValue = previousValue - getLongValue(sessionMonitoringEvent.getValue()).orElse(0L);
             }
             sessionToUpdate.setStepPropertyValue(sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty(),
                                                  updatedValue);
@@ -170,7 +171,7 @@ public class SessionService implements ISessionService {
                     break;
                 case DEC:
                     // If we create using the DEC operator, we use the opposite value
-                    Long valueDec = -getLongValue(sessionMonitoringEvent.getValue());
+                    Long valueDec = -getLongValue(sessionMonitoringEvent.getValue()).orElse(0L);
                     sessionToUpdate.setStepPropertyValue(sessionMonitoringEvent.getStep(),
                                                          sessionMonitoringEvent.getProperty(), valueDec);
                     break;
@@ -229,7 +230,7 @@ public class SessionService implements ISessionService {
         publisher.publish(notif);
     }
 
-    private Long getLongValue(Object value) {
+    private Optional<Long> getLongValue(Object value) {
         Long longValue = null;
         if (value instanceof Integer) {
             longValue = new Long((Integer) value);
@@ -237,7 +238,9 @@ public class SessionService implements ISessionService {
             longValue = new Long((Long) value);
         } else if (value instanceof Double) {
             longValue = new Long(((Double) value).longValue());
+        } else {
+            LOG.error("Error getting long value from object", value);
         }
-        return longValue;
+        return Optional.ofNullable(longValue);
     }
 }
