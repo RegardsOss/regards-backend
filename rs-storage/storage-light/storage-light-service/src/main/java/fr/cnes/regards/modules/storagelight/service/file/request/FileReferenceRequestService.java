@@ -204,7 +204,7 @@ public class FileReferenceRequestService {
                 fileDeletionRequestService.delete(deletionRequest.get());
             }
             if (!fileReference.getMetaInfo().equals(request.buildMetaInfo())) {
-                LOGGER.warn("Existing referenced file meta information differs "
+                LOGGER.debug("Existing referenced file meta information differs "
                         + "from new reference meta information. Previous ones are maintained");
             }
             String message = String
