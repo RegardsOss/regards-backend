@@ -140,7 +140,7 @@ public class SessionService implements ISessionService {
             // Handle mathematical operators
             Object previousValueAsObject = sessionToUpdate.getStepPropertyValue(sessionMonitoringEvent.getStep(),
                                                                                 sessionMonitoringEvent.getProperty());
-            long previousValue;
+            Integer previousValue;
             // We support only numerical value, so we fallback previousValue to zero if its type is string
             if (previousValueAsObject instanceof String) {
                 previousValue = 0;
@@ -148,7 +148,7 @@ public class SessionService implements ISessionService {
                 previousValue = (Integer) sessionToUpdate.getStepPropertyValue(sessionMonitoringEvent.getStep(),
                                                                                sessionMonitoringEvent.getProperty());
             }
-            long updatedValue;
+            Integer updatedValue;
             switch (sessionMonitoringEvent.getOperator()) {
                 case INC:
                     updatedValue = previousValue + (Integer) sessionMonitoringEvent.getValue();
