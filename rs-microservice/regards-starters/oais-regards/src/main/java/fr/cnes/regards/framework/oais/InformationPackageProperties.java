@@ -476,7 +476,7 @@ public class InformationPackageProperties {
      * Set the syntax to the information package thanks to the given parameters
      */
     public InformationPackageProperties withSyntax(String mimeName, String mimeDescription, MimeType mimeType) {
-        getUnderConstruction().withSyntax(mimeName, mimeDescription, mimeType);
+        getUnderConstruction().withSyntax(mimeName, mimeDescription, mimeType, null, null);
         return this;
     }
 
@@ -486,6 +486,15 @@ public class InformationPackageProperties {
      */
     public InformationPackageProperties withSyntax(MimeType mimeType) {
         getUnderConstruction().withSyntax(mimeType);
+        return this;
+    }
+
+    /**
+     * Set syntax representation
+     * @param mimeType MIME type
+     */
+    public InformationPackageProperties withSyntaxAndDimension(MimeType mimeType, Integer width, Integer height) {
+        getUnderConstruction().withSyntaxAndDimension(mimeType, width, height);
         return this;
     }
 

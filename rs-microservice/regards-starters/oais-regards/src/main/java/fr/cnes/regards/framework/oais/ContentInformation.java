@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -97,8 +96,8 @@ public class ContentInformation {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (dataObject == null ? 0 : dataObject.hashCode());
-        result = prime * result + (representationInformation == null ? 0 : representationInformation.hashCode());
+        result = (prime * result) + (dataObject == null ? 0 : dataObject.hashCode());
+        result = (prime * result) + (representationInformation == null ? 0 : representationInformation.hashCode());
         return result;
     }
 
@@ -231,8 +230,8 @@ public class ContentInformation {
      * @param mimeDescription MIME description
      * @param mimeType MIME type
      */
-    public ContentInformation withSyntax(@Nullable String mimeName, @Nullable String mimeDescription,
-            MimeType mimeType) {
+    public ContentInformation withSyntax(@Nullable String mimeName, @Nullable String mimeDescription, MimeType mimeType,
+            @Nullable Integer width, @Nullable Integer height) {
         Assert.notNull(mimeType, "Mime type cannot be null");
         Assert.hasLength(mimeType.getType(), "Mime type type cannot be null");
         Assert.hasLength(mimeType.getSubtype(), "Mime type subtype cannot be null");
@@ -241,6 +240,8 @@ public class ContentInformation {
         syntax.setName(mimeName);
         syntax.setDescription(mimeDescription);
         syntax.setMimeType(mimeType);
+        syntax.setWidth(width);
+        syntax.setHeight(height);
 
         setRepresentationInformation(new RepresentationInformation());
         getRepresentationInformation().setSyntax(syntax);
@@ -252,7 +253,15 @@ public class ContentInformation {
      * @param mimeType MIME type
      */
     public ContentInformation withSyntax(MimeType mimeType) {
-        return withSyntax(null, null, mimeType);
+        return withSyntax(null, null, mimeType, null, null);
+    }
+
+    /**
+     * Set syntax representation
+     * @param mimeType MIME type
+     */
+    public ContentInformation withSyntaxAndDimension(MimeType mimeType, Integer width, Integer height) {
+        return withSyntax(null, null, mimeType, width, height);
     }
 
     /**
@@ -264,7 +273,7 @@ public class ContentInformation {
      */
     public ContentInformation withSyntaxAndSemantic(String mimeName, String mimeDescription, MimeType mimeType,
             String semanticDescription) {
-        withSyntax(mimeName, mimeDescription, mimeType);
+        withSyntax(mimeName, mimeDescription, mimeType, null, null);
 
         Assert.hasLength(semanticDescription, "Semantic description cannot be null. Use alternative method otherwise.");
         Semantic semantic = new Semantic();
