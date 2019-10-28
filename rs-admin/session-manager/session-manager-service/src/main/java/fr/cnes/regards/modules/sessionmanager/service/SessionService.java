@@ -145,8 +145,8 @@ public class SessionService implements ISessionService {
             if (previousValueAsObject instanceof String) {
                 previousValue = 0;
             } else {
-                previousValue = (long) sessionToUpdate.getStepPropertyValue(sessionMonitoringEvent.getStep(),
-                                                                            sessionMonitoringEvent.getProperty());
+                previousValue = (Integer) sessionToUpdate.getStepPropertyValue(sessionMonitoringEvent.getStep(),
+                                                                               sessionMonitoringEvent.getProperty());
             }
             long updatedValue;
             switch (sessionMonitoringEvent.getOperator()) {
@@ -170,7 +170,7 @@ public class SessionService implements ISessionService {
                     break;
                 case DEC:
                     // If we create using the DEC operator, we use the opposite value
-                    double valueDec = -(long) sessionMonitoringEvent.getValue();
+                    double valueDec = -(Integer) sessionMonitoringEvent.getValue();
                     sessionToUpdate.setStepPropertyValue(sessionMonitoringEvent.getStep(),
                                                          sessionMonitoringEvent.getProperty(), valueDec);
                     break;
