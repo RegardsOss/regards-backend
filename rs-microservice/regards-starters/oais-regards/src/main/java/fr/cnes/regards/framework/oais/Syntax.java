@@ -34,12 +34,12 @@ public class Syntax {
     /**
      * Height of the file (only for image files) in pixels
      */
-    private Integer height;
+    private Double height;
 
     /**
      * Width of the file (only for image files) in pixels
      */
-    private Integer width;
+    private Double width;
 
     public String getDescription() {
         return description;
@@ -65,19 +65,19 @@ public class Syntax {
         name = pName;
     }
 
-    public Integer getHeight() {
+    public Double getHeight() {
         return height;
     }
 
-    public void setHeight(Integer height) {
+    public void setHeight(Double height) {
         this.height = height;
     }
 
-    public Integer getWidth() {
+    public Double getWidth() {
         return width;
     }
 
-    public void setWidth(Integer width) {
+    public void setWidth(Double width) {
         this.width = width;
     }
 
@@ -121,8 +121,9 @@ public class Syntax {
         }
         if (name == null) {
             return other.name == null;
-        } else
+        } else {
             return name.equals(other.name);
+        }
     }
 
 }
