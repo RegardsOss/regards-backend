@@ -291,6 +291,10 @@ public class RequestsGroupService {
                          reqGrp.getId(), successes.size());
             publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(), reqGrp.getType(), FlowItemStatus.SUCCESS,
                                                            successes));
+            if (successes.isEmpty()) {
+                LOGGER.error("[{} GROUP SUCCESS {}] No success requests associated to terminated group {}",
+                             reqGrp.getType(), reqGrp.getId());
+            }
         } else {
             LOGGER.error("[{} GROUP ERROR {}] - {} success / {} errors.", reqGrp.getType().toString().toUpperCase(),
                          reqGrp.getId(), successes.size(), errors.size());
