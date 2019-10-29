@@ -226,8 +226,8 @@ public class MediaExtension extends AbstractExtension {
             MediaContent content = new MediaContent(new UrlReference(URI.create(href)));
             content.setMedium("image");
             content.setType(file.getMimeType().toString());
-            content.setHeight(file.getImageHeight());
-            content.setWidth(file.getImageWidth());
+            content.setHeight(file.getImageHeight().intValue());
+            content.setWidth(file.getImageWidth().intValue());
             Metadata metadata = new Metadata();
             Category[] categories = { cat };
             metadata.setCategories(categories);
