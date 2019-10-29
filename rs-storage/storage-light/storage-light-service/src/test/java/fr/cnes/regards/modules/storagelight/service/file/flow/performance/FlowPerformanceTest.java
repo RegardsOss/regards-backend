@@ -151,14 +151,29 @@ public class FlowPerformanceTest extends AbstractStorageTest {
     @Test
     public void referenceFiles() throws InterruptedException {
         LOGGER.info(" --------     REFERENCE TEST     --------- ");
+        String refStorage = "storage-1";
         String storage = "storage" + UUID.randomUUID().toString();
         for (int i = 0; i < 5000; i++) {
+            String newOwner = "owner-" + UUID.randomUUID().toString();
             String checksum = UUID.randomUUID().toString();
+            String checksum2 = UUID.randomUUID().toString();
+            Set<FileReferenceRequestDTO> requests = Sets.newHashSet();
+            requests.add(FileReferenceRequestDTO.build("quicklook.1-" + checksum, checksum2, "MD5",
+                                                       "application/octet-stream", 10L, newOwner, refStorage,
+                                                       "file://storage/location/quicklook1"));
+            requests.add(FileReferenceRequestDTO.build("quicklook.2-" + checksum, checksum2, "MD5",
+                                                       "application/octet-stream", 10L, newOwner, refStorage,
+                                                       "file://storage/location/quicklook1"));
+            requests.add(FileReferenceRequestDTO.build("quicklook.3-" + checksum, checksum2, "MD5",
+                                                       "application/octet-stream", 10L, newOwner, refStorage,
+                                                       "file://storage/location/quicklook1"));
+            requests.add(FileReferenceRequestDTO.build("quicklook.4-" + checksum, checksum2, "MD5",
+                                                       "application/octet-stream", 10L, newOwner, refStorage,
+                                                       "file://storage/location/quicklook1"));
             // Create a new bus message File reference request
-            ;
-            ReferenceFlowItem item = ReferenceFlowItem.build(FileReferenceRequestDTO
-                    .build("error.file.name", checksum, "MD5", "application/octet-stream", 10L, "owner-test", storage,
-                           "file://storage/location/file.name"), UUID.randomUUID().toString());
+            requests.add(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
+                                                       newOwner, storage, "file://storage/location/file.name"));
+            ReferenceFlowItem item = ReferenceFlowItem.build(requests, UUID.randomUUID().toString());
             TenantWrapper<ReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
             // Publish request
             referenceFlowHandler.handle(wrapper);
@@ -170,10 +185,10 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             Thread.sleep(2_000);
             page = fileRefRepo.findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
-        } while ((loops < 10) && ((page.getTotalElements()) != 5000));
+        } while ((loops < 50) && ((page.getTotalElements()) != 5000));
 
-        Assert.assertEquals("There should be 5000 file ref created", fileRefRepo
-                .findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements(), 5000);
+        Assert.assertEquals("There should be 5004 file ref created", 5000, fileRefRepo
+                .findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
     }
 
     @Test
@@ -231,10 +246,10 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         Long total = page.getTotalElements();
         for (FileReference fileRef : page.getContent()) {
             FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
-                                         fileRef.getOwners().get(0), false);
+                                         fileRef.getOwners().iterator().next(), false);
             DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO
                     .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
-                           fileRef.getOwners().get(0), false), UUID.randomUUID().toString());
+                           fileRef.getOwners().iterator().next(), false), UUID.randomUUID().toString());
             TenantWrapper<DeletionFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
             deleteHandler.handle(wrapper);
         }
