@@ -18,21 +18,10 @@
  */
 package fr.cnes.regards.modules.sessionmanager.service;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.sessionmanager.domain.Session;
-import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
-import fr.cnes.regards.modules.sessionmanager.dao.ISessionRepository;
-import fr.cnes.regards.modules.sessionmanager.dao.SessionSpecifications;
-import fr.cnes.regards.modules.sessionmanager.domain.event.DeleteSessionEvent;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +29,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.sessionmanager.dao.ISessionRepository;
+import fr.cnes.regards.modules.sessionmanager.dao.SessionSpecifications;
+import fr.cnes.regards.modules.sessionmanager.domain.Session;
+import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
+import fr.cnes.regards.modules.sessionmanager.domain.event.DeleteSessionEvent;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
 
 @Service
 @Transactional
@@ -64,8 +66,10 @@ public class SessionService implements ISessionService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Session> retrieveSessions(String source, String name, OffsetDateTime from, OffsetDateTime to, SessionState state, boolean onlyLastSession, Pageable page) {
-        return sessionRepository.findAll(SessionSpecifications.search(source, name, from, to, state, onlyLastSession), page);
+    public Page<Session> retrieveSessions(String source, String name, OffsetDateTime from, OffsetDateTime to,
+            SessionState state, boolean onlyLastSession, Pageable page) {
+        return sessionRepository.findAll(SessionSpecifications.search(source, name, from, to, state, onlyLastSession),
+                                         page);
     }
 
     @Override
@@ -84,7 +88,7 @@ public class SessionService implements ISessionService {
     public Session updateSessionState(Long id, SessionState state) throws ModuleException {
         Session s = getSession(id);
         // Allow user to mark as acknowledged a session previously in error
-        if (s.getState() == SessionState.ERROR && state == SessionState.ACKNOWLEDGED) {
+        if ((s.getState() == SessionState.ERROR) && (state == SessionState.ACKNOWLEDGED)) {
             s.setState(state);
             return this.updateSession(s);
         }
@@ -96,8 +100,9 @@ public class SessionService implements ISessionService {
     @Override
     public void deleteSession(Long id, boolean force) throws ModuleException {
         Session s = getSession(id);
-        if (s.getState() == SessionState.DELETED && !force) {
-            String errorMessage = String.format("Can't delete the session %s %s as it's already marked as deleted", s.getSource(), s.getName());
+        if ((s.getState() == SessionState.DELETED) && !force) {
+            String errorMessage = String.format("Can't delete the session %s %s as it's already marked as deleted",
+                                                s.getSource(), s.getName());
             LOG.debug(errorMessage);
             throw new EntityOperationForbiddenException(String.valueOf(s.getId()), Session.class, errorMessage);
         }
@@ -118,7 +123,8 @@ public class SessionService implements ISessionService {
     @Override
     public Session updateSessionProperty(SessionMonitoringEvent sessionMonitoringEvent) {
         // Retrieve the session to update or create it
-        Optional<Session> sessionOpt = sessionRepository.findOneBySourceAndName(sessionMonitoringEvent.getSource(), sessionMonitoringEvent.getName());
+        Optional<Session> sessionOpt = sessionRepository.findOneBySourceAndName(sessionMonitoringEvent.getSource(),
+                                                                                sessionMonitoringEvent.getName());
         Session sessionToUpdate;
         if (!sessionOpt.isPresent()) {
             sessionToUpdate = createSession(sessionMonitoringEvent.getName(), sessionMonitoringEvent.getSource());
@@ -127,41 +133,47 @@ public class SessionService implements ISessionService {
         }
 
         // Set the new value inside the map
-        boolean isKeyExisting = sessionToUpdate.isStepPropertyExisting(sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty());
-        if (isKeyExisting && (
-                sessionMonitoringEvent.getOperator() == SessionNotificationOperator.INC ||
-                        sessionMonitoringEvent.getOperator() == SessionNotificationOperator.DEC
-        )) {
+        boolean isKeyExisting = sessionToUpdate.isStepPropertyExisting(sessionMonitoringEvent.getStep(),
+                                                                       sessionMonitoringEvent.getProperty());
+        if (isKeyExisting && ((sessionMonitoringEvent.getOperator() == SessionNotificationOperator.INC)
+                || (sessionMonitoringEvent.getOperator() == SessionNotificationOperator.DEC))) {
             // Handle mathematical operators
-            Object previousValueAsObject = sessionToUpdate.getStepPropertyValue(sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty());
-            long previousValue;
+            Object previousValueAsObject = sessionToUpdate.getStepPropertyValue(sessionMonitoringEvent.getStep(),
+                                                                                sessionMonitoringEvent.getProperty());
+            Long previousValue;
             // We support only numerical value, so we fallback previousValue to zero if its type is string
             if (previousValueAsObject instanceof String) {
-                previousValue = 0;
+                previousValue = 0L;
             } else {
-                previousValue = (long) sessionToUpdate.getStepPropertyValue(sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty());
+                previousValue = getLongValue(sessionToUpdate.getStepPropertyValue(sessionMonitoringEvent.getStep(),
+                                                                                  sessionMonitoringEvent.getProperty()))
+                                                                                          .orElse(0L);
             }
-            long updatedValue;
+            Long updatedValue;
             switch (sessionMonitoringEvent.getOperator()) {
                 case INC:
-                    updatedValue = previousValue + (long) sessionMonitoringEvent.getValue();
+                    updatedValue = previousValue + getLongValue(sessionMonitoringEvent.getValue()).orElse(0L);
                     break;
                 case DEC:
                 default:
-                    updatedValue = previousValue - (long) sessionMonitoringEvent.getValue();
+                    updatedValue = previousValue - getLongValue(sessionMonitoringEvent.getValue()).orElse(0L);
             }
-            sessionToUpdate.setStepPropertyValue(sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty(), updatedValue);
+            sessionToUpdate.setStepPropertyValue(sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty(),
+                                                 updatedValue);
         } else {
             switch (sessionMonitoringEvent.getOperator()) {
                 case INC:
                 case REPLACE:
                     // Just use the provided value
-                    sessionToUpdate.setStepPropertyValue(sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty(), sessionMonitoringEvent.getValue());
+                    sessionToUpdate.setStepPropertyValue(sessionMonitoringEvent.getStep(),
+                                                         sessionMonitoringEvent.getProperty(),
+                                                         sessionMonitoringEvent.getValue());
                     break;
                 case DEC:
                     // If we create using the DEC operator, we use the opposite value
-                    double valueDec = -(long) sessionMonitoringEvent.getValue();
-                    sessionToUpdate.setStepPropertyValue(sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty(), valueDec);
+                    Long valueDec = -getLongValue(sessionMonitoringEvent.getValue()).orElse(0L);
+                    sessionToUpdate.setStepPropertyValue(sessionMonitoringEvent.getStep(),
+                                                         sessionMonitoringEvent.getProperty(), valueDec);
                     break;
             }
         }
@@ -191,7 +203,6 @@ public class SessionService implements ISessionService {
         return newSession;
     }
 
-
     private Session getSession(Long id) throws EntityNotFoundException {
         Optional<Session> sessionOpt = sessionRepository.findById(id);
         if (!sessionOpt.isPresent()) {
@@ -217,5 +228,19 @@ public class SessionService implements ISessionService {
     private void sendDeleteNotification(Session session) {
         DeleteSessionEvent notif = DeleteSessionEvent.build(session.getSource(), session.getName());
         publisher.publish(notif);
+    }
+
+    private Optional<Long> getLongValue(Object value) {
+        Long longValue = null;
+        if (value instanceof Integer) {
+            longValue = new Long((Integer) value);
+        } else if (value instanceof Long) {
+            longValue = new Long((Long) value);
+        } else if (value instanceof Double) {
+            longValue = new Long(((Double) value).longValue());
+        } else {
+            LOG.error("Error getting long value from object", value);
+        }
+        return Optional.ofNullable(longValue);
     }
 }
