@@ -197,11 +197,12 @@ public class FileReferenceService {
      * Update the given fileReference
      * @param updatedFile
      */
-    public void update(String checksum, String storage, FileReference updatedFile) {
+    public FileReference update(String checksum, String storage, FileReference updatedFile) {
         Assert.notNull(updatedFile, "File reference to update can not be null");
         Assert.notNull(updatedFile.getId(), "File reference id to update can not be null");
-        fileRefRepo.save(updatedFile);
+        FileReference saved = fileRefRepo.save(updatedFile);
         fileRefEventPublisher.updated(checksum, storage, updatedFile);
+        return saved;
     }
 
     /**
