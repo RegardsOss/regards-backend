@@ -240,4 +240,12 @@ public interface IProductService {
      */
     boolean manageUpdatedProductsByPage(AcquisitionProcessingChain processingChain);
 
+    /**
+     * Save success and errors products in DB and submit success ones to ingest microservice for ingestion
+     * @param processingChain
+     * @param success
+     * @param errors
+     */
+    void handleGeneratedProducts(AcquisitionProcessingChain processingChain, Set<Product> success, Set<Product> errors);
+
 }
