@@ -705,37 +705,38 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             List<DirectoryStream<Path>> streams = scanPlugin.stream(scanningDate);
             Iterator<DirectoryStream<Path>> streamsIt = streams.iterator();
             while (streamsIt.hasNext() && !Thread.currentThread().isInterrupted()) {
-                DirectoryStream<Path> stream = streamsIt.next();
-                int filesCount = 0;
-                long totalTime = 0;
-                Iterator<Path> it = stream.iterator();
-                List<Path> files = Lists.newArrayList();
-                OffsetDateTime lastModificationDate = null;
-                if (fileInfo.getLastModificationDate() != null) {
-                    lastModificationDate = fileInfo.getLastModificationDate();
-                }
-                while (it.hasNext() && !Thread.currentThread().isInterrupted()) {
-                    Path filePath = it.next();
-                    files.add(filePath);
-                    OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(),
-                                                                  ZoneOffset.UTC);
-                    if ((lastModificationDate == null) || lastModificationDate.isBefore(lmd)) {
-                        lastModificationDate = lmd;
+                try (DirectoryStream<Path> stream = streamsIt.next()) {
+                    int filesCount = 0;
+                    long totalTime = 0;
+                    Iterator<Path> it = stream.iterator();
+                    List<Path> files = Lists.newArrayList();
+                    OffsetDateTime lastModificationDate = null;
+                    if (fileInfo.getLastModificationDate() != null) {
+                        lastModificationDate = fileInfo.getLastModificationDate();
                     }
-                    if (!it.hasNext() || (files.size() >= AcquisitionProcessingService.BATCH_SIZE)) {
-                        long transactionStartTime = System.currentTimeMillis();
-                        totalCount += self.registerFiles(files, fileInfo, scanningDate, false);
-                        LOGGER.debug("{} new file(s) registered in {} milliseconds", files.size(),
-                                     System.currentTimeMillis() - transactionStartTime);
-                        filesCount += AcquisitionProcessingService.BATCH_SIZE;
-                        totalTime += System.currentTimeMillis() - transactionStartTime;
-                        LOGGER.debug("{} total files registered in {}", filesCount, totalTime / 1000);
-                        files.clear();
+                    while (it.hasNext() && !Thread.currentThread().isInterrupted()) {
+                        Path filePath = it.next();
+                        files.add(filePath);
+                        OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(),
+                                                                      ZoneOffset.UTC);
+                        if ((lastModificationDate == null) || lastModificationDate.isBefore(lmd)) {
+                            lastModificationDate = lmd;
+                        }
+                        if (!it.hasNext() || (files.size() >= AcquisitionProcessingService.BATCH_SIZE)) {
+                            long transactionStartTime = System.currentTimeMillis();
+                            totalCount += self.registerFiles(files, fileInfo, scanningDate, false);
+                            LOGGER.debug("{} new file(s) registered in {} milliseconds", files.size(),
+                                         System.currentTimeMillis() - transactionStartTime);
+                            filesCount += AcquisitionProcessingService.BATCH_SIZE;
+                            totalTime += System.currentTimeMillis() - transactionStartTime;
+                            LOGGER.debug("{} total files registered in {}", filesCount, totalTime / 1000);
+                            files.clear();
+                        }
                     }
-                }
-                if (!Thread.currentThread().isInterrupted()) {
-                    fileInfo.setLastModificationDate(lastModificationDate);
-                    fileInfoRepository.save(fileInfo);
+                    if (!Thread.currentThread().isInterrupted()) {
+                        fileInfo.setLastModificationDate(lastModificationDate);
+                        fileInfoRepository.save(fileInfo);
+                    }
                 }
             }
         } catch (IOException e) {
