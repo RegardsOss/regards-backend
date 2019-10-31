@@ -23,7 +23,7 @@ public final class ChecksumUtils {
      * transform a byte array to an hexadecimal string
      */
     public static String getHexChecksum(byte[] checksumByte) {
-        return DatatypeConverter.printHexBinary(checksumByte);
+        return DatatypeConverter.printHexBinary(checksumByte).toLowerCase();
     }
 
     /**
@@ -40,7 +40,7 @@ public final class ChecksumUtils {
             while (dis.read(buffer) != -1) {
             }
         }
-        return DatatypeConverter.printHexBinary(md.digest());
+        return getHexChecksum(md.digest());
     }
 
     /**
@@ -60,7 +60,7 @@ public final class ChecksumUtils {
         } finally {
             is.close();
         }
-        return DatatypeConverter.printHexBinary(md.digest());
+        return getHexChecksum(md.digest());
     }
 
     /**
