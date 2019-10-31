@@ -79,7 +79,7 @@ public class LockService implements ILockService {
         try {
             return self.obtainLockOrSkipTransactional(name, owner, expiresIn);
         } catch (LockAcquisitionException | CannotAcquireLockException | JpaSystemException e) {
-            LOG.warn("Error getting database lock.", e.getMessage());
+            LOG.warn(String.format("Error getting database lock %s. Cause: %s.", name, e.getMessage()));
             return false;
         }
     }
