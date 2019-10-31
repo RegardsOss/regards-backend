@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -196,6 +197,19 @@ public interface IAcquisitionProcessingService {
      */
     int registerFiles(List<Path> filePaths, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate,
             boolean updateFileInfo) throws ModuleException;
+
+    /**
+     * Register multiple files in one transaction
+     * @param filePaths paths of the files to register
+     * @param info related file info
+     * @param scanningDate reference date used to launch scan plugin
+     * @param updateFileInfo does the fileInfo last modification date should be updated
+     *                       with the file last modification date
+     * @param limit maximum number of files to register
+     * @return number of registered files
+     */
+    RegisterFilesResponse registerFiles(Iterator<Path> filePaths, AcquisitionFileInfo info,
+            Optional<OffsetDateTime> scanningDate, boolean updateFileInfo, int limit) throws ModuleException;
 
     /**
      * Register a new file in one transaction
