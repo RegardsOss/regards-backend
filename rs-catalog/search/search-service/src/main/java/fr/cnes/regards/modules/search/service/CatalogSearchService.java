@@ -197,10 +197,10 @@ public class CatalogSearchService implements ICatalogSearchService {
                     Predicate<Dataset> datasetGroupAccessFilter = ds -> !Sets.intersection(ds.getGroups(), accessGroups)
                             .isEmpty();
                     facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey, convertedPageable,
-                                                     criterion, (Predicate<R>) datasetGroupAccessFilter);
+                                                     criterion, (Predicate<R>) datasetGroupAccessFilter, searchFacets);
                 } else {
                     facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey, convertedPageable,
-                                                     criterion);
+                                                     criterion, searchFacets);
                 }
             }
 

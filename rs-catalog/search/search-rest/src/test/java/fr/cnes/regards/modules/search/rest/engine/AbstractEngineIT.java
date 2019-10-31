@@ -432,15 +432,15 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         quicklook.setMimeType(MimeType.valueOf("application/jpg"));
         quicklook.setUri(URI.create("http://regards/le_quicklook.jpg"));
         quicklook.setReference(false);
-        quicklook.setImageWidth(100);
-        quicklook.setImageHeight(100);
+        quicklook.setImageWidth(100d);
+        quicklook.setImageHeight(100d);
         planet.getFiles().put(DataType.QUICKLOOK_SD, quicklook);
 
         DataFile thumbnail = new DataFile();
         thumbnail.setMimeType(MimeType.valueOf("application/png"));
         thumbnail.setUri(URI.create("http://regards/thumbnail.png"));
-        thumbnail.setImageWidth(250);
-        thumbnail.setImageHeight(250);
+        thumbnail.setImageWidth(250d);
+        thumbnail.setImageHeight(250d);
         thumbnail.setReference(false);
         planet.getFiles().put(DataType.THUMBNAIL, thumbnail);
 
