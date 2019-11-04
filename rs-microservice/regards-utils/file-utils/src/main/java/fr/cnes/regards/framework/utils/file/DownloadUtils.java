@@ -98,7 +98,7 @@ public final class DownloadUtils {
             throws IOException, NoSuchAlgorithmException {
         String checksum = downloadThroughProxy(source, destination, checksumAlgorithm, proxy, nonProxyHosts,
                                                pConnectionTimeout);
-        return checksum.equals(expectedChecksum);
+        return checksum.toLowerCase().equals(expectedChecksum.toLowerCase());
     }
 
     public static InputStream getInputStreamThroughProxy(URL source, Proxy proxy, Collection<String> nonProxyHosts)
