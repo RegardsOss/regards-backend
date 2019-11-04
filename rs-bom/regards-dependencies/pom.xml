@@ -69,6 +69,7 @@
         <oais.docs.version>GEODE</oais.docs.version>
         <oais.starter.version>GEODE</oais.starter.version>
         <encryption.starter.version>GEODE</encryption.starter.version>
+        <metric.starter.version>GEODE</metric.starter.version>
 
         <!-- Bootstrap -->
         <config.bootstrap.version>GEODE</config.bootstrap.version>
@@ -119,6 +120,8 @@
         <fr.cnes.regards.modules.uiconfiguration.version>GEODE
         </fr.cnes.regards.modules.uiconfiguration.version>
         <fr.cnes.regards.modules.dam.version>GEODE</fr.cnes.regards.modules.dam.version>
+        <fr.cnes.regards.modules.model.version>GEODE</fr.cnes.regards.modules.model.version>
+        <fr.cnes.regards.modules.feature.version>GEODE</fr.cnes.regards.modules.feature.version>
         <fr.cnes.regards.frontend-webapp.version>GEODE</fr.cnes.regards.frontend-webapp.version>
         <fr.cnes.regards.modules.emails.version>GEODE</fr.cnes.regards.modules.emails.version>
         <fr.cnes.regards.modules.notification.version>GEODE</fr.cnes.regards.modules.notification.version>
