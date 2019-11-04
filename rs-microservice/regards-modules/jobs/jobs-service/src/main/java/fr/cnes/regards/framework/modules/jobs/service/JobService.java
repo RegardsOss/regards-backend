@@ -230,7 +230,7 @@ public class JobService implements IJobService {
             // expired job, aborted job, instantiation errors and job resetting
             runtimeTenantResolver.forceTenant(jobInfo.getTenant());
             // Case expiration date reached
-            if ((jobInfo.getExpirationDate() != null) && jobInfo.getExpirationDate().isBefore(OffsetDateTime.now())) {
+            if (jobInfo.getExpirationDate() != null && jobInfo.getExpirationDate().isBefore(OffsetDateTime.now())) {
                 jobInfo.updateStatus(JobStatus.FAILED);
                 jobInfo.getStatus().setStackTrace("Expiration date reached");
                 jobInfoService.save(jobInfo);
@@ -249,6 +249,7 @@ public class JobService implements IJobService {
             @SuppressWarnings("rawtypes")
             IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
             beanFactory.autowireBean(job);
+            job.setJobInfoId(jobInfo.getId());
             job.setParameters(jobInfo.getParametersAsMap());
             if (job.needWorkspace()) {
                 job.setWorkspace(workspaceService::getPrivateDirectory);

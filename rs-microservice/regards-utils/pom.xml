@@ -52,5 +52,6 @@
         <module>exception-utils</module>
         <module>encryption-standalone</module>
         <module>spring-utils</module>
+        <module>request-utils</module>
     </modules>
 </project>

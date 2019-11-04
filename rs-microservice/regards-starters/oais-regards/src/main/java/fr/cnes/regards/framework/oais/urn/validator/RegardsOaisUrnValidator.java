@@ -36,8 +36,8 @@ public class RegardsOaisUrnValidator implements ConstraintValidator<RegardsOaisU
 
     @Override
     public boolean isValid(UniformResourceName pValue, ConstraintValidatorContext pContext) {
-        return (pValue == null) || !(pValue.getOaisIdentifier().equals(OAISIdentifier.SIP) && (
-                (pValue.getOrder() != null) || (pValue.getRevision() != null)));
+        return pValue == null || !(pValue.getIdentifier().equals(OAISIdentifier.SIP)
+                && (pValue.getOrder() != null || pValue.getRevision() != null));
     }
 
 }

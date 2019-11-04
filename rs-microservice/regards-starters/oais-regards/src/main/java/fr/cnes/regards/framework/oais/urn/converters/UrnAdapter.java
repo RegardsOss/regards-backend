@@ -23,6 +23,7 @@ import java.io.IOException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
@@ -40,7 +41,11 @@ public class UrnAdapter extends TypeAdapter<UniformResourceName> {
 
     @Override
     public void write(JsonWriter pArg0, UniformResourceName pArg1) throws IOException {
-        pArg0.value(pArg1.toString());
+        if (pArg1 != null) {
+            pArg0.value(pArg1.toString());
+        } else {
+            pArg0.nullValue();
+        }
     }
 
 }

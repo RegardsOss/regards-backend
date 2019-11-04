@@ -128,8 +128,8 @@ public class AmqpAutoConfiguration {
 
     @Bean
     public IAmqpAdmin regardsAmqpAdmin() {
-        return new RegardsAmqpAdmin(amqpMicroserviceProperties.getTypeIdentifier(),
-                amqpMicroserviceProperties.getInstanceIdentifier());
+        return new RegardsAmqpAdmin(amqpManagmentProperties.getNamespace(),
+                amqpMicroserviceProperties.getTypeIdentifier(), amqpMicroserviceProperties.getInstanceIdentifier());
     }
 
     @Bean
@@ -154,9 +154,10 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public MessageConverter jsonMessageConverters(@Autowired(required = false) Gson gson) {
+    public MessageConverter jsonMessageConverters(@Autowired(required = false) Gson gson,
+            IRuntimeTenantResolver runtimeTenantResolver) {
 
-        JsonMessageConverters converters = new JsonMessageConverters();
+        JsonMessageConverters converters = new JsonMessageConverters(runtimeTenantResolver);
 
         // Register Jackson
         Jackson2JsonMessageConverter jacksonConverter = new Jackson2JsonMessageConverter();

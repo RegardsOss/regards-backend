@@ -32,6 +32,7 @@ import org.springframework.util.Assert;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * JSON message converters manager
@@ -45,10 +46,18 @@ public class JsonMessageConverters implements MessageConverter {
 
     private static final String CONVERTER_TYPE_HEADER = "__ctype__";
 
+    public static final String TENANT_HEADER = "__tenant__";
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
     /**
      * Registered JSON message converters
      */
     Map<JsonMessageConverter, MessageConverter> converters = new HashMap<>();
+
+    public JsonMessageConverters(IRuntimeTenantResolver runtimeTenantResolver) {
+        this.runtimeTenantResolver = runtimeTenantResolver;
+    }
 
     @Override
     public Message toMessage(Object object, MessageProperties messageProperties) throws MessageConversionException {
@@ -60,12 +69,32 @@ public class JsonMessageConverters implements MessageConverter {
         // Add wrapped type information for Gson deserialization
         messageProperties.getHeaders().put(Gson2JsonMessageConverter.WRAPPED_TYPE_HEADER,
                                            wrapper.getContent().getClass().getName());
+        // Add tenant for Gson tenant specific deserialization
+        messageProperties.getHeaders().put(JsonMessageConverters.TENANT_HEADER, wrapper.getTenant());
         return selectConverter(jmc).toMessage(object, messageProperties);
     }
 
     @Override
     public Object fromMessage(Message message) throws MessageConversionException {
-        return selectConverter(message.getMessageProperties()).fromMessage(message);
+
+        MessageProperties messageProperties = message.getMessageProperties();
+        if (messageProperties == null) {
+            String errorMessage = "Missing message properties";
+            LOGGER.error(errorMessage);
+            throw new MessageConversionException(errorMessage);
+        }
+
+        String tenant = messageProperties.getHeader(TENANT_HEADER);
+        try {
+            if (tenant != null) {
+                runtimeTenantResolver.forceTenant(tenant);
+            }
+            return selectConverter(message.getMessageProperties()).fromMessage(message);
+        } finally {
+            if (tenant != null) {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
     }
 
     public void registerConverter(JsonMessageConverter converterType, MessageConverter converter) {
@@ -85,13 +114,8 @@ public class JsonMessageConverters implements MessageConverter {
     }
 
     private MessageConverter selectConverter(MessageProperties messageProperties) throws MessageConversionException {
-        if (messageProperties == null) {
-            String errorMessage = "Missing message properties";
-            LOGGER.error(errorMessage);
-            throw new MessageConversionException(errorMessage);
-        }
 
-        Object converterType = messageProperties.getHeaders().get(CONVERTER_TYPE_HEADER);
+        Object converterType = messageProperties.getHeader(CONVERTER_TYPE_HEADER);
         if (converterType == null) {
             String message = "Cannot determine JSON converter type, falling back to Jackson";
             LOGGER.trace(message);
