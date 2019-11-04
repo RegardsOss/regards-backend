@@ -695,7 +695,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     } while (response.hasNext());
                 }
             }
-            if (fileInfo.getLastModificationDate().isBefore(lmd) && !Thread.currentThread().isInterrupted()) {
+
+            if ((fileInfo.getLastModificationDate() == null)
+                    || (fileInfo.getLastModificationDate().isBefore(lmd) && !Thread.currentThread().isInterrupted())) {
                 fileInfo.setLastModificationDate(lmd);
                 fileInfoRepository.save(fileInfo);
             }
