@@ -178,19 +178,18 @@
         </org.springframework.cloud.spring-cloud-dependencies.version>
         <!-- Take a version that retrieve a version of Hibernate that correctly
             manage uk naming while inheriting classes with JOINED strategy -->
-        <org.springframework.boot.spring-boot-dependencies.version>2.1.2.RELEASE
-        </org.springframework.boot.spring-boot-dependencies.version>
-        <org.springframework.security.oauth.autoconfigure-version>2.1.2.RELEASE
+        <spring.boot.version>2.1.9.RELEASE</spring.boot.version>
+        <org.springframework.security.oauth.autoconfigure-version>2.1.9.RELEASE
         </org.springframework.security.oauth.autoconfigure-version>
         <!-- Spring OAuth is no more into spring-boot, only client is (From what
             i understood) -->
-        <org.springframework.security.oauth.version>2.3.4.RELEASE</org.springframework.security.oauth.version>
+        <org.springframework.security.oauth.version>2.3.6.RELEASE</org.springframework.security.oauth.version>
         <org.springframework.security.jwt.version>1.0.9.RELEASE</org.springframework.security.jwt.version>
         <!-- use same version the one provided by spring-boot. This is mandatory,
             i don't know why but hateoas-spring override spring-core version given by
             spring-boot -->
-        <org.springframework.spring-core.version>5.1.4.RELEASE</org.springframework.spring-core.version>
-        <org.springframework.spring-restdocs.version>2.0.2.RELEASE</org.springframework.spring-restdocs.version>
+        <org.springframework.spring-core.version>5.1.10.RELEASE</org.springframework.spring-core.version>
+<!--         <org.springframework.spring-restdocs.version>2.0.2.RELEASE</org.springframework.spring-restdocs.version> -->
         <org.apache.poi.poi-ooxml.version>3.15</org.apache.poi.poi-ooxml.version>
         <org.apache.maven.maven-plugin-api.version>3.0</org.apache.maven.maven-plugin-api.version>
         <org.apache.maven.plugin-tools.maven-plugin-annotations.version>3.4
@@ -317,6 +316,11 @@
                 <artifactId>hateoas-regards</artifactId>
                 <version>${hateoas.starter.version}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>metric-regards-starter</artifactId>
+                <version>${metric.starter.version}</version>
+            </dependency>
             <!-- JPA -->
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
@@ -396,6 +400,11 @@
             <dependency>
                 <groupId>fr.cnes.regards.framework.utils</groupId>
                 <artifactId>file-utils</artifactId>
+                <version>${file.utils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.utils</groupId>
+                <artifactId>request-utils</artifactId>
                 <version>${file.utils.version}</version>
             </dependency>
             <dependency>
@@ -694,6 +703,78 @@
                 <groupId>fr.cnes.regards.modules.dam</groupId>
                 <artifactId>dam-plugins</artifactId>
                 <version>${fr.cnes.regards.modules.dam.version}</version>
+            </dependency>
+            <!-- Model -->
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-domain</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-dto</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-gson</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-dao</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-service</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-validation</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-rest</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+          	<dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-client</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+            <!-- Feature -->
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.feature</groupId>
+                <artifactId>feature-domain</artifactId>
+                <version>${fr.cnes.regards.modules.feature.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.feature</groupId>
+                <artifactId>feature-dto</artifactId>
+                <version>${fr.cnes.regards.modules.feature.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.feature</groupId>
+                <artifactId>feature-dao</artifactId>
+                <version>${fr.cnes.regards.modules.feature.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.feature</groupId>
+                <artifactId>feature-service</artifactId>
+                <version>${fr.cnes.regards.modules.feature.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.feature</groupId>
+                <artifactId>feature-rest</artifactId>
+                <version>${fr.cnes.regards.modules.feature.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.feature</groupId>
+                <artifactId>feature-client</artifactId>
+                <version>${fr.cnes.regards.modules.feature.version}</version>
             </dependency>
             <!-- Crawler -->
             <dependency>
@@ -1190,7 +1271,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${org.springframework.boot.spring-boot-dependencies.version}</version>
+                <version>${spring.boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -1262,7 +1343,7 @@
                 <version>${com.google.code.gson.version}</version>
             </dependency>
             <!-- Spring REST docs -->
-            <dependency>
+<!--             <dependency>
                 <groupId>org.springframework.restdocs</groupId>
                 <artifactId>spring-restdocs-core</artifactId>
                 <version>${org.springframework.spring-restdocs.version}</version>
@@ -1271,7 +1352,18 @@
                 <groupId>org.springframework.restdocs</groupId>
                 <artifactId>spring-restdocs-mockmvc</artifactId>
                 <version>${org.springframework.spring-restdocs.version}</version>
-            </dependency>
+            </dependency> -->
+            <!-- FIXME AMQP / to be removed with Spring Boot 2.2 -->
+        	<dependency>
+            	<groupId>org.springframework.amqp</groupId>
+            	<artifactId>spring-rabbit</artifactId>
+            	<version>2.2.0.RELEASE</version>
+        	</dependency>
+        	<dependency>
+            	<groupId>org.springframework.amqp</groupId>
+            	<artifactId>spring-amqp</artifactId>
+            	<version>2.2.0.RELEASE</version>
+        	</dependency>
             <!-- Maven plugins -->
             <dependency>
                 <groupId>org.apache.maven</groupId>
