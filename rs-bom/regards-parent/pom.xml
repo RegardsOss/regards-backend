@@ -72,7 +72,7 @@
         <jacoco.out.it.file>jacoco-it.exec</jacoco.out.it.file>
         <!-- Tells Sonar where the Jacoco coverage result file is located for IT -->
         <sonar.jacoco.itReportPath>${jacoco.outputDir}/${jacoco.out.it.file}</sonar.jacoco.itReportPath>
-        <spring.hibernate.version>5.3.7.Final</spring.hibernate.version>
+        <spring.hibernate.version>5.3.12.Final</spring.hibernate.version>
 		<spring.version>5.1.4.RELEASE</spring.version>
         <regards.bom.version>0.5.0-SNAPSHOT</regards.bom.version>
 	<org.mapstruct.version>1.3.0.Final</org.mapstruct.version>
@@ -485,6 +485,22 @@
 							<version>1.2.4.RELEASE</version>
 						</dependency>
 					</dependencies>
+				</plugin>
+				<plugin> 
+                	<groupId>org.hibernate.orm.tooling</groupId> 
+                	<artifactId>hibernate-enhance-maven-plugin</artifactId> 
+                	<version>${spring.hibernate.version}</version> 
+                	<executions> 
+                    	<execution> 
+                        	<configuration> 
+                            	<failOnError>true</failOnError> 
+                            	<enableLazyInitialization>true</enableLazyInitialization> 
+                        	</configuration> 
+                        	<goals> 
+                            	<goal>enhance</goal> 
+                        	</goals> 
+                    	</execution> 
+                	</executions> 
 				</plugin>
 			</plugins>
 		</pluginManagement>
