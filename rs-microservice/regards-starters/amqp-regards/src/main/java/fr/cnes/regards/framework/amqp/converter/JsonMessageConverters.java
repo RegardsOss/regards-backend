@@ -85,13 +85,24 @@ public class JsonMessageConverters implements MessageConverter {
         }
 
         String tenant = messageProperties.getHeader(TENANT_HEADER);
+        String runtimeTenant = runtimeTenantResolver.getTenant();
+
+        // Check if tenant already set and match!
+        if (tenant != null && runtimeTenant != null && !runtimeTenant.equals(tenant)) {
+            String errorMessage = String
+                    .format("Inconsistent tenant resolution : runtime tenant \"%s\" does not match with message one : \"%s\"",
+                            runtimeTenant, tenant);
+            LOGGER.error(errorMessage);
+            throw new MessageConversionException(errorMessage);
+        }
+
         try {
-            if (tenant != null) {
+            if (tenant != null && runtimeTenant == null) {
                 runtimeTenantResolver.forceTenant(tenant);
             }
             return selectConverter(message.getMessageProperties()).fromMessage(message);
         } finally {
-            if (tenant != null) {
+            if (tenant != null && runtimeTenant == null) {
                 runtimeTenantResolver.clearTenant();
             }
         }
