@@ -25,6 +25,8 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -98,8 +100,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        logger.debug("[{}] : starting SIP generation job of {} product(s)", processingChain.getLabel(),
-                     products.size());
+        logger.info("[{}] : starting SIP generation job of {} product(s)", processingChain.getLabel(), products.size());
         long startTime = System.currentTimeMillis();
         int generatedCount = 0; // Effectively count generated products in case of interruption
         String debugInterruption = "";
@@ -115,8 +116,9 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         }
 
         Set<String> sessions = new HashSet<>();
+        Set<Product> success = Sets.newHashSet();
+        Set<Product> errors = Sets.newHashSet();
 
-        // Launch generation plugin
         for (Product product : products) {
             if (Thread.currentThread().isInterrupted()) {
                 debugInterruption = "before thread interruption";
@@ -125,12 +127,12 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             logger.trace("Generating SIP for product {}", product.getProductName());
             sessions.add(product.getSession());
             try {
+                // Launch generation plugin
                 SIP sip = generateSipPlugin.generate(product);
                 // Update product
                 product.setSip(sip);
                 product.setSipState(ProductSIPState.SUBMITTED);
-                productService.saveAndSubmitSIP(product, processingChain);
-                sessionNotifier.notifySipSubmitting(product);
+                success.add(product);
                 generatedCount++;
             } catch (ModuleException e) {
                 String message = String.format("Error while generating product \"%s\"", product.getProductName());
@@ -138,10 +140,11 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 logger.debug(message, e);
                 product.setSipState(ProductSIPState.GENERATION_ERROR);
                 product.setError(e.getMessage());
-                sessionNotifier.notifySipSubmittingFailed(product);
-                productService.save(product);
+                errors.add(product);
             }
         }
+
+        productService.handleGeneratedProducts(processingChain, success, errors);
 
         for (String session : sessions) {
             if (productService
@@ -152,8 +155,8 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             }
         }
 
-        logger.debug("[{}] : {} SIP(s) generated in {} milliseconds {}", processingChain.getLabel(), generatedCount,
-                     System.currentTimeMillis() - startTime, debugInterruption);
+        logger.info("[{}] : {} SIP(s) generated in {} milliseconds {}", processingChain.getLabel(), generatedCount,
+                    System.currentTimeMillis() - startTime, debugInterruption);
 
     }
 }
