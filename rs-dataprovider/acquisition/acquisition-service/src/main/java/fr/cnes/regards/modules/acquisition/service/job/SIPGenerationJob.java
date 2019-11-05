@@ -145,6 +145,8 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         }
 
         productService.handleGeneratedProducts(processingChain, success, errors);
+        success.clear();
+        errors.clear();
 
         for (String session : sessions) {
             if (productService
@@ -157,6 +159,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
         logger.info("[{}] : {} SIP(s) generated in {} milliseconds {}", processingChain.getLabel(), generatedCount,
                     System.currentTimeMillis() - startTime, debugInterruption);
-
+        sessions.clear();
+        products.clear();
     }
 }
