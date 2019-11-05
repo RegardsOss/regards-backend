@@ -18,9 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -54,17 +68,6 @@ import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
-import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Service;
 
 /**
  * Manage ingest requests
@@ -122,6 +125,8 @@ public class IngestRequestService implements IIngestRequestService {
         // Lock job info
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
                 jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
+        // Lock job to avoid automatic deletion. The job must be unlock when the link to the request is removed.
+        jobInfo.setLocked(true);
         jobInfoService.createAsQueued(jobInfo);
 
         // Attach job
@@ -161,7 +166,7 @@ public class IngestRequestService implements IIngestRequestService {
         request.setState(RequestState.GRANTED);
 
         // Keep track of the request
-        ingestRequestRepository.save(request);
+        saveRequest(request);
 
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
@@ -220,11 +225,12 @@ public class IngestRequestService implements IIngestRequestService {
             request.setRemoteStepGroupIds(remoteStepGroupIds);
 
             // Keep track of the request
-            ingestRequestRepository.save(request);
+            saveRequest(request);
         } catch (ModuleException e) {
             // Keep track of the error
-            saveAndPublishErrorRequest(request, String.format(
-                    "Cannot send events to store AIP files because they are malformed. Cause: %s", e.getMessage()));
+            saveAndPublishErrorRequest(request, String
+                    .format("Cannot send events to store AIP files because they are malformed. Cause: %s",
+                            e.getMessage()));
         }
     }
 
@@ -280,7 +286,7 @@ public class IngestRequestService implements IIngestRequestService {
                     // Check if there is another storage request we're waiting for
                     List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, requestInfo);
                     if (!remoteStepGroupIds.isEmpty()) {
-                        ingestRequestRepository.save(request);
+                        saveRequest(request);
                         // Another request is still pending
                         return;
                     }
@@ -316,7 +322,7 @@ public class IngestRequestService implements IIngestRequestService {
             request.setRemoteStepGroupIds(Lists.newArrayList(requestId));
 
             // Keep track of the request
-            ingestRequestRepository.save(request);
+            saveRequest(request);
         } catch (ModuleException e) {
             // Keep track of the error
             saveAndPublishErrorRequest(request, "Cannot send AIP storage request");
@@ -335,7 +341,7 @@ public class IngestRequestService implements IIngestRequestService {
 
         // Clean
 
-        ingestRequestRepository.delete(request);
+        deleteRequest(request);
         // Change AIP state
         List<AIPEntity> aips = request.getAips();
         for (AIPEntity aipEntity : aips) {
@@ -404,7 +410,7 @@ public class IngestRequestService implements IIngestRequestService {
                     // Check if there is another storage request we're waiting for
                     List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, requestInfo);
                     if (!remoteStepGroupIds.isEmpty()) {
-                        ingestRequestRepository.save(request);
+                        saveRequest(request);
                         // Another request is still pending
                         return;
                     }
@@ -417,7 +423,8 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void handleRemoteReferenceError(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
+    public void handleRemoteReferenceError(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success,
+            Collection<RequestResultInfoDTO> errors) {
 
         // Retrieve request
         Optional<IngestRequest> requestOp = ingestRequestRepository.findOneWithAIPs(requestInfo.getGroupId());
@@ -442,12 +449,33 @@ public class IngestRequestService implements IIngestRequestService {
         }
 
         // Keep track of the error
-        ingestRequestRepository.save(request);
+        saveRequest(request);
 
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
                                                    request.getState(), request.getErrors()));
+    }
+
+    public IngestRequest saveRequest(IngestRequest request) {
+        // Before saving entity check the state of the associated job if any
+        if ((request.getJobInfo() != null) && !request.getJobInfo().isLocked()) {
+            // Lock the job info before saving entity in order to avoid deletion of this job by an other process
+            JobInfo jobInfo = request.getJobInfo();
+            jobInfo.setLocked(true);
+            jobInfoService.save(jobInfo);
+            request.setJobInfo(jobInfo);
+        }
+        return ingestRequestRepository.save(request);
+    }
+
+    public void deleteRequest(IngestRequest request) {
+        if ((request.getJobInfo() != null) && !request.getJobInfo().isLocked()) {
+            JobInfo jobInfoToUnlock = request.getJobInfo();
+            jobInfoToUnlock.setLocked(false);
+            jobInfoService.save(jobInfoToUnlock);
+        }
+        ingestRequestRepository.delete(request);
     }
 
     private void updateOAISEntitiesWithErrors(IngestRequest request, Collection<RequestResultInfoDTO> errors,
@@ -466,7 +494,8 @@ public class IngestRequestService implements IIngestRequestService {
             }
         }
         // Save all errors inside the SIP
-        Set<String> newErrors = errors.stream().map(e -> errorCause + ": " + e.getErrorCause()).collect(Collectors.toSet());
+        Set<String> newErrors = errors.stream().map(e -> errorCause + ": " + e.getErrorCause())
+                .collect(Collectors.toSet());
         SIPEntity sip = request.getAips().get(0).getSip();
         sipService.saveErrors(sip, newErrors);
         sessionNotifier.notifySIPStorageFailed(sip);
