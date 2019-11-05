@@ -375,7 +375,7 @@
 				<plugin>
 					<groupId>fr.cnes.regards.microservices</groupId>
 					<artifactId>report-maven-plugin</artifactId>
-					<version>1.1.0</version>
+					<version>${project.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
