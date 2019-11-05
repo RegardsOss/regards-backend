@@ -78,6 +78,10 @@
 			<artifactId>dam-client</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.model</groupId>
+			<artifactId>model-client</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>hateoas-regards</artifactId>
 		</dependency>
