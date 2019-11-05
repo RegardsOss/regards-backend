@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
@@ -35,12 +37,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.google.common.net.HttpHeaders;
 
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.entities.attribute.AbstractAttribute;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionBuilder;
@@ -229,7 +232,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         String geoJsonUrl = "OpenSearchDescription/Url[@type='" + GeoJsonMediaType.APPLICATION_GEOJSON_VALUE + "']";
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
+        customizer.headers().setAccept(Arrays.asList(new MediaType("application", "xml", StandardCharsets.UTF_8)));
 
         // Check metadatas
         customizer.expect(MockMvcResultMatchers.xpath("OpenSearchDescription").exists());
@@ -292,19 +295,20 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                 .xpath(atomUrl + "/Parameter[@name='sun_distance' and @maxInclusive='4.48943598E9']").exists());
 
         // Check date boundaries
-        AbstractAttribute<?> startDate = mercury.getProperty("TimePeriod.startDate");
-        AbstractAttribute<?> stopDate = mercury.getProperty("TimePeriod.stopDate");
+        AbstractProperty<?> startDate = mercury.getProperty("TimePeriod.startDate");
+        AbstractProperty<?> stopDate = mercury.getProperty("TimePeriod.stopDate");
         Assert.assertNotNull(startDate);
         Assert.assertNotNull(stopDate);
 
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl
-                + String.format("/Parameter[@name='début' and @minInclusive='%s']", startDate.getValue().toString()))
+                + String.format("/Parameter[@name='début' and @minInclusive='%s']",
+                                OffsetDateTimeAdapter.format((OffsetDateTime) startDate.getValue())))
                 .exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl
-                + String.format("/Parameter[@name='fin' and @maxInclusive='%s']", stopDate.getValue().toString()))
+                + String.format("/Parameter[@name='fin' and @maxInclusive='%s']", OffsetDateTimeAdapter.format((OffsetDateTime) stopDate.getValue())))
                 .exists());
 
-        customizer.addParameter("token", "public_token");
+        customizer.addParameter("token", "pu blic_token");
 
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING_EXTRA,
                           customizer, "open search description error", ENGINE_TYPE, OpenSearchEngine.EXTRA_DESCRIPTION);

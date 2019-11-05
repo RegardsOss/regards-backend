@@ -60,7 +60,6 @@ import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
@@ -74,6 +73,7 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
@@ -178,8 +178,8 @@ public class CatalogSearchService implements ICatalogSearchService {
             // JoinEntitySearchKey<?, Dataset> without any criterion on searchType => just directly search
             // datasets (ie SimpleSearchKey<DataSet>)
             // This is correct because all
-            if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey)
-                    && (TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
+            if (criterion == null && searchKey instanceof JoinEntitySearchKey
+                    && TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class) {
                 searchKey = Searches.onSingleEntity(Searches.fromClass(searchKey.getResultClass()));
             }
 
@@ -192,15 +192,14 @@ public class CatalogSearchService implements ICatalogSearchService {
                 // It may be necessary to filter returned objects (before pagination !!!) by user access groups to avoid
                 // getting datasets on which user has no right
                 final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
-                if ((TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)
-                        && (accessGroups != null)) { // accessGroups null means superuser
+                if (TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class && accessGroups != null) { // accessGroups null means superuser
                     Predicate<Dataset> datasetGroupAccessFilter = ds -> !Sets.intersection(ds.getGroups(), accessGroups)
                             .isEmpty();
                     facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey, convertedPageable,
-                                                     criterion, (Predicate<R>) datasetGroupAccessFilter);
+                                                     criterion, (Predicate<R>) datasetGroupAccessFilter, searchFacets);
                 } else {
                     facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey, convertedPageable,
-                                                     criterion);
+                                                     criterion, searchFacets);
                 }
             }
 
@@ -212,14 +211,13 @@ public class CatalogSearchService implements ICatalogSearchService {
             }
 
             // Filter data file according to access rights when searching for data objects
-            if (((searchKey instanceof SimpleSearchKey)
-                    && searchKey.getSearchTypeMap().values().contains(DataObject.class))
-                    || ((searchKey.getResultClass() != null)
-                            && (TypeToken.of(searchKey.getResultClass()).getRawType() == DataObject.class))) {
+            if (searchKey instanceof SimpleSearchKey && searchKey.getSearchTypeMap().values().contains(DataObject.class)
+                    || searchKey.getResultClass() != null
+                            && TypeToken.of(searchKey.getResultClass()).getRawType() == DataObject.class) {
                 Set<String> userGroups = accessRightFilter.getUserAccessGroups();
                 for (R entity : facetPage.getContent()) {
                     if (entity instanceof DataObject) {
-                        filterDataFiles(userGroups, ((DataObject) entity));
+                        filterDataFiles(userGroups, (DataObject) entity);
                     }
                 }
             }
@@ -458,8 +456,6 @@ public class CatalogSearchService implements ICatalogSearchService {
                 return (SimpleSearchKey<T>) Searches.onSingleEntity(EntityType.DATA);
             case DATASETS:
                 return (SimpleSearchKey<T>) Searches.onSingleEntity(EntityType.DATASET);
-            case DOCUMENTS:
-                return (SimpleSearchKey<T>) Searches.onSingleEntity(EntityType.DOCUMENT);
             default:
                 throw new UnsupportedOperationException("Unsupported search type : " + searchType);
         }
@@ -476,8 +472,6 @@ public class CatalogSearchService implements ICatalogSearchService {
                 return (SearchKey<S, R>) Searches.onSingleEntity(EntityType.DATA);
             case DATASETS:
                 return (SearchKey<S, R>) Searches.onSingleEntity(EntityType.DATASET);
-            case DOCUMENTS:
-                return (SearchKey<S, R>) Searches.onSingleEntity(EntityType.DOCUMENT);
             case DATAOBJECTS_RETURN_DATASETS:
                 return (SearchKey<S, R>) Searches.onSingleEntityReturningJoinEntity(EntityType.DATA,
                                                                                     EntityType.DATASET);
@@ -504,7 +498,7 @@ public class CatalogSearchService implements ICatalogSearchService {
         qas.entrySet().forEach(qa -> {
             AttributeModel attribute = qa.getKey();
             Aggregation aggregation = qa.getValue().getAggregation();
-            if ((aggregation != null) && aggregation.getType().equals(StatsAggregationBuilder.NAME)) {
+            if (aggregation != null && aggregation.getType().equals(StatsAggregationBuilder.NAME)) {
                 ParsedStats stats = (ParsedStats) aggregation;
                 Double min = stats.getMin();
                 String minAsString = stats.getMinAsString();
@@ -514,13 +508,13 @@ public class CatalogSearchService implements ICatalogSearchService {
                 String maxAsString = stats.getMaxAsString();
                 Integer maxAsInt = max.intValue();
                 Long maxAsLong = max.longValue();
-                if ((Double.NEGATIVE_INFINITY == stats.getMin()) || (Double.POSITIVE_INFINITY == stats.getMin())) {
+                if (Double.NEGATIVE_INFINITY == stats.getMin() || Double.POSITIVE_INFINITY == stats.getMin()) {
                     min = null;
                     minAsString = null;
                     minAsInt = null;
                     minAsLong = null;
                 }
-                if ((Double.POSITIVE_INFINITY == stats.getMax()) || (Double.NEGATIVE_INFINITY == stats.getMax())) {
+                if (Double.POSITIVE_INFINITY == stats.getMax() || Double.NEGATIVE_INFINITY == stats.getMax()) {
                     max = null;
                     maxAsString = null;
                     maxAsInt = null;
@@ -559,20 +553,20 @@ public class CatalogSearchService implements ICatalogSearchService {
         return bounds;
     }
 
-	@Override
-	public boolean hasAccess(UniformResourceName urn) throws EntityNotFoundException  {
-		AbstractEntity<?> entity;
-		try {
-			entity = get(urn);
-		} catch (EntityOperationForbiddenException e) {
-			return false;
-		}
-		boolean hasRights = true;
+    @Override
+    public boolean hasAccess(UniformResourceName urn) throws EntityNotFoundException {
+        AbstractEntity<?> entity;
+        try {
+            entity = get(urn);
+        } catch (EntityOperationForbiddenException e) {
+            return false;
+        }
+        boolean hasRights = true;
         if (entity instanceof DataObject) {
             hasRights = ((DataObject) entity).getFiles().containsKey(DataType.RAWDATA);
         }
-        // in the plugin catalog-security-delegation there was a treatment to verify if the user has admin rights 
+        // in the plugin catalog-security-delegation there was a treatment to verify if the user has admin rights
         // we will not check it here
         return hasRights;
-	}
+    }
 }

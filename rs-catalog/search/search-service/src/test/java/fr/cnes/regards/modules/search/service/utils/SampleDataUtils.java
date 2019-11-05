@@ -42,21 +42,20 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
-import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.entities.Document;
-import fr.cnes.regards.modules.dam.domain.models.Model;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModelBuilder;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeType;
-import fr.cnes.regards.modules.dam.domain.models.attributes.Fragment;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
+import fr.cnes.regards.modules.model.client.IAttributeModelClient;
+import fr.cnes.regards.modules.model.domain.Model;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
+import fr.cnes.regards.modules.model.domain.attributes.Fragment;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.search.domain.Terms;
 
 /**
@@ -109,59 +108,58 @@ public class SampleDataUtils {
 
     // Build some attribute models for all attribute types
     public static final AttributeModel BOOLEAN_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(BOOLEAN_FIELD, AttributeType.BOOLEAN, BOOLEAN_FIELD).fragment(TEST_FRAGMENT).get();
+            .build(BOOLEAN_FIELD, PropertyType.BOOLEAN, BOOLEAN_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel INTEGER_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(INTEGER_FIELD, AttributeType.INTEGER, INTEGER_FIELD).fragment(TEST_FRAGMENT).get();
+            .build(INTEGER_FIELD, PropertyType.INTEGER, INTEGER_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel DOUBLE_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(DOUBLE_FIELD, AttributeType.DOUBLE, DOUBLE_FIELD).fragment(TEST_FRAGMENT).get();
+            .build(DOUBLE_FIELD, PropertyType.DOUBLE, DOUBLE_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel LONG_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(LONG_FIELD, AttributeType.LONG, LONG_FIELD).fragment(TEST_FRAGMENT).get();
+            .build(LONG_FIELD, PropertyType.LONG, LONG_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel STRING_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(STRING_FIELD, AttributeType.STRING, STRING_FIELD).fragment(TEST_FRAGMENT).get();
+            .build(STRING_FIELD, PropertyType.STRING, STRING_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel STRING_ATTRIBUTE_MODEL_1 = AttributeModelBuilder
-            .build(STRING_FIELD_1, AttributeType.STRING, STRING_FIELD_1).fragment(TEST_FRAGMENT).get();
+            .build(STRING_FIELD_1, PropertyType.STRING, STRING_FIELD_1).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel LOCAL_DATE_TIME_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(LOCAL_DATE_TIME_FIELD, AttributeType.DATE_ISO8601, LOCAL_DATE_TIME_FIELD).fragment(TEST_FRAGMENT)
+            .build(LOCAL_DATE_TIME_FIELD, PropertyType.DATE_ISO8601, LOCAL_DATE_TIME_FIELD).fragment(TEST_FRAGMENT)
             .get();
 
     public static final AttributeModel INTEGER_RANGE_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(INTEGER_RANGE_FIELD, AttributeType.INTEGER_INTERVAL, INTEGER_RANGE_FIELD).fragment(TEST_FRAGMENT)
+            .build(INTEGER_RANGE_FIELD, PropertyType.INTEGER_INTERVAL, INTEGER_RANGE_FIELD).fragment(TEST_FRAGMENT)
             .get();
 
     public static final AttributeModel DOUBLE_RANGE_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(DOUBLE_RANGE_FIELD, AttributeType.DOUBLE_INTERVAL, DOUBLE_RANGE_FIELD).fragment(TEST_FRAGMENT).get();
+            .build(DOUBLE_RANGE_FIELD, PropertyType.DOUBLE_INTERVAL, DOUBLE_RANGE_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel LONG_RANGE_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(LONG_RANGE_FIELD, AttributeType.LONG_INTERVAL, LONG_RANGE_FIELD).fragment(TEST_FRAGMENT).get();
+            .build(LONG_RANGE_FIELD, PropertyType.LONG_INTERVAL, LONG_RANGE_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel LOCAL_DATE_TIME_RANGE_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(LOCAL_DATE_TIME_RANGE_FIELD, AttributeType.DATE_INTERVAL, LOCAL_DATE_TIME_RANGE_FIELD)
+            .build(LOCAL_DATE_TIME_RANGE_FIELD, PropertyType.DATE_INTERVAL, LOCAL_DATE_TIME_RANGE_FIELD)
             .fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel INTEGER_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(INTEGER_ARRAY_FIELD, AttributeType.INTEGER_ARRAY, INTEGER_ARRAY_FIELD).fragment(TEST_FRAGMENT).get();
+            .build(INTEGER_ARRAY_FIELD, PropertyType.INTEGER_ARRAY, INTEGER_ARRAY_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel DOUBLE_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(DOUBLE_ARRAY_FIELD, AttributeType.DOUBLE_ARRAY, DOUBLE_ARRAY_FIELD).fragment(TEST_FRAGMENT).get();
+            .build(DOUBLE_ARRAY_FIELD, PropertyType.DOUBLE_ARRAY, DOUBLE_ARRAY_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel LONG_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(LONG_ARRAY_FIELD, AttributeType.LONG_ARRAY, LONG_ARRAY_FIELD).fragment(TEST_FRAGMENT).get();
+            .build(LONG_ARRAY_FIELD, PropertyType.LONG_ARRAY, LONG_ARRAY_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel STRING_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(STRING_ARRAY_FIELD, AttributeType.STRING_ARRAY, STRING_ARRAY_FIELD).fragment(TEST_FRAGMENT).get();
+            .build(STRING_ARRAY_FIELD, PropertyType.STRING_ARRAY, STRING_ARRAY_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel LOCAL_DATE_TIME_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(LOCAL_DATE_TIME_ARRAY, AttributeType.DATE_ARRAY, LOCAL_DATE_TIME_ARRAY).fragment(TEST_FRAGMENT)
-            .get();
+            .build(LOCAL_DATE_TIME_ARRAY, PropertyType.DATE_ARRAY, LOCAL_DATE_TIME_ARRAY).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel TAGS_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(TAGS_FIELD, AttributeType.STRING_ARRAY, TAGS_FIELD).fragment(TEST_FRAGMENT).get();
+            .build(TAGS_FIELD, PropertyType.STRING_ARRAY, TAGS_FIELD).fragment(TEST_FRAGMENT).get();
 
     public static final List<AttributeModel> LIST = Lists
             .newArrayList(BOOLEAN_ATTRIBUTE_MODEL, INTEGER_ATTRIBUTE_MODEL, DOUBLE_ATTRIBUTE_MODEL,
@@ -241,14 +239,9 @@ public class SampleDataUtils {
             .mock(PagedResourcesAssembler.class);
 
     /**
-     * A dummy assembler for documents
-     */
-    public static final PagedResourcesAssembler<Document> ASSEMBLER_DOCUMENT = Mockito
-            .mock(PagedResourcesAssembler.class);
-
-    /**
      * A dummy assembler for entities
      */
+    @SuppressWarnings("rawtypes")
     public static final PagedResourcesAssembler<AbstractEntity> ASSEMBLER_ABSTRACT_ENTITIES = Mockito
             .mock(PagedResourcesAssembler.class);
 
@@ -261,8 +254,6 @@ public class SampleDataUtils {
 
     public static final Model DATASET_MODEL = Model.build("dataSetModel", "dataSetModel", EntityType.DATASET);
 
-    public static final Model DOCUMENT_MODEL = Model.build("docModel", "docModel", EntityType.DOCUMENT);
-
     /**
      * A dummy dataobject
      */
@@ -272,11 +263,6 @@ public class SampleDataUtils {
      * A dummy dataset
      */
     public static final Dataset DATASET = new Dataset(DATASET_MODEL, "tenant", "DS1", "DS1");
-
-    /**
-     * A dummy document
-     */
-    public static final Document DOCUMENT = new Document(DOCUMENT_MODEL, "tenant", "DOC1", "DOC1");
 
     /**
      * A dummy list of facets

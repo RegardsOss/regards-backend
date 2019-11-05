@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.dam.domain.models.Model;
+import fr.cnes.regards.modules.model.domain.Model;
 
 /**
  * @author Sylvain Vissiere-Guerinet

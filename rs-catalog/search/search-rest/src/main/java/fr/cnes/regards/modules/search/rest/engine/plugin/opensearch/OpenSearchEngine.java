@@ -48,13 +48,13 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
-import fr.cnes.regards.modules.dam.domain.entities.attribute.AbstractAttribute;
-import fr.cnes.regards.modules.dam.domain.entities.attribute.DateAttribute;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
+import fr.cnes.regards.modules.model.dto.properties.DateProperty;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
@@ -249,10 +249,10 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     private Optional<OffsetDateTime> getEntityLastUpdateDate(EntityFeature entity) {
         Optional<OffsetDateTime> date = Optional.empty();
         if (engineConfiguration.getEntityLastUpdateDatePropertyPath() != null) {
-            AbstractAttribute<?> dateAttribute = entity
+            AbstractProperty<?> dateAttribute = entity
                     .getProperty(engineConfiguration.getEntityLastUpdateDatePropertyPath());
-            if (dateAttribute instanceof DateAttribute) {
-                DateAttribute dateAttr = (DateAttribute) dateAttribute;
+            if (dateAttribute instanceof DateProperty) {
+                DateProperty dateAttr = (DateProperty) dateAttribute;
                 return Optional.ofNullable(dateAttr.getValue());
             }
         }
@@ -284,7 +284,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             try {
                 // Ignore special query parameter (q) or empty values
                 if (!queryParam.getKey().equals(configuration.getQueryParameterName())
-                        && ((queryParam.getValue().size() != 1)
+                        && (queryParam.getValue().size() != 1
                                 || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
                     String attributePath;
                     // Check if parameter key is an alias from configuration
@@ -379,7 +379,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         List<String> startPage = context.getQueryParams().get(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME);
 
         int size = context.getPageable().getPageSize();
-        if ((count != null) && (count.size() == 1)) {
+        if (count != null && count.size() == 1) {
             try {
                 size = Integer.valueOf(count.get(0));
             } catch (NumberFormatException e) {
@@ -388,7 +388,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         }
 
         int start = context.getPageable().getPageNumber();
-        if ((startPage != null) && (startPage.size() == 1)) {
+        if (startPage != null && startPage.size() == 1) {
             try {
                 start = Integer.valueOf(startPage.get(0));
                 // Handle page starts at 1 but 0 for spring Pageable

@@ -30,9 +30,9 @@ import com.google.gson.Gson;
 import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.io.ModuleGenerator;
 
-import fr.cnes.regards.modules.dam.domain.entities.attribute.AbstractAttribute;
-import fr.cnes.regards.modules.dam.domain.entities.attribute.ObjectAttribute;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
+import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.RegardsModule;
 
@@ -103,11 +103,11 @@ public class RegardsModuleGenerator implements ModuleGenerator {
 
     }
 
-    protected Element generateAttributeElement(AbstractAttribute<?> attribute, Gson gson) {
+    protected Element generateAttributeElement(AbstractProperty<?> attribute, Gson gson) {
         Element elt;
-        if (attribute instanceof ObjectAttribute) {
+        if (attribute instanceof ObjectProperty) {
             elt = new Element(attribute.getName(), REGARDS_NS);
-            elt.addContent(((ObjectAttribute) attribute).getValue().stream()
+            elt.addContent(((ObjectProperty) attribute).getValue().stream()
                     .map(a -> this.generateAttributeElement(a, gson)).collect(Collectors.toList()));
         } else {
             elt = generateElement(attribute.getName(), attribute.getValue(), gson);
@@ -122,7 +122,7 @@ public class RegardsModuleGenerator implements ModuleGenerator {
     }
 
     protected void addStandardElement(Element rootElement, String name, Object value, Gson gson) {
-        if ((rootElement != null) && (value != null)) {
+        if (rootElement != null && value != null) {
             rootElement.addContent(generateElement(name, value, gson));
         }
     }

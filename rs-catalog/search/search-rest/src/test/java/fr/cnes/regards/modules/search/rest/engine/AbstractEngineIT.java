@@ -56,22 +56,21 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
-import fr.cnes.regards.modules.dam.client.models.IModelAttrAssocClient;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.entities.Document;
-import fr.cnes.regards.modules.dam.domain.entities.attribute.builder.AttributeBuilder;
-import fr.cnes.regards.modules.dam.domain.models.Model;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
-import fr.cnes.regards.modules.dam.gson.entities.MultitenantFlattenedAttributeAdapterFactory;
-import fr.cnes.regards.modules.dam.service.models.IAttributeModelService;
-import fr.cnes.regards.modules.dam.service.models.ModelService;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.service.IIndexerService;
+import fr.cnes.regards.modules.model.client.IAttributeModelClient;
+import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.model.domain.Model;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactory;
+import fr.cnes.regards.modules.model.service.IAttributeModelService;
+import fr.cnes.regards.modules.model.service.ModelService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -382,23 +381,22 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     protected List<Collection> createGalaxies(Model galaxyModel) {
         Collection milkyWay = createEntity(galaxyModel, MILKY_WAY);
-        milkyWay.addProperty(AttributeBuilder.buildString(GALAXY, MILKY_WAY));
-        milkyWay.addProperty(AttributeBuilder
-                .buildString(ABSTRACT, "The Milky Way is the galaxy that contains our Solar System."));
+        milkyWay.addProperty(IProperty.buildString(GALAXY, MILKY_WAY));
+        milkyWay.addProperty(IProperty.buildString(ABSTRACT,
+                                                   "The Milky Way is the galaxy that contains our Solar System."));
         return Arrays.asList(milkyWay);
     }
 
     protected List<Collection> createStars(Model starModel) {
         Collection sun = createEntity(starModel, SUN);
-        sun.addProperty(AttributeBuilder.buildString(STAR, SUN));
-        sun.addProperty(AttributeBuilder.buildString(ABSTRACT,
-                                                     "The Sun is the star at the center of the Solar System."));
+        sun.addProperty(IProperty.buildString(STAR, SUN));
+        sun.addProperty(IProperty.buildString(ABSTRACT, "The Sun is the star at the center of the Solar System."));
         return Arrays.asList(sun);
     }
 
     protected Dataset createStelarSystem(Model starSystemModel, String label) {
         Dataset solarSystem = createEntity(starSystemModel, label);
-        solarSystem.addProperty(AttributeBuilder.buildString(STAR_SYSTEM, label));
+        solarSystem.addProperty(IProperty.buildString(STAR_SYSTEM, label));
         solarSystem.addTags("REGARDS");
         solarSystem.addTags("CNES");
         solarSystem.addTags("CS-SI");
@@ -432,15 +430,15 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         quicklook.setMimeType(MimeType.valueOf("application/jpg"));
         quicklook.setUri(URI.create("http://regards/le_quicklook.jpg"));
         quicklook.setReference(false);
-        quicklook.setImageWidth(100);
-        quicklook.setImageHeight(100);
+        quicklook.setImageWidth(100d);
+        quicklook.setImageHeight(100d);
         planet.getFiles().put(DataType.QUICKLOOK_SD, quicklook);
 
         DataFile thumbnail = new DataFile();
         thumbnail.setMimeType(MimeType.valueOf("application/png"));
         thumbnail.setUri(URI.create("http://regards/thumbnail.png"));
-        thumbnail.setImageWidth(250);
-        thumbnail.setImageHeight(250);
+        thumbnail.setImageWidth(250d);
+        thumbnail.setImageHeight(250d);
         thumbnail.setReference(false);
         planet.getFiles().put(DataType.THUMBNAIL, thumbnail);
 
@@ -455,9 +453,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                                          IGeometry.position(10.0, 10.0))));
         planet.setGeometry(geo);
         planet.setWgs84(geo);
-        planet.addProperty(AttributeBuilder.buildObject("TimePeriod",
-                                                        AttributeBuilder.buildDate(START_DATE, startDateValue),
-                                                        AttributeBuilder.buildDate(STOP_DATE, stopDateValue)));
+        planet.addProperty(IProperty.buildObject("TimePeriod", IProperty.buildDate(START_DATE, startDateValue),
+                                                 IProperty.buildDate(STOP_DATE, stopDateValue)));
 
         return planet;
     }
@@ -474,13 +471,12 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         DataObject planet = createEntity(planetModel, name);
         planet.setGroups(getAccessGroups());
         planet.setCreationDate(OffsetDateTime.now());
-        planet.addProperty(AttributeBuilder.buildString(PLANET, name));
-        planet.addProperty(AttributeBuilder.buildString(PLANET_TYPE, type));
-        planet.addProperty(AttributeBuilder.buildInteger(PLANET_DIAMETER, diameter));
-        planet.addProperty(AttributeBuilder.buildLong(PLANET_SUN_DISTANCE, sunDistance));
-        if ((params != null) && !params.isEmpty()) {
-            planet.addProperty(AttributeBuilder.buildStringArray(PLANET_PARAMS,
-                                                                 params.toArray(new String[params.size()])));
+        planet.addProperty(IProperty.buildString(PLANET, name));
+        planet.addProperty(IProperty.buildString(PLANET_TYPE, type));
+        planet.addProperty(IProperty.buildInteger(PLANET_DIAMETER, diameter));
+        planet.addProperty(IProperty.buildLong(PLANET_SUN_DISTANCE, sunDistance));
+        if (params != null && !params.isEmpty()) {
+            planet.addProperty(IProperty.buildStringArray(PLANET_PARAMS, params.toArray(new String[params.size()])));
         }
         return planet;
     }
@@ -508,9 +504,6 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                 break;
             case DATASET:
                 entity = new Dataset(model, getDefaultTenant(), label, label);
-                break;
-            case DOCUMENT:
-                entity = new Document(model, getDefaultTenant(), label, label);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown entity type " + model.getType());

@@ -45,14 +45,14 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.modules.dam.client.models.IModelAttrAssocClient;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.dam.domain.models.ModelAttrAssoc;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
-import fr.cnes.regards.modules.dam.domain.models.attributes.restriction.PatternRestriction;
-import fr.cnes.regards.modules.dam.domain.models.attributes.restriction.RestrictionType;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.PatternRestriction;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
@@ -297,7 +297,7 @@ public class DescriptionBuilder {
     private OpenSearchParameter buildParameter(DescriptionParameter descParameter,
             List<IOpenSearchExtension> extensions) {
         OpenSearchParameter parameter = new OpenSearchParameter();
-        if ((descParameter.getConfiguration() != null) && (descParameter.getConfiguration().getAllias() != null)) {
+        if (descParameter.getConfiguration() != null && descParameter.getConfiguration().getAllias() != null) {
             parameter.setName(descParameter.getConfiguration().getAllias());
         } else {
             parameter.setName(descParameter.getName());
@@ -306,13 +306,13 @@ public class DescriptionBuilder {
         parameter.setMaximum("1");
         parameter.setValue(String.format("{%s}", descParameter.getAttributeModel().getName()));
         parameter.setTitle(descParameter.getAttributeModel().getDescription());
-        if ((descParameter.getAttributeModel().getRestriction() != null)
+        if (descParameter.getAttributeModel().getRestriction() != null
                 && RestrictionType.PATTERN.equals(descParameter.getAttributeModel().getRestriction().getType())) {
             PatternRestriction restriction = (PatternRestriction) descParameter.getAttributeModel().getRestriction();
             parameter.setPattern(restriction.getPattern());
         }
 
-        if ((descParameter.getQueryableAttribute().getAggregation() != null)) {
+        if (descParameter.getQueryableAttribute().getAggregation() != null) {
             if (descParameter.getQueryableAttribute().getAggregation() instanceof ParsedStringTerms) {
                 ParsedStringTerms terms = (ParsedStringTerms) descParameter.getQueryableAttribute().getAggregation();
                 terms.getBuckets().forEach(b -> {
@@ -430,8 +430,6 @@ public class DescriptionBuilder {
                 return EntityType.DATA;
             case DATASETS:
                 return EntityType.DATASET;
-            case DOCUMENTS:
-                return EntityType.DOCUMENT;
             case ALL:
             case DATAOBJECTS_RETURN_DATASETS:
             default:
