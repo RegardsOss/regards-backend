@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.amqp.test;
 
 import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -27,10 +28,12 @@ import org.springframework.test.context.junit4.SpringRunner;
  * Single virtual host tests
  * @author Marc Sordi
  */
+@DirtiesContext
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
-@TestPropertySource(properties = { "regards.amqp.management.mode=SINGLE", "regards.tenants=PROJECT, PROJECT1",
-        "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false" },
+@TestPropertySource(
+        properties = { "regards.amqp.management.mode=SINGLE", "regards.tenants=PROJECT, PROJECT1",
+                "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false" },
         locations = "classpath:amqp.properties")
 public class SingleVhostPollerIT extends AbstractPollerIT {
 
