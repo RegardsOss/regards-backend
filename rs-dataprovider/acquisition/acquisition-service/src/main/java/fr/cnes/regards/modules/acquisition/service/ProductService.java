@@ -43,7 +43,6 @@ import org.springframework.util.Assert;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -93,8 +92,6 @@ public class ProductService implements IProductService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
 
-    private static final String DEFAULT_SESSION = "Default";
-
     @Autowired
     private IPluginService pluginService;
 
@@ -143,9 +140,6 @@ public class ProductService implements IProductService {
         for (StorageMetadataProvider storage : acquisitionChain.getStorages()) {
             storageList.add(StorageMetadata.build(storage.getPluginBusinessId(), storage.getStorePath(),
                                                   storage.getTargetTypes()));
-        }
-        if (acquisitionChain.getCategories().contains("ref-location")) {
-            storageList.add(StorageMetadata.build("ref-location", null, Sets.newHashSet()));
         }
 
         IngestMetadataDto ingestMetadata = IngestMetadataDto
@@ -200,22 +194,39 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public void delete(Product product) {
+    public void delete(AcquisitionProcessingChain chain, Product product) {
         productRepository.delete(product);
+        sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
     }
 
     @Override
-    public void deleteBySession(AcquisitionProcessingChain chain, String session) {
+    public long deleteBySession(AcquisitionProcessingChain chain, String session) {
         Pageable page = PageRequest.of(0, 500);
         Page<Product> results;
         do {
             results = productRepository.findByProcessingChainAndSession(chain, session, page);
-            for (Product product : results.getContent()) {
-                acqFileRepository.deleteByProduct(product);
-                delete(product);
+            List<Product> products = results.getContent();
+            for (Product product : products) {
+                sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
             }
-            page = page.next();
+            productRepository.deleteAll(products);
         } while (results.hasNext());
+        return results.getTotalElements();
+    }
+
+    @Override
+    public long deleteByProcessingChain(AcquisitionProcessingChain chain) {
+        Pageable page = PageRequest.of(0, 500);
+        Page<Product> results;
+        do {
+            results = productRepository.findByProcessingChain(chain, page);
+            List<Product> products = results.getContent();
+            for (Product product : products) {
+                sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
+            }
+            productRepository.deleteAll(products);
+        } while (results.hasNext());
+        return results.getTotalElements();
     }
 
     @Override
@@ -392,8 +403,6 @@ public class ProductService implements IProductService {
                 // The product is now managed by another session
                 currentProduct.setSession(session);
             }
-            // Keep the current product state to send the notif
-            ProductState oldState = currentProduct.getState();
 
             // Fulfill product with new valid acquired files
             fulfillProduct(validFilesByProductName.get(productName), currentProduct);
@@ -663,6 +672,27 @@ public class ProductService implements IProductService {
 
         productRepository.saveAll(page.getContent());
         return page.hasNext();
+    }
+
+    @Override
+    public void handleGeneratedProducts(AcquisitionProcessingChain processingChain, Set<Product> success,
+            Set<Product> errors) {
+        for (Product product : success) {
+            try {
+                saveAndSubmitSIP(product, processingChain);
+                sessionNotifier.notifySipSubmitting(product);
+            } catch (SIPGenerationException e) {
+                LOGGER.error(e.getMessage(), e);
+                product.setSipState(ProductSIPState.INGESTION_FAILED);
+                product.setError(e.getMessage());
+                sessionNotifier.notifySipGenerationFailed(product);
+                save(product);
+            }
+        }
+        for (Product product : errors) {
+            sessionNotifier.notifySipGenerationFailed(product);
+            save(product);
+        }
     }
 
 }

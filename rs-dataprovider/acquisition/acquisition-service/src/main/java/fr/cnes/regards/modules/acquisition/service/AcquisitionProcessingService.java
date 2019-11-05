@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -37,8 +36,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +47,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.util.MimeTypeUtils;
-
-import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -92,11 +87,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
-import fr.cnes.regards.modules.ingest.client.ISIPRestClient;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
 
@@ -130,9 +121,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private IProductService productService;
 
     @Autowired
-    private ISIPRestClient sipRestClient;
-
-    @Autowired
     private IJobInfoService jobInfoService;
 
     @Autowired
@@ -153,27 +141,13 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @Autowired
     private ITemplateService templateService;
 
-    @SuppressWarnings("unused")
-    @Autowired
-    private EntityManager entityManager;
-
-    /**
-     * Compute file checksum
-     * @param filePath file path
-     * @param checksumAlgorithm checksum algorithm
-     * @return checksum
-     * @throws IOException if error occurs!
-     * @throws NoSuchAlgorithmException if error occurs!
-     */
-    private static String computeFileChecksum(Path filePath, String checksumAlgorithm)
-            throws IOException, NoSuchAlgorithmException {
-        InputStream inputStream = Files.newInputStream(filePath);
-        return ChecksumUtils.computeHexChecksum(inputStream, checksumAlgorithm);
-    }
-
     @Override
     public Page<AcquisitionProcessingChain> getAllChains(Pageable pageable) throws ModuleException {
         return acqChainRepository.findAll(pageable);
+    }
+
+    public List<AcquisitionProcessingChain> getChainsByLabel(String label) throws ModuleException {
+        return acqChainRepository.findByLabel(label);
     }
 
     @Override
@@ -461,7 +435,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                         jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
                     }
 
-                    productService.delete(product);
+                    productService.delete(processingChain, product);
                 }
             }
         } while (products.hasNext());
@@ -703,43 +677,29 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private long streamAndRegisterFiles(AcquisitionFileInfo fileInfo, IFluxScanPlugin scanPlugin,
             Optional<OffsetDateTime> scanningDate) throws ModuleException {
         long totalCount = 0;
-
         try {
             List<DirectoryStream<Path>> streams = scanPlugin.stream(scanningDate);
             Iterator<DirectoryStream<Path>> streamsIt = streams.iterator();
+            OffsetDateTime lmd = null;
             while (streamsIt.hasNext() && !Thread.currentThread().isInterrupted()) {
-                DirectoryStream<Path> stream = streamsIt.next();
-                int filesCount = 0;
-                long totalTime = 0;
-                Iterator<Path> it = stream.iterator();
-                List<Path> files = Lists.newArrayList();
-                OffsetDateTime lastModificationDate = null;
-                if (fileInfo.getLastModificationDate() != null) {
-                    lastModificationDate = fileInfo.getLastModificationDate();
+                try (DirectoryStream<Path> stream = streamsIt.next()) {
+                    Iterator<Path> it = stream.iterator();
+                    RegisterFilesResponse response;
+                    do {
+                        response = self.registerFiles(it, fileInfo, scanningDate, false, BATCH_SIZE);
+                        totalCount += response.getNumberOfRegisteredFiles();
+                        if ((lmd == null) || (lmd.isBefore(response.getLastUpdateDate())
+                                && !Thread.currentThread().isInterrupted())) {
+                            lmd = response.getLastUpdateDate();
+                        }
+                    } while (response.hasNext());
                 }
-                while (it.hasNext() && !Thread.currentThread().isInterrupted()) {
-                    Path filePath = it.next();
-                    files.add(filePath);
-                    OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(),
-                                                                  ZoneOffset.UTC);
-                    if ((lastModificationDate == null) || lastModificationDate.isBefore(lmd)) {
-                        lastModificationDate = lmd;
-                    }
-                    if (!it.hasNext() || (files.size() >= AcquisitionProcessingService.BATCH_SIZE)) {
-                        long transactionStartTime = System.currentTimeMillis();
-                        totalCount += self.registerFiles(files, fileInfo, scanningDate, false);
-                        LOGGER.debug("{} new file(s) registered in {} milliseconds", files.size(),
-                                     System.currentTimeMillis() - transactionStartTime);
-                        filesCount += AcquisitionProcessingService.BATCH_SIZE;
-                        totalTime += System.currentTimeMillis() - transactionStartTime;
-                        LOGGER.debug("{} total files registered in {}", filesCount, totalTime / 1000);
-                        files.clear();
-                    }
-                }
-                if (!Thread.currentThread().isInterrupted()) {
-                    fileInfo.setLastModificationDate(lastModificationDate);
-                    fileInfoRepository.save(fileInfo);
-                }
+            }
+
+            if ((fileInfo.getLastModificationDate() == null)
+                    || (fileInfo.getLastModificationDate().isBefore(lmd) && !Thread.currentThread().isInterrupted())) {
+                fileInfo.setLastModificationDate(lmd);
+                fileInfoRepository.save(fileInfo);
             }
         } catch (IOException e) {
             throw new ModuleException(e);
@@ -761,6 +721,31 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         return countRegistered;
     }
 
+    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public RegisterFilesResponse registerFiles(Iterator<Path> filePaths, AcquisitionFileInfo info,
+            Optional<OffsetDateTime> scanningDate, boolean updateFileInfo, int limit) throws ModuleException {
+        int countRegistered = 0;
+        OffsetDateTime lastUpdateDate = null;
+        while (filePaths.hasNext() && (countRegistered <= limit) && !Thread.currentThread().isInterrupted()) {
+            Path filePath = filePaths.next();
+            if (registerFile(filePath, info, scanningDate, updateFileInfo)) {
+                countRegistered++;
+                OffsetDateTime lmd;
+                try {
+                    lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(), ZoneOffset.UTC);
+                    if ((lastUpdateDate == null) || lmd.isAfter(lastUpdateDate)) {
+                        lastUpdateDate = lmd;
+                    }
+                } catch (IOException e) {
+                    LOGGER.error("Error getting last update date for file {} cause : {}.", filePath.toString(),
+                                 e.getMessage());
+                }
+            }
+        }
+        return RegisterFilesResponse.build(countRegistered, lastUpdateDate, filePaths.hasNext());
+    }
+
     @Override
     public boolean registerFile(Path filePath, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate,
             boolean updateFileInfo) throws ModuleException {
@@ -775,7 +760,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // Compute checksum and manage last modification date
         try {
             // Compute and set checksum
-            scannedFile.setChecksum(computeFileChecksum(filePath, AcquisitionProcessingChain.CHECKSUM_ALGORITHM));
+            String checksum = ChecksumUtils.computeHexChecksum(filePath, AcquisitionProcessingChain.CHECKSUM_ALGORITHM);
+            scannedFile.setChecksum(checksum);
             scannedFile.setState(AcquisitionFileState.IN_PROGRESS);
 
             // Update last modification date
@@ -980,15 +966,29 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public void deleteSessionProducts(Long processingChainId, String session) throws ModuleException {
-        AcquisitionProcessingChain chain = getChain(processingChainId);
-        if (!chain.isLocked()) {
-            productService.deleteBySession(chain, session);
-            sipRestClient.deleteBySession(OAISDeletionRequestDto.build(chain.getLabel(), session,
-                                                                       SessionDeletionMode.IRREVOCABLY,
-                                                                       SessionDeletionSelectionMode.INCLUDE));
-        } else {
-            throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
+    public void deleteSessionProducts(String processingChainLabel, String session) throws ModuleException {
+        List<AcquisitionProcessingChain> chains = getChainsByLabel(processingChainLabel);
+        for (AcquisitionProcessingChain chain : chains) {
+            if (!chain.isLocked()) {
+                productService.deleteBySession(chain, session);
+            } else {
+                throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
+            }
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService#deleteProducts(java.lang.String)
+     */
+    @Override
+    public void deleteProducts(String processingChainLabel) throws ModuleException {
+        List<AcquisitionProcessingChain> chains = getChainsByLabel(processingChainLabel);
+        for (AcquisitionProcessingChain chain : chains) {
+            if (!chain.isLocked()) {
+                productService.deleteByProcessingChain(chain);
+            } else {
+                throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
+            }
         }
     }
 }

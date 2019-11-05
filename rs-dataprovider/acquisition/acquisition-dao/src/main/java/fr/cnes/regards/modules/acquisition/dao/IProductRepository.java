@@ -195,5 +195,5 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     @EntityGraph("graph.product.complete")
     List<Product> findAllByIdIn(List<Long> productIds, Sort sort);
 
-    void deleteBySessionAndProcessingChain(String session, AcquisitionProcessingChain chain);
+    Page<Product> findByProcessingChain(AcquisitionProcessingChain chain, Pageable page);
 }

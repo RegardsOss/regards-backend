@@ -87,14 +87,22 @@ public interface IProductService {
      * Delete one specified {@link Product}
      * @param product {@link Product} to delete
      */
-    void delete(Product product);
+    void delete(AcquisitionProcessingChain chain, Product product);
 
     /**
      * Delete products
      * @param chain
      * @param session
+     * @return number of deleted products
      */
-    public void deleteBySession(AcquisitionProcessingChain chain, String session);
+    long deleteBySession(AcquisitionProcessingChain chain, String session);
+
+    /**
+     *
+     * @param chain
+     * @return number of deleted products
+     */
+    long deleteByProcessingChain(AcquisitionProcessingChain chain);
 
     /**
      * @return page of products related to specified
@@ -231,4 +239,13 @@ public interface IProductService {
      * @return whether there is a product page remaining to managed
      */
     boolean manageUpdatedProductsByPage(AcquisitionProcessingChain processingChain);
+
+    /**
+     * Save success and errors products in DB and submit success ones to ingest microservice for ingestion
+     * @param processingChain
+     * @param success
+     * @param errors
+     */
+    void handleGeneratedProducts(AcquisitionProcessingChain processingChain, Set<Product> success, Set<Product> errors);
+
 }
