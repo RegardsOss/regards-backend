@@ -628,7 +628,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             } else {
                 totalCount = scanAndRegisterFilesByDirectory(fileInfo, scanPlugin, scanningDate);
             }
-            LOGGER.info("{} new file(s) registered in {} milliseconds", totalCount,
+            LOGGER.info("All {} new file(s) registered in {} milliseconds", totalCount,
                         System.currentTimeMillis() - startTime);
         }
 
@@ -686,12 +686,15 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     Iterator<Path> it = stream.iterator();
                     RegisterFilesResponse response;
                     do {
+                        long startTime = System.currentTimeMillis();
                         response = self.registerFiles(it, fileInfo, scanningDate, false, BATCH_SIZE);
                         totalCount += response.getNumberOfRegisteredFiles();
                         if ((lmd == null) || (lmd.isBefore(response.getLastUpdateDate())
                                 && !Thread.currentThread().isInterrupted())) {
                             lmd = response.getLastUpdateDate();
                         }
+                        LOGGER.info("{} new file(s) registered in {} milliseconds",
+                                    response.getNumberOfRegisteredFiles(), System.currentTimeMillis() - startTime);
                     } while (response.hasNext());
                 }
             }
@@ -990,5 +993,16 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
             }
         }
+    }
+
+    @Override
+    public List<AcquisitionProcessingChain> findAllBootableAutomaticChains() {
+        return acqChainRepository.findAllBootableAutomaticChains();
+    }
+
+    @Override
+    public List<AcquisitionProcessingChain> findByModeAndActiveTrueAndLockedFalse(
+            AcquisitionProcessingChainMode manual) {
+        return acqChainRepository.findByModeAndActiveTrueAndLockedFalse(manual);
     }
 }
