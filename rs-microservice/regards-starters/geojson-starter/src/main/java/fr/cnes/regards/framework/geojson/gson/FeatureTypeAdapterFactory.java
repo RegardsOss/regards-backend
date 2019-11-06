@@ -62,6 +62,7 @@ public class FeatureTypeAdapterFactory implements TypeAdapterFactory {
                 // Set feature unlocated if geometry is null
                 if (feature.getGeometry() == null) {
                     feature.setGeometry(IGeometry.unlocated());
+                    feature.setNormalizedGeometry(IGeometry.unlocated());
                 }
                 return (T) feature;
             }
