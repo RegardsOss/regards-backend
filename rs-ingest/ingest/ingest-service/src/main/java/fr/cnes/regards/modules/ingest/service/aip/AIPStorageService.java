@@ -185,10 +185,14 @@ public class AIPStorageService implements IAIPStorageService {
                     // It's safe to patch the checksum here
                     dataObject.setChecksum(resultFile.getMetaInfo().getChecksum());
                     // Update representational info
-                    ci.getRepresentationInformation().getSyntax()
-                            .setHeight(new Double(resultFile.getMetaInfo().getHeight()));
-                    ci.getRepresentationInformation().getSyntax()
-                            .setWidth(new Double(resultFile.getMetaInfo().getWidth()));
+                    if (resultFile.getMetaInfo().getHeight() != null) {
+                        ci.getRepresentationInformation().getSyntax()
+                                .setHeight(new Double(resultFile.getMetaInfo().getHeight()));
+                    }
+                    if (resultFile.getMetaInfo().getWidth() != null) {
+                        ci.getRepresentationInformation().getSyntax()
+                                .setWidth(new Double(resultFile.getMetaInfo().getWidth()));
+                    }
                     ci.getRepresentationInformation().getSyntax().setMimeType(resultFile.getMetaInfo().getMimeType());
                     // Exclude from the location list any null storage
                     Set<OAISDataObjectLocation> newLocations = dataObject.getLocations().stream()
