@@ -125,7 +125,8 @@
         <fr.cnes.regards.frontend-webapp.version>GEODE</fr.cnes.regards.frontend-webapp.version>
         <fr.cnes.regards.modules.emails.version>GEODE</fr.cnes.regards.modules.emails.version>
         <fr.cnes.regards.modules.notifier.version>GEODE</fr.cnes.regards.modules.notifier.version>
-        <fr.cnes.regards.modules.notifier-instance.version>GEODE</fr.cnes.regards.modules.notifier-instance.version>
+        <fr.cnes.regards.modules.notification.version>GEODE</fr.cnes.regards.modules.notification.version>
+        <fr.cnes.regards.modules.notification-instance.version>GEODE</fr.cnes.regards.modules.notification-instance.version>
         <fr.cnes.regards.modules.metrics.version>GEODE</fr.cnes.regards.modules.metrics.version>
         <fr.cnes.regards.modules.templates.version>GEODE</fr.cnes.regards.modules.templates.version>
         <fr.cnes.regards.modules.dataprovider.version>GEODE</fr.cnes.regards.modules.dataprovider.version>
@@ -1027,6 +1028,32 @@
                 <artifactId>metrics-rest</artifactId>
                 <version>${fr.cnes.regards.modules.metrics.version}</version>
             </dependency>
+            <!-- Notification -->
+            <dependency>
+                <groupId>fr.cnes.regards.modules.notification</groupId>
+                <artifactId>notification-rest</artifactId>
+                <version>${fr.cnes.regards.modules.notification.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.notification</groupId>
+                <artifactId>notification-domain</artifactId>
+                <version>${fr.cnes.regards.modules.notifier.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.notifier</groupId>
+                <artifactId>notification-dao</artifactId>
+                <version>${fr.cnes.regards.modules.notification.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>notification-regards</artifactId>
+                <version>${fr.cnes.regards.framework.notification.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>notification-regards-starter</artifactId>
+                <version>${fr.cnes.regards.framework.notification.version}</version>
+            </dependency>
             <!-- Notifier -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.notifier</groupId>
@@ -1043,21 +1070,11 @@
                 <artifactId>notifier-dao</artifactId>
                 <version>${fr.cnes.regards.modules.notifier.version}</version>
             </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework</groupId>
-                <artifactId>notification-regards</artifactId>
-                <version>${fr.cnes.regards.framework.notification.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework</groupId>
-                <artifactId>notification-regards-starter</artifactId>
-                <version>${fr.cnes.regards.framework.notification.version}</version>
-            </dependency>
             <!-- Notification Instance -->
             <dependency>
-                <groupId>fr.cnes.regards.modules.notifier-instance</groupId>
-                <artifactId>notifier-instance-rest</artifactId>
-                <version>${fr.cnes.regards.modules.notifier-instance.version}</version>
+                <groupId>fr.cnes.regards.modules.notification-instance</groupId>
+                <artifactId>notification-instance-rest</artifactId>
+                <version>${fr.cnes.regards.modules.notification-instance.version}</version>
             </dependency>
             <!-- Search -->
             <dependency>
