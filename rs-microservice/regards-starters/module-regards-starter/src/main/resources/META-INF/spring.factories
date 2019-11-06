@@ -1,4 +1,3 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 fr.cnes.regards.framework.module.rest.GlobalControllerAdvice,\
-fr.cnes.regards.framework.module.autoconfigure.JacksonXmlAutoConfiguration,\
-fr.cnes.regards.framework.module.autoconfigure.SchedulerConfiguration
+fr.cnes.regards.framework.module.autoconfigure.JacksonXmlAutoConfiguration
