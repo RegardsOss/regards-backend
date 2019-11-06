@@ -258,4 +258,8 @@ public interface IAcquisitionProcessingService {
      * Handle {@link fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob} errors
      */
     void handleProductAcquisitionError(JobInfo jobInfo);
+
+    List<AcquisitionProcessingChain> findAllBootableAutomaticChains();
+
+    List<AcquisitionProcessingChain> findByModeAndActiveTrueAndLockedFalse(AcquisitionProcessingChainMode manual);
 }
