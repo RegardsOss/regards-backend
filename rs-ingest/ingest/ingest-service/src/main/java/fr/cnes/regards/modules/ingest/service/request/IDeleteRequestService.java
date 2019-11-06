@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.Set;
+
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
-import java.util.Collection;
 
 /**
  * Delete file request service
@@ -29,13 +29,14 @@ import java.util.Collection;
  *
  */
 public interface IDeleteRequestService {
+
     /**
      * Handle file deletion error
      */
-    void handleRemoteDeleteError(RequestInfo request, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors);
+    void handleRemoteDeleteError(Set<RequestInfo> requests);
 
     /**
      * Handle file deletion success
      */
-    void handleRemoteDeleteSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success);
+    void handleRemoteDeleteSuccess(Set<RequestInfo> requests);
 }
