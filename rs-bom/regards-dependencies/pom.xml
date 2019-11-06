@@ -1040,7 +1040,7 @@
                 <version>${fr.cnes.regards.modules.notifier.version}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.modules.notifier</groupId>
+                <groupId>fr.cnes.regards.modules.notification</groupId>
                 <artifactId>notification-dao</artifactId>
                 <version>${fr.cnes.regards.modules.notification.version}</version>
             </dependency>
