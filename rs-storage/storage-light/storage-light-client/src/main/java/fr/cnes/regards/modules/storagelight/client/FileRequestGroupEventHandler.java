@@ -58,7 +58,7 @@ public class FileRequestGroupEventHandler
     /**
      * Bulk size limit to handle messages
      */
-    @Value("${regards.storage.reference.items.bulk.size:100}")
+    @Value("${regards.storage.client.responses.items.bulk.size:100}")
     private int BULK_SIZE;
 
     @Autowired(required = false)
@@ -86,6 +86,19 @@ public class FileRequestGroupEventHandler
         String tenant = wrapper.getTenant();
         runtimeTenantResolver.forceTenant(tenant);
         LOGGER.trace("[EVENT] New FileStorageFlowItem received -- {}", wrapper.getContent().toString());
+
+        while (items.size() >= (100 * BULK_SIZE)) {
+            // Do not overload the concurrent queue if the configured listener does not handle queued message faster
+            try {
+                LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
+                Thread.sleep(30_000);
+            } catch (InterruptedException e) {
+                LOGGER.error(String
+                        .format("Error waiting for storage client responses handling by custom listener. Current responses pool to handle = %s",
+                                items.size()),
+                             e);
+            }
+        }
         FileRequestsGroupEvent item = wrapper.getContent();
         if (!items.containsKey(tenant)) {
             items.put(tenant, new ConcurrentLinkedQueue<>());
@@ -119,8 +132,12 @@ public class FileRequestGroupEventHandler
                         }
                     }
                     if (!list.isEmpty()) {
+                        LOGGER.info("[STORAGE RESPONSES HANDLER] Handling {} FileRequestsGroupEvent...", list.size());
+                        long start = System.currentTimeMillis();
                         handle(list);
                         list.clear();
+                        LOGGER.info("[STORAGE RESPONSES HANDLER] {} FileRequestsGroupEvent handled in {} ms",
+                                    list.size(), System.currentTimeMillis() - start);
                     }
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
             } finally {

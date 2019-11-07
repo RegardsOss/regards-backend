@@ -89,6 +89,18 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
         String tenant = wrapper.getTenant();
         runtimeTenantResolver.forceTenant(tenant);
         LOGGER.trace("[EVENT] New FileStorageFlowItem received -- {}", wrapper.getContent().toString());
+        while (items.size() >= (100 * BULK_SIZE)) {
+            // Do not overload the concurrent queue if the configured listener does not handle queued message faster
+            try {
+                LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
+                Thread.sleep(30_000);
+            } catch (InterruptedException e) {
+                LOGGER.error(String
+                        .format("Error waiting for requests handled by microservice. Current requests pool to handle = %s",
+                                items.size()),
+                             e);
+            }
+        }
         StorageFlowItem item = wrapper.getContent();
         if (item.getFiles().size() > StorageFlowItem.MAX_REQUEST_PER_GROUP) {
             String message = String.format("Number of storage requests for group %s exeeds maximum limit of %d",

@@ -90,6 +90,18 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
         String tenant = wrapper.getTenant();
         CopyFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
+        while (items.size() >= (100 * BULK_SIZE)) {
+            // Do not overload the concurrent queue if the configured listener does not handle queued message faster
+            try {
+                LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
+                Thread.sleep(30_000);
+            } catch (InterruptedException e) {
+                LOGGER.error(String
+                        .format("Error waiting for requests handled by microservice. Current requests pool to handle = %s",
+                                items.size()),
+                             e);
+            }
+        }
         if (item.getFiles().size() > MAX_REQUEST_PER_GROUP) {
             String message = String.format("Number of copy requests for group %s exeeds maximum limit of %d",
                                            item.getGroupId(), MAX_REQUEST_PER_GROUP);
