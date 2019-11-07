@@ -53,7 +53,7 @@
 	</parent>
 
 	<properties>
-		<microservice.heap.size>512m</microservice.heap.size>
+		<microservice.heap.size>1024m</microservice.heap.size>
 		<fr.cnes.regards.docker.image.name>rs-dataprovider</fr.cnes.regards.docker.image.name>
 	</properties>
 

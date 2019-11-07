@@ -30,7 +30,7 @@ public final class AcquisitionProperties {
      * All transactions only manage at most {@link #WORKING_UNIT} entities at a time
      * in order to take care of the memory consumption and potential tenant starvation.
      */
-    public static final Integer WORKING_UNIT = 1_000;
+    public static final Integer WORKING_UNIT = 100;
 
     private AcquisitionProperties() {
         // Nothing to do
