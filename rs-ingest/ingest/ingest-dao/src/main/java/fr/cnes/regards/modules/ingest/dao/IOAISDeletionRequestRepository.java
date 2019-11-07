@@ -31,8 +31,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IOAISDeletionRequestRepository extends JpaRepository<OAISDeletionRequest, Long> {
 
-    /**
-     * Retrieve the number of entity with the provided state
-     */
-    long countByState(InternalRequestStep state);
 }

@@ -102,8 +102,6 @@ public class IngestServiceTest {
      * @throws Exception
      */
     public void init() throws Exception {
-        ingestRequestRepository.deleteAll();
-        aipUpdateRequestRepository.deleteAll();
         requestRepository.deleteAll();;
         aipRepository.deleteAll();
         sipRepository.deleteAll();

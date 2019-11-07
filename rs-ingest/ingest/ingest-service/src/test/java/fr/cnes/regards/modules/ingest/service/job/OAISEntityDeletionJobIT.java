@@ -66,9 +66,6 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
     private IStorageDeletionRequestRepository deletionStorageRequestRepository;
 
     @Autowired
-    private IOAISDeletionRequestRepository deletionRequestRepository;
-
-    @Autowired
     private IAIPRepository aipRepository;
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
@@ -96,8 +93,6 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        deletionStorageRequestRepository.deleteAll();
-        deletionRequestRepository.deleteAll();
     }
 
     public void waitUntilNbSIPStoredReach(long nbSIPRemaining) {
@@ -105,13 +100,13 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
         ingestServiceTest.waitAllRequestsFinished(FIVE_SECONDS);
     }
 
-    public void waitUntilNbSIPErrorReach(long timeout, long nbError) {
+    public void waitUntilNbDeletionRequestInErrorReach(long timeout, long nbError) {
 
         long end = System.currentTimeMillis() + timeout;
         // Wait
         do {
-            long count = deletionRequestRepository.countByState(InternalRequestStep.ERROR);
-            LOGGER.debug("{} Current request in error", count);
+            long count = deletionStorageRequestRepository.countByState(InternalRequestStep.ERROR);
+            LOGGER.info("{} Current request in error", count);
             if (count == nbError) {
                 break;
             }
@@ -187,7 +182,7 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
         ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto.build(SESSION_OWNER_0, SESSION_0,
                                                                                SessionDeletionMode.IRREVOCABLY,
                                                                                SessionDeletionSelectionMode.INCLUDE));
-        waitUntilNbSIPErrorReach(FIVE_SECONDS, 4);
+        waitUntilNbDeletionRequestInErrorReach(FIVE_SECONDS, 2);
 
     }
 }

@@ -72,10 +72,11 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
         long start = System.currentTimeMillis();
         long existingItems = 0;
         long maxloops = 1000;
+        String session = OffsetDateTime.now().toString();
         for (long i = 0; i < maxloops; i++) {
             SIP sip = create("provider" + i, null);
             // Create event
-            publishSIPEvent(sip, "fake", OffsetDateTime.now().toString(), "source", CATEGORIES);
+            publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
         }
 
         // Wait
