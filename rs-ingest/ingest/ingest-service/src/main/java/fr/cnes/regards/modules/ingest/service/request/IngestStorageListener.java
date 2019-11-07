@@ -20,6 +20,12 @@ package fr.cnes.regards.modules.ingest.service.request;
 
 import java.util.Set;
 
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.storagelight.client.IStorageRequestListener;
+import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
+import java.util.Collection;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +47,9 @@ public class IngestStorageListener implements IStorageRequestListener {
 
     @Autowired
     private IIngestRequestService ingestRequestService;
+
+    @Autowired
+    private IRequestService requestService;
 
     @Autowired
     private IDeleteRequestService deleteRequestService;
@@ -87,17 +96,17 @@ public class IngestStorageListener implements IStorageRequestListener {
 
     @Override
     public void onStoreSuccess(Set<RequestInfo> requests) {
-        ingestRequestService.handleRemoteStoreSuccess(requests);
+        requestService.handleRemoteStoreSuccess(requests);
     }
 
     @Override
     public void onStoreError(Set<RequestInfo> requests) {
-        ingestRequestService.handleRemoteStoreError(requests);
+        requestService.handleRemoteStoreError(requests);
     }
 
     @Override
     public void onRequestGranted(Set<RequestInfo> requests) {
-        ingestRequestService.handleRemoteRequestGranted(requests);
+        requestService.handleRemoteRequestGranted(requests);
     }
 
     @Override

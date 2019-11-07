@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.AIPUpdateRequest;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import java.util.List;
 import org.springframework.data.domain.Page;

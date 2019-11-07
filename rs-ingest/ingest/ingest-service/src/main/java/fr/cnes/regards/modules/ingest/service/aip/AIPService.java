@@ -63,6 +63,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -295,6 +296,14 @@ public class AIPService implements IAIPService {
         aipEntity.getErrors().add(errorMessage);
         aipEntity.setState(AIPState.ERROR);
         save(aipEntity);
+    }
+
+    @Override
+    public List<AIPEntity> saveAll(Collection<AIPEntity> entities) {
+        for (AIPEntity aip : entities) {
+            aip.setLastUpdate(OffsetDateTime.now());
+        }
+        return aipRepository.saveAll(entities);
     }
 
     @Override

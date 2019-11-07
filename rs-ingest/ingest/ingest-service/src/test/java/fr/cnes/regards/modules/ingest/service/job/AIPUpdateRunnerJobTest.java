@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
-import fr.cnes.regards.modules.ingest.service.flow.AIPUpdateFlowHandler;
+import fr.cnes.regards.modules.ingest.service.schedule.AIPUpdateJobScheduler;
 import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -70,7 +70,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
     private IAIPService aipService;
 
     @Autowired
-    private AIPUpdateFlowHandler updateFlowHandler;
+    private AIPUpdateJobScheduler updateFlowHandler;
 
     @Autowired
     private IJobService jobService;

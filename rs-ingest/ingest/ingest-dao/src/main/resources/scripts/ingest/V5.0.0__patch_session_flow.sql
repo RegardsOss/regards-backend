@@ -59,75 +59,35 @@ drop table t_sip_session;
 alter table ta_sip_errors drop constraint fk_errors_sip_entity_id;
 drop table ta_sip_errors;
 
--- Deletion request
-create table t_deletion_request (
-  id int8 not null,
-  errors jsonb,
-  state varchar(50) not null,
-  deletion_mode int4 not null,
-  delete_files boolean,
-  selection_mode int4 not null,
-  session_name varchar(128) not null,
-  session_owner varchar(128) not null,
-  creation_date timestamp not null,
-  sipIds jsonb,
-  providerIds jsonb,
-  job_info_id uuid,
-  primary key (id)
- );
-create index idx_deletion_request_state on t_deletion_request (state);
-alter table t_deletion_request add constraint idx_deletion_request_search unique (session_owner, session_name, state);
-alter table t_deletion_request add constraint fk_req_job_info_id foreign key (job_info_id) references t_job_info;
-create sequence seq_deletion_request start 1 increment 50;
-
--- Storage deletion request
-create table t_deletion_storage_request (
-  id int8 not null,
-  sip_id varchar(128) not null,
-  deletion_mode int4 not null,
-  remote_step_group_id varchar(36) not null,
-  state varchar(50) not null,
-  session_name varchar(128) not null,
-  session_owner varchar(128) not null,
-  creation_date timestamp not null,
-  errors jsonb,
-  job_info_id uuid,
-  primary key (id)
-);
-create sequence seq_storage_deletion_request start 1 increment 50;
-create index idx_deletion_storage_remote_step_group_id on t_deletion_storage_request (remote_step_group_id);
-alter table t_deletion_storage_request add constraint fk_req_job_info_id foreign key (job_info_id) references t_job_info;
-alter table t_deletion_storage_request add constraint uk_deletion_storage_remote_step_group_id unique (remote_step_group_id);
-
-
 -- Ingest request
-create table t_ingest_request (
-  id int8 not null,
-  request_id varchar(36) NOT NULL,
-  ingest_chain varchar(100) not null,
-  session_name varchar(128) not null,
-  session_owner varchar(128) not null,
-  creation_date timestamp not null,
-  storages jsonb,
-  state varchar(20) NOT NULL,
-  errors jsonb,
-  rawsip jsonb,
-  job_info_id uuid,
-  categories jsonb,
-  step varchar(50) NOT NULL,
-  remote_step_deadline TIMESTAMP,
-  remote_step_group_ids jsonb,
-  primary key (id)
-);
-CREATE INDEX idx_ingest_request_id on t_ingest_request (request_id);
-CREATE INDEX idx_ingest_request_state ON t_ingest_request (state);
-CREATE INDEX idx_ingest_request_step ON t_ingest_request (step);
-CREATE INDEX idx_ingest_remote_step_deadline ON t_ingest_request (remote_step_deadline);
-CREATE INDEX idx_ingest_request_remote_step_group_ids ON t_ingest_request USING gin (remote_step_group_ids);
-ALTER TABLE t_ingest_request ADD CONSTRAINT uk_ingest_request_id UNIQUE (request_id);
-alter table t_ingest_request add constraint fk_req_job_info_id foreign key (job_info_id) references t_job_info;
-create sequence seq_ingest_request start 1 increment 50;
 
+create table t_request (
+    dtype varchar(32) not null,
+    id int8 not null,
+    creation_date timestamp not null,
+    errors jsonb,
+    provider_id varchar(128),
+    remote_step_deadline timestamp,
+    remote_step_group_ids jsonb,
+    session_name varchar(128),
+    session_owner varchar(128),
+    payload jsonb,
+    state varchar(50),
+    sip_id varchar(128),
+    job_info_id uuid,
+    aip_id int8,
+    update_task_id int8,
+    primary key (id)
+);
+create sequence seq_request start 1 increment 50;
+
+create index idx_request_search on t_request (session_owner, session_name, provider_id);
+create INDEX idx_request_remote_step_group_ids on t_request using gin (remote_step_group_ids);
+
+alter table t_request add constraint fk_req_job_info_id foreign key (job_info_id) references t_job_info;
+alter table t_request add constraint fk_update_request_aip foreign key (aip_id) references t_aip;
+
+--
 -- Join table to link AIP to ingest request
 create table t_ingest_request_aip (
   ingest_request_id int8 not null,
@@ -136,26 +96,7 @@ create table t_ingest_request_aip (
 );
 alter table t_ingest_request_aip add constraint uk_ingest_request_aip_aip_id unique (aip_id);
 alter table t_ingest_request_aip add constraint fk_ingest_request_aip_aip_id foreign key (aip_id) references t_aip;
-alter table t_ingest_request_aip add constraint fk_ingest_request_aip_request_id foreign key (ingest_request_id) references t_ingest_request;
-
-create table t_update_request (
-    id int8 not null,
-    errors jsonb,
-    session_name varchar(128) not null,
-    session_owner varchar(128) not null,
-    state varchar(50) not null,
-    job_info_id uuid,
-    creation_date timestamp not null,
-    aip_id int8,
-    update_task_id int8,
-    primary key (id)
-);
-create index idx_update_request_search on t_update_request (session_owner, session_name, state);
-create index idx_update_request_state on t_update_request (state);
-create sequence seq_update_request start 1 increment 50;
-alter table t_update_request add constraint fk_req_job_info_id foreign key (job_info_id) references t_job_info;
-alter table t_update_request add constraint fk_update_request_aip foreign key (aip_id) references t_aip;
-
+alter table t_ingest_request_aip add constraint fk_ingest_request_aip_request_id foreign key (ingest_request_id) references t_request;
 
 create table t_update_task (
     dtype varchar(30) not null,
@@ -166,4 +107,5 @@ create table t_update_task (
     primary key (id)
 );
 create sequence seq_aip_update_task start 1 increment 50;
-alter table t_update_request add constraint fk_update_request_update_task_id foreign key (update_task_id) references t_update_task;
+alter table t_request add constraint fk_update_request_update_task_id foreign key (update_task_id) references t_update_task;
+

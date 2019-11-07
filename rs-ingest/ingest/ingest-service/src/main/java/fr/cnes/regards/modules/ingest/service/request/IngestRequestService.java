@@ -18,23 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -49,16 +34,18 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.ingest.dao.AIPSaveMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPSaveMetaDataService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
@@ -68,6 +55,17 @@ import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
 
 /**
  * Manage ingest requests
@@ -109,7 +107,14 @@ public class IngestRequestService implements IIngestRequestService {
     private INotificationClient notificationClient;
 
     @Autowired
+    private AIPSaveMetaDataRepository aipSaveMetaDataRepository;
+
+    @Autowired
     private SessionNotifier sessionNotifier;
+
+    @Autowired
+    private IAIPSaveMetaDataService aipSaveMetaDataService;
+;
 
     @Override
     public void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests) {
@@ -234,18 +239,6 @@ public class IngestRequestService implements IIngestRequestService {
         }
     }
 
-    /**
-     * Do not use at the moment, just log.
-     */
-    @Override
-    public void handleRemoteRequestGranted(Set<RequestInfo> requests) {
-        // Do not track at the moment : the ongoing request could send a success too quickly
-        // and could cause unnecessary concurrent access to the database!
-        for (RequestInfo ri : requests) {
-            LOGGER.debug("Storage request granted with id \"{}\"", ri.getGroupId());
-        }
-    }
-
     @Override
     public void handleRemoteRequestDenied(Set<RequestInfo> requests) {
         for (RequestInfo ri : requests) {
@@ -260,19 +253,11 @@ public class IngestRequestService implements IIngestRequestService {
                         // Keep track of the error
                         saveAndPublishErrorRequest(request, String.format("Remote file storage request denied"));
                         break;
-                    case REMOTE_AIP_STORAGE_REQUESTED:
-                        // Save the request was denied at AIP itself storage
-                        request.setStep(IngestRequestStep.REMOTE_AIP_STORAGE_DENIED);
-                        // Keep track of the error
-                        saveAndPublishErrorRequest(request, String.format("Remote AIP storage request denied"));
-                        break;
                     default:
                         // Keep track of the error
                         saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
                         break;
                 }
-            } else {
-                LOGGER.debug("Storage request received but not matching any request \"{}\"", ri.getGroupId());
             }
         }
     }
@@ -280,59 +265,26 @@ public class IngestRequestService implements IIngestRequestService {
     @Override
     public void handleRemoteStoreSuccess(Set<RequestInfo> requests) {
         for (RequestInfo ri : requests) {
-            // Retrieve request and related entities SIP & AIPs
             Optional<IngestRequest> requestOp = ingestRequestRepository.findOneWithAIPs(ri.getGroupId());
             if (requestOp.isPresent()) {
                 IngestRequest request = requestOp.get();
-                switch (request.getStep()) {
-                    case REMOTE_STORAGE_REQUESTED:
-                        // Update AIPs with meta returned by storage
-                        aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(),
-                                                                             ri.getSuccessRequests());
-                        // Check if there is another storage request we're waiting for
-                        List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, ri);
-                        if (!remoteStepGroupIds.isEmpty()) {
-                            saveRequest(request);
-                            // Another request is still pending
-                            return;
-                        }
-                        // Request for FILEs storage successfully completed, now requests AIPs storage
-                        storeAips(request);
-                        break;
-                    case REMOTE_AIP_STORAGE_REQUESTED:
-                        // Request for AIPs storage successfully completed, now finalize successful request
-                        finalizeSuccessfulRequest(request);
-                        break;
-                    default:
-                        // Keep track of the error
-                        saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
-                        break;
+                if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
+                    // Update AIPs with meta returned by storage
+                    aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), ri.getSuccessRequests());
+                    // Check if there is another storage request we're waiting for
+                    List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, ri);
+                    if (!remoteStepGroupIds.isEmpty()) {
+                        saveRequest(request);
+                        // Another request is still pending
+                        return;
+                    }
+                    // The current request is over
+                    finalizeSuccessfulRequest(request);
+                } else {
+                    // Keep track of the error
+                    saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
                 }
             }
-        }
-    }
-
-    private void storeAips(IngestRequest request) {
-        // Launch next remote step
-        request.setStep(IngestRequestStep.REMOTE_AIP_STORAGE_REQUESTED, confProperties.getRemoteRequestTimeout());
-
-        try {
-            List<AIPEntity> aips = request.getAips();
-            for (AIPEntity aipEntity : aips) {
-                // Save the checksum of the AIP
-                aipService.computeAndSaveChecksum(aipEntity);
-            }
-            String requestId = aipStorageService.storeAIPs(aips);
-
-            // TODO remove old AIP
-            // Register request info to identify storage callback events
-            request.setRemoteStepGroupIds(Lists.newArrayList(requestId));
-
-            // Keep track of the request
-            saveRequest(request);
-        } catch (ModuleException e) {
-            // Keep track of the error
-            saveAndPublishErrorRequest(request, "Cannot send AIP storage request");
         }
     }
 
@@ -345,17 +297,20 @@ public class IngestRequestService implements IIngestRequestService {
 
     private void finalizeSuccessfulRequest(IngestRequest request) {
         request.setState(RequestState.SUCCESS);
-
         // Clean
-
         deleteRequest(request);
-        // Change AIP state
+
         List<AIPEntity> aips = request.getAips();
+
+        // Change AIP state
         for (AIPEntity aipEntity : aips) {
             aipEntity.setState(AIPState.STORED);
             aipService.save(aipEntity);
         }
         sessionNotifier.notifyAIPsStored(aips);
+
+        // Schedule manifest archivage
+        aipSaveMetaDataService.scheduleSaveMetaData(aips, false, true);
 
         // Update SIP state
         SIPEntity sipEntity = aips.get(0).getSip();
@@ -380,29 +335,18 @@ public class IngestRequestService implements IIngestRequestService {
                 // Propagate errors
                 ri.getErrorRequests().forEach(e -> request.addError(e.getErrorCause()));
 
-                switch (request.getStep()) {
-                    case REMOTE_STORAGE_REQUESTED:
-                        // Update AIP and SIP with current error
-                        updateOAISEntitiesWithErrors(request, ri.getErrorRequests(),
-                                                     "Error occurred while storing AIP files");
-                        // Update AIPs with success response returned by storage
-                        aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(),
-                                                                             ri.getSuccessRequests());
-                        // Save error in request status
-                        request.setStep(IngestRequestStep.REMOTE_STORAGE_ERROR);
-                        // Keep track of the error
-                        saveAndPublishErrorRequest(request, String.format("Remote file storage request error"));
-                        break;
-                    case REMOTE_AIP_STORAGE_REQUESTED:
-                        // Save error in request status
-                        request.setStep(IngestRequestStep.REMOTE_AIP_STORAGE_ERROR);
-                        // Keep track of the error
-                        saveAndPublishErrorRequest(request, String.format("Remote AIP storage request error"));
-                        break;
-                    default:
-                        // Keep track of the error
-                        saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
-                        break;
+                if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
+                    // Update AIP and SIP with current error
+                    updateOAISEntitiesWithErrors(request, ri.getErrorRequests(), "Error occurred while storing AIP files");
+                    // Update AIPs with success response returned by storage
+                    aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), ri.getSuccessRequests());
+                    // Save error in request status
+                    request.setStep(IngestRequestStep.REMOTE_STORAGE_ERROR);
+                    // Keep track of the error
+                    saveAndPublishErrorRequest(request, String.format("Remote file storage request error"));
+                } else {
+                    // Keep track of the error
+                    saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
                 }
             }
         }
@@ -415,19 +359,15 @@ public class IngestRequestService implements IIngestRequestService {
             Optional<IngestRequest> requestOp = ingestRequestRepository.findOneWithAIPs(ri.getGroupId());
             if (requestOp.isPresent()) {
                 IngestRequest request = requestOp.get();
-                switch (request.getStep()) {
-                    case REMOTE_STORAGE_REQUESTED:
-                        // Check if there is another storage request we're waiting for
-                        List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, ri);
-                        if (!remoteStepGroupIds.isEmpty()) {
-                            saveRequest(request);
-                            // Another request is still pending
-                            return;
-                        }
-                        // Request for FILEs storage successfully completed, now requests AIPs storage
-                        storeAips(request);
-                    default:
-                        // do nothing
+                if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
+                    List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, ri);
+                    if (!remoteStepGroupIds.isEmpty()) {
+                        saveRequest(request);
+                        // Another request is still pending
+                        return;
+                    }
+                    // The current request is over
+                    finalizeSuccessfulRequest(request);
                 }
             }
         }
@@ -446,7 +386,7 @@ public class IngestRequestService implements IIngestRequestService {
                     ri.getErrorRequests().forEach(e -> request.addError(e.getErrorCause()));
                 }
                 updateOAISEntitiesWithErrors(request, ri.getErrorRequests(),
-                                             "Error occurred while storing AIP references");
+                        "Error occurred while storing AIP references");
             }
         }
     }

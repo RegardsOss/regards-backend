@@ -21,29 +21,32 @@ package fr.cnes.regards.modules.ingest.dao;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
-import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import java.util.Set;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
- * JPA {@link Specification} to define {@link Predicate}s for criteria search for {@link IngestRequest} from repository.
  * @author Léo Mieulet
  */
-public final class IngestRequestSpecifications {
+public final class AbstractRequestSpecifications {
 
-    private IngestRequestSpecifications() {
+    private AbstractRequestSpecifications() {
         throw new IllegalStateException("Utility class");
     }
 
-    public static Specification<IngestRequest> searchByRemoteStepId(String remoteStepGroupId) {
+    public static Specification<AbstractRequest> searchAllByRemoteStepGroupId(String groupId) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            Path<Object> attributeRequeted = root.get("remoteStepGroupIds");
-            predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingElements(attributeRequeted,
-                    Lists.newArrayList(remoteStepGroupId), cb));
+
+            if (groupId != null) {
+                Path<Object> attributeRequested = root.get("remoteStepGroupIds");
+                predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingElements(attributeRequested, Lists.newArrayList(groupId), cb));
+            }
+
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
+
 }

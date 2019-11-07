@@ -42,7 +42,7 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.step.GenerationStep;
