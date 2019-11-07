@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -44,7 +45,7 @@ import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOp
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
 
 @Service
-@Transactional
+@MultitenantTransactional
 public class SessionService implements ISessionService {
 
     /**
@@ -117,6 +118,13 @@ public class SessionService implements ISessionService {
             LOG.info("Mark session {} {} as deleted", s.getSource(), s.getName());
             s.setState(SessionState.DELETED);
             updateSession(s);
+        }
+    }
+
+    @Override
+    public void updateSessionProperties(List<SessionMonitoringEvent> events) {
+        for (SessionMonitoringEvent event : events) {
+            this.updateSessionProperty(event);
         }
     }
 

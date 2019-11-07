@@ -18,18 +18,19 @@
  */
 package fr.cnes.regards.modules.sessionmanager.service;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.sessionmanager.domain.Session;
 import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
-import java.time.OffsetDateTime;
-import java.util.List;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 public interface ISessionService {
-
 
     /**
      * Retrieve the list of sessions
@@ -41,7 +42,8 @@ public interface ISessionService {
      * @param state           Return only session matching this state
      * @return A {@link List} of {@link Session}
      */
-    Page<Session> retrieveSessions(String source, String name, OffsetDateTime from, OffsetDateTime to, SessionState state, boolean onlyLastSession, Pageable page);
+    Page<Session> retrieveSessions(String source, String name, OffsetDateTime from, OffsetDateTime to,
+            SessionState state, boolean onlyLastSession, Pageable page);
 
     /**
      * Retrive the list of session names
@@ -66,7 +68,6 @@ public interface ISessionService {
      */
     Session updateSessionState(Long id, SessionState state) throws ModuleException;
 
-
     /**
      * Delete a session
      * @param id    The session <code>id</code>
@@ -82,5 +83,10 @@ public interface ISessionService {
      */
     Session updateSessionProperty(SessionMonitoringEvent sessionMonitoringEvent);
 
+    /**
+     * Update session properties
+     * @param sessionMonitoringEvents The notifications with everything to update the sessions
+     */
+    void updateSessionProperties(List<SessionMonitoringEvent> list);
 
 }
