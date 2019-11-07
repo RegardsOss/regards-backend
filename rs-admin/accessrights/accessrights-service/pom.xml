@@ -73,12 +73,6 @@
 			<groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
 			<artifactId>accessrights-instance-client</artifactId>
 		</dependency>
-
-		<!-- Thanks for using https://jar-download.com -->
-		<dependency>
-			<groupId>org.springframework.amqp</groupId>
-			<artifactId>spring-rabbit</artifactId>
-		</dependency>
 		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
