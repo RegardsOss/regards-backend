@@ -86,11 +86,18 @@ public class SessionNotifier {
 
     public static final String PROPERTY_INGESTED = "ingested";
 
+    public static final String PROPERTY_FILES_ACQUIRED = "files_acquired";
+
     @Autowired
     private IPublisher publisher;
 
     public void notifyProductDeleted(String sessionOwner, Product product) {
         notifyDecrementSession(sessionOwner, product.getSession(), product.getState());
+    }
+
+    public void notifyFileAcquired(String session, String sessionOwner, long nbFilesAcquired) {
+        notifyIncrementSession(sessionOwner, session, PROPERTY_FILES_ACQUIRED, SessionNotificationState.OK,
+                               nbFilesAcquired);
     }
 
     public void notifyProductStateChange(SessionChangingStateProbe probe) {

@@ -18,7 +18,30 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -48,26 +71,6 @@ import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link Product} workflow
@@ -111,7 +114,7 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         acqFileRepository.deleteAll();
         fileInfoRepository.deleteAll();
         acquisitionProcessingChainRepository.deleteAll();
-        for(PluginConfiguration pc: pluginService.getAllPluginConfigurations()) {
+        for (PluginConfiguration pc : pluginService.getAllPluginConfigurations()) {
             pluginService.deletePluginConfiguration(pc.getBusinessId());
         }
     }
@@ -139,8 +142,9 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
-                PluginParameterTransformer.toJson(Arrays.asList(dataPath.toString()))));
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
+                                        PluginParameterTransformer.toJson(Arrays.asList(dataPath.toString()))));
 
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
@@ -156,9 +160,11 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         fileInfo.setMimeType(MediaType.IMAGE_PNG);
         fileInfo.setDataType(DataType.QUICKLOOK_SD);
 
-        parameters = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
-                PluginParameterTransformer.toJson(Arrays.asList(browsePath.toString()))),
-                IPluginParam.build(GlobDiskScanning.FIELD_GLOB, "*B.png"));
+        parameters = IPluginParam.set(
+                                      IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
+                                                         PluginParameterTransformer
+                                                                 .toJson(Arrays.asList(browsePath.toString()))),
+                                      IPluginParam.build(GlobDiskScanning.FIELD_GLOB, "*B.png"));
 
         scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
@@ -174,9 +180,11 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         fileInfo.setMimeType(MediaType.IMAGE_PNG);
         fileInfo.setDataType(DataType.QUICKLOOK_MD);
 
-        parameters = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
-                PluginParameterTransformer.toJson(Arrays.asList(browsePath.toString()))),
-                IPluginParam.build(GlobDiskScanning.FIELD_GLOB, "*C.png"));
+        parameters = IPluginParam.set(
+                                      IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
+                                                         PluginParameterTransformer
+                                                                 .toJson(Arrays.asList(browsePath.toString()))),
+                                      IPluginParam.build(GlobDiskScanning.FIELD_GLOB, "*C.png"));
 
         scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
@@ -209,7 +217,6 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         // SIP post processing
         // Not required
 
-
         List<StorageMetadataProvider> storages = new ArrayList<>();
         storages.add(StorageMetadataProvider.build("AWS", "/path/to/file", new HashSet<>()));
         storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file", new HashSet<>()));
@@ -219,7 +226,7 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         JobInfo jobInfo = new JobInfo(true);
         jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY.getPriority());
         jobInfo.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()),
-                new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, "my funky session"));
+                              new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, "my funky session"));
         jobInfo.setClassName(ProductAcquisitionJob.class.getName());
         jobInfo.setOwner("user 1");
         jobInfoService.createAsQueued(jobInfo);
@@ -236,7 +243,7 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         AcquisitionProcessingChain processingChain = createProcessingChain();
         //AcquisitionProcessingChain processingChain = processingService.getFullChains().get(0);
 
-        processingService.scanAndRegisterFiles(processingChain);
+        processingService.scanAndRegisterFiles(processingChain, "session1");
 
         // Check registered files
         for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
