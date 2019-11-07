@@ -29,8 +29,8 @@ public final class OAISEntitySpecification {
 
         Set<Predicate> predicates = Sets.newHashSet();
         if (tags != null && !tags.isEmpty()) {
-            Path<Object> attributeRequeted = root.get("tags");
-            predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingElements(attributeRequeted, tags, cb));
+            Path<Object> attributeRequested = root.get("tags");
+            predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingElements(attributeRequested, tags, cb));
         }
         if (sessionOwner != null) {
             predicates.add(cb.equal(root.get(INGEST_METADATA).get("sessionOwner"), sessionOwner));

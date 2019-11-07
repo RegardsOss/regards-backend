@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.update;
 
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import java.util.ArrayList;
 import java.util.List;

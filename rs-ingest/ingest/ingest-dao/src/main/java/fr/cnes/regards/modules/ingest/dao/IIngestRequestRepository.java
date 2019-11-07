@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import java.util.Collection;
 import java.util.List;
@@ -49,9 +49,9 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      * @param pageable page info
      */
     // FIXME remove if not used after PM implementation
-    @Deprecated
-    Page<IngestRequest> findPageByMetadataIngestChainAndState(String ingestChain, RequestState state,
-            Pageable pageable);
+//    @Deprecated
+//    Page<IngestRequest> findPageByMetadataIngestChainAndState(String ingestChain, RequestState state,
+//            Pageable pageable);
 
     /**
      * Update state for a collection of requests
@@ -59,15 +59,15 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      * @param ids request identifiers
      */
     // FIXME remove if not used after PM implementation
-    @Deprecated
-    @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("UPDATE IngestRequest r set r.state = :state where r.id in (:ids)")
-    void updateIngestRequestState(@Param("state") RequestState state, @Param("ids") Collection<Long> ids);
+//    @Deprecated
+//    @Modifying(flushAutomatically = true, clearAutomatically = true)
+//    @Query("UPDATE IngestRequest r set r.state = :state where r.id in (:ids)")
+//    void updateIngestRequestState(@Param("state") RequestState state, @Param("ids") Collection<Long> ids);
 
     /**
      * Return true if an entity exists with provided criteria
      */
-    boolean existsByMetadataSessionOwnerAndMetadataSessionAndStepIn(String sessionOwner, String session, List<IngestRequestStep> steps);
+//    boolean existsByMetadataSessionOwnerAndMetadataSessionAndStepIn(String sessionOwner, String session, List<IngestRequestStep> steps);
 
     /**
      * Get request by ids

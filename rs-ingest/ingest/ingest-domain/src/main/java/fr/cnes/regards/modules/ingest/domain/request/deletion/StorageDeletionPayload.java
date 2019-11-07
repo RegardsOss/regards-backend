@@ -16,35 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.request;
-
+package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.MappedSuperclass;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 /**
- * Common request properties
- * All requests extending this object are not published outside of this microservice
  * @author Léo Mieulet
  */
-@MappedSuperclass
-public abstract class AbstractInternalRequest extends AbstractRequest {
+public class StorageDeletionPayload {
 
-    @NotNull(message = "Request state is required")
-    @Enumerated(EnumType.STRING)
-    @Column(name = "state", length = 50)
-    private InternalRequestStep state;
+    @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_MODE)
+    private SessionDeletionMode deletionMode;
 
-    public InternalRequestStep getState() {
-        return state;
+    public SessionDeletionMode getDeletionMode() {
+        return deletionMode;
     }
 
-    public void setState(InternalRequestStep state) {
-        this.state = state;
+    public void setDeletionMode(SessionDeletionMode deletionMode) {
+        this.deletionMode = deletionMode;
+    }
+
+    public static StorageDeletionPayload build(SessionDeletionMode deletionMode) {
+        StorageDeletionPayload sdp = new StorageDeletionPayload();
+        sdp.setDeletionMode(deletionMode);
+        return sdp;
     }
 }

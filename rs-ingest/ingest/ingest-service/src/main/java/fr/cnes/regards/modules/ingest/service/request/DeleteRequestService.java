@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import com.netflix.discovery.converters.Auto;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,8 +33,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.StorageDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.StorageDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
@@ -42,6 +44,16 @@ import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.checkerframework.checker.units.qual.A;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Delete request service
@@ -53,6 +65,9 @@ import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfo
 public class DeleteRequestService implements IDeleteRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeleteRequestService.class);
+
+    @Autowired
+    private IAbstractRequestService abstractRequestService;
 
     @Autowired
     private IStorageDeletionRequestRepository storageDeletionRequestRepo;
@@ -67,14 +82,14 @@ public class DeleteRequestService implements IDeleteRequestService {
     private SessionNotifier sessionNotifier;
 
     @Override
-    public void handleRemoteDeleteError(Set<RequestInfo> requests) {
-        for (RequestInfo ri : requests) {
-            Optional<StorageDeletionRequest> storageRequestOptional = storageDeletionRequestRepo
-                    .findOneByRemoteStepGroupId(ri.getGroupId());
-            if (storageRequestOptional.isPresent()) {
-                StorageDeletionRequest deletionRequest = storageRequestOptional.get();
+    public void handleRemoteDeleteError(Set<RequestInfo> requestInfos) {
+        for (RequestInfo ri : requestInfos) {
+            List<AbstractRequest> requests = abstractRequestService.findRequests(ri.getGroupId());
+            for (AbstractRequest request : requests) {
+                StorageDeletionRequest deletionRequest = (StorageDeletionRequest) request;
                 deletionRequest.setState(InternalRequestStep.ERROR);
-                Set<String> errorList = ri.getErrorRequests().stream().map(RequestResultInfoDTO::getErrorCause)
+                Set<String> errorList = ri.getErrorRequests().stream()
+                        .map(RequestResultInfoDTO::getErrorCause)
                         .collect(Collectors.toSet());
                 deletionRequest.setErrors(errorList);
 
@@ -98,7 +113,7 @@ public class DeleteRequestService implements IDeleteRequestService {
                     sessionNotifier.notifyAIPDeletionFailed(aipEntities);
                 } catch (EntityNotFoundException e) {
                     LOGGER.debug("Can't mark SIPEntity with sidId[{}] with error: {}", deletionRequest.getSipId(),
-                                 e.getMessage());
+                            e.getMessage());
                 }
                 storageDeletionRequestRepo.save(deletionRequest);
             }
@@ -106,12 +121,11 @@ public class DeleteRequestService implements IDeleteRequestService {
     }
 
     @Override
-    public void handleRemoteDeleteSuccess(Set<RequestInfo> requests) {
-        for (RequestInfo ri : requests) {
-            Optional<StorageDeletionRequest> storageRequestOptional = storageDeletionRequestRepo
-                    .findOneByRemoteStepGroupId(ri.getGroupId());
-            if (storageRequestOptional.isPresent()) {
-                StorageDeletionRequest deletionRequest = storageRequestOptional.get();
+    public void handleRemoteDeleteSuccess(Set<RequestInfo> requestInfos) {
+        for (RequestInfo ri : requestInfos) {
+            List<AbstractRequest> requests = abstractRequestService.findRequests(ri.getGroupId());
+            for (AbstractRequest request : requests) {
+                StorageDeletionRequest deletionRequest = (StorageDeletionRequest) request;
                 boolean deleteIrrevocably = deletionRequest.getDeletionMode() == SessionDeletionMode.IRREVOCABLY;
                 aipService.processDeletion(deletionRequest.getSipId(), deleteIrrevocably);
                 sipService.processDeletion(deletionRequest.getSipId(), deleteIrrevocably);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,25 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.util.Set;
-
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import java.util.List;
 
 /**
- * Delete file request service
- *
  * @author Léo Mieulet
- *
  */
-public interface IDeleteRequestService {
-
+public interface IAbstractRequestService {
     /**
-     * Handle file deletion error
+     * @param groupId
+     * @return the list of AbstractRequest linked to the event group id
      */
-    void handleRemoteDeleteError(Set<RequestInfo> requestInfos);
-
-    /**
-     * Handle file deletion success
-     */
-    void handleRemoteDeleteSuccess(Set<RequestInfo> requestInfos);
+    List<AbstractRequest> findRequests(String groupId);
 }

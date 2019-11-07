@@ -28,8 +28,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
-import fr.cnes.regards.modules.ingest.domain.request.AIPUpdateRequest;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
@@ -39,6 +40,7 @@ import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPSimpleProperty;
 import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPStorage;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -55,7 +57,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
     private ListMultimap<String, AIPUpdateRequest> requestByAIP;
 
     @Autowired
-    private IAIPService aipRepository;
+    private IAIPService aipService;
 
     @Autowired
     private IStorageClient storageClient;
@@ -94,6 +96,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        List<AIPEntity> updates = new ArrayList<>();
         for (String aipId : requestByAIP.keySet()) {
             // Get the ordered list of task to execute on this AIP
             List<AIPUpdateRequest> updateRequests = getOrderedTaskList(aipId);
@@ -101,8 +104,9 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
             AIPEntityUpdateWrapper aipWrapper = runUpdates(updateRequests);
             // Did something change in the AIP?
             if (!aipWrapper.isPristine()) {
-                // Save the AIP
-                aipRepository.save(aipWrapper.getAip());
+                // Save the AIP threw the service
+                // TODO maybe collect aips and save once at the end
+                updates.add(aipWrapper.getAip());
                 // Wrapper also collect events
                 if (aipWrapper.hasDeletionRequests()) {
                     // Request files deletion
@@ -114,10 +118,19 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
             advanceCompletion();
         }
         // Keep only ERROR requests
-        List<AIPUpdateRequest> requests = requestByAIP.values().stream()
+        List<AIPUpdateRequest> succeedRequestsToDelete = requestByAIP.values().stream()
                 .filter(request -> request.getState() != InternalRequestStep.ERROR)
                 .collect(Collectors.toList());
-        aipUpdateRequestRepository.deleteAll(requests);
+        aipUpdateRequestRepository.deleteAll(succeedRequestsToDelete);
+
+        // Save ERROR requests
+        List<AIPUpdateRequest> errorRequests = requestByAIP.values().stream()
+                .filter(request -> request.getState() == InternalRequestStep.ERROR)
+                .collect(Collectors.toList());
+        aipUpdateRequestRepository.saveAll(errorRequests);
+
+        // Save AIPs
+        aipService.saveAll(updates);
     }
 
     private AIPEntityUpdateWrapper runUpdates(List<AIPUpdateRequest> updateRequests) {

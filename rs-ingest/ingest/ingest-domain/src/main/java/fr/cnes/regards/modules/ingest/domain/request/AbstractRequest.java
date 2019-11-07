@@ -18,40 +18,119 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
 /**
- * Common request properties
+ * Basic request properties
  *
  * @author Marc SORDI
- *
+ * @author Léo Mieulet
  */
-@MappedSuperclass
+@Entity
+@Table(name = "t_request",
+    indexes = {
+        @Index(name = "idx_request_search", columnList = "session_owner,session_name,provider_id"),
+        @Index(name = "idx_request_remote_step_group_ids", columnList = "remote_step_group_ids")
+})
+@DiscriminatorColumn(name = "dtype", length = 32)
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public abstract class AbstractRequest {
+
+    @Id
+    @SequenceGenerator(name = "requestSequence", initialValue = 1, sequenceName = "seq_request")
+    @GeneratedValue(generator = "requestSequence", strategy = GenerationType.SEQUENCE)
+    private Long id;
 
     @Column(columnDefinition = "jsonb", name = "errors")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> errors;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "job_info_id", foreignKey = @ForeignKey(name = "fk_req_job_info_id"))
     private JobInfo jobInfo;
 
     @NotNull(message = "Creation date is required")
     @Column(name = "creation_date", nullable = false)
     private OffsetDateTime creationDate;
+
+    /**
+     * Remote request group id
+     */
+    @Column(columnDefinition = "jsonb", name = "remote_step_group_ids")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    private List<String> remoteStepGroupIds;
+
+    /**
+     * Remote step dead line <br/>
+     * A daemon controls this and passes this request in {@link RequestState#ERROR} if deadline is outdated!
+     */
+    @Column(name = "remote_step_deadline")
+    private OffsetDateTime remoteStepDeadline;
+
+
+    @Column(length = 128, name = "session_owner")
+    private String sessionOwner;
+
+    @Column(length = 128, name = "session_name")
+    private String session;
+
+    @Column(length = 128, name = "provider_id")
+    private String providerId;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public List<String> getRemoteStepGroupIds() {
+        return remoteStepGroupIds;
+    }
+
+    public void setRemoteStepGroupIds(List<String> remoteStepGroupIds) {
+        this.remoteStepGroupIds = remoteStepGroupIds;
+    }
+
+    public OffsetDateTime getRemoteStepDeadline() {
+        return remoteStepDeadline;
+    }
+
+    public void setRemoteStepDeadline(OffsetDateTime remoteStepDeadline) {
+        this.remoteStepDeadline = remoteStepDeadline;
+    }
 
     public Set<String> getErrors() {
         return errors;
@@ -81,5 +160,29 @@ public abstract class AbstractRequest {
 
     public void setCreationDate(OffsetDateTime creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public String getSessionOwner() {
+        return sessionOwner;
+    }
+
+    public void setSessionOwner(String sessionOwner) {
+        this.sessionOwner = sessionOwner;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 }

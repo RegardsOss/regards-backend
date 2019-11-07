@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.test;
 
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
+import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +65,9 @@ public class IngestServiceTest {
     protected IAIPRepository aipRepository;
 
     @Autowired
+    protected IAbstractRequestRepository requestRepository;
+
+    @Autowired
     private IJobInfoRepository jobInfoRepo;
 
     @Autowired
@@ -73,6 +78,9 @@ public class IngestServiceTest {
 
     @Autowired
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
+
+    @Autowired
+    private IAbstractRequestRepository abstractRequestRepository;
 
     @Autowired
     private IPublisher publisher;
@@ -96,6 +104,7 @@ public class IngestServiceTest {
     public void init() throws Exception {
         ingestRequestRepository.deleteAll();
         aipUpdateRequestRepository.deleteAll();
+        requestRepository.deleteAll();;
         aipRepository.deleteAll();
         sipRepository.deleteAll();
         storageDeletionRequestRepository.deleteAll();
@@ -157,6 +166,32 @@ public class IngestServiceTest {
             }
             LOGGER.debug("{} SIP(s) created in database", sipCount);
             if (sipCount == expectedSips) {
+                break;
+            }
+            long now = System.currentTimeMillis();
+            if (end > now) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Assert.fail("Thread interrupted");
+                }
+            } else {
+                Assert.fail("Timeout");
+            }
+        } while (true);
+    }
+
+    /**
+     * Helper method that waits all requests have been processed
+     * @param timeout
+     */
+    public void waitAllRequestsFinished(long timeout) {
+        long end = System.currentTimeMillis() + timeout;
+        // Wait
+        do {
+            long count = abstractRequestRepository.count();
+            LOGGER.debug("{} Current request running", count);
+            if (count == 0) {
                 break;
             }
             long now = System.currentTimeMillis();

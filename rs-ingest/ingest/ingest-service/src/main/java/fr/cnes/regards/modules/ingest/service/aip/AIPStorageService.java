@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetaDataRequest;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceMetaInfoDTO;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -180,20 +183,21 @@ public class AIPStorageService implements IAIPStorageService {
                 // Iterate over request results
                 for (RequestResultInfoDTO storeRequestInfo : storeRequestInfosForCurrentAIP) {
                     FileReferenceDTO resultFile = storeRequestInfo.getResultFile();
+                    FileReferenceMetaInfoDTO metaInfo = resultFile.getMetaInfo();
                     // Update AIP data object metas
-                    dataObject.setFileSize(resultFile.getMetaInfo().getFileSize());
+                    dataObject.setFileSize(metaInfo.getFileSize());
                     // It's safe to patch the checksum here
-                    dataObject.setChecksum(resultFile.getMetaInfo().getChecksum());
+                    dataObject.setChecksum(metaInfo.getChecksum());
                     // Update representational info
-                    if (resultFile.getMetaInfo().getHeight() != null) {
+                    if (metaInfo.getHeight() != null) {
                         ci.getRepresentationInformation().getSyntax()
-                                .setHeight(new Double(resultFile.getMetaInfo().getHeight()));
+                                .setHeight(new Double(metaInfo.getHeight()));
                     }
-                    if (resultFile.getMetaInfo().getWidth() != null) {
+                    if (metaInfo.getWidth() != null) {
                         ci.getRepresentationInformation().getSyntax()
-                                .setWidth(new Double(resultFile.getMetaInfo().getWidth()));
+                                .setWidth(new Double(metaInfo.getWidth()));
                     }
-                    ci.getRepresentationInformation().getSyntax().setMimeType(resultFile.getMetaInfo().getMimeType());
+                    ci.getRepresentationInformation().getSyntax().setMimeType(metaInfo.getMimeType());
                     // Exclude from the location list any null storage
                     Set<OAISDataObjectLocation> newLocations = dataObject.getLocations().stream()
                             .filter(l -> l.getStorage() != null).collect(Collectors.toSet());
@@ -355,15 +359,15 @@ public class AIPStorageService implements IAIPStorageService {
             files.addAll(requests);
         }
 
-        // Request storage for all AIPs of the ingest request
+        // Make a request group for all these aips
         RequestInfo info = storageClient.store(files);
         return info.getGroupId();
     }
 
     /**
      * Generate a public download URL for the file associated to the given Checksum
-     * @param checksum
-     * @return
+     * @param aipId aip id
+     * @return a public URL to retrieve the AIP manifest
      * @throws ModuleException if the Eureka server is not reachable
      */
     public URL generateDownloadUrl(UniformResourceName aipId) throws ModuleException {

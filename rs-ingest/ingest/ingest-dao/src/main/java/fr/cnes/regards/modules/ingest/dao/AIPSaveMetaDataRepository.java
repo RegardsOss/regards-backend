@@ -19,20 +19,23 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetaDataRequest;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
- * {@link OAISDeletionRequest} repository
- * @author Marc SORDI
+ * {@link AIPSaveMetaDataRequest} repository
+ * @author Léo Mieulet
  */
 @Repository
-public interface IOAISDeletionRequestRepository extends JpaRepository<OAISDeletionRequest, Long> {
+public interface AIPSaveMetaDataRepository extends JpaRepository<AIPSaveMetaDataRequest, Long> {
 
-    /**
-     * Retrieve the number of entity with the provided state
-     */
-    long countByState(InternalRequestStep state);
+    default Page<AIPSaveMetaDataRequest> findWaitingRequest(Pageable pageRequest) {
+        return findAllByState(InternalRequestStep.CREATED, pageRequest);
+    }
+
+    Page<AIPSaveMetaDataRequest> findAllByState(InternalRequestStep step, Pageable page);
 }

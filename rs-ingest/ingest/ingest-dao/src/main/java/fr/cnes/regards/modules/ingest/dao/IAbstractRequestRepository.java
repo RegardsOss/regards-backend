@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,21 +18,20 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
+import java.util.List;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 /**
- * {@link OAISDeletionRequest} repository
- * @author Marc SORDI
+ * @author Léo Mieulet
  */
-@Repository
-public interface IOAISDeletionRequestRepository extends JpaRepository<OAISDeletionRequest, Long> {
-
+public interface IAbstractRequestRepository extends JpaRepository<AbstractRequest, Long> {
     /**
-     * Retrieve the number of entity with the provided state
+     * Retrieve a page of {@link AbstractRequest} matching the provided specification
+     * @param aipEntitySpecification
+     * @return a page of {@link AbstractRequest}
      */
-    long countByState(InternalRequestStep state);
+    List<AbstractRequest> findAll(Specification<AbstractRequest> aipEntitySpecification);
 }
