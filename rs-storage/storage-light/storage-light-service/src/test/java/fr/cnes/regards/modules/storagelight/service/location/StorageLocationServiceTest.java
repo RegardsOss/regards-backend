@@ -111,7 +111,7 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         Assert.assertTrue("There should be file referenced for STAF storage",
                           storageLocationService.search(storage).isPresent());
         Assert.assertEquals("Total size on STAF storage is invalid", totalSize.longValue(),
-                            storageLocationService.search(storage).get().getTotalSizeOfReferencedFiles().longValue());
+                            storageLocationService.search(storage).get().getTotalSizeOfReferencedFilesInKo().longValue());
         Assert.assertEquals("Total number of files on STAF storage is invalid", 4L,
                             storageLocationService.search(storage).get().getNumberOfReferencedFiles().longValue());
         createFileReference(storage, 3L);
@@ -120,7 +120,7 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         Assert.assertTrue("There should be file referenced for STAF storage",
                           storageLocationService.search(storage).isPresent());
         Assert.assertEquals("Total size on STAF storage is invalid", totalSize.longValue(),
-                            storageLocationService.search(storage).get().getTotalSizeOfReferencedFiles().longValue());
+                            storageLocationService.search(storage).get().getTotalSizeOfReferencedFilesInKo().longValue());
         Assert.assertEquals("Total number of files on STAF storage invalid", 5L,
                             storageLocationService.search(storage).get().getNumberOfReferencedFiles().longValue());
     }

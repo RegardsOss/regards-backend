@@ -57,7 +57,7 @@ public class StorageLocation {
     @Column(name = "nb_ref_files")
     private Long numberOfReferencedFiles = 0L;
 
-    @Column(name = "total_size")
+    @Column(name = "total_size_ko")
     private Long totalSizeOfReferencedFiles = 0L;
 
     @Column(name = "last_update_date")
@@ -89,7 +89,7 @@ public class StorageLocation {
         return numberOfReferencedFiles;
     }
 
-    public Long getTotalSizeOfReferencedFiles() {
+    public Long getTotalSizeOfReferencedFilesInKo() {
         return totalSizeOfReferencedFiles;
     }
 
@@ -101,7 +101,7 @@ public class StorageLocation {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public void setTotalSizeOfReferencedFiles(Long totalSizeOfReferencedFiles) {
+    public void setTotalSizeOfReferencedFilesInKo(Long totalSizeOfReferencedFiles) {
         this.totalSizeOfReferencedFiles = totalSizeOfReferencedFiles;
     }
 

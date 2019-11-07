@@ -139,9 +139,9 @@ public class StorageLocationService {
         if (oConf.isPresent() && oLoc.isPresent()) {
             StorageLocationConfiguration conf = oConf.get();
             StorageLocation loc = oLoc.get();
-            return StorageLocationDTO
-                    .build(conf.getPluginConfiguration().getBusinessId(), loc.getNumberOfReferencedFiles(),
-                           loc.getTotalSizeOfReferencedFiles() / 1024, nbStorageError, nbDeletionError, conf);
+            return StorageLocationDTO.build(conf.getPluginConfiguration().getBusinessId(),
+                                            loc.getNumberOfReferencedFiles(), loc.getTotalSizeOfReferencedFilesInKo(),
+                                            nbStorageError, nbDeletionError, conf);
         } else if (oConf.isPresent()) {
             StorageLocationConfiguration conf = oConf.get();
             return StorageLocationDTO.build(conf.getPluginConfiguration().getBusinessId(), null, null, nbStorageError,
@@ -149,7 +149,7 @@ public class StorageLocationService {
         } else if (oLoc.isPresent()) {
             StorageLocation loc = oLoc.get();
             return StorageLocationDTO.build(storageId, loc.getNumberOfReferencedFiles(),
-                                            loc.getTotalSizeOfReferencedFiles() / 1024, 0L, 0L, null);
+                                            loc.getTotalSizeOfReferencedFilesInKo(), 0L, 0L, null);
         } else {
             throw new EntityNotFoundException(storageId, StorageLocation.class);
         }
@@ -173,8 +173,8 @@ public class StorageLocationService {
             StorageLocation monitored = monitoredLocations.get(conf.getName());
             if (monitored != null) {
                 locationsDto.add(StorageLocationDTO.build(conf.getName(), monitored.getNumberOfReferencedFiles(),
-                                                          monitored.getTotalSizeOfReferencedFiles() / 1024,
-                                                          nbStorageError, nbDeletionError, conf));
+                                                          monitored.getTotalSizeOfReferencedFilesInKo(), nbStorageError,
+                                                          nbDeletionError, conf));
                 monitoredLocations.remove(monitored.getName());
             } else {
                 locationsDto
@@ -187,7 +187,7 @@ public class StorageLocationService {
             Long nbDeletionError = 0L;
             locationsDto.add(StorageLocationDTO
                     .build(monitored.getName(), monitored.getNumberOfReferencedFiles(),
-                           monitored.getTotalSizeOfReferencedFiles() / 1024, nbStorageError, nbDeletionError,
+                           monitored.getTotalSizeOfReferencedFilesInKo(), nbStorageError, nbDeletionError,
                            new StorageLocationConfiguration(monitored.getName(), null, null)));
         }
         return locationsDto;
@@ -218,7 +218,7 @@ public class StorageLocationService {
             Optional<StorageLocation> oStorage = storageLocationRepo.findByName(agg.getStorage());
             StorageLocation storage = oStorage.orElse(new StorageLocation(agg.getStorage()));
             storage.setLastUpdateDate(monitoringDate);
-            storage.setTotalSizeOfReferencedFiles(storage.getTotalSizeOfReferencedFiles() + agg.getUsedSize());
+            storage.setTotalSizeOfReferencedFilesInKo(storage.getTotalSizeOfReferencedFilesInKo() + (agg.getUsedSize() / 1024));
             storage.setNumberOfReferencedFiles(storage.getNumberOfReferencedFiles() + agg.getNumberOfFileReference());
 
             if ((storageMonitoring.getLastFileReferenceIdMonitored() == null)
@@ -231,7 +231,7 @@ public class StorageLocationService {
             Optional<StorageLocationConfiguration> conf = pLocationConfService.search(agg.getStorage());
             if (conf.isPresent() && (conf.get().getAllocatedSizeInKo() != null)
                     && (conf.get().getAllocatedSizeInKo() > 0L)) {
-                Double ratio = (Double.valueOf(storage.getTotalSizeOfReferencedFiles())
+                Double ratio = (Double.valueOf(storage.getTotalSizeOfReferencedFilesInKo())
                         / (conf.get().getAllocatedSizeInKo() * 1024L)) * 100;
                 if (ratio >= criticalThreshold) {
                     String message = String
