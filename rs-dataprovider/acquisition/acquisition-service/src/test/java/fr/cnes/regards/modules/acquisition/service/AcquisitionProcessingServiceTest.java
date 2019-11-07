@@ -43,13 +43,13 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantService
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
@@ -81,10 +81,10 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
     private ProductService productService;
 
     @Autowired
-    private IAcquisitionProcessingChainRepository processingChainRepository;
+    private Validator validator;
 
     @Autowired
-    private Validator validator;
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Before
     public void initialize() throws ModuleException {
@@ -108,10 +108,11 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
         // Save processing chain
         processingService.createChain(create());
 
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Test loading chain by mode
-        List<AcquisitionProcessingChain> automaticChains = processingChainRepository.findAllBootableAutomaticChains();
+        List<AcquisitionProcessingChain> automaticChains = processingService.findAllBootableAutomaticChains();
         Assert.assertTrue(automaticChains.isEmpty());
-        List<AcquisitionProcessingChain> manualChains = processingChainRepository
+        List<AcquisitionProcessingChain> manualChains = processingService
                 .findByModeAndActiveTrueAndLockedFalse(AcquisitionProcessingChainMode.MANUAL);
         Assert.assertTrue(!manualChains.isEmpty() && (manualChains.size() == 1));
     }
