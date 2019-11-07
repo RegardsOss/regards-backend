@@ -18,12 +18,10 @@
  */
 package fr.cnes.regards.modules.sessionmanager.dao;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.modules.sessionmanager.domain.Session;
-import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,13 +30,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.modules.sessionmanager.domain.Session;
+import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
 
 /**
  * Testing Session DAO
  * @author Léo Mieulet
  */
-@TestPropertySource(
-        properties = {"spring.jpa.properties.hibernate.default_schema=session_dao"})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=session_dao" })
 public class SessionRepositoryIT extends AbstractMultitenantServiceTest {
 
     @Autowired
@@ -97,50 +97,55 @@ public class SessionRepositoryIT extends AbstractMultitenantServiceTest {
         sessionDelete.setState(SessionState.DELETED);
         sessionRepo.save(sessionDelete);
 
-
         // Test retrieving only session marked as error
-        Page<Session> sessionInError = sessionRepo.findAll(
-                SessionSpecifications.search(null, null, null, null, SessionState.ERROR, false),
-                PageRequest.of(0, 100)
-        );
+        Page<Session> sessionInError = sessionRepo
+                .findAll(SessionSpecifications.search(null, null, null, null, SessionState.ERROR, false),
+                         PageRequest.of(0, 100));
         Assert.assertEquals("Should return all sessions marked as error", 5, sessionInError.getTotalElements());
 
         // Test retrieving only session marked as error and latest
-        Page<Session> sessionInError2 = sessionRepo.findAll(
-                SessionSpecifications.search(null, null, null, null, SessionState.ERROR, true),
-                PageRequest.of(0, 100)
-        );
+        Page<Session> sessionInError2 = sessionRepo
+                .findAll(SessionSpecifications.search(null, null, null, null, SessionState.ERROR, true),
+                         PageRequest.of(0, 100));
         Assert.assertEquals("Should return all latest sessions marked as error", 3, sessionInError2.getTotalElements());
 
-
         // Test retrieving a different SessionState
-        Page<Session> sessionAcknowledged = sessionRepo.findAll(
-                SessionSpecifications.search(null, null, null, null, SessionState.ACKNOWLEDGED, false),
-                PageRequest.of(0, 100)
-        );
-        Assert.assertEquals("Should return the only session marked as acknowledged", 1, sessionAcknowledged.getTotalElements());
+        Page<Session> sessionAcknowledged = sessionRepo
+                .findAll(SessionSpecifications.search(null, null, null, null, SessionState.ACKNOWLEDGED, false),
+                         PageRequest.of(0, 100));
+        Assert.assertEquals("Should return the only session marked as acknowledged", 1,
+                            sessionAcknowledged.getTotalElements());
 
         // Test research by date
-        Page<Session> oldSessions = sessionRepo.findAll(
-                SessionSpecifications.search(null, null, OffsetDateTime.now().minusYears(10), OffsetDateTime.now().minusMonths(6), null, false),
-                PageRequest.of(0, 100)
-        );
+        Page<Session> oldSessions = sessionRepo
+                .findAll(SessionSpecifications.search(null, null, OffsetDateTime.now().minusYears(10),
+                                                      OffsetDateTime.now().minusMonths(6), null, false),
+                         PageRequest.of(0, 100));
         Assert.assertEquals("Should return all sessions with an old creation date", 3, oldSessions.getTotalElements());
-
 
         // Test research by source, containing the current year in the name and latest from their source
         Page<Session> sessionMatchingSourceAndName = sessionRepo.findAll(
-                SessionSpecifications.search("error", String.valueOf(OffsetDateTime.now().getYear()), null, null, null, true),
-                PageRequest.of(0, 100)
-        );
-        Assert.assertEquals("Should return all sessions matching the source and name", 3, sessionMatchingSourceAndName.getTotalElements());
+                                                                         SessionSpecifications
+                                                                                 .search("error",
+                                                                                         String.valueOf(OffsetDateTime
+                                                                                                 .now().getYear()),
+                                                                                         null, null, null, true),
+                                                                         PageRequest.of(0, 100));
+        Assert.assertEquals("Should return all sessions matching the source and name", 3,
+                            sessionMatchingSourceAndName.getTotalElements());
 
         // All in one
         Page<Session> researchAllInOne = sessionRepo.findAll(
-                SessionSpecifications.search("error", String.valueOf(OffsetDateTime.now().getYear()), OffsetDateTime.now().minusYears(10), OffsetDateTime.now().minusMonths(6), SessionState.ERROR, true),
-                PageRequest.of(0, 100)
-        );
-        Assert.assertEquals("Should return one session matching all criteria in the same time", 1, researchAllInOne.getTotalElements());
+                                                             SessionSpecifications
+                                                                     .search("error",
+                                                                             String.valueOf(OffsetDateTime.now()
+                                                                                     .getYear()),
+                                                                             OffsetDateTime.now().minusYears(10),
+                                                                             OffsetDateTime.now().minusMonths(6),
+                                                                             SessionState.ERROR, true),
+                                                             PageRequest.of(0, 100));
+        Assert.assertEquals("Should return one session matching all criteria in the same time", 1,
+                            researchAllInOne.getTotalElements());
     }
 
     @Test
@@ -162,7 +167,6 @@ public class SessionRepositoryIT extends AbstractMultitenantServiceTest {
         Assert.assertEquals("Should not retrieve any result", false, sessionQuery.isPresent());
     }
 
-
     @Test
     public void testSearchSessionByName() {
         String sessionName = "SESSION_1_2_3";
@@ -176,11 +180,9 @@ public class SessionRepositoryIT extends AbstractMultitenantServiceTest {
         List<String> query2 = sessionRepo.findAllSessionName("Sess");
         Assert.assertEquals("Should be case insensitive", 1, query2.size());
 
-
         List<String> queryEmpty = sessionRepo.findAllSessionName("");
         Assert.assertEquals("Should be case insensitive", 1, queryEmpty.size());
     }
-
 
     @Test
     public void testSearchSessionBySource() {
@@ -195,10 +197,25 @@ public class SessionRepositoryIT extends AbstractMultitenantServiceTest {
         List<String> query2 = sessionRepo.findAllSessionSource("SOUR");
         Assert.assertEquals("Should be case insensitive", 1, query2.size());
 
-
         List<String> queryEmpty = sessionRepo.findAllSessionSource("");
         Assert.assertEquals("Should be case insensitive", 1, queryEmpty.size());
     }
 
+    @Test
+    public void testSearchLatestSession() {
+        String sourceName = "Source 1 2 3";
+        String name = OffsetDateTime.now().toString();
+        Session session1 = new Session(sourceName, name);
+        sessionRepo.save(session1);
+
+        String name2 = OffsetDateTime.now().toString();
+        Session session2 = new Session(sourceName, name2);
+        session2.setLatest(false);
+        sessionRepo.save(session2);
+
+        List<Session> results = sessionRepo
+                .findAll(SessionSpecifications.search(sourceName, null, null, null, null, true));
+        Assert.assertEquals(1, results.size());
+    }
 
 }

@@ -200,9 +200,10 @@ public class SessionService implements ISessionService {
      */
     private Session createSession(String name, String source) {
 
+        // Does a session exists for the same source ?
+        Optional<Session> oldLatestSessionOpt = sessionRepository.findOneBySourceAndIsLatestTrue(source);
         Session newSession = sessionRepository.save(new Session(source, name));
         // Remove the flag isLatest to the previous one session sharing the same source
-        Optional<Session> oldLatestSessionOpt = sessionRepository.findOneBySourceAndIsLatestTrue(source);
         if (oldLatestSessionOpt.isPresent()) {
             Session oldLatestSession = oldLatestSessionOpt.get();
             oldLatestSession.setLatest(false);
