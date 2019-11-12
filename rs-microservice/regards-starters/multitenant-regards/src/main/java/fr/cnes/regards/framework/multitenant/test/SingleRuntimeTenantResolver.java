@@ -34,20 +34,28 @@ public class SingleRuntimeTenantResolver implements IRuntimeTenantResolver {
     private static final Logger LOGGER = LoggerFactory.getLogger(SingleRuntimeTenantResolver.class);
 
     // Thread safe tenant holder for forced tenant
-    private static final ThreadLocal<String> tenantHolder = new ThreadLocal<>();
+    private static final ThreadLocal<String> forcedTenantHolder = new ThreadLocal<>();
 
-    public SingleRuntimeTenantResolver(final String pTenant) {
-        tenantHolder.set(pTenant);
+    private static final ThreadLocal<String> currentTenantHolder = new ThreadLocal<>();
+
+    public SingleRuntimeTenantResolver(String tenant) {
+        currentTenantHolder.set(tenant);
     }
 
     @Override
     public String getTenant() {
-        return tenantHolder.get();
+        // Try to get tenant from tenant holder
+        String tenant = forcedTenantHolder.get();
+        if (tenant != null) {
+            return tenant;
+        }
+        // Try to get current tenant
+        return currentTenantHolder.get();
     }
 
     @Override
-    public void forceTenant(final String tenant) {
-        tenantHolder.set(tenant);
+    public void forceTenant(String tenant) {
+        forcedTenantHolder.set(tenant);
     }
 
     @Override
@@ -57,7 +65,7 @@ public class SingleRuntimeTenantResolver implements IRuntimeTenantResolver {
 
     @Override
     public void clearTenant() {
-        tenantHolder.remove();
+        forcedTenantHolder.remove();
     }
 
 }
