@@ -63,8 +63,10 @@ public class ExternalTarget<T> implements Target<T> {
             throw new RuntimeException("Could not instantiate external target as URL is invalid", e);
         }
         // 3 - Add any user header (override default ones if there are specified)
-        for (Entry<String, String> entry : headers.entrySet()) {
-            this.headers.put(entry.getKey(), Collections.singletonList(entry.getValue()));
+        if (headers != null) {
+            for (Entry<String, String> entry : headers.entrySet()) {
+                this.headers.put(entry.getKey(), Collections.singletonList(entry.getValue()));
+            }
         }
     }
 
