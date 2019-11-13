@@ -234,7 +234,7 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
                        FileReferenceDTO.build(OffsetDateTime.now(),
                                               FileReferenceMetaInfoDTO.build(fakeChecksum3, null, null, null, null,
                                                                              null, null, null),
-                                              FileLocationDTO.build(location, "http://someurl.com")),
+                                              FileLocationDTO.build(location, "http://someurl.com"), Sets.newHashSet()),
                        null));
     }
 }
