@@ -59,9 +59,6 @@ public interface IAIPUpdateRequestRepository extends JpaRepository<AIPUpdateRequ
     List<AIPUpdateRequest> findAllByAipIdInAndState(List<Long> aipIds, InternalRequestStep state);
     //   TODO List<AIPUpdateRequest> findDistinctByAipIdAndAipIdInAndState(List<Long> aipIds, InternalRequestStep state);
 
-    @Modifying
-    @Query("update AIPUpdateRequest aur set aur.state = :state where aur.id in (:ids)")
-    int updateStates(@Param("ids") List<Long> ids, @Param("state") InternalRequestStep state);
 
     // @Query(value = "UPDATE AIPUpdateRequest SET state = :state WHERE id IN (:ids)")
     // long updateStates(@Param("ids") List<Long> ids, @Param("state") String state);

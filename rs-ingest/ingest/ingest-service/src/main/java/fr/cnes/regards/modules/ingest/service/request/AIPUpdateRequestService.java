@@ -18,25 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
+import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
-import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 
 /**
  * Service to handle {@link AIPUpdateRequest} entities.
@@ -49,6 +47,9 @@ public class AIPUpdateRequestService {
 
     @Autowired
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
+
+    @Autowired
+    private IAbstractRequestRepository abstractRequestRepository;
 
     /**
      * Creates new {@link AIPUpdateRequest}s for the given {@link AIPEntity}s and each given {@link AbstractAIPUpdateTask}
@@ -121,7 +122,7 @@ public class AIPUpdateRequestService {
      */
     public void updateState(Collection<AIPUpdateRequest> requests, InternalRequestStep state) {
         if ((requests != null) && !requests.isEmpty()) {
-            aipUpdateRequestRepository.updateStates(Lists
+            abstractRequestRepository.updateStates(Lists
                     .newArrayList(requests.stream().map(AIPUpdateRequest::getId).collect(Collectors.toList())), state);
         }
     }
