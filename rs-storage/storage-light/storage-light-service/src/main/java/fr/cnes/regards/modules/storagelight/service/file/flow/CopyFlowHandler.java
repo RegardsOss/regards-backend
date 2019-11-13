@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.storagelight.service.file.flow;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +37,6 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storagelight.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.ReferenceFlowItem;
@@ -60,7 +58,7 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
     @Value("${regards.storage.copy.items.bulk.size:100}")
     private int BULK_SIZE;
 
-    private static final int MAX_REQUEST_PER_GROUP = 100;
+    public static final int MAX_REQUEST_PER_GROUP = 500;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -116,7 +114,7 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
 
     public void handleSync(TenantWrapper<CopyFlowItem> wrapper) {
         CopyFlowItem item = wrapper.getContent();
-        copy(item.getFiles(), item.getGroupId());
+        fileCopyReqService.copy(item.getFiles(), item.getGroupId());
         reqGroupService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size());
     }
 
@@ -148,7 +146,7 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
                     if (!list.isEmpty()) {
                         LOGGER.info("[COPY FLOW HANDLER] Bulk saving {} CopyFlowItem...", list.size());
                         long start = System.currentTimeMillis();
-                        copy(list);
+                        fileCopyReqService.copy(list);
                         LOGGER.info("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms", list.size(),
                                     System.currentTimeMillis() - start);
                         list.clear();
@@ -158,28 +156,6 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
                 runtimeTenantResolver.clearTenant();
             }
         }
-    }
-
-    /**
-     * Handle many {@link FileCopyRequestDTO} to copy files to a given storage location.
-     * @param files copy requests
-     * @param groupId business request identifier
-     */
-    private void copy(Collection<FileCopyRequestDTO> files, String groupId) {
-        files.forEach(f -> {
-            fileCopyReqService.handle(f, groupId);
-        });
-    }
-
-    /**
-     * Handle many {@link CopyFlowItem} to copy files to a given storage location.
-     * @param items copy flow items
-     */
-    private void copy(Collection<CopyFlowItem> items) {
-        items.forEach(i -> {
-            copy(i.getFiles(), i.getGroupId());
-            reqGroupService.granted(i.getGroupId(), FileRequestType.COPY, i.getFiles().size());
-        });
     }
 
 }

@@ -24,12 +24,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -43,6 +46,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileCopyRequ
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.flow.CopyFlowHandler;
 import fr.cnes.regards.modules.storagelight.service.file.request.FileCopyRequestService;
 
 /**
@@ -62,8 +66,6 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
     public static final String SOURCE_PATH = "sourcePath";
 
     public static final String DESTINATION_PATH = "destinationPath";
-
-    private static final int PAGE_BULK_SIZE = 500;
 
     @Autowired
     private IPublisher publisher;
@@ -104,13 +106,15 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             }
             LOGGER.info("[COPY JOB] Calculate all files to copy from storage location {} to {} ",
                         storageLocationSourceId, storageLocationDestinationId);
-            Pageable pageRequest = PageRequest.of(0, PAGE_BULK_SIZE);
+            Pageable pageRequest = PageRequest.of(0, CopyFlowHandler.MAX_REQUEST_PER_GROUP);
             Page<FileReference> pageResults;
             long nbFilesToCopy = 0L;
             do {
                 // Search for all file references matching the given storage location.
                 pageResults = fileRefService.search(storageLocationSourceId, pageRequest);
                 totalPages = pageResults.getTotalPages();
+                String groupId = UUID.randomUUID().toString();
+                Set<FileCopyRequestDTO> requests = Sets.newHashSet();
                 for (FileReference fileRef : pageResults.getContent()) {
                     try {
                         Optional<Path> desinationFilePath = getDestinationFilePath(fileRef.getLocation().getUrl(),
@@ -118,9 +122,9 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                         if (desinationFilePath.isPresent()) {
                             nbFilesToCopy++;
                             // For each file reference located in the given path, send a copy request to the destination storage location.
-                            publisher.publish(CopyFlowItem.build(FileCopyRequestDTO
-                                    .build(fileRef.getMetaInfo().getChecksum(), storageLocationDestinationId,
-                                           desinationFilePath.get().toString()), UUID.randomUUID().toString()));
+                            requests.add(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+                                                                  storageLocationDestinationId,
+                                                                  desinationFilePath.get().toString()));
                         }
                     } catch (MalformedURLException | ModuleException e) {
                         LOGGER.error("Unable to handle file reference {} for copy from {} to {}. Cause {}",
@@ -129,6 +133,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                     }
                     this.advanceCompletion();
                 }
+                publisher.publish(CopyFlowItem.build(requests, groupId));
                 pageRequest = pageRequest.next();
             } while (pageResults.hasNext());
             LOGGER.info("[COPY JOB] {} files to copy from storage location {} to {} ", nbFilesToCopy,

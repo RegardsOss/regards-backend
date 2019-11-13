@@ -61,9 +61,9 @@ public class RequestResultInfoDTO {
         dto.requestChecksum = checksum;
         dto.requestStorage = storage;
         if (fileReference != null) {
-            dto.resultFile = FileReferenceDTO.build(fileReference.getStorageDate(),
-                                                    FileReferenceMetaInfoDTO.build(fileReference.getMetaInfo()),
-                                                    FileLocationDTO.build(fileReference.getLocation()));
+            dto.resultFile = FileReferenceDTO
+                    .build(fileReference.getStorageDate(), FileReferenceMetaInfoDTO.build(fileReference.getMetaInfo()),
+                           FileLocationDTO.build(fileReference.getLocation()), fileReference.getOwners());
         }
         dto.errorCause = errorCause;
         return dto;

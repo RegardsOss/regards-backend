@@ -110,6 +110,28 @@ public class FileCopyRequestService {
     private ILockService lockService;
 
     /**
+     * Initialize new copy requests from Flow items.
+     * @param items
+     */
+    public void copy(Collection<CopyFlowItem> items) {
+        for (CopyFlowItem item : items) {
+            reqGrpService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size());
+            copy(item.getFiles(), item.getGroupId());
+        }
+    }
+
+    /**
+     * Initialize new copy requests for a given group identifier
+     * @param requests
+     * @param groupId
+     */
+    public void copy(Collection<FileCopyRequestDTO> requests, String groupId) {
+        for (FileCopyRequestDTO request : requests) {
+            copy(request, groupId);
+        }
+    }
+
+    /**
      * Handle a {@link FileCopyRequestDTO}.<br>
      * If a copy request with the same parameters already exists, this method does not creates a new one.<br>
      * If the file to copy is well referenced, then a new copy request is created.<br>
@@ -119,7 +141,7 @@ public class FileCopyRequestService {
      * @param groupId request group identifier.
      * @return {@link FileCopyRequest} created if any.
      */
-    public Optional<FileCopyRequest> handle(FileCopyRequestDTO requestDto, String groupId) {
+    public Optional<FileCopyRequest> copy(FileCopyRequestDTO requestDto, String groupId) {
         // Check a same request already exists
         Optional<FileCopyRequest> request = copyRepository.findOneByMetaInfoChecksumAndStorage(requestDto.getChecksum(),
                                                                                                requestDto.getStorage());
@@ -206,7 +228,7 @@ public class FileCopyRequestService {
      */
     public void handle(Collection<FileCopyRequestDTO> requests, String groupId) {
         for (FileCopyRequestDTO request : requests) {
-            handle(request, groupId);
+            copy(request, groupId);
         }
     }
 
@@ -343,7 +365,7 @@ public class FileCopyRequestService {
     }
 
     /**
-     * Lock deletion process for all instance of storage microservice
+     * Lock copy process for all instance of storage microservice
      * @param blockingMode
      * @param expiresIn seconds
      */
