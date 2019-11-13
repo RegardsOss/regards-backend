@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -34,10 +33,10 @@ import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;

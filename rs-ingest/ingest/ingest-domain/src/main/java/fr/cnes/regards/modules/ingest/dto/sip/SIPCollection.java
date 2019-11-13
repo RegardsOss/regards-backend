@@ -18,13 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
-import java.util.List;
-import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 
 /**

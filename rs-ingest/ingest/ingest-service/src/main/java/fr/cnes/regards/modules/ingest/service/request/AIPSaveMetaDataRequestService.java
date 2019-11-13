@@ -18,24 +18,27 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Manage {@link AIPStoreMetaDataRequest} entities
@@ -89,6 +92,7 @@ public class AIPSaveMetaDataRequestService implements IAIPSaveMetaDataRequestSer
             storageClient.delete(filesToDelete);
         }
     }
+
     @Override
     public void scheduleSaveMetaData(List<AIPEntity> aips, boolean removeCurrentMetaData, boolean computeChecksum) {
         List<AIPStoreMetaDataRequest> requests = new ArrayList<>();
@@ -101,7 +105,6 @@ public class AIPSaveMetaDataRequestService implements IAIPSaveMetaDataRequestSer
 
     @Override
     public void handleManifestSaved(AIPStoreMetaDataRequest request, Set<RequestInfo> requestInfos) {
-        // TODO
         sessionNotifier.notifyAIPMetaDataStored(request.getAip());
         aipStoreMetaDataRepository.delete(request);
     }
@@ -109,7 +112,6 @@ public class AIPSaveMetaDataRequestService implements IAIPSaveMetaDataRequestSer
     @Override
     public void handleManifestSaveError(Set<RequestInfo> requestInfos) {
         sessionNotifier.notifyAIPMetaDataStoreError(null);
-        // TODO
         List<AIPStoreMetaDataRequest> requests = new ArrayList<>();
         for (AIPStoreMetaDataRequest request : requests) {
             request.setErrors(null);
