@@ -35,17 +35,8 @@ import fr.cnes.regards.modules.templates.domain.Template;
  */
 public final class TemplateConfigUtil {
 
-    /**
-     * The order created email template as html
-     */
-    private static final String ORDER_CREATED_TEMPLATE = "template/order-created-template.html";
-
-    /**
-     * The aside blablah... (guess the end)
-     */
-    private static final String ASIDE_ORDERS_NOTIFICATION_TEMPLATE = "template/aside-orders-notification-template.html";
-
-    private TemplateConfigUtil() {}
+    private TemplateConfigUtil() {
+    }
 
     public static Template readTemplate(String name, String path) throws IOException {
         ClassPathResource resource = new ClassPathResource(path);

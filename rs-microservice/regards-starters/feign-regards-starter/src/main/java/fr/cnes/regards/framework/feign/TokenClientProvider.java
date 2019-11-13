@@ -53,6 +53,7 @@ public class TokenClientProvider<T> implements Target<T> {
         this.feignSecurityManager = pFeignSecurityManager;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Request apply(final RequestTemplate pTemplate) {
         if (pTemplate.url().indexOf("http") != 0) {

@@ -75,7 +75,6 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * Methods to use :
  * <ul>
  * <li>{@link #withContextTags(String...)}</li>
- * <li> {@link #withContextCategories(String...)}</li>
  * <li>{@link #withContextInformation(String, Object)}</li>
  * </ul>
  * <br/>
@@ -184,9 +183,9 @@ public class InformationPackageProperties {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + (contentInformations == null ? 0 : contentInformations.hashCode());
-        result = (prime * result) + (descriptiveInformation == null ? 0 : descriptiveInformation.hashCode());
-        result = (prime * result) + (pdi == null ? 0 : pdi.hashCode());
+        result = prime * result + (contentInformations == null ? 0 : contentInformations.hashCode());
+        result = prime * result + (descriptiveInformation == null ? 0 : descriptiveInformation.hashCode());
+        result = prime * result + (pdi == null ? 0 : pdi.hashCode());
         return result;
     }
 

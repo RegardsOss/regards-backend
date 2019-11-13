@@ -266,13 +266,13 @@ public abstract class AbstractSubscriberIT {
             // To do so, we have to do it by hand
             OnePerMicroserviceInfo wrongEvent = new OnePerMicroserviceInfo();
             wrongEvent.setMessage(wrongEvent.getMessage() + Math.random());
-            TenantWrapper messageSended = new TenantWrapper(wrongEvent, "PROJECT");
-            rabbitTemplate
-                    .convertAndSend(exchangeName, RegardsAmqpAdmin.DEFAULT_ROUTING_KEY, messageSended, pMessage -> {
-                        MessageProperties messageProperties = pMessage.getMessageProperties();
-                        messageProperties.setPriority(0);
-                        return new Message(pMessage.getBody(), messageProperties);
-                    });
+            TenantWrapper<OnePerMicroserviceInfo> messageSended = TenantWrapper.build(wrongEvent, "PROJECT");
+            rabbitTemplate.convertAndSend(exchangeName, RegardsAmqpAdmin.DEFAULT_ROUTING_KEY, messageSended,
+                                          pMessage -> {
+                                              MessageProperties messageProperties = pMessage.getMessageProperties();
+                                              messageProperties.setPriority(0);
+                                              return new Message(pMessage.getBody(), messageProperties);
+                                          });
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
@@ -287,11 +287,10 @@ public abstract class AbstractSubscriberIT {
                 return;
             }
             if (fromDlq instanceof TenantWrapper) {
-                Object content = ((TenantWrapper) fromDlq).getContent();
+                Object content = ((TenantWrapper<?>) fromDlq).getContent();
                 if (!(content instanceof OnePerMicroserviceInfo)) {
                     Assert.fail(String.format("Message from DLQ is not %s but %s",
-                                              OnePerMicroserviceInfo.class.getName(),
-                                              content.getClass().getName()));
+                                              OnePerMicroserviceInfo.class.getName(), content.getClass().getName()));
                 }
             } else {
                 Assert.fail("Message from DLQ is not a TenantWrapper. You might have been compromised by other tests.");

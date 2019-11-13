@@ -27,7 +27,6 @@ import javax.sql.DataSource;
 import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -97,7 +96,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
     /**
      * JPA Configuration
      */
-    private JpaProperties jpaProperties;
+    private final JpaProperties jpaProperties;
 
     public MultitenantJpaEventHandler(String microserviceName, Map<String, DataSource> dataSources,
             MultitenantDaoProperties daoProperties, IDatasourceSchemaHelper datasourceSchemaHelper,
@@ -143,7 +142,8 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 // Init data source
                 // before initiating data source, lets decrypt password
                 tenantConnection.setPassword(encryptionService.decrypt(tenantConnection.getPassword()));
-                DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection, schemaIdentifier);
+                DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection,
+                                                                              schemaIdentifier);
                 // Remove existing one
                 DataSource oldDataSource = dataSources.remove(tenantConnection.getTenant());
                 if (oldDataSource != null) {

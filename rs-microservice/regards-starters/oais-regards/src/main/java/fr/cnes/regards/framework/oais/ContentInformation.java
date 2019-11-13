@@ -54,7 +54,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * <br/>
  * To set the representation information, use :
  * <ul>
- * <li>{@link #withSyntax(String, String, MimeType)}</li>
+ * <li>{@link #withSyntax(String, String, MimeType, Double, Double)}</li>
  * <li>{@link #withSyntax(MimeType)}</li>
  * <li>{@link #withSyntaxAndSemantic(String, String, MimeType, String)}</li>
  * <li>{@link #withHardwareEnvironmentProperty(String, Object)}</li>
@@ -96,8 +96,8 @@ public class ContentInformation {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + (dataObject == null ? 0 : dataObject.hashCode());
-        result = (prime * result) + (representationInformation == null ? 0 : representationInformation.hashCode());
+        result = prime * result + (dataObject == null ? 0 : dataObject.hashCode());
+        result = prime * result + (representationInformation == null ? 0 : representationInformation.hashCode());
         return result;
     }
 

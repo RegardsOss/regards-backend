@@ -5,6 +5,8 @@ package fr.cnes.regards.framework.modules.locks.domain;
  */
 public class LockException extends Exception {
 
+    private static final long serialVersionUID = 1L;
+
     public LockException(InterruptedException e) {
         super(e);
     }

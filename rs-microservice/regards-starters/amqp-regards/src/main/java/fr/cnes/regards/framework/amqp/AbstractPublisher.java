@@ -256,7 +256,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
             int priority) {
 
         // Message to publish
-        final TenantWrapper<T> messageSended = new TenantWrapper<>(event, tenant);
+        TenantWrapper<T> messageSended = TenantWrapper.build(event, tenant);
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
         rabbitTemplate.convertAndSend(exchangeName, routingKey, messageSended, pMessage -> {
             MessageProperties messageProperties = pMessage.getMessageProperties();

@@ -26,8 +26,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
@@ -74,9 +74,6 @@ public class JobServiceTest {
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
-
-    @Autowired
-    private IRabbitVirtualHostAdmin rabbitVhostAdmin;
 
     @Autowired
     private ISubscriber subscriber;
@@ -256,9 +253,8 @@ public class JobServiceTest {
                     LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
                     break;
                 default:
-                    throw new IllegalArgumentException(
-                            type + " is not an handled type of JobEvent for this test: " + JobServiceTest.class
-                                    .getSimpleName());
+                    throw new IllegalArgumentException(type + " is not an handled type of JobEvent for this test: "
+                            + JobServiceTest.class.getSimpleName());
             }
         }
     }

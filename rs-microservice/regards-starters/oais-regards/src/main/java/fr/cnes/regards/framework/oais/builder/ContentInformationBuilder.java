@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;

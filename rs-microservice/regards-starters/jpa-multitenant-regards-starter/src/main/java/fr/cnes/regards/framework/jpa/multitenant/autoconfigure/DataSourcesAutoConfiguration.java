@@ -28,7 +28,6 @@ import java.util.Map;
 import javax.persistence.Entity;
 import javax.sql.DataSource;
 
-import org.hibernate.HibernateException;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.cfg.Environment;
@@ -216,7 +215,8 @@ public class DataSourcesAutoConfiguration {
                     // Retrieve schema name
                     String schemaIdentifier = jpaProperties.getProperties().get(Environment.DEFAULT_SCHEMA);
                     // Init data source
-                    DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection, schemaIdentifier);
+                    DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection,
+                                                                                  schemaIdentifier);
                     // Update database schema
                     datasourceSchemaHelper().migrate(dataSource);
                     // Register connection

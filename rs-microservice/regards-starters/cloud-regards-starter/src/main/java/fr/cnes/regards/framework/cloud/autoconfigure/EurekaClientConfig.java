@@ -15,14 +15,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.PropertyResolver;
 
 @Configuration
 @EnableConfigurationProperties
 @Profile("docker")
 public class EurekaClientConfig {
 
-    private ConfigurableEnvironment env;
+    private final ConfigurableEnvironment env;
 
     public EurekaClientConfig(final ConfigurableEnvironment env) {
         this.env = env;
@@ -41,7 +40,7 @@ public class EurekaClientConfig {
                     hostAddress = inetAddress.getHostAddress();
                 }
 
-//                System.out.printf("Inet %s: %s / %s\n", netInt.getName(),  inetAddress.getHostName(), inetAddress.getHostAddress());
+                //                System.out.printf("Inet %s: %s / %s\n", netInt.getName(),  inetAddress.getHostName(), inetAddress.getHostAddress());
             }
         }
         if (hostAddress == null) {
@@ -54,7 +53,7 @@ public class EurekaClientConfig {
         instance.setHostname(hostName);
         instance.setIpAddress(hostAddress);
         instance.setNonSecurePort(nonSecurePort);
-//        System.out.println(instance);
+        //        System.out.println(instance);
         return instance;
     }
 }

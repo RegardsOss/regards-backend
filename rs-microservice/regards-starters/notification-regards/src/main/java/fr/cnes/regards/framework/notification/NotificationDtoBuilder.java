@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.notification;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
