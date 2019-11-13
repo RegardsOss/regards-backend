@@ -18,8 +18,22 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -34,7 +48,6 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
@@ -56,17 +69,6 @@ import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
-import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Service;
 
 /**
  * Manage ingest requests
@@ -108,14 +110,10 @@ public class IngestRequestService implements IIngestRequestService {
     private INotificationClient notificationClient;
 
     @Autowired
-    private IAIPStoreMetaDataRepository aipStoreMetaDataRepository;
-
-    @Autowired
     private SessionNotifier sessionNotifier;
 
     @Autowired
-    private IAIPSaveMetaDataService aipSaveMetaDataService;
-;
+    private IAIPSaveMetaDataService aipSaveMetaDataService;;
 
     @Override
     public void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests) {
@@ -336,7 +334,8 @@ public class IngestRequestService implements IIngestRequestService {
 
                 if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
                     // Update AIP and SIP with current error
-                    updateOAISEntitiesWithErrors(request, ri.getErrorRequests(), "Error occurred while storing AIP files");
+                    updateOAISEntitiesWithErrors(request, ri.getErrorRequests(),
+                                                 "Error occurred while storing AIP files");
                     // Update AIPs with success response returned by storage
                     aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), ri.getSuccessRequests());
                     // Save error in request status
@@ -385,7 +384,7 @@ public class IngestRequestService implements IIngestRequestService {
                     ri.getErrorRequests().forEach(e -> request.addError(e.getErrorCause()));
                 }
                 updateOAISEntitiesWithErrors(request, ri.getErrorRequests(),
-                        "Error occurred while storing AIP references");
+                                             "Error occurred while storing AIP references");
             }
         }
     }

@@ -18,20 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import java.util.List;
-import java.util.Set;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * @author Léo Mieulet
  */
 public interface IRequestService {
+
     void handleRemoteRequestDenied(Set<RequestInfo> requests);
 
     void handleRemoteStoreError(Set<RequestInfo> requests);

@@ -18,21 +18,27 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.storagelight.client.IStorageRequestListener;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
-import java.util.Collection;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocationTask;
+import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import fr.cnes.regards.modules.ingest.service.aip.AIPService;
 import fr.cnes.regards.modules.storagelight.client.IStorageRequestListener;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * This class offers callbacks from storage events
@@ -54,9 +60,44 @@ public class IngestStorageListener implements IStorageRequestListener {
     @Autowired
     private IDeleteRequestService deleteRequestService;
 
+    @Autowired
+    private AIPUpdateRequestService aipUpdateRequestService;
+
+    @Autowired
+    private AIPService aipService;
+
     @Override
     public void onCopySuccess(Set<RequestInfo> requests) {
-        // Nothing to do
+        // When a AIP is successfully copied to a new location, we have to update local AIP to add the new location.
+        // Dispatch each success copy request by AIP to update
+        Multimap<String, AbstractAIPUpdateTask> newFileLocations = ArrayListMultimap.create();
+        for (RequestInfo r : requests) {
+            // For each copy group request in success, check unitary file copy requests succeeded
+            for (RequestResultInfoDTO sr : r.getSuccessRequests()) {
+                // For each file copy success, check if at least one of the owners of the file is an AIP.
+                for (String fileOwner : sr.getResultFile().getOwners()) {
+                    if (UniformResourceName.isValidUrn(fileOwner)) {
+                        // If so, associate the AIPUpdateFileLocationTask to the aip.
+                        newFileLocations.put(fileOwner,
+                                             AIPUpdateFileLocationTask.buildAddLocationTask(Lists.newArrayList(sr)));
+                    }
+                }
+            }
+        }
+        // To improve performance, retrieve all requested AIPs in one request
+        Collection<AIPEntity> aips = aipService.getAips(newFileLocations.keySet());
+        // Then dispatch each update task by AIPentity
+        Multimap<AIPEntity, AbstractAIPUpdateTask> newFileLocationsWithAIP = ArrayListMultimap.create();
+        newFileLocations.asMap().forEach((aipId, tasks) -> {
+            Optional<AIPEntity> aip = aips.stream().filter(a -> a.getAipId().equals(aipId)).findFirst();
+            if (aip.isPresent()) {
+                newFileLocationsWithAIP.putAll(aip.get(), tasks);
+            }
+        });
+        newFileLocations.clear();
+        // Finally, creates the AIPUpdateLocationRequests
+        aipUpdateRequestService.create(newFileLocationsWithAIP);
+        newFileLocationsWithAIP.clear();
     }
 
     @Override

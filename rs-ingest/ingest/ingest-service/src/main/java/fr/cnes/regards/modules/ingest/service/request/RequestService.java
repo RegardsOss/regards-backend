@@ -18,6 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications;
@@ -36,17 +49,6 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPSaveMetaDataService;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
 /**
  * @author Léo Mieulet
@@ -108,7 +110,6 @@ public class RequestService implements IRequestService {
                     Optional<IngestRequest> requestOp = ingestRequestRepository.findOneWithAIPs(ri.getGroupId());
 
                     if (requestOp.isPresent()) {
-                        IngestRequest request2 = requestOp.get();
                         ingestRequestService.handleRemoteStoreSuccess(requestInfos);
                     }
                 } else if (request instanceof AIPStoreMetaDataRequest) {
@@ -141,36 +142,36 @@ public class RequestService implements IRequestService {
         if (filters.getRequestType() != null) {
             switch (filters.getRequestType()) {
                 case INGEST:
-                    requests = ingestRequestRepository.findAll(
-                            AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
+                    requests = ingestRequestRepository
+                            .findAll(AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
                     break;
                 case AIP_UPDATES_CREATOR:
-                    requests = aipUpdatesCreatorRepository.findAll(
-                            AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
+                    requests = aipUpdatesCreatorRepository
+                            .findAll(AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
                     break;
                 case OAIS_DELETION:
-                    requests = oaisDeletionRequestRepository.findAll(
-                            AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
+                    requests = oaisDeletionRequestRepository
+                            .findAll(AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
                     break;
                 case STORAGE_DELETION:
-                    requests = storageDeletionRequestRepository.findAll(
-                            AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
+                    requests = storageDeletionRequestRepository
+                            .findAll(AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
                     break;
                 case STORE_METADATA:
-                    requests = aipStoreMetaDataRepository.findAll(
-                            AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
+                    requests = aipStoreMetaDataRepository
+                            .findAll(AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
                     break;
                 case UPDATE:
-                    requests = aipUpdateRequestRepository.findAll(
-                            AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
+                    requests = aipUpdateRequestRepository
+                            .findAll(AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
                     break;
                 default:
                     throw new ModuleException("Unexpected state received : " + filters.getRequestType());
             }
         } else {
             // Fallback to the mother's repository
-            requests = abstractRequestRepository.findAll(
-                    AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
+            requests = abstractRequestRepository.findAll(AbstractRequestSpecifications.searchAllByFilters(filters),
+                                                         pageable);
         }
         // Transform AbstractRequests to DTO
         for (AbstractRequest request : requests) {

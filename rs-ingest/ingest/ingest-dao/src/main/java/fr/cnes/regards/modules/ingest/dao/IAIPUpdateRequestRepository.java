@@ -18,14 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 
 /**
  * {@link AIPUpdateRequest} repository
@@ -49,9 +54,15 @@ public interface IAIPUpdateRequestRepository extends JpaRepository<AIPUpdateRequ
 
     List<AIPUpdateRequest> findAllByAipIdIn(List<Long> aipIds);
 
-
     Page<AIPUpdateRequest> findAllByStateAndAipIdIn(InternalRequestStep step, List<Long> aipIds, Pageable page);
 
     List<AIPUpdateRequest> findAllByAipIdInAndState(List<Long> aipIds, InternalRequestStep state);
-//   TODO List<AIPUpdateRequest> findDistinctByAipIdAndAipIdInAndState(List<Long> aipIds, InternalRequestStep state);
+    //   TODO List<AIPUpdateRequest> findDistinctByAipIdAndAipIdInAndState(List<Long> aipIds, InternalRequestStep state);
+
+    @Modifying
+    @Query("update AIPUpdateRequest aur set aur.state = :state where aur.id in (:ids)")
+    int updateStates(@Param("ids") List<Long> ids, @Param("state") InternalRequestStep state);
+
+    // @Query(value = "UPDATE AIPUpdateRequest SET state = :state WHERE id IN (:ids)")
+    // long updateStates(@Param("ids") List<Long> ids, @Param("state") String state);
 }

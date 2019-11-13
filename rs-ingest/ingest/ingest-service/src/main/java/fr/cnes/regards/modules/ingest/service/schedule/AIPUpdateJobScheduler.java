@@ -18,7 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.service.schedule;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -32,30 +48,23 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.service.job.AIPUpdateRunnerJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 
 /**
  * This component scans the AIPUpdateRepo and regroups tasks by aip to update
  *
  * @author Leo Mieulet
  */
+@Profile("!noscheduler")
 @Component
 @MultitenantTransactional
 public class AIPUpdateJobScheduler {
 
     @Autowired
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
+
+    @Autowired
+    private AIPUpdateRequestService aipUpdateRequestService;
 
     @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
@@ -109,17 +118,15 @@ public class AIPUpdateJobScheduler {
         Page<AIPUpdateRequest> waitingRequest = aipUpdateRequestRepository.findWaitingRequest(pageRequest);
         if (!waitingRequest.isEmpty()) {
             // Fetch all update request linked to same aips
-            List<AIPUpdateRequest> content = waitingRequest.getContent();
-            List<AIPUpdateRequest> request = new ArrayList<>(content);
-            List<Long> aipIds = content.stream().map(wr -> wr.getAip().getId()).collect(Collectors.toList());
+            List<AIPUpdateRequest> contents = waitingRequest.getContent();
+            List<AIPUpdateRequest> requests = new ArrayList<>(contents);
+            List<Long> aipIds = contents.stream().map(wr -> wr.getAip().getId()).collect(Collectors.toList());
             List<AIPUpdateRequest> linkedTasks = aipUpdateRequestRepository.findAllByAipIdIn(aipIds);
-            request.addAll(linkedTasks);
+            requests.addAll(linkedTasks);
+            aipUpdateRequestService.updateState(requests, InternalRequestStep.RUNNING);
 
-            request.forEach(task -> task.setState(InternalRequestStep.RUNNING));
-            aipUpdateRequestRepository.saveAll(request);
-
-            // Make a list of request ids
-            List<Long> requestIds = request.stream().map(AIPUpdateRequest::getId).collect(Collectors.toList());
+            // Make a list of content ids
+            List<Long> requestIds = requests.stream().map(AIPUpdateRequest::getId).collect(Collectors.toList());
 
             // Change request state
             abstractRequestRepository.updateStates(requestIds, InternalRequestStep.RUNNING);
@@ -127,8 +134,8 @@ public class AIPUpdateJobScheduler {
             // Schedule deletion job
             Set<JobParameter> jobParameters = Sets.newHashSet();
             jobParameters.add(new JobParameter(AIPUpdateRunnerJob.UPDATE_REQUEST_IDS, requestIds));
-            jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_RUNNER_PRIORITY.getPriority(),
-                    jobParameters, null, AIPUpdateRunnerJob.class.getName());
+            jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_RUNNER_PRIORITY.getPriority(), jobParameters,
+                    null, AIPUpdateRunnerJob.class.getName());
             jobInfoService.createAsPending(jobInfo);
         }
         return jobInfo;

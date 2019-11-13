@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
-import fr.cnes.regards.modules.ingest.service.request.IRequestService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +33,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.service.request.IRequestService;
+
 /**
  * This controller manages Requests.
  *
@@ -49,8 +49,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(RequestController.TYPE_MAPPING)
 public class RequestController implements IResourceController<RequestDto> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RequestController.class);
 
     public static final String TYPE_MAPPING = "/requests";
 
@@ -69,12 +67,14 @@ public class RequestController implements IResourceController<RequestDto> {
      * @param pageable
      * @param assembler
      * @return page of aip metadata respecting the constraints
+     * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Return a page of Requests")
-    public ResponseEntity<PagedResources<Resource<RequestDto>>> searchRequest(@RequestBody SearchRequestsParameters filters,
+    public ResponseEntity<PagedResources<Resource<RequestDto>>> searchRequest(
+            @RequestBody SearchRequestsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<RequestDto> assembler) {
+            PagedResourcesAssembler<RequestDto> assembler) throws ModuleException {
         Page<RequestDto> requests = requestService.searchRequests(filters, pageable);
         return new ResponseEntity<>(toPagedResources(requests, assembler), HttpStatus.OK);
     }

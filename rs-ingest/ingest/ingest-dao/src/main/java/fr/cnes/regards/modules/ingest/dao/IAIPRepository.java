@@ -18,15 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 
 /**
  * JPA Repository to access {@link AIPEntity}
@@ -56,5 +58,12 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
      * @return a page of {@link AIPEntity}
      */
     Page<AIPEntity> findAll(Specification<AIPEntity> aipEntitySpecification, Pageable pageable);
+
+    /**
+     * Retrieve a list of aips thanks to their aipId
+     * @param aipIds
+     * @return
+     */
+    Set<AIPEntity> findByAipIdIn(Collection<String> aipIds);
 
 }
