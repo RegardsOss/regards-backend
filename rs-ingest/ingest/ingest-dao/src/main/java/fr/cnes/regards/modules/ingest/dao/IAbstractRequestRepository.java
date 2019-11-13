@@ -18,22 +18,26 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 
 /**
  * @author Léo Mieulet
  */
 @Repository
 public interface IAbstractRequestRepository extends JpaRepository<AbstractRequest, Long> {
+
     /**
      * Retrieve a page of {@link AbstractRequest} matching the provided specification
      * @param aipEntitySpecification criteria spec
@@ -54,6 +58,7 @@ public interface IAbstractRequestRepository extends JpaRepository<AbstractReques
      * @param state new state
      * @return
      */
-    @Query(value = "UPDATE {h-schema}t_request SET state = :state WHERE id IN (:ids)", nativeQuery = true)
-    List<AbstractRequest> updateStates(@Param("ids") List<Long> ids, @Param("state") InternalRequestStep state);
+    @Modifying
+    @Query(value = "UPDATE AbstractRequest SET state = :state WHERE id IN (:ids)")
+    int updateStates(@Param("ids") List<Long> ids, @Param("state") InternalRequestStep state);
 }
