@@ -172,7 +172,7 @@ public class FileReferenceController {
     @RequestMapping(method = RequestMethod.POST, path = STORE_PATH)
     @ResourceAccess(description = "Configure a storage location by his name", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> store(@Valid @RequestBody Collection<StorageFlowItem> items) {
-        items.stream().map(i -> new TenantWrapper<>(i, tenantResolver.getTenant())).forEach(storageHandler::handle);
+        items.stream().map(i -> TenantWrapper.build(i, tenantResolver.getTenant())).forEach(storageHandler::handle);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

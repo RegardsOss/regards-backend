@@ -77,7 +77,7 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
                 .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
                                                      "owner-test", storage, "file://storage/location/file.name"),
                        UUID.randomUUID().toString());
-        TenantWrapper<ReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<ReferenceFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
         long start = System.currentTimeMillis();
         // Publish request
         handler.handleSync(wrapper);
@@ -113,8 +113,8 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
                                                      owner, storage, "file://storage/location/file.name"),
                        UUID.randomUUID().toString());
 
-        TenantWrapper<ReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
-        TenantWrapper<ReferenceFlowItem> wrapper2 = new TenantWrapper<>(item2, getDefaultTenant());
+        TenantWrapper<ReferenceFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
+        TenantWrapper<ReferenceFlowItem> wrapper2 = TenantWrapper.build(item2, getDefaultTenant());
         // Publish request
         handler.handle(wrapper);
         handler.handle(wrapper2);
@@ -147,7 +147,7 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
                 .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
                                                      "owner-test", storage, "file://storage/location/file.name"),
                        UUID.randomUUID().toString());
-        TenantWrapper<ReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<ReferenceFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -178,7 +178,7 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
                 .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
                                                      "owner-test", storage, "file://storage/location/file.name"),
                        UUID.randomUUID().toString());
-        TenantWrapper<ReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<ReferenceFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
         // Publish request
         handler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());

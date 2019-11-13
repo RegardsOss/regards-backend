@@ -174,7 +174,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             requests.add(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
                                                        newOwner, storage, "file://storage/location/file.name"));
             ReferenceFlowItem item = ReferenceFlowItem.build(requests, UUID.randomUUID().toString());
-            TenantWrapper<ReferenceFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+            TenantWrapper<ReferenceFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
             // Publish request
             referenceFlowHandler.handle(wrapper);
         }
@@ -185,7 +185,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             Thread.sleep(2_000);
             page = fileRefRepo.findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
-        } while ((loops < 50) && ((page.getTotalElements()) != 5000));
+        } while (loops < 50 && page.getTotalElements() != 5000);
 
         Assert.assertEquals("There should be 5004 file ref created", 5000, fileRefRepo
                 .findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
@@ -202,7 +202,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
                     .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream",
                                                        "owner-test", originUrl, ONLINE_CONF_LABEL, Optional.empty()),
                            UUID.randomUUID().toString());
-            TenantWrapper<StorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+            TenantWrapper<StorageFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
             // Publish request
             storeFlowHandler.handle(wrapper);
         }
@@ -212,7 +212,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             Thread.sleep(10_000);
             page = stoReqService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
-        } while ((loops < 10) && ((page.getTotalElements()) != 5000));
+        } while (loops < 10 && page.getTotalElements() != 5000);
 
         Assert.assertEquals("There should be 5000 file storage request created", 5000, stoReqService
                 .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
@@ -250,7 +250,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO
                     .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
                            fileRef.getOwners().iterator().next(), false), UUID.randomUUID().toString());
-            TenantWrapper<DeletionFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+            TenantWrapper<DeletionFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
             deleteHandler.handle(wrapper);
         }
         LOGGER.info("Waiting ....");
@@ -259,7 +259,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             Thread.sleep(5_000);
             page = fileRefService.search(PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
-        } while ((loops < 10) && (nbToDelete != (total - page.getTotalElements())));
+        } while (loops < 10 && nbToDelete != total - page.getTotalElements());
 
         Assert.assertEquals("500 ref should be deleted", nbToDelete, total - page.getTotalElements());
     }
@@ -272,7 +272,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         // Create a new bus message File reference request
         AvailabilityFlowItem item = AvailabilityFlowItem.build(nlChecksums, OffsetDateTime.now().plusDays(1),
                                                                UUID.randomUUID().toString());
-        TenantWrapper<AvailabilityFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<AvailabilityFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
         // Publish request
         availabilityHandler.handle(wrapper);
         availabilityHandler.handleQueue();

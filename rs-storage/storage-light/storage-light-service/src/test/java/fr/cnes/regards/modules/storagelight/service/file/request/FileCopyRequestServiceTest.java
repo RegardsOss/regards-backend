@@ -151,7 +151,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         FileReferenceEvent event = getFileReferenceEvent(argumentCaptor.getAllValues());
 
-        fileRefEventHandler.handle(new TenantWrapper<>(event, getDefaultTenant()));
+        fileRefEventHandler.handle(TenantWrapper.build(event, getDefaultTenant()));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // A new storage request should be created
@@ -180,7 +180,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         // Simulate file  stored event
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         event = getFileReferenceEvent(argumentCaptor.getAllValues());
-        fileRefEventHandler.handle(new TenantWrapper<>(event, getDefaultTenant()));
+        fileRefEventHandler.handle(TenantWrapper.build(event, getDefaultTenant()));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
@@ -199,7 +199,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         for (ISubscribable e : argumentCaptor.getAllValues()) {
             if (e instanceof FileRequestsGroupEvent) {
                 frge = (FileRequestsGroupEvent) e;
-                if ((frge.getType() == FileRequestType.COPY) && frge.getGroupId().equals(requestGroup)) {
+                if (frge.getType() == FileRequestType.COPY && frge.getGroupId().equals(requestGroup)) {
                     break;
                 } else {
                     frge = null;
@@ -255,7 +255,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         FileReferenceEvent event = getFileReferenceEvent(argumentCaptor.getAllValues());
 
-        fileRefEventHandler.handle(new TenantWrapper<>(event, getDefaultTenant()));
+        fileRefEventHandler.handle(TenantWrapper.build(event, getDefaultTenant()));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // A new storage request should be created
@@ -286,7 +286,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         // Simulate file  stored event
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         event = getFileReferenceEvent(argumentCaptor.getAllValues());
-        fileRefEventHandler.handle(new TenantWrapper<>(event, getDefaultTenant()));
+        fileRefEventHandler.handle(TenantWrapper.build(event, getDefaultTenant()));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
@@ -330,7 +330,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         FileReferenceEvent event = getFileReferenceEvent(argumentCaptor.getAllValues());
-        fileRefEventHandler.handle(new TenantWrapper<>(event, getDefaultTenant()));
+        fileRefEventHandler.handle(TenantWrapper.build(event, getDefaultTenant()));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // Copy request should be updated in ERROR

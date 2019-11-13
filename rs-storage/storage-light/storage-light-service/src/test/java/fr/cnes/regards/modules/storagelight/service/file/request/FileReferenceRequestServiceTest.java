@@ -112,12 +112,10 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         FileDeletionJobProgressManager manager = new FileDeletionJobProgressManager(fileDeletionRequestService,
                 fileEventPublisher, new FileDeletionRequestJob());
         manager.deletionSucceed(fdr);
-        fileRefEventHandler
-                .handle(new TenantWrapper<>(
-                        FileReferenceEvent.build(fileRefChecksum, FileReferenceEventType.FULLY_DELETED, null,
-                                                 "Deletion succeed", oFileRef.get().getLocation(),
-                                                 oFileRef.get().getMetaInfo(), Sets.newHashSet(deletionReqId)),
-                        runtimeTenantResolver.getTenant()));
+        fileRefEventHandler.handle(TenantWrapper.build(FileReferenceEvent
+                .build(fileRefChecksum, FileReferenceEventType.FULLY_DELETED, null, "Deletion succeed",
+                       oFileRef.get().getLocation(), oFileRef.get().getMetaInfo(), Sets.newHashSet(deletionReqId)),
+                                                       runtimeTenantResolver.getTenant()));
         // Has the handler clear the tenant we have to force it here for tests.
         runtimeTenantResolver.forceTenant(tenant);
         frr = stoReqService.search(fileRefStorage, fileRefChecksum);
