@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRe
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
-import fr.cnes.regards.modules.ingest.service.request.IAIPSaveMetaDataRequestService;
+import fr.cnes.regards.modules.ingest.service.request.IAIPStoreMetaDataRequestService;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
     private IAIPService aipService;
 
     @Autowired
-    private IAIPSaveMetaDataRequestService aipSaveMetaDataService;
+    private IAIPStoreMetaDataRequestService aipSaveMetaDataService;
 
 
     @Override
@@ -61,7 +61,7 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
         }.getType();
         List<Long> updateRequestIds = getValue(parameters, UPDATE_METADATA_REQUEST_IDS, type);
         // Retrieve list of AIP save metadata requests to handle
-        requests = aipSaveMetaDataService.findAllById(updateRequestIds);
+        requests = aipSaveMetaDataService.search(updateRequestIds);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
             }
             advanceCompletion();
         }
-        aipSaveMetaDataService.commitJob(requests, aipsToStore, aipsToUpdate, filesToDelete);
+        aipSaveMetaDataService.handle(requests, aipsToStore, aipsToUpdate, filesToDelete);
     }
 
     private void recomputeChecksum(AIPStoreMetaDataRequest request, AIPEntity aip) {
