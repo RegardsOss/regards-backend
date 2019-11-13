@@ -53,8 +53,8 @@ import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
 import fr.cnes.regards.modules.model.dto.properties.DateProperty;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
@@ -249,8 +249,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     private Optional<OffsetDateTime> getEntityLastUpdateDate(EntityFeature entity) {
         Optional<OffsetDateTime> date = Optional.empty();
         if (engineConfiguration.getEntityLastUpdateDatePropertyPath() != null) {
-            AbstractProperty<?> dateAttribute = entity
-                    .getProperty(engineConfiguration.getEntityLastUpdateDatePropertyPath());
+            IProperty<?> dateAttribute = entity.getProperty(engineConfiguration.getEntityLastUpdateDatePropertyPath());
             if (dateAttribute instanceof DateProperty) {
                 DateProperty dateAttr = (DateProperty) dateAttribute;
                 return Optional.ofNullable(dateAttr.getValue());

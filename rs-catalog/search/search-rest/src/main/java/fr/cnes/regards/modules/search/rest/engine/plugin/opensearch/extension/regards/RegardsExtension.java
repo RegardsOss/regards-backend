@@ -28,7 +28,7 @@ import com.rometools.rome.feed.atom.Entry;
 import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.AttributeCriterionBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterOperator;
@@ -62,7 +62,7 @@ public class RegardsExtension extends AbstractExtension {
     @Override
     public void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
             Feature feature, String token) {
-        for (AbstractProperty<?> property : entity.getProperties()) {
+        for (IProperty<?> property : entity.getProperties()) {
             feature.addProperty(property.getName(), property.getValue());
         }
         feature.addProperty("tags", entity.getTags());

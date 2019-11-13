@@ -31,7 +31,7 @@ import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.io.ModuleGenerator;
 
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.RegardsModule;
@@ -103,7 +103,7 @@ public class RegardsModuleGenerator implements ModuleGenerator {
 
     }
 
-    protected Element generateAttributeElement(AbstractProperty<?> attribute, Gson gson) {
+    protected Element generateAttributeElement(IProperty<?> attribute, Gson gson) {
         Element elt;
         if (attribute instanceof ObjectProperty) {
             elt = new Element(attribute.getName(), REGARDS_NS);

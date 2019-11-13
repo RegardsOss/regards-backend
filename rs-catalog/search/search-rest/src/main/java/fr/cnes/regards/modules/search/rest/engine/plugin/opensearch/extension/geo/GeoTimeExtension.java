@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
-import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.AttributeCriterionBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterOperator;
@@ -271,8 +271,8 @@ public class GeoTimeExtension extends AbstractExtension {
                     .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
             String endDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
                     .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
-            AbstractProperty<?> startDate = entity.getProperty(startDateJsonPath);
-            AbstractProperty<?> stopDate = entity.getProperty(endDateJsonPath);
+            IProperty<?> startDate = entity.getProperty(startDateJsonPath);
+            IProperty<?> stopDate = entity.getProperty(endDateJsonPath);
             if (startDate != null && startDate.getValue() instanceof OffsetDateTime && stopDate != null
                     && stopDate.getValue() instanceof OffsetDateTime) {
                 gmlMod.setStartDate((OffsetDateTime) startDate.getValue());
