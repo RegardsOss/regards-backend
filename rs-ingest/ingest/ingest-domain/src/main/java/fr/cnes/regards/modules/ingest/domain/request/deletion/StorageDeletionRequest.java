@@ -16,67 +16,41 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.request;
+package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractInternalRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import java.time.OffsetDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
 
 /**
  * Storing info that a request have been sent to storage to remove files
  * To track answer about request status
  * @author Léo Mieulet
  */
-@Entity
-@Table(name = "t_deletion_storage_request",
-        indexes = {@Index(name = "idx_deletion_storage_remote_step_group_id", columnList = "remote_step_group_id")},
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_deletion_storage_remote_step_group_id", columnNames = {"remote_step_group_id"})
-        })
-@TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
+@Entity(name = "StorageDeletionRequest")
 public class StorageDeletionRequest extends AbstractInternalRequest {
 
-    @Id
-    @SequenceGenerator(name = "storageDeletionRequestSequence", initialValue = 1, sequenceName = "seq_storage_deletion_request")
-    @GeneratedValue(generator = "storageDeletionRequestSequence", strategy = GenerationType.SEQUENCE)
-    private Long id;
+    /**
+     * request configuration
+     */
+    @Column(columnDefinition = "jsonb", name = "payload")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    private StorageDeletionPayload config;
 
     @NotBlank(message = IngestValidationMessages.MISSING_SESSION)
     @Column(length = 128, name = "sip_id", nullable = false)
     private String sipId;
-
-    @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_MODE)
-    @Column(length = 20, name = "deletion_mode", nullable = false)
-    private SessionDeletionMode deletionMode;
-
-    /**
-     * Store a request id sent by the current request to propagate changes (on storage)
-     */
-    @Column(name = "remote_step_group_id", length = 36, nullable = false)
-    private String remoteStepGroupId;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getSipId() {
         return sipId;
@@ -86,30 +60,32 @@ public class StorageDeletionRequest extends AbstractInternalRequest {
         this.sipId = sipId;
     }
 
+    public StorageDeletionPayload getConfig() {
+        return config;
+    }
+
+    public void setConfig(StorageDeletionPayload config) {
+        this.config = config;
+    }
+
+
     public SessionDeletionMode getDeletionMode() {
-        return deletionMode;
+        return config.getDeletionMode();
     }
 
     public void setDeletionMode(SessionDeletionMode deletionMode) {
-        this.deletionMode = deletionMode;
-    }
-
-    public String getRemoteStepGroupId() {
-        return remoteStepGroupId;
-    }
-
-    public void setRemoteStepGroupId(String remoteStepGroupId) {
-        this.remoteStepGroupId = remoteStepGroupId;
+        config.setDeletionMode(deletionMode);
     }
 
     public static StorageDeletionRequest build(String requestId, SIPEntity sipEntity, SessionDeletionMode deletionMode) {
         StorageDeletionRequest sdr = new StorageDeletionRequest();
         sdr.setState(InternalRequestStep.RUNNING);
-        sdr.setRemoteStepGroupId(requestId);
+        sdr.setRemoteStepGroupIds(Lists.newArrayList(requestId));
         sdr.setSipId(sipEntity.getSipId());
         sdr.setSessionOwner(sipEntity.getIngestMetadata().getSessionOwner());
         sdr.setSession(sipEntity.getIngestMetadata().getSession());
-        sdr.setDeletionMode(deletionMode);
+        sdr.setProviderId(sipEntity.getProviderId());
+        sdr.setConfig(StorageDeletionPayload.build(deletionMode));
         sdr.setCreationDate(OffsetDateTime.now());
         return sdr;
     }

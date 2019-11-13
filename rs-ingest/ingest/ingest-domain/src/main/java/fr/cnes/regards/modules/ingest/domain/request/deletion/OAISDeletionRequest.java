@@ -16,8 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.request;
+package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
+import fr.cnes.regards.modules.ingest.domain.request.AbstractInternalRequest;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -45,88 +46,67 @@ import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
  * Macro request that keeps info about a "massive" suppression of OAIS entities
  * @author Marc SORDI
  */
-@Entity
-@Table(name = "t_deletion_request",
-        indexes = { @Index(name = "idx_deletion_request_search", columnList = "session_owner,session_name,state") })
+@Entity(name = "OAISDeletionRequest")
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class OAISDeletionRequest extends AbstractInternalRequest {
 
-    @Id
-    @SequenceGenerator(name = "deletionRequestSequence", initialValue = 1, sequenceName = "seq_deletion_request")
-    @GeneratedValue(generator = "deletionRequestSequence", strategy = GenerationType.SEQUENCE)
-    private Long id;
-
-    @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_MODE)
-    @Column(name = "deletion_mode", nullable = false)
-    private SessionDeletionMode deletionMode;
-
-    @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_SELECTION_MODE)
-    @Column(name = "selection_mode", nullable = false)
-    private SessionDeletionSelectionMode selectionMode;
-
-    @Column(name = "delete_files")
-    private Boolean deletePhysicalFiles = true;
-
     /**
-     * URN of the SIP(s) to preserve or remove in the specified session (according to {@link #selectionMode})
+     * request configuration
      */
-    @Column(columnDefinition = "jsonb")
+    @Column(columnDefinition = "jsonb", name = "payload")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
-    private Set<String> sipIds;
+    private OAISDeletionPayload config;
 
-    /**
-     * Provider id(s) of the SIP to preserve or remove in the specified session (according to {@link #selectionMode})
-     */
-    @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
-    private Set<String> providerIds;
-
-    public Long getId() {
-        return id;
+    public OAISDeletionRequest() {
+        this.config = new OAISDeletionPayload();
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public OAISDeletionPayload getConfig() {
+        return config;
     }
+
+    public void setConfig(OAISDeletionPayload config) {
+        this.config = config;
+    }
+
 
     public SessionDeletionMode getDeletionMode() {
-        return deletionMode;
+        return config.getDeletionMode();
     }
 
     public void setDeletionMode(SessionDeletionMode deletionMode) {
-        this.deletionMode = deletionMode;
+        config.setDeletionMode(deletionMode);
     }
 
     public SessionDeletionSelectionMode getSelectionMode() {
-        return selectionMode;
+        return config.getSelectionMode();
     }
 
     public void setSelectionMode(SessionDeletionSelectionMode selectionMode) {
-        this.selectionMode = selectionMode;
-    }
-
-    public Set<String> getSipIds() {
-        return sipIds;
-    }
-
-    public void setSipIds(Set<String> sipIds) {
-        this.sipIds = sipIds;
-    }
-
-    public Set<String> getProviderIds() {
-        return providerIds;
-    }
-
-    public void setProviderIds(Set<String> providerIds) {
-        this.providerIds = providerIds;
+        config.setSelectionMode(selectionMode);
     }
 
     public Boolean getDeletePhysicalFiles() {
-        return deletePhysicalFiles;
+        return config.getDeletePhysicalFiles();
     }
 
     public void setDeletePhysicalFiles(Boolean deletePhysicalFiles) {
-        this.deletePhysicalFiles = deletePhysicalFiles;
+        config.setDeletePhysicalFiles(deletePhysicalFiles);
     }
 
+    public Set<String> getSipIds() {
+        return config.getSipIds();
+    }
+
+    public void setSipIds(Set<String> sipIds) {
+        config.setSipIds(sipIds);
+    }
+
+    public Set<String> getProviderIds() {
+        return config.getProviderIds();
+    }
+
+    public void setProviderIds(Set<String> providerIds) {
+        config.setProviderIds(providerIds);
+    }
 }

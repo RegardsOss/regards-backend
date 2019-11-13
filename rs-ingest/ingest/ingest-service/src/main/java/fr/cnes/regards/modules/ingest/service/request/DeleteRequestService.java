@@ -18,13 +18,24 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import com.netflix.discovery.converters.Auto;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.StorageDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.StorageDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
@@ -34,9 +45,11 @@ import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +67,9 @@ public class DeleteRequestService implements IDeleteRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeleteRequestService.class);
 
     @Autowired
+    private IAbstractRequestService abstractRequestService;
+
+    @Autowired
     private IStorageDeletionRequestRepository storageDeletionRequestRepo;
 
     @Autowired
@@ -66,51 +82,55 @@ public class DeleteRequestService implements IDeleteRequestService {
     private SessionNotifier sessionNotifier;
 
     @Override
-    public void handleRemoteDeleteError(RequestInfo request, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
-        Optional<StorageDeletionRequest> storageRequestOptional = storageDeletionRequestRepo.findOneByRemoteStepGroupId(request.getGroupId());
-        if (storageRequestOptional.isPresent()) {
-            StorageDeletionRequest deletionRequest = storageRequestOptional.get();
-            deletionRequest.setState(InternalRequestStep.ERROR);
-            Set<String> errorList = errors.stream()
-                    .map(RequestResultInfoDTO::getErrorCause)
-                    .collect(Collectors.toSet());
-            deletionRequest.setErrors(errorList);
+    public void handleRemoteDeleteError(Set<RequestInfo> requestInfos) {
+        for (RequestInfo ri : requestInfos) {
+            List<AbstractRequest> requests = abstractRequestService.findRequests(ri.getGroupId());
+            for (AbstractRequest request : requests) {
+                StorageDeletionRequest deletionRequest = (StorageDeletionRequest) request;
+                deletionRequest.setState(InternalRequestStep.ERROR);
+                Set<String> errorList = ri.getErrorRequests().stream()
+                        .map(RequestResultInfoDTO::getErrorCause)
+                        .collect(Collectors.toSet());
+                deletionRequest.setErrors(errorList);
 
-            // Append to the message the origin of the issue
-            Set<String> oaisEntityError = errorList.stream()
-                    .map(message -> "Error while removing stored file: " + message)
-                    .collect(Collectors.toSet());
-            try {
-                // Update SIP with error
-                SIPEntity sipEntity = sipService.getEntity(deletionRequest.getSipId());
-                sipEntity.setState(SIPState.ERROR);
-                sipEntity.setErrors(oaisEntityError);
-                sessionNotifier.notifySIPDeletionFailed(sipEntity);
-                sipService.save(sipEntity);
-                // Update AIP with error
-                Set<AIPEntity> aipEntities = aipService.getAips(deletionRequest.getSipId());
-                for (AIPEntity aipEntity : aipEntities) {
-                    aipEntity.setErrors(oaisEntityError);
-                    aipEntity.setState(AIPState.ERROR);
-                    aipService.save(aipEntity);
+                // Append to the message the origin of the issue
+                Set<String> oaisEntityError = errorList.stream()
+                        .map(message -> "Error while removing stored file: " + message).collect(Collectors.toSet());
+                try {
+                    // Update SIP with error
+                    SIPEntity sipEntity = sipService.getEntity(deletionRequest.getSipId());
+                    sipEntity.setState(SIPState.ERROR);
+                    sipEntity.setErrors(oaisEntityError);
+                    sessionNotifier.notifySIPDeletionFailed(sipEntity);
+                    sipService.save(sipEntity);
+                    // Update AIP with error
+                    Set<AIPEntity> aipEntities = aipService.getAips(deletionRequest.getSipId());
+                    for (AIPEntity aipEntity : aipEntities) {
+                        aipEntity.setErrors(oaisEntityError);
+                        aipEntity.setState(AIPState.ERROR);
+                        aipService.save(aipEntity);
+                    }
+                    sessionNotifier.notifyAIPDeletionFailed(aipEntities);
+                } catch (EntityNotFoundException e) {
+                    LOGGER.debug("Can't mark SIPEntity with sidId[{}] with error: {}", deletionRequest.getSipId(),
+                            e.getMessage());
                 }
-                sessionNotifier.notifyAIPDeletionFailed(aipEntities);
-            } catch (EntityNotFoundException e) {
-                LOGGER.debug("Can't mark SIPEntity with sidId[{}] with error: {}", deletionRequest.getSipId(), e.getMessage());
+                storageDeletionRequestRepo.save(deletionRequest);
             }
-            storageDeletionRequestRepo.save(deletionRequest);
         }
     }
 
     @Override
-    public void handleRemoteDeleteSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
-        Optional<StorageDeletionRequest> storageRequestOptional = storageDeletionRequestRepo.findOneByRemoteStepGroupId(request.getGroupId());
-        if (storageRequestOptional.isPresent()) {
-            StorageDeletionRequest deletionRequest = storageRequestOptional.get();
-            boolean deleteIrrevocably = deletionRequest.getDeletionMode() == SessionDeletionMode.IRREVOCABLY;
-            aipService.processDeletion(deletionRequest.getSipId(), deleteIrrevocably);
-            sipService.processDeletion(deletionRequest.getSipId(), deleteIrrevocably);
-            storageDeletionRequestRepo.delete(deletionRequest);
+    public void handleRemoteDeleteSuccess(Set<RequestInfo> requestInfos) {
+        for (RequestInfo ri : requestInfos) {
+            List<AbstractRequest> requests = abstractRequestService.findRequests(ri.getGroupId());
+            for (AbstractRequest request : requests) {
+                StorageDeletionRequest deletionRequest = (StorageDeletionRequest) request;
+                boolean deleteIrrevocably = deletionRequest.getDeletionMode() == SessionDeletionMode.IRREVOCABLY;
+                aipService.processDeletion(deletionRequest.getSipId(), deleteIrrevocably);
+                sipService.processDeletion(deletionRequest.getSipId(), deleteIrrevocably);
+                storageDeletionRequestRepo.delete(deletionRequest);
+            }
         }
     }
 }

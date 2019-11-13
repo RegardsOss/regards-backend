@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -133,4 +134,6 @@ public interface IAIPService {
     Set<AIPEntity> getAips(String sipId);
 
     void saveError(AIPEntity aipEntity, String errorMessage);
+
+    List<AIPEntity> saveAll(Collection<AIPEntity> updates);
 }

@@ -266,4 +266,15 @@ public class SessionNotifier {
         return "";
     }
 
+    public void notifyAIPMetaDataStoring(AIPEntity aip) {
+        // TODO
+    }
+
+    public void notifyAIPMetaDataStored(AIPEntity aip) {
+        // TODO
+    }
+
+    public void notifyAIPMetaDataStoreError(AIPEntity aip) {
+        // TODO
+    }
 }

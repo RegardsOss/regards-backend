@@ -18,14 +18,21 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.Set;
+
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.storagelight.client.IStorageRequestListener;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 import java.util.Collection;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import fr.cnes.regards.modules.storagelight.client.IStorageRequestListener;
+import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 
 /**
  * This class offers callbacks from storage events
@@ -42,65 +49,68 @@ public class IngestStorageListener implements IStorageRequestListener {
     private IIngestRequestService ingestRequestService;
 
     @Autowired
+    private IRequestService requestService;
+
+    @Autowired
     private IDeleteRequestService deleteRequestService;
 
     @Override
-    public void onCopySuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
+    public void onCopySuccess(Set<RequestInfo> requests) {
         // Nothing to do
     }
 
     @Override
-    public void onCopyError(RequestInfo request, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
+    public void onCopyError(Set<RequestInfo> requests) {
         // Nothing to do
     }
 
     @Override
-    public void onAvailable(RequestInfo request, Collection<RequestResultInfoDTO> success) {
+    public void onAvailable(Set<RequestInfo> requests) {
         // Nothing to do
     }
 
     @Override
-    public void onAvailabilityError(RequestInfo request, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
+    public void onAvailabilityError(Set<RequestInfo> requests) {
         // Nothing to do
     }
 
     @Override
-    public void onDeletionSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
-        deleteRequestService.handleRemoteDeleteSuccess(request, success);
+    public void onDeletionSuccess(Set<RequestInfo> requests) {
+        deleteRequestService.handleRemoteDeleteSuccess(requests);
     }
 
     @Override
-    public void onDeletionError(RequestInfo request, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
-        deleteRequestService.handleRemoteDeleteError(request, success, errors);
+    public void onDeletionError(Set<RequestInfo> requests) {
+        deleteRequestService.handleRemoteDeleteError(requests);
     }
 
     @Override
-    public void onReferenceSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
-        ingestRequestService.handleRemoteReferenceSuccess(request, success);
+    public void onReferenceSuccess(Set<RequestInfo> requests) {
+        ingestRequestService.handleRemoteReferenceSuccess(requests);
     }
 
     @Override
-    public void onReferenceError(RequestInfo request, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
-        ingestRequestService.handleRemoteReferenceError(request, success, errors);
+    public void onReferenceError(Set<RequestInfo> requests) {
+        ingestRequestService.handleRemoteReferenceError(requests);
     }
 
     @Override
-    public void onStoreSuccess(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success) {
-        ingestRequestService.handleRemoteStoreSuccess(requestInfo, success);
+    public void onStoreSuccess(Set<RequestInfo> requests) {
+        requestService.handleRemoteStoreSuccess(requests);
     }
 
     @Override
-    public void onStoreError(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success, Collection<RequestResultInfoDTO> errors) {
-        ingestRequestService.handleRemoteStoreError(requestInfo, success, errors);
+    public void onStoreError(Set<RequestInfo> requests) {
+        requestService.handleRemoteStoreError(requests);
     }
 
     @Override
-    public void onRequestGranted(RequestInfo requestInfo) {
-        ingestRequestService.handleRemoteRequestGranted(requestInfo);
+    public void onRequestGranted(Set<RequestInfo> requests) {
+        requestService.handleRemoteRequestGranted(requests);
     }
 
     @Override
-    public void onRequestDenied(RequestInfo requestInfo) {
-        ingestRequestService.handleRemoteRequestDenied(requestInfo);
+    public void onRequestDenied(Set<RequestInfo> requests) {
+        ingestRequestService.handleRemoteRequestDenied(requests);
     }
 }

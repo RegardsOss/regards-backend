@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 
 /**
  * Ingest request service
@@ -77,34 +77,27 @@ public interface IIngestRequestService {
     void handleIngestJobSucceed(IngestRequest request, SIPEntity sipEntity, List<AIP> aips);
 
     /**
-     * Handle request granted from storage service
-     */
-    void handleRemoteRequestGranted(RequestInfo requestInfo);
-
-    /**
      * Handle request denied from storage service
      */
-    void handleRemoteRequestDenied(RequestInfo requestInfo);
+    void handleRemoteRequestDenied(Set<RequestInfo> requests);
 
     /**
      * Handle remote storage success
      */
-    void handleRemoteStoreSuccess(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success);
+    void handleRemoteStoreSuccess(Set<RequestInfo> requests);
 
     /**
      * Handle remote storage error
      */
-    void handleRemoteStoreError(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success,
-            Collection<RequestResultInfoDTO> errors);
+    void handleRemoteStoreError(Set<RequestInfo> requests);
 
     /**
      * Handle remote reference success
      */
-    void handleRemoteReferenceSuccess(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success);
+    void handleRemoteReferenceSuccess(Set<RequestInfo> requests);
 
     /**
      * Handle remote reference error
      */
-    void handleRemoteReferenceError(RequestInfo requestInfo, Collection<RequestResultInfoDTO> success,
-            Collection<RequestResultInfoDTO> errors);
+    void handleRemoteReferenceError(Set<RequestInfo> requests);
 }

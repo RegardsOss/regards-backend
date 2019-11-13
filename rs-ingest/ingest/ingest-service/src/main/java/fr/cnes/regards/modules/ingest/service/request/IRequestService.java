@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,25 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
+import java.util.Collection;
 import java.util.Set;
 
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-
 /**
- * Delete file request service
- *
  * @author Léo Mieulet
- *
  */
-public interface IDeleteRequestService {
+public interface IRequestService {
+    void handleRemoteRequestDenied(Set<RequestInfo> requests);
+
+    void handleRemoteStoreError(Set<RequestInfo> requests);
+
+    void handleRemoteStoreSuccess(Set<RequestInfo> requests);
 
     /**
-     * Handle file deletion error
+     * Handle request granted from storage service
      */
-    void handleRemoteDeleteError(Set<RequestInfo> requestInfos);
-
-    /**
-     * Handle file deletion success
-     */
-    void handleRemoteDeleteSuccess(Set<RequestInfo> requestInfos);
+    void handleRemoteRequestGranted(Set<RequestInfo> requests);
 }

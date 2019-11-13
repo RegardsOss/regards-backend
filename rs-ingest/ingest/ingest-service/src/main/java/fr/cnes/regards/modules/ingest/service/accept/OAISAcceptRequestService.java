@@ -18,15 +18,18 @@
  */
 package fr.cnes.regards.modules.ingest.service.accept;
 
+import java.util.ArrayList;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.accept.OAISRequestType;
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
-import java.util.ArrayList;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 
 /**
  * Accept or deny request if there is another type of request currently running
@@ -66,19 +69,16 @@ public class OAISAcceptRequestService implements IOAISAcceptRequestService {
      * @return true when there is currently an ingestion
      */
     private boolean isIngesting(String sessionOwner, String session) {
-        ArrayList<IngestRequestStep> runningStep = Lists.newArrayList(IngestRequestStep.LOCAL_SCHEDULED,
-                IngestRequestStep.LOCAL_INIT,
-                IngestRequestStep.LOCAL_PRE_PROCESSING,
-                IngestRequestStep.LOCAL_VALIDATION,
-                IngestRequestStep.LOCAL_GENERATION,
-                IngestRequestStep.LOCAL_TAGGING,
-                IngestRequestStep.LOCAL_POST_PROCESSING,
-                IngestRequestStep.LOCAL_FINAL,
-                IngestRequestStep.REMOTE_STORAGE_REQUESTED,
-                IngestRequestStep.REMOTE_AIP_STORAGE_REQUESTED);
-
-        return ingestRequestRepository.
-                existsByMetadataSessionOwnerAndMetadataSessionAndStepIn(sessionOwner, session, runningStep);
+        ArrayList<IngestRequestStep> runningStep = Lists
+                .newArrayList(IngestRequestStep.LOCAL_SCHEDULED, IngestRequestStep.LOCAL_INIT,
+                              IngestRequestStep.LOCAL_PRE_PROCESSING, IngestRequestStep.LOCAL_VALIDATION,
+                              IngestRequestStep.LOCAL_GENERATION, IngestRequestStep.LOCAL_TAGGING,
+                              IngestRequestStep.LOCAL_POST_PROCESSING, IngestRequestStep.LOCAL_FINAL,
+                              IngestRequestStep.REMOTE_STORAGE_REQUESTED);
+        return false;
+        //        TODO
+        //        return ingestRequestRepository.
+        //                existsByMetadataSessionOwnerAndMetadataSessionAndStepIn(sessionOwner, session, runningStep);
     }
 
     /**
@@ -96,6 +96,7 @@ public class OAISAcceptRequestService implements IOAISAcceptRequestService {
      * @return true when there is currently a job working to delete OAIS entites
      */
     private boolean isDeleting(String sessionOwner, String session) {
-        return oaisDeletionRequestRepository.existsBySessionOwnerAndSession(sessionOwner, session);
+        //        return oaisDeletionRequestRepository.existsBySessionOwnerAndSession(sessionOwner, session);
+        return false;
     }
 }
