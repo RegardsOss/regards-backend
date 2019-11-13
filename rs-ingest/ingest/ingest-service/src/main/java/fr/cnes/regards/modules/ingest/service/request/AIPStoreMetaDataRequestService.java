@@ -61,9 +61,6 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
     private IAIPService aipService;
 
     @Autowired
-    private IRequestService requestService;
-
-    @Autowired
     private IStorageClient storageClient;
 
     @Override
@@ -98,9 +95,6 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
 
     @Override
     public void schedule(List<AIPEntity> aips, boolean removeCurrentMetaData, boolean computeChecksum) {
-        // get existing requests for given aips
-        requestS
-
         List<AIPStoreMetaDataRequest> requests = new ArrayList<>();
         for (AIPEntity aip : aips) {
             requests.add(AIPStoreMetaDataRequest.build(aip, removeCurrentMetaData, computeChecksum));

@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -26,7 +25,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
@@ -60,11 +58,4 @@ public interface IRequestService {
      * @return a page of entities
      */
     Page<RequestDto> searchRequests(SearchRequestsParameters filters, Pageable pageable) throws ModuleException;
-
-    /**
-     * Retrieve existing {@link AbstractRequest}s for the given {@link AIPEntity} ids
-     * @param aipIds {@link AIPEntity} ids
-     * @return {@link AbstractRequest}s
-     */
-    Set<AbstractRequest> searchByAipIds(Collection<String> aipIds);
 }
