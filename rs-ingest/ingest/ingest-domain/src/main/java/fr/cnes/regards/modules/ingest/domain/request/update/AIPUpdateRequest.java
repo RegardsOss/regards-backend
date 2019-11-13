@@ -18,14 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.update;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.AbstractInternalRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -33,17 +30,24 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.Valid;
+
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 
 /**
  * Keep info about an AIP update request
  * @author Léo Mieulet
  */
-@Entity(name = "AIPUpdateRequest")
+@Entity(name = RequestTypeConstant.UPDATE_VALUE)
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-public class AIPUpdateRequest extends AbstractInternalRequest {
-
+public class AIPUpdateRequest extends AbstractRequest {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "update_task_id", foreignKey = @ForeignKey(name = "fk_update_request_update_task_id"))
@@ -77,7 +81,8 @@ public class AIPUpdateRequest extends AbstractInternalRequest {
         return AIPUpdateRequest.build(aip, AbstractAIPUpdateTask.build(updateTaskDto), pending);
     }
 
-    public static List<AIPUpdateRequest> build(AIPEntity aip, List<AbstractAIPUpdateTask> updateTasks, boolean pending) {
+    public static List<AIPUpdateRequest> build(AIPEntity aip, Collection<AbstractAIPUpdateTask> updateTasks,
+            boolean pending) {
         List<AIPUpdateRequest> result = new ArrayList<>();
         for (AbstractAIPUpdateTask updateTask : updateTasks) {
             AIPUpdateRequest updateRequest = new AIPUpdateRequest();

@@ -18,27 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.schedule;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.dao.AIPSaveMetaDataRepository;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetaDataRequest;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
-import fr.cnes.regards.modules.ingest.service.job.AIPSaveMetaDataJob;
-import fr.cnes.regards.modules.ingest.service.job.AIPUpdateRunnerJob;
-import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,17 +32,37 @@ import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
+import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
+import fr.cnes.regards.modules.ingest.service.job.AIPSaveMetaDataJob;
+import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
+
 /**
  * This component scans the AIPSaveMetaDataRepo and schedule jobs
  *
  * @author Leo Mieulet
  */
+@Profile("!noscheduler")
 @Component
 @MultitenantTransactional
 public class AIPSaveMetaDataJobScheduler {
 
     @Autowired
-    private AIPSaveMetaDataRepository aipSaveMetaDataRepository;
+    private IAIPStoreMetaDataRepository aipStoreMetaDataRepository;
+
+    @Autowired
+    private IAbstractRequestRepository abstractRequestRepository;
 
     @Autowired
     private AIPSaveMetaDataJobScheduler self;
@@ -104,16 +110,15 @@ public class AIPSaveMetaDataJobScheduler {
         JobInfo jobInfo = null;
         Pageable pageRequest = PageRequest.of(0, updateRequestIterationLimit, Sort.Direction.ASC, "id");
         // Fetch the first list of update request to handle
-        Page<AIPSaveMetaDataRequest> waitingRequests = aipSaveMetaDataRepository.findWaitingRequest(pageRequest);
+        Page<AIPStoreMetaDataRequest> waitingRequests = aipStoreMetaDataRepository.findWaitingRequest(pageRequest);
         if (!waitingRequests.isEmpty()) {
-            List<AIPSaveMetaDataRequest> content = waitingRequests.getContent();
+            List<AIPStoreMetaDataRequest> content = waitingRequests.getContent();
 
-            // Fetch all update request linked to same aips
-            content.forEach(task -> task.setState(InternalRequestStep.RUNNING));
-            aipSaveMetaDataRepository.saveAll(content);
+            // Make a list of request ids
+            List<Long> requestIds = content.stream().map(AIPStoreMetaDataRequest::getId).collect(Collectors.toList());
 
-            // Make a list of content ids
-            List<Long> requestIds = content.stream().map(AIPSaveMetaDataRequest::getId).collect(Collectors.toList());
+            // Change request state
+            abstractRequestRepository.updateStates(requestIds, InternalRequestStep.RUNNING);
 
             // Schedule deletion job
             Set<JobParameter> jobParameters = Sets.newHashSet();

@@ -18,37 +18,27 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
-import fr.cnes.regards.modules.ingest.domain.request.AbstractInternalRequest;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
 import java.util.Set;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
-
 /**
  * Macro request that keeps info about a "massive" suppression of OAIS entities
  * @author Marc SORDI
  */
-@Entity(name = "OAISDeletionRequest")
+@Entity(name = RequestTypeConstant.OAIS_DELETION_VALUE)
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-public class OAISDeletionRequest extends AbstractInternalRequest {
+public class OAISDeletionRequest extends AbstractRequest {
 
     /**
      * request configuration

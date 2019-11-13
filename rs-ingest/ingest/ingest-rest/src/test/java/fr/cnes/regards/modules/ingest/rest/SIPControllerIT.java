@@ -18,16 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.Set;
+
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -43,7 +41,7 @@ import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.geojson.GeoJsonFieldDescriptors;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
@@ -62,6 +60,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
+import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 
 /**
  *
@@ -94,8 +93,9 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Ingest valid SIPs")
     public void ingestSips() {
 
-        SIPCollection collection = SIPCollection.build(IngestMetadataDto
-                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, CATEGORIES, STORAGE_METADATA));
+        SIPCollection collection = SIPCollection
+                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                               CATEGORIES, STORAGE_METADATA));
 
         SIP firstSIPwithGeometry = buildSipOne("SIP_001", "data1.fits");
         firstSIPwithGeometry
@@ -127,7 +127,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         lfd.add(fields.withPath("metadata.sessionOwner", "The ingestion session source"));
         lfd.add(fields.withPath("metadata.storages", "Target storages"));
         lfd.add(fields.withPath("metadata.storages[].pluginBusinessId", "Storage identifier"));
-        lfd.add(fields.withPath("metadata.storages[].targetTypes", "List of data object types accepted by this storage location (when storing AIPs)"));
+        lfd.add(fields.withPath("metadata.storages[].targetTypes",
+                                "List of data object types accepted by this storage location (when storing AIPs)"));
 
         lfd.add(fields.withPath("type", "Feature collection"));
 
@@ -147,8 +148,9 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Get SIPs")
     public void getSips() {
 
-        SIPCollection collection = SIPCollection.build(IngestMetadataDto
-                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, Sets.newHashSet("CAT"), STORAGE_METADATA));
+        SIPCollection collection = SIPCollection
+                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                               Sets.newHashSet("CAT"), STORAGE_METADATA));
 
         collection.add(buildSipOne("SIP_001", "data1.fits"));
         collection.add(buildSipOne("SIP_002", "data2.fits"));
@@ -207,8 +209,9 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Ingest valid and invalid SIPs")
     public void ingestInvalidSips() {
 
-        SIPCollection collection = SIPCollection.build(IngestMetadataDto
-                .build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, Sets.newHashSet("CAT"), STORAGE_METADATA));
+        SIPCollection collection = SIPCollection
+                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                               Sets.newHashSet("CAT"), STORAGE_METADATA));
 
         // SIP 1
         SIP sip = SIP.build(EntityType.DATA, "SIP_001");

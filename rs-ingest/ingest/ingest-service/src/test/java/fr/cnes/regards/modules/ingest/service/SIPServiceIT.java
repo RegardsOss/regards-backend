@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -34,7 +33,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -45,6 +43,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 

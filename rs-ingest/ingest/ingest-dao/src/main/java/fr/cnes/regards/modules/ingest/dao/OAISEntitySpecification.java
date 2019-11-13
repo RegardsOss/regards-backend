@@ -47,7 +47,7 @@ public final class OAISEntitySpecification {
                     providerIdsPredicates.add(cb.equal(root.get("providerId"), providerId));
                 }
             }
-            // Use the OR operator between each storage
+            // Use the OR operator between each provider id
             predicates.add(cb.or(providerIdsPredicates.toArray(new Predicate[providerIdsPredicates.size()])));
         }
         if (storages != null && !storages.isEmpty()) {

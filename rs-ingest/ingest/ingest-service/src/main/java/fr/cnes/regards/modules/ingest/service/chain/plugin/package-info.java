@@ -16,18 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.request;
-
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import java.util.List;
-
 /**
- * @author Léo Mieulet
+ *
+ * This package defines default ingest plugins
+ *
+ * @author Marc Sordi
+ *
  */
-public interface IAbstractRequestService {
-    /**
-     * @param groupId
-     * @return the list of AbstractRequest linked to the event group id
-     */
-    List<AbstractRequest> findRequests(String groupId);
-}
+package fr.cnes.regards.modules.ingest.service.chain.plugin;

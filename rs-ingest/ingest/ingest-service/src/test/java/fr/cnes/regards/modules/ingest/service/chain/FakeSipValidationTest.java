@@ -27,7 +27,7 @@ import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.ingest.service.plugin.FakeSipValidation;
+import fr.cnes.regards.modules.ingest.service.chain.plugin.FakeSipValidation;
 
 /**
  * Test {@link FakeSipValidationTest} plugin

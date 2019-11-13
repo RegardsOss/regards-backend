@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -27,11 +27,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
- * {@link OAISDeletionRequest} repository
- * @author Marc SORDI
+ * {@link AIPUpdatesCreatorRequest} repository
+ * @author Léo Mieulet
  */
 @Repository
-public interface IOAISDeletionRequestRepository extends JpaRepository<OAISDeletionRequest, Long> {
+public interface IAIPUpdatesCreatorRepository extends JpaRepository<AIPUpdatesCreatorRequest, Long> {
 
     Page<AbstractRequest> findAll(Specification<AbstractRequest> searchAllByFilters, Pageable pageable);
 }

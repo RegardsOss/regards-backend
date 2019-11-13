@@ -16,39 +16,40 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.aip;
+package fr.cnes.regards.modules.ingest.service.request;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
-import com.netflix.discovery.converters.Auto;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.ingest.dao.AIPSaveMetaDataRepository;
+import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import org.checkerframework.checker.units.qual.A;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
- * Manage {@link AIPSaveMetaDataRequest} entities
+ * Manage {@link AIPStoreMetaDataRequest} entities
  * @author Léo Mieulet
  */
 @Service
 @MultitenantTransactional
-public class AIPSaveMetaDataService implements IAIPSaveMetaDataService {
+public class AIPSaveMetaDataRequestService implements IAIPSaveMetaDataRequestService {
 
     @Autowired
-    private AIPSaveMetaDataRepository aipSaveMetaDataRepository;
+    private IAIPStoreMetaDataRepository aipStoreMetaDataRepository;
 
     @Autowired
     private IAIPStorageService aipStorageService;
@@ -63,7 +64,7 @@ public class AIPSaveMetaDataService implements IAIPSaveMetaDataService {
     private IStorageClient storageClient;
 
     @Override
-    public void commitJob(List<AIPSaveMetaDataRequest> requests, List<AIPEntity> aipsToStore,
+    public void commitJob(List<AIPStoreMetaDataRequest> requests, List<AIPEntity> aipsToStore,
             List<AIPEntity> aipsToUpdate, List<FileDeletionRequestDTO> filesToDelete) {
         String requestId = null;
         try {
@@ -74,7 +75,7 @@ public class AIPSaveMetaDataService implements IAIPSaveMetaDataService {
         }
 
         // Link the request sent to storage to the
-        for (AIPSaveMetaDataRequest request : requests) {
+        for (AIPStoreMetaDataRequest request : requests) {
             if (request.getState() != InternalRequestStep.ERROR) {
                 // Register request info to identify storage callback events
                 request.setRemoteStepGroupIds(Lists.newArrayList(requestId));
@@ -91,42 +92,41 @@ public class AIPSaveMetaDataService implements IAIPSaveMetaDataService {
             storageClient.delete(filesToDelete);
         }
     }
+
     @Override
     public void scheduleSaveMetaData(List<AIPEntity> aips, boolean removeCurrentMetaData, boolean computeChecksum) {
-        List<AIPSaveMetaDataRequest> requests = new ArrayList<>();
+        List<AIPStoreMetaDataRequest> requests = new ArrayList<>();
         for (AIPEntity aip : aips) {
-            requests.add(AIPSaveMetaDataRequest.build(aip, removeCurrentMetaData, computeChecksum));
+            requests.add(AIPStoreMetaDataRequest.build(aip, removeCurrentMetaData, computeChecksum));
             sessionNotifier.notifyAIPMetaDataStoring(aip);
         }
-        aipSaveMetaDataRepository.saveAll(requests);
+        aipStoreMetaDataRepository.saveAll(requests);
     }
 
     @Override
-    public void handleManifestSaved(AIPSaveMetaDataRequest request, Set<RequestInfo> requestInfos) {
-        // TODO
+    public void handleManifestSaved(AIPStoreMetaDataRequest request, Set<RequestInfo> requestInfos) {
         sessionNotifier.notifyAIPMetaDataStored(request.getAip());
-        aipSaveMetaDataRepository.delete(request);
+        aipStoreMetaDataRepository.delete(request);
     }
 
     @Override
     public void handleManifestSaveError(Set<RequestInfo> requestInfos) {
         sessionNotifier.notifyAIPMetaDataStoreError(null);
-        // TODO
-        List<AIPSaveMetaDataRequest> requests = new ArrayList<>();
-        for (AIPSaveMetaDataRequest request : requests) {
+        List<AIPStoreMetaDataRequest> requests = new ArrayList<>();
+        for (AIPStoreMetaDataRequest request : requests) {
             request.setErrors(null);
             request.setState(InternalRequestStep.ERROR);
         }
-        aipSaveMetaDataRepository.saveAll(requests);
+        aipStoreMetaDataRepository.saveAll(requests);
     }
 
     @Override
-    public List<AIPSaveMetaDataRequest> findAllById(List<Long> ids) {
-        return aipSaveMetaDataRepository.findAllById(ids);
+    public List<AIPStoreMetaDataRequest> findAllById(List<Long> ids) {
+        return aipStoreMetaDataRepository.findAllById(ids);
     }
 
     @Override
-    public List<AIPSaveMetaDataRequest> saveAll(List<AIPSaveMetaDataRequest> requests) {
-        return aipSaveMetaDataRepository.saveAll(requests);
+    public List<AIPStoreMetaDataRequest> saveAll(List<AIPStoreMetaDataRequest> requests) {
+        return aipStoreMetaDataRepository.saveAll(requests);
     }
 }

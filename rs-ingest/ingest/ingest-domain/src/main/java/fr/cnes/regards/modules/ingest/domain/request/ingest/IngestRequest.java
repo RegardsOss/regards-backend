@@ -21,8 +21,9 @@ package fr.cnes.regards.modules.ingest.domain.request.ingest;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -48,7 +49,7 @@ import org.springframework.lang.Nullable;
  * @author Léo Mieulet
  *
  */
-@Entity(name = "IngestRequest")
+@Entity(name = RequestTypeConstant.INGEST_VALUE)
 public class IngestRequest extends AbstractRequest {
 
     @Column(columnDefinition = "jsonb", name = "payload")
@@ -82,14 +83,6 @@ public class IngestRequest extends AbstractRequest {
 
     public void setRequestId(String requestId) {
         config.setRequestId(requestId);
-    }
-
-    public RequestState getState() {
-        return config.getState();
-    }
-
-    public void setState(RequestState state) {
-        config.setState(state);
     }
 
     public IngestMetadata getMetadata() {
@@ -142,21 +135,21 @@ public class IngestRequest extends AbstractRequest {
         return UUID.randomUUID().toString();
     }
 
-    public static IngestRequest build(IngestMetadata metadata, RequestState state, IngestRequestStep step, SIP sip) {
+    public static IngestRequest build(IngestMetadata metadata, InternalRequestStep state, IngestRequestStep step, SIP sip) {
         return build(generateRequestId(), metadata, state, step, sip, null);
     }
 
-    public static IngestRequest build(IngestMetadata metadata, RequestState state, IngestRequestStep step, SIP sip,
+    public static IngestRequest build(IngestMetadata metadata, InternalRequestStep state, IngestRequestStep step, SIP sip,
             @Nullable Set<String> errors) {
         return build(generateRequestId(), metadata, state, step, sip, errors);
     }
 
-    public static IngestRequest build(String requestId, IngestMetadata metadata, RequestState state,
+    public static IngestRequest build(String requestId, IngestMetadata metadata, InternalRequestStep state,
             IngestRequestStep step, SIP sip) {
         return build(requestId, metadata, state, step, sip, null);
     }
 
-    public static IngestRequest build(String requestId, IngestMetadata metadata, RequestState state,
+    public static IngestRequest build(String requestId, IngestMetadata metadata, InternalRequestStep state,
             IngestRequestStep step, SIP sip, @Nullable Set<String> errors) {
         IngestRequest request = new IngestRequest();
         request.setConfig(new IngestPayload());

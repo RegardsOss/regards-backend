@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.ingest.domain.request;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +28,8 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -38,12 +39,8 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -62,10 +59,12 @@ import org.hibernate.annotations.TypeDefs;
         @Index(name = "idx_request_search", columnList = "session_owner,session_name,provider_id"),
         @Index(name = "idx_request_remote_step_group_ids", columnList = "remote_step_group_ids")
 })
-@DiscriminatorColumn(name = "dtype", length = 32)
+@DiscriminatorColumn(name = "dtype", length = AbstractRequest.MAX_TYPE_LENGTH)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public abstract class AbstractRequest {
+
+    public static final int MAX_TYPE_LENGTH = 32;
 
     @Id
     @SequenceGenerator(name = "requestSequence", initialValue = 1, sequenceName = "seq_request")
@@ -107,6 +106,14 @@ public abstract class AbstractRequest {
 
     @Column(length = 128, name = "provider_id")
     private String providerId;
+
+    @NotNull(message = "Request state is required")
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50)
+    private InternalRequestStep state;
+
+    @Column(length = 128, name = "dtype", insertable = false, updatable = false)
+    private String dtype;
 
     public Long getId() {
         return id;
@@ -184,5 +191,21 @@ public abstract class AbstractRequest {
 
     public void setProviderId(String providerId) {
         this.providerId = providerId;
+    }
+
+    public InternalRequestStep getState() {
+        return state;
+    }
+
+    public void setState(InternalRequestStep state) {
+        this.state = state;
+    }
+
+    public String getDtype() {
+        return dtype;
+    }
+
+    public void setDtype(String dtype) {
+        this.dtype = dtype;
     }
 }

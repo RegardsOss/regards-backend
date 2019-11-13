@@ -18,20 +18,47 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 
 /**
  * @author Léo Mieulet
  */
+@Repository
 public interface IAbstractRequestRepository extends JpaRepository<AbstractRequest, Long> {
+
     /**
      * Retrieve a page of {@link AbstractRequest} matching the provided specification
-     * @param aipEntitySpecification
+     * @param aipEntitySpecification criteria spec
      * @return a page of {@link AbstractRequest}
      */
+    Page<AbstractRequest> findAll(Specification<AbstractRequest> aipEntitySpecification, Pageable pageable);
+
+    /**
+     * Retrieve a list of {@link AbstractRequest} referencing the provided specification
+     * @param aipEntitySpecification criteria spec
+     * @return a list of {@link AbstractRequest}
+     */
     List<AbstractRequest> findAll(Specification<AbstractRequest> aipEntitySpecification);
+
+    /**
+     * Update the state of list of entities using their ids
+     * @param ids request ids
+     * @param state new state
+     * @return
+     */
+    @Modifying
+    @Query(value = "UPDATE AbstractRequest SET state = :state WHERE id IN (:ids)")
+    int updateStates(@Param("ids") List<Long> ids, @Param("state") InternalRequestStep state);
 }

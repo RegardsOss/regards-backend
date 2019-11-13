@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.plugin;
+package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
 import java.util.List;
 import java.util.Map;

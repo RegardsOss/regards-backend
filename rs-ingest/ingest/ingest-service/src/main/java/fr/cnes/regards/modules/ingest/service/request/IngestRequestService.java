@@ -18,8 +18,22 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -34,10 +48,10 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ingest.dao.AIPSaveMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -45,7 +59,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPSaveMetaDataService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
@@ -55,17 +68,6 @@ import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
-import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Service;
 
 /**
  * Manage ingest requests
@@ -107,14 +109,10 @@ public class IngestRequestService implements IIngestRequestService {
     private INotificationClient notificationClient;
 
     @Autowired
-    private AIPSaveMetaDataRepository aipSaveMetaDataRepository;
-
-    @Autowired
     private SessionNotifier sessionNotifier;
 
     @Autowired
-    private IAIPSaveMetaDataService aipSaveMetaDataService;
-;
+    private IAIPSaveMetaDataRequestService aipSaveMetaDataService;;
 
     @Override
     public void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests) {
@@ -168,26 +166,23 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Override
     public void handleRequestGranted(IngestRequest request) {
-        request.setState(RequestState.GRANTED);
-
         // Keep track of the request
         saveRequest(request);
 
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   request.getState(), request.getErrors()));
+                RequestState.GRANTED, request.getErrors()));
     }
 
     @Override
     public void handleRequestDenied(IngestRequest request) {
-        request.setState(RequestState.DENIED);
-
+        request.setState(InternalRequestStep.ERROR);
         // Do not keep track of the request
         // Publish DENIED request
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   request.getState(), request.getErrors()));
+                RequestState.DENIED, request.getErrors()));
     }
 
     @Override
@@ -250,6 +245,7 @@ public class IngestRequestService implements IIngestRequestService {
                     case REMOTE_STORAGE_REQUESTED:
                         // Save the request was denied at AIP files storage
                         request.setStep(IngestRequestStep.REMOTE_STORAGE_DENIED);
+                        request.setState(InternalRequestStep.ERROR);
                         // Keep track of the error
                         saveAndPublishErrorRequest(request, String.format("Remote file storage request denied"));
                         break;
@@ -296,7 +292,8 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     private void finalizeSuccessfulRequest(IngestRequest request) {
-        request.setState(RequestState.SUCCESS);
+        // TODO wtf is this staTE?
+//        request.setState(RequestState.SUCCESS);
         // Clean
         deleteRequest(request);
 
@@ -318,7 +315,7 @@ public class IngestRequestService implements IIngestRequestService {
         sipService.save(sipEntity);
         // Publish SUCCESSFUL request
         publisher.publish(IngestRequestEvent.build(request.getRequestId(), request.getSip().getId(),
-                                                   sipEntity.getSipId(), request.getState(), request.getErrors()));
+                                                   sipEntity.getSipId(), RequestState.SUCCESS, request.getErrors()));
 
         // Publish new SIP in current session
         sessionNotifier.notifySIPStored(sipEntity);
@@ -337,7 +334,8 @@ public class IngestRequestService implements IIngestRequestService {
 
                 if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
                     // Update AIP and SIP with current error
-                    updateOAISEntitiesWithErrors(request, ri.getErrorRequests(), "Error occurred while storing AIP files");
+                    updateOAISEntitiesWithErrors(request, ri.getErrorRequests(),
+                                                 "Error occurred while storing AIP files");
                     // Update AIPs with success response returned by storage
                     aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), ri.getSuccessRequests());
                     // Save error in request status
@@ -386,14 +384,13 @@ public class IngestRequestService implements IIngestRequestService {
                     ri.getErrorRequests().forEach(e -> request.addError(e.getErrorCause()));
                 }
                 updateOAISEntitiesWithErrors(request, ri.getErrorRequests(),
-                        "Error occurred while storing AIP references");
+                                             "Error occurred while storing AIP references");
             }
         }
     }
 
     private void saveAndPublishErrorRequest(IngestRequest request, @Nullable String message) {
         // Mutate request
-        request.setState(RequestState.ERROR);
         request.addError(String.format("Storage request error with id \"%s\" and SIP provider id \"%s\"",
                                        request.getRequestId(), request.getSip().getId()));
         if (message != null) {
@@ -406,7 +403,7 @@ public class IngestRequestService implements IIngestRequestService {
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   request.getState(), request.getErrors()));
+                RequestState.ERROR, request.getErrors()));
     }
 
     public IngestRequest saveRequest(IngestRequest request) {

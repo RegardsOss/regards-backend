@@ -20,8 +20,9 @@ package fr.cnes.regards.modules.ingest.domain.request.manifest;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.AbstractInternalRequest;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import java.time.OffsetDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -36,9 +37,9 @@ import org.hibernate.annotations.TypeDefs;
  * Storing info that a metadata should be saved on storage
  * @author Léo Mieulet
  */
-@Entity(name = "AIPSaveMetaDataRequest")
+@Entity(name = RequestTypeConstant.STORE_METADATA_VALUE)
 @TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
-public class AIPSaveMetaDataRequest extends AbstractInternalRequest {
+public class AIPStoreMetaDataRequest extends AbstractRequest {
 
     /**
      * AIP to update
@@ -49,7 +50,7 @@ public class AIPSaveMetaDataRequest extends AbstractInternalRequest {
 
     @Column(columnDefinition = "jsonb", name = "payload")
     @Type(type = "jsonb")
-    private AIPSaveMetaDataPayload config;
+    private AIPStoreMetaDataPayload config;
 
     public AIPEntity getAip() {
         return aip;
@@ -59,11 +60,11 @@ public class AIPSaveMetaDataRequest extends AbstractInternalRequest {
         this.aip = aip;
     }
 
-    public AIPSaveMetaDataPayload getConfig() {
+    public AIPStoreMetaDataPayload getConfig() {
         return config;
     }
 
-    public void setConfig(AIPSaveMetaDataPayload config) {
+    public void setConfig(AIPStoreMetaDataPayload config) {
         this.config = config;
     }
 
@@ -84,15 +85,15 @@ public class AIPSaveMetaDataRequest extends AbstractInternalRequest {
         config.setComputeChecksum(computeChecksum);
     }
 
-    public static AIPSaveMetaDataRequest build(AIPEntity aip, boolean removeCurrentMetaData, boolean computeChecksum) {
-        AIPSaveMetaDataRequest smdr = new AIPSaveMetaDataRequest();
+    public static AIPStoreMetaDataRequest build(AIPEntity aip, boolean removeCurrentMetaData, boolean computeChecksum) {
+        AIPStoreMetaDataRequest smdr = new AIPStoreMetaDataRequest();
         smdr.setState(InternalRequestStep.CREATED);
         smdr.setAip(aip);
         smdr.setSessionOwner(aip.getIngestMetadata().getSessionOwner());
         smdr.setSession(aip.getIngestMetadata().getSession());
         smdr.setProviderId(aip.getProviderId());
         smdr.setCreationDate(OffsetDateTime.now());
-        smdr.setConfig(AIPSaveMetaDataPayload.build(removeCurrentMetaData, computeChecksum));
+        smdr.setConfig(AIPStoreMetaDataPayload.build(removeCurrentMetaData, computeChecksum));
         return smdr;
     }
 }

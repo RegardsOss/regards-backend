@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,11 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.modules.ingest.domain.mapper;
+
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
+import org.mapstruct.Mapper;
+
 /**
- *
- * This package defines default ingest plugins
- *
- * @author Marc Sordi
- *
+ * @author Léo Mieulet
  */
-package fr.cnes.regards.modules.ingest.service.plugin;
+@Mapper(componentModel = "spring")
+public interface IRequestMapper {
+
+    RequestDto metadataToDto(AbstractRequest metadata);
+}

@@ -18,16 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.update;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * @author Léo Mieulet
@@ -40,7 +43,8 @@ public class AIPUpdateFileLocationTask extends AbstractAIPUpdateTask {
      * File list that were either added or removed from a storage location
      */
     @Column(columnDefinition = "jsonb", name = "payload")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+            value = "fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO") })
     private List<RequestResultInfoDTO> fileLocationUpdates;
 
     public List<RequestResultInfoDTO> getFileLocationUpdates() {
@@ -49,5 +53,21 @@ public class AIPUpdateFileLocationTask extends AbstractAIPUpdateTask {
 
     public void setFileLocationUpdates(List<RequestResultInfoDTO> fileLocationUpdates) {
         this.fileLocationUpdates = fileLocationUpdates;
+    }
+
+    public static AIPUpdateFileLocationTask buildAddLocationTask(List<RequestResultInfoDTO> fileLocationUpdates) {
+        AIPUpdateFileLocationTask task = new AIPUpdateFileLocationTask();
+        task.setType(AIPUpdateTaskType.ADD_FILE_LOCATION);
+        task.setState(AIPUpdateState.READY);
+        task.setFileLocationUpdates(fileLocationUpdates);
+        return task;
+    }
+
+    public static AIPUpdateFileLocationTask buildRemoveLocationTask(List<RequestResultInfoDTO> fileLocationUpdates) {
+        AIPUpdateFileLocationTask task = new AIPUpdateFileLocationTask();
+        task.setType(AIPUpdateTaskType.REMOVE_FILE_LOCATION);
+        task.setState(AIPUpdateState.READY);
+        task.setFileLocationUpdates(fileLocationUpdates);
+        return task;
     }
 }

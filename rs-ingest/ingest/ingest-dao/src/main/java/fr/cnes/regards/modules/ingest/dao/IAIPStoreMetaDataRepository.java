@@ -18,24 +18,27 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetaDataRequest;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
- * {@link AIPSaveMetaDataRequest} repository
+ * {@link AIPStoreMetaDataRequest} repository
  * @author Léo Mieulet
  */
 @Repository
-public interface AIPSaveMetaDataRepository extends JpaRepository<AIPSaveMetaDataRequest, Long> {
+public interface IAIPStoreMetaDataRepository extends JpaRepository<AIPStoreMetaDataRequest, Long> {
 
-    default Page<AIPSaveMetaDataRequest> findWaitingRequest(Pageable pageRequest) {
+    default Page<AIPStoreMetaDataRequest> findWaitingRequest(Pageable pageRequest) {
         return findAllByState(InternalRequestStep.CREATED, pageRequest);
     }
 
-    Page<AIPSaveMetaDataRequest> findAllByState(InternalRequestStep step, Pageable page);
+    Page<AIPStoreMetaDataRequest> findAllByState(InternalRequestStep step, Pageable page);
+
+    Page<AbstractRequest> findAll(Specification<AbstractRequest> searchAllByFilters, Pageable pageable);
 }
