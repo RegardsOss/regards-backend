@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
  * @author sbinda
  *
  */
-public class AbstractIngestRequestTest extends AbstractMultitenantServiceTest {
+public abstract class AbstractIngestRequestTest extends AbstractMultitenantServiceTest {
 
     protected SIPEntity sipEntity;
 

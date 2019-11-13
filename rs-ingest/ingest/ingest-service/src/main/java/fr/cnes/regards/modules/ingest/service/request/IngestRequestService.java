@@ -307,6 +307,7 @@ public class IngestRequestService implements IIngestRequestService {
         sessionNotifier.notifyAIPsStored(aips);
 
         // Schedule manifest archivage
+        aipSaveMetaDataService.scheduleSaveMetaData(aips, false, true);
 
         // Update SIP state
         SIPEntity sipEntity = aips.get(0).getSip();

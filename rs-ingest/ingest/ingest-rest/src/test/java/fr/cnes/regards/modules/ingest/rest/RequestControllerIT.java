@@ -104,9 +104,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
 
         String session = "Session 1";
         String sessionOwner = "# Session owner 25";
-        SearchRequestsParameters body = SearchRequestsParameters.build()
-                .withSession(session)
-                .withSessionOwner(sessionOwner);
+        SearchRequestsParameters body = SearchRequestsParameters.build();
         for (int i = 0; i < 1000; i = i + 1) {
             AIPUpdatesCreatorRequest someRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto.build(
                     SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
