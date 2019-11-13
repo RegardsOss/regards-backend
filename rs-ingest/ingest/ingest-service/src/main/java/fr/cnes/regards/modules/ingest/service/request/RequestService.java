@@ -47,7 +47,6 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPSaveMetaDataService;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 
 /**
@@ -63,7 +62,7 @@ public class RequestService implements IRequestService {
     private IIngestRequestService ingestRequestService;
 
     @Autowired
-    private IAIPSaveMetaDataService aipSaveMetaDataService;
+    private IAIPSaveMetaDataRequestService aipSaveMetaDataService;
 
     @Autowired
     private IIngestRequestRepository ingestRequestRepository;

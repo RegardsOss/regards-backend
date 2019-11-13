@@ -16,15 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.accept;
-
-import fr.cnes.regards.modules.ingest.domain.accept.OAISRequestType;
-
 /**
- * @author Léo Mieulet
+ *
+ * This package defines default ingest plugins
+ *
+ * @author Marc Sordi
+ *
  */
-public interface IOAISAcceptRequestService {
-
-    boolean acceptRequest(String sessionOwner, String session, OAISRequestType queryType);
-
-}
+package fr.cnes.regards.modules.ingest.service.chain.plugin;

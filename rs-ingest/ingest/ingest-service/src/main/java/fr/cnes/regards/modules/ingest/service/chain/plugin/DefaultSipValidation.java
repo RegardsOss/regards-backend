@@ -16,32 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.plugin;
+package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import org.springframework.validation.Errors;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
- * Default AIP generation plugin. The plugin automatically build a single AIP based on SIP information.
+ * Default no effect SIP validation plugin
  *
  * @author Marc Sordi
  */
-@Plugin(author = "REGARDS Team", description = "Default single AIP generation", id = "DefaultSingleAIPGeneration",
+@Plugin(author = "REGARDS Team", description = "Default no effect SIP validation plugin", id = "DefaultSipValidation",
         version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
-public class DefaultSingleAIPGeneration implements IAipGeneration {
+public class DefaultSipValidation implements ISipValidation {
 
     @Override
-    public List<AIP> generate(SIP sip, UniformResourceName aipId, UniformResourceName sipId, String providerId) {
-        List<AIP> aips = new ArrayList<>();
-        aips.add(AIP.build(sip, aipId, Optional.of(sipId), providerId));
-        return aips;
+    public void validate(final SIP sip, Errors errors) {
+        // Nothing to do
     }
+
 }

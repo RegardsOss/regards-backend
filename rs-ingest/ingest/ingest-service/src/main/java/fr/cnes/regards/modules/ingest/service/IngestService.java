@@ -18,6 +18,26 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
+
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ListMultimap;
@@ -25,6 +45,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -33,7 +54,6 @@ import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.modules.ingest.domain.accept.OAISRequestType;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
 import fr.cnes.regards.modules.ingest.domain.mapper.IOAISDeletionRequestMapper;
@@ -47,30 +67,11 @@ import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
-import fr.cnes.regards.modules.ingest.service.accept.IOAISAcceptRequestService;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.OAISEntityDeletionJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.StringJoiner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
 
 /**
  * Ingest management service
@@ -115,9 +116,6 @@ public class IngestService implements IIngestService {
     @Autowired
     private OAISDeletionRequestService oaisDeletionRequestService;
 
-    @Autowired
-    private IOAISAcceptRequestService oaisAcceptRequestService;
-
     /**
      * Validate, save and publish a new request
      * @param item request to manage
@@ -131,8 +129,8 @@ public class IngestService implements IIngestService {
             Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB)
             ingestRequestService.handleRequestDenied(IngestRequest
-                    .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()), InternalRequestStep.ERROR,
-                           IngestRequestStep.LOCAL_DENIED, null, errs));
+                    .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()),
+                           InternalRequestStep.ERROR, IngestRequestStep.LOCAL_DENIED, null, errs));
             if (LOGGER.isDebugEnabled()) {
                 StringJoiner joiner = new StringJoiner(", ");
                 errs.forEach(err -> joiner.add(err));
@@ -144,8 +142,8 @@ public class IngestService implements IIngestService {
 
         // Save granted ingest request
         IngestRequest request = IngestRequest
-                .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()), InternalRequestStep.CREATED,
-                       IngestRequestStep.LOCAL_SCHEDULED, item.getSip());
+                .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()),
+                       InternalRequestStep.CREATED, IngestRequestStep.LOCAL_SCHEDULED, item.getSip());
         ingestRequestService.handleRequestGranted(request);
         // return granted request
         return request;
@@ -163,9 +161,8 @@ public class IngestService implements IIngestService {
             // Compute the session state if not already available
             if (!acceptBySession.contains(sessionOwner, session)) {
                 // Store if the current session can be ingested now
-                acceptBySession
-                        .put(sessionOwner, session,
-                             oaisAcceptRequestService.acceptRequest(sessionOwner, session, OAISRequestType.INGEST));
+                // TODO : Check if request can be proceed
+                acceptBySession.put(sessionOwner, session, true);
             }
             if (!acceptBySession.get(sessionOwner, session)) {
                 // Handle session not ingestible
@@ -328,8 +325,7 @@ public class IngestService implements IIngestService {
         OAISDeletionRequest deletionRequest = deletionRequestMapper.dtoToEntity(request);
 
         // TODO check if we can accept this request now
-        if (!oaisAcceptRequestService.acceptRequest(request.getSessionOwner(), request.getSession(),
-                                                    OAISRequestType.DELETE)) {
+        if (false) {
             String error = String
                     .format("Cannot delete AIPs on sessionOwner %s session %s, this index is locked. Please ensure there is no"
                             + " ingestion or update before asking AIPs deletion", request.getSessionOwner(),

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.aip;
+package fr.cnes.regards.modules.ingest.service.request;
 
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * @author Léo Mieulet
  */
-public interface IAIPSaveMetaDataService {
+public interface IAIPSaveMetaDataRequestService {
 
     void commitJob(List<AIPStoreMetaDataRequest> requests, List<AIPEntity> aipsToStore,
             List<AIPEntity> aipsToUpdate, List<FileDeletionRequestDTO> filesToDelete);

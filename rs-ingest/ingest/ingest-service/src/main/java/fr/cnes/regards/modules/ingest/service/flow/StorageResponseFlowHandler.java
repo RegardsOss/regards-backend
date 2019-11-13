@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.request;
+package fr.cnes.regards.modules.ingest.service.flow;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -36,6 +36,10 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocationTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.service.aip.AIPService;
+import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
+import fr.cnes.regards.modules.ingest.service.request.IDeleteRequestService;
+import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.storagelight.client.IStorageRequestListener;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
@@ -46,10 +50,10 @@ import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfo
  * @author Marc SORDI
  */
 @Component
-public class IngestStorageListener implements IStorageRequestListener {
+public class StorageResponseFlowHandler implements IStorageRequestListener {
 
     @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestStorageListener.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageResponseFlowHandler.class);
 
     @Autowired
     private IIngestRequestService ingestRequestService;

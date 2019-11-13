@@ -31,11 +31,12 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 
 /**
- * Test class for {@link IngestStorageListener}
+ * Test class for {@link StorageResponseFlowHandler}
  *
  * @author Sébastien Binda
  */
@@ -45,7 +46,7 @@ import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfo
 public class IngestStorageListenerTest extends AbstractIngestRequestTest {
 
     @Autowired
-    private IngestStorageListener storageListener;
+    private StorageResponseFlowHandler storageListener;
 
     @Autowired
     private AIPUpdateRequestService aipUpdateReqService;

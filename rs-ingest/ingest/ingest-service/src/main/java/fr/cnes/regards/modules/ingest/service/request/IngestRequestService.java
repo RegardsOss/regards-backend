@@ -59,7 +59,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPSaveMetaDataService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
@@ -113,7 +112,7 @@ public class IngestRequestService implements IIngestRequestService {
     private SessionNotifier sessionNotifier;
 
     @Autowired
-    private IAIPSaveMetaDataService aipSaveMetaDataService;;
+    private IAIPSaveMetaDataRequestService aipSaveMetaDataService;;
 
     @Override
     public void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests) {

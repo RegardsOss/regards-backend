@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.aip;
+package fr.cnes.regards.modules.ingest.service.request;
 
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -25,6 +25,8 @@ import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
@@ -41,7 +43,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @MultitenantTransactional
-public class AIPSaveMetaDataService implements IAIPSaveMetaDataService {
+public class AIPSaveMetaDataRequestService implements IAIPSaveMetaDataRequestService {
 
     @Autowired
     private IAIPStoreMetaDataRepository aipStoreMetaDataRepository;

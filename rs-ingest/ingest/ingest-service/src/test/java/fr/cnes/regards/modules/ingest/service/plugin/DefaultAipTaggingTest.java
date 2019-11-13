@@ -44,6 +44,7 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.service.chain.plugin.DefaultAIPTagging;
 
 /**
  * Test {@link DefaultAIPTagging} plugin

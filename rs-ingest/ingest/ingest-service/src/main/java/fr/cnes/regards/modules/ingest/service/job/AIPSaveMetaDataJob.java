@@ -28,8 +28,8 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPSaveMetaDataService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.request.IAIPSaveMetaDataRequestService;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
     private IAIPService aipService;
 
     @Autowired
-    private IAIPSaveMetaDataService aipSaveMetaDataService;
+    private IAIPSaveMetaDataRequestService aipSaveMetaDataService;
 
 
     @Override
