@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import java.util.List;
+
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 
@@ -36,11 +38,25 @@ public interface IPublisherContract {
     void publish(ISubscribable event);
 
     /**
+     * Publish in batch a list of {@link ISubscribable} events
+     *
+     * <br/><br/><b>!!!!! Experimental feature for test only at the moment</b>
+     */
+    void publish(List<? extends ISubscribable> events);
+
+    /**
      * Publish an {@link ISubscribable} event
      * @param event {@link ISubscribable} event to publish
      * @param priority event priority
      */
     void publish(ISubscribable event, int priority);
+
+    /**
+     * Publish in batch a list of {@link ISubscribable} events with specified priority
+     *
+     * <br/><br/><b>!!!!! Experimental feature for test only at the moment</b>
+     */
+    void publish(List<? extends ISubscribable> events, int priority);
 
     /**
      * Publish an {@link IPollable} event

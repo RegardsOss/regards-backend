@@ -36,7 +36,7 @@ public class BatchHandler implements IBatchHandler<BatchMessage> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BatchHandler.class);
 
-    private Map<String, Integer> countByTenants = new HashMap<>();
+    private final Map<String, Integer> countByTenants = new HashMap<>();
 
     private Integer calls = 0;
 
@@ -44,7 +44,7 @@ public class BatchHandler implements IBatchHandler<BatchMessage> {
     public void handleBatch(String tenant, List<BatchMessage> messages) {
         calls++;
         for (BatchMessage message : messages) {
-            Assert.assertTrue(message.getMessage().startsWith(tenant));
+            Assert.assertTrue("Bad tenant", message.getMessage().startsWith(tenant));
             LOGGER.info(message.getMessage());
             increment(tenant);
         }
