@@ -16,27 +16,36 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.plugin;
+package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
- * Default no effect SIP validation plugin
- *
- * @author Marc Sordi
+ * Validation plugin rejecting a SIP if a version of it already exists.
+ * @author Olivier Rousselot
  */
-@Plugin(author = "REGARDS Team", description = "Default no effect SIP validation plugin", id = "DefaultSipValidation",
-        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-        url = "https://regardsoss.github.io/")
-public class DefaultSipValidation implements ISipValidation {
+@Plugin(author = "REGARDS Team", description = "Unique provider id SIP validation plugin",
+        id = "UniqueProviderIdSipValidation", version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3",
+        owner = "CNES", url = "https://regardsoss.github.io/")
+public class UniqueProviderIdSipValidation implements ISipValidation {
 
+    @Autowired
+    private ISIPService sipService;
+
+    /**
+     * Check if a SIP with same provider id already exists.
+     * If so, fail
+     */
     @Override
-    public void validate(final SIP sip, Errors errors) {
-        // Nothing to do
+    public void validate(SIP sip, Errors errors) {
+        if (sipService.validatedVersionExists(sip.getId())) {
+            errors.reject("Existing providerId", "Only one version of SIP is allowed");
+        }
     }
-
 }

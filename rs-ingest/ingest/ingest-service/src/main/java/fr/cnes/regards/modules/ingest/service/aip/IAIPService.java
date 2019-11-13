@@ -18,6 +18,18 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -27,15 +39,6 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import javax.servlet.http.HttpServletResponse;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * AIP Service interface. Service to handle business around {@link AIPEntity}s
@@ -59,7 +62,8 @@ public interface IAIPService {
     String scheduleAIPEntityDeletion(String sipId);
 
     /**
-     * Schedule a job to select all AIPs matching provided criteria and save the associated task to run with
+     * Create an AIPUpdatesCreatorRequest and
+     * schedule a job to select all AIPs matching provided criteria and save the associated task to run with
      */
     void scheduleAIPEntityUpdate(AIPUpdateParametersDto params);
 
@@ -136,4 +140,11 @@ public interface IAIPService {
     void saveError(AIPEntity aipEntity, String errorMessage);
 
     List<AIPEntity> saveAll(Collection<AIPEntity> updates);
+
+    /**
+     * Retrieve {@link AIPEntity}s from given aip ids
+     * @param aipIds
+     * @return
+     */
+    Collection<AIPEntity> getAips(Collection<String> aipIds);
 }

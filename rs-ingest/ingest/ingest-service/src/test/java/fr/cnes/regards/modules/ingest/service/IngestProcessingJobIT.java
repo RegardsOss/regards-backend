@@ -18,24 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -49,11 +32,11 @@ import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
@@ -66,6 +49,20 @@ import fr.cnes.regards.modules.ingest.service.plugin.PostProcessingTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.PreprocessingTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test class to verify {@link IngestProcessingJob}.
@@ -243,7 +240,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         Mockito.clearInvocations(ingestRequestService);
         IngestRequest request = ingestRequestCaptor.getValue();
         Assert.assertNotNull(request);
-        Assert.assertEquals(RequestState.ERROR, request.getState());
+        Assert.assertEquals(InternalRequestStep.ERROR, request.getState());
         Assert.assertTrue(!request.getErrors().isEmpty());
 
         Assert.assertNotNull(sipCaptor.getValue());

@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.test;
 
-import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.AmqpIOException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -38,6 +28,9 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
+import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
@@ -49,6 +42,12 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.storagelight.client.FileRequestGroupEventHandler;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpIOException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class IngestServiceTest {
@@ -79,8 +78,13 @@ public class IngestServiceTest {
     @Autowired
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
 
+
+
     @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
+
+    @Autowired
+    private IIngestProcessingChainRepository ingestProcessingChainRepository;
 
     @Autowired
     private IPublisher publisher;
@@ -102,13 +106,13 @@ public class IngestServiceTest {
      * @throws Exception
      */
     public void init() throws Exception {
-        requestRepository.deleteAll();;
-        aipRepository.deleteAll();
-        sipRepository.deleteAll();
-        storageDeletionRequestRepository.deleteAll();
-        deletionRequestRepository.deleteAll();
+        ingestProcessingChainRepository.deleteAllInBatch();
+        ingestRequestRepository.deleteAllInBatch();
+        requestRepository.deleteAllInBatch();
+        aipRepository.deleteAllInBatch();
+        sipRepository.deleteAllInBatch();
         jobInfoRepo.deleteAll();
-        pluginConfRepo.deleteAll();
+        pluginConfRepo.deleteAllInBatch();
         cleanAMQPQueues(FileRequestGroupEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
     }
 

@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
+import javax.validation.constraints.NotNull;
+
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import javax.persistence.Column;
-import javax.validation.constraints.NotNull;
 
 /**
  * @author Léo Mieulet

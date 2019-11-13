@@ -18,9 +18,36 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -38,44 +65,23 @@ import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
 import fr.cnes.regards.modules.ingest.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
+import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.ICustomAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import fr.cnes.regards.modules.ingest.service.job.AIPUpdateScannerJob;
+import fr.cnes.regards.modules.ingest.service.job.AIPUpdatesCreatorJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import javax.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
 
 /**
  * AIP service management
@@ -96,6 +102,9 @@ public class AIPService implements IAIPService {
 
     @Autowired
     private IAIPRepository aipRepository;
+
+    @Autowired
+    private IAIPUpdatesCreatorRepository aipUpdatesCreatorRepository;
 
     @Autowired
     private ICustomAIPRepository customAIPRepository;
@@ -255,11 +264,13 @@ public class AIPService implements IAIPService {
 
     @Override
     public void scheduleAIPEntityUpdate(AIPUpdateParametersDto params) {
+        AIPUpdatesCreatorRequest request = AIPUpdatesCreatorRequest.build(params);
+        request = aipUpdatesCreatorRepository.save(request);
         // Schedule deletion job
         Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(AIPUpdateScannerJob.CRITERIA, params));
+        jobParameters.add(new JobParameter(AIPUpdatesCreatorJob.REQUEST_ID, request.getId()));
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_SCAN_JOB_PRIORITY.getPriority(),
-                jobParameters, authResolver.getUser(), AIPUpdateScannerJob.class.getName());
+                jobParameters, authResolver.getUser(), AIPUpdatesCreatorJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
     }
 
@@ -317,6 +328,11 @@ public class AIPService implements IAIPService {
             LOGGER.error(message, e);
             throw new ModuleException(message, e);
         }
+    }
+
+    @Override
+    public Collection<AIPEntity> getAips(Collection<String> aipIds) {
+        return aipRepository.findByAipIdIn(aipIds);
     }
 
 }

@@ -54,22 +54,19 @@ import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.modules.ingest.domain.accept.OAISRequestType;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
 import fr.cnes.regards.modules.ingest.domain.mapper.IOAISDeletionRequestMapper;
-import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
-import fr.cnes.regards.modules.ingest.service.accept.IOAISAcceptRequestService;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.OAISEntityDeletionJob;
@@ -83,6 +80,8 @@ import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService
  *
  * TODO : retry ingestion
  * TODO : retry deletion?
+ * TODO : Check handleIngestRequests. Requests can be be proceed ?
+ * TODO : Check registerOAISDeletionRequest Requests can be be proceed ?
  */
 @Service
 @MultitenantTransactional
@@ -119,9 +118,6 @@ public class IngestService implements IIngestService {
     @Autowired
     private OAISDeletionRequestService oaisDeletionRequestService;
 
-    @Autowired
-    private IOAISAcceptRequestService oaisAcceptRequestService;
-
     /**
      * Validate, save and publish a new request
      * @param item request to manage
@@ -135,8 +131,8 @@ public class IngestService implements IIngestService {
             Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB)
             ingestRequestService.handleRequestDenied(IngestRequest
-                    .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()), RequestState.DENIED,
-                           IngestRequestStep.LOCAL_DENIED, null, errs));
+                    .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()),
+                           InternalRequestStep.ERROR, IngestRequestStep.LOCAL_DENIED, null, errs));
             if (LOGGER.isDebugEnabled()) {
                 StringJoiner joiner = new StringJoiner(", ");
                 errs.forEach(err -> joiner.add(err));
@@ -148,8 +144,8 @@ public class IngestService implements IIngestService {
 
         // Save granted ingest request
         IngestRequest request = IngestRequest
-                .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()), RequestState.GRANTED,
-                       IngestRequestStep.LOCAL_SCHEDULED, item.getSip());
+                .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()),
+                       InternalRequestStep.CREATED, IngestRequestStep.LOCAL_SCHEDULED, item.getSip());
         ingestRequestService.handleRequestGranted(request);
         // return granted request
         return request;
@@ -167,15 +163,14 @@ public class IngestService implements IIngestService {
             // Compute the session state if not already available
             if (!acceptBySession.contains(sessionOwner, session)) {
                 // Store if the current session can be ingested now
-                acceptBySession
-                        .put(sessionOwner, session,
-                             oaisAcceptRequestService.acceptRequest(sessionOwner, session, OAISRequestType.INGEST));
+                // TODO : Check if request can be proceed
+                acceptBySession.put(sessionOwner, session, true);
             }
             if (!acceptBySession.get(sessionOwner, session)) {
                 // Handle session not ingestible
                 ingestRequestService.handleRequestDenied(IngestRequest
                         .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()),
-                               RequestState.DENIED, IngestRequestStep.LOCAL_DENIED, null,
+                               InternalRequestStep.ERROR, IngestRequestStep.LOCAL_DENIED, null,
                                Sets.newHashSet("Failed to ingest SIP, session is locked")));
                 break;
             }
@@ -192,17 +187,6 @@ public class IngestService implements IIngestService {
             ingestRequestService.scheduleIngestProcessingJobByChain(chainName, requestPerChain.get(chainName));
         }
     }
-
-    //    @Override
-    //    public RequestInfoDto redirectToDataflow(SIPCollection sips) {
-    //        RequestInfoDto info = RequestInfoDto.build(RequestType.INGEST,
-    //                                                   "SIP Collection ingestion request redirected to dataflow");
-    //        for (IngestRequestFlowItem item : sipToFlow(sips)) {
-    //            info.addRequestMapping(item.getSip().getId(), item.getRequestId());
-    //            publisher.publish(item);
-    //        }
-    //        return info;
-    //    }
 
     @Override
     public RequestInfoDto handleSIPCollection(SIPCollection sips) throws EntityInvalidException {
@@ -269,7 +253,7 @@ public class IngestService implements IIngestService {
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB) / Warning : request id cannot be known
-            ingestRequestService.handleRequestDenied(IngestRequest.build(ingestMetadata, RequestState.DENIED,
+            ingestRequestService.handleRequestDenied(IngestRequest.build(ingestMetadata, InternalRequestStep.ERROR,
                                                                          IngestRequestStep.LOCAL_DENIED, sip, errs));
 
             StringJoiner joiner = new StringJoiner(", ");
@@ -281,7 +265,7 @@ public class IngestService implements IIngestService {
         }
 
         // Save granted ingest request
-        IngestRequest request = IngestRequest.build(ingestMetadata, RequestState.GRANTED,
+        IngestRequest request = IngestRequest.build(ingestMetadata, InternalRequestStep.CREATED,
                                                     IngestRequestStep.LOCAL_SCHEDULED, sip);
         ingestRequestService.handleRequestGranted(request);
         // Trace granted request
@@ -305,17 +289,6 @@ public class IngestService implements IIngestService {
         return items;
     }
 
-    //    @Override
-    //    public RequestInfoDto redirectToDataflow(InputStream input) throws ModuleException {
-    //        try (Reader json = new InputStreamReader(input, DEFAULT_CHARSET)) {
-    //            SIPCollection sips = gson.fromJson(json, SIPCollection.class);
-    //            return redirectToDataflow(sips);
-    //        } catch (JsonIOException | IOException e) {
-    //            LOGGER.error("Cannot read JSON file containing SIP collection", e);
-    //            throw new EntityInvalidException(e.getMessage(), e);
-    //        }
-    //    }
-
     @Override
     public RequestInfoDto handleSIPCollection(InputStream input) throws ModuleException {
         try (Reader json = new InputStreamReader(input, DEFAULT_CHARSET)) {
@@ -332,8 +305,7 @@ public class IngestService implements IIngestService {
         OAISDeletionRequest deletionRequest = deletionRequestMapper.dtoToEntity(request);
 
         // TODO check if we can accept this request now
-        if (!oaisAcceptRequestService.acceptRequest(request.getSessionOwner(), request.getSession(),
-                                                    OAISRequestType.DELETE)) {
+        if (false) {
             String error = String
                     .format("Cannot delete AIPs on sessionOwner %s session %s, this index is locked. Please ensure there is no"
                             + " ingestion or update before asking AIPs deletion", request.getSessionOwner(),
