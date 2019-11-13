@@ -18,10 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
-import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * @author Léo Mieulet
@@ -37,4 +42,17 @@ public interface IRequestService {
      * Handle request granted from storage service
      */
     void handleRemoteRequestGranted(Set<RequestInfo> requests);
+
+    /**
+     * Retrieve all requests referencing the provided group id
+     */
+    List<AbstractRequest> findRequestsByGroupId(String groupId);
+
+    /**
+     * Retrieve all requests matching provided criteria
+     * @param filters
+     * @param pageable
+     * @return a page of entities
+     */
+    Page<RequestDto> searchRequests(SearchRequestsParameters filters, Pageable pageable) throws ModuleException;
 }

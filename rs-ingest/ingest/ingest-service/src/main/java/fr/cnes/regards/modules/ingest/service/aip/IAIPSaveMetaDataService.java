@@ -19,11 +19,9 @@
 package fr.cnes.regards.modules.ingest.service.aip;
 
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetaDataRequest;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -32,7 +30,7 @@ import java.util.Set;
  */
 public interface IAIPSaveMetaDataService {
 
-    void commitJob(List<AIPSaveMetaDataRequest> requests, List<AIPEntity> aipsToStore,
+    void commitJob(List<AIPStoreMetaDataRequest> requests, List<AIPEntity> aipsToStore,
             List<AIPEntity> aipsToUpdate, List<FileDeletionRequestDTO> filesToDelete);
 
     /**
@@ -47,17 +45,17 @@ public interface IAIPSaveMetaDataService {
      * @param ids a list of request id
      * @return the list of entities
      */
-    List<AIPSaveMetaDataRequest> findAllById(List<Long> ids);
+    List<AIPStoreMetaDataRequest> findAllById(List<Long> ids);
 
     /**
      * Save new requests states
      * @param requests
      * @return
      */
-    List<AIPSaveMetaDataRequest> saveAll(List<AIPSaveMetaDataRequest> requests);
+    List<AIPStoreMetaDataRequest> saveAll(List<AIPStoreMetaDataRequest> requests);
 
 
-    void handleManifestSaved(AIPSaveMetaDataRequest request, Set<RequestInfo> requestInfos);
+    void handleManifestSaved(AIPStoreMetaDataRequest request, Set<RequestInfo> requestInfos);
 
     void handleManifestSaveError(Set<RequestInfo> requestInfos);
 }

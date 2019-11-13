@@ -23,15 +23,22 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -44,11 +51,11 @@ import org.springframework.data.domain.Sort;
  *
  * @author Léo Mieulet
  */
-public class AIPUpdateScannerJob extends AbstractJob<Void> {
+public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
 
-    public static final String CRITERIA = "CRITERIA";
+    public static final String REQUEST_ID = "REQUEST_ID";
 
-    private AIPUpdateParametersDto updateTaskDto;
+    private AIPUpdatesCreatorRequest request;
 
     private int totalPages = 0;
 
@@ -58,16 +65,26 @@ public class AIPUpdateScannerJob extends AbstractJob<Void> {
     @Autowired
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
 
+    @Autowired
+    private IAIPUpdatesCreatorRepository aipUpdatesCreatorRepository;
+
     /**
      * Limit number of AIPs to retrieve in one page.
      */
     @Value("${regards.ingest.aips.scan.iteration-limit:100}")
     private Integer aipIterationLimit;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        // Retrieve update task
-        updateTaskDto = getValue(parameters, CRITERIA);
+        // Retrieve update request id
+        Long requestId = getValue(parameters, REQUEST_ID);
+        // Retrieve the request
+        Optional<AIPUpdatesCreatorRequest> oDeletionRequest = aipUpdatesCreatorRepository.findById(requestId);
+        if (!oDeletionRequest.isPresent()) {
+            throw new JobRuntimeException(String.format("Unknown deletion request with id %d", requestId));
+        }
+        request = oDeletionRequest.get();
     }
 
     @Override
@@ -75,12 +92,15 @@ public class AIPUpdateScannerJob extends AbstractJob<Void> {
         Pageable pageRequest = PageRequest.of(0, aipIterationLimit, Sort.Direction.ASC, "id");
         Page<AIPEntity> aipsPage;
         boolean isFirstPage = true;
+        // Set the request as running
+        request.setState(InternalRequestStep.RUNNING);
+        aipUpdatesCreatorRepository.save(request);
         do {
             if (!isFirstPage) {
                 pageRequest.next();
             }
-            // Page request isn't modified as the state of entities are modified
-            aipsPage = aipRepository.search(updateTaskDto.getCriteria(), pageRequest);
+            AIPUpdateParametersDto updateTask = request.getConfig();
+            aipsPage = aipRepository.search(updateTask.getCriteria(), pageRequest);
             // Save number of pages to publish job advancement
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();
@@ -96,7 +116,7 @@ public class AIPUpdateScannerJob extends AbstractJob<Void> {
             for (AIPEntity aip : aipsPageContent) {
                 // Create the request as pending if there is already a running request
                 boolean isPending = runningAIPIds.contains(aip.getId());
-                List<AIPUpdateRequest> requests = AIPUpdateRequest.build(aip, updateTaskDto, isPending);
+                List<AIPUpdateRequest> requests = AIPUpdateRequest.build(aip, updateTask, isPending);
                 aipUpdateRequestRepository.saveAll(requests);
             };
             isFirstPage = false;
@@ -105,6 +125,8 @@ public class AIPUpdateScannerJob extends AbstractJob<Void> {
             }
             pageRequest.next();
         } while (aipsPage.hasNext());
+        // Delete the request
+        aipUpdatesCreatorRepository.delete(request);
     }
 
     @Override

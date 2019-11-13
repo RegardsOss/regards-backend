@@ -20,8 +20,9 @@ package fr.cnes.regards.modules.ingest.domain.request.update;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.AbstractInternalRequest;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -40,9 +41,9 @@ import org.hibernate.annotations.TypeDefs;
  * Keep info about an AIP update request
  * @author Léo Mieulet
  */
-@Entity(name = "AIPUpdateRequest")
+@Entity(name = RequestTypeConstant.UPDATE_VALUE)
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-public class AIPUpdateRequest extends AbstractInternalRequest {
+public class AIPUpdateRequest extends AbstractRequest {
 
 
     @OneToOne(cascade = CascadeType.ALL)

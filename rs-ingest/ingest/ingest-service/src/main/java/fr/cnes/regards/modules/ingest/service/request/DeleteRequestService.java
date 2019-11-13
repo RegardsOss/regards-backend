@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import com.netflix.discovery.converters.Auto;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
@@ -44,12 +34,9 @@ import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +54,7 @@ public class DeleteRequestService implements IDeleteRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeleteRequestService.class);
 
     @Autowired
-    private IAbstractRequestService abstractRequestService;
+    private IRequestService requestService;
 
     @Autowired
     private IStorageDeletionRequestRepository storageDeletionRequestRepo;
@@ -84,7 +71,7 @@ public class DeleteRequestService implements IDeleteRequestService {
     @Override
     public void handleRemoteDeleteError(Set<RequestInfo> requestInfos) {
         for (RequestInfo ri : requestInfos) {
-            List<AbstractRequest> requests = abstractRequestService.findRequests(ri.getGroupId());
+            List<AbstractRequest> requests = requestService.findRequestsByGroupId(ri.getGroupId());
             for (AbstractRequest request : requests) {
                 StorageDeletionRequest deletionRequest = (StorageDeletionRequest) request;
                 deletionRequest.setState(InternalRequestStep.ERROR);
@@ -123,7 +110,7 @@ public class DeleteRequestService implements IDeleteRequestService {
     @Override
     public void handleRemoteDeleteSuccess(Set<RequestInfo> requestInfos) {
         for (RequestInfo ri : requestInfos) {
-            List<AbstractRequest> requests = abstractRequestService.findRequests(ri.getGroupId());
+            List<AbstractRequest> requests = requestService.findRequestsByGroupId(ri.getGroupId());
             for (AbstractRequest request : requests) {
                 StorageDeletionRequest deletionRequest = (StorageDeletionRequest) request;
                 boolean deleteIrrevocably = deletionRequest.getDeletionMode() == SessionDeletionMode.IRREVOCABLY;

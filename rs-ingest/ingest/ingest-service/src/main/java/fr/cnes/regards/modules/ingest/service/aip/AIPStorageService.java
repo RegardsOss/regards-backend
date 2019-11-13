@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetaDataRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceMetaInfoDTO;
 import java.net.MalformedURLException;
 import java.net.URL;

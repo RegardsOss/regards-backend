@@ -18,26 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.StringJoiner;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ListMultimap;
@@ -45,7 +25,6 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -58,13 +37,12 @@ import fr.cnes.regards.modules.ingest.domain.accept.OAISRequestType;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
 import fr.cnes.regards.modules.ingest.domain.mapper.IOAISDeletionRequestMapper;
-import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
@@ -75,6 +53,24 @@ import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.OAISEntityDeletionJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.StringJoiner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
 
 /**
  * Ingest management service
@@ -135,7 +131,7 @@ public class IngestService implements IIngestService {
             Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB)
             ingestRequestService.handleRequestDenied(IngestRequest
-                    .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()), RequestState.DENIED,
+                    .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()), InternalRequestStep.ERROR,
                            IngestRequestStep.LOCAL_DENIED, null, errs));
             if (LOGGER.isDebugEnabled()) {
                 StringJoiner joiner = new StringJoiner(", ");
@@ -148,7 +144,7 @@ public class IngestService implements IIngestService {
 
         // Save granted ingest request
         IngestRequest request = IngestRequest
-                .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()), RequestState.GRANTED,
+                .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()), InternalRequestStep.CREATED,
                        IngestRequestStep.LOCAL_SCHEDULED, item.getSip());
         ingestRequestService.handleRequestGranted(request);
         // return granted request
@@ -175,7 +171,7 @@ public class IngestService implements IIngestService {
                 // Handle session not ingestible
                 ingestRequestService.handleRequestDenied(IngestRequest
                         .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()),
-                               RequestState.DENIED, IngestRequestStep.LOCAL_DENIED, null,
+                               InternalRequestStep.ERROR, IngestRequestStep.LOCAL_DENIED, null,
                                Sets.newHashSet("Failed to ingest SIP, session is locked")));
                 break;
             }
@@ -269,7 +265,7 @@ public class IngestService implements IIngestService {
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB) / Warning : request id cannot be known
-            ingestRequestService.handleRequestDenied(IngestRequest.build(ingestMetadata, RequestState.DENIED,
+            ingestRequestService.handleRequestDenied(IngestRequest.build(ingestMetadata, InternalRequestStep.ERROR,
                                                                          IngestRequestStep.LOCAL_DENIED, sip, errs));
 
             StringJoiner joiner = new StringJoiner(", ");
@@ -281,7 +277,7 @@ public class IngestService implements IIngestService {
         }
 
         // Save granted ingest request
-        IngestRequest request = IngestRequest.build(ingestMetadata, RequestState.GRANTED,
+        IngestRequest request = IngestRequest.build(ingestMetadata, InternalRequestStep.CREATED,
                                                     IngestRequestStep.LOCAL_SCHEDULED, sip);
         ingestRequestService.handleRequestGranted(request);
         // Trace granted request

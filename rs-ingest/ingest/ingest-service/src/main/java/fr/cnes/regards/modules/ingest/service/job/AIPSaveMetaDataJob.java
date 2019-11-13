@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import com.google.common.collect.Lists;
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -26,20 +25,17 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetaDataRequest;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPSaveMetaDataService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
-import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 /**
  * @author Léo Mieulet
@@ -48,7 +44,7 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
 
     public static final String UPDATE_METADATA_REQUEST_IDS = "UPDATE_METADATA_REQUEST_IDS";
 
-    private List<AIPSaveMetaDataRequest> requests;
+    private List<AIPStoreMetaDataRequest> requests;
 
     @Autowired
     private IAIPService aipService;
@@ -73,7 +69,7 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
         List<AIPEntity> aipsToStore = new ArrayList<>();
         List<AIPEntity> aipsToUpdate = new ArrayList<>();
         List<FileDeletionRequestDTO> filesToDelete = new ArrayList<>();
-        for (AIPSaveMetaDataRequest request : requests) {
+        for (AIPStoreMetaDataRequest request : requests) {
             AIPEntity aip = request.getAip();
             // Check if there is already existing manifest that should be removed
             if (request.isRemoveCurrentMetaData()) {
@@ -93,7 +89,7 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
         aipSaveMetaDataService.commitJob(requests, aipsToStore, aipsToUpdate, filesToDelete);
     }
 
-    private void recomputeChecksum(AIPSaveMetaDataRequest request, AIPEntity aip) {
+    private void recomputeChecksum(AIPStoreMetaDataRequest request, AIPEntity aip) {
         try {
             aipService.computeAndSaveChecksum(aip);
         } catch (ModuleException e) {

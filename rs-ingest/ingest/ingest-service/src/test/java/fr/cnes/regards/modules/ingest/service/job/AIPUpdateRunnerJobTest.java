@@ -58,7 +58,7 @@ import org.springframework.test.context.TestPropertySource;
 public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdateScannerJobIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdatesCreatorJobIT.class);
 
     @Autowired
     private StorageClientMock storageClient;

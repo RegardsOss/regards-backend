@@ -38,16 +38,18 @@ import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
 import fr.cnes.regards.modules.ingest.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
+import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.ICustomAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import fr.cnes.regards.modules.ingest.service.job.AIPUpdateScannerJob;
+import fr.cnes.regards.modules.ingest.service.job.AIPUpdatesCreatorJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
@@ -96,6 +98,9 @@ public class AIPService implements IAIPService {
 
     @Autowired
     private IAIPRepository aipRepository;
+
+    @Autowired
+    private IAIPUpdatesCreatorRepository aipUpdatesCreatorRepository;
 
     @Autowired
     private ICustomAIPRepository customAIPRepository;
@@ -255,11 +260,13 @@ public class AIPService implements IAIPService {
 
     @Override
     public void scheduleAIPEntityUpdate(AIPUpdateParametersDto params) {
+        AIPUpdatesCreatorRequest request = AIPUpdatesCreatorRequest.build(params);
+        request = aipUpdatesCreatorRepository.save(request);
         // Schedule deletion job
         Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(AIPUpdateScannerJob.CRITERIA, params));
+        jobParameters.add(new JobParameter(AIPUpdatesCreatorJob.REQUEST_ID, request.getId()));
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_SCAN_JOB_PRIORITY.getPriority(),
-                jobParameters, authResolver.getUser(), AIPUpdateScannerJob.class.getName());
+                jobParameters, authResolver.getUser(), AIPUpdatesCreatorJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
     }
 

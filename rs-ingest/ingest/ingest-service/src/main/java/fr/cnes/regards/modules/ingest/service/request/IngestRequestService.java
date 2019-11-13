@@ -34,10 +34,11 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ingest.dao.AIPSaveMetaDataRepository;
+import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -107,7 +108,7 @@ public class IngestRequestService implements IIngestRequestService {
     private INotificationClient notificationClient;
 
     @Autowired
-    private AIPSaveMetaDataRepository aipSaveMetaDataRepository;
+    private IAIPStoreMetaDataRepository aipStoreMetaDataRepository;
 
     @Autowired
     private SessionNotifier sessionNotifier;
@@ -168,26 +169,23 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Override
     public void handleRequestGranted(IngestRequest request) {
-        request.setState(RequestState.GRANTED);
-
         // Keep track of the request
         saveRequest(request);
 
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   request.getState(), request.getErrors()));
+                RequestState.GRANTED, request.getErrors()));
     }
 
     @Override
     public void handleRequestDenied(IngestRequest request) {
-        request.setState(RequestState.DENIED);
-
+        request.setState(InternalRequestStep.ERROR);
         // Do not keep track of the request
         // Publish DENIED request
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   request.getState(), request.getErrors()));
+                RequestState.DENIED, request.getErrors()));
     }
 
     @Override
@@ -250,6 +248,7 @@ public class IngestRequestService implements IIngestRequestService {
                     case REMOTE_STORAGE_REQUESTED:
                         // Save the request was denied at AIP files storage
                         request.setStep(IngestRequestStep.REMOTE_STORAGE_DENIED);
+                        request.setState(InternalRequestStep.ERROR);
                         // Keep track of the error
                         saveAndPublishErrorRequest(request, String.format("Remote file storage request denied"));
                         break;
@@ -296,7 +295,8 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     private void finalizeSuccessfulRequest(IngestRequest request) {
-        request.setState(RequestState.SUCCESS);
+        // TODO wtf is this staTE?
+//        request.setState(RequestState.SUCCESS);
         // Clean
         deleteRequest(request);
 
@@ -310,7 +310,6 @@ public class IngestRequestService implements IIngestRequestService {
         sessionNotifier.notifyAIPsStored(aips);
 
         // Schedule manifest archivage
-        aipSaveMetaDataService.scheduleSaveMetaData(aips, false, true);
 
         // Update SIP state
         SIPEntity sipEntity = aips.get(0).getSip();
@@ -318,7 +317,7 @@ public class IngestRequestService implements IIngestRequestService {
         sipService.save(sipEntity);
         // Publish SUCCESSFUL request
         publisher.publish(IngestRequestEvent.build(request.getRequestId(), request.getSip().getId(),
-                                                   sipEntity.getSipId(), request.getState(), request.getErrors()));
+                                                   sipEntity.getSipId(), RequestState.SUCCESS, request.getErrors()));
 
         // Publish new SIP in current session
         sessionNotifier.notifySIPStored(sipEntity);
@@ -393,7 +392,6 @@ public class IngestRequestService implements IIngestRequestService {
 
     private void saveAndPublishErrorRequest(IngestRequest request, @Nullable String message) {
         // Mutate request
-        request.setState(RequestState.ERROR);
         request.addError(String.format("Storage request error with id \"%s\" and SIP provider id \"%s\"",
                                        request.getRequestId(), request.getSip().getId()));
         if (message != null) {
@@ -406,7 +404,7 @@ public class IngestRequestService implements IIngestRequestService {
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   request.getState(), request.getErrors()));
+                RequestState.ERROR, request.getErrors()));
     }
 
     public IngestRequest saveRequest(IngestRequest request) {

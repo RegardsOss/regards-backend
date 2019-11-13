@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.ingest.domain.request.manifest;
 /**
  * @author Léo Mieulet
  */
-public class AIPSaveMetaDataPayload {
+public class AIPStoreMetaDataPayload {
 
     private boolean removeCurrentMetaData;
 
@@ -43,10 +43,10 @@ public class AIPSaveMetaDataPayload {
         this.computeChecksum = computeChecksum;
     }
 
-    public static AIPSaveMetaDataPayload build (boolean removeCurrentMetaData, boolean computeChecksum) {
-        AIPSaveMetaDataPayload aipSaveMetaDataPayload = new AIPSaveMetaDataPayload();
-        aipSaveMetaDataPayload.setComputeChecksum(computeChecksum);
-        aipSaveMetaDataPayload.setRemoveCurrentMetaData(removeCurrentMetaData);
-        return aipSaveMetaDataPayload;
+    public static AIPStoreMetaDataPayload build (boolean removeCurrentMetaData, boolean computeChecksum) {
+        AIPStoreMetaDataPayload aipStoreMetaDataPayload = new AIPStoreMetaDataPayload();
+        aipStoreMetaDataPayload.setComputeChecksum(computeChecksum);
+        aipStoreMetaDataPayload.setRemoveCurrentMetaData(removeCurrentMetaData);
+        return aipStoreMetaDataPayload;
     }
 }

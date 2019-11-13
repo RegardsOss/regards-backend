@@ -16,22 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dao;
+package fr.cnes.regards.modules.ingest.domain.mapper;
 
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
+import org.mapstruct.Mapper;
 
 /**
- * {@link OAISDeletionRequest} repository
- * @author Marc SORDI
+ * @author Léo Mieulet
  */
-@Repository
-public interface IOAISDeletionRequestRepository extends JpaRepository<OAISDeletionRequest, Long> {
+@Mapper(componentModel = "spring")
+public interface IRequestMapper {
 
-    Page<AbstractRequest> findAll(Specification<AbstractRequest> searchAllByFilters, Pageable pageable);
+    RequestDto metadataToDto(AbstractRequest metadata);
 }

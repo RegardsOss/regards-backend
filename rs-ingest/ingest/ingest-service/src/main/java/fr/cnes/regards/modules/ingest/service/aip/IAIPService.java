@@ -59,7 +59,8 @@ public interface IAIPService {
     String scheduleAIPEntityDeletion(String sipId);
 
     /**
-     * Schedule a job to select all AIPs matching provided criteria and save the associated task to run with
+     * Create an AIPUpdatesCreatorRequest and
+     * schedule a job to select all AIPs matching provided criteria and save the associated task to run with
      */
     void scheduleAIPEntityUpdate(AIPUpdateParametersDto params);
 

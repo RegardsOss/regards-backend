@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import java.util.Set;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
@@ -45,6 +46,46 @@ public final class AbstractRequestSpecifications {
                 predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingElements(attributeRequested, Lists.newArrayList(groupId), cb));
             }
 
+            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+
+
+
+    public static Specification<AbstractRequest> searchAllByFilters(SearchRequestsParameters filters) {
+        return (root, query, cb) -> {
+            Set<Predicate> predicates = Sets.newHashSet();
+
+            if (filters.getCreationDate().getFrom() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("creationDate"), filters.getCreationDate().getFrom()));
+            }
+            if (filters.getCreationDate().getTo() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("creationDate"), filters.getCreationDate().getTo()));
+            }
+            if (filters.getSessionOwner() != null) {
+                predicates.add(cb.equal(root.get("sessionOwner"), filters.getSessionOwner()));
+            }
+            if (filters.getSession() != null) {
+                predicates.add(cb.equal(root.get("session"), filters.getSession()));
+            }
+            if (filters.getProviderIds() != null && !filters.getProviderIds().isEmpty()) {
+                Set<Predicate> providerIdsPredicates = Sets.newHashSet();
+                for (String providerId: filters.getProviderIds()) {
+                    if (providerId.startsWith(SpecificationUtils.LIKE_CHAR) || providerId.endsWith(SpecificationUtils.LIKE_CHAR)) {
+                        providerIdsPredicates.add(cb.like(root.get("providerId"), providerId));
+                    } else {
+                        providerIdsPredicates.add(cb.equal(root.get("providerId"), providerId));
+                    }
+                }
+                // Use the OR operator between each provider id
+                predicates.add(cb.or(providerIdsPredicates.toArray(new Predicate[providerIdsPredicates.size()])));
+            }
+            if (filters.getRequestType() != null) {
+                predicates.add(cb.equal(root.get("dtype"), filters.getRequestType().name()));
+            }
+            if (filters.getState() != null) {
+                predicates.add(cb.equal(root.get("state"), filters.getState()));
+            }
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
