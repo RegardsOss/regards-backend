@@ -82,12 +82,9 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
     }
 
     public void bulkSave() {
-        long start = System.currentTimeMillis();
         storageRequestService
                 .handleSuccess(handledRequest.stream().filter(r -> !r.isError()).collect(Collectors.toSet()));
         storageRequestService.handleError(handledRequest.stream().filter(r -> r.isError()).collect(Collectors.toSet()));
-        LOG.info("[STORAGE JOB] finalized in {} ms for {} requests", System.currentTimeMillis() - start,
-                 handledRequest.size());
     }
 
     /**

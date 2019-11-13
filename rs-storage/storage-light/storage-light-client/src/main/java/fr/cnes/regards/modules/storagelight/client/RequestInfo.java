@@ -18,7 +18,12 @@
  */
 package fr.cnes.regards.modules.storagelight.client;
 
+import java.util.Collection;
 import java.util.UUID;
+
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * POJO containing information about a group of requests.
@@ -28,8 +33,20 @@ public class RequestInfo {
 
     private String groupId;
 
+    private Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
+
+    private Collection<RequestResultInfoDTO> errorRequests = Sets.newHashSet();
+
     public String getGroupId() {
         return groupId;
+    }
+
+    public Collection<RequestResultInfoDTO> getSuccessRequests() {
+        return successRequests;
+    }
+
+    public Collection<RequestResultInfoDTO> getErrorRequests() {
+        return errorRequests;
     }
 
     public static RequestInfo build() {
@@ -41,6 +58,15 @@ public class RequestInfo {
     public static RequestInfo build(String groupId) {
         RequestInfo ri = new RequestInfo();
         ri.groupId = groupId;
+        return ri;
+    }
+
+    public static RequestInfo build(String groupId, Collection<RequestResultInfoDTO> successRequests,
+            Collection<RequestResultInfoDTO> errorRequests) {
+        RequestInfo ri = new RequestInfo();
+        ri.groupId = groupId;
+        ri.successRequests = successRequests;
+        ri.errorRequests = errorRequests;
         return ri;
     }
 

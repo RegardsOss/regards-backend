@@ -99,28 +99,28 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         Assert.assertFalse("0. There not have file referenced yet", storageLocationService.search(storage).isPresent());
         storageLocationService.monitorStorageLocations(false);
         Assert.assertFalse("1. There not have file referenced yet", storageLocationService.search(storage).isPresent());
-        createFileReference(storage, 1L);
+        createFileReference(storage, 1024L);
         totalSize++;
-        createFileReference(storage, 1L);
+        createFileReference(storage, 1024L);
         totalSize++;
-        createFileReference(storage, 1L);
+        createFileReference(storage, 1024L);
         totalSize++;
-        createFileReference(storage, 1L);
+        createFileReference(storage, 1024L);
         totalSize++;
         storageLocationService.monitorStorageLocations(false);
         Assert.assertTrue("There should be file referenced for STAF storage",
                           storageLocationService.search(storage).isPresent());
-        Assert.assertEquals("Total size on STAF storage is invalid", totalSize.longValue(),
-                            storageLocationService.search(storage).get().getTotalSizeOfReferencedFiles().longValue());
+        Assert.assertEquals("Total size on STAF storage is invalid", totalSize.longValue(), storageLocationService
+                .search(storage).get().getTotalSizeOfReferencedFilesInKo().longValue());
         Assert.assertEquals("Total number of files on STAF storage is invalid", 4L,
                             storageLocationService.search(storage).get().getNumberOfReferencedFiles().longValue());
-        createFileReference(storage, 3L);
+        createFileReference(storage, 3 * 1024L);
         totalSize += 3;
         storageLocationService.monitorStorageLocations(false);
         Assert.assertTrue("There should be file referenced for STAF storage",
                           storageLocationService.search(storage).isPresent());
-        Assert.assertEquals("Total size on STAF storage is invalid", totalSize.longValue(),
-                            storageLocationService.search(storage).get().getTotalSizeOfReferencedFiles().longValue());
+        Assert.assertEquals("Total size on STAF storage is invalid", totalSize.longValue(), storageLocationService
+                .search(storage).get().getTotalSizeOfReferencedFilesInKo().longValue());
         Assert.assertEquals("Total number of files on STAF storage invalid", 5L,
                             storageLocationService.search(storage).get().getNumberOfReferencedFiles().longValue());
     }
@@ -128,8 +128,8 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
     @Test
     public void retrieveOne() throws EntityNotFoundException {
         String storage = "STAF";
-        createFileReference(storage, 2L);
-        createFileReference(storage, 2L);
+        createFileReference(storage, 2048L);
+        createFileReference(storage, 2048L);
         storageLocationService.monitorStorageLocations(false);
         StorageLocationDTO loc = storageLocationService.getById(storage);
         Assert.assertNotNull("A location should be retrieved", loc);
@@ -143,14 +143,14 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
     @Test
     public void retrieveAll() throws EntityNotFoundException {
         String storage = "STAF";
-        createFileReference(storage, 2L);
-        createFileReference(storage, 2L);
+        createFileReference(storage, 2 * 1024L);
+        createFileReference(storage, 2 * 1024L);
         String storage2 = "HPSS";
-        createFileReference(storage2, 4L);
-        createFileReference(storage2, 4L);
-        createFileReference(storage2, 4L);
-        createFileReference(storage2, 4L);
-        createFileReference(storage2, 4L);
+        createFileReference(storage2, 4 * 1024L);
+        createFileReference(storage2, 4 * 1024L);
+        createFileReference(storage2, 4 * 1024L);
+        createFileReference(storage2, 4 * 1024L);
+        createFileReference(storage2, 4 * 1024L);
         storageLocationService.monitorStorageLocations(false);
         Set<StorageLocationDTO> locs = storageLocationService.getAllLocations();
         Assert.assertNotNull("Locations should be retrieved", locs);

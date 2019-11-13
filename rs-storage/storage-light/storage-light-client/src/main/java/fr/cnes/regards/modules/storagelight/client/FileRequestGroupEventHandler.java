@@ -18,18 +18,32 @@
  */
 package fr.cnes.regards.modules.storagelight.client;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
+import fr.cnes.regards.modules.storagelight.domain.flow.FlowItemStatus;
 
 /**
  * Handle {@link FileRequestsGroupEvent} events.
@@ -41,6 +55,12 @@ public class FileRequestGroupEventHandler
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileRequestGroupEventHandler.class);
 
+    /**
+     * Bulk size limit to handle messages
+     */
+    @Value("${regards.storage.client.responses.items.bulk.size:100}")
+    private int BULK_SIZE;
+
     @Autowired(required = false)
     private IStorageRequestListener listener;
 
@@ -49,6 +69,8 @@ public class FileRequestGroupEventHandler
 
     @Autowired
     private ISubscriber subscriber;
+
+    private final Map<String, ConcurrentLinkedQueue<FileRequestsGroupEvent>> items = new ConcurrentHashMap<>();
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -62,77 +84,199 @@ public class FileRequestGroupEventHandler
     @Override
     public void handle(TenantWrapper<FileRequestsGroupEvent> wrapper) {
         String tenant = wrapper.getTenant();
-        FileRequestsGroupEvent event = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
-        try {
-            LOGGER.debug("[{} EVENT RECEIVED] {}", event.getType().toString(), event.toString());
-            handle(event);
-        } finally {
-            runtimeTenantResolver.clearTenant();
+        LOGGER.trace("[EVENT] New FileStorageFlowItem received -- {}", wrapper.getContent().toString());
+
+        while (items.size() >= (100 * BULK_SIZE)) {
+            // Do not overload the concurrent queue if the configured listener does not handle queued message faster
+            try {
+                LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
+                Thread.sleep(30_000);
+            } catch (InterruptedException e) {
+                LOGGER.error(String
+                        .format("Error waiting for storage client responses handling by custom listener. Current responses pool to handle = %s",
+                                items.size()),
+                             e);
+            }
+        }
+        FileRequestsGroupEvent item = wrapper.getContent();
+        if (!items.containsKey(tenant)) {
+            items.put(tenant, new ConcurrentLinkedQueue<>());
+        }
+        items.get(tenant).add(item);
+    }
+
+    /**
+     * Bulk save queued items every second.
+     */
+    @Scheduled(fixedDelay = 1_000)
+    public void handleQueue() {
+        for (Map.Entry<String, ConcurrentLinkedQueue<FileRequestsGroupEvent>> entry : items.entrySet()) {
+            try {
+                runtimeTenantResolver.forceTenant(entry.getKey());
+                ConcurrentLinkedQueue<FileRequestsGroupEvent> tenantItems = entry.getValue();
+                List<FileRequestsGroupEvent> list = new ArrayList<>();
+                do {
+                    // Build a 100 (at most) documents bulk request
+                    for (int i = 0; i < BULK_SIZE; i++) {
+                        FileRequestsGroupEvent doc = tenantItems.poll();
+                        if (doc == null) {
+                            if (list.isEmpty()) {
+                                // nothing to do
+                                return;
+                            }
+                            // Less than BULK_SIZE documents, bulk save what we have already
+                            break;
+                        } else { // enqueue document
+                            list.add(doc);
+                        }
+                    }
+                    if (!list.isEmpty()) {
+                        LOGGER.info("[STORAGE RESPONSES HANDLER] Handling {} FileRequestsGroupEvent...", list.size());
+                        long start = System.currentTimeMillis();
+                        handle(list);
+                        LOGGER.info("[STORAGE RESPONSES HANDLER] {} FileRequestsGroupEvent handled in {} ms",
+                                    list.size(), System.currentTimeMillis() - start);
+                        list.clear();
+                    }
+                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
         }
     }
 
-    private void handle(FileRequestsGroupEvent event) {
-        RequestInfo info = RequestInfo.build(event.getGroupId());
-        switch (event.getState()) {
-            case SUCCESS:
-                handleDone(event, info);
-                break;
-            case ERROR:
-                handleError(event, info);
-                break;
-            case GRANTED:
-                listener.onRequestGranted(info);
-                break;
-            case DENIED:
-                listener.onRequestDenied(info);
-                break;
-            default:
-                break;
+    private void handle(Collection<FileRequestsGroupEvent> events) {
+        Set<FileRequestsGroupEvent> dones = Sets.newHashSet();
+        Set<FileRequestsGroupEvent> granted = Sets.newHashSet();
+        Set<FileRequestsGroupEvent> denied = Sets.newHashSet();
+        for (FileRequestsGroupEvent event : events) {
+            switch (event.getState()) {
+                case SUCCESS:
+                case ERROR:
+                    dones.add(event);
+                    break;
+                case GRANTED:
+                    granted.add(event);
+                    break;
+                case DENIED:
+                    denied.add(event);
+                    break;
+                default:
+                    break;
+            }
+        }
+        handleDone(dones);
+        handleGranted(granted);
+        handleDenied(denied);
+    }
+
+    /**
+     * @param denied
+     */
+    private void handleDenied(Set<FileRequestsGroupEvent> events) {
+        if ((events != null) && !events.isEmpty()) {
+            listener.onRequestDenied(events.stream()
+                    .map(e -> RequestInfo.build(e.getGroupId(), e.getSuccess(), e.getErrors()))
+                    .collect(Collectors.toSet()));
         }
     }
 
-    private void handleDone(FileRequestsGroupEvent event, RequestInfo info) {
-        switch (event.getType()) {
-            case AVAILABILITY:
-                listener.onAvailable(info, event.getSuccess());
-                break;
-            case DELETION:
-                listener.onDeletionSuccess(info, event.getSuccess());
-                break;
-            case REFERENCE:
-                listener.onReferenceSuccess(info, event.getSuccess());
-                break;
-            case STORAGE:
-                listener.onStoreSuccess(info, event.getSuccess());
-                break;
-            case COPY:
-                listener.onCopySuccess(info, event.getSuccess());
-                break;
-            default:
-                break;
+    /**
+     * @param granted
+     */
+    private void handleGranted(Set<FileRequestsGroupEvent> events) {
+        if ((events != null) && !events.isEmpty()) {
+            listener.onRequestGranted(events.stream()
+                    .map(e -> RequestInfo.build(e.getGroupId(), e.getSuccess(), e.getErrors()))
+                    .collect(Collectors.toSet()));
         }
+
     }
 
-    private void handleError(FileRequestsGroupEvent event, RequestInfo info) {
-        switch (event.getType()) {
-            case AVAILABILITY:
-                listener.onAvailabilityError(info, event.getSuccess(), event.getErrors());
-                break;
-            case DELETION:
-                listener.onDeletionError(info, event.getSuccess(), event.getErrors());
-                break;
-            case REFERENCE:
-                listener.onReferenceError(info, event.getSuccess(), event.getErrors());
-                break;
-            case STORAGE:
-                listener.onStoreError(info, event.getSuccess(), event.getErrors());
-                break;
-            case COPY:
-                listener.onCopyError(info, event.getSuccess(), event.getErrors());
-                break;
-            default:
-                break;
+    private void handleDone(Set<FileRequestsGroupEvent> events) {
+        Set<RequestInfo> availables = Sets.newHashSet();
+        Set<RequestInfo> availableErrors = Sets.newHashSet();
+        Set<RequestInfo> deleted = Sets.newHashSet();
+        Set<RequestInfo> deletionErrors = Sets.newHashSet();
+        Set<RequestInfo> referenced = Sets.newHashSet();
+        Set<RequestInfo> referenceErrors = Sets.newHashSet();
+        Set<RequestInfo> stored = Sets.newHashSet();
+        Set<RequestInfo> storeErrors = Sets.newHashSet();
+        Set<RequestInfo> copied = Sets.newHashSet();
+        Set<RequestInfo> copyErrors = Sets.newHashSet();
+
+        for (FileRequestsGroupEvent event : events) {
+            RequestInfo ri = RequestInfo.build(event.getGroupId(), event.getSuccess(), event.getErrors());
+            switch (event.getType()) {
+                case AVAILABILITY:
+                    if (event.getState() == FlowItemStatus.SUCCESS) {
+                        availables.add(ri);
+                    } else {
+                        availableErrors.add(ri);
+                    }
+                    break;
+                case DELETION:
+                    if (event.getState() == FlowItemStatus.SUCCESS) {
+                        deleted.add(ri);
+                    } else {
+                        deletionErrors.add(ri);
+                    }
+                    break;
+                case REFERENCE:
+                    if (event.getState() == FlowItemStatus.SUCCESS) {
+                        referenced.add(ri);
+                    } else {
+                        referenceErrors.add(ri);
+                    }
+                    break;
+                case STORAGE:
+                    if (event.getState() == FlowItemStatus.SUCCESS) {
+                        stored.add(ri);
+                    } else {
+                        storeErrors.add(ri);
+                    }
+                    break;
+                case COPY:
+                    if (event.getState() == FlowItemStatus.SUCCESS) {
+                        copied.add(ri);
+                    } else {
+                        copyErrors.add(ri);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (!availables.isEmpty()) {
+            listener.onAvailable(availables);
+        }
+        if (!availableErrors.isEmpty()) {
+            listener.onAvailabilityError(availableErrors);
+        }
+        if (!deleted.isEmpty()) {
+            listener.onDeletionSuccess(deleted);
+        }
+        if (!deletionErrors.isEmpty()) {
+            listener.onDeletionError(deletionErrors);
+        }
+        if (!referenced.isEmpty()) {
+            listener.onReferenceSuccess(referenced);
+        }
+        if (!referenceErrors.isEmpty()) {
+            listener.onReferenceError(referenceErrors);
+        }
+        if (!stored.isEmpty()) {
+            listener.onStoreSuccess(stored);
+        }
+        if (!storeErrors.isEmpty()) {
+            listener.onStoreError(storeErrors);
+        }
+        if (!copied.isEmpty()) {
+            listener.onCopySuccess(copied);
+        }
+        if (!copyErrors.isEmpty()) {
+            listener.onCopyError(copyErrors);
         }
     }
 }

@@ -121,8 +121,8 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
                 }
             }
             progressManager.bulkSave();
-            LOGGER.debug("[STORAGE JOB] storage job handled in {}ms for {} storage requests",
-                         System.currentTimeMillis() - start, nbRequestToHandle);
+            LOGGER.info("[STORAGE JOB] storage job handled in {}ms for {} storage requests",
+                        System.currentTimeMillis() - start, nbRequestToHandle);
         }
     }
 

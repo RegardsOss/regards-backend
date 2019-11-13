@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.domain.dto;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -50,11 +51,12 @@ public class FileReferenceDTO {
     private FileLocationDTO location;
 
     public static FileReferenceDTO build(OffsetDateTime storageDate, FileReferenceMetaInfoDTO metaInfo,
-            FileLocationDTO location) {
+            FileLocationDTO location, Collection<String> owners) {
         FileReferenceDTO dto = new FileReferenceDTO();
         dto.storageDate = storageDate;
         dto.metaInfo = metaInfo;
         dto.location = location;
+        dto.owners.addAll(owners);
         return dto;
     }
 

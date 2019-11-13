@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -47,7 +48,10 @@ import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestS
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storagelight.domain.flow.CopyFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.FlowItemStatus;
 import fr.cnes.regards.modules.storagelight.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
 
@@ -59,6 +63,9 @@ import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStora
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_copy_tests",
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class FileCopyRequestServiceTest extends AbstractStorageTest {
+
+    @Autowired
+    private RequestsGroupService reqGrpService;
 
     @Before
     @Override
@@ -86,16 +93,29 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Mockito.reset(publisher);
         jobService.runJob(ji, getDefaultTenant()).get();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        // A copy event should be sent for all files in /rep/one
-        Mockito.verify(publisher, Mockito.times(20)).publish(Mockito.any(CopyFlowItem.class));
+        // Check event is well publish for copying the files
+        ArgumentCaptor<CopyFlowItem> argumentCaptor = ArgumentCaptor.forClass(CopyFlowItem.class);
+        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(CopyFlowItem.class));
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        CopyFlowItem copyItem = null;
+        for (Object item : argumentCaptor.getAllValues()) {
+            if (item instanceof CopyFlowItem) {
+                copyItem = (CopyFlowItem) item;
+                break;
+            }
+        }
+        Assert.assertNotNull(copyItem);
+        // 3 of the 6 files must be copied (only files in target/files)
+        Assert.assertEquals(20, copyItem.getFiles().size());
     }
 
     @Test
     public void copyFile() throws InterruptedException, ExecutionException {
+        String requestGroup = UUID.randomUUID().toString();
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test", Optional.empty());
         Set<FileCopyRequestDTO> requests = Sets
                 .newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL));
-        fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
+        fileCopyRequestService.copy(Sets.newHashSet(CopyFlowItem.build(requests, requestGroup)));
         // A new copy request should be created
         Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
                                                                        ONLINE_CONF_LABEL);
@@ -169,6 +189,28 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         // File should not be in cache anymore
         oCachedFile = cacheService.search(fileRef.getMetaInfo().getChecksum());
         Assert.assertFalse("The cache file should be deleted after copy", oCachedFile.isPresent());
+
+        // Check request group is done
+        Mockito.reset(publisher);
+        reqGrpService.checkRequestsGroupsDone();
+        argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        FileRequestsGroupEvent frge = null;
+        for (ISubscribable e : argumentCaptor.getAllValues()) {
+            if (e instanceof FileRequestsGroupEvent) {
+                frge = (FileRequestsGroupEvent) e;
+                if ((frge.getType() == FileRequestType.COPY) && frge.getGroupId().equals(requestGroup)) {
+                    break;
+                } else {
+                    frge = null;
+                }
+            }
+        }
+        Assert.assertNotNull(frge);
+        Assert.assertEquals(FlowItemStatus.SUCCESS, frge.getState());
+        Assert.assertEquals(1, frge.getSuccess().size());
+        Assert.assertEquals(0, frge.getErrors().size());
+
     }
 
     @Test

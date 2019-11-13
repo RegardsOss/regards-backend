@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storagelight.client;
 
-import java.util.Collection;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -55,94 +54,110 @@ public class StorageListener implements IStorageRequestListener {
     }
 
     @Override
-    public void onCopySuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
-        LOGGER.debug("[TEST RESULT] - Copy success for group {} with {} success", request.getGroupId(), success.size());
-        this.success.putAll(request, success);
+    public void onCopySuccess(Set<RequestInfo> requests) {
+        for (RequestInfo ri : requests) {
+            LOGGER.debug("[TEST RESULT] - Copy success for group {} with {} success", ri.getGroupId(),
+                         ri.getSuccessRequests().size());
+            this.success.putAll(ri, ri.getSuccessRequests());
+        }
     }
 
     @Override
-    public void onCopyError(RequestInfo request, Collection<RequestResultInfoDTO> success,
-            Collection<RequestResultInfoDTO> errors) {
-        LOGGER.debug("[TEST RESULT] - Copy error for group {} with {} errors and {} success", request.getGroupId(),
-                     errors.size(), success.size());
-        this.errors.putAll(request, errors);
-        this.success.putAll(request, success);
-
-    }
-
-    @Override
-    public void onAvailable(RequestInfo request, Collection<RequestResultInfoDTO> success) {
-        LOGGER.debug("[TEST RESULT] - Availability success for group {} with {} success", request.getGroupId(),
-                     success.size());
-        this.success.putAll(request, success);
-    }
-
-    @Override
-    public void onAvailabilityError(RequestInfo request, Collection<RequestResultInfoDTO> success,
-            Collection<RequestResultInfoDTO> errors) {
-        LOGGER.debug("[TEST RESULT] - Availability error for group {} with {} errors and {} success",
-                     request.getGroupId(), errors.size(), success.size());
-        this.errors.putAll(request, errors);
-        this.success.putAll(request, success);
-    }
-
-    @Override
-    public void onDeletionSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
-        LOGGER.debug("[TEST RESULT] - Deletion success for group {} with {} success", request.getGroupId(),
-                     success.size());
-        this.success.putAll(request, success);
-    }
-
-    @Override
-    public void onDeletionError(RequestInfo request, Collection<RequestResultInfoDTO> success,
-            Collection<RequestResultInfoDTO> errors) {
-        LOGGER.debug("[TEST RESULT] - Deletion error for group {} with {} errors and {} success", request.getGroupId(),
-                     errors.size(), success.size());
-        this.errors.putAll(request, errors);
-        this.success.putAll(request, success);
-    }
-
-    @Override
-    public void onReferenceSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
-        LOGGER.debug("[TEST RESULT] - Reference success for group {} with {} success", request.getGroupId(),
-                     success.size());
-        this.success.putAll(request, success);
-    }
-
-    @Override
-    public void onReferenceError(RequestInfo request, Collection<RequestResultInfoDTO> success,
-            Collection<RequestResultInfoDTO> errors) {
-        LOGGER.debug("[TEST RESULT] - Reference error for group {} with {} errors and {} success", request.getGroupId(),
-                     errors.size(), success.size());
-        this.errors.putAll(request, errors);
-        this.success.putAll(request, success);
-    }
-
-    @Override
-    public void onRequestGranted(RequestInfo request) {
-        granted.add(request);
+    public void onCopyError(Set<RequestInfo> requests) {
+        for (RequestInfo ri : requests) {
+            LOGGER.debug("[TEST RESULT] - Copy error for group {} with {} errors and {} success", ri.getGroupId(),
+                         errors.size(), success.size());
+            this.errors.putAll(ri, ri.getErrorRequests());
+            this.success.putAll(ri, ri.getSuccessRequests());
+        }
 
     }
 
     @Override
-    public void onRequestDenied(RequestInfo request) {
-        denied.add(request);
+    public void onAvailable(Set<RequestInfo> requests) {
+        for (RequestInfo ri : requests) {
+            LOGGER.debug("[TEST RESULT] - Availability success for group {} with {} success", ri.getGroupId(),
+                         success.size());
+            this.success.putAll(ri, ri.getSuccessRequests());
+        }
     }
 
     @Override
-    public void onStoreSuccess(RequestInfo request, Collection<RequestResultInfoDTO> success) {
-        LOGGER.debug("[TEST RESULT] - Storage success for group {} with {} success", request.getGroupId(),
-                     success.size());
-        this.success.putAll(request, success);
+    public void onAvailabilityError(Set<RequestInfo> requests) {
+        for (RequestInfo ri : requests) {
+            LOGGER.debug("[TEST RESULT] - Availability error for group {} with {} errors and {} success",
+                         ri.getGroupId(), errors.size(), success.size());
+            this.errors.putAll(ri, ri.getErrorRequests());
+            this.success.putAll(ri, ri.getSuccessRequests());
+        }
     }
 
     @Override
-    public void onStoreError(RequestInfo request, Collection<RequestResultInfoDTO> success,
-            Collection<RequestResultInfoDTO> errors) {
-        LOGGER.debug("[TEST RESULT] - Storage error for group {} with {} errors and {} success", request.getGroupId(),
-                     errors.size(), success.size());
-        this.errors.putAll(request, errors);
-        this.success.putAll(request, success);
+    public void onDeletionSuccess(Set<RequestInfo> requests) {
+        for (RequestInfo ri : requests) {
+            LOGGER.debug("[TEST RESULT] - Deletion success for group {} with {} success", ri.getGroupId(),
+                         success.size());
+            this.success.putAll(ri, ri.getSuccessRequests());
+        }
+    }
+
+    @Override
+    public void onDeletionError(Set<RequestInfo> requests) {
+        for (RequestInfo ri : requests) {
+            LOGGER.debug("[TEST RESULT] - Deletion error for group {} with {} errors and {} success", ri.getGroupId(),
+                         errors.size(), success.size());
+            this.errors.putAll(ri, ri.getErrorRequests());
+            this.success.putAll(ri, ri.getSuccessRequests());
+        }
+    }
+
+    @Override
+    public void onReferenceSuccess(Set<RequestInfo> requests) {
+        for (RequestInfo ri : requests) {
+            LOGGER.debug("[TEST RESULT] - Reference success for group {} with {} success", ri.getGroupId(),
+                         success.size());
+            this.success.putAll(ri, ri.getSuccessRequests());
+        }
+    }
+
+    @Override
+    public void onReferenceError(Set<RequestInfo> requests) {
+        for (RequestInfo ri : requests) {
+            LOGGER.debug("[TEST RESULT] - Reference error for group {} with {} errors and {} success", ri.getGroupId(),
+                         errors.size(), success.size());
+            this.errors.putAll(ri, ri.getErrorRequests());
+            this.success.putAll(ri, ri.getSuccessRequests());
+        }
+    }
+
+    @Override
+    public void onRequestGranted(Set<RequestInfo> requests) {
+        granted.addAll(requests);
+
+    }
+
+    @Override
+    public void onRequestDenied(Set<RequestInfo> requests) {
+        denied.addAll(requests);
+    }
+
+    @Override
+    public void onStoreSuccess(Set<RequestInfo> requests) {
+        for (RequestInfo ri : requests) {
+            LOGGER.debug("[TEST RESULT] - Storage success for group {} with {} success", ri.getGroupId(),
+                         success.size());
+            this.success.putAll(ri, ri.getSuccessRequests());
+        }
+    }
+
+    @Override
+    public void onStoreError(Set<RequestInfo> requests) {
+        for (RequestInfo ri : requests) {
+            LOGGER.debug("[TEST RESULT] - Storage error for group {} with {} errors and {} success", ri.getGroupId(),
+                         errors.size(), success.size());
+            this.errors.putAll(ri, ri.getErrorRequests());
+            this.success.putAll(ri, ri.getSuccessRequests());
+        }
     }
 
     public Set<RequestInfo> getDenied() {
