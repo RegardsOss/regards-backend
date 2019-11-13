@@ -408,11 +408,6 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.utils</groupId>
-                <artifactId>request-utils</artifactId>
-                <version>${file.utils.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.utils</groupId>
                 <artifactId>spring-utils</artifactId>
                 <version>${spring.utils.version}</version>
             </dependency>
