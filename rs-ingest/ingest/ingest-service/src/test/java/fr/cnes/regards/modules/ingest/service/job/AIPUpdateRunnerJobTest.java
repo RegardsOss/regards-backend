@@ -70,7 +70,6 @@ import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfo
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
 
-    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdatesCreatorJobIT.class);
 
     @Autowired
@@ -79,6 +78,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
     @Autowired
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
 
+    @SuppressWarnings("unused")
     @Autowired
     private AIPUpdateRequestService aipUpdateServiceRequest;
 
@@ -149,7 +149,6 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
      * Helper method to wait for DB ingestion
      * @param expectedTasks expected count of task in db
      * @param timeout in ms
-     * @throws InterruptedException
      */
     public void waitForUpdateTaskCreated(long expectedTasks, long timeout) {
         long end = System.currentTimeMillis() + timeout;
