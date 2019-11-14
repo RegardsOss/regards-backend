@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.domain.mapper;
 
-import fr.cnes.regards.modules.ingest.domain.request.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
 import org.mapstruct.Mapper;
 

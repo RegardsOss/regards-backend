@@ -18,13 +18,30 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
+import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -35,26 +52,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
-import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
 /**
  * @author Marc Sordi
@@ -132,7 +129,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
                 .handleIngestJobFailed(argumentCaptor.capture(), ArgumentCaptor.forClass(SIPEntity.class).capture());
         IngestRequest request = argumentCaptor.getValue();
         Assert.assertNotNull(request);
-        Assert.assertTrue(RequestState.ERROR.equals(request.getState()));
+        Assert.assertEquals(InternalRequestStep.ERROR, request.getState());
 
         // Check repository
         ingestServiceTest.waitForIngestion(1, TWO_SECONDS);

@@ -16,46 +16,38 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.request;
+package fr.cnes.regards.modules.ingest.domain.request.update;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
 import javax.validation.Valid;
+
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 
 /**
  * Keep info about an AIP update request
  * @author Léo Mieulet
  */
-@Entity
-@Table(name = "t_update_request",
-        indexes = { @Index(name = "idx_update_request_search", columnList = "session_owner,session_name,state"),
-                @Index(name = "idx_update_request_state", columnList = "state") })
+@Entity(name = RequestTypeConstant.UPDATE_VALUE)
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-public class AIPUpdateRequest extends AbstractInternalRequest {
-
-    @Id
-    @SequenceGenerator(name = "updateRequestSequence", initialValue = 1, sequenceName = "seq_update_request")
-    @GeneratedValue(generator = "updateRequestSequence", strategy = GenerationType.SEQUENCE)
-    private Long id;
+public class AIPUpdateRequest extends AbstractRequest {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "update_task_id", foreignKey = @ForeignKey(name = "fk_update_request_update_task_id"))
@@ -69,12 +61,12 @@ public class AIPUpdateRequest extends AbstractInternalRequest {
     @JoinColumn(name = "aip_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_update_request_aip"))
     private AIPEntity aip;
 
-    public Long getId() {
-        return id;
+    public AbstractAIPUpdateTask getUpdateTask() {
+        return updateTask;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setUpdateTask(AbstractAIPUpdateTask updateTask) {
+        this.updateTask = updateTask;
     }
 
     public AIPEntity getAip() {
@@ -85,19 +77,12 @@ public class AIPUpdateRequest extends AbstractInternalRequest {
         this.aip = aip;
     }
 
-    public AbstractAIPUpdateTask getUpdateTask() {
-        return updateTask;
-    }
-
-    public void setUpdateTask(AbstractAIPUpdateTask updateTask) {
-        this.updateTask = updateTask;
-    }
-
     public static List<AIPUpdateRequest> build(AIPEntity aip, AIPUpdateParametersDto updateTaskDto, boolean pending) {
         return AIPUpdateRequest.build(aip, AbstractAIPUpdateTask.build(updateTaskDto), pending);
     }
 
-    public static List<AIPUpdateRequest> build(AIPEntity aip, List<AbstractAIPUpdateTask> updateTasks, boolean pending) {
+    public static List<AIPUpdateRequest> build(AIPEntity aip, Collection<AbstractAIPUpdateTask> updateTasks,
+            boolean pending) {
         List<AIPUpdateRequest> result = new ArrayList<>();
         for (AbstractAIPUpdateTask updateTask : updateTasks) {
             AIPUpdateRequest updateRequest = new AIPUpdateRequest();
@@ -106,6 +91,7 @@ public class AIPUpdateRequest extends AbstractInternalRequest {
             updateRequest.setCreationDate(OffsetDateTime.now());
             updateRequest.setSessionOwner(aip.getIngestMetadata().getSessionOwner());
             updateRequest.setSession(aip.getIngestMetadata().getSession());
+            updateRequest.setProviderId(aip.getProviderId());
             if (pending) {
                 updateRequest.setState(InternalRequestStep.BLOCKED);
             } else {

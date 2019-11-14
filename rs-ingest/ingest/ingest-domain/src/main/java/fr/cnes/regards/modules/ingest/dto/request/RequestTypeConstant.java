@@ -16,15 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.accept;
-
-import fr.cnes.regards.modules.ingest.domain.accept.OAISRequestType;
+package fr.cnes.regards.modules.ingest.dto.request;
 
 /**
  * @author Léo Mieulet
  */
-public interface IOAISAcceptRequestService {
-
-    boolean acceptRequest(String sessionOwner, String session, OAISRequestType queryType);
-
+public class RequestTypeConstant {
+    public static final String STORE_METADATA_VALUE = "STORE_METADATA";
+    public static final String UPDATE_VALUE = "UPDATE";
+    public static final String AIP_UPDATES_CREATOR_VALUE = "AIP_UPDATES_CREATOR";
+    public static final String INGEST_VALUE = "INGEST";
+    public static final String STORAGE_DELETION_VALUE = "STORAGE_DELETION";
+    public static final String OAIS_DELETION_VALUE = "OAIS_DELETION";
 }

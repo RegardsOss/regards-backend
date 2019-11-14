@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
-import fr.cnes.regards.modules.ingest.domain.request.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 
 /**
  * Service to handle {@link OAISDeletionRequest}s

@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.ingest.dao;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import java.util.Set;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;

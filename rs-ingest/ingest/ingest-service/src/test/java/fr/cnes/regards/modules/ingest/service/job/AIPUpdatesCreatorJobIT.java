@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.AIPUpdateRequest;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTagTask;
@@ -54,7 +54,7 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=update_scanner_job",
         "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false" })
 @ActiveProfiles(value={"testAmqp", "StorageClientMock"})
-public class AIPUpdateScannerJobIT extends IngestMultitenantServiceTest {
+public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdateRunnerJobTest.class);

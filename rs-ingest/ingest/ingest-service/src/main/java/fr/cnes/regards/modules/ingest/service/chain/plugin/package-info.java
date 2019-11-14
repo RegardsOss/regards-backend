@@ -23,4 +23,4 @@
  * @author Marc Sordi
  *
  */
-package fr.cnes.regards.modules.ingest.service.plugin;
+package fr.cnes.regards.modules.ingest.service.chain.plugin;

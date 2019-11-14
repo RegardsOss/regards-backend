@@ -29,8 +29,8 @@ public final class OAISEntitySpecification {
 
         Set<Predicate> predicates = Sets.newHashSet();
         if (tags != null && !tags.isEmpty()) {
-            Path<Object> attributeRequeted = root.get("tags");
-            predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingElements(attributeRequeted, tags, cb));
+            Path<Object> attributeRequested = root.get("tags");
+            predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingElements(attributeRequested, tags, cb));
         }
         if (sessionOwner != null) {
             predicates.add(cb.equal(root.get(INGEST_METADATA).get("sessionOwner"), sessionOwner));
@@ -47,7 +47,7 @@ public final class OAISEntitySpecification {
                     providerIdsPredicates.add(cb.equal(root.get("providerId"), providerId));
                 }
             }
-            // Use the OR operator between each storage
+            // Use the OR operator between each provider id
             predicates.add(cb.or(providerIdsPredicates.toArray(new Predicate[providerIdsPredicates.size()])));
         }
         if (storages != null && !storages.isEmpty()) {

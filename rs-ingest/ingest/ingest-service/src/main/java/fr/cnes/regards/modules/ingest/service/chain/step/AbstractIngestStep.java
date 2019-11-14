@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -73,6 +74,7 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
     protected void handleRequestError(String error) {
         Assert.hasText(error, "Error message is required");
         addError(error);
+        job.getCurrentRequest().setState(InternalRequestStep.ERROR);
         job.getCurrentRequest().setErrors(errors);
         ingestRequestService.handleIngestJobFailed(job.getCurrentRequest(), job.getCurrentEntity());
     }

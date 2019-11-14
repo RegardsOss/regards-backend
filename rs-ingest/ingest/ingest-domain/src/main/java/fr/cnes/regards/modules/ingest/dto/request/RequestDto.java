@@ -16,36 +16,61 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.request;
+package fr.cnes.regards.modules.ingest.dto.request;
 
-
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.MappedSuperclass;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
- * Common request properties for requests published outside of this microservice
  * @author Léo Mieulet
  */
-@MappedSuperclass
-public abstract class AbstractInternalRequest extends AbstractRequest {
+public class RequestDto {
 
-    @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER)
-    @Column(length = 128, name = "session_owner", nullable = false)
+    private Long id;
+
+    private Set<String> errors;
+
+    private OffsetDateTime creationDate;
+
+    private OffsetDateTime remoteStepDeadline;
+
     private String sessionOwner;
 
-    @NotBlank(message = IngestValidationMessages.MISSING_SESSION)
-    @Column(length = 128, name = "session_name", nullable = false)
     private String session;
 
-    @NotNull(message = "Request state is required")
-    @Enumerated(EnumType.STRING)
-    @Column(name = "state", length = 50, nullable = false)
-    private InternalRequestStep state;
+    private String providerId;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Set<String> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(Set<String> errors) {
+        this.errors = errors;
+    }
+
+    public OffsetDateTime getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(OffsetDateTime creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public OffsetDateTime getRemoteStepDeadline() {
+        return remoteStepDeadline;
+    }
+
+    public void setRemoteStepDeadline(OffsetDateTime remoteStepDeadline) {
+        this.remoteStepDeadline = remoteStepDeadline;
+    }
 
     public String getSessionOwner() {
         return sessionOwner;
@@ -63,11 +88,11 @@ public abstract class AbstractInternalRequest extends AbstractRequest {
         this.session = session;
     }
 
-    public InternalRequestStep getState() {
-        return state;
+    public String getProviderId() {
+        return providerId;
     }
 
-    public void setState(InternalRequestStep state) {
-        this.state = state;
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 }

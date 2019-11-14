@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.dto.request.update;
 
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import java.util.ArrayList;
 import java.util.List;
 import javax.validation.Valid;
 
@@ -117,5 +118,35 @@ public class AIPUpdateParametersDto {
         params.setRemoveCategories(removeCategories);
         params.setRemoveStorages(removeStorages);
         return params;
+    }
+    public static AIPUpdateParametersDto build(SearchAIPsParameters aipsParameters) {
+        AIPUpdateParametersDto params = new AIPUpdateParametersDto();
+        params.setCriteria(aipsParameters);
+        params.setAddTags(new ArrayList<>());
+        params.setRemoveTags(new ArrayList<>());
+        params.setAddCategories(new ArrayList<>());
+        params.setRemoveCategories(new ArrayList<>());
+        params.setRemoveStorages(new ArrayList<>());
+        return params;
+    }
+    public AIPUpdateParametersDto withAddTags(List<String> addTags) {
+        this.addTags.addAll(addTags);
+        return this;
+    }
+    public AIPUpdateParametersDto withRemoveTags(List<String> removeTags) {
+        this.removeTags.addAll(removeTags);
+        return this;
+    }
+    public AIPUpdateParametersDto withAddCategories(List<String> addCategories) {
+        this.addCategories.addAll(addCategories);
+        return this;
+    }
+    public AIPUpdateParametersDto withRemoveCategories(List<String> removeCategories) {
+        this.removeCategories.addAll(removeCategories);
+        return this;
+    }
+    public AIPUpdateParametersDto withRemoveStorages(List<String> removeStorages) {
+        this.removeStorages.addAll(removeStorages);
+        return this;
     }
 }

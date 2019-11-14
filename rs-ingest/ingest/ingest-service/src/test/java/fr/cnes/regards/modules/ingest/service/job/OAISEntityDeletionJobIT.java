@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -31,10 +33,10 @@ import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
@@ -51,6 +53,8 @@ import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestMultitenantServiceTest.class);
+
     @Autowired
     private StorageClientMock storageClient;
 
@@ -59,9 +63,6 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IStorageDeletionRequestRepository deletionStorageRequestRepository;
-
-    @Autowired
-    private IOAISDeletionRequestRepository deletionRequestRepository;
 
     @Autowired
     private IAIPRepository aipRepository;
@@ -91,16 +92,34 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        deletionStorageRequestRepository.deleteAll();
-        deletionRequestRepository.deleteAll();
     }
 
     public void waitUntilNbSIPStoredReach(long nbSIPRemaining) {
         ingestServiceTest.waitForIngestion(nbSIPRemaining, FIVE_SECONDS * nbSIPRemaining, SIPState.STORED);
+        ingestServiceTest.waitAllRequestsFinished(FIVE_SECONDS);
     }
 
-    public void waitUntilNbSIPErrorReach(long nbSIPRemaining) {
-        ingestServiceTest.waitForIngestion(nbSIPRemaining, FIVE_SECONDS * nbSIPRemaining, SIPState.ERROR);
+    public void waitUntilNbDeletionRequestInErrorReach(long timeout, long nbError) {
+
+        long end = System.currentTimeMillis() + timeout;
+        // Wait
+        do {
+            long count = deletionStorageRequestRepository.countByState(InternalRequestStep.ERROR);
+            LOGGER.info("{} Current request in error", count);
+            if (count == nbError) {
+                break;
+            }
+            long now = System.currentTimeMillis();
+            if (end > now) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Assert.fail("Thread interrupted");
+                }
+            } else {
+                Assert.fail("Timeout");
+            }
+        } while (true);
     }
 
     public void assertDeletedAIPs(long nbAipDeletedExpected) {
@@ -125,6 +144,7 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
         publishSIPEvent(create("6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        ingestServiceTest.waitAllRequestsFinished(FIVE_SECONDS * 3);
     }
 
     @Test
@@ -161,7 +181,7 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
         ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto.build(SESSION_OWNER_0, SESSION_0,
                                                                                SessionDeletionMode.IRREVOCABLY,
                                                                                SessionDeletionSelectionMode.INCLUDE));
-        waitUntilNbSIPStoredReach(4);
+        waitUntilNbDeletionRequestInErrorReach(FIVE_SECONDS, 2);
 
     }
 }

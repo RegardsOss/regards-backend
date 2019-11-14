@@ -38,7 +38,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
-import fr.cnes.regards.modules.ingest.domain.request.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;

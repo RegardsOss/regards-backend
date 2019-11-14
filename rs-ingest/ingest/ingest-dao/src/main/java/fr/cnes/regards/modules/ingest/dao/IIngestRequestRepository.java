@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.request.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.dto.request.RequestState;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -29,9 +28,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -49,9 +45,9 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      * @param pageable page info
      */
     // FIXME remove if not used after PM implementation
-    @Deprecated
-    Page<IngestRequest> findPageByMetadataIngestChainAndState(String ingestChain, RequestState state,
-            Pageable pageable);
+//    @Deprecated
+//    Page<IngestRequest> findPageByMetadataIngestChainAndState(String ingestChain, RequestState state,
+//            Pageable pageable);
 
     /**
      * Update state for a collection of requests
@@ -59,15 +55,15 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      * @param ids request identifiers
      */
     // FIXME remove if not used after PM implementation
-    @Deprecated
-    @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("UPDATE IngestRequest r set r.state = :state where r.id in (:ids)")
-    void updateIngestRequestState(@Param("state") RequestState state, @Param("ids") Collection<Long> ids);
+//    @Deprecated
+//    @Modifying(flushAutomatically = true, clearAutomatically = true)
+//    @Query("UPDATE IngestRequest r set r.state = :state where r.id in (:ids)")
+//    void updateIngestRequestState(@Param("state") RequestState state, @Param("ids") Collection<Long> ids);
 
     /**
      * Return true if an entity exists with provided criteria
      */
-    boolean existsByMetadataSessionOwnerAndMetadataSessionAndStepIn(String sessionOwner, String session, List<IngestRequestStep> steps);
+//    boolean existsByMetadataSessionOwnerAndMetadataSessionAndStepIn(String sessionOwner, String session, List<IngestRequestStep> steps);
 
     /**
      * Get request by ids
@@ -109,4 +105,6 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      * Internal method used to retrieve IngestRequest using a specification
      */
     Optional<IngestRequest> findOne(Specification<IngestRequest> spec);
+
+    Page<AbstractRequest> findAll(Specification<AbstractRequest> searchAllByFilters, Pageable pageable);
 }

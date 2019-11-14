@@ -18,7 +18,29 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.RunnableFuture;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
@@ -29,24 +51,15 @@ import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
-import fr.cnes.regards.modules.ingest.service.flow.AIPUpdateFlowHandler;
+import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
+import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
+import fr.cnes.regards.modules.ingest.service.schedule.AIPUpdateJobScheduler;
+import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.RunnableFuture;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
+import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * Test {@link AIPUpdateRunnerJob}
@@ -54,11 +67,11 @@ import org.springframework.test.context.TestPropertySource;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=update_oais_job",
         "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false" })
-@ActiveProfiles(value={"testAmqp", "StorageClientMock"})
+@ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdateScannerJobIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdatesCreatorJobIT.class);
 
     @Autowired
     private StorageClientMock storageClient;
@@ -67,31 +80,46 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
 
     @Autowired
+    private AIPUpdateRequestService aipUpdateServiceRequest;
+
+    @Autowired
     private IAIPService aipService;
 
     @Autowired
-    private AIPUpdateFlowHandler updateFlowHandler;
+    private AIPUpdateJobScheduler updateFlowHandler;
+
+    @Autowired
+    private StorageResponseFlowHandler storageListener;
 
     @Autowired
     private IJobService jobService;
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY", "CATEGORY00", "CATEGORY01");
+
     private static final List<String> CATEGORIES_1 = Lists.newArrayList("CATEGORY1");
+
     private static final List<String> CATEGORIES_2 = Lists.newArrayList("CATEGORY2");
 
     private static final List<String> TAG_0 = Lists.newArrayList("toto", "tata");
+
     private static final List<String> TAG_1 = Lists.newArrayList("toto", "tutu");
+
     private static final List<String> TAG_2 = Lists.newArrayList("plop", "ping");
+
     private static final List<String> TAG_3 = Lists.newArrayList("toto");
 
     private static final String STORAGE_1 = "AWS";
+
     private static final String STORAGE_2 = "Azure";
+
     private static final String STORAGE_3 = "Pentagon";
 
     private static final String SESSION_OWNER_0 = "NASA";
+
     private static final String SESSION_OWNER_1 = "CNES";
 
     private static final String SESSION_0 = OffsetDateTime.now().toString();
+
     private static final String SESSION_1 = OffsetDateTime.now().minusDays(4).toString();
 
     @Override
@@ -166,15 +194,13 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         }
     }
 
-
     @Test
     public void testUpdateJob() throws ModuleException {
         storageClient.setBehavior(true, true);
         initData();
-        aipService.scheduleAIPEntityUpdate(AIPUpdateParametersDto.build(
-                SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
-                TAG_2, TAG_3, CATEGORIES_2, CATEGORIES_0, Lists.newArrayList(STORAGE_3)
-        ));
+        aipService.scheduleAIPEntityUpdate(AIPUpdateParametersDto
+                .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0), TAG_2,
+                       TAG_3, CATEGORIES_2, CATEGORIES_0, Lists.newArrayList(STORAGE_3)));
         long nbSipConcerned = 2;
         long nbTasksPerSip = 5;
         waitForUpdateTaskCreated(nbSipConcerned * nbTasksPerSip, 10_000);
@@ -182,8 +208,9 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         runAndWaitJob(Lists.newArrayList(updateJob));
         Pageable pageRequest = PageRequest.of(0, 200);
 
-        Page<AIPEntity> aips = aipService.search(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
-                pageRequest);
+        Page<AIPEntity> aips = aipService
+                .search(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
+                        pageRequest);
         List<AIPEntity> aipsContent = aips.getContent();
         for (AIPEntity aip : aipsContent) {
             Assert.assertEquals(3, aip.getTags().size());
@@ -196,5 +223,54 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
             Assert.assertFalse(aip.getIngestMetadata().getStorages().stream()
                     .anyMatch(sto -> sto.getPluginBusinessId().equals(STORAGE_3)));
         }
+    }
+
+    @Test
+    public void testUpdateAIPFileLocationJob() throws InterruptedException {
+
+        storageClient.setBehavior(true, true);
+        initData();
+
+        Page<AIPEntity> aips = aipService
+                .search(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
+                        PageRequest.of(0, 200));
+        AIPEntity toUpdate = aips.getContent().get(0);
+        String providerId = toUpdate.getProviderId();
+        Assert.assertEquals("Before adding the new location the data object should contains only one location", 1,
+                            toUpdate.getAip().getProperties().getContentInformations().get(0).getDataObject()
+                                    .getLocations().size());
+        String toUpdateChecksum = toUpdate.getAip().getProperties().getContentInformations().get(0).getDataObject()
+                .getChecksum();
+
+        LOGGER.info("Updating AIP {} and file {}", toUpdate.getAipId(), toUpdateChecksum);
+
+        Set<RequestInfo> requests = Sets.newHashSet();
+        String newStorageLocation = "somewhere";
+        Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
+        successRequests
+                .add(RequestResultInfoDTO.build("groupId", toUpdateChecksum, newStorageLocation,
+                                                simulatefileReference(toUpdateChecksum, toUpdate.getAipId()), null));
+        requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
+
+        storageListener.onCopySuccess(requests);
+
+        JobInfo updateJob = updateFlowHandler.getUpdateJob();
+        runAndWaitJob(Lists.newArrayList(updateJob));
+
+        // Check that the new location is added to the AIP in DB.
+        aips = aipService.search(SearchAIPsParameters.build().withProviderId(providerId), PageRequest.of(0, 10));
+        AIPEntity updateAIP = aips.getContent().get(0);
+        Assert.assertEquals("After adding the new location the data object should contains two locations", 2, updateAIP
+                .getAip().getProperties().getContentInformations().get(0).getDataObject().getLocations().size());
+        Assert.assertTrue("New location is not added to the AIP dataobject",
+                          updateAIP.getAip().getProperties().getContentInformations().get(0).getDataObject()
+                                  .getLocations().stream()
+                                  .anyMatch(l -> l.getStorage().contentEquals(newStorageLocation)));
+
+    }
+
+    protected FileReference simulatefileReference(String checksum, String owner) {
+        FileReferenceMetaInfo meta = new FileReferenceMetaInfo(checksum, "MD5", "file.name", 10L, MediaType.TEXT_PLAIN);
+        return new FileReference(owner, meta, new FileLocation("somewhere", "file:///somewhere/file.name"));
     }
 }

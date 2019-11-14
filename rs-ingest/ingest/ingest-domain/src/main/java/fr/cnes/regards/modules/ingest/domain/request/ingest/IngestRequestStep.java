@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.request;
+package fr.cnes.regards.modules.ingest.domain.request.ingest;
 
 /**
  * Available steps to follow to properly handle SIP ingestion
@@ -67,27 +67,14 @@ public enum IngestRequestStep {
      *   |_ {@link #REMOTE_STORAGE_DENIED}
      *   |_ {@link #REMOTE_STORAGE_ERROR}
      *   |
-     *   {@link #REMOTE_AIP_STORAGE_REQUESTED}
-     *   |_{@link #REMOTE_AIP_STORAGE_DENIED}
-     *   |_{@link #REMOTE_AIP_STORAGE_ERROR}
-     *   |
      * Request deleted
      *
      */
 
     // For AIP files
     REMOTE_STORAGE_REQUESTED(true, true),
-    // REMOTE_STORAGE_GRANTED(true),
     REMOTE_STORAGE_DENIED(true),
-    REMOTE_STORAGE_ERROR(true),
-    // REMOTE_STORAGE_SUCCESS(true),
-
-    // For AIP itself
-    REMOTE_AIP_STORAGE_REQUESTED(true, true),
-    // REMOTE_AIP_STORAGE_GRANTED(true),
-    REMOTE_AIP_STORAGE_DENIED(true),
-    REMOTE_AIP_STORAGE_ERROR(true);
-    // REMOTE_AIP_STORAGE_SUCCESS(true);
+    REMOTE_STORAGE_ERROR(true);
 
     private boolean remote = false;
 

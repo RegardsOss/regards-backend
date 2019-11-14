@@ -53,6 +53,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceDTO;
+import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceMetaInfoDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
@@ -60,6 +61,8 @@ import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfo
 
 /**
  * @author Léo Mieulet
+ *
+ * TODO : Handle security access for downloadable AIPs
  */
 @Service
 public class AIPStorageService implements IAIPStorageService {
@@ -74,6 +77,9 @@ public class AIPStorageService implements IAIPStorageService {
 
     @Value("${spring.application.name}")
     private String applicationName;
+
+    @Value("${regards.ingest.aips.storage.location.subdirectory:AIPs}")
+    private String apiStorageSubDirectory;
 
     @Autowired
     private DiscoveryClient discoveryClient;
@@ -180,16 +186,19 @@ public class AIPStorageService implements IAIPStorageService {
                 // Iterate over request results
                 for (RequestResultInfoDTO storeRequestInfo : storeRequestInfosForCurrentAIP) {
                     FileReferenceDTO resultFile = storeRequestInfo.getResultFile();
+                    FileReferenceMetaInfoDTO metaInfo = resultFile.getMetaInfo();
                     // Update AIP data object metas
-                    dataObject.setFileSize(resultFile.getMetaInfo().getFileSize());
+                    dataObject.setFileSize(metaInfo.getFileSize());
                     // It's safe to patch the checksum here
-                    dataObject.setChecksum(resultFile.getMetaInfo().getChecksum());
+                    dataObject.setChecksum(metaInfo.getChecksum());
                     // Update representational info
-                    ci.getRepresentationInformation().getSyntax()
-                            .setHeight(new Double(resultFile.getMetaInfo().getHeight()));
-                    ci.getRepresentationInformation().getSyntax()
-                            .setWidth(new Double(resultFile.getMetaInfo().getWidth()));
-                    ci.getRepresentationInformation().getSyntax().setMimeType(resultFile.getMetaInfo().getMimeType());
+                    if (metaInfo.getHeight() != null) {
+                        ci.getRepresentationInformation().getSyntax().setHeight(new Double(metaInfo.getHeight()));
+                    }
+                    if (metaInfo.getWidth() != null) {
+                        ci.getRepresentationInformation().getSyntax().setWidth(new Double(metaInfo.getWidth()));
+                    }
+                    ci.getRepresentationInformation().getSyntax().setMimeType(metaInfo.getMimeType());
                     // Exclude from the location list any null storage
                     Set<OAISDataObjectLocation> newLocations = dataObject.getLocations().stream()
                             .filter(l -> l.getStorage() != null).collect(Collectors.toSet());
@@ -345,21 +354,20 @@ public class AIPStorageService implements IAIPStorageService {
 
         for (AIPEntity aipEntity : aips) {
             // Create a request for each storage
-            // TODO préciser le répertoire de sauvegarde des AIPs
             Collection<FileStorageRequestDTO> requests = buildAIPStorageRequest(aipEntity.getAip(), aipEntity
                     .getChecksum(), aipEntity.getIngestMetadata().getStorages());
             files.addAll(requests);
         }
 
-        // Request storage for all AIPs of the ingest request
+        // Make a request group for all these aips
         RequestInfo info = storageClient.store(files);
         return info.getGroupId();
     }
 
     /**
      * Generate a public download URL for the file associated to the given Checksum
-     * @param checksum
-     * @return
+     * @param aipId aip id
+     * @return a public URL to retrieve the AIP manifest
      * @throws ModuleException if the Eureka server is not reachable
      */
     public URL generateDownloadUrl(UniformResourceName aipId) throws ModuleException {
@@ -369,7 +377,6 @@ public class AIPStorageService implements IAIPStorageService {
             String path = Paths.get(AIPS_CONTROLLER_ROOT_PATH, AIP_DOWNLOAD_PATH).toString();
             String p = path.toString().replace("{" + AIP_ID_PATH_PARAM + "}", aipId.toString());
             p = (p.charAt(0) == '/') ? p.replaceFirst("/", "") : p;
-            // TODO : Handle security access for downloadable AIPs
             String urlStr = String.format("%s/%s?scope=%s", host, p, tenantResolver.getTenant());
             try {
                 return new URL(urlStr);
@@ -401,12 +408,16 @@ public class AIPStorageService implements IAIPStorageService {
 
         // Create a request for each storage
         for (StorageMetadata storage : storages) {
-
             if (storage.getTargetTypes().isEmpty() || storage.getTargetTypes().contains(DataType.AIP)) {
+                String storePath = null;
+                // If storage location sub directory is given, add a specific one for AIPs
+                if (storage.getStorePath() != null) {
+                    storePath = Paths.get(storage.getStorePath(), apiStorageSubDirectory).toString();
+                }
                 files.add(FileStorageRequestDTO.build(aip.getId().toString(), checksum, AIPService.MD5_ALGORITHM,
                                                       MediaType.APPLICATION_JSON_UTF8_VALUE, aip.getId().toString(),
                                                       originUrl.toString(), storage.getPluginBusinessId(),
-                                                      Optional.ofNullable(storage.getStorePath())));
+                                                      Optional.ofNullable(storePath)));
             }
         }
 

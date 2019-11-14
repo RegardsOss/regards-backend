@@ -18,20 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.dto.aip;
 
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+
 import org.apache.commons.compress.utils.Lists;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 
 /**
