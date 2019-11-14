@@ -48,6 +48,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -62,6 +63,7 @@ import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.dam.dto.FeatureEvent;
 import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
 import fr.cnes.regards.modules.ingest.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
@@ -120,6 +122,9 @@ public class AIPService implements IAIPService {
 
     @Autowired
     private IAuthenticationResolver authResolver;
+
+    @Autowired
+    private IPublisher publisher;
 
     @Autowired
     private Gson gson;
@@ -289,6 +294,8 @@ public class AIPService implements IAIPService {
             // Delete them
             aipRepository.deleteAll(aipsRelatedToSip);
         }
+        // Send notification to data mangement for feature deleted
+        aipsRelatedToSip.forEach(aip -> publisher.publish(FeatureEvent.buildFeatureDeleted(aip.getAipId())));
 
     }
 

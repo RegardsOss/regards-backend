@@ -102,7 +102,6 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
             // Did something change in the AIP?
             if (!aipWrapper.isPristine()) {
                 // Save the AIP threw the service
-                // TODO maybe collect aips and save once at the end
                 updates.add(aipWrapper.getAip());
                 // Wrapper also collect events
                 if (aipWrapper.hasDeletionRequests()) {
