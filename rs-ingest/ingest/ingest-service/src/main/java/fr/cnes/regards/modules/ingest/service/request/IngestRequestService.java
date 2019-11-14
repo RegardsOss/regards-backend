@@ -112,7 +112,7 @@ public class IngestRequestService implements IIngestRequestService {
     private SessionNotifier sessionNotifier;
 
     @Autowired
-    private IAIPSaveMetaDataRequestService aipSaveMetaDataService;;
+    private IAIPStoreMetaDataRequestService aipSaveMetaDataService;
 
     @Override
     public void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests) {
@@ -172,7 +172,7 @@ public class IngestRequestService implements IIngestRequestService {
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
-                RequestState.GRANTED, request.getErrors()));
+                                                   RequestState.GRANTED, request.getErrors()));
     }
 
     @Override
@@ -182,13 +182,11 @@ public class IngestRequestService implements IIngestRequestService {
         // Publish DENIED request
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
-                RequestState.DENIED, request.getErrors()));
+                                                   RequestState.DENIED, request.getErrors()));
     }
 
     @Override
     public void handleIngestJobFailed(IngestRequest request, SIPEntity entity) {
-
-        // TODO Unlock the job when request is removed!
         // Lock job
         jobInfoService.lock(request.getJobInfo());
 
@@ -293,7 +291,7 @@ public class IngestRequestService implements IIngestRequestService {
 
     private void finalizeSuccessfulRequest(IngestRequest request) {
         // TODO wtf is this staTE?
-//        request.setState(RequestState.SUCCESS);
+        //        request.setState(RequestState.SUCCESS);
         // Clean
         deleteRequest(request);
 
@@ -307,7 +305,7 @@ public class IngestRequestService implements IIngestRequestService {
         sessionNotifier.notifyAIPsStored(aips);
 
         // Schedule manifest archivage
-        aipSaveMetaDataService.scheduleSaveMetaData(aips, false, true);
+        aipSaveMetaDataService.schedule(aips, false, true);
 
         // Update SIP state
         SIPEntity sipEntity = aips.get(0).getSip();
@@ -403,9 +401,14 @@ public class IngestRequestService implements IIngestRequestService {
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
-                RequestState.ERROR, request.getErrors()));
+                                                   RequestState.ERROR, request.getErrors()));
     }
 
+    /**
+     * Creates or update the given {@link IngestRequest} and lock associated jobs if any.
+     * @param request
+     * @return saved {@link IngestRequest}
+     */
     public IngestRequest saveRequest(IngestRequest request) {
         // Before saving entity check the state of the associated job if any
         if ((request.getJobInfo() != null) && !request.getJobInfo().isLocked()) {
@@ -418,6 +421,10 @@ public class IngestRequestService implements IIngestRequestService {
         return ingestRequestRepository.save(request);
     }
 
+    /**
+     * Delete the given {@link IngestRequest} and unlock associated jobs.
+     * @param request
+     */
     public void deleteRequest(IngestRequest request) {
         if ((request.getJobInfo() != null) && !request.getJobInfo().isLocked()) {
             JobInfo jobInfoToUnlock = request.getJobInfo();

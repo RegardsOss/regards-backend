@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionReque
  */
 @Service
 @MultitenantTransactional
-public class AIPSaveMetaDataRequestService implements IAIPSaveMetaDataRequestService {
+public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestService {
 
     @Autowired
     private IAIPStoreMetaDataRepository aipStoreMetaDataRepository;
@@ -64,7 +64,7 @@ public class AIPSaveMetaDataRequestService implements IAIPSaveMetaDataRequestSer
     private IStorageClient storageClient;
 
     @Override
-    public void commitJob(List<AIPStoreMetaDataRequest> requests, List<AIPEntity> aipsToStore,
+    public void handle(List<AIPStoreMetaDataRequest> requests, List<AIPEntity> aipsToStore,
             List<AIPEntity> aipsToUpdate, List<FileDeletionRequestDTO> filesToDelete) {
         String requestId = null;
         try {
@@ -83,7 +83,7 @@ public class AIPSaveMetaDataRequestService implements IAIPSaveMetaDataRequestSer
         }
 
         // Save request status
-        saveAll(requests);
+        aipStoreMetaDataRepository.saveAll(requests);
         // Save AIPs
         aipService.saveAll(aipsToUpdate);
 
@@ -94,7 +94,7 @@ public class AIPSaveMetaDataRequestService implements IAIPSaveMetaDataRequestSer
     }
 
     @Override
-    public void scheduleSaveMetaData(List<AIPEntity> aips, boolean removeCurrentMetaData, boolean computeChecksum) {
+    public void schedule(List<AIPEntity> aips, boolean removeCurrentMetaData, boolean computeChecksum) {
         List<AIPStoreMetaDataRequest> requests = new ArrayList<>();
         for (AIPEntity aip : aips) {
             requests.add(AIPStoreMetaDataRequest.build(aip, removeCurrentMetaData, computeChecksum));
@@ -104,13 +104,13 @@ public class AIPSaveMetaDataRequestService implements IAIPSaveMetaDataRequestSer
     }
 
     @Override
-    public void handleManifestSaved(AIPStoreMetaDataRequest request, Set<RequestInfo> requestInfos) {
+    public void handleSuccess(AIPStoreMetaDataRequest request, Set<RequestInfo> requestInfos) {
         sessionNotifier.notifyAIPMetaDataStored(request.getAip());
         aipStoreMetaDataRepository.delete(request);
     }
 
     @Override
-    public void handleManifestSaveError(Set<RequestInfo> requestInfos) {
+    public void handleError(Set<RequestInfo> requestInfos) {
         sessionNotifier.notifyAIPMetaDataStoreError(null);
         List<AIPStoreMetaDataRequest> requests = new ArrayList<>();
         for (AIPStoreMetaDataRequest request : requests) {
@@ -121,12 +121,7 @@ public class AIPSaveMetaDataRequestService implements IAIPSaveMetaDataRequestSer
     }
 
     @Override
-    public List<AIPStoreMetaDataRequest> findAllById(List<Long> ids) {
+    public List<AIPStoreMetaDataRequest> search(List<Long> ids) {
         return aipStoreMetaDataRepository.findAllById(ids);
-    }
-
-    @Override
-    public List<AIPStoreMetaDataRequest> saveAll(List<AIPStoreMetaDataRequest> requests) {
-        return aipStoreMetaDataRepository.saveAll(requests);
     }
 }

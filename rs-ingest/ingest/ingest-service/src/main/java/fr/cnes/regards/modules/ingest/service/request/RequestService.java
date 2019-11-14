@@ -62,7 +62,7 @@ public class RequestService implements IRequestService {
     private IIngestRequestService ingestRequestService;
 
     @Autowired
-    private IAIPSaveMetaDataRequestService aipSaveMetaDataService;
+    private IAIPStoreMetaDataRequestService aipSaveMetaDataService;
 
     @Autowired
     private IIngestRequestRepository ingestRequestRepository;
@@ -96,7 +96,7 @@ public class RequestService implements IRequestService {
     @Override
     public void handleRemoteStoreError(Set<RequestInfo> requestInfos) {
         ingestRequestService.handleRemoteStoreError(requestInfos);
-        aipSaveMetaDataService.handleManifestSaveError(requestInfos);
+        aipSaveMetaDataService.handleError(requestInfos);
     }
 
     @Override
@@ -112,7 +112,7 @@ public class RequestService implements IRequestService {
                         ingestRequestService.handleRemoteStoreSuccess(requestInfos);
                     }
                 } else if (request instanceof AIPStoreMetaDataRequest) {
-                    aipSaveMetaDataService.handleManifestSaved((AIPStoreMetaDataRequest) request, requestInfos);
+                    aipSaveMetaDataService.handleSuccess((AIPStoreMetaDataRequest) request, requestInfos);
                 }
             }
         }
