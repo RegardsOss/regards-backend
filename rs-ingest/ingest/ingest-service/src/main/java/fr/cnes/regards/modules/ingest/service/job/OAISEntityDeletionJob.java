@@ -31,20 +31,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
-import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
 import fr.cnes.regards.modules.ingest.domain.request.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
+import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
@@ -57,19 +55,13 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
     public static final String ID = "ID";
 
     @Autowired
-    private IOAISDeletionRequestRepository deletionRequestRepository;
+    private OAISDeletionRequestService oaisDeletionRequestService;
 
     @Autowired
     private ISIPRepository sipRepository;
 
     @Autowired
     private ISIPService sipService;
-
-    @Autowired
-    private IPublisher publisher;
-
-    @Autowired
-    private INotificationClient notificationClient;
 
     private OAISDeletionRequest deletionRequest;
 
@@ -87,7 +79,7 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
 
         // Retrieve deletion request
         Long databaseId = getValue(parameters, ID);
-        Optional<OAISDeletionRequest> oDeletionRequest = deletionRequestRepository.findById(databaseId);
+        Optional<OAISDeletionRequest> oDeletionRequest = oaisDeletionRequestService.search(databaseId);
 
         if (!oDeletionRequest.isPresent()) {
             throw new JobRuntimeException(String.format("Unknown deletion request with id %d", databaseId));
@@ -122,7 +114,7 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
             advanceCompletion();
         } while (sipsPage.hasNext());
 
-        deletionRequestRepository.delete(deletionRequest);
+        oaisDeletionRequestService.deleteRequest(deletionRequest);
     }
 
     @Override
