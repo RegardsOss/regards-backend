@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.models.Model;
+import fr.cnes.regards.modules.model.domain.Model;
 
 /**
  * Declare static variables for tests.
@@ -165,7 +165,7 @@ public class BackendForFrontendTestUtils {
 
     static {
         DOCUMENT_MODEL = new Model();
-        DOCUMENT_MODEL.setType(EntityType.DOCUMENT);
+        DOCUMENT_MODEL.setType(EntityType.DATA);
         DOCUMENT_MODEL.setName("documentModel");
     }
 

@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionReposit
 import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.models.Model;
+import fr.cnes.regards.modules.model.domain.Model;
 
 /**
  * Unit Test for {@link UIPluginConfigurationService}
