@@ -96,7 +96,7 @@ public class AcquisitionProcessingServiceNotxTest extends AbstractMultitenantSer
         fileInfo.setDataType(DataType.RAWDATA);
 
         Set<IPluginParam> param = IPluginParam.set(IPluginParam
-                .build(GlobDiskScanning.FIELD_DIRS, PluginParameterTransformer.toJson(new ArrayList())));
+                .build(GlobDiskScanning.FIELD_DIRS, PluginParameterTransformer.toJson(new ArrayList<>())));
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(param, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin 2");
@@ -117,7 +117,8 @@ public class AcquisitionProcessingServiceNotxTest extends AbstractMultitenantSer
         filePaths.add(first);
         filePaths.add(searchDir.resolve("CSSI_PRODUCT_02.md"));
         filePaths.add(searchDir.resolve("CSSI_PRODUCT_03.md"));
-        Assert.assertTrue(processingService.registerFiles(filePaths, fileInfo, Optional.of(lmd), true) == 2);
+        Assert.assertTrue(processingService.registerFiles(filePaths, fileInfo, Optional.of(lmd), true, "chain1",
+                                                          "session1") == 2);
 
     }
 }

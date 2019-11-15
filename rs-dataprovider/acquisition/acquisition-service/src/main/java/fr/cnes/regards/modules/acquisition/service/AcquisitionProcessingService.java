@@ -87,6 +87,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
+import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
@@ -140,6 +141,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Autowired
     private ITemplateService templateService;
+
+    @Autowired
+    private SessionNotifier sessionNotifier;
 
     @Override
     public Page<AcquisitionProcessingChain> getAllChains(Pageable pageable) throws ModuleException {
@@ -600,7 +604,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Override
     @MultitenantTransactional(propagation = Propagation.NOT_SUPPORTED)
-    public void scanAndRegisterFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
+    public void scanAndRegisterFiles(AcquisitionProcessingChain processingChain, String session)
+            throws ModuleException {
         // Launch file scanning for each file information
         Iterator<AcquisitionFileInfo> fileInfoIter = processingChain.getFileInfos().iterator();
         while (fileInfoIter.hasNext() && !Thread.currentThread().isInterrupted()) {
@@ -624,9 +629,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             long totalCount = 0;
             long startTime = System.currentTimeMillis();
             if (scanPlugin instanceof IFluxScanPlugin) {
-                totalCount = streamAndRegisterFiles(fileInfo, (IFluxScanPlugin) scanPlugin, scanningDate);
+                totalCount = streamAndRegisterFiles(fileInfo, (IFluxScanPlugin) scanPlugin, scanningDate, session,
+                                                    processingChain.getLabel());
             } else {
-                totalCount = scanAndRegisterFilesByDirectory(fileInfo, scanPlugin, scanningDate);
+                totalCount = scanAndRegisterFilesByDirectory(fileInfo, scanPlugin, scanningDate, session,
+                                                             processingChain.getLabel());
             }
             LOGGER.info("All {} new file(s) registered in {} milliseconds", totalCount,
                         System.currentTimeMillis() - startTime);
@@ -635,7 +642,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     private long scanAndRegisterFilesByDirectory(AcquisitionFileInfo fileInfo, IScanPlugin scanPlugin,
-            Optional<OffsetDateTime> scanningDate) throws ModuleException {
+            Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
         // Do scan
         List<Path> scannedFiles = scanPlugin.scan(scanningDate);
 
@@ -656,7 +663,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             long transactionStartTime = System.currentTimeMillis();
             // Do it in one transaction
             LOGGER.debug("Trying to register {}/{} of the new file(s) scanned", toIndex, scannedFiles.size());
-            int count = self.registerFiles(scannedFiles.subList(fromIndex, toIndex), fileInfo, scanningDate, true);
+            int count = self.registerFiles(scannedFiles.subList(fromIndex, toIndex), fileInfo, scanningDate, true,
+                                           session, sessionOwner);
             totalCount += count;
             LOGGER.debug("{}/{} new file(s) registered in {} milliseconds", count, toIndex,
                          System.currentTimeMillis() - transactionStartTime);
@@ -667,7 +675,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         long transactionStartTime = System.currentTimeMillis();
         List<Path> remainingFiles = scannedFiles.subList(fromIndex, scannedFiles.size());
         LOGGER.debug("Trying to register the last {} of the new file(s) scanned", remainingFiles.size());
-        int count = self.registerFiles(remainingFiles, fileInfo, scanningDate, true);
+        int count = self.registerFiles(remainingFiles, fileInfo, scanningDate, true, session, sessionOwner);
         totalCount += count;
         LOGGER.debug("{}/{} new file(s) registered in {} milliseconds", count, remainingFiles.size(),
                      System.currentTimeMillis() - transactionStartTime);
@@ -675,7 +683,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     private long streamAndRegisterFiles(AcquisitionFileInfo fileInfo, IFluxScanPlugin scanPlugin,
-            Optional<OffsetDateTime> scanningDate) throws ModuleException {
+            Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
         long totalCount = 0;
         try {
             List<DirectoryStream<Path>> streams = scanPlugin.stream(scanningDate);
@@ -687,12 +695,15 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     RegisterFilesResponse response;
                     do {
                         long startTime = System.currentTimeMillis();
-                        response = self.registerFiles(it, fileInfo, scanningDate, false, BATCH_SIZE);
+                        response = self.registerFiles(it, fileInfo, scanningDate, false, BATCH_SIZE, session,
+                                                      sessionOwner);
                         totalCount += response.getNumberOfRegisteredFiles();
                         if ((lmd == null) || (lmd.isBefore(response.getLastUpdateDate())
                                 && !Thread.currentThread().isInterrupted())) {
                             lmd = response.getLastUpdateDate();
                         }
+                        sessionNotifier.notifyFileAcquired(session, sessionOwner,
+                                                           response.getNumberOfRegisteredFiles());
                         LOGGER.info("{} new file(s) registered in {} milliseconds",
                                     response.getNumberOfRegisteredFiles(), System.currentTimeMillis() - startTime);
                     } while (response.hasNext());
@@ -713,7 +724,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public int registerFiles(List<Path> filePaths, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate,
-            boolean updateFileInfo) throws ModuleException {
+            boolean updateFileInfo, String session, String sessionOwner) throws ModuleException {
         int countRegistered = 0;
         Iterator<Path> filePathIter = filePaths.iterator();
         while (filePathIter.hasNext() && !Thread.currentThread().isInterrupted()) {
@@ -721,16 +732,18 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 countRegistered++;
             }
         }
+        sessionNotifier.notifyFileAcquired(session, sessionOwner, countRegistered);
         return countRegistered;
     }
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public RegisterFilesResponse registerFiles(Iterator<Path> filePaths, AcquisitionFileInfo info,
-            Optional<OffsetDateTime> scanningDate, boolean updateFileInfo, int limit) throws ModuleException {
+            Optional<OffsetDateTime> scanningDate, boolean updateFileInfo, int limit, String session,
+            String sessionOwner) throws ModuleException {
         int countRegistered = 0;
         OffsetDateTime lastUpdateDate = null;
-        while (filePaths.hasNext() && (countRegistered <= limit) && !Thread.currentThread().isInterrupted()) {
+        while (filePaths.hasNext() && (countRegistered < limit) && !Thread.currentThread().isInterrupted()) {
             Path filePath = filePaths.next();
             if (registerFile(filePath, info, scanningDate, updateFileInfo)) {
                 countRegistered++;

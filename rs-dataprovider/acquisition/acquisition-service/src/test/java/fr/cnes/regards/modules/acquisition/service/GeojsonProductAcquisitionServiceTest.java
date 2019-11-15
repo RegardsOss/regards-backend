@@ -18,7 +18,30 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -47,26 +70,6 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.GeoJsonFeatureCollectionParserPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.GeoJsonSIPGeneration;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link Product} workflow
@@ -96,9 +99,6 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
     private IAcquisitionFileInfoRepository fileInfoRepository;
 
     @Autowired
-    private IAcquisitionFileRepository acquisitionFileRepository;
-
-    @Autowired
     private IPluginService pluginService;
 
     @Autowired
@@ -112,7 +112,7 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
         acqFileRepository.deleteAll();
         fileInfoRepository.deleteAll();
         acquisitionProcessingChainRepository.deleteAll();
-        for(PluginConfiguration pc: pluginService.getAllPluginConfigurations()) {
+        for (PluginConfiguration pc : pluginService.getAllPluginConfigurations()) {
             pluginService.deletePluginConfiguration(pc.getBusinessId());
         }
     }
@@ -138,9 +138,9 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
         fileInfo.setMimeType(MediaType.APPLICATION_JSON);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        Set<IPluginParam> parameters = IPluginParam.set(
-                IPluginParam.build(GeoJsonFeatureCollectionParserPlugin.FIELD_FEATURE_ID, "nom"),
-                IPluginParam.build(GeoJsonFeatureCollectionParserPlugin.FIELD_DIR, dataPath.toString()));
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(GeoJsonFeatureCollectionParserPlugin.FIELD_FEATURE_ID, "nom"),
+                     IPluginParam.build(GeoJsonFeatureCollectionParserPlugin.FIELD_DIR, dataPath.toString()));
 
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters,
                                                                             GeoJsonFeatureCollectionParserPlugin.class);
@@ -178,12 +178,11 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
         storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file", new HashSet<>()));
         processingChain.setStorages(storages);
 
-
         // we need to set up a fake ProductAcquisitionJob to fill its attributes
         JobInfo jobInfo = new JobInfo(true);
         jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY.getPriority());
         jobInfo.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()),
-                new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, "my funky session"));
+                              new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, "my funky session"));
         jobInfo.setClassName(ProductAcquisitionJob.class.getName());
         jobInfo.setOwner("user 1");
         jobInfoService.createAsQueued(jobInfo);
@@ -200,7 +199,7 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
         AcquisitionProcessingChain processingChain = createProcessingChain();
         //AcquisitionProcessingChain processingChain = processingService.getFullChains().get(0);
 
-        processingService.scanAndRegisterFiles(processingChain);
+        processingService.scanAndRegisterFiles(processingChain, "session1");
 
         // Check registered files
         for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {

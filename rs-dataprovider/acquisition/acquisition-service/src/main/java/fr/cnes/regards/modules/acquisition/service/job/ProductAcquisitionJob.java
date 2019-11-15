@@ -19,7 +19,6 @@
 
 package fr.cnes.regards.modules.acquisition.service.job;
 
-import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +33,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
+import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
 
 /**
  * This class manages data driven product creation using following steps :
@@ -101,7 +101,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
 
             // Nominal process
             // First step : scan and register files (Not interruptible at the moment)
-            processingService.scanAndRegisterFiles(processingChain);
+            processingService.scanAndRegisterFiles(processingChain, session);
             // Second step : validate in progress files, build and
             // schedule SIP generation for newly completed or finished products
             processingService.manageRegisteredFiles(processingChain);
