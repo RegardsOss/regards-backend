@@ -40,6 +40,10 @@
 			<artifactId>ingest-domain</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.dam</groupId>
+			<artifactId>dam-dto</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules.session-manager</groupId>
 			<artifactId>session-manager-domain</artifactId>
 		</dependency>

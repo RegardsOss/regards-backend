@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +42,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.step.GenerationStep;
@@ -135,7 +135,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         IProcessingStep<SIP, Void> validationStep = new ValidationStep(this, ingestChain);
         beanFactory.autowireBean(validationStep);
         // Step 3 : required AIP generation
-        IProcessingStep<SIP, List<AIP>> generationStep = new GenerationStep(this, ingestChain);
+        IProcessingStep<SIPEntity, List<AIP>> generationStep = new GenerationStep(this, ingestChain);
         beanFactory.autowireBean(generationStep);
         // Step 4 : optional AIP tagging
         IProcessingStep<List<AIP>, Void> taggingStep = new TaggingStep(this, ingestChain);
@@ -169,7 +169,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                 // Step 2 : required validation
                 validationStep.execute(sip);
                 // Step 3 : required AIP generation
-                List<AIP> aips = generationStep.execute(sip);
+                List<AIP> aips = generationStep.execute(currentEntity);
                 // Step 4 : optional AIP tagging
                 taggingStep.execute(aips);
                 // Step 5 : optional postprocessing

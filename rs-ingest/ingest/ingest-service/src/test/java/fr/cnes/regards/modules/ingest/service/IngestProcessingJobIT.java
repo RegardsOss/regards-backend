@@ -18,7 +18,24 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -49,20 +66,6 @@ import fr.cnes.regards.modules.ingest.service.plugin.PostProcessingTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.PreprocessingTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test class to verify {@link IngestProcessingJob}.
@@ -221,6 +224,9 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         AIPEntity resultAip = resultAips.stream().findFirst().get();
         Assert.assertNotNull(resultAip);
         Assert.assertEquals(AIPState.GENERATED, resultAip.getState());
+        Assert.assertNotNull(resultSip.getVersion());
+        Assert.assertNotNull(resultAip.getAip().getVersion());
+        Assert.assertEquals(resultSip.getVersion(), resultAip.getAip().getVersion());
     }
 
     private void simulateProcessingError(SIPCollection sips, Class<?> errorClass) {

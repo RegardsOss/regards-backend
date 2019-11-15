@@ -24,13 +24,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import javax.validation.constraints.NotBlank;
-
 import org.apache.commons.compress.utils.Lists;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 
 /**
@@ -46,10 +43,8 @@ public class SearchAIPsParameters {
 
     private Set<String> providerIds = Sets.newHashSet();
 
-    @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER)
     private String sessionOwner;
 
-    @NotBlank(message = IngestValidationMessages.MISSING_SESSION)
     private String session;
 
     private Set<String> storages = Sets.newHashSet();

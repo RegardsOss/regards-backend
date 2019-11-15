@@ -18,13 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.dto.aip;
 
+import java.util.Optional;
+
+import javax.validation.constraints.NotBlank;
+
+import org.springframework.util.Assert;
+
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import java.util.Optional;
-import javax.validation.constraints.NotBlank;
-import org.springframework.util.Assert;
 
 /**
  *
@@ -46,6 +49,11 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
      * SIP ID
      */
     private String sipId;
+
+    /**
+     * AIP Version
+     */
+    private Integer version;
 
     /**
      * Default constructor
@@ -84,6 +92,14 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
         }
     }
 
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
     public String getProviderId() {
         return providerId;
     }
@@ -97,7 +113,7 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
         return super.equals(o);
