@@ -18,6 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -28,9 +33,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initialize {@link SIPEntity} from specified {@link IngestRequest}

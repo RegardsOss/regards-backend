@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
@@ -46,7 +47,7 @@ import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
+public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerationStep.class);
 
@@ -58,10 +59,10 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
     }
 
     @Override
-    protected List<AIP> doExecute(SIP sip) throws ProcessingStepException {
+    protected List<AIP> doExecute(SIPEntity sipEntity) throws ProcessingStepException {
         job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_GENERATION);
 
-        LOGGER.debug("Generating AIP(s) from SIP \"{}\"", sip.getId());
+        LOGGER.debug("Generating AIP(s) from SIP \"{}\"", sipEntity.getSip().getId());
         PluginConfiguration conf = ingestChain.getGenerationPlugin();
         IAipGeneration generation = this.getStepPlugin(conf.getBusinessId());
 
@@ -71,7 +72,12 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
         UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, sipId.getEntityType(),
                 sipId.getTenant(), sipId.getEntityId(), sipId.getVersion());
         // Launch AIP generation
-        List<AIP> aips = generation.generate(sip, aipId, sipId, sip.getId());
+        List<AIP> aips = generation.generate(sipEntity.getSip(), aipId, sipId, sipEntity.getSip().getId());
+        // Add version to AIP
+        for (AIP aip : aips) {
+            aip.setVersion(sipEntity.getVersion());
+        }
+
         // Validate
         validateAips(aips);
         // Return valid AIPs
@@ -96,7 +102,7 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
     }
 
     @Override
-    protected void doAfterError(SIP sip) {
-        handleRequestError(String.format("Generation fails for AIP(s) of SIP \"{}\"", sip.getId()));
+    protected void doAfterError(SIPEntity sip) {
+        handleRequestError(String.format("Generation fails for AIP(s) of SIP \"{}\"", sip.getSip().getId()));
     }
 }
