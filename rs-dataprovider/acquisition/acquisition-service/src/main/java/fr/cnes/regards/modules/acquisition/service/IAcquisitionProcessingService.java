@@ -182,9 +182,10 @@ public interface IAcquisitionProcessingService {
     /**
      * Scan and register detected files for specified {@link AcquisitionProcessingChain}
      * @param processingChain processing chain
+     * @param session name of the acquisition processing session
      * @throws ModuleException if error occurs!
      */
-    void scanAndRegisterFiles(AcquisitionProcessingChain processingChain) throws ModuleException;
+    void scanAndRegisterFiles(AcquisitionProcessingChain processingChain, String session) throws ModuleException;
 
     /**
      * Register multiple files in one transaction
@@ -196,7 +197,7 @@ public interface IAcquisitionProcessingService {
      * @return number of registered files
      */
     int registerFiles(List<Path> filePaths, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate,
-            boolean updateFileInfo) throws ModuleException;
+            boolean updateFileInfo, String session, String sessionOwner) throws ModuleException;
 
     /**
      * Register multiple files in one transaction
@@ -209,7 +210,8 @@ public interface IAcquisitionProcessingService {
      * @return number of registered files
      */
     RegisterFilesResponse registerFiles(Iterator<Path> filePaths, AcquisitionFileInfo info,
-            Optional<OffsetDateTime> scanningDate, boolean updateFileInfo, int limit) throws ModuleException;
+            Optional<OffsetDateTime> scanningDate, boolean updateFileInfo, int limit, String session,
+            String sessionOwner) throws ModuleException;
 
     /**
      * Register a new file in one transaction

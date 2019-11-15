@@ -301,7 +301,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         AcquisitionProcessingChain processingChain = createProcessingChainWithStream(Paths
                 .get("src/test/resources/data/income/stream_test"));
         Mockito.reset(publisher);
-        processingService.scanAndRegisterFiles(processingChain);
+        processingService.scanAndRegisterFiles(processingChain, "session1");
         processingService.manageRegisteredFiles(processingChain);
         Assert.assertEquals("Invalid number of files registered", 5, acqFileRepository.findAll().size());
         Assert.assertEquals("Invalid number of products", 5, productRepository.findAll().size());
@@ -316,7 +316,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
         Mockito.reset(publisher);
 
-        processingService.scanAndRegisterFiles(processingChain);
+        processingService.scanAndRegisterFiles(processingChain, "session1");
 
         // Check registered files
         Page<AcquisitionFile> inProgressFiles = acqFileRepository
