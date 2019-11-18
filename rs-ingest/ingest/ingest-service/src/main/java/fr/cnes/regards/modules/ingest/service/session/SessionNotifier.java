@@ -20,6 +20,8 @@ public class SessionNotifier {
 
     public static final String SESSION_NOTIF_STEP = "oais";
 
+    public static final String PRODUCT_COUNT = "products";
+
     public static final String PRODUCT_GEN_ERROR = "products_gen_error";
 
     public static final String PRODUCT_GEN_PENDING = "products_gen_pending";
@@ -46,6 +48,16 @@ public class SessionNotifier {
     public void productRetry(String sessionOwner, String session) {
         // -1 product_generation_error
         notifyDecrementSession(sessionOwner, session, PRODUCT_GEN_ERROR, SessionNotificationState.OK, 1);
+    }
+
+    /**
+     * Notify session that a list of products has been granted for generation
+     * @param sessionOwner
+     * @param session
+     * @param nbProducts
+     */
+    public void productsGranted(String sessionOwner, String session, int nbProducts) {
+        notifyIncrementSession(sessionOwner, session, PRODUCT_COUNT, SessionNotificationState.OK, nbProducts);
     }
 
     /**
@@ -89,6 +101,11 @@ public class SessionNotifier {
             if (nbGenerated > 0) {
                 notifyIncrementSession(sessionOwner, session, PRODUCT_STORE_PENDING, SessionNotificationState.OK,
                                        nbGenerated);
+            }
+            if (generatedAips.size() > 1) {
+                // Increment number of total products (case of one SIP for many AIPs)
+                notifyIncrementSession(sessionOwner, session, PRODUCT_COUNT, SessionNotificationState.OK,
+                                       generatedAips.size() - 1);
             }
         }
     }
@@ -197,6 +214,8 @@ public class SessionNotifier {
             notifyDecrementSession(sessionOwner, session, PRODUCT_STORED, SessionNotificationState.OK, nbStored);
             // TODO -x product_meta_stored ???
         }
+        notifyDecrementSession(sessionOwner, session, PRODUCT_COUNT, SessionNotificationState.OK,
+                               nbGenerated + nbStored);
     }
 
     private void notifyIncrementSession(String sessionOwner, String session, String property,

@@ -120,22 +120,26 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testGenerationStart() {
+        sessionNotifier.productsGranted(sessionOwner, session, 1);
         sessionNotifier.productGenerationStart(sessionOwner, session);
 
         ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
-        Mockito.verify(publisher, Mockito.times(1)).publish(argumentCaptor.capture());
+        Mockito.verify(publisher, Mockito.times(2)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
         Assert.assertEquals(1, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
+        Assert.assertEquals(1, (long) result.get(SessionNotifier.PRODUCT_COUNT));
     }
 
     @Test
     public void testGenerationSuccess() {
+        sessionNotifier.productsGranted(sessionOwner, session, 1);
         sessionNotifier.productGenerationStart(sessionOwner, session);
         sessionNotifier.productGenerationEnd(sessionOwner, session, aips);
 
         ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
-        Mockito.verify(publisher, Mockito.times(3)).publish(argumentCaptor.capture());
+        Mockito.verify(publisher, Mockito.times(5)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_COUNT));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
         Assert.assertNull(result.get(SessionNotifier.PRODUCT_GEN_ERROR));
         Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_STORE_PENDING));
@@ -143,13 +147,15 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testGenerationFail() {
+        sessionNotifier.productsGranted(sessionOwner, session, 1);
         sessionNotifier.productGenerationStart(sessionOwner, session);
         sessionNotifier.productGenerationEnd(sessionOwner, session, new ArrayList<>());
 
         ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
 
-        Mockito.verify(publisher, Mockito.times(3)).publish(argumentCaptor.capture());
+        Mockito.verify(publisher, Mockito.times(4)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Assert.assertEquals(1, (long) result.get(SessionNotifier.PRODUCT_COUNT));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
         Assert.assertEquals(1, (long) result.get(SessionNotifier.PRODUCT_GEN_ERROR));
         Assert.assertNull(result.get(SessionNotifier.PRODUCT_META_STORE_PENDING));
@@ -157,13 +163,15 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testStoreFail() {
+        sessionNotifier.productsGranted(sessionOwner, session, 1);
         sessionNotifier.productGenerationStart(sessionOwner, session);
         sessionNotifier.productGenerationEnd(sessionOwner, session, aips);
         sessionNotifier.productStoreError(sessionOwner, session, aips);
 
         ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
-        Mockito.verify(publisher, Mockito.times(5)).publish(argumentCaptor.capture());
+        Mockito.verify(publisher, Mockito.times(7)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_COUNT));
         Assert.assertNull(result.get(SessionNotifier.PRODUCT_GEN_ERROR));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_STORE_PENDING));
@@ -173,13 +181,15 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testStoreSucceed() {
+        sessionNotifier.productsGranted(sessionOwner, session, 1);
         sessionNotifier.productGenerationStart(sessionOwner, session);
         sessionNotifier.productGenerationEnd(sessionOwner, session, aips);
         sessionNotifier.productStoreSuccess(sessionOwner, session, aips);
 
         ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
-        Mockito.verify(publisher, Mockito.times(5)).publish(argumentCaptor.capture());
+        Mockito.verify(publisher, Mockito.times(7)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_COUNT));
         Assert.assertNull(result.get(SessionNotifier.PRODUCT_GEN_ERROR));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_STORE_PENDING));
@@ -189,14 +199,16 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testStoreMetaPending() {
+        sessionNotifier.productsGranted(sessionOwner, session, 1);
         sessionNotifier.productGenerationStart(sessionOwner, session);
         sessionNotifier.productGenerationEnd(sessionOwner, session, aips);
         sessionNotifier.productStoreSuccess(sessionOwner, session, aips);
         sessionNotifier.productMetaStorePending(sessionOwner, session, aips);
 
         ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
-        Mockito.verify(publisher, Mockito.times(6)).publish(argumentCaptor.capture());
+        Mockito.verify(publisher, Mockito.times(8)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_COUNT));
         Assert.assertNull(result.get(SessionNotifier.PRODUCT_GEN_ERROR));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_STORE_PENDING));
@@ -208,6 +220,7 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testStoreMetaSucceed() {
+        sessionNotifier.productsGranted(sessionOwner, session, 1);
         sessionNotifier.productGenerationStart(sessionOwner, session);
         sessionNotifier.productGenerationEnd(sessionOwner, session, aips);
         sessionNotifier.productStoreSuccess(sessionOwner, session, aips);
@@ -216,8 +229,9 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
         sessionNotifier.productMetaStoredSuccess(aipEntity2);
 
         ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
-        Mockito.verify(publisher, Mockito.times(10)).publish(argumentCaptor.capture());
+        Mockito.verify(publisher, Mockito.times(12)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_COUNT));
         Assert.assertNull(result.get(SessionNotifier.PRODUCT_GEN_ERROR));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_STORE_PENDING));
@@ -229,6 +243,7 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testStoreMetaError() {
+        sessionNotifier.productsGranted(sessionOwner, session, 1);
         sessionNotifier.productGenerationStart(sessionOwner, session);
         sessionNotifier.productGenerationEnd(sessionOwner, session, aips);
         sessionNotifier.productStoreSuccess(sessionOwner, session, aips);
@@ -237,8 +252,9 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
         sessionNotifier.productMetaStoredError(aipEntity2);
 
         ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
-        Mockito.verify(publisher, Mockito.times(10)).publish(argumentCaptor.capture());
+        Mockito.verify(publisher, Mockito.times(12)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_COUNT));
         Assert.assertNull(result.get(SessionNotifier.PRODUCT_GEN_ERROR));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_STORE_PENDING));
@@ -251,6 +267,7 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testDeletion() {
+        sessionNotifier.productsGranted(sessionOwner, session, 1);
         sessionNotifier.productGenerationStart(sessionOwner, session);
         sessionNotifier.productGenerationEnd(sessionOwner, session, aips);
         sessionNotifier.productStoreSuccess(sessionOwner, session, aips);
@@ -261,8 +278,9 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
 
         ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
 
-        Mockito.verify(publisher, Mockito.times(6)).publish(argumentCaptor.capture());
+        Mockito.verify(publisher, Mockito.times(9)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_COUNT));
         Assert.assertNull(result.get(SessionNotifier.PRODUCT_GEN_ERROR));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
         Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_STORE_PENDING));

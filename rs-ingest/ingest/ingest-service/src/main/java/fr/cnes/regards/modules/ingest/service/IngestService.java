@@ -27,6 +27,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -72,6 +73,7 @@ import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.OAISEntityDeletionJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 
 /**
  * Ingest management service
@@ -118,6 +120,9 @@ public class IngestService implements IIngestService {
     @Autowired
     private OAISDeletionRequestService oaisDeletionRequestService;
 
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
     /**
      * Validate, save and publish a new request
      * @param item request to manage
@@ -157,6 +162,7 @@ public class IngestService implements IIngestService {
         ListMultimap<String, IngestRequest> requestPerChain = ArrayListMultimap.create();
         // Store session state (is ingestible ?) by session
         Table<String, String, Boolean> acceptBySession = HashBasedTable.create();
+        Map<String, Long> nbRequestPerSession = new HashMap<>();
         for (IngestRequestFlowItem item : items) {
             String sessionOwner = item.getMetadata().getSessionOwner();
             String session = item.getMetadata().getSession();
@@ -179,6 +185,8 @@ public class IngestService implements IIngestService {
             IngestRequest ingestRequest = registerIngestRequest(item);
             if (ingestRequest != null) {
                 requestPerChain.put(ingestRequest.getMetadata().getIngestChain(), ingestRequest);
+                // Notify session for handled requests
+                sessionNotifier.productsGranted(sessionOwner, session, 1);
             }
         }
 
