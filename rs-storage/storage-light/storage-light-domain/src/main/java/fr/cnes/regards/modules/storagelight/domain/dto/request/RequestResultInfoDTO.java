@@ -45,6 +45,11 @@ public class RequestResultInfoDTO {
     private String requestStorage;
 
     /**
+     * Store path of the request if any
+     */
+    private String requestStorePath;
+
+    /**
      * Request result file
      */
     private FileReferenceDTO resultFile;
@@ -54,12 +59,13 @@ public class RequestResultInfoDTO {
      */
     private String errorCause;
 
-    public static RequestResultInfoDTO build(String groupId, String checksum, String storage,
+    public static RequestResultInfoDTO build(String groupId, String checksum, String storage, String storePath,
             FileReference fileReference, String errorCause) {
         RequestResultInfoDTO dto = new RequestResultInfoDTO();
         dto.groupId = groupId;
         dto.requestChecksum = checksum;
         dto.requestStorage = storage;
+        dto.requestStorePath = storePath;
         if (fileReference != null) {
             dto.resultFile = FileReferenceDTO
                     .build(fileReference.getStorageDate(), FileReferenceMetaInfoDTO.build(fileReference.getMetaInfo()),
@@ -69,12 +75,13 @@ public class RequestResultInfoDTO {
         return dto;
     }
 
-    public static RequestResultInfoDTO build(String groupId, String checksum, String storage,
+    public static RequestResultInfoDTO build(String groupId, String checksum, String storage, String storePath,
             FileReferenceDTO resultFile, String errorCause) {
         RequestResultInfoDTO dto = new RequestResultInfoDTO();
         dto.groupId = groupId;
         dto.requestChecksum = checksum;
         dto.requestStorage = storage;
+        dto.requestStorePath = storePath;
         dto.resultFile = resultFile;
         dto.errorCause = errorCause;
         return dto;
@@ -98,6 +105,10 @@ public class RequestResultInfoDTO {
 
     public String getErrorCause() {
         return errorCause;
+    }
+
+    public String getRequestStorePath() {
+        return requestStorePath;
     }
 
 }

@@ -256,7 +256,7 @@ public class FileCopyRequestService {
         }
         publisher.copySuccess(newFileRef, successMessage, request.getGroupId());
         reqGrpService.requestSuccess(request.getGroupId(), FileRequestType.COPY, request.getMetaInfo().getChecksum(),
-                                     request.getStorage(), newFileRef);
+                                     request.getStorage(), request.getStorageSubDirectory(), newFileRef);
     }
 
     /**
@@ -274,7 +274,7 @@ public class FileCopyRequestService {
         update(request);
         publisher.copyError(request, errorCause);
         reqGrpService.requestError(request.getGroupId(), FileRequestType.COPY, request.getMetaInfo().getChecksum(),
-                                   request.getStorage(), errorCause);
+                                   request.getStorage(), null, errorCause);
     }
 
     /**

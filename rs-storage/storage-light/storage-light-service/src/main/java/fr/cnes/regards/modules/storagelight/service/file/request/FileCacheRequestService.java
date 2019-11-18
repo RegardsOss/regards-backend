@@ -313,7 +313,7 @@ public class FileCacheRequestService {
                             fileReq.getGroupId());
         // Inform group that a request is done
         reqGrpService.requestSuccess(fileReq.getGroupId(), FileRequestType.AVAILABILITY, fileReq.getChecksum(), null,
-                                     null);
+                                     null, null);
     }
 
     /**
@@ -335,7 +335,7 @@ public class FileCacheRequestService {
         }
         publisher.notAvailable(fileReq.getChecksum(), cause, fileReq.getGroupId());
         reqGrpService.requestError(fileReq.getGroupId(), FileRequestType.AVAILABILITY, fileReq.getChecksum(),
-                                   fileReq.getStorage(), cause);
+                                   fileReq.getStorage(), null, cause);
     }
 
     /**
@@ -460,7 +460,7 @@ public class FileCacheRequestService {
                      request.getFileReference().getMetaInfo().getChecksum(), request.getErrorCause());
         publisher.notAvailable(request.getChecksum(), request.getErrorCause(), request.getGroupId());
         reqGrpService.requestError(request.getGroupId(), FileRequestType.AVAILABILITY, request.getChecksum(),
-                                   request.getStorage(), message);
+                                   request.getStorage(), null, message);
     }
 
     /**
@@ -479,11 +479,11 @@ public class FileCacheRequestService {
                 // For online files we have to generate access url though storage microservice
                 String url = downloadService.generateDownloadUrl(checksum);
                 publisher.available(checksum, storage, url, fileRef.getOwners(), message, availabilityGroupId);
-                reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage,
+                reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, null,
                                              fileRef);
             } catch (ModuleException e) {
                 publisher.notAvailable(checksum, e.getMessage(), availabilityGroupId);
-                reqGrpService.requestError(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage,
+                reqGrpService.requestError(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, null,
                                            e.getMessage());
             }
         }
@@ -502,7 +502,7 @@ public class FileCacheRequestService {
                                            fileRef.getMetaInfo().getFileName(), checksum);
             publisher.available(checksum, "cache", cacheService.getFilePath(checksum), fileRef.getOwners(), message,
                                 groupId);
-            reqGrpService.requestSuccess(groupId, FileRequestType.AVAILABILITY, checksum, storage, fileRef);
+            reqGrpService.requestSuccess(groupId, FileRequestType.AVAILABILITY, checksum, storage, null, fileRef);
         }
     }
 
