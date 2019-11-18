@@ -61,7 +61,7 @@ public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
         task.setType(AIPUpdateTaskType.ADD_FILE_LOCATION);
         task.setState(AIPUpdateState.READY);
         task.setFileLocationUpdates(Lists
-                .newArrayList(RequestResultInfoDTO.build("groupId", "checksum", "somewhere",
+                .newArrayList(RequestResultInfoDTO.build("groupId", "checksum", "somewhere", null,
                                                          simulatefileReference(checksum, aipEntity.getAipId()), null)));
         updateTasks.add(task);
         AIPUpdateCategoryTask catTask = new AIPUpdateCategoryTask();
@@ -86,7 +86,7 @@ public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
         initSipAndAip(checksum, providerId);
         Set<AbstractAIPUpdateTask> updateTasks = Sets.newHashSet();
         AIPUpdateFileLocationTask task = AIPUpdateFileLocationTask.buildAddLocationTask(Lists
-                .newArrayList(RequestResultInfoDTO.build("groupId", "checksum", "somewhere",
+                .newArrayList(RequestResultInfoDTO.build("groupId", "checksum", "somewhere", null,
                                                          simulatefileReference(checksum, aipEntity.getAipId()), null)));
         AIPUpdateCategoryTask catTask = new AIPUpdateCategoryTask();
         catTask.setType(AIPUpdateTaskType.ADD_CATEGORY);
@@ -108,7 +108,7 @@ public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
 
         // Send the same requests
         AIPUpdateFileLocationTask newTask = AIPUpdateFileLocationTask.buildAddLocationTask(Lists
-                .newArrayList(RequestResultInfoDTO.build("groupId", "checksum", "somewhere",
+                .newArrayList(RequestResultInfoDTO.build("groupId", "checksum", "somewhere", null,
                                                          simulatefileReference(checksum, aipEntity.getAipId()), null)));
         aipUpdateReqService.create(aipEntity, Sets.newHashSet(newTask));
         // The new update request should be blocked as requests are already running for the give aip

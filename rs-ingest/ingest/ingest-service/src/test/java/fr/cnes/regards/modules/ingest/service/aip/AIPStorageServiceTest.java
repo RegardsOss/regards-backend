@@ -50,7 +50,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileLocationDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceMetaInfoDTO;
@@ -61,9 +60,6 @@ import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfo
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_storage_service" })
 public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
-
-    @Autowired
-    private SessionNotifier sessionNotifier;
 
     @SpyBean
     private IPublisher publisher;
@@ -230,7 +226,7 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
 
     private ArrayList<RequestResultInfoDTO> getStorageQueryResult(String fakeChecksum3, String location) {
         return Lists.newArrayList(RequestResultInfoDTO
-                .build("groupId", fakeChecksum3, location,
+                .build("groupId", fakeChecksum3, location, null,
                        FileReferenceDTO.build(OffsetDateTime.now(),
                                               FileReferenceMetaInfoDTO.build(fakeChecksum3, null, null, null, null,
                                                                              null, null, null),
