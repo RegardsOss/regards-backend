@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,6 +41,7 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -53,6 +55,7 @@ import fr.cnes.regards.modules.ingest.service.chain.step.PreprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 
 /**
  * This job manages processing chain for AIP generation from a SIP
@@ -78,6 +81,9 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     @Autowired
     private INotificationClient notificationClient;
+
+    @Autowired
+    private SessionNotifier sesssionNotifier;
 
     private IngestProcessingChain ingestChain;
 
@@ -145,7 +151,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         beanFactory.autowireBean(postprocessingStep);
 
         // Internal final step
-        IProcessingStep<List<AIP>, Void> finalStep = new InternalFinalStep(this, ingestChain);
+        IProcessingStep<List<AIP>, List<AIPEntity>> finalStep = new InternalFinalStep(this, ingestChain);
         beanFactory.autowireBean(finalStep);
 
         long start = System.currentTimeMillis();
@@ -154,9 +160,12 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
         for (IngestRequest request : requests) {
             currentRequest = request;
+            List<AIPEntity> generatedAips = new ArrayList<>();
             try {
 
                 long start2 = System.currentTimeMillis();
+                sesssionNotifier.productGenerationStart(request.getMetadata().getSessionOwner(),
+                                                        request.getMetadata().getSession());
 
                 // Internal preparation step (no plugin involved)
                 currentEntity = initStep.execute(request);
@@ -177,16 +186,14 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
                 // Internal finalization step (no plugin involved)
                 // Do all persistence actions in this step
-                finalStep.execute(aips);
+                generatedAips.addAll(finalStep.execute(aips));
 
                 sipIngested++;
                 LOGGER.debug("{}SIP \"{}\" ingested in {} ms", INFO_TAB, currentRequest.getSip().getId(),
                              System.currentTimeMillis() - start2);
 
             } catch (ProcessingStepException e) {
-
                 LOGGER.error("SIP \"{}\" ingestion error", currentRequest.getSip().getId());
-
                 sipInError++;
                 String msg = String.format("Error while ingesting SIP \"%s\" in request \"%s\"",
                                            currentRequest.getSip().getId(), currentRequest.getRequestId());
@@ -194,6 +201,10 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                 LOGGER.error(msg);
                 LOGGER.error("Ingestion step error", e);
                 // Continue with following SIPs
+            } finally {
+                sesssionNotifier.productGenerationEnd(request.getMetadata().getSessionOwner(),
+                                                      request.getMetadata().getSession(), generatedAips);
+                generatedAips.clear();
             }
         }
 

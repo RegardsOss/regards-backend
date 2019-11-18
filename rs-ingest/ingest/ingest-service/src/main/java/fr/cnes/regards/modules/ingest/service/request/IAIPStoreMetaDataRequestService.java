@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import java.util.List;
-import java.util.Set;
 
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
@@ -60,13 +59,14 @@ public interface IAIPStoreMetaDataRequestService {
     /**
      * Callback when a {@link AIPStoreMetaDataRequest} is terminated successfully.
      * @param request {@link AIPStoreMetaDataRequest}
-     * @param requestInfos {@link RequestInfo}s
+     * @param requestInfo {@link RequestInfo}
      */
-    void handleSuccess(AIPStoreMetaDataRequest request, Set<RequestInfo> requestInfos);
+    void handleSuccess(AIPStoreMetaDataRequest request, RequestInfo requestInfo);
 
     /**
      * Callback when a  {@link AIPStoreMetaDataRequest} is terminated with errors.
-     * @param requestInfos {@link RequestInfo}s
+     * @param request {@link AIPStoreMetaDataRequest}
+     * @param requestInfo {@link RequestInfo}
      */
-    void handleError(Set<RequestInfo> requestInfos);
+    void handleError(AIPStoreMetaDataRequest request, RequestInfo requestInfo);
 }

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.session;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,8 +35,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
-
-import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
@@ -79,6 +78,8 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
 
     private static AIPEntity aipEntity2;
 
+    private final ArrayList<AIPEntity> aips = new ArrayList<>();
+
     @Before
     public void init() {
         sipEntity = SIPEntity.build(getDefaultTenant(),
@@ -97,6 +98,8 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
                                  UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
                                                                      getDefaultTenant(), 1),
                                  Optional.ofNullable(sipEntity.getSipIdUrn()), providerId));
+        aips.add(aipEntity1);
+        aips.add(aipEntity2);
         Mockito.clearInvocations(publisher);
     }
 
@@ -116,128 +119,154 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void testCreationFail() {
-        sessionNotifier.notifySIPCreationFailed(sipEntity);
+    public void testGenerationStart() {
+        sessionNotifier.productGenerationStart(sessionOwner, session);
+
+        ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
+        Mockito.verify(publisher, Mockito.times(1)).publish(argumentCaptor.capture());
+        Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Assert.assertEquals(1, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
+    }
+
+    @Test
+    public void testGenerationSuccess() {
+        sessionNotifier.productGenerationStart(sessionOwner, session);
+        sessionNotifier.productGenerationEnd(sessionOwner, session, aips);
+
+        ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
+        Mockito.verify(publisher, Mockito.times(3)).publish(argumentCaptor.capture());
+        Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_GEN_ERROR));
+        Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_STORE_PENDING));
+    }
+
+    @Test
+    public void testGenerationFail() {
+        sessionNotifier.productGenerationStart(sessionOwner, session);
+        sessionNotifier.productGenerationEnd(sessionOwner, session, new ArrayList<>());
 
         ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
 
-        Mockito.verify(publisher, Mockito.times(1)).publish(argumentCaptor.capture());
+        Mockito.verify(publisher, Mockito.times(3)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
-        Assert.assertEquals(1, (long) result.get(SessionNotifier.PROPERTY_SIP_ERROR));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
+        Assert.assertEquals(1, (long) result.get(SessionNotifier.PRODUCT_GEN_ERROR));
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_META_STORE_PENDING));
     }
 
     @Test
     public void testStoreFail() {
-        sessionNotifier.notifySIPCreated(sipEntity);
-        sessionNotifier.notifyAIPCreated(Lists.newArrayList(aipEntity1, aipEntity2));
-
-        sessionNotifier.notifySIPStorageFailed(sipEntity);
-        sessionNotifier.notifyAIPStorageFailed(aipEntity1);
-        sessionNotifier.notifyAIPStorageFailed(aipEntity2);
+        sessionNotifier.productGenerationStart(sessionOwner, session);
+        sessionNotifier.productGenerationEnd(sessionOwner, session, aips);
+        sessionNotifier.productStoreError(sessionOwner, session, aips);
 
         ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
-
-        Mockito.verify(publisher, Mockito.times(8)).publish(argumentCaptor.capture());
+        Mockito.verify(publisher, Mockito.times(5)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
-        Assert.assertEquals(1, (long) result.get(SessionNotifier.PROPERTY_SIP_ERROR));
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_SIP_INGESTING));
-
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_AIP_GENERATED));
-        Assert.assertEquals(2, (long) result.get(SessionNotifier.PROPERTY_AIP_ERROR));
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_GEN_ERROR));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_STORE_PENDING));
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_STORED));
+        Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_STORE_ERROR));
     }
 
     @Test
     public void testStoreSucceed() {
-        sessionNotifier.notifySIPCreated(sipEntity);
-        sessionNotifier.notifyAIPCreated(Lists.newArrayList(aipEntity1, aipEntity2));
+        sessionNotifier.productGenerationStart(sessionOwner, session);
+        sessionNotifier.productGenerationEnd(sessionOwner, session, aips);
+        sessionNotifier.productStoreSuccess(sessionOwner, session, aips);
 
-        sipEntity.setState(SIPState.STORED);
+        ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
+        Mockito.verify(publisher, Mockito.times(5)).publish(argumentCaptor.capture());
+        Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_GEN_ERROR));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_STORE_PENDING));
+        Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_STORED));
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_STORE_ERROR));
+    }
+
+    @Test
+    public void testStoreMetaPending() {
+        sessionNotifier.productGenerationStart(sessionOwner, session);
+        sessionNotifier.productGenerationEnd(sessionOwner, session, aips);
+        sessionNotifier.productStoreSuccess(sessionOwner, session, aips);
+        sessionNotifier.productMetaStorePending(sessionOwner, session, aips);
+
+        ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
+        Mockito.verify(publisher, Mockito.times(6)).publish(argumentCaptor.capture());
+        Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_GEN_ERROR));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_STORE_PENDING));
+        Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_STORED));
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_STORE_ERROR));
+        Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_META_STORE_PENDING));
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_META_STORED));
+    }
+
+    @Test
+    public void testStoreMetaSucceed() {
+        sessionNotifier.productGenerationStart(sessionOwner, session);
+        sessionNotifier.productGenerationEnd(sessionOwner, session, aips);
+        sessionNotifier.productStoreSuccess(sessionOwner, session, aips);
+        sessionNotifier.productMetaStorePending(sessionOwner, session, aips);
+        sessionNotifier.productMetaStoredSuccess(aipEntity1);
+        sessionNotifier.productMetaStoredSuccess(aipEntity2);
+
+        ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
+        Mockito.verify(publisher, Mockito.times(10)).publish(argumentCaptor.capture());
+        Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_GEN_ERROR));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_STORE_PENDING));
+        Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_STORED));
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_STORE_ERROR));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_META_STORE_PENDING));
+        Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_META_STORED));
+    }
+
+    @Test
+    public void testStoreMetaError() {
+        sessionNotifier.productGenerationStart(sessionOwner, session);
+        sessionNotifier.productGenerationEnd(sessionOwner, session, aips);
+        sessionNotifier.productStoreSuccess(sessionOwner, session, aips);
+        sessionNotifier.productMetaStorePending(sessionOwner, session, aips);
+        sessionNotifier.productMetaStoredSuccess(aipEntity1);
+        sessionNotifier.productMetaStoredError(aipEntity2);
+
+        ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
+        Mockito.verify(publisher, Mockito.times(10)).publish(argumentCaptor.capture());
+        Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_GEN_ERROR));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_STORE_PENDING));
+        Assert.assertEquals(2, (long) result.get(SessionNotifier.PRODUCT_STORED));
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_STORE_ERROR));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_META_STORE_PENDING));
+        Assert.assertEquals(1, (long) result.get(SessionNotifier.PRODUCT_META_STORED));
+        Assert.assertEquals(1, (long) result.get(SessionNotifier.PRODUCT_META_STORE_ERROR));
+    }
+
+    @Test
+    public void testDeletion() {
+        sessionNotifier.productGenerationStart(sessionOwner, session);
+        sessionNotifier.productGenerationEnd(sessionOwner, session, aips);
+        sessionNotifier.productStoreSuccess(sessionOwner, session, aips);
         aipEntity1.setState(AIPState.STORED);
         aipEntity2.setState(AIPState.STORED);
-
-        sessionNotifier.notifySIPStored(sipEntity);
-        sessionNotifier.notifyAIPsStored(Lists.newArrayList(aipEntity1, aipEntity2));
+        sipEntity.setState(SIPState.STORED);
+        sessionNotifier.productDeleted(sessionOwner, session, aips);
 
         ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
 
         Mockito.verify(publisher, Mockito.times(6)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_SIP_INGESTING));
-        Assert.assertEquals(1, (long) result.get(SessionNotifier.PROPERTY_SIP_INGESTED));
-
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_AIP_GENERATED));
-        Assert.assertEquals(2, (long) result.get(SessionNotifier.PROPERTY_AIP_STORED));
-    }
-
-    @Test
-    public void testDeleteSucceed() {
-        sessionNotifier.notifySIPCreated(sipEntity);
-        sessionNotifier.notifyAIPCreated(Lists.newArrayList(aipEntity1, aipEntity2));
-
-        sipEntity.setState(SIPState.STORED);
-        aipEntity1.setState(AIPState.STORED);
-        aipEntity2.setState(AIPState.STORED);
-
-        sessionNotifier.notifySIPStored(sipEntity);
-        sessionNotifier.notifyAIPsStored(Lists.newArrayList(aipEntity1, aipEntity2));
-
-        sessionNotifier.notifySIPDeleting(sipEntity);
-        sessionNotifier.notifyAIPDeleting(Sets.newLinkedHashSet(aipEntity1, aipEntity2));
-
-        aipEntity1.setState(AIPState.DELETED);
-        aipEntity2.setState(AIPState.DELETED);
-        sipEntity.setState(SIPState.DELETED);
-
-        sessionNotifier.notifySIPDeleted(sipEntity);
-        sessionNotifier.notifyAIPDeleted(Sets.newLinkedHashSet(aipEntity1, aipEntity2));
-
-        ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
-
-        Mockito.verify(publisher, Mockito.times(12)).publish(argumentCaptor.capture());
-        Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_SIP_INGESTING));
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_SIP_INGESTED));
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_SIP_DELETING));
-
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_AIP_GENERATED));
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_AIP_STORED));
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_AIP_DELETING));
-    }
-
-    @Test
-    public void testDeleteFailed() {
-        sessionNotifier.notifySIPCreated(sipEntity);
-        sessionNotifier.notifyAIPCreated(Lists.newArrayList(aipEntity1, aipEntity2));
-
-        sipEntity.setState(SIPState.STORED);
-        aipEntity1.setState(AIPState.STORED);
-        aipEntity2.setState(AIPState.STORED);
-
-        sessionNotifier.notifySIPStored(sipEntity);
-        sessionNotifier.notifyAIPsStored(Lists.newArrayList(aipEntity1, aipEntity2));
-
-        sessionNotifier.notifySIPDeleting(sipEntity);
-        sessionNotifier.notifyAIPDeleting(Sets.newLinkedHashSet(aipEntity1, aipEntity2));
-
-        aipEntity1.setState(AIPState.DELETED);
-        aipEntity2.setState(AIPState.DELETED);
-        sipEntity.setState(SIPState.DELETED);
-
-        sessionNotifier.notifySIPDeletionFailed(sipEntity);
-        sessionNotifier.notifyAIPDeletionFailed(Sets.newLinkedHashSet(aipEntity1, aipEntity2));
-
-        ArgumentCaptor<SessionMonitoringEvent> argumentCaptor = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
-
-        Mockito.verify(publisher, Mockito.times(14)).publish(argumentCaptor.capture());
-        Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_SIP_INGESTING));
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_SIP_INGESTED));
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_SIP_DELETING));
-        Assert.assertEquals(1, (long) result.get(SessionNotifier.PROPERTY_SIP_ERROR));
-
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_AIP_GENERATED));
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_AIP_STORED));
-        Assert.assertEquals(0, (long) result.get(SessionNotifier.PROPERTY_AIP_DELETING));
-        Assert.assertEquals(2, (long) result.get(SessionNotifier.PROPERTY_AIP_ERROR));
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_GEN_ERROR));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_GEN_PENDING));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_STORE_PENDING));
+        Assert.assertEquals(0, (long) result.get(SessionNotifier.PRODUCT_STORED));
+        Assert.assertNull(result.get(SessionNotifier.PRODUCT_STORE_ERROR));
     }
 }

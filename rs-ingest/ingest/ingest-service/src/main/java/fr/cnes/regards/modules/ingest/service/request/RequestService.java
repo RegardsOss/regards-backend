@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.ingest.service.request;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -95,8 +94,16 @@ public class RequestService implements IRequestService {
 
     @Override
     public void handleRemoteStoreError(Set<RequestInfo> requestInfos) {
-        ingestRequestService.handleRemoteStoreError(requestInfos);
-        aipSaveMetaDataService.handleError(requestInfos);
+        for (RequestInfo ri : requestInfos) {
+            List<AbstractRequest> requests = findRequestsByGroupId(ri.getGroupId());
+            for (AbstractRequest request : requests) {
+                if (request instanceof IngestRequest) {
+                    ingestRequestService.handleRemoteStoreError((IngestRequest) request, ri);
+                } else if (request instanceof AIPStoreMetaDataRequest) {
+                    aipSaveMetaDataService.handleError((AIPStoreMetaDataRequest) request, ri);
+                }
+            }
+        }
     }
 
     @Override
@@ -105,14 +112,9 @@ public class RequestService implements IRequestService {
             List<AbstractRequest> requests = findRequestsByGroupId(ri.getGroupId());
             for (AbstractRequest request : requests) {
                 if (request instanceof IngestRequest) {
-                    // Retrieve request
-                    Optional<IngestRequest> requestOp = ingestRequestRepository.findOneWithAIPs(ri.getGroupId());
-
-                    if (requestOp.isPresent()) {
-                        ingestRequestService.handleRemoteStoreSuccess(requestInfos);
-                    }
+                    ingestRequestService.handleRemoteStoreSuccess((IngestRequest) (request), ri);
                 } else if (request instanceof AIPStoreMetaDataRequest) {
-                    aipSaveMetaDataService.handleSuccess((AIPStoreMetaDataRequest) request, requestInfos);
+                    aipSaveMetaDataService.handleSuccess((AIPStoreMetaDataRequest) request, ri);
                 }
             }
         }

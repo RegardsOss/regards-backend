@@ -48,7 +48,6 @@ import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
-import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -75,9 +74,6 @@ public class SIPService implements ISIPService {
     @Autowired
     private IAIPService aipService;
 
-    @Autowired
-    private SessionNotifier sessionNotifier;
-
     @Override
     public Page<SIPEntity> search(SearchSIPsParameters params, Pageable page) {
         return sipRepository.loadAll(SIPEntitySpecifications
@@ -98,20 +94,20 @@ public class SIPService implements ISIPService {
 
     @Override
     public void scheduleDeletion(SIPEntity sipEntity, SessionDeletionMode deletionMode, Boolean deleteFiles) {
+        // Update SIPEntity
+        sipEntity.setState(SIPState.DELETED);
+        save(sipEntity);
         // Update AIPs state as deleted and retrieve events to delete associated files and AIPs
         if (deleteFiles) {
+            // Schedule deletion of AIPs associated to SIP
             String deleteRequestId = aipService.scheduleAIPEntityDeletion(sipEntity.getSipId());
-
-            sessionNotifier.notifySIPDeleting(sipEntity);
-            sipEntity.setState(SIPState.DELETED);
-            save(sipEntity);
-
             // Save the request id sent to storage
             StorageDeletionRequest sdr = StorageDeletionRequest.build(deleteRequestId, sipEntity, deletionMode);
             storageDeletionRequestRepo.save(sdr);
         } else {
             aipService.processDeletion(sipEntity.getSipId(), deletionMode == SessionDeletionMode.IRREVOCABLY);
             processDeletion(sipEntity.getSipId(), deletionMode == SessionDeletionMode.IRREVOCABLY);
+            // NOTE : Session is notified in processDeletion method of AIPService.
         }
     }
 
@@ -120,7 +116,6 @@ public class SIPService implements ISIPService {
         Optional<SIPEntity> optionalSIPEntity = sipRepository.findOneBySipId(sipId);
         if (optionalSIPEntity.isPresent()) {
             SIPEntity sipEntity = optionalSIPEntity.get();
-            sessionNotifier.notifySIPDeleted(sipEntity);
             if (!deleteIrrevocably) {
                 // Mark the SIP correctly deleted
                 sipEntity.setState(SIPState.DELETED);

@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.ingest.service.request;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -98,26 +98,23 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
         List<AIPStoreMetaDataRequest> requests = new ArrayList<>();
         for (AIPEntity aip : aips) {
             requests.add(AIPStoreMetaDataRequest.build(aip, removeCurrentMetaData, computeChecksum));
-            sessionNotifier.notifyAIPMetaDataStoring(aip);
         }
         aipStoreMetaDataRepository.saveAll(requests);
     }
 
     @Override
-    public void handleSuccess(AIPStoreMetaDataRequest request, Set<RequestInfo> requestInfos) {
-        sessionNotifier.notifyAIPMetaDataStored(request.getAip());
+    public void handleSuccess(AIPStoreMetaDataRequest request, RequestInfo requestInfo) {
         aipStoreMetaDataRepository.delete(request);
+        sessionNotifier.productMetaStoredSuccess(request.getAip());
     }
 
     @Override
-    public void handleError(Set<RequestInfo> requestInfos) {
-        sessionNotifier.notifyAIPMetaDataStoreError(null);
-        List<AIPStoreMetaDataRequest> requests = new ArrayList<>();
-        for (AIPStoreMetaDataRequest request : requests) {
-            request.setErrors(null);
-            request.setState(InternalRequestStep.ERROR);
-        }
-        aipStoreMetaDataRepository.saveAll(requests);
+    public void handleError(AIPStoreMetaDataRequest request, RequestInfo requestInfo) {
+        request.setErrors(requestInfo.getErrorRequests().stream().map(r -> r.getErrorCause())
+                .collect(Collectors.toSet()));
+        request.setState(InternalRequestStep.ERROR);
+        aipStoreMetaDataRepository.save(request);
+        sessionNotifier.productMetaStoredError(request.getAip());
     }
 
     @Override
