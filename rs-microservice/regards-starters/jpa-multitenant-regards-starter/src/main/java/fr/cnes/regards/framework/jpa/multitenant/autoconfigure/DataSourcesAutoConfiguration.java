@@ -215,6 +215,7 @@ public class DataSourcesAutoConfiguration {
                     // Retrieve schema name
                     String schemaIdentifier = jpaProperties.getProperties().get(Environment.DEFAULT_SCHEMA);
                     // Init data source
+                    TenantDataSourceHelper.verifyBatchParameter(jpaProperties, tenantConnection);
                     DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection,
                                                                                   schemaIdentifier);
                     // Update database schema
