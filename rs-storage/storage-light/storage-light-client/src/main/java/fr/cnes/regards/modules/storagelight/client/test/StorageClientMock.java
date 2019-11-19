@@ -88,13 +88,12 @@ public class StorageClientMock implements IStorageClient {
         }
 
         RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(), FileRequestType.STORAGE,
-                file.getChecksum(), file.getStorage());
+                file.getChecksum(), file.getStorage(), file.getSubDirectory().orElse(null));
 
-        resultInfo.setResultFile(
-                                 new FileReference(file.getOwner(),
-                                         new FileReferenceMetaInfo(file.getChecksum(), file.getAlgorithm(),
-                                                 file.getFileName(), 1000L, MimeType.valueOf(file.getMimeType())),
-                                         new FileLocation(file.getStorage(), "http://somedomain.com/api/v1/storage/file/2")));
+        resultInfo.setResultFile(new FileReference(file.getOwner(),
+                new FileReferenceMetaInfo(file.getChecksum(), file.getAlgorithm(), file.getFileName(), 1000L,
+                        MimeType.valueOf(file.getMimeType())),
+                new FileLocation(file.getStorage(), "http://somedomain.com/api/v1/storage/file/2")));
         List<RequestResultInfo> requestInfos = Collections.singletonList(resultInfo);
         publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.STORAGE, firstStatus,
                                                        requestInfos));
@@ -172,7 +171,7 @@ public class StorageClientMock implements IStorageClient {
         }
 
         RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(), FileRequestType.DELETION,
-                file.getChecksum(), file.getStorage());
+                file.getChecksum(), file.getStorage(), null);
 
         resultInfo.setResultFile(
                                  new FileReference(file.getOwner(),

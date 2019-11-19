@@ -77,6 +77,9 @@ public class RequestResultInfo {
     @Column(name = "request_storage", length = FileLocation.STORAGE_MAX_LENGTH)
     private String requestStorage;
 
+    @Column(name = "request_store_path", length = FileLocation.URL_MAX_LENGTH)
+    private String requestStorePath;
+
     @Column
     private boolean error;
 
@@ -87,7 +90,8 @@ public class RequestResultInfo {
         super();
     }
 
-    public RequestResultInfo(String groupId, FileRequestType requestType, String checksum, String storage) {
+    public RequestResultInfo(String groupId, FileRequestType requestType, String checksum, String storage,
+            String storePath) {
         Assert.notNull(groupId, "groupId can not be null");
         Assert.notNull(checksum, "checksum can not be null");
         Assert.notNull(requestType, "requestType can not be null");
@@ -95,6 +99,7 @@ public class RequestResultInfo {
         this.requestType = requestType;
         this.requestChecksum = checksum;
         this.requestStorage = storage;
+        this.requestStorePath = storePath;
     }
 
     public String getGroupId() {
@@ -147,6 +152,10 @@ public class RequestResultInfo {
 
     public String getRequestStorage() {
         return requestStorage;
+    }
+
+    public String getRequestStorePath() {
+        return requestStorePath;
     }
 
 }

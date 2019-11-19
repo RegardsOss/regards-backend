@@ -98,11 +98,12 @@ public class RequestsGroupService {
      * @param type
      * @param checksum
      * @param storage
+     * @param storePath
      * @param fileRef
      */
-    public void requestSuccess(String groupId, FileRequestType type, String checksum, String storage,
+    public void requestSuccess(String groupId, FileRequestType type, String checksum, String storage, String storePath,
             FileReference fileRef) {
-        requestDone(groupId, type, checksum, storage, fileRef, false, null);
+        requestDone(groupId, type, checksum, storage, storePath, fileRef, false, null);
     }
 
     /**
@@ -112,11 +113,13 @@ public class RequestsGroupService {
      * @param type
      * @param checksum
      * @param storage
+     * @param storePath
      * @param errorCause
      * @param checkGroupDone
      */
-    public void requestError(String groupId, FileRequestType type, String checksum, String storage, String errorCause) {
-        requestDone(groupId, type, checksum, storage, null, true, errorCause);
+    public void requestError(String groupId, FileRequestType type, String checksum, String storage, String storePath,
+            String errorCause) {
+        requestDone(groupId, type, checksum, storage, storePath, null, true, errorCause);
     }
 
     /**
@@ -311,15 +314,16 @@ public class RequestsGroupService {
      * @param type
      * @param checksum
      * @param storage
+     * @param storePath
      * @param fileRef
      * @param error
      * @param errorCause
      */
-    private void requestDone(String groupId, FileRequestType type, String checksum, String storage,
+    private void requestDone(String groupId, FileRequestType type, String checksum, String storage, String storePath,
             FileReference fileRef, boolean error, String errorCause) {
         // Check if associated group exists
         if (reqGroupRepository.existsById(groupId)) {
-            RequestResultInfo gInfo = new RequestResultInfo(groupId, type, checksum, storage);
+            RequestResultInfo gInfo = new RequestResultInfo(groupId, type, checksum, storage, storePath);
             gInfo.setResultFile(fileRef);
             gInfo.setError(error);
             gInfo.setErrorCause(errorCause);

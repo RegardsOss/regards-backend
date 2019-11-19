@@ -97,7 +97,7 @@ public class FileRequestsGroupEvent implements ISubscribable {
         event.type = type;
         event.success.addAll(success.stream()
                 .map(s -> RequestResultInfoDTO.build(s.getGroupId(), s.getRequestChecksum(), s.getRequestStorage(),
-                                                    s.getResultFile(), s.getErrorCause()))
+                                                     s.getRequestStorePath(), s.getResultFile(), s.getErrorCause()))
                 .collect(Collectors.toSet()));
         return event;
     }
@@ -123,11 +123,11 @@ public class FileRequestsGroupEvent implements ISubscribable {
         event.state = FlowItemStatus.ERROR;
         event.errors.addAll(errors.stream()
                 .map(e -> RequestResultInfoDTO.build(e.getGroupId(), e.getRequestChecksum(), e.getRequestStorage(),
-                                                    e.getResultFile(), e.getErrorCause()))
+                                                     e.getRequestStorePath(), e.getResultFile(), e.getErrorCause()))
                 .collect(Collectors.toSet()));
         event.success.addAll(success.stream()
                 .map(s -> RequestResultInfoDTO.build(s.getGroupId(), s.getRequestChecksum(), s.getRequestStorage(),
-                                                    s.getResultFile(), s.getErrorCause()))
+                                                     s.getRequestStorePath(), s.getResultFile(), s.getErrorCause()))
                 .collect(Collectors.toSet()));
         event.type = type;
         return event;

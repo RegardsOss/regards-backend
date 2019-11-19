@@ -497,7 +497,8 @@ public class FileStorageRequestService {
         for (String groupId : fileStorageRequest.getGroupIds()) {
             reqGroupService.requestError(groupId, FileRequestType.STORAGE,
                                          fileStorageRequest.getMetaInfo().getChecksum(),
-                                         fileStorageRequest.getStorage(), errorCause);
+                                         fileStorageRequest.getStorage(), fileStorageRequest.getStorageSubDirectory(),
+                                         errorCause);
         }
     }
 
@@ -518,7 +519,8 @@ public class FileStorageRequestService {
                     for (String groupId : request.getGroupIds()) {
                         reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE,
                                                        fileRef.getMetaInfo().getChecksum(),
-                                                       fileRef.getLocation().getStorage(), fileRef);
+                                                       fileRef.getLocation().getStorage(),
+                                                       request.getStorageSubDirectory(), fileRef);
                     }
                 } catch (ModuleException e) {
                     handleError(request, e.getMessage());
@@ -552,7 +554,7 @@ public class FileStorageRequestService {
                                   errorCause, request.getGroupIds());
         for (String groupId : request.getGroupIds()) {
             reqGroupService.requestError(groupId, FileRequestType.STORAGE, request.getMetaInfo().getChecksum(),
-                                         request.getStorage(), errorCause);
+                                         request.getStorage(), request.getStorageSubDirectory(), errorCause);
         }
     }
 
@@ -589,7 +591,8 @@ public class FileStorageRequestService {
             eventPublisher.storeSuccess(fileReference, message, Sets.newHashSet(groupId));
             updatedFileRef = fileRefService.addOwner(fileReference, request.getOwner());
             reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE, request.getChecksum(),
-                                           request.getStorage(), updatedFileRef);
+                                           request.getStorage(), request.getSubDirectory().orElse(null),
+                                           updatedFileRef);
         }
         return Optional.ofNullable(updatedFileRef);
     }
