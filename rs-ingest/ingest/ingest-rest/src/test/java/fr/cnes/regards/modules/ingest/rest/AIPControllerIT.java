@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -31,7 +33,10 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
@@ -56,6 +61,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
@@ -63,6 +69,7 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
+import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import fr.cnes.regards.modules.test.IngestServiceTest;
 
 /**
@@ -71,7 +78,7 @@ import fr.cnes.regards.modules.test.IngestServiceTest;
 * @author Léo Mieulet
 *
 */
-@ActiveProfiles({ "testAmqp" })
+@ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_controller_it",
         "regards.amqp.enabled=true" })
 @ContextConfiguration(classes = { AIPControllerIT.Config.class })
@@ -81,7 +88,23 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     @EnableScheduling
     static class Config {
 
+        @Bean
+        public DiscoveryClient discoveryClient() throws URISyntaxException {
+
+            DiscoveryClient client = Mockito.mock(DiscoveryClient.class);
+            List<ServiceInstance> response = Lists.newArrayList();
+            ServiceInstance service = Mockito.mock(ServiceInstance.class);
+            Mockito.when(service.getUri()).thenReturn(new URI("http://localhost:7777"));
+            response.add(service);
+            Mockito.when(client.getInstances(Mockito.anyString())).thenReturn(response);
+            return client;
+
+        }
+
     }
+
+    @Autowired
+    private StorageClientMock storageClient;
 
     @Autowired
     private ApplicationEventPublisher springPublisher;
@@ -95,6 +118,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     @Before
     public void init() throws Exception {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        storageClient.setBehavior(true, true);
         // Clean everything
         ingestServiceTest.init();
         // resend the event of AppReady to reinit default data
@@ -132,7 +156,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), "ESA", OffsetDateTime.now().toString(), "NAS #1");
 
         // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(1, 10000);
+        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
+        ingestServiceTest.waitAllRequestsFinished(10000);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
 
@@ -159,10 +184,12 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                   OffsetDateTime.now().toString(), "NAS #1");
 
         // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(1, 10000);
+        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
+        ingestServiceTest.waitAllRequestsFinished(10000);
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.expectToHaveSize("$.content", 2);
-        requestBuilderCustomizer.expectIsNotEmpty("$.content[0].properties.pdi.provenanceInformation.history");
+        requestBuilderCustomizer
+                .expectIsNotEmpty("$.content[0].content.aip.properties.pdi.provenanceInformation.history");
 
         SearchAIPsParameters body = SearchAIPsParameters.build().withProviderIds("testRetrieveAIPVersionHistory");
 
@@ -184,7 +211,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner, session, "NAS #1");
 
         // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(1, 10000);
+        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
+        ingestServiceTest.waitAllRequestsFinished(10000);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -211,7 +239,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner, session, "NAS #1");
 
         // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(1, 10000);
+        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
+        ingestServiceTest.waitAllRequestsFinished(10000);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -238,7 +267,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner, session, "NAS #1");
 
         // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(1, 10000);
+        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
+        ingestServiceTest.waitAllRequestsFinished(10000);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -265,7 +295,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         createAIP("my object #10", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner, session, "NAS #1");
 
         // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(1, 10000);
+        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
+        ingestServiceTest.waitAllRequestsFinished(10000);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -430,38 +461,29 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         fields.add(constrainedFields.withPath(prefix + "aip", "aip", "Generated AIP").type(JSON_OBJECT_TYPE));
 
-        String prefixIngestMetadata = "content[].content.ingestMetadata.";
-
-        fields.add(constrainedFields.withPath(prefixIngestMetadata + "sessionOwner", "sessionOwner", "Session owner")
+        fields.add(constrainedFields.withPath(prefix + "sessionOwner", "sessionOwner", "Session owner")
                 .type(JSON_STRING_TYPE));
 
-        fields.add(constrainedFields.withPath(prefixIngestMetadata + "session", "session", "Session")
-                .type(JSON_STRING_TYPE));
+        fields.add(constrainedFields.withPath(prefix + "session", "session", "Session").type(JSON_STRING_TYPE));
 
-        fields.add(constrainedFields
-                .withPath(prefixIngestMetadata + "ingestChain", "ingestChain", "Name of the ingest chain")
-                .type(JSON_STRING_TYPE));
-
-        fields.add(constrainedFields.withPath(prefixIngestMetadata + "storages", "storages", "List of storage")
+        fields.add(constrainedFields.withPath(prefix + "storages", "storages", "List of storage")
                 .type(JSON_ARRAY_TYPE));
 
-        fields.add(constrainedFields.withPath(prefixIngestMetadata + "categories", "categories", "List of categories")
+        fields.add(constrainedFields.withPath(prefix + "categories", "categories", "List of categories")
                 .type(JSON_ARRAY_TYPE));
 
-        String prefixStorages = "content[].content.ingestMetadata.storages[].";
+        String prefixManifestLocation = "content[].content.manifestLocations[].";
 
         fields.add(constrainedFields
-                .withPath(prefixStorages + "pluginBusinessId", "pluginBusinessId", "Destination storage identifier")
+                .withPath(prefixManifestLocation + "storage", "storage", "Destination storage identifier")
                 .type(JSON_STRING_TYPE));
 
         fields.add(constrainedFields
-                .withPath(prefixStorages + "storePath", "storePath",
+                .withPath(prefixManifestLocation + "storePath", "storePath",
                           "Optional path identifying the base directory in which to store related files")
                 .type(JSON_STRING_TYPE).optional());
 
-        fields.add(constrainedFields
-                .withPath(prefixStorages + "targetTypes", "targetTypes",
-                          "List of data object types accepted by this storage location (when storing AIPs)")
+        fields.add(constrainedFields.withPath(prefixManifestLocation + "url", "url", "URL to the AIP manifest file")
                 .type(JSON_ARRAY_TYPE).optional());
 
         return fields;
