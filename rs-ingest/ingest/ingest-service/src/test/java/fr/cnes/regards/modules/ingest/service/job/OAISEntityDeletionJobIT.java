@@ -34,6 +34,9 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
@@ -47,7 +50,7 @@ import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
+import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
 /**
  * @author Léo Mieulet
@@ -152,6 +155,8 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
     }
 
     @Test
+    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_310"), @Requirement("REGARDS_DSL_STO_AIP_115") })
+    @Purpose("check deletion process for a list of SIPS. Check two deletion modes. Commplet deletion or matk as deleted")
     public void testDeletionJobSucceed() throws ModuleException {
         storageClient.setBehavior(true, true);
         initData();

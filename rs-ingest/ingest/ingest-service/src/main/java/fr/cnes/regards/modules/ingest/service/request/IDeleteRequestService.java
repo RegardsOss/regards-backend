@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.ingest.service.request;
 
 import java.util.Set;
 
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
 
 /**
  * Delete file request service

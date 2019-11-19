@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -25,11 +29,8 @@ import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRe
 import fr.cnes.regards.modules.ingest.domain.request.manifest.StoreLocation;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * Manage AIP storage

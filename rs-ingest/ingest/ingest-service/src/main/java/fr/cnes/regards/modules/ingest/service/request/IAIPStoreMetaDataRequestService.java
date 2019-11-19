@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.List;
+import java.util.Set;
+
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
-import java.util.List;
-import java.util.Set;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 
 /**
  * Service to handle {@link AIPStoreMetaDataRequest}s
@@ -51,7 +52,8 @@ public interface IAIPStoreMetaDataRequestService {
      * @param removeCurrentMetaData true when a legacy metadata exists and should be removed
      * @param computeChecksum true when the aip does not contains a reliable checksum and should be recomputed
      */
-    void schedule(List<AIPEntity> aips, Set<StorageMetadata> storages, boolean removeCurrentMetaData, boolean computeChecksum);
+    void schedule(List<AIPEntity> aips, Set<StorageMetadata> storages, boolean removeCurrentMetaData,
+            boolean computeChecksum);
 
     /**
      * Schedule new {@link AIPStoreMetaDataRequest}s associated to given {@link AIPEntity}s
@@ -60,7 +62,8 @@ public interface IAIPStoreMetaDataRequestService {
      * @param removeCurrentMetaData true when a legacy metadata exists and should be removed
      * @param computeChecksum true when the aip does not contains a reliable checksum and should be recomputed
      */
-    void schedule(AIPEntity aip, Set<OAISDataObjectLocation> manifestLocations, boolean removeCurrentMetaData, boolean computeChecksum);
+    void schedule(AIPEntity aip, Set<OAISDataObjectLocation> manifestLocations, boolean removeCurrentMetaData,
+            boolean computeChecksum);
 
     /**
      * @param ids a list of request id

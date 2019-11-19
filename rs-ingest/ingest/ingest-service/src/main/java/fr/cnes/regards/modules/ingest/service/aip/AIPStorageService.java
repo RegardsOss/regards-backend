@@ -18,6 +18,26 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.ContentInformation;
@@ -31,33 +51,15 @@ import fr.cnes.regards.modules.ingest.domain.request.manifest.StoreLocation;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.storagelight.client.IStorageClient;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileLocationDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceMetaInfoDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
+import fr.cnes.regards.modules.storage.client.IStorageClient;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
+import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
+import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * @author Léo Mieulet
@@ -204,7 +206,8 @@ public class AIPStorageService implements IAIPStorageService {
                     Set<OAISDataObjectLocation> newLocations = dataObject.getLocations().stream()
                             .filter(l -> l.getStorage() != null).collect(Collectors.toSet());
                     newLocations.add(OAISDataObjectLocation.build(fileLocation.getUrl(),
-                            storeRequestInfo.getRequestStorage(), storeRequestInfo.getRequestStorePath()));
+                                                                  storeRequestInfo.getRequestStorage(),
+                                                                  storeRequestInfo.getRequestStorePath()));
                     dataObject.setLocations(newLocations);
 
                     // Ensure the AIP storage list is updated
@@ -214,8 +217,7 @@ public class AIPStorageService implements IAIPStorageService {
 
             // Check if some storeRequests are concerning the AIP itself
             Set<RequestResultInfoDTO> storeRequestInfosForAIPManifest = storeRequestInfos.stream()
-                    .filter(r -> r.getRequestChecksum().equals(aipEntity.getChecksum()))
-                    .collect(Collectors.toSet());
+                    .filter(r -> r.getRequestChecksum().equals(aipEntity.getChecksum())).collect(Collectors.toSet());
             for (RequestResultInfoDTO storeRequestInfo : storeRequestInfosForAIPManifest) {
                 Set<OAISDataObjectLocation> manifestLocations = aipEntity.getManifestLocations();
                 // Remove any old reference to this storage
@@ -223,8 +225,9 @@ public class AIPStorageService implements IAIPStorageService {
                         .filter(ml -> ml.getStorage().equals(storeRequestInfo.getRequestStorage()))
                         .collect(Collectors.toSet());
                 // Generate the new ObjectLocation
-                newManifestLocations.add(OAISDataObjectLocation.build(storeRequestInfo.getResultFile().getLocation().getUrl(),
-                        storeRequestInfo.getRequestStorage(), storeRequestInfo.getRequestStorePath()));
+                newManifestLocations.add(OAISDataObjectLocation
+                        .build(storeRequestInfo.getResultFile().getLocation().getUrl(),
+                               storeRequestInfo.getRequestStorage(), storeRequestInfo.getRequestStorePath()));
                 // Save it
                 aipEntity.setManifestLocations(newManifestLocations);
 
@@ -259,9 +262,9 @@ public class AIPStorageService implements IAIPStorageService {
                 if (!dataObjectLocationExists) {
                     edited = true;
                     // Add this new location to the ContentInfo locations list
-                    ci.getDataObject().getLocations().add(OAISDataObjectLocation.build(
-                            eventInfo.getResultFile().getLocation().getUrl(), storageLocation,
-                            eventInfo.getRequestStorePath()));
+                    ci.getDataObject().getLocations()
+                            .add(OAISDataObjectLocation.build(eventInfo.getResultFile().getLocation().getUrl(),
+                                                              storageLocation, eventInfo.getRequestStorePath()));
                     aip.getAip().withEvent("update",
                                            String.format("File %s [%s] is now stored on %s.",
                                                          eventInfo.getResultFile().getMetaInfo().getFileName(),
@@ -278,9 +281,9 @@ public class AIPStorageService implements IAIPStorageService {
                 if (!manifestLocationExists) {
                     edited = true;
                     // Add this new location to the manifest locations
-                    aip.getManifestLocations().add(OAISDataObjectLocation
-                            .build(eventInfo.getResultFile().getLocation().getUrl(), storageLocation,
-                                eventInfo.getRequestStorePath()));
+                    aip.getManifestLocations()
+                            .add(OAISDataObjectLocation.build(eventInfo.getResultFile().getLocation().getUrl(),
+                                                              storageLocation, eventInfo.getRequestStorePath()));
                 }
             }
         }
@@ -327,11 +330,11 @@ public class AIPStorageService implements IAIPStorageService {
                 if (!shouldKeepStorage) {
                     edited = true;
 
-                    Set<String> updatedStorages = aip.getStorages().stream()
-                            .filter(s -> !s.equals(storageLocation)).collect(Collectors.toSet());
+                    Set<String> updatedStorages = aip.getStorages().stream().filter(s -> !s.equals(storageLocation))
+                            .collect(Collectors.toSet());
                     aip.setStorages(updatedStorages);
                 }
-            }  else if (aip.getChecksum().equals(eventInfo.getRequestChecksum())) {
+            } else if (aip.getChecksum().equals(eventInfo.getRequestChecksum())) {
                 // The event concern the AIP manifest itself
 
                 // Check if the event storage location exists in manifest locations
@@ -397,11 +400,11 @@ public class AIPStorageService implements IAIPStorageService {
         // Check if some manifest location have been removed
         if (manifestLocations.size() < newManifestLocations.size()) {
             for (OAISDataObjectLocation location : manifestLocations) {
-                for (String removeStorage: removedStorages) {
+                for (String removeStorage : removedStorages) {
                     if (location.getStorage().equals(removeStorage)) {
                         // Create a storage deletion request
-                        filesToRemove.add(FileDeletionRequestDTO.build(aip.getChecksum(), removeStorage,
-                                aip.getAipId(), false));
+                        filesToRemove.add(FileDeletionRequestDTO.build(aip.getChecksum(), removeStorage, aip.getAipId(),
+                                                                       false));
                     }
                 }
             }
@@ -439,7 +442,9 @@ public class AIPStorageService implements IAIPStorageService {
         for (AIPStoreMetaDataRequest request : requests) {
             // Create a request for each storage
             Collection<FileStorageRequestDTO> fileStorageRequests = buildAIPStorageRequest(request.getAip().getAip(),
-                    request.getAip().getChecksum(), request.getStoreLocations());
+                                                                                           request.getAip()
+                                                                                                   .getChecksum(),
+                                                                                           request.getStoreLocations());
             files.addAll(fileStorageRequests);
         }
 

@@ -18,15 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.service.job.step;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocationTask;
-import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
+import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
-import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * @author Léo Mieulet
@@ -37,7 +39,8 @@ public class UpdateAIPLocation implements IUpdateStep {
     private IAIPStorageService aipStorageService;
 
     @Override
-    public AIPEntityUpdateWrapper run(AIPEntityUpdateWrapper aipWrapper, AbstractAIPUpdateTask updateTask) throws ModuleException {
+    public AIPEntityUpdateWrapper run(AIPEntityUpdateWrapper aipWrapper, AbstractAIPUpdateTask updateTask)
+            throws ModuleException {
         AIPUpdateTaskType taskType = updateTask.getType();
         AIPUpdateFileLocationTask updateFileLocation = (AIPUpdateFileLocationTask) updateTask;
         List<RequestResultInfoDTO> fileLocationUpdates = updateFileLocation.getFileLocationUpdates();
@@ -45,7 +48,8 @@ public class UpdateAIPLocation implements IUpdateStep {
         if (taskType == AIPUpdateTaskType.ADD_FILE_LOCATION) {
             updated = aipStorageService.addAIPLocations(aipWrapper.getAip(), fileLocationUpdates);
         } else {
-            updated = aipStorageService.removeAIPLocations(aipWrapper.getAip(), updateFileLocation.getFileLocationUpdates());
+            updated = aipStorageService.removeAIPLocations(aipWrapper.getAip(),
+                                                           updateFileLocation.getFileLocationUpdates());
         }
         if (updated) {
             aipWrapper.markAsUpdated();

@@ -52,8 +52,8 @@
 			<artifactId>jobs-domain</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.storage-light</groupId>
-			<artifactId>storage-light-domain</artifactId>
+			<groupId>fr.cnes.regards.modules.storage</groupId>
+			<artifactId>storage-domain</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>

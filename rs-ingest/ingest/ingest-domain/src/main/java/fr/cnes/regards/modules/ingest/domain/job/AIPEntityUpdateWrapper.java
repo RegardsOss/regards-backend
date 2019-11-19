@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.domain.job;
 
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 import java.util.ArrayList;
 import java.util.Collection;
+
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 
 /**
  * During a AIPJob update, we detect if the task have done some update on the entity to avoid
@@ -73,6 +74,7 @@ public class AIPEntityUpdateWrapper {
     public void markAsUpdated() {
         this.pristine = false;
     }
+
     public static AIPEntityUpdateWrapper build(AIPEntity aip) {
         AIPEntityUpdateWrapper wrapper = new AIPEntityUpdateWrapper();
         wrapper.aip = aip;

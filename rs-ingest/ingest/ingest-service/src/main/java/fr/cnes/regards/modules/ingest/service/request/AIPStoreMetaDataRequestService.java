@@ -18,7 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
@@ -31,14 +39,9 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
-import fr.cnes.regards.modules.storagelight.client.IStorageClient;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import fr.cnes.regards.modules.storage.client.IStorageClient;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 
 /**
  * Manage {@link AIPStoreMetaDataRequest} entities
@@ -94,7 +97,8 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
     }
 
     @Override
-    public void schedule(List<AIPEntity> aips, Set<StorageMetadata> storages, boolean removeCurrentMetaData, boolean computeChecksum) {
+    public void schedule(List<AIPEntity> aips, Set<StorageMetadata> storages, boolean removeCurrentMetaData,
+            boolean computeChecksum) {
         Set<StoreLocation> storeLocations = aipStorageService.getManifestStoreLocationsByStorageMetadata(storages);
         for (AIPEntity aip : aips) {
             scheduleRequest(aip, storeLocations, removeCurrentMetaData, computeChecksum);
@@ -102,20 +106,23 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
     }
 
     @Override
-    public void schedule(AIPEntity aip, Set<OAISDataObjectLocation> storages, boolean removeCurrentMetaData, boolean computeChecksum) {
+    public void schedule(AIPEntity aip, Set<OAISDataObjectLocation> storages, boolean removeCurrentMetaData,
+            boolean computeChecksum) {
         Set<StoreLocation> manifestStorages = aipStorageService.getManifestStoreLocationsByLocation(storages);
         scheduleRequest(aip, manifestStorages, removeCurrentMetaData, computeChecksum);
     }
 
-
-    private void scheduleRequest(AIPEntity aip, Set<StoreLocation> storages, boolean removeCurrentMetaData, boolean computeChecksum) {
-        aipStoreMetaDataRepository.save(AIPStoreMetaDataRequest.build(aip, storages, removeCurrentMetaData, computeChecksum));
+    private void scheduleRequest(AIPEntity aip, Set<StoreLocation> storages, boolean removeCurrentMetaData,
+            boolean computeChecksum) {
+        aipStoreMetaDataRepository
+                .save(AIPStoreMetaDataRequest.build(aip, storages, removeCurrentMetaData, computeChecksum));
     }
 
     @Override
     public void handleSuccess(AIPStoreMetaDataRequest request, RequestInfo requestInfo) {
         // Update the manifest, save manifest location and update storages list
-        aipStorageService.updateAIPsContentInfosAndLocations(Lists.newArrayList(request.getAip()), requestInfo.getSuccessRequests());
+        aipStorageService.updateAIPsContentInfosAndLocations(Lists.newArrayList(request.getAip()),
+                                                             requestInfo.getSuccessRequests());
         // Save the AIP
         aipService.save(request.getAip());
         // Delete the request

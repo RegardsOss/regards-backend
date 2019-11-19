@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -160,7 +159,6 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
         for (IngestRequest request : requests) {
             currentRequest = request;
-            List<AIPEntity> generatedAips = new ArrayList<>();
             try {
 
                 long start2 = System.currentTimeMillis();
@@ -186,7 +184,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
                 // Internal finalization step (no plugin involved)
                 // Do all persistence actions in this step
-                generatedAips.addAll(finalStep.execute(aips));
+                finalStep.execute(aips);
 
                 sipIngested++;
                 LOGGER.debug("{}SIP \"{}\" ingested in {} ms", INFO_TAB, currentRequest.getSip().getId(),
@@ -203,8 +201,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                 // Continue with following SIPs
             } finally {
                 sesssionNotifier.productGenerationEnd(request.getMetadata().getSessionOwner(),
-                                                      request.getMetadata().getSession(), generatedAips);
-                generatedAips.clear();
+                                                      request.getMetadata().getSession(), request.getAips());
             }
         }
 

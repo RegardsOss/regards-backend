@@ -27,7 +27,6 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -162,7 +161,6 @@ public class IngestService implements IIngestService {
         ListMultimap<String, IngestRequest> requestPerChain = ArrayListMultimap.create();
         // Store session state (is ingestible ?) by session
         Table<String, String, Boolean> acceptBySession = HashBasedTable.create();
-        Map<String, Long> nbRequestPerSession = new HashMap<>();
         for (IngestRequestFlowItem item : items) {
             String sessionOwner = item.getMetadata().getSessionOwner();
             String session = item.getMetadata().getSession();

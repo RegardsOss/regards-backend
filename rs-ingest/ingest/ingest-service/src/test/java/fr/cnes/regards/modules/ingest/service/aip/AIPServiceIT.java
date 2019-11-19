@@ -18,18 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import com.google.common.collect.Lists;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -41,6 +29,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Test;
@@ -53,10 +42,27 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Lists;
+
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
         "spring.jpa.show-sql=false", "regards.amqp.enabled=true", "regards.scheduler.pool.size=4",
         "regards.ingest.maxBulkSize=100", "eureka.client.enabled=false" })
-@ActiveProfiles(value={"testAmqp", "StorageClientMock"})
+@ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPServiceIT extends IngestMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPServiceIT.class);
@@ -96,7 +102,6 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
     @Autowired
     private StorageClientMock storageClient;
 
-
     @Override
     public void doInit() {
         simulateApplicationReadyEvent();
@@ -110,6 +115,9 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_STO_AIP_110")
+    @Requirement("REGARDS_DSL_STO_AIP_130")
+    @Purpose("Check that a AIP file is downloadable")
     public void testDownloadAIPFile() throws ModuleException, IOException, NoSuchAlgorithmException {
         storageClient.setBehavior(true, true);
 
@@ -145,6 +153,9 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
     }
 
     @Test
+    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_110"), @Requirement("REGARDS_DSL_STO_AIP_115"),
+            @Requirement("REGARDS_DSL_STO_AIP_120"), @Requirement("REGARDS_DSL_STO_AIP_560") })
+    @Purpose("Check that ingested AIPs are retrievable")
     public void testSearchAIPEntity() throws InterruptedException {
         storageClient.setBehavior(true, true);
         long nbSIP = 7;
@@ -186,8 +197,10 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
                                     PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getTotalElements());
 
-        results = aipService.search(SearchAIPsParameters.build().withLastUpdateFrom(OffsetDateTime.now().minusHours(5))
-                .withLastUpdateTo(OffsetDateTime.now().plusDays(5)), PageRequest.of(0, 100));
+        results = aipService.search(
+                                    SearchAIPsParameters.build().withLastUpdateFrom(OffsetDateTime.now().minusHours(5))
+                                            .withLastUpdateTo(OffsetDateTime.now().plusDays(5)),
+                                    PageRequest.of(0, 100));
         Assert.assertEquals(7, results.getTotalElements());
 
         results = aipService.search(SearchAIPsParameters.build().withTag("toto"), PageRequest.of(0, 100));
@@ -200,9 +213,9 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(7, results.getTotalElements());
 
         results = aipService.search(SearchAIPsParameters.build().withState(AIPState.STORED)
-                .withLastUpdateFrom(OffsetDateTime.now().minusHours(5)).withLastUpdateTo(OffsetDateTime.now().plusDays(5)).withTags(TAG_1)
-                .withSessionOwner(SESSION_OWNER_1).withSession(SESSION_1).withStorages(STORAGE_2)
-                .withCategories(CATEGORIES_2), PageRequest.of(0, 100));
+                .withLastUpdateFrom(OffsetDateTime.now().minusHours(5))
+                .withLastUpdateTo(OffsetDateTime.now().plusDays(5)).withTags(TAG_1).withSessionOwner(SESSION_OWNER_1)
+                .withSession(SESSION_1).withStorages(STORAGE_2).withCategories(CATEGORIES_2), PageRequest.of(0, 100));
         Assert.assertEquals(1, results.getTotalElements());
     }
 
@@ -235,7 +248,8 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(2, results.size());
 
         // Full test (with almost all attributes)
-        filters = filters.withProviderIds("provider 1", "provider %").withLastUpdateFrom(OffsetDateTime.now().minusHours(5))
+        filters = filters.withProviderIds("provider 1", "provider %")
+                .withLastUpdateFrom(OffsetDateTime.now().minusHours(5))
                 .withLastUpdateTo(OffsetDateTime.now().plusDays(6)).withAIPIds(aipIds)
                 .withCategories(Sets.newHashSet(CATEGORIES_0)).withStorages(Sets.newLinkedHashSet(STORAGE_0))
                 .withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0);

@@ -44,6 +44,9 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
@@ -53,12 +56,12 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
 import fr.cnes.regards.modules.ingest.service.schedule.AIPUpdateJobScheduler;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
-import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import fr.cnes.regards.modules.storage.domain.database.FileLocation;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * Test {@link AIPUpdateRunnerJob}
@@ -190,7 +193,14 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         }
     }
 
+    /**
+     * Test to add/remove TAGS and categories to an existing list of AIPs.
+     * @throws ModuleException
+     */
     @Test
+    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_420"), @Requirement("REGARDS_DSL_STO_AIP_430"),
+            @Requirement("REGARDS_DSL_STO_AIP_210") })
+    @Purpose("Check that specific informations can be updated in AIP properties")
     public void testUpdateJob() throws ModuleException {
         storageClient.setBehavior(true, true);
         initData();

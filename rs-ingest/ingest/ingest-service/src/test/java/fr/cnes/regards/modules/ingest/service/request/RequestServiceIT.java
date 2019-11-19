@@ -18,6 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -50,28 +61,15 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
-import java.time.OffsetDateTime;
-import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
+import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=request_it",
-        "regards.aips.save-metadata.bulk.delay=20000000",  "regards.amqp.enabled=true",
-        "eureka.client.enabled=false", "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100",
-            "spring.jpa.show-sql=true"
-    }
-)
-@ActiveProfiles(value={"testAmqp", "StorageClientMock"})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_it",
+        "regards.aips.save-metadata.bulk.delay=20000000", "regards.amqp.enabled=true", "eureka.client.enabled=false",
+        "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100", "spring.jpa.show-sql=true" })
+@ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class RequestServiceIT extends IngestMultitenantServiceTest {
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
@@ -170,16 +168,14 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         storeMetaDataRequest.setState(InternalRequestStep.ERROR);
         storeMetaDataRepository.save(storeMetaDataRequest);
 
-        AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest.build(
-                AIPUpdateParametersDto.build(SearchAIPsParameters.build().withSession(SESSION_0)));
+        AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest
+                .build(AIPUpdateParametersDto.build(SearchAIPsParameters.build().withSession(SESSION_0)));
         updateCreatorRequest.setState(InternalRequestStep.ERROR);
         aipUpdatesCreatorRepository.save(updateCreatorRequest);
 
-        List<AIPUpdateRequest> updateRequest = AIPUpdateRequest.build(
-                aips.get(0),
-                AIPUpdateParametersDto.build(SearchAIPsParameters.build().withSession(SESSION_0)).withAddTags(Lists.newArrayList("SOME TAG")),
-                true
-        );
+        List<AIPUpdateRequest> updateRequest = AIPUpdateRequest.build(aips.get(0), AIPUpdateParametersDto
+                .build(SearchAIPsParameters.build().withSession(SESSION_0)).withAddTags(Lists.newArrayList("SOME TAG")),
+                                                                      true);
         updateRequest.get(0).setState(InternalRequestStep.ERROR);
         aipUpdateRequestRepository.saveAll(updateRequest);
 
@@ -190,47 +186,42 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         deletionRequest.setState(InternalRequestStep.ERROR);
         oaisDeletionRequestRepository.save(deletionRequest);
 
-        StorageDeletionRequest storageDeletionRequest = StorageDeletionRequest.build("some request id",
-                aips.get(0).getSip(), SessionDeletionMode.BY_STATE);
+        StorageDeletionRequest storageDeletionRequest = StorageDeletionRequest
+                .build("some request id", aips.get(0).getSip(), SessionDeletionMode.BY_STATE);
         storageDeletionRequest.setState(InternalRequestStep.ERROR);
         storageDeletionRequestRepository.save(storageDeletionRequest);
     }
-
-
 
     @Test
     public void testSearchRequests() throws ModuleException {
         initData();
         PageRequest pr = PageRequest.of(0, 100);
-        Page<RequestDto> requests = requestService.searchRequests(SearchRequestsParameters.build().withState(InternalRequestStep.ERROR), pr);
+        Page<RequestDto> requests = requestService
+                .searchRequests(SearchRequestsParameters.build().withState(InternalRequestStep.ERROR), pr);
         Assert.assertEquals(6, requests.getTotalElements());
 
-
-
-        requests = requestService.searchRequests(
-                SearchRequestsParameters.build().withRequestType(RequestTypeEnum.INGEST).withState(InternalRequestStep.ERROR), pr);
+        requests = requestService.searchRequests(SearchRequestsParameters.build()
+                .withRequestType(RequestTypeEnum.INGEST).withState(InternalRequestStep.ERROR), pr);
         Assert.assertEquals(1, requests.getTotalElements());
 
-
-        requests = requestService.searchRequests(
-                SearchRequestsParameters.build().withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR).withState(InternalRequestStep.ERROR), pr);
+        requests = requestService.searchRequests(SearchRequestsParameters.build()
+                .withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR).withState(InternalRequestStep.ERROR), pr);
         Assert.assertEquals(1, requests.getTotalElements());
 
-        requests = requestService.searchRequests(
-                SearchRequestsParameters.build().withRequestType(RequestTypeEnum.OAIS_DELETION).withState(InternalRequestStep.ERROR), pr);
+        requests = requestService.searchRequests(SearchRequestsParameters.build()
+                .withRequestType(RequestTypeEnum.OAIS_DELETION).withState(InternalRequestStep.ERROR), pr);
         Assert.assertEquals(1, requests.getTotalElements());
 
-        requests = requestService.searchRequests(
-                SearchRequestsParameters.build().withRequestType(RequestTypeEnum.STORAGE_DELETION).withState(InternalRequestStep.ERROR), pr);
+        requests = requestService.searchRequests(SearchRequestsParameters.build()
+                .withRequestType(RequestTypeEnum.STORAGE_DELETION).withState(InternalRequestStep.ERROR), pr);
         Assert.assertEquals(1, requests.getTotalElements());
 
-        requests = requestService.searchRequests(
-                SearchRequestsParameters.build().withRequestType(RequestTypeEnum.STORE_METADATA).withState(InternalRequestStep.ERROR)
-                , pr);
+        requests = requestService.searchRequests(SearchRequestsParameters.build()
+                .withRequestType(RequestTypeEnum.STORE_METADATA).withState(InternalRequestStep.ERROR), pr);
         Assert.assertEquals(1, requests.getTotalElements());
 
-        requests = requestService.searchRequests(
-                SearchRequestsParameters.build().withRequestType(RequestTypeEnum.UPDATE).withState(InternalRequestStep.ERROR), pr);
+        requests = requestService.searchRequests(SearchRequestsParameters.build()
+                .withRequestType(RequestTypeEnum.UPDATE).withState(InternalRequestStep.ERROR), pr);
         Assert.assertEquals(1, requests.getTotalElements());
     }
 }
