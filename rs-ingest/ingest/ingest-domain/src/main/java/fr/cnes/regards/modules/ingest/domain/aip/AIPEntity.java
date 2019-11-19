@@ -102,7 +102,8 @@ public class AIPEntity extends AbstractOAISEntity {
      */
     @Valid
     @Column(columnDefinition = "jsonb", name = "manifest_locations", nullable = false)
-    @Type(type = "jsonb")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+            value = "fr.cnes.regards.framework.oais.OAISDataObjectLocation") })
     private Set<OAISDataObjectLocation> manifestLocations = new HashSet<>();
 
     /**

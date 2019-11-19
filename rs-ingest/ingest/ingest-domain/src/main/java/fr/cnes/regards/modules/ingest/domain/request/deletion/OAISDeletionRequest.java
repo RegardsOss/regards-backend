@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
@@ -27,7 +26,6 @@ import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -44,7 +42,7 @@ public class OAISDeletionRequest extends AbstractRequest {
      * request configuration
      */
     @Column(columnDefinition = "jsonb", name = "payload")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(type = "jsonb")
     private OAISDeletionPayload config;
 
     public OAISDeletionRequest() {

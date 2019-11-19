@@ -18,17 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.dto.request;
 
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
 import org.springframework.util.Assert;
-
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 
 /**
  * Session deletion request
@@ -41,10 +37,8 @@ public class OAISDeletionRequestDto {
 
     private InternalRequestStep state;
 
-    @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER)
     private String sessionOwner;
 
-    @NotBlank(message = IngestValidationMessages.MISSING_SESSION)
     private String session;
 
     @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_MODE)
@@ -70,8 +64,6 @@ public class OAISDeletionRequestDto {
      */
     public static OAISDeletionRequestDto build(String sessionOwner, String session, SessionDeletionMode deletionMode,
             SessionDeletionSelectionMode selectionMode) {
-        Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
-        Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION);
         Assert.notNull(deletionMode, IngestValidationMessages.MISSING_SESSION_DELETION_MODE);
         Assert.notNull(selectionMode, IngestValidationMessages.MISSING_SESSION_DELETION_SELECTION_MODE);
 
