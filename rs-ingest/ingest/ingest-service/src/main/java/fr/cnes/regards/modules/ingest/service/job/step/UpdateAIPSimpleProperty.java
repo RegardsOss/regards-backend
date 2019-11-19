@@ -70,14 +70,14 @@ public class UpdateAIPSimpleProperty implements IUpdateStep {
     private AIPEntityUpdateWrapper handleCategory(AIPEntityUpdateWrapper aipWrapper, AIPUpdateCategoryTask updateTask) {
         AIPEntity aip = aipWrapper.getAip();
         List<String> categories = updateTask.getCategories();
-        int categorySize = aip.getIngestMetadata().getCategories().size();
+        int categorySize = aip.getCategories().size();
         if (AIPUpdateTaskType.ADD_CATEGORY == updateTask.getType()) {
-            aip.getIngestMetadata().getCategories().addAll(categories);
+            aip.getCategories().addAll(categories);
         } else {
-            aip.getIngestMetadata().getCategories().removeAll(categories);
+            aip.getCategories().removeAll(categories);
         }
         // Update the wrapper pristine flag if the list changed
-        if (categorySize != aip.getIngestMetadata().getCategories().size()) {
+        if (categorySize != aip.getCategories().size()) {
             aipWrapper.markAsUpdated();
         }
         return aipWrapper;

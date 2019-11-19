@@ -38,34 +38,6 @@ import org.springframework.stereotype.Repository;
 public interface IIngestRequestRepository extends JpaRepository<IngestRequest, Long> {
 
     /**
-     * WARNING : concurrent access here!
-     * Get ingest request by ingest chain and state
-     * @param ingestChain ingest chain
-     * @param state request state
-     * @param pageable page info
-     */
-    // FIXME remove if not used after PM implementation
-//    @Deprecated
-//    Page<IngestRequest> findPageByMetadataIngestChainAndState(String ingestChain, RequestState state,
-//            Pageable pageable);
-
-    /**
-     * Update state for a collection of requests
-     * @param state new state
-     * @param ids request identifiers
-     */
-    // FIXME remove if not used after PM implementation
-//    @Deprecated
-//    @Modifying(flushAutomatically = true, clearAutomatically = true)
-//    @Query("UPDATE IngestRequest r set r.state = :state where r.id in (:ids)")
-//    void updateIngestRequestState(@Param("state") RequestState state, @Param("ids") Collection<Long> ids);
-
-    /**
-     * Return true if an entity exists with provided criteria
-     */
-//    boolean existsByMetadataSessionOwnerAndMetadataSessionAndStepIn(String sessionOwner, String session, List<IngestRequestStep> steps);
-
-    /**
      * Get request by ids
      */
     List<IngestRequest> findByIdIn(Collection<Long> ids);
@@ -86,13 +58,7 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      * Find request by remote group id (i.e. remote request id)
      */
     default Optional<IngestRequest> findOne(String remoteStepGroupId) {
-        return  findOne(IngestRequestSpecifications.searchByRemoteStepId(remoteStepGroupId));
-//        List<IngestRequest> ingestRequests = findOne(IngestRequestSpecifications.searchByRemoteStepId(remoteStepGroupId));
-//        Optional<IngestRequest> result = Optional.empty();
-//        if (!ingestRequests.isEmpty()) {
-//            result = Optional.ofNullable(ingestRequests.get(0));
-//        }
-//        return result;
+        return findOne(IngestRequestSpecifications.searchByRemoteStepId(remoteStepGroupId));
     }
 
     /**
@@ -105,6 +71,4 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      * Internal method used to retrieve IngestRequest using a specification
      */
     Optional<IngestRequest> findOne(Specification<IngestRequest> spec);
-
-    Page<AbstractRequest> findAll(Specification<AbstractRequest> searchAllByFilters, Pageable pageable);
 }

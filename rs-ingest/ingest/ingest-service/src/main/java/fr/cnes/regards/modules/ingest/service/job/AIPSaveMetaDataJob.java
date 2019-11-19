@@ -18,27 +18,24 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.gson.reflect.TypeToken;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.IAIPStoreMetaDataRequestService;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Léo Mieulet
@@ -103,9 +100,9 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
     private List<FileDeletionRequestDTO> deleteLegacyManifest(AIPEntity aip) {
         List<FileDeletionRequestDTO> filesToDelete = new ArrayList<>();
         // Add the AIP itself (on each storage) to the file list to remove
-        for (StorageMetadata storage : aip.getIngestMetadata().getStorages()) {
-            filesToDelete.add(FileDeletionRequestDTO.build(aip.getChecksum(), storage.getPluginBusinessId(),
-                                                           aip.getAipId(), false));
+        for (OAISDataObjectLocation location : aip.getManifestLocations()) {
+            filesToDelete.add(FileDeletionRequestDTO.build(aip.getChecksum(), location.getStorage(),
+                    aip.getAipId(), false));
         }
         return filesToDelete;
     }

@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import java.util.Set;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
 /**
  * Specification class to filter DAO searches on {@link AIPEntity} entities
@@ -41,6 +39,8 @@ public final class AIPEntitySpecification {
     private AIPEntitySpecification() {
         throw new IllegalStateException("Utility class");
     }
+
+
 
     public static Specification<AIPEntity> searchAll(SearchAIPsParameters filters, Pageable page) {
         return (root, query, cb) -> {
@@ -54,10 +54,14 @@ public final class AIPEntitySpecification {
             if (filters.getLastUpdate().getTo() != null) {
                 predicates.add(cb.lessThanOrEqualTo(root.get("lastUpdate"), filters.getLastUpdate().getTo()));
             }
+            if (filters.getStorages() != null && !filters.getStorages().isEmpty()) {
+                Path<Object> attributeRequeted = root.get("storages");
+                predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingOneOfElement(attributeRequeted,
+                        Lists.newArrayList(filters.getStorages()), cb));
+            }
             predicates.addAll(OAISEntitySpecification
                     .buildCommonPredicate(root, cb, filters.getTags(), filters.getSessionOwner(),
-                                          filters.getSession(), filters.getProviderIds(), filters.getStorages(),
-                                          filters.getCategories()));
+                                          filters.getSession(), filters.getProviderIds(),  filters.getCategories()));
             query.orderBy(cb.desc(root.get("creationDate")));
 
             // Add order

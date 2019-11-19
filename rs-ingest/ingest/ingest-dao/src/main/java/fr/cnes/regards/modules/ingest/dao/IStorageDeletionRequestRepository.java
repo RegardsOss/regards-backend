@@ -38,6 +38,4 @@ public interface IStorageDeletionRequestRepository extends JpaRepository<Storage
      * Retrieve the number of entity with the provided state
      */
     long countByState(InternalRequestStep state);
-
-    Page<AbstractRequest> findAll(Specification<AbstractRequest> searchAllByFilters, Pageable pageable);
 }

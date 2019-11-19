@@ -212,12 +212,11 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
             Assert.assertEquals(3, aip.getTags().size());
             // TAG_3 are not existing anymore on entities
             Assert.assertFalse(aip.getTags().stream().anyMatch(tag -> TAG_3.contains(tag)));
-            Assert.assertEquals(1, aip.getIngestMetadata().getCategories().size());
+            Assert.assertEquals(1, aip.getCategories().size());
             // Only one category remaining
-            Assert.assertEquals(CATEGORIES_2.get(0), aip.getIngestMetadata().getCategories().iterator().next());
+            Assert.assertEquals(CATEGORIES_2.get(0), aip.getCategories().iterator().next());
             // No more STORAGE_3
-            Assert.assertFalse(aip.getIngestMetadata().getStorages().stream()
-                    .anyMatch(sto -> sto.getPluginBusinessId().equals(STORAGE_3)));
+            Assert.assertFalse(aip.getStorages().contains(STORAGE_3));
         }
     }
 

@@ -18,23 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
@@ -48,6 +32,18 @@ import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -78,7 +74,7 @@ public class SIPService implements ISIPService {
     public Page<SIPEntity> search(SearchSIPsParameters params, Pageable page) {
         return sipRepository.loadAll(SIPEntitySpecifications
                 .search(params.getProviderIds(), null, params.getSessionOwner(), params.getSession(), params.getFrom(),
-                        params.getStates(), params.getProcessing(), true, params.getTags(), params.getStorages(),
+                        params.getStates(), params.getProcessing(), true, params.getTags(),
                         params.getCategories(), page), page);
     }
 
@@ -119,7 +115,6 @@ public class SIPService implements ISIPService {
             if (!deleteIrrevocably) {
                 // Mark the SIP correctly deleted
                 sipEntity.setState(SIPState.DELETED);
-                sipEntity.setErrors(null);
                 save(sipEntity);
             } else {
                 sipRepository.delete(sipEntity);
@@ -130,13 +125,6 @@ public class SIPService implements ISIPService {
     @Override
     public boolean validatedVersionExists(String providerId) {
         return sipRepository.countByProviderIdAndStateIn(providerId) > 0;
-    }
-
-    @Override
-    public void saveErrors(SIPEntity sip, Set<String> errors) {
-        sip.getErrors().addAll(errors);
-        sip.setState(SIPState.ERROR);
-        save(sip);
     }
 
     @Override

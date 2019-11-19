@@ -123,6 +123,8 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
                                  UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
                                                                      getDefaultTenant(), 1),
                                  Optional.ofNullable(sipEntity.getSipIdUrn()), providerId));
+        aipEntity1.setStorages(Sets.newLinkedHashSet(LOCATION, LOCATION_2, LOCATION_3));
+        aipEntity1.setChecksum("some checksum");
     }
 
     @Test
@@ -130,14 +132,14 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
         // Test usual behavior
         init();
         Assert.assertEquals("3 storage in ingest metadata at the beginning", 3,
-                            aipEntity1.getIngestMetadata().getStorages().size());
+                            aipEntity1.getStorages().size());
         Assert.assertEquals("No event before", 0, aipEntity1.getAip().getHistory().size());
         Collection<RequestResultInfoDTO> storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_3, LOCATION_4);
 
         boolean isUpdated = storageService.addAIPLocations(aipEntity1, storeRequestsInfos);
         Assert.assertTrue("Should detect some change", isUpdated);
         Assert.assertEquals("Now 4 storages should be defined in ingest metadata", 4,
-                            aipEntity1.getIngestMetadata().getStorages().size());
+                            aipEntity1.getStorages().size());
         Optional<ContentInformation> ciOp = aipEntity1.getAip().getProperties().getContentInformations().stream()
                 .filter(ci -> ci.getDataObject().getChecksum().equals(FAKE_CHECKSUM_3)).findFirst();
         Assert.assertTrue(ciOp.isPresent());
@@ -151,7 +153,7 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
         isUpdated = storageService.addAIPLocations(aipEntity1, storeRequestsInfos);
         Assert.assertTrue("Should detect some change", isUpdated);
         Assert.assertEquals("Sill 3 storages should be defined in ingest metadata", 3,
-                            aipEntity1.getIngestMetadata().getStorages().size());
+                            aipEntity1.getStorages().size());
         ciOp = aipEntity1.getAip().getProperties().getContentInformations().stream()
                 .filter(ci -> ci.getDataObject().getChecksum().equals(FAKE_CHECKSUM_3)).findFirst();
         Assert.assertTrue(ciOp.isPresent());
@@ -178,14 +180,14 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
         // Test usual behavior
         init();
         Assert.assertEquals("3 storage in ingest metadata at the beginning", 3,
-                            aipEntity1.getIngestMetadata().getStorages().size());
+                            aipEntity1.getStorages().size());
         Assert.assertEquals("No event before", 0, aipEntity1.getAip().getHistory().size());
         Collection<RequestResultInfoDTO> storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_2, LOCATION_2);
 
         boolean isUpdated = storageService.removeAIPLocations(aipEntity1, storeRequestsInfos);
         Assert.assertTrue("Should detect some change", isUpdated);
         Assert.assertEquals("Now 2 storages in ingest metadata remaining", 2,
-                            aipEntity1.getIngestMetadata().getStorages().size());
+                            aipEntity1.getStorages().size());
         Optional<ContentInformation> ciOp = aipEntity1.getAip().getProperties().getContentInformations().stream()
                 .filter(ci -> ci.getDataObject().getChecksum().equals(FAKE_CHECKSUM_2)).findFirst();
         Assert.assertTrue(ciOp.isPresent());
@@ -202,7 +204,7 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
 
         Assert.assertTrue("Should detect some change", isUpdated);
         Assert.assertEquals("Still 3 storages in ingest metadata", 3,
-                            aipEntity1.getIngestMetadata().getStorages().size());
+                            aipEntity1.getStorages().size());
         ciOp = aipEntity1.getAip().getProperties().getContentInformations().stream()
                 .filter(ci -> ci.getDataObject().getChecksum().equals(FAKE_CHECKSUM_3)).findFirst();
         Assert.assertTrue(ciOp.isPresent());

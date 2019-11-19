@@ -18,27 +18,27 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.StoreLocation;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Manage {@link AIPStoreMetaDataRequest} entities
@@ -68,13 +68,13 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
             List<AIPEntity> aipsToUpdate, List<FileDeletionRequestDTO> filesToDelete) {
         String requestId = null;
         try {
-            // Store AIPs meta data
-            requestId = aipStorageService.storeAIPs(aipsToStore);
+            // Store AIPs meta data requests
+            requestId = aipStorageService.storeAIPs(requests);
         } catch (ModuleException e) {
             e.printStackTrace();
         }
 
-        // Link the request sent to storage to the
+        // Link to requests the group id of the request sent to storage
         for (AIPStoreMetaDataRequest request : requests) {
             if (request.getState() != InternalRequestStep.ERROR) {
                 // Register request info to identify storage callback events
@@ -94,16 +94,31 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
     }
 
     @Override
-    public void schedule(List<AIPEntity> aips, boolean removeCurrentMetaData, boolean computeChecksum) {
-        List<AIPStoreMetaDataRequest> requests = new ArrayList<>();
+    public void schedule(List<AIPEntity> aips, Set<StorageMetadata> storages, boolean removeCurrentMetaData, boolean computeChecksum) {
+        Set<StoreLocation> storeLocations = aipStorageService.getManifestStoreLocationsByStorageMetadata(storages);
         for (AIPEntity aip : aips) {
-            requests.add(AIPStoreMetaDataRequest.build(aip, removeCurrentMetaData, computeChecksum));
+            scheduleRequest(aip, storeLocations, removeCurrentMetaData, computeChecksum);
         }
-        aipStoreMetaDataRepository.saveAll(requests);
+    }
+
+    @Override
+    public void schedule(AIPEntity aip, Set<OAISDataObjectLocation> storages, boolean removeCurrentMetaData, boolean computeChecksum) {
+        Set<StoreLocation> manifestStorages = aipStorageService.getManifestStoreLocationsByLocation(storages);
+        scheduleRequest(aip, manifestStorages, removeCurrentMetaData, computeChecksum);
+    }
+
+
+    private void scheduleRequest(AIPEntity aip, Set<StoreLocation> storages, boolean removeCurrentMetaData, boolean computeChecksum) {
+        aipStoreMetaDataRepository.save(AIPStoreMetaDataRequest.build(aip, storages, removeCurrentMetaData, computeChecksum));
     }
 
     @Override
     public void handleSuccess(AIPStoreMetaDataRequest request, RequestInfo requestInfo) {
+        // Update the manifest, save manifest location and update storages list
+        aipStorageService.updateAIPsContentInfosAndLocations(Lists.newArrayList(request.getAip()), requestInfo.getSuccessRequests());
+        // Save the AIP
+        aipService.save(request.getAip());
+        // Delete the request
         aipStoreMetaDataRepository.delete(request);
         sessionNotifier.productMetaStoredSuccess(request.getAip());
     }

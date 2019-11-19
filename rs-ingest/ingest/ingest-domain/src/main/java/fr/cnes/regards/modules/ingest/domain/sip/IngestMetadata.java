@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.domain.sip;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -69,7 +68,7 @@ public class IngestMetadata {
     @Column(columnDefinition = "jsonb")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
             value = "fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata") })
-    private List<StorageMetadata> storages;
+    private Set<StorageMetadata> storages;
 
     @Column(columnDefinition = "jsonb", nullable = false)
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
@@ -99,11 +98,11 @@ public class IngestMetadata {
         this.session = session;
     }
 
-    public List<StorageMetadata> getStorages() {
+    public Set<StorageMetadata> getStorages() {
         return storages;
     }
 
-    public void setStorages(List<StorageMetadata> storages) {
+    public void setStorages(Set<StorageMetadata> storages) {
         this.storages = storages;
     }
 
@@ -134,7 +133,7 @@ public class IngestMetadata {
         m.setSessionOwner(sessionOwner);
         m.setSession(session);
         m.setCategories(categories);
-        m.setStorages(Arrays.asList(storages));
+        m.setStorages(Sets.newHashSet(storages));
         return m;
     }
 }

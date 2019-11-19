@@ -35,8 +35,6 @@ public interface IAIPUpdateRequestRepository extends JpaRepository<AIPUpdateRequ
 
     Page<AbstractRequest> findAll(Specification<AbstractRequest> searchAllByFilters, Pageable pageable);
 
-    boolean existsBySessionOwnerAndSession(String sessionOwner, String session);
-
     default Page<AIPUpdateRequest> findWaitingRequest(Pageable pageRequest) {
         return findAllByState(InternalRequestStep.CREATED, pageRequest);
     }
@@ -49,12 +47,6 @@ public interface IAIPUpdateRequestRepository extends JpaRepository<AIPUpdateRequ
 
     List<AIPUpdateRequest> findAllByAipIdIn(List<Long> aipIds);
 
-    Page<AIPUpdateRequest> findAllByStateAndAipIdIn(InternalRequestStep step, List<Long> aipIds, Pageable page);
-
     List<AIPUpdateRequest> findAllByAipIdInAndState(List<Long> aipIds, InternalRequestStep state);
     //   TODO List<AIPUpdateRequest> findDistinctByAipIdAndAipIdInAndState(List<Long> aipIds, InternalRequestStep state);
-
-
-    // @Query(value = "UPDATE AIPUpdateRequest SET state = :state WHERE id IN (:ids)")
-    // long updateStates(@Param("ids") List<Long> ids, @Param("state") String state);
 }

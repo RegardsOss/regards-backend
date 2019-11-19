@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import java.time.OffsetDateTime;
+import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -85,15 +86,24 @@ public class AIPStoreMetaDataRequest extends AbstractRequest {
         config.setComputeChecksum(computeChecksum);
     }
 
-    public static AIPStoreMetaDataRequest build(AIPEntity aip, boolean removeCurrentMetaData, boolean computeChecksum) {
+    public Set<StoreLocation> getStoreLocations() {
+        return config.getStoreLocations();
+    }
+
+    public void setStoreLocations(Set<StoreLocation> storages) {
+        config.setStoreLocations(storages);
+    }
+
+    public static AIPStoreMetaDataRequest build(AIPEntity aip, Set<StoreLocation> storeLocations,
+            boolean removeCurrentMetaData, boolean computeChecksum) {
         AIPStoreMetaDataRequest smdr = new AIPStoreMetaDataRequest();
         smdr.setState(InternalRequestStep.CREATED);
         smdr.setAip(aip);
-        smdr.setSessionOwner(aip.getIngestMetadata().getSessionOwner());
-        smdr.setSession(aip.getIngestMetadata().getSession());
+        smdr.setSessionOwner(aip.getSessionOwner());
+        smdr.setSession(aip.getSession());
         smdr.setProviderId(aip.getProviderId());
         smdr.setCreationDate(OffsetDateTime.now());
-        smdr.setConfig(AIPStoreMetaDataPayload.build(removeCurrentMetaData, computeChecksum));
+        smdr.setConfig(AIPStoreMetaDataPayload.build(storeLocations, removeCurrentMetaData, computeChecksum));
         return smdr;
     }
 }

@@ -18,22 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -68,6 +54,17 @@ import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
 
 /**
  * Manage ingest requests
@@ -177,7 +174,6 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Override
     public void handleRequestDenied(IngestRequest request) {
-        request.setState(InternalRequestStep.ERROR);
         // Do not keep track of the request
         // Publish DENIED request
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
@@ -210,7 +206,7 @@ public class IngestRequestService implements IIngestRequestService {
 
         try {
             // Send AIP files storage events, keep these events ids in a list
-            List<String> remoteStepGroupIds = aipStorageService.storeAIPFiles(aipEntities);
+            List<String> remoteStepGroupIds = aipStorageService.storeAIPFiles(aipEntities, request.getMetadata());
 
             // Register request info to identify storage callback events
             request.setRemoteStepGroupIds(remoteStepGroupIds);
@@ -279,8 +275,6 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     private void finalizeSuccessfulRequest(IngestRequest request) {
-        // TODO wtf is this staTE?
-        //        request.setState(RequestState.SUCCESS);
         // Clean
         deleteRequest(request);
 
@@ -294,7 +288,7 @@ public class IngestRequestService implements IIngestRequestService {
         sessionNotifier.productStoreSuccess(request.getSessionOwner(), request.getSession(), aips);
 
         // Schedule manifest archivage
-        aipSaveMetaDataService.schedule(aips, false, true);
+        aipSaveMetaDataService.schedule(aips, request.getMetadata().getStorages(), false, true);
         sessionNotifier.productMetaStorePending(request.getSessionOwner(), request.getSession(), aips);
 
         // Update SIP state
@@ -424,7 +418,7 @@ public class IngestRequestService implements IIngestRequestService {
                 if (error.getResultFile().getOwners().contains(aipEntity.getAipId())) {
                     // Add the cause to this AIP
                     String errorMessage = errorCause + ": " + error.getErrorCause();
-                    aipService.saveError(aipEntity, errorMessage);
+                    aipService.save(aipEntity);
                 }
             }
         }
@@ -432,7 +426,7 @@ public class IngestRequestService implements IIngestRequestService {
         Set<String> newErrors = errors.stream().map(e -> errorCause + ": " + e.getErrorCause())
                 .collect(Collectors.toSet());
         SIPEntity sip = request.getAips().get(0).getSip();
-        sipService.saveErrors(sip, newErrors);
+        sipService.save(sip);
         sessionNotifier.productStoreError(request.getSessionOwner(), request.getSession(), aips);
     }
 }

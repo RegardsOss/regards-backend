@@ -99,7 +99,7 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
             sipsPage = sipRepository.loadAll(SIPEntitySpecifications
                     .search(deletionRequest.getProviderIds(), deletionRequest.getSipIds(),
                             deletionRequest.getSessionOwner(), deletionRequest.getSession(), null, states, null,
-                            deletionRequest.getSelectionMode() == SessionDeletionSelectionMode.INCLUDE, null, null,
+                            deletionRequest.getSelectionMode() == SessionDeletionSelectionMode.INCLUDE, null,
                             null, pageRequest), pageRequest);
             // Save number of pages to publish job advancement
             if (totalPages < sipsPage.getTotalPages()) {

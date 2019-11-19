@@ -45,11 +45,6 @@ public interface IIngestProcessingChainRepository
         extends JpaRepository<IngestProcessingChain, Long>, JpaSpecificationExecutor<IngestProcessingChain> {
 
     /**
-     * Retrieve all processing chain name
-     */
-    List<IngestProcessingChainView> findNamesBy();
-
-    /**
      * Retrieve chain with specified name
      * @param name processing chain name
      * @return {@link IngestProcessingChain}

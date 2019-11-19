@@ -19,11 +19,17 @@
 package fr.cnes.regards.modules.ingest.service.aip;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.StoreLocation;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Manage AIP storage
@@ -34,18 +40,19 @@ public interface IAIPStorageService {
     /**
      * Store AIPs Files
      * @param aips
+     * @param metadata
      * @return file storage event group_id list
      * @throws ModuleException
      */
-    List<String> storeAIPFiles(List<AIPEntity> aips) throws ModuleException;
+    List<String> storeAIPFiles(List<AIPEntity> aips, IngestMetadata metadata) throws ModuleException;
 
     /**
      * Store AIPs
-     * @param aips
+     * @param requests
      * @return group id
      * @throws ModuleException
      */
-    String storeAIPs(List<AIPEntity> aips) throws ModuleException;
+    String storeAIPs(List<AIPStoreMetaDataRequest> requests) throws ModuleException;
 
     /**
      * Update provided {@link AIPEntity} aips content info with files metadata
@@ -77,4 +84,18 @@ public interface IAIPStorageService {
      * @return the list of events to sent to storage, empty if nothing have been done
      */
     Collection<FileDeletionRequestDTO> removeStorages(AIPEntity aip, List<String> removedStorages);
+
+    /**
+     * Extract from a storage metadata list (during ingestion) the list of storage we'll use to save metadata
+     * @param storages
+     * @return
+     */
+    Set<StoreLocation> getManifestStoreLocationsByStorageMetadata(Set<StorageMetadata> storages);
+
+    /**
+     * Extract from the AIP OAISDataObjectLocations the list of storage already in use to (re)save AIP
+     * @param manifestLocations
+     * @return
+     */
+    Set<StoreLocation> getManifestStoreLocationsByLocation(Set<OAISDataObjectLocation> manifestLocations);
 }

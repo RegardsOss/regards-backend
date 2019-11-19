@@ -53,8 +53,6 @@ public class SearchSIPsParameters {
 
     private String processing;
 
-    private Set<String> storages = Sets.newHashSet();
-
     private Set<String> providerIds = Sets.newHashSet();
 
     private Set<String> categories = Sets.newHashSet();
@@ -114,23 +112,6 @@ public class SearchSIPsParameters {
 
     public SearchSIPsParameters withProcessing(String processing) {
         this.processing = processing;
-        return this;
-    }
-
-    public SearchSIPsParameters withStorage(String storage) {
-        this.storages.add(storage);
-        return this;
-    }
-
-    public SearchSIPsParameters withStorages(String... storages) {
-        this.storages.addAll(Arrays.asList(storages));
-        return this;
-    }
-
-    public SearchSIPsParameters withStorages(Collection<String> storages) {
-        if ((storages != null) && !storages.isEmpty()) {
-            this.storages.addAll(storages);
-        }
         return this;
     }
 
@@ -198,14 +179,6 @@ public class SearchSIPsParameters {
 
     public void setProcessing(String processing) {
         this.processing = processing;
-    }
-
-    public Set<String> getStorages() {
-        return storages;
-    }
-
-    public void setStorages(Set<String> storages) {
-        this.storages = storages;
     }
 
     public Set<String> getCategories() {

@@ -18,20 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -44,12 +34,20 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.ingest.service.job.step.IUpdateStep;
 import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPLocation;
 import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPSimpleProperty;
 import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPStorage;
 import fr.cnes.regards.modules.ingest.service.request.IAIPStoreMetaDataRequestService;
 import fr.cnes.regards.modules.storagelight.client.IStorageClient;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 /**
  * @author Léo Mieulet
@@ -62,6 +60,9 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
 
     @Autowired
     private IAIPService aipService;
+
+    @Autowired
+    private IAIPStorageService aipStorageService;
 
     @Autowired
     private IStorageClient storageClient;
@@ -109,12 +110,13 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                     storageClient.delete(aipWrapper.getDeletionRequests());
                 }
             }
+            // Schedule manifest storage
+            aipStoreMetaDataService.schedule(aipWrapper.getAip(), aipWrapper.getAip().getManifestLocations(), true, true);
+
             // update progress
             advanceCompletion();
         }
 
-        // Schedule manifest storage
-        aipStoreMetaDataService.schedule(updates, true, true);
 
         // Keep only ERROR requests
         List<AIPUpdateRequest> succeedRequestsToDelete = requestByAIP.values().stream()

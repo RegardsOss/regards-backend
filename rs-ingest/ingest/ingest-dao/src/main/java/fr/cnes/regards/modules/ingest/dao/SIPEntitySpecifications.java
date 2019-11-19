@@ -58,7 +58,7 @@ public final class SIPEntitySpecifications {
      */
     public static Specification<SIPEntity> search(Set<String> providerIds, Set<String> sipIds, String sessionOwner, String session,
             OffsetDateTime from, List<SIPState> states, String ingestChain, boolean areIdListInclusive,
-            List<String> tags, Set<String> storages, Set<String> categories, Pageable page) {
+            List<String> tags, Set<String> categories, Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (states != null && !states.isEmpty()) {
@@ -107,7 +107,7 @@ public final class SIPEntitySpecifications {
             }
 
             predicates.addAll(OAISEntitySpecification.buildCommonPredicate(root, cb, tags,
-                    sessionOwner, session, null, storages, categories));
+                    sessionOwner, session, null, categories));
 
             // Add order
             Sort.Direction defaultDirection = Sort.Direction.ASC;

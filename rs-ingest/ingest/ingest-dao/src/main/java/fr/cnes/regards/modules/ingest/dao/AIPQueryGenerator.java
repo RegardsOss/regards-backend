@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.utils.CustomPostgresDialect;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.dto.NativeSelectQuery;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.dto.NativeSelectQuery;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 
 /**
  * Query generator to build SQL queries to run against OAISEntity repository on {@link fr.cnes.regards.modules.ingest.dto.aip.AIP} entities
@@ -60,7 +59,7 @@ public class AIPQueryGenerator {
      * @return
      */
     public static NativeSelectQuery searchAipStoragesUsingSQL(SearchFacetsAIPsParameters filters) {
-        NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements(storages)->>'pluginBusinessId'",
+        NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(storages)",
                 "{h-schema}t_aip ");
 
         query = generatePredicates(query, filters.getState(), filters.getLastUpdate().getFrom(),
@@ -126,8 +125,7 @@ public class AIPQueryGenerator {
             query = getConjunctionPredicate("categories", query, categories);
         }
         if ((storages != null) && !storages.isEmpty()) {
-            query.addOneOf("(storages @> jsonb_build_array(json_build_object('pluginBusinessId',", ")))", "storages",
-                           storages);
+            query = getDisjunctionPredicate("storages", query, storages);
         }
         return query;
     }
@@ -135,6 +133,12 @@ public class AIPQueryGenerator {
     private static NativeSelectQuery getConjunctionPredicate(String propertyName, NativeSelectQuery query,
             Set<String> tags) {
         query.andListPredicate("(" + propertyName + " @> jsonb_build_array(", "))", propertyName, tags);
+        return query;
+    }
+
+    private static NativeSelectQuery getDisjunctionPredicate(String propertyName, NativeSelectQuery query,
+            Set<String> tags) {
+        query.andListPredicate("(" + CustomPostgresDialect.JSONB_EXISTS_ANY + "(" + propertyName + ", array[", "]))", propertyName, tags);
         return query;
     }
 }

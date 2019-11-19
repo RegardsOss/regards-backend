@@ -176,8 +176,8 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_DEFAULT_CHAIN_ID_TEST);
         Assert.assertNotNull(resultSip);
         Assert.assertEquals(SIPState.INGESTED, resultSip.getState());
-        Assert.assertEquals(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                            resultSip.getIngestMetadata().getIngestChain());
+        Assert.assertEquals(SESSION_OWNER, resultSip.getSessionOwner());
+        Assert.assertEquals(SESSION, resultSip.getSession());
     }
 
     @Requirement("REGARDS_DSL_ING_PRO_160")
@@ -216,7 +216,8 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_ID_TEST);
         Assert.assertNotNull(resultSip);
         Assert.assertEquals(SIPState.INGESTED, resultSip.getState());
-        Assert.assertEquals(PROCESSING_CHAIN_TEST, resultSip.getIngestMetadata().getIngestChain());
+        Assert.assertEquals(SESSION_OWNER, resultSip.getSessionOwner());
+        Assert.assertEquals(SESSION, resultSip.getSession());
 
         Set<AIPEntity> resultAips = aipRepository.findBySipSipId(resultSip.getSipId());
         Assert.assertNotNull(resultAips);
@@ -274,6 +275,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_REF_ID_TEST);
         Assert.assertNotNull(resultSip);
         Assert.assertEquals(SIPState.INGESTED, resultSip.getState());
-        Assert.assertEquals(PROCESSING_CHAIN_TEST, resultSip.getIngestMetadata().getIngestChain());
+        Assert.assertEquals(SESSION_OWNER, resultSip.getSessionOwner());
+        Assert.assertEquals(SESSION, resultSip.getSession());
     }
 }

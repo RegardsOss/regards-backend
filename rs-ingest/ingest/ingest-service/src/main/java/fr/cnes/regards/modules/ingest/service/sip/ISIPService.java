@@ -70,8 +70,6 @@ public interface ISIPService {
      */
     void processDeletion(String sipId, boolean deleteIrrevocably);
 
-    void saveErrors(SIPEntity sip, Set<String> errors);
-
     /**
      * Update the last update date of the {@link SIPEntity} and save it in DAO,
      * @param sip {@link SIPEntity} to update

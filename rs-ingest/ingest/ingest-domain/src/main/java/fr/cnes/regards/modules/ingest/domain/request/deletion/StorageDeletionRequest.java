@@ -82,8 +82,8 @@ public class StorageDeletionRequest extends AbstractRequest {
         sdr.setState(InternalRequestStep.RUNNING);
         sdr.setRemoteStepGroupIds(Lists.newArrayList(requestId));
         sdr.setSipId(sipEntity.getSipId());
-        sdr.setSessionOwner(sipEntity.getIngestMetadata().getSessionOwner());
-        sdr.setSession(sipEntity.getIngestMetadata().getSession());
+        sdr.setSessionOwner(sipEntity.getSessionOwner());
+        sdr.setSession(sipEntity.getSession());
         sdr.setProviderId(sipEntity.getProviderId());
         sdr.setConfig(StorageDeletionPayload.build(deletionMode));
         sdr.setCreationDate(OffsetDateTime.now());

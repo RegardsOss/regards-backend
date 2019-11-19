@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
@@ -29,6 +30,8 @@ import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.StorageDeletionRequest;
@@ -38,11 +41,13 @@ import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRe
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
@@ -122,6 +127,8 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
     @Autowired
     private ISubscriber subscriber;
 
+    @Autowired
+    private IIngestMetadataMapper mapper;
 
     @Autowired
     private StorageClientMock storageClient;
@@ -148,13 +155,18 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_2);
         publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         publishSIPEvent(create("provider 7", TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+
+        IngestMetadataDto mtd = IngestMetadataDto.build(SESSION_OWNER_0, SESSION_0,
+                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                Sets.newHashSet(CATEGORIES_0),
+                StorageMetadata.build(STORAGE_0));
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 1000);
 
         List<AIPEntity> aips = aipRepository.findAll();
 
         // Create an event of each type and ensure they are not consummed by jobs / queue / whatever
-        AIPStoreMetaDataRequest storeMetaDataRequest = AIPStoreMetaDataRequest.build(aips.get(0), true, true);
+        AIPStoreMetaDataRequest storeMetaDataRequest = AIPStoreMetaDataRequest.build(aips.get(0), null, true, true);
         storeMetaDataRequest.setState(InternalRequestStep.ERROR);
         storeMetaDataRepository.save(storeMetaDataRequest);
 
@@ -171,7 +183,7 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         updateRequest.get(0).setState(InternalRequestStep.ERROR);
         aipUpdateRequestRepository.saveAll(updateRequest);
 
-        ingestRequestRepository.save(IngestRequest.build(aips.get(0).getIngestMetadata(), InternalRequestStep.ERROR,
+        ingestRequestRepository.save(IngestRequest.build(mapper.dtoToMetadata(mtd), InternalRequestStep.ERROR,
                 IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip()));
         OAISDeletionRequest deletionRequest = new OAISDeletionRequest();
         deletionRequest.setCreationDate(OffsetDateTime.now());
