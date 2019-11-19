@@ -44,7 +44,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
-import fr.cnes.regards.modules.storagelight.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 
 /**
  * REST Controller handling operations on downloads.

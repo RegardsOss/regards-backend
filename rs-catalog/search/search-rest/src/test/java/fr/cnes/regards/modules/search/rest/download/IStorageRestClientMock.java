@@ -18,11 +18,11 @@ import org.springframework.stereotype.Service;
 import feign.Request;
 import feign.Request.Body;
 import feign.Response;
-import fr.cnes.regards.modules.storagelight.client.IStorageFileListener;
-import fr.cnes.regards.modules.storagelight.client.IStorageRestClient;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.dto.StorageLocationDTO;
+import fr.cnes.regards.modules.storage.client.IStorageFileListener;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 
 @Primary
 @Service
@@ -86,7 +86,7 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     }
 
     /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storagelight.client.IStorageRestClient#export()
+     * @see fr.cnes.regards.modules.storage.client.IStorageRestClient#export()
      */
     @Override
     public Response export() {
@@ -95,7 +95,7 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     }
 
     /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storagelight.client.IStorageRestClient#retrieve()
+     * @see fr.cnes.regards.modules.storage.client.IStorageRestClient#retrieve()
      */
     @Override
     public ResponseEntity<List<Resource<StorageLocationDTO>>> retrieve() {
