@@ -35,7 +35,6 @@ public enum DataType {
     DOCUMENT,
     THUMBNAIL,
     OTHER,
-    @Deprecated
     AIP,
     DESCRIPTION;
 
