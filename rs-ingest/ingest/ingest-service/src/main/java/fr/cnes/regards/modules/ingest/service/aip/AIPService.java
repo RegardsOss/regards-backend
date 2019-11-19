@@ -72,6 +72,7 @@ import fr.cnes.regards.modules.ingest.dao.ICustomAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
@@ -235,9 +236,6 @@ public class AIPService implements IAIPService {
         // Retrieve all AIP relative to this SIP id
         Set<AIPEntity> aipsRelatedToSip = aipRepository.findBySipSipId(sipId);
 
-        // Mark these entities as deleted
-        sessionNotifier.notifyAIPDeleting(aipsRelatedToSip);
-
         for (AIPEntity aipEntity : aipsRelatedToSip) {
             // Retrieve all files linked to this AIP
             for (ContentInformation ci : aipEntity.getAip().getProperties().getContentInformations()) {
@@ -283,20 +281,22 @@ public class AIPService implements IAIPService {
     public void processDeletion(String sipId, boolean deleteIrrevocably) {
         // Retrieve all AIP relative to this SIP id
         Set<AIPEntity> aipsRelatedToSip = aipRepository.findBySipSipId(sipId);
-        sessionNotifier.notifyAIPDeleted(aipsRelatedToSip);
-        if (!deleteIrrevocably) {
-            for (AIPEntity aipEntity : aipsRelatedToSip) {
-                aipEntity.setErrors(null);
-                aipEntity.setState(AIPState.DELETED);
-                save(aipEntity);
+        if (!aipsRelatedToSip.isEmpty()) {
+            IngestMetadata metadata = aipsRelatedToSip.stream().findFirst().get().getIngestMetadata();
+            sessionNotifier.productDeleted(metadata.getSessionOwner(), metadata.getSession(), aipsRelatedToSip);
+            if (!deleteIrrevocably) {
+                for (AIPEntity aipEntity : aipsRelatedToSip) {
+                    aipEntity.setErrors(null);
+                    aipEntity.setState(AIPState.DELETED);
+                    save(aipEntity);
+                }
+            } else {
+                // Delete them
+                aipRepository.deleteAll(aipsRelatedToSip);
             }
-        } else {
-            // Delete them
-            aipRepository.deleteAll(aipsRelatedToSip);
+            // Send notification to data mangement for feature deleted
+            aipsRelatedToSip.forEach(aip -> publisher.publish(FeatureEvent.buildFeatureDeleted(aip.getAipId())));
         }
-        // Send notification to data mangement for feature deleted
-        aipsRelatedToSip.forEach(aip -> publisher.publish(FeatureEvent.buildFeatureDeleted(aip.getAipId())));
-
     }
 
     @Override

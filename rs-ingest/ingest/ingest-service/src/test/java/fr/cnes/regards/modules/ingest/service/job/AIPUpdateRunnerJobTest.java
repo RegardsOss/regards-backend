@@ -52,7 +52,6 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
-import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 import fr.cnes.regards.modules.ingest.service.schedule.AIPUpdateJobScheduler;
 import fr.cnes.regards.modules.storagelight.client.RequestInfo;
 import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
@@ -79,9 +78,6 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
 
     @SuppressWarnings("unused")
-    @Autowired
-    private AIPUpdateRequestService aipUpdateServiceRequest;
-
     @Autowired
     private IAIPService aipService;
 
@@ -247,7 +243,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         String newStorageLocation = "somewhere";
         Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
         successRequests
-                .add(RequestResultInfoDTO.build("groupId", toUpdateChecksum, newStorageLocation,
+                .add(RequestResultInfoDTO.build("groupId", toUpdateChecksum, newStorageLocation, null,
                                                 simulatefileReference(toUpdateChecksum, toUpdate.getAipId()), null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
 
