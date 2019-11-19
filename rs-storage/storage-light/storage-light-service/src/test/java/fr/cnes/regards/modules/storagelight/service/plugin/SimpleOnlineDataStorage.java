@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.regex.Pattern;
@@ -70,6 +71,8 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
 
     public static final String HANDLE_DELETE_ERROR_FILE_PATTERN = "delete_error_file_pattern";
 
+    public static final String ALLOW_PHYSICAL_DELETION = "allow";
+
     /**
      * {@link IRuntimeTenantResolver} instance
      */
@@ -90,6 +93,10 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     @PluginParameter(name = HANDLE_DELETE_ERROR_FILE_PATTERN, description = "Delete Error file pattern",
             label = "Delete Error file pattern")
     private String deleteErrorFilePattern;
+
+    @PluginParameter(name = ALLOW_PHYSICAL_DELETION, description = "allowPhysicalDeletion",
+            label = "allowPhysicalDeletion", defaultValue = "true")
+    private Boolean allowPhysicalDeletion;
 
     private final String doNotHandlePattern = "doNotHandle.*";
 
@@ -180,6 +187,16 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
             if (Pattern.matches(deleteErrorFilePattern, fileName)) {
                 progressManager.deletionFailed(request, "Test deletion failure");
             } else {
+                try {
+                    // Do file deletion if exists
+                    Path fileToDelete;
+                    fileToDelete = Paths.get((new URL(request.getFileReference().getLocation().getUrl())).getPath());
+                    if (Files.exists(fileToDelete)) {
+                        Files.delete(fileToDelete);
+                    }
+                } catch (IOException e) {
+                    // Nothing to do
+                }
                 progressManager.deletionSucceed(request);
             }
         });
@@ -199,7 +216,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
 
     @Override
     public boolean allowPhysicalDeletion() {
-        return true;
+        return allowPhysicalDeletion;
     }
 
 }

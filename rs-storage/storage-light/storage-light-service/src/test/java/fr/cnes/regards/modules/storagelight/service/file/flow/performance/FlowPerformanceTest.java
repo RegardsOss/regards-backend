@@ -100,7 +100,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         fileCacheReqRepo.deleteAll();
         jobInfoRepo.deleteAll();
         if (!storageLocationConfService.search(ONLINE_CONF_LABEL).isPresent()) {
-            initDataStoragePluginConfiguration(ONLINE_CONF_LABEL);
+            initDataStoragePluginConfiguration(ONLINE_CONF_LABEL, true);
         }
 
         if (!storageLocationConfService.search(NEARLINE_CONF_LABEL).isPresent()) {

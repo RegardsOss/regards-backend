@@ -258,7 +258,7 @@ public class FileReferenceEventHandler
                 .create(fileAvailableEvent.getOwners(), copyRequest.getMetaInfo(),
                         fileAvailableEvent.getLocation().getUrl(), copyRequest.getStorage(),
                         Optional.ofNullable(copyRequest.getStorageSubDirectory()), FileRequestStatus.TO_DO,
-                        storageGroupId);
+                        storageGroupId, Optional.empty());
         if (request.isPresent()) {
             copyRequest.setFileStorageGroupId(storageGroupId);
             fileCopyRequestService.update(copyRequest);

@@ -38,6 +38,8 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
@@ -74,7 +76,14 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
 
     }
 
+    /**
+     * Test to retrieve nearline files and add it in the internal system cache.
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
     @Test
+    @Requirement("REGARDS_DSL_STO_CMD_110")
+    @Purpose("The system retrieve nearline files in an internal cache system")
     public void makeAvailable() throws InterruptedException, ExecutionException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test", Optional.empty());
         fileCacheRequestService.makeAvailable(Sets.newHashSet(fileRef.getMetaInfo().getChecksum()),
@@ -178,16 +187,26 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("A cache request should be created", request.get().getStatus() == FileRequestStatus.ERROR);
     }
 
+    /**
+     * Check a multiple files availability request.
+     * If a file is requested many times it should be retrieve only one times in cache system to be available.
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
     @Test
+    @Requirement("REGARDS_DSL_STO_ARC_440")
+    @Purpose("The system keeps only one copy of a file into its cache")
     public void restoreMultiple() throws InterruptedException, ExecutionException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test", Optional.empty());
         FileReference fileRef2 = this.generateRandomStoredNearlineFileReference("file-nl-2.test", Optional.empty());
         FileReference fileRef3 = this.generateRandomStoredNearlineFileReference("file-nl-3.test", Optional.empty());
         FileReference fileRef4 = this.generateRandomStoredNearlineFileReference("file-nl-4.test", Optional.empty());
+        // Create availability requests for 5 files (4 different and 2 times the same file)
         fileCacheRequestService.makeAvailable(Sets
-                .newHashSet(fileRef.getMetaInfo().getChecksum(), fileRef2.getMetaInfo().getChecksum(),
-                            fileRef3.getMetaInfo().getChecksum(), fileRef4.getMetaInfo().getChecksum()),
-                                              OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
+                .newHashSet(fileRef.getMetaInfo().getChecksum(), fileRef.getMetaInfo().getChecksum(),
+                            fileRef2.getMetaInfo().getChecksum(), fileRef3.getMetaInfo().getChecksum(),
+                            fileRef4.getMetaInfo().getChecksum()), OffsetDateTime.now().plusDays(1),
+                                              UUID.randomUUID().toString());
         Assert.assertTrue("A cache request should be created",
                           fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
         Assert.assertTrue("A cache request should be created",

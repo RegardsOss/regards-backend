@@ -1,1 +1,0 @@
-alter table t_data_file add column failure_causes text;

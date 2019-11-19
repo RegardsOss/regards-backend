@@ -18,6 +18,11 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.request;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +42,8 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
@@ -157,61 +164,89 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
     }
 
     @Test
-    public void deleteStoredFileReference() throws InterruptedException, ExecutionException, EntityNotFoundException {
-        String fileChecksum = "file-1";
-        String firstOwner = "first-owner";
-        String secondOwner = "second-owner";
-        FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "file.test", ONLINE_CONF_LABEL,
-                                                            Optional.empty());
-        Assert.assertNotNull("File reference should have been created", fileRef);
-        Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
-        Optional<FileReference> oFileRef = generateStoredFileReferenceAlreadyReferenced(fileChecksum,
-                                                                                        fileRef.getLocation()
-                                                                                                .getStorage(),
-                                                                                        secondOwner);
-        Assert.assertTrue("File reference should be updated", oFileRef.isPresent());
-        Assert.assertTrue("File reference should belongs to first owner",
-                          oFileRef.get().getOwners().contains(firstOwner));
-        Assert.assertTrue("File reference should belongs to second owner",
-                          oFileRef.get().getOwners().contains(secondOwner));
-        fileRef = oFileRef.get();
+    @Requirement("REGARDS_DSL_STO_ARC_100")
+    @Purpose("Check that a deletion request for file is well when physical deletion is allowed.")
+    public void deleteStoredFile()
+            throws InterruptedException, ExecutionException, MalformedURLException, ModuleException {
+        Path deletedFilePath = deleteStoredFile(ONLINE_CONF_LABEL);
+        Assert.assertFalse("File should be deleted on disk", Files.exists(deletedFilePath));
+    }
 
-        // Delete file reference for one owner
-        FileDeletionRequestDTO request = FileDeletionRequestDTO
-                .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), firstOwner, false);
-        fileDeletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
+    @Test
+    @Requirement("REGARDS_DSL_STO_ARC_100")
+    @Purpose("Check that a deletion request for file is well when physical deletion is not allowed.")
+    public void deleteStoredFileWithoutPhysicalDeletion()
+            throws InterruptedException, ExecutionException, MalformedURLException, ModuleException {
+        Path deletedFilePath = deleteStoredFile(ONLINE_CONF_LABEL_WITHOUT_DELETE);
+        Assert.assertTrue("File should not be deleted on disk", Files.exists(deletedFilePath));
+    }
 
-        // File reference should still exists for the remaining owner
-        Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
-                                                                      fileRef.getMetaInfo().getChecksum());
-        Assert.assertTrue("File reference should be always existing", afterDeletion.isPresent());
-        Assert.assertEquals("File reference should always be owned by one owner", 1,
-                            afterDeletion.get().getOwners().size());
-        Assert.assertTrue("File reference should always be owned by one owner",
-                          afterDeletion.get().getOwners().contains(secondOwner));
+    private Path deleteStoredFile(String pluginConf) {
+        try {
+            String fileChecksum = "file-1";
+            String firstOwner = "first-owner";
+            String secondOwner = "second-owner";
+            FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "file.test", pluginConf,
+                                                                Optional.empty());
+            Assert.assertNotNull("File reference should have been created", fileRef);
+            Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
+            Optional<FileReference> oFileRef = generateStoredFileReferenceAlreadyReferenced(fileChecksum,
+                                                                                            fileRef.getLocation()
+                                                                                                    .getStorage(),
+                                                                                            secondOwner);
+            Assert.assertTrue("File reference should be updated", oFileRef.isPresent());
+            Assert.assertTrue("File reference should belongs to first owner",
+                              oFileRef.get().getOwners().contains(firstOwner));
+            Assert.assertTrue("File reference should belongs to second owner",
+                              oFileRef.get().getOwners().contains(secondOwner));
+            fileRef = oFileRef.get();
+            Path filePathToDelete = null;
+            filePathToDelete = Paths.get(new URL(fileRef.getLocation().getUrl()).getPath());
 
-        // Delete file reference for the remaining owner
-        request = FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
-                                               secondOwner, false);
-        fileDeletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
+            // Delete file reference for one owner
+            FileDeletionRequestDTO request = FileDeletionRequestDTO
+                    .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), firstOwner, false);
+            fileDeletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
 
-        // File reference should still exists with no owners
-        afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum());
-        Assert.assertTrue("File reference should still exists", afterDeletion.isPresent());
-        Assert.assertTrue("File reference should not belongs to anyone", afterDeletion.get().getOwners().isEmpty());
-        Optional<FileDeletionRequest> oDeletionRequest = fileDeletionRequestService.search(fileRef);
-        Assert.assertTrue("File deletion request should be created", oDeletionRequest.isPresent());
+            // File reference should still exists for the remaining owner
+            Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
+                                                                          fileRef.getMetaInfo().getChecksum());
+            Assert.assertTrue("File reference should be always existing", afterDeletion.isPresent());
+            Assert.assertEquals("File reference should always be owned by one owner", 1,
+                                afterDeletion.get().getOwners().size());
+            Assert.assertTrue("File reference should always be owned by one owner",
+                              afterDeletion.get().getOwners().contains(secondOwner));
 
-        // Now schedule deletion jobs
-        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                                           Lists.newArrayList());
-        runAndWaitJob(jobs);
+            // Delete file reference for the remaining owner
+            request = FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+                                                   fileRef.getLocation().getStorage(), secondOwner, false);
+            fileDeletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
 
-        // File reference & request deletion should be deleted
-        afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum());
-        Assert.assertFalse("File reference should be deleted", afterDeletion.isPresent());
-        oDeletionRequest = fileDeletionRequestService.search(fileRef);
-        Assert.assertFalse("File reference request should be deleted", oDeletionRequest.isPresent());
+            // File reference should still exists with no owners
+            afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
+                                                  fileRef.getMetaInfo().getChecksum());
+            Assert.assertTrue("File reference should still exists", afterDeletion.isPresent());
+            Assert.assertTrue("File reference should not belongs to anyone", afterDeletion.get().getOwners().isEmpty());
+            Optional<FileDeletionRequest> oDeletionRequest = fileDeletionRequestService.search(fileRef);
+            Assert.assertTrue("File deletion request should be created", oDeletionRequest.isPresent());
+            Assert.assertTrue("File should exists on disk", Files.exists(filePathToDelete));
+
+            // Now schedule deletion jobs
+            Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                                               Lists.newArrayList());
+            runAndWaitJob(jobs);
+
+            // File reference & request deletion should be deleted
+            afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
+                                                  fileRef.getMetaInfo().getChecksum());
+            Assert.assertFalse("File reference should be deleted", afterDeletion.isPresent());
+            oDeletionRequest = fileDeletionRequestService.search(fileRef);
+            Assert.assertFalse("File reference request should be deleted", oDeletionRequest.isPresent());
+            return filePathToDelete;
+        } catch (InterruptedException | ExecutionException | MalformedURLException e) {
+            Assert.fail(e.getMessage());
+            return null;
+        }
     }
 
 }

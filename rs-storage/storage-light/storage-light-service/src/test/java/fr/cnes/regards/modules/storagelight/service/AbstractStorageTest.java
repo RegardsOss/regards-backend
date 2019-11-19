@@ -100,6 +100,8 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
 
     protected static final String ONLINE_CONF_LABEL = "target";
 
+    protected static final String ONLINE_CONF_LABEL_WITHOUT_DELETE = "target_without_delete";
+
     protected static final String NEARLINE_CONF_LABEL = "NL_target";
 
     private static final Long ALLOCATED_SIZE_IN_KO = 1_000_000L;
@@ -208,13 +210,15 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
             }
         });
 
-        initDataStoragePluginConfiguration(ONLINE_CONF_LABEL);
+        initDataStoragePluginConfiguration(ONLINE_CONF_LABEL, true);
+        initDataStoragePluginConfiguration(ONLINE_CONF_LABEL_WITHOUT_DELETE, false);
         initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
         storagePlgConfHandler.refresh();
 
     }
 
-    protected StorageLocationConfiguration initDataStoragePluginConfiguration(String label) throws ModuleException {
+    protected StorageLocationConfiguration initDataStoragePluginConfiguration(String label,
+            Boolean allowPhysicalDeletion) throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
             Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
@@ -223,7 +227,8 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                     .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                                             getBaseStorageLocation().toString()),
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
-                         IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
+                         IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"),
+                         IPluginParam.build(SimpleOnlineDataStorage.ALLOW_PHYSICAL_DELETION, allowPhysicalDeletion));
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
             return storageLocationConfService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
@@ -316,6 +321,12 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         oFileRefReq = stoReqService.search(destination.getStorage(), checksum);
         oFileRef = fileRefService.search(destination.getStorage(), checksum);
         Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
+        try {
+            Assert.assertTrue("File should be created on disk",
+                              Files.exists(Paths.get(new URL(oFileRef.get().getLocation().getUrl()).getPath())));
+        } catch (MalformedURLException e) {
+            Assert.fail(e.getMessage());
+        }
         Assert.assertFalse("File reference request should not exists anymore", oFileRefReq.isPresent());
         return oFileRef.get();
     }

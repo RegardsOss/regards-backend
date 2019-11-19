@@ -45,6 +45,9 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
@@ -200,6 +203,8 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
     }
 
     @Test
+    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_010"), @Requirement("REGARDS_DSL_STOP_AIP_070") })
+    @Purpose("System should be able to store files nearline.")
     public void storeWithNearlinePlugin() throws InterruptedException, ExecutionException {
         this.generateRandomStoredNearlineFileReference();
     }
@@ -210,7 +215,7 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
     }
 
     @Test
-    public void storeWithNotHandledFiles() throws InterruptedException, ExecutionException {
+    public void storeWithNotHandledFiles() throws InterruptedException, ExecutionException, MalformedURLException {
 
         String owner = "someone";
         // Add a file reference request for a file that will not be handled by the storage plugin (ignored by his name in the test plugin)
@@ -246,9 +251,26 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
                            req.isPresent());
     }
 
+    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_010"), @Requirement("REGARDS_DSL_STOP_AIP_070") })
+    @Purpose("System should be able to store files online.")
     @Test
     public void storeWithOnlinePlugin() throws InterruptedException, ExecutionException {
         this.generateRandomStoredOnlineFileReference();
+    }
+
+    @Requirement("REGARDS_DSL_STO_AIP_030")
+    @Purpose("Check that an invalid URL is not accepted during a storage request.")
+    @Test
+    public void storeWithInvalidUrl() throws MalformedURLException {
+        String checksum = UUID.randomUUID().toString();
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", "invalid.test", 1024L,
+                MediaType.APPLICATION_OCTET_STREAM);
+        // Run file reference creation.
+        stoReqService.handleRequest("someone", fileMetaInfo, "invalid:/plop/file@.file", ONLINE_CONF_LABEL,
+                                    Optional.empty(), UUID.randomUUID().toString());
+        Optional<FileStorageRequest> oFileRefReq = stoReqService.search(ONLINE_CONF_LABEL, fileMetaInfo.getChecksum());
+        Assert.assertEquals("Request sould be in error status as file url is not valid", oFileRefReq.get().getStatus(),
+                            FileRequestStatus.ERROR);
     }
 
     @Test

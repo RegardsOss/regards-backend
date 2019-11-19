@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.request;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -187,14 +189,27 @@ public class FileStorageRequestService {
      * @param fileRef {@link FileReference} of associated file if already exists
      * @param groupId business request identifier
      * @return {@link FileReference} if the file is already referenced.
+     * @throws MalformedURLException
      */
     private Optional<FileReference> handleRequest(FileStorageRequestDTO request, Optional<FileReference> fileRef,
             String groupId) {
         if (fileRef.isPresent()) {
             return handleAlreadyExists(fileRef.get(), request, groupId);
         } else {
+            Optional<String> cause = Optional.empty();
+            FileRequestStatus status = FileRequestStatus.TO_DO;
+            try {
+                // Check that URL is a valid
+                new URL(request.getOriginUrl());
+            } catch (MalformedURLException e) {
+                String errorMessage = "Invalid URL for file " + request.getFileName() + "storage. Cause : "
+                        + e.getMessage();
+                LOGGER.error(errorMessage);
+                status = FileRequestStatus.ERROR;
+                cause = Optional.of(errorMessage);
+            }
             create(Sets.newHashSet(request.getOwner()), request.buildMetaInfo(), request.getOriginUrl(),
-                   request.getStorage(), request.getSubDirectory(), FileRequestStatus.TO_DO, groupId);
+                   request.getStorage(), request.getSubDirectory(), status, groupId, cause);
             return Optional.empty();
         }
     }
@@ -397,7 +412,7 @@ public class FileStorageRequestService {
      */
     public Optional<FileStorageRequest> create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             String originUrl, String storage, Optional<String> storageSubDirectory, FileRequestStatus status,
-            String groupId) {
+            String groupId, Optional<String> errorCause) {
         // Check if file storage request already exists
         Optional<FileStorageRequest> oFileRefRequest = search(storage, fileMetaInfo.getChecksum());
         if (oFileRefRequest.isPresent()) {
@@ -406,6 +421,7 @@ public class FileStorageRequestService {
             FileStorageRequest fileStorageRequest = new FileStorageRequest(owners, fileMetaInfo, originUrl, storage,
                     storageSubDirectory, groupId);
             fileStorageRequest.setStatus(status);
+            fileStorageRequest.setErrorCause(errorCause.orElse(null));
             if (!storageHandler.getConfiguredStorages().contains(storage)) {
                 // The storage destination is unknown, we can already set the request in error status
                 handleStorageNotAvailable(fileStorageRequest);
@@ -578,7 +594,7 @@ public class FileStorageRequestService {
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
             // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
             create(Sets.newHashSet(request.getOwner()), newMetaInfo, request.getOriginUrl(), request.getStorage(),
-                   request.getSubDirectory(), FileRequestStatus.DELAYED, groupId);
+                   request.getSubDirectory(), FileRequestStatus.DELAYED, groupId, Optional.empty());
         } else {
             if (deletionRequest.isPresent()) {
                 // Delete not running deletion request to add the new owner

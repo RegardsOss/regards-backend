@@ -36,6 +36,8 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
@@ -138,6 +140,8 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
                           oFileRef.get().getOwners().contains(fileRefNewOwner));
     }
 
+    @Requirement("REGARDS_DSL_STOP_AIP_070")
+    @Purpose("System can reference file without moving files and save the files checksum.")
     @Test
     public void referenceFileWithoutStorage() {
         String owner = "someone";

@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.storagelight.domain.dto.request;
 
 import java.util.Optional;
 
+import javax.validation.constraints.NotBlank;
+
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 
@@ -43,20 +45,27 @@ import fr.cnes.regards.modules.storagelight.domain.flow.StorageFlowItem;
  */
 public class FileStorageRequestDTO {
 
+    @NotBlank(message = "File name is mandatory")
     private String fileName;
 
+    @NotBlank(message = "Checksum is mandatory")
     private String checksum;
 
+    @NotBlank(message = "Algorithm is mandatory")
     private String algorithm;
 
+    @NotBlank(message = "MimeType is mandatory")
     private String mimeType;
 
+    @NotBlank(message = "Owner is mandatory")
     private String owner;
 
     private String type;
 
+    @NotBlank(message = "Origine URL is mandatory")
     private String originUrl;
 
+    @NotBlank(message = "Storage is mandatory")
     private String storage;
 
     private Optional<String> subDirectory;

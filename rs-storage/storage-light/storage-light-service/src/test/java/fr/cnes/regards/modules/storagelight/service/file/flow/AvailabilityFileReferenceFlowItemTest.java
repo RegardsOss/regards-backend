@@ -45,6 +45,8 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
@@ -88,6 +90,8 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_STO_AIP_140")
+    @Purpose("Check that a availability request is well handled when a new bus message is received")
     public void availabilityFlowItem() throws InterruptedException, ExecutionException {
 
         LOGGER.info("--> availabilityFlowItem");
@@ -164,6 +168,8 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_STO_AIP_140")
+    @Purpose("Check that a availability request is well handled when a new bus message is received")
     public void availabilityWithCacheFile() throws InterruptedException, ExecutionException, MalformedURLException {
         LOGGER.info("--> availabilityWithCacheFile");
         // Simulate file storage on a near line location
@@ -193,6 +199,8 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_STO_AIP_140")
+    @Purpose("Check that a availability request is well handled when a new bus message is received")
     public void availability() throws InterruptedException, ExecutionException {
         LOGGER.info("--> availability");
         // Simulate storage of 3 files in a near line location with restore error

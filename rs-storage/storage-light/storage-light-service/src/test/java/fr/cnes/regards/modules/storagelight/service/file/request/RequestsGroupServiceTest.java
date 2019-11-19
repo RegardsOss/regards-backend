@@ -104,8 +104,8 @@ public class RequestsGroupServiceTest extends AbstractStorageTest {
         Optional<FileStorageRequest> oReq = storageReqService
                 .create(Sets.newHashSet("owner"),
                         new FileReferenceMetaInfo(checksum, "UUID", "file.test", 0L, MediaType.APPLICATION_JSON),
-                        "file://somewhere/file.test", destStorage, Optional.empty(), FileRequestStatus.PENDING,
-                        groupId);
+                        "file://somewhere/file.test", destStorage, Optional.empty(), FileRequestStatus.PENDING, groupId,
+                        Optional.empty());
         // Simulate response infos added for this group
         reqInfoRepo.save(new RequestResultInfo(groupId, FileRequestType.STORAGE, checksum, destStorage, null));
 
@@ -133,8 +133,8 @@ public class RequestsGroupServiceTest extends AbstractStorageTest {
         Optional<FileStorageRequest> oReq = storageReqService
                 .create(Sets.newHashSet("owner"),
                         new FileReferenceMetaInfo(checksum, "UUID", "file.test", 0L, MediaType.APPLICATION_JSON),
-                        "file://somewhere/file.test", destStorage, Optional.empty(), FileRequestStatus.PENDING,
-                        groupId);
+                        "file://somewhere/file.test", destStorage, Optional.empty(), FileRequestStatus.PENDING, groupId,
+                        Optional.empty());
         Assert.assertTrue("Request should be created", oReq.isPresent());
         Assert.assertEquals("Requests should be pending", FileRequestStatus.PENDING,
                             storageReqService.search(destStorage, checksum).get().getStatus());

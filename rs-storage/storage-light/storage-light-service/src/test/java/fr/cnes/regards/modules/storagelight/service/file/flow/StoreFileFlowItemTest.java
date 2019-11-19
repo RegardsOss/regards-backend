@@ -42,6 +42,8 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storagelight.domain.dto.request.FileStorageRequestDTO;
@@ -70,6 +72,17 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
     public void initialize() throws ModuleException {
         Mockito.clearInvocations(publisher);
         super.init();
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_STO_AIP_080")
+    @Purpose("Check that a storage request without checksum is denied")
+    public void storeFileWithutChecksum() {
+        // Create a new bus message File reference request
+        StorageFlowItem.build(
+                              FileStorageRequestDTO.build("file.name", null, "MD5", "application/octet-stream", "owner",
+                                                          originUrl, ONLINE_CONF_LABEL, Optional.empty()),
+                              UUID.randomUUID().toString());
     }
 
     /**

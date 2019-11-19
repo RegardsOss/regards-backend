@@ -33,6 +33,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.storagelight.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.CacheFile;
 
@@ -90,7 +92,13 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         Assert.assertEquals("Total size not valid", 10_000L, service.getCacheSizeUsedBytes().longValue());
     }
 
+    /**
+     * Test that cache is well purged when files are expired.
+     * @throws IOException
+     */
     @Test
+    @Requirement("REGARDS_DSL_STO_ARC_450")
+    @Purpose("Files in cache are purged when they are expired")
     public void purge() throws IOException {
         OffsetDateTime expirationDate = OffsetDateTime.now().minusDays(100);
         // Create some files in cache

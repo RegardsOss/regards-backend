@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.storagelight.domain.flow;
 import java.util.Collection;
 import java.util.Set;
 
+import javax.validation.Valid;
+
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.event.Event;
@@ -48,6 +50,7 @@ public class StorageFlowItem implements ISubscribable {
     /**
      * Information about files to store
      */
+    @Valid
     private final Set<FileStorageRequestDTO> files = Sets.newHashSet();
 
     /**
