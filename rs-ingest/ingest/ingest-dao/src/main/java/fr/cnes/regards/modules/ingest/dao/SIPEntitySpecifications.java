@@ -18,17 +18,21 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
+
 import javax.persistence.criteria.Predicate;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
 /**
  * JPA {@link Specification} to define {@link Predicate}s for criteria search for {@link SIPEntity} from repository.
@@ -52,27 +56,27 @@ public final class SIPEntitySpecifications {
      * @param session
      * @param from
      * @param states list of states
-     * @param ingestChain name of the chain
      * @param areIdListInclusive true when sipIds and providerIds should be include in the request, otherwise these
      * @param page
      */
-    public static Specification<SIPEntity> search(Set<String> providerIds, Set<String> sipIds, String sessionOwner, String session,
-            OffsetDateTime from, List<SIPState> states, String ingestChain, boolean areIdListInclusive,
-            List<String> tags, Set<String> categories, Pageable page) {
+    public static Specification<SIPEntity> search(Set<String> providerIds, Set<String> sipIds, String sessionOwner,
+            String session, OffsetDateTime from, List<SIPState> states, boolean areIdListInclusive, List<String> tags,
+            Set<String> categories, Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            if (states != null && !states.isEmpty()) {
+            if ((states != null) && !states.isEmpty()) {
                 Set<Predicate> statePredicates = Sets.newHashSet();
                 for (SIPState state : states) {
                     statePredicates.add(cb.equal(root.get("state"), state));
                 }
                 predicates.add(cb.or(statePredicates.toArray(new Predicate[statePredicates.size()])));
             }
-            if (providerIds != null && !providerIds.isEmpty()) {
+            if ((providerIds != null) && !providerIds.isEmpty()) {
                 Set<Predicate> providerIdPredicates = Sets.newHashSet();
                 for (String providerId : providerIds) {
                     // Use the like operator only if the providerId contains a % directly in the chain
-                    if (providerId.startsWith(SpecificationUtils.LIKE_CHAR) || providerId.endsWith(SpecificationUtils.LIKE_CHAR)) {
+                    if (providerId.startsWith(SpecificationUtils.LIKE_CHAR)
+                            || providerId.endsWith(SpecificationUtils.LIKE_CHAR)) {
                         if (areIdListInclusive) {
                             providerIdPredicates.add(cb.like(root.get(PROVIDER_ID), providerId));
                         } else {
@@ -91,9 +95,9 @@ public final class SIPEntitySpecifications {
             if (from != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), from));
             }
-            if (sipIds != null && !sipIds.isEmpty()) {
+            if ((sipIds != null) && !sipIds.isEmpty()) {
                 Set<Predicate> sipIdsPredicates = Sets.newHashSet();
-                for (String sipId: sipIds) {
+                for (String sipId : sipIds) {
                     if (areIdListInclusive) {
                         sipIdsPredicates.add(cb.equal(root.get("sipId"), sipId));
                     } else {
@@ -102,12 +106,9 @@ public final class SIPEntitySpecifications {
                 }
                 predicates.add(cb.or(sipIdsPredicates.toArray(new Predicate[sipIdsPredicates.size()])));
             }
-            if (ingestChain != null) {
-                predicates.add(cb.equal(root.get("ingestMetadata").get("ingestChain"), ingestChain));
-            }
 
-            predicates.addAll(OAISEntitySpecification.buildCommonPredicate(root, cb, tags,
-                    sessionOwner, session, null, categories));
+            predicates.addAll(OAISEntitySpecification.buildCommonPredicate(root, cb, tags, sessionOwner, session, null,
+                                                                           categories));
 
             // Add order
             Sort.Direction defaultDirection = Sort.Direction.ASC;
@@ -117,6 +118,5 @@ public final class SIPEntitySpecifications {
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
-
 
 }

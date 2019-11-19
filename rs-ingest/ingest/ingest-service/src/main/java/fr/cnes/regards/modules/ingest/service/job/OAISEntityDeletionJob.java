@@ -98,9 +98,9 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
             // Page request isn't modified as the state of entities are modified
             sipsPage = sipRepository.loadAll(SIPEntitySpecifications
                     .search(deletionRequest.getProviderIds(), deletionRequest.getSipIds(),
-                            deletionRequest.getSessionOwner(), deletionRequest.getSession(), null, states, null,
-                            deletionRequest.getSelectionMode() == SessionDeletionSelectionMode.INCLUDE, null,
-                            null, pageRequest), pageRequest);
+                            deletionRequest.getSessionOwner(), deletionRequest.getSession(), null, states,
+                            deletionRequest.getSelectionMode() == SessionDeletionSelectionMode.INCLUDE, null, null,
+                            pageRequest), pageRequest);
             // Save number of pages to publish job advancement
             if (totalPages < sipsPage.getTotalPages()) {
                 totalPages = sipsPage.getTotalPages();

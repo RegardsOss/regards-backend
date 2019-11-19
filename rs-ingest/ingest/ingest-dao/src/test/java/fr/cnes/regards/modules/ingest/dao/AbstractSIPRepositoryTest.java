@@ -18,21 +18,24 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import java.time.OffsetDateTime;
+import java.util.Set;
+import java.util.UUID;
+
+import org.junit.After;
+import org.junit.Before;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.transaction.BeforeTransaction;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import java.time.OffsetDateTime;
-import java.util.Set;
-import java.util.UUID;
-import org.junit.After;
-import org.junit.Before;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.transaction.BeforeTransaction;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:ingest_dao" })
 public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
@@ -83,9 +86,9 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip2.setProviderId("SIP_002");
         sip2.setCreationDate(OffsetDateTime.now().minusHours(6));
         sip2.setLastUpdate(OffsetDateTime.now().minusHours(6));
-        sip1.setSessionOwner(SESSION_OWNER);
-        sip1.setSession(SESSION);
-        sip1.setCategories(CATEGORIES);
+        sip2.setSessionOwner(SESSION_OWNER);
+        sip2.setSession(SESSION);
+        sip2.setCategories(CATEGORIES);
         sip2.setState(SIPState.INGESTED);
         sip2.setVersion(1);
         sip2.setChecksum("12345678902");
@@ -99,9 +102,9 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip3.setProviderId("SIP_003");
         sip3.setCreationDate(OffsetDateTime.now().minusHours(6));
         sip3.setLastUpdate(OffsetDateTime.now().minusHours(6));
-        sip1.setSessionOwner(SESSION_OWNER);
-        sip1.setSession(SESSION);
-        sip1.setCategories(CATEGORIES);
+        sip3.setSessionOwner(SESSION_OWNER);
+        sip3.setSession(SESSION);
+        sip3.setCategories(CATEGORIES);
         sip3.setState(SIPState.INGESTED);
         sip3.setVersion(1);
         sip3.setChecksum("12345678903");
@@ -116,9 +119,9 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
         sip4.setProviderId("SIP_003");
         sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
         sip4.setLastUpdate(OffsetDateTime.now().minusHours(6));
-        sip1.setSessionOwner(SESSION_OWNER);
-        sip1.setSession(SESSION);
-        sip1.setCategories(CATEGORIES);
+        sip4.setSessionOwner(SESSION_OWNER);
+        sip4.setSession(SESSION);
+        sip4.setCategories(CATEGORIES);
         sip4.setState(SIPState.INGESTED);
         sip4.setVersion(2);
         sip4.setChecksum("123456789032");

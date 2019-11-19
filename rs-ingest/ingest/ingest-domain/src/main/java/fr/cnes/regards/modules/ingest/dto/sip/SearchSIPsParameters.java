@@ -173,14 +173,6 @@ public class SearchSIPsParameters {
         this.session = session;
     }
 
-    public String getProcessing() {
-        return processing;
-    }
-
-    public void setProcessing(String processing) {
-        this.processing = processing;
-    }
-
     public Set<String> getCategories() {
         return categories;
     }

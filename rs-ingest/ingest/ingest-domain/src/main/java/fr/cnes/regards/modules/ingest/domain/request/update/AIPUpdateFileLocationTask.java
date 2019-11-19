@@ -44,7 +44,7 @@ public class AIPUpdateFileLocationTask extends AbstractAIPUpdateTask {
      */
     @Column(columnDefinition = "jsonb", name = "payload")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-            value = "fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO") })
+            value = "fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO") })
     private List<RequestResultInfoDTO> fileLocationUpdates;
 
     public List<RequestResultInfoDTO> getFileLocationUpdates() {
