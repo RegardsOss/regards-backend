@@ -33,9 +33,9 @@ import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
-import fr.cnes.regards.modules.storagelight.client.IStorageClient;
-import fr.cnes.regards.modules.storagelight.client.IStorageFileListener;
-import fr.cnes.regards.modules.storagelight.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.IStorageClient;
+import fr.cnes.regards.modules.storage.client.IStorageFileListener;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 
 /**
  * @author oroussel

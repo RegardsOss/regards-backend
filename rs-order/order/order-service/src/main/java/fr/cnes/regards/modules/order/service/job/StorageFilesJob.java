@@ -19,14 +19,17 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
-import fr.cnes.regards.modules.storagelight.client.IStorageClient;
+import fr.cnes.regards.modules.storage.client.IStorageClient;
 
 public class StorageFilesJob extends AbstractJob<Void> {
 
-	@Autowired
-	private IStorageClient storageClient;
+    @Autowired
+    private IStorageClient storageClient;
+
     private OffsetDateTime expirationDate;
+
     private Semaphore semaphore;
+
     @Autowired
     private IStorageFileListenerService subscriber;
 
@@ -43,9 +46,10 @@ public class StorageFilesJob extends AbstractJob<Void> {
      * Used in order to avoid listening on two same available events from storage.
      */
     private final Set<String> alreadyHandledFiles = Sets.newHashSet();
+
     @Autowired
     private IOrderDataFileService dataFileService;
-    
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
@@ -67,11 +71,11 @@ public class StorageFilesJob extends AbstractJob<Void> {
             if (FilesJobParameter.isCompatible(param)) {
                 OrderDataFile[] files = param.getValue();
                 for (OrderDataFile dataFile : files) {
-                	dataFilesMultimap.put(dataFile.getChecksum(), dataFile);
+                    dataFilesMultimap.put(dataFile.getChecksum(), dataFile);
                 }
             } else if (ExpirationDateJobParameter.isCompatible(param)) {
                 expirationDate = param.getValue();
-            } 
+            }
         }
     }
 
@@ -81,10 +85,10 @@ public class StorageFilesJob extends AbstractJob<Void> {
         subscriber.subscribe(this);
 
         try {
-        	storageClient.makeAvailable(dataFilesMultimap.keySet(), expirationDate);
+            storageClient.makeAvailable(dataFilesMultimap.keySet(), expirationDate);
             dataFilesMultimap.forEach((cs, f) -> {
-            	LOGGER.debug("Order job is waiting for {} file {} - {} availability.",
-                                                         dataFilesMultimap.size(), f.getFilename(), cs);
+                LOGGER.debug("Order job is waiting for {} file {} - {} availability.", dataFilesMultimap.size(),
+                             f.getFilename(), cs);
             });
             // Wait for remaining files availability from storage
             try {
@@ -103,7 +107,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
             dataFilesMultimap.values().forEach(df -> df.setState(FileState.ERROR));
             dataFileService.save(dataFilesMultimap.values());
             throw e;
-        } 
+        }
     }
 
     /**
