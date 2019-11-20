@@ -726,6 +726,11 @@
             </dependency>
            	<dependency>
                 <groupId>fr.cnes.regards.modules.model</groupId>
+                <artifactId>model-gson-helper</artifactId>
+                <version>${fr.cnes.regards.modules.model.version}</version>
+            </dependency>
+           	<dependency>
+                <groupId>fr.cnes.regards.modules.model</groupId>
                 <artifactId>model-dao</artifactId>
                 <version>${fr.cnes.regards.modules.model.version}</version>
             </dependency>
