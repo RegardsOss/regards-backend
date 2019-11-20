@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.io.IOException;
 import java.nio.channels.ClosedByInterruptException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
@@ -35,6 +34,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -685,38 +685,34 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private long streamAndRegisterFiles(AcquisitionFileInfo fileInfo, IFluxScanPlugin scanPlugin,
             Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
         long totalCount = 0;
-        try {
-            List<DirectoryStream<Path>> streams = scanPlugin.stream(scanningDate);
-            Iterator<DirectoryStream<Path>> streamsIt = streams.iterator();
-            OffsetDateTime lmd = null;
-            while (streamsIt.hasNext() && !Thread.currentThread().isInterrupted()) {
-                try (DirectoryStream<Path> stream = streamsIt.next()) {
-                    Iterator<Path> it = stream.iterator();
-                    RegisterFilesResponse response;
-                    do {
-                        long startTime = System.currentTimeMillis();
-                        response = self.registerFiles(it, fileInfo, scanningDate, false, BATCH_SIZE, session,
-                                                      sessionOwner);
-                        totalCount += response.getNumberOfRegisteredFiles();
-                        if ((lmd == null) || (lmd.isBefore(response.getLastUpdateDate())
-                                && !Thread.currentThread().isInterrupted())) {
-                            lmd = response.getLastUpdateDate();
-                        }
-                        sessionNotifier.notifyFileAcquired(session, sessionOwner,
-                                                           response.getNumberOfRegisteredFiles());
-                        LOGGER.info("{} new file(s) registered in {} milliseconds",
-                                    response.getNumberOfRegisteredFiles(), System.currentTimeMillis() - startTime);
-                    } while (response.hasNext());
-                }
-            }
+        List<Stream<Path>> streams = scanPlugin.stream(scanningDate);
+        Iterator<Stream<Path>> streamsIt = streams.iterator();
+        OffsetDateTime lmd = null;
+        while (streamsIt.hasNext() && !Thread.currentThread().isInterrupted()) {
+            try (Stream<Path> stream = streamsIt.next()) {
+                Iterator<Path> it = stream.iterator();
+                RegisterFilesResponse response;
+                do {
+                    long startTime = System.currentTimeMillis();
+                    response = self.registerFiles(it, fileInfo, scanningDate, false, BATCH_SIZE, session, sessionOwner);
+                    totalCount += response.getNumberOfRegisteredFiles();
+                    if ((lmd == null) || (lmd.isBefore(response.getLastUpdateDate())
+                            && !Thread.currentThread().isInterrupted())) {
+                        lmd = response.getLastUpdateDate();
+                    }
+                    sessionNotifier.notifyFileAcquired(session, sessionOwner, response.getNumberOfRegisteredFiles());
+                    LOGGER.info("{} new file(s) registered in {} milliseconds", response.getNumberOfRegisteredFiles(),
+                                System.currentTimeMillis() - startTime);
+                } while (response.hasNext());
+            } catch (Exception e) {
 
-            if ((fileInfo.getLastModificationDate() == null) || ((fileInfo.getLastModificationDate().isBefore(lmd)
-                    && !Thread.currentThread().isInterrupted()))) {
-                fileInfo.setLastModificationDate(lmd);
-                fileInfoRepository.save(fileInfo);
             }
-        } catch (IOException e) {
-            throw new ModuleException(e);
+        }
+
+        if ((lmd != null) && ((fileInfo.getLastModificationDate() == null)
+                || ((fileInfo.getLastModificationDate().isBefore(lmd)) && !Thread.currentThread().isInterrupted()))) {
+            fileInfo.setLastModificationDate(lmd);
+            fileInfoRepository.save(fileInfo);
         }
         return totalCount;
     }
@@ -743,20 +739,27 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             String sessionOwner) throws ModuleException {
         int countRegistered = 0;
         OffsetDateTime lastUpdateDate = null;
-        while (filePaths.hasNext() && (countRegistered < limit) && !Thread.currentThread().isInterrupted()) {
-            Path filePath = filePaths.next();
-            if (registerFile(filePath, info, scanningDate, updateFileInfo)) {
-                countRegistered++;
-                OffsetDateTime lmd;
-                try {
-                    lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(), ZoneOffset.UTC);
-                    if ((lastUpdateDate == null) || lmd.isAfter(lastUpdateDate)) {
-                        lastUpdateDate = lmd;
+        // We catch general exception to avoid AccessDeniedException thrown by FileTreeIterator provided to this method.
+        boolean nextPath = true;
+        while (nextPath && (countRegistered < limit) && !Thread.currentThread().isInterrupted()) {
+            try {
+                Path filePath = filePaths.next();
+                if (registerFile(filePath, info, scanningDate, updateFileInfo)) {
+                    countRegistered++;
+                    OffsetDateTime lmd;
+                    try {
+                        lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(), ZoneOffset.UTC);
+                        if ((lastUpdateDate == null) || lmd.isAfter(lastUpdateDate)) {
+                            lastUpdateDate = lmd;
+                        }
+                    } catch (IOException e) {
+                        LOGGER.error("Error getting last update date for file {} cause : {}.", filePath.toString(),
+                                     e.getMessage());
                     }
-                } catch (IOException e) {
-                    LOGGER.error("Error getting last update date for file {} cause : {}.", filePath.toString(),
-                                 e.getMessage());
                 }
+                nextPath = filePaths.hasNext();
+            } catch (Exception e) { // NOSONAR
+                LOGGER.error("Error parsing file. {}", e.getMessage());
             }
         }
         return RegisterFilesResponse.build(countRegistered, lastUpdateDate, filePaths.hasNext());
@@ -764,7 +767,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Override
     public boolean registerFile(Path filePath, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate,
-            boolean updateFileInfo) throws ModuleException {
+            boolean updateFileInfo) {
 
         // Initialize new file
         AcquisitionFile scannedFile = new AcquisitionFile();
