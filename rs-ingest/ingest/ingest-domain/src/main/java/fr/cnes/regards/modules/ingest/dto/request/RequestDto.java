@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dto.request;
 
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
@@ -39,6 +40,10 @@ public class RequestDto {
     private String session;
 
     private String providerId;
+
+    private String dtype;
+
+    private InternalRequestStep state;
 
     public Long getId() {
         return id;
@@ -94,5 +99,21 @@ public class RequestDto {
 
     public void setProviderId(String providerId) {
         this.providerId = providerId;
+    }
+
+    public String getDtype() {
+        return dtype;
+    }
+
+    public void setDtype(String dtype) {
+        this.dtype = dtype;
+    }
+
+    public InternalRequestStep getState() {
+        return state;
+    }
+
+    public void setState(InternalRequestStep state) {
+        this.state = state;
     }
 }

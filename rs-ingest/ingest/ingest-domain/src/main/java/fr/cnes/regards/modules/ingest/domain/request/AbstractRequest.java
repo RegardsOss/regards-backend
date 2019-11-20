@@ -92,7 +92,7 @@ public abstract class AbstractRequest {
 
     /**
      * Remote step dead line <br/>
-     * A daemon controls this and passes this request in {@link RequestState#ERROR} if deadline is outdated!
+     * A daemon controls this and passes this request in {@link InternalRequestStep#ERROR} if deadline is outdated!
      */
     @Column(name = "remote_step_deadline")
     private OffsetDateTime remoteStepDeadline;
