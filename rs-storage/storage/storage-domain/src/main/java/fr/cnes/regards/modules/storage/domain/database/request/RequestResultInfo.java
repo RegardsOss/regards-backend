@@ -171,4 +171,8 @@ public class RequestResultInfo {
         return requestStorePath;
     }
 
+    public Set<String> getRequestOwners() {
+        return requestOwners;
+    }
+
 }
