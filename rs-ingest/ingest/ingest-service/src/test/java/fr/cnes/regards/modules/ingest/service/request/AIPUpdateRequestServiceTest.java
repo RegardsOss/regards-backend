@@ -60,9 +60,9 @@ public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
         AIPUpdateFileLocationTask task = new AIPUpdateFileLocationTask();
         task.setType(AIPUpdateTaskType.ADD_FILE_LOCATION);
         task.setState(AIPUpdateState.READY);
-        task.setFileLocationUpdates(Lists
-                .newArrayList(RequestResultInfoDTO.build("groupId", "checksum", "somewhere", null,
-                                                         simulatefileReference(checksum, aipEntity.getAipId()), null)));
+        task.setFileLocationUpdates(Lists.newArrayList(RequestResultInfoDTO
+                .build("groupId", "checksum", "somewhere", null, Sets.newHashSet("someone"),
+                       simulatefileReference(checksum, aipEntity.getAipId()), null)));
         updateTasks.add(task);
         AIPUpdateCategoryTask catTask = new AIPUpdateCategoryTask();
         catTask.setType(AIPUpdateTaskType.ADD_CATEGORY);
@@ -85,9 +85,10 @@ public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
         String providerId = "providerId";
         initSipAndAip(checksum, providerId);
         Set<AbstractAIPUpdateTask> updateTasks = Sets.newHashSet();
-        AIPUpdateFileLocationTask task = AIPUpdateFileLocationTask.buildAddLocationTask(Lists
-                .newArrayList(RequestResultInfoDTO.build("groupId", "checksum", "somewhere", null,
-                                                         simulatefileReference(checksum, aipEntity.getAipId()), null)));
+        AIPUpdateFileLocationTask task = AIPUpdateFileLocationTask
+                .buildAddLocationTask(Lists.newArrayList(RequestResultInfoDTO
+                        .build("groupId", "checksum", "somewhere", null, Sets.newHashSet("someone"),
+                               simulatefileReference(checksum, aipEntity.getAipId()), null)));
         AIPUpdateCategoryTask catTask = new AIPUpdateCategoryTask();
         catTask.setType(AIPUpdateTaskType.ADD_CATEGORY);
         catTask.setState(AIPUpdateState.READY);
@@ -107,9 +108,10 @@ public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
         aipUpdateReqService.updateState(repo.findAll(), InternalRequestStep.RUNNING);
 
         // Send the same requests
-        AIPUpdateFileLocationTask newTask = AIPUpdateFileLocationTask.buildAddLocationTask(Lists
-                .newArrayList(RequestResultInfoDTO.build("groupId", "checksum", "somewhere", null,
-                                                         simulatefileReference(checksum, aipEntity.getAipId()), null)));
+        AIPUpdateFileLocationTask newTask = AIPUpdateFileLocationTask
+                .buildAddLocationTask(Lists.newArrayList(RequestResultInfoDTO
+                        .build("groupId", "checksum", "somewhere", null, Sets.newHashSet("someone"),
+                               simulatefileReference(checksum, aipEntity.getAipId()), null)));
         aipUpdateReqService.create(aipEntity, Sets.newHashSet(newTask));
         // The new update request should be blocked as requests are already running for the give aip
         Assert.assertEquals(1, aipUpdateReqService.search(InternalRequestStep.BLOCKED, PageRequest.of(0, 10))

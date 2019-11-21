@@ -38,6 +38,8 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.ContentInformation;
@@ -146,6 +148,7 @@ public class AIPStorageService implements IAIPStorageService {
                         }
                     } else {
                         // Create a storage reference
+                        validateForReference(dataObject);
                         filesToRefer.add(FileReferenceRequestDTO
                                 .build(dataObject.getFilename(), dataObject.getChecksum(), dataObject.getAlgorithm(),
                                        ci.getRepresentationInformation().getSyntax().getMimeType().toString(),
@@ -168,6 +171,31 @@ public class AIPStorageService implements IAIPStorageService {
             remoteStepGroupIds.add(info.getGroupId());
         }
         return remoteStepGroupIds;
+    }
+
+    /**
+     * @param dataObject
+     * @return
+     * @throws ModuleException
+     */
+    private void validateForReference(OAISDataObject dataObject) throws ModuleException {
+        Set<String> errors = Sets.newHashSet();
+        if ((dataObject.getAlgorithm() == null) || dataObject.getAlgorithm().isEmpty()) {
+            errors.add("Invalid checksum algorithm");
+        }
+        if ((dataObject.getChecksum() == null) || dataObject.getChecksum().isEmpty()) {
+            errors.add("Invalid checksum");
+        }
+        if (dataObject.getFileSize() == null) {
+            errors.add("Invalid filesize");
+        }
+        if ((dataObject.getFilename() == null) || dataObject.getFilename().isEmpty()) {
+            errors.add("Invalid filename");
+        }
+        if (errors.isEmpty()) {
+            throw new ModuleException(
+                    String.format("Invalid entity {}. Information are missing : %s", String.join(", ", errors)));
+        }
     }
 
     @Override

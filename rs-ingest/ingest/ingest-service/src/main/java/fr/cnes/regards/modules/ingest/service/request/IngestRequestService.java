@@ -418,7 +418,7 @@ public class IngestRequestService implements IIngestRequestService {
         for (AIPEntity aipEntity : aips) {
             for (RequestResultInfoDTO error : errors) {
                 // Check using owner property if the AIP contains the file that was not properly saved
-                if (error.getResultFile().getOwners().contains(aipEntity.getAipId())) {
+                if (error.getRequestOwners().contains(aipEntity.getAipId())) {
                     // Add the cause to this AIP
                     String errorMessage = errorCause + ": " + error.getErrorCause();
                     aipService.save(aipEntity);

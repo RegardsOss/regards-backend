@@ -55,8 +55,9 @@ public class IngestStorageListenerTest extends AbstractIngestRequestTest {
     public void testCopySuccessForUnknownFiles() {
         Set<RequestInfo> requests = Sets.newHashSet();
         Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
-        successRequests.add(RequestResultInfoDTO.build("groupId", "checksum", "somewhere", null,
-                                                       simulatefileReference("checksum", "someone"), null));
+        successRequests
+                .add(RequestResultInfoDTO.build("groupId", "checksum", "somewhere", null, Sets.newHashSet("someone"),
+                                                simulatefileReference("checksum", "someone"), null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
         Assert.assertEquals("At initialization no requests should be created", 0, aipUpdateReqService
                 .search(InternalRequestStep.CREATED, PageRequest.of(0, 10)).getTotalElements());
@@ -72,9 +73,11 @@ public class IngestStorageListenerTest extends AbstractIngestRequestTest {
         initSipAndAip(checksum, providerId);
         Set<RequestInfo> requests = Sets.newHashSet();
         Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
-        successRequests.add(RequestResultInfoDTO.build("groupId", checksum, "somewhere", null,
-                                                       simulatefileReference(checksum, aipEntity.getAipId()), null));
+        successRequests
+                .add(RequestResultInfoDTO.build("groupId", checksum, "somewhere", null, Sets.newHashSet("someone"),
+                                                simulatefileReference(checksum, aipEntity.getAipId()), null));
         successRequests.add(RequestResultInfoDTO.build("groupId", "other-file-checksum", "somewhere", null,
+                                                       Sets.newHashSet("someone"),
                                                        simulatefileReference(checksum, "someone"), null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
         Assert.assertEquals("At initialization no requests should be created", 0, aipUpdateReqService

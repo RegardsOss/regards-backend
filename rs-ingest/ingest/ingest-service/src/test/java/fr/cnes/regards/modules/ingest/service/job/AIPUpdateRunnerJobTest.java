@@ -252,9 +252,9 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         Set<RequestInfo> requests = Sets.newHashSet();
         String newStorageLocation = "somewhere";
         Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
-        successRequests
-                .add(RequestResultInfoDTO.build("groupId", toUpdateChecksum, newStorageLocation, null,
-                                                simulatefileReference(toUpdateChecksum, toUpdate.getAipId()), null));
+        successRequests.add(RequestResultInfoDTO
+                .build("groupId", toUpdateChecksum, newStorageLocation, null, Sets.newHashSet("someone"),
+                       simulatefileReference(toUpdateChecksum, toUpdate.getAipId()), null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
 
         storageListener.onCopySuccess(requests);
