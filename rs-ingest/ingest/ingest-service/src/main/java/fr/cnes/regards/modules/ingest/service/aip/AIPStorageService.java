@@ -436,15 +436,18 @@ public class AIPStorageService implements IAIPStorageService {
     @Override
     public String storeAIPs(List<AIPStoreMetaDataRequest> requests) throws ModuleException {
 
+        Optional<ServiceInstance> instance = discoveryClient.getInstances(applicationName).stream().findFirst();
+        if (!instance.isPresent()) {
+            throw new ModuleException("Unable to retrieve an accessible instance for ingest microservice");
+        }
+
         // Build file storage requests
         Collection<FileStorageRequestDTO> files = new ArrayList<>();
 
         for (AIPStoreMetaDataRequest request : requests) {
             // Create a request for each storage
-            Collection<FileStorageRequestDTO> fileStorageRequests = buildAIPStorageRequest(request.getAip().getAip(),
-                                                                                           request.getAip()
-                                                                                                   .getChecksum(),
-                                                                                           request.getStoreLocations());
+            Collection<FileStorageRequestDTO> fileStorageRequests = buildAIPStorageRequest(request.getAip()
+                    .getAip(), request.getAip().getChecksum(), request.getStoreLocations(), instance.get());
             files.addAll(fileStorageRequests);
         }
 
@@ -459,27 +462,20 @@ public class AIPStorageService implements IAIPStorageService {
      * @return a public URL to retrieve the AIP manifest
      * @throws ModuleException if the Eureka server is not reachable
      */
-    public URL generateDownloadUrl(UniformResourceName aipId) throws ModuleException {
-        Optional<ServiceInstance> instance = discoveryClient.getInstances(applicationName).stream().findFirst();
-        if (instance.isPresent()) {
-            String host = instance.get().getUri().toString();
-            String path = Paths.get(AIPS_CONTROLLER_ROOT_PATH, AIP_DOWNLOAD_PATH).toString();
-            String p = path.toString().replace("{" + AIP_ID_PATH_PARAM + "}", aipId.toString());
-            p = (p.charAt(0) == '/') ? p.replaceFirst("/", "") : p;
-            String urlStr = String.format("%s/%s?scope=%s", host, p, tenantResolver.getTenant());
-            try {
-                return new URL(urlStr);
-            } catch (MalformedURLException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw new ModuleException(
-                        String.format("Error generating AIP download url. Invalid calculated url %s. Cause : %s",
-                                      urlStr, e.getMessage()),
-                        e);
-            }
-        } else {
-            String message = "Error getting ingest microservice address from eureka client";
-            LOGGER.error(message);
-            throw new ModuleException(message);
+    public URL generateDownloadUrl(UniformResourceName aipId, ServiceInstance instance) throws ModuleException {
+        String host = instance.getUri().toString();
+        String path = Paths.get(AIPS_CONTROLLER_ROOT_PATH, AIP_DOWNLOAD_PATH).toString();
+        String p = path.toString().replace("{" + AIP_ID_PATH_PARAM + "}", aipId.toString());
+        p = (p.charAt(0) == '/') ? p.replaceFirst("/", "") : p;
+        String urlStr = String.format("%s/%s?scope=%s", host, p, tenantResolver.getTenant());
+        try {
+            return new URL(urlStr);
+        } catch (MalformedURLException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new ModuleException(
+                    String.format("Error generating AIP download url. Invalid calculated url %s. Cause : %s", urlStr,
+                                  e.getMessage()),
+                    e);
         }
     }
 
@@ -487,13 +483,13 @@ public class AIPStorageService implements IAIPStorageService {
      * Build storage request for AIP file itself!
      */
     private Collection<FileStorageRequestDTO> buildAIPStorageRequest(AIP aip, String checksum,
-            Set<StoreLocation> storeLocations) throws ModuleException {
+            Set<StoreLocation> storeLocations, ServiceInstance instance) throws ModuleException {
 
         // Build file storage requests
         Collection<FileStorageRequestDTO> files = new ArrayList<>();
 
         // Build origin(s) URL
-        URL originUrl = generateDownloadUrl(aip.getId());
+        URL originUrl = generateDownloadUrl(aip.getId(), instance);
 
         // Create a request for each storage
         for (StoreLocation storeLocation : storeLocations) {
