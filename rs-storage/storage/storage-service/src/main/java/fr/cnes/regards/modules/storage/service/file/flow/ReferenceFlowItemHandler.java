@@ -89,9 +89,8 @@ public class ReferenceFlowItemHandler
         String tenant = wrapper.getTenant();
         ReferenceFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
-        ConcurrentLinkedQueue<ReferenceFlowItem> tenantItems = items.get(tenant);
         LOGGER.trace("[EVENT] New FileReferenceFlowItem received -- {}", wrapper.getContent().toString());
-        while (tenantItems.size() >= (100 * BULK_SIZE)) {
+        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (100 * BULK_SIZE))) {
             // Do not overload the concurrent queue if the configured listener does not handle queued message faster
             try {
                 LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
@@ -111,7 +110,7 @@ public class ReferenceFlowItemHandler
             if (!items.containsKey(tenant)) {
                 items.put(tenant, new ConcurrentLinkedQueue<>());
             }
-            tenantItems.add(item);
+            items.get(tenant).add(item);
         }
     }
 

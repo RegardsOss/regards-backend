@@ -85,10 +85,9 @@ public class FileRequestGroupEventHandler
     public void handle(TenantWrapper<FileRequestsGroupEvent> wrapper) {
         String tenant = wrapper.getTenant();
         runtimeTenantResolver.forceTenant(tenant);
-        ConcurrentLinkedQueue<FileRequestsGroupEvent> tenantItems = items.get(tenant);
         LOGGER.trace("[EVENT] New FileStorageFlowItem received -- {}", wrapper.getContent().toString());
 
-        while (tenantItems.size() >= (50 * BULK_SIZE)) {
+        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (50 * BULK_SIZE))) {
             // Do not overload the concurrent queue if the configured listener does not handle queued message faster
             try {
                 LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
@@ -104,7 +103,7 @@ public class FileRequestGroupEventHandler
         if (!items.containsKey(tenant)) {
             items.put(tenant, new ConcurrentLinkedQueue<>());
         }
-        tenantItems.add(item);
+        items.get(tenant).add(item);
     }
 
     /**

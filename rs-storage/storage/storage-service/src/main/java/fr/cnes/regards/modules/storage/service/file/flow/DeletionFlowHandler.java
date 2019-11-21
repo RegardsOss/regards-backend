@@ -88,8 +88,7 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
         String tenant = wrapper.getTenant();
         DeletionFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
-        ConcurrentLinkedQueue<DeletionFlowItem> tenantItems = items.get(tenant);
-        while (tenantItems.size() >= (50 * BULK_SIZE)) {
+        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (50 * BULK_SIZE))) {
             // Do not overload the concurrent queue if the configured listener does not handle queued message faster
             try {
                 LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
@@ -109,7 +108,7 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
             if (!items.containsKey(tenant)) {
                 items.put(tenant, new ConcurrentLinkedQueue<>());
             }
-            tenantItems.add(item);
+            items.get(tenant).add(item);
         }
     }
 
