@@ -75,8 +75,9 @@ public class SessionNotificationHandler implements IHandler<SessionMonitoringEve
     public void handle(TenantWrapper<SessionMonitoringEvent> wrapper) {
         String tenant = wrapper.getTenant();
         runtimeTenantResolver.forceTenant(tenant);
+        ConcurrentLinkedQueue<SessionMonitoringEvent> tenantItems = items.get(tenant);
         LOGGER.trace("[EVENT] New SessionMonitoringEvent received -- {}", wrapper.getContent().toString());
-        while (items.size() >= (100 * BULK_SIZE)) {
+        while (tenantItems.size() >= (100 * BULK_SIZE)) {
             // Do not overload the concurrent queue if the configured listener does not handle queued message faster
             try {
                 LOG.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
@@ -92,7 +93,7 @@ public class SessionNotificationHandler implements IHandler<SessionMonitoringEve
         if (!items.containsKey(tenant)) {
             items.put(tenant, new ConcurrentLinkedQueue<>());
         }
-        items.get(tenant).add(item);
+        tenantItems.add(item);
     }
 
     /**
