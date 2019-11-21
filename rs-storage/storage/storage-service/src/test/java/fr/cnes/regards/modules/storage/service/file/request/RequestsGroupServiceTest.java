@@ -76,9 +76,11 @@ public class RequestsGroupServiceTest extends AbstractStorageTest {
             // Grant a group requests
             reqGrpService.granted(groupId, type, 2);
             // Simulate a request ends success
-            reqGrpService.requestSuccess(groupId, type, UUID.randomUUID().toString(), ONLINE_CONF_LABEL, null, null);
+            reqGrpService.requestSuccess(groupId, type, UUID.randomUUID().toString(), ONLINE_CONF_LABEL, null,
+                                         Sets.newHashSet("someone"), null);
             // Simulate a requests ends error
-            reqGrpService.requestError(groupId, type, UUID.randomUUID().toString(), ONLINE_CONF_LABEL, null, null);
+            reqGrpService.requestError(groupId, type, UUID.randomUUID().toString(), ONLINE_CONF_LABEL, null,
+                                       Sets.newHashSet("someone"), null);
             // Group should be created
             Assert.assertTrue("Error during group request creation", reqGrpRepository.findById(groupId).isPresent());
             Assert.assertEquals("There be requests infos for expired group", 2, reqInfoRepo.count());
@@ -107,7 +109,8 @@ public class RequestsGroupServiceTest extends AbstractStorageTest {
                         "file://somewhere/file.test", destStorage, Optional.empty(), FileRequestStatus.PENDING, groupId,
                         Optional.empty());
         // Simulate response infos added for this group
-        reqInfoRepo.save(new RequestResultInfo(groupId, FileRequestType.STORAGE, checksum, destStorage, null));
+        reqInfoRepo.save(new RequestResultInfo(groupId, FileRequestType.STORAGE, checksum, destStorage, null,
+                Sets.newHashSet("owner")));
 
         Assert.assertTrue("Request should be created", oReq.isPresent());
         Assert.assertEquals("Requests should be pending", FileRequestStatus.PENDING,

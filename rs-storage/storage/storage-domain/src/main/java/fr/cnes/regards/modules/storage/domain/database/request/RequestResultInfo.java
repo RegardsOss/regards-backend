@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.domain.database.request;
 
+import java.util.Collection;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -31,7 +34,10 @@ import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
@@ -80,6 +86,10 @@ public class RequestResultInfo {
     @Column(name = "request_store_path", length = FileLocation.URL_MAX_LENGTH)
     private String requestStorePath;
 
+    @Column(columnDefinition = "jsonb", name = "request_owners")
+    @Type(type = "jsonb")
+    private final Set<String> requestOwners = Sets.newHashSet();
+
     @Column
     private boolean error;
 
@@ -91,7 +101,7 @@ public class RequestResultInfo {
     }
 
     public RequestResultInfo(String groupId, FileRequestType requestType, String checksum, String storage,
-            String storePath) {
+            String storePath, Collection<String> requestOwners) {
         Assert.notNull(groupId, "groupId can not be null");
         Assert.notNull(checksum, "checksum can not be null");
         Assert.notNull(requestType, "requestType can not be null");
@@ -100,6 +110,9 @@ public class RequestResultInfo {
         this.requestChecksum = checksum;
         this.requestStorage = storage;
         this.requestStorePath = storePath;
+        if ((requestOwners != null) && !requestOwners.isEmpty()) {
+            this.requestOwners.addAll(requestOwners);
+        }
     }
 
     public String getGroupId() {

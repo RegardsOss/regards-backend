@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.service.file.request;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -102,8 +103,8 @@ public class RequestsGroupService {
      * @param fileRef
      */
     public void requestSuccess(String groupId, FileRequestType type, String checksum, String storage, String storePath,
-            FileReference fileRef) {
-        requestDone(groupId, type, checksum, storage, storePath, fileRef, false, null);
+            Collection<String> owners, FileReference fileRef) {
+        requestDone(groupId, type, checksum, storage, storePath, owners, fileRef, false, null);
     }
 
     /**
@@ -114,12 +115,13 @@ public class RequestsGroupService {
      * @param checksum
      * @param storage
      * @param storePath
+     * @param owners
      * @param errorCause
      * @param checkGroupDone
      */
     public void requestError(String groupId, FileRequestType type, String checksum, String storage, String storePath,
-            String errorCause) {
-        requestDone(groupId, type, checksum, storage, storePath, null, true, errorCause);
+            Set<String> owners, String errorCause) {
+        requestDone(groupId, type, checksum, storage, storePath, owners, null, true, errorCause);
     }
 
     /**
@@ -315,15 +317,16 @@ public class RequestsGroupService {
      * @param checksum
      * @param storage
      * @param storePath
+     * @param owners
      * @param fileRef
      * @param error
      * @param errorCause
      */
     private void requestDone(String groupId, FileRequestType type, String checksum, String storage, String storePath,
-            FileReference fileRef, boolean error, String errorCause) {
+            Collection<String> owners, FileReference fileRef, boolean error, String errorCause) {
         // Check if associated group exists
         if (reqGroupRepository.existsById(groupId)) {
-            RequestResultInfo gInfo = new RequestResultInfo(groupId, type, checksum, storage, storePath);
+            RequestResultInfo gInfo = new RequestResultInfo(groupId, type, checksum, storage, storePath, owners);
             gInfo.setResultFile(fileRef);
             gInfo.setError(error);
             gInfo.setErrorCause(errorCause);

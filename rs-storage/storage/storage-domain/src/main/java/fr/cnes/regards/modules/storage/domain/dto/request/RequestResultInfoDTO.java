@@ -18,6 +18,11 @@
  */
 package fr.cnes.regards.modules.storage.domain.dto.request;
 
+import java.util.Collection;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
@@ -50,6 +55,11 @@ public class RequestResultInfoDTO {
     private String requestStorePath;
 
     /**
+     * Storage request file owners.
+     */
+    private final Set<String> requestOwners = Sets.newHashSet();
+
+    /**
      * Request result file
      */
     private FileReferenceDTO resultFile;
@@ -60,12 +70,15 @@ public class RequestResultInfoDTO {
     private String errorCause;
 
     public static RequestResultInfoDTO build(String groupId, String checksum, String storage, String storePath,
-            FileReference fileReference, String errorCause) {
+            Collection<String> owners, FileReference fileReference, String errorCause) {
         RequestResultInfoDTO dto = new RequestResultInfoDTO();
         dto.groupId = groupId;
         dto.requestChecksum = checksum;
         dto.requestStorage = storage;
         dto.requestStorePath = storePath;
+        if ((owners != null) && !owners.isEmpty()) {
+            dto.requestOwners.addAll(owners);
+        }
         if (fileReference != null) {
             dto.resultFile = FileReferenceDTO
                     .build(fileReference.getStorageDate(), FileReferenceMetaInfoDTO.build(fileReference.getMetaInfo()),
@@ -76,7 +89,7 @@ public class RequestResultInfoDTO {
     }
 
     public static RequestResultInfoDTO build(String groupId, String checksum, String storage, String storePath,
-            FileReferenceDTO resultFile, String errorCause) {
+            Collection<String> owners, FileReferenceDTO resultFile, String errorCause) {
         RequestResultInfoDTO dto = new RequestResultInfoDTO();
         dto.groupId = groupId;
         dto.requestChecksum = checksum;
@@ -84,6 +97,9 @@ public class RequestResultInfoDTO {
         dto.requestStorePath = storePath;
         dto.resultFile = resultFile;
         dto.errorCause = errorCause;
+        if ((owners != null) && !owners.isEmpty()) {
+            dto.requestOwners.addAll(owners);
+        }
         return dto;
     }
 
@@ -109,6 +125,10 @@ public class RequestResultInfoDTO {
 
     public String getRequestStorePath() {
         return requestStorePath;
+    }
+
+    public Set<String> getRequestOwners() {
+        return requestOwners;
     }
 
 }

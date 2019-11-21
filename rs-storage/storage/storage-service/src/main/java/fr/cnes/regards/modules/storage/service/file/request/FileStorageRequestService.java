@@ -514,7 +514,7 @@ public class FileStorageRequestService {
             reqGroupService.requestError(groupId, FileRequestType.STORAGE,
                                          fileStorageRequest.getMetaInfo().getChecksum(),
                                          fileStorageRequest.getStorage(), fileStorageRequest.getStorageSubDirectory(),
-                                         errorCause);
+                                         fileStorageRequest.getOwners(), errorCause);
         }
     }
 
@@ -536,7 +536,7 @@ public class FileStorageRequestService {
                         reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE,
                                                        fileRef.getMetaInfo().getChecksum(),
                                                        fileRef.getLocation().getStorage(),
-                                                       request.getStorageSubDirectory(), fileRef);
+                                                       request.getStorageSubDirectory(), request.getOwners(), fileRef);
                     }
                 } catch (ModuleException e) {
                     handleError(request, e.getMessage());
@@ -570,7 +570,8 @@ public class FileStorageRequestService {
                                   errorCause, request.getGroupIds());
         for (String groupId : request.getGroupIds()) {
             reqGroupService.requestError(groupId, FileRequestType.STORAGE, request.getMetaInfo().getChecksum(),
-                                         request.getStorage(), request.getStorageSubDirectory(), errorCause);
+                                         request.getStorage(), request.getStorageSubDirectory(), request.getOwners(),
+                                         errorCause);
         }
     }
 
@@ -608,7 +609,7 @@ public class FileStorageRequestService {
             updatedFileRef = fileRefService.addOwner(fileReference, request.getOwner());
             reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE, request.getChecksum(),
                                            request.getStorage(), request.getSubDirectory().orElse(null),
-                                           updatedFileRef);
+                                           Sets.newHashSet(request.getOwner()), updatedFileRef);
         }
         return Optional.ofNullable(updatedFileRef);
     }

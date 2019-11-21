@@ -115,7 +115,7 @@ public class FileReferenceRequestService {
             try {
                 FileReference fileRef = reference(file, oFileRef, Sets.newHashSet(groupId));
                 reqGrpService.requestSuccess(groupId, FileRequestType.REFERENCE, fileRef.getMetaInfo().getChecksum(),
-                                             fileRef.getLocation().getStorage(), null, fileRef);
+                                             fileRef.getLocation().getStorage(), null, fileRef.getOwners(), fileRef);
                 fileRefs.add(fileRef);
                 // Add newly created fileRef to existing file refs in case of the requests contains multiple time the same file to reference
                 existingOnes.add(fileRef);
@@ -124,7 +124,7 @@ public class FileReferenceRequestService {
                 fileRefEventPublisher.storeError(file.getChecksum(), Sets.newHashSet(file.getOwner()),
                                                  file.getStorage(), e.getMessage(), Sets.newHashSet(groupId));
                 reqGrpService.requestError(groupId, FileRequestType.REFERENCE, file.getChecksum(), file.getStorage(),
-                                           null, e.getMessage());
+                                           null, Sets.newHashSet(file.getOwner()), e.getMessage());
             }
         }
         return fileRefs;

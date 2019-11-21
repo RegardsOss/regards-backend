@@ -323,7 +323,7 @@ public class FileDeletionRequestService {
             } else {
                 // File does not exists. Handle has deletion success
                 reqGroupService.requestSuccess(groupId, FileRequestType.DELETION, request.getChecksum(),
-                                               request.getStorage(), null, oFileRef.orElse(null));
+                                               request.getStorage(), null, Sets.newHashSet(request.getOwner()), null);
             }
         }
     }
@@ -346,7 +346,8 @@ public class FileDeletionRequestService {
                 fileRefService.delete(fileReference, groupId);
                 reqGroupService.requestSuccess(groupId, FileRequestType.DELETION,
                                                fileReference.getMetaInfo().getChecksum(),
-                                               fileReference.getLocation().getStorage(), null, null);
+                                               fileReference.getLocation().getStorage(), null,
+                                               fileReference.getOwners(), null);
             }
         }
     }
@@ -399,7 +400,7 @@ public class FileDeletionRequestService {
             // Publish request error
             reqGroupService.requestError(fileDeletionRequest.getGroupId(), FileRequestType.DELETION,
                                          fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), null,
-                                         errorCause);
+                                         fileRef.getOwners(), errorCause);
         } else {
             // Force delete option.
             handleSuccess(fileDeletionRequest);
@@ -424,7 +425,8 @@ public class FileDeletionRequestService {
         // 3. Publish request success
         reqGroupService.requestSuccess(fileDeletionRequest.getGroupId(), FileRequestType.DELETION,
                                        deletedFileRef.getMetaInfo().getChecksum(),
-                                       deletedFileRef.getLocation().getStorage(), null, null);
+                                       deletedFileRef.getLocation().getStorage(), null, deletedFileRef.getOwners(),
+                                       null);
     }
 
     /**
