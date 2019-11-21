@@ -88,8 +88,9 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
     public void handle(TenantWrapper<StorageFlowItem> wrapper) {
         String tenant = wrapper.getTenant();
         runtimeTenantResolver.forceTenant(tenant);
+        ConcurrentLinkedQueue<StorageFlowItem> tenantItems = items.get(tenant);
         LOGGER.trace("[EVENT] New FileStorageFlowItem received -- {}", wrapper.getContent().toString());
-        while (items.size() >= (100 * BULK_SIZE)) {
+        while (tenantItems.size() >= (50 * BULK_SIZE)) {
             // Do not overload the concurrent queue if the configured listener does not handle queued message faster
             try {
                 LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
@@ -110,7 +111,7 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
             if (!items.containsKey(tenant)) {
                 items.put(tenant, new ConcurrentLinkedQueue<>());
             }
-            items.get(tenant).add(item);
+            tenantItems.add(item);
         }
     }
 
