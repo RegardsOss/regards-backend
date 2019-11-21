@@ -134,10 +134,9 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 product.setSipState(ProductSIPState.SUBMITTED);
                 success.add(product);
                 generatedCount++;
-            } catch (ModuleException e) {
+            } catch (Exception e) {
                 String message = String.format("Error while generating product \"%s\"", product.getProductName());
-                // Message already logged!
-                logger.debug(message, e);
+                logger.error(message, e);
                 product.setSipState(ProductSIPState.GENERATION_ERROR);
                 product.setError(e.getMessage());
                 errors.add(product);
