@@ -71,8 +71,6 @@ public class FixedStorageSIPGenerationIT extends AbstractMultitenantServiceTest 
         info.setDataType(DataType.RAWDATA);
         info.setMimeType(MimeType.valueOf("application/octet-stream"));
         acqFile.setFileInfo(info);
-        acqFile.setChecksum("checksum");
-        acqFile.setChecksumAlgorithm("MD5");
         acqFile.setFilePath(Paths.get("/tmp/file.txt"));
         product.addAcquisitionFile(acqFile);
         SIP sip = pluginImp.generate(product);

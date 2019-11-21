@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugin;
 
+import java.util.UUID;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
@@ -52,9 +55,9 @@ public class LongLastingSIPGeneration implements ISipGenerationPlugin {
 
         // Fill SIP with product information
         for (AcquisitionFile af : product.getActiveAcquisitionFiles()) {
-            sipBuilder.getContentInformationBuilder().setDataObject(af.getFileInfo().getDataType(),
-                                                                    af.getFilePath().toAbsolutePath(),
-                                                                    af.getChecksumAlgorithm(), af.getChecksum());
+            sipBuilder.getContentInformationBuilder()
+                    .setDataObject(af.getFileInfo().getDataType(), af.getFilePath().toAbsolutePath(),
+                                   AcquisitionProcessingChain.CHECKSUM_ALGORITHM, UUID.randomUUID().toString());
             sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
             sipBuilder.addContentInformation();
         }
