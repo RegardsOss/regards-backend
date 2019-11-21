@@ -163,6 +163,7 @@ public class AcquisitionFile {
         final int prime = 31;
         int result = 1;
         result = (prime * result) + (acqDate == null ? 0 : acqDate.hashCode());
+        result = (prime * result) + (filePath == null ? 0 : filePath.hashCode());
         result = (prime * result) + (fileInfo == null ? 0 : fileInfo.hashCode());
         return result;
     }
