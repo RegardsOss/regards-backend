@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -51,6 +53,8 @@ public interface IAcquisitionFileRepository
     Page<AcquisitionFile> findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState state, AcquisitionFileInfo fileInfo,
             Pageable pageable);
 
+    Optional<AcquisitionFile> findOneByFilePath(Path filePath);
+
     /**
      * Search all acquisition files for the given {@link AcquisitionFileState}
      * @param state {@link AcquisitionFileState}
@@ -73,11 +77,6 @@ public interface IAcquisitionFileRepository
      * @return number of matching {@link AcquisitionFile}
      */
     long countByFileInfo(AcquisitionFileInfo fileInfo);
-
-    /**
-     * Count number of {@link AcquisitionFile} associated to the given {@link AcquisitionFileInfo} and checksum
-     */
-    long countByFileInfoAndChecksum(AcquisitionFileInfo fileInfo, String checksum);
 
     /**
      * @param product

@@ -194,36 +194,35 @@ public interface IAcquisitionProcessingService {
      * @param scanningDate reference date used to launch scan plugin
      * @param updateFileInfo does the fileInfo last modification date should be updated
      *                       with the file last modification date
-     * @return number of registered files
-     */
-    int registerFiles(List<Path> filePaths, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate,
-            boolean updateFileInfo, String session, String sessionOwner) throws ModuleException;
-
-    /**
-     * Register multiple files in one transaction
-     * @param filePaths paths of the files to register
-     * @param info related file info
-     * @param scanningDate reference date used to launch scan plugin
-     * @param updateFileInfo does the fileInfo last modification date should be updated
-     *                       with the file last modification date
      * @param limit maximum number of files to register
      * @return number of registered files
      */
-    RegisterFilesResponse registerFiles(Iterator<Path> filePaths, AcquisitionFileInfo info,
-            Optional<OffsetDateTime> scanningDate, boolean updateFileInfo, int limit, String session,
-            String sessionOwner) throws ModuleException;
+    RegisterFilesResponse registerFilesBatch(Iterator<Path> filePaths, AcquisitionFileInfo info,
+            Optional<OffsetDateTime> scanningDate, int limit, String session, String sessionOwner)
+            throws ModuleException;
+
+    /**
+     * Register multiple files by creating multiple transactions by batch
+     * @param filePathsIt
+     * @param fileInfo
+     * @param scanningDate
+     * @param session
+     * @param sessionOwner
+     * @return
+     * @throws ModuleException
+     */
+    public long registerFiles(Iterator<Path> filePathsIt, AcquisitionFileInfo fileInfo,
+            Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException;
 
     /**
      * Register a new file in one transaction
      * @param filePath path of the file to register
      * @param info related file info
      * @param scanningDate reference date used to launch scan plugin
-     * @param updateFileInfo does the fileInfo last modification date should be updated
-     *                       with the file last modification date
      * @return true if really registered
      */
-    boolean registerFile(Path filePath, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate,
-            boolean updateFileInfo) throws ModuleException;
+    boolean registerFile(Path filePath, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate)
+            throws ModuleException;
 
     /**
      * Manage new registered file : prepare or fulfill products and schedule SIP generation as soon as possible

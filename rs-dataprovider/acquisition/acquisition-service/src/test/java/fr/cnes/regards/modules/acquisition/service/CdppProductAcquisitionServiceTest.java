@@ -293,6 +293,6 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         // Find product to submitted
         long submitted = productService.countByProcessingChainAndSipStateIn(processingChain,
                                                                             Arrays.asList(ProductSIPState.SUBMITTED));
-        Assert.assertTrue(submitted == 1);
+        Assert.assertEquals(1, submitted);
     }
 }
