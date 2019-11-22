@@ -31,6 +31,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeType;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
@@ -88,7 +90,8 @@ public class StorageClientMock implements IStorageClient {
         }
 
         RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(), FileRequestType.STORAGE,
-                file.getChecksum(), file.getStorage(), file.getSubDirectory().orElse(null));
+                file.getChecksum(), file.getStorage(), file.getSubDirectory().orElse(null),
+                Sets.newHashSet(file.getOwner()));
 
         resultInfo.setResultFile(new FileReference(file.getOwner(),
                 new FileReferenceMetaInfo(file.getChecksum(), file.getAlgorithm(), file.getFileName(), 1000L,
@@ -171,7 +174,7 @@ public class StorageClientMock implements IStorageClient {
         }
 
         RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(), FileRequestType.DELETION,
-                file.getChecksum(), file.getStorage(), null);
+                file.getChecksum(), file.getStorage(), null, Sets.newHashSet(file.getOwner()));
 
         resultInfo.setResultFile(
                                  new FileReference(file.getOwner(),
