@@ -144,6 +144,7 @@ public class SessionService implements ISessionService {
                     sessionToUpdate = sessionOpt.get();
                 }
             }
+            sessionToUpdate.setLastUpdateDate(OffsetDateTime.now());
             sessionsToUpdate.put(sessionKey, updateSessionProperty(sessionToUpdate, sessionMonitoringEvent));
         }
         return sessionsToUpdate.values();
