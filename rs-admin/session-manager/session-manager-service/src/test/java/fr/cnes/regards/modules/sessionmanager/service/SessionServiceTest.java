@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.sessionmanager.service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.Assert;
@@ -125,6 +127,49 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
         olds = sessionService.retrieveSessions(source, null, null, null, null, false, PageRequest.of(0, 10));
         Assert.assertEquals(1, latests.getTotalElements());
         Assert.assertEquals(2, olds.getTotalElements());
+
+    }
+
+    @Test
+    public void testUpdateSessionsProperties() {
+        List<SessionMonitoringEvent> events = new ArrayList<>();
+        // source1/name1@step1.property1=2
+        // source1/name1@step1.property2=10
+        events.add(SessionMonitoringEvent.build("source1", "name1", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.INC, "PROPERTY1", 1));
+        events.add(SessionMonitoringEvent.build("source1", "name1", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.INC, "PROPERTY1", 1));
+        events.add(SessionMonitoringEvent.build("source1", "name1", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.INC, "PROPERTY2", 10));
+
+        // source1/name2@step1.property1=1
+        events.add(SessionMonitoringEvent.build("source1", "name2", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.INC, "PROPERTY1", 1));
+
+        // source1/name2@step2.property1=1
+        events.add(SessionMonitoringEvent.build("source1", "name2", SessionNotificationState.OK, "STEP2",
+                                                SessionNotificationOperator.INC, "PROPERTY1", 1));
+
+        // source2/name1@step1.property1=2
+        events.add(SessionMonitoringEvent.build("source2", "name1", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.INC, "PROPERTY1", 2));
+        events.add(SessionMonitoringEvent.build("source2", "name1", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.DEC, "PROPERTY1", 1));
+        events.add(SessionMonitoringEvent.build("source2", "name1", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.INC, "PROPERTY1", 1));
+        sessionService.updateSessionProperties(events);
+
+        Optional<Session> session = sessionRepository.findOneBySourceAndName("source1", "name1");
+        Assert.assertTrue(session.isPresent());
+        Assert.assertEquals(2L, session.get().getStepPropertyValue("STEP1", "PROPERTY1"));
+        Assert.assertEquals(10L, session.get().getStepPropertyValue("STEP1", "PROPERTY2"));
+        session = sessionRepository.findOneBySourceAndName("source1", "name2");
+        Assert.assertTrue(session.isPresent());
+        Assert.assertEquals(1L, session.get().getStepPropertyValue("STEP1", "PROPERTY1"));
+        Assert.assertEquals(1L, session.get().getStepPropertyValue("STEP2", "PROPERTY1"));
+        session = sessionRepository.findOneBySourceAndName("source2", "name1");
+        Assert.assertTrue(session.isPresent());
+        Assert.assertEquals(2L, session.get().getStepPropertyValue("STEP1", "PROPERTY1"));
 
     }
 

@@ -19,7 +19,10 @@
 package fr.cnes.regards.modules.sessionmanager.service;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -123,9 +126,27 @@ public class SessionService implements ISessionService {
 
     @Override
     public void updateSessionProperties(List<SessionMonitoringEvent> events) {
-        for (SessionMonitoringEvent event : events) {
-            this.updateSessionProperty(event);
+        sessionRepository.saveAll(mergeEvents(events));
+    }
+
+    public Collection<Session> mergeEvents(Collection<SessionMonitoringEvent> events) {
+        Map<String, Session> sessionsToUpdate = new HashMap<>();
+        for (SessionMonitoringEvent sessionMonitoringEvent : events) {
+            String sessionKey = sessionMonitoringEvent.getSource() + "__" + sessionMonitoringEvent.getName();
+            Session sessionToUpdate = sessionsToUpdate.get(sessionKey);
+            if (sessionToUpdate == null) {
+                Optional<Session> sessionOpt = sessionRepository
+                        .findOneBySourceAndName(sessionMonitoringEvent.getSource(), sessionMonitoringEvent.getName());
+                if (!sessionOpt.isPresent()) {
+                    sessionToUpdate = createSession(sessionMonitoringEvent.getName(),
+                                                    sessionMonitoringEvent.getSource());
+                } else {
+                    sessionToUpdate = sessionOpt.get();
+                }
+            }
+            sessionsToUpdate.put(sessionKey, updateSessionProperty(sessionToUpdate, sessionMonitoringEvent));
         }
+        return sessionsToUpdate.values();
     }
 
     @Override
@@ -139,7 +160,10 @@ public class SessionService implements ISessionService {
         } else {
             sessionToUpdate = sessionOpt.get();
         }
+        return this.updateSession(updateSessionProperty(sessionToUpdate, sessionMonitoringEvent));
+    }
 
+    private Session updateSessionProperty(Session sessionToUpdate, SessionMonitoringEvent sessionMonitoringEvent) {
         // Set the new value inside the map
         boolean isKeyExisting = sessionToUpdate.isStepPropertyExisting(sessionMonitoringEvent.getStep(),
                                                                        sessionMonitoringEvent.getProperty());
@@ -189,8 +213,7 @@ public class SessionService implements ISessionService {
         if (sessionMonitoringEvent.getState() == SessionNotificationState.ERROR) {
             sessionToUpdate.setState(SessionState.ERROR);
         }
-        // Save the session
-        return this.updateSession(sessionToUpdate);
+        return sessionToUpdate;
     }
 
     /**
