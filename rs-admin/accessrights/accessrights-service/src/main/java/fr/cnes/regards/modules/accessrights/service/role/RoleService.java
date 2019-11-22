@@ -57,6 +57,7 @@ import fr.cnes.regards.framework.security.event.ResourceAccessEvent;
 import fr.cnes.regards.framework.security.event.RoleEvent;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framwork.logbackappender.LogConstants;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -87,9 +88,9 @@ public class RoleService implements IRoleService {
      */
     private static final String NATIVE_ROLE_NOT_REMOVABLE = "Modifications on native roles are forbidden";
 
-    public static final String ROLE_GAINED_ACCESS = "Role {} has been granted access to these resources: {}";
+    public static final String ROLE_GAINED_ACCESS = LogConstants.SECURITY_MARKER + "Role {} has been granted access to these resources: {}";
 
-    public static final String ROLE_LOST_ACCESS = "Role {} does not have access to the these resources anymore: {}";
+    public static final String ROLE_LOST_ACCESS = LogConstants.SECURITY_MARKER + "Role {} does not have access to the these resources anymore: {}";
 
     /**
      * CRUD repository managing {@link Role}s. Autowired by Spring.
