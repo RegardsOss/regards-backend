@@ -188,7 +188,7 @@ public class IngestRequestServiceTest extends IngestMultitenantServiceTest {
     @Test
     public void testMetaStorageResponsesHandler() throws ModuleException {
         // NOTE : up this number for performances tests.
-        int nbAipsToGenerated = 100_000;
+        int nbAipsToGenerated = 300;
         Set<RequestInfo> responses = initAips(nbAipsToGenerated, true);
 
         Iterator<RequestInfo> it = responses.iterator();
@@ -202,7 +202,7 @@ public class IngestRequestServiceTest extends IngestMultitenantServiceTest {
                 remaining--;
             }
             service.handleRemoteStoreSuccess(subList);
-            System.out.printf("Duration : %d ms", System.currentTimeMillis() - start);
+            System.out.printf("Duration : %d ms \n", System.currentTimeMillis() - start);
             // Check results
             Assert.assertEquals(remaining,
                                 service.searchRequests(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
