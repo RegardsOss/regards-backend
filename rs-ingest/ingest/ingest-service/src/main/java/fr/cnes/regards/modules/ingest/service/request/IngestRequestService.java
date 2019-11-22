@@ -311,14 +311,14 @@ public class IngestRequestService implements IIngestRequestService {
 
         if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
             // Update AIP and SIP with current error
-            updateOAISEntitiesWithErrors(request, requestInfo.getErrorRequests(),
+            updateRequestWithErrors(request, requestInfo.getErrorRequests(),
                                          "Error occurred while storing AIP files");
             // Update AIPs with success response returned by storage
             aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), requestInfo.getSuccessRequests());
             // Save error in request status
             request.setStep(IngestRequestStep.REMOTE_STORAGE_ERROR);
             // Keep track of the error
-            saveAndPublishErrorRequest(request, String.format("Remote file storage request error"));
+            saveAndPublishErrorRequest(request, null);
         } else {
             // Keep track of the error
             saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
@@ -358,8 +358,9 @@ public class IngestRequestService implements IIngestRequestService {
                 if (ri.getErrorRequests() != null) {
                     ri.getErrorRequests().forEach(e -> request.addError(e.getErrorCause()));
                 }
-                updateOAISEntitiesWithErrors(request, ri.getErrorRequests(),
+                updateRequestWithErrors(request, ri.getErrorRequests(),
                                              "Error occurred while storing AIP references");
+                saveAndPublishErrorRequest(request, null);
             }
         }
     }
@@ -411,7 +412,7 @@ public class IngestRequestService implements IIngestRequestService {
         ingestRequestRepository.delete(request);
     }
 
-    private void updateOAISEntitiesWithErrors(IngestRequest request, Collection<RequestResultInfoDTO> errors,
+    private void updateRequestWithErrors(IngestRequest request, Collection<RequestResultInfoDTO> errors,
             String errorCause) {
         List<AIPEntity> aips = request.getAips();
         // Iterate overs AIPs and errors
@@ -421,15 +422,10 @@ public class IngestRequestService implements IIngestRequestService {
                 if (error.getRequestOwners().contains(aipEntity.getAipId())) {
                     // Add the cause to this AIP
                     String errorMessage = errorCause + ": " + error.getErrorCause();
-                    aipService.save(aipEntity);
+                    request.addError(errorMessage);
                 }
             }
         }
-        // Save all errors inside the SIP
-        Set<String> newErrors = errors.stream().map(e -> errorCause + ": " + e.getErrorCause())
-                .collect(Collectors.toSet());
-        SIPEntity sip = request.getAips().get(0).getSip();
-        sipService.save(sip);
         sessionNotifier.productStoreError(request.getSessionOwner(), request.getSession(), aips);
     }
 }

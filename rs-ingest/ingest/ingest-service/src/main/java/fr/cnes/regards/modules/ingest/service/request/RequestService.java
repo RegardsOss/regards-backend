@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.service.request;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,6 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.mapper.IRequestMapper;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
@@ -59,9 +59,6 @@ public class RequestService implements IRequestService {
     private IAIPStoreMetaDataRequestService aipSaveMetaDataService;
 
     @Autowired
-    private IIngestRequestRepository ingestRequestRepository;
-
-    @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
 
     @Autowired
@@ -74,13 +71,16 @@ public class RequestService implements IRequestService {
 
     @Override
     public void handleRemoteStoreError(Set<RequestInfo> requestInfos) {
+        List<AbstractRequest> requests = findRequestsByGroupIdIn(requestInfos.stream().map(RequestInfo::getGroupId)
+                .collect(Collectors.toList()));
         for (RequestInfo ri : requestInfos) {
-            List<AbstractRequest> requests = findRequestsByGroupId(ri.getGroupId());
             for (AbstractRequest request : requests) {
-                if (request instanceof IngestRequest) {
-                    ingestRequestService.handleRemoteStoreError((IngestRequest) request, ri);
-                } else if (request instanceof AIPStoreMetaDataRequest) {
-                    aipSaveMetaDataService.handleError((AIPStoreMetaDataRequest) request, ri);
+                if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
+                    if (request instanceof IngestRequest) {
+                        ingestRequestService.handleRemoteStoreError((IngestRequest) request, ri);
+                    } else if (request instanceof AIPStoreMetaDataRequest) {
+                        aipSaveMetaDataService.handleError((AIPStoreMetaDataRequest) request, ri);
+                    }
                 }
             }
         }
@@ -88,13 +88,16 @@ public class RequestService implements IRequestService {
 
     @Override
     public void handleRemoteStoreSuccess(Set<RequestInfo> requestInfos) {
+        List<AbstractRequest> requests = findRequestsByGroupIdIn(requestInfos.stream().map(RequestInfo::getGroupId)
+                .collect(Collectors.toList()));
         for (RequestInfo ri : requestInfos) {
-            List<AbstractRequest> requests = findRequestsByGroupId(ri.getGroupId());
             for (AbstractRequest request : requests) {
-                if (request instanceof IngestRequest) {
-                    ingestRequestService.handleRemoteStoreSuccess((IngestRequest) (request), ri);
-                } else if (request instanceof AIPStoreMetaDataRequest) {
-                    aipSaveMetaDataService.handleSuccess((AIPStoreMetaDataRequest) request, ri);
+                if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
+                    if (request instanceof IngestRequest) {
+                        ingestRequestService.handleRemoteStoreSuccess((IngestRequest) (request), ri);
+                    } else if (request instanceof AIPStoreMetaDataRequest) {
+                        aipSaveMetaDataService.handleSuccess((AIPStoreMetaDataRequest) request, ri);
+                    }
                 }
             }
         }
@@ -111,8 +114,8 @@ public class RequestService implements IRequestService {
     }
 
     @Override
-    public List<AbstractRequest> findRequestsByGroupId(String groupId) {
-        return abstractRequestRepository.findAll(AbstractRequestSpecifications.searchAllByRemoteStepGroupId(groupId));
+    public List<AbstractRequest> findRequestsByGroupIdIn(List<String> groupIds) {
+        return abstractRequestRepository.findAll(AbstractRequestSpecifications.searchAllByRemoteStepGroupId(groupIds));
     }
 
     @Override

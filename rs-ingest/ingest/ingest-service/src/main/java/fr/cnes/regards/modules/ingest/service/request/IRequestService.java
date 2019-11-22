@@ -49,7 +49,7 @@ public interface IRequestService {
     /**
      * Retrieve all requests referencing the provided group id
      */
-    List<AbstractRequest> findRequestsByGroupId(String groupId);
+    List<AbstractRequest> findRequestsByGroupIdIn(List<String> groupIds);
 
     /**
      * Retrieve all requests matching provided criteria
