@@ -60,10 +60,10 @@ public class DeleteSessionEventHandler
     @Override
     public void handle(TenantWrapper<DeleteSessionEvent> wrapper) {
         DeleteSessionEvent event = wrapper.getContent();
-        LOGGER.debug("Event receive to program the deletion of all Products from session {} {}", event.getSource(),
-                     event.getName());
         // Set working tenant
         runtimeTenantResolver.forceTenant(wrapper.getTenant());
+        LOGGER.info("Event receive to program the deletion of all Products from session {} {}", event.getSource(),
+                    event.getName());
         // Run a SessionDeletionJob
         try {
             acquisitionService.deleteSessionProducts(event.getSource(), event.getName());
