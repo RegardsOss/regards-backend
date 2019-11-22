@@ -221,6 +221,7 @@ public class IngestRequestService implements IIngestRequestService {
             saveAndPublishErrorRequest(request, String
                     .format("Cannot send events to store AIP files because they are malformed. Cause: %s",
                             e.getMessage()));
+            sessionNotifier.productStoreError(request.getSessionOwner(), request.getSession(), request.getAips());
         }
         return aipEntities;
     }
@@ -311,8 +312,7 @@ public class IngestRequestService implements IIngestRequestService {
 
         if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
             // Update AIP and SIP with current error
-            updateRequestWithErrors(request, requestInfo.getErrorRequests(),
-                                         "Error occurred while storing AIP files");
+            updateRequestWithErrors(request, requestInfo.getErrorRequests(), "Error occurred while storing AIP files");
             // Update AIPs with success response returned by storage
             aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), requestInfo.getSuccessRequests());
             // Save error in request status
@@ -358,9 +358,9 @@ public class IngestRequestService implements IIngestRequestService {
                 if (ri.getErrorRequests() != null) {
                     ri.getErrorRequests().forEach(e -> request.addError(e.getErrorCause()));
                 }
-                updateRequestWithErrors(request, ri.getErrorRequests(),
-                                             "Error occurred while storing AIP references");
+                updateRequestWithErrors(request, ri.getErrorRequests(), "Error occurred while storing AIP references");
                 saveAndPublishErrorRequest(request, null);
+                sessionNotifier.productStoreError(request.getSessionOwner(), request.getSession(), request.getAips());
             }
         }
     }
@@ -426,6 +426,5 @@ public class IngestRequestService implements IIngestRequestService {
                 }
             }
         }
-        sessionNotifier.productStoreError(request.getSessionOwner(), request.getSession(), aips);
     }
 }

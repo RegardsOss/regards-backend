@@ -187,12 +187,13 @@ public class IngestRequestServiceTest extends IngestMultitenantServiceTest {
 
     @Test
     public void testMetaStorageResponsesHandler() throws ModuleException {
-        Set<RequestInfo> responses = initAips(10_000, true);
+        // NOTE : up this number for performances tests.
+        int nbAipsToGenerated = 100_000;
+        Set<RequestInfo> responses = initAips(nbAipsToGenerated, true);
 
         Iterator<RequestInfo> it = responses.iterator();
 
-        // NOTE : up this number for performances tests.
-        int remaining = 1_000;
+        int remaining = responses.size();
         do {
             long start = System.currentTimeMillis();
             Set<RequestInfo> subList = Sets.newHashSet();

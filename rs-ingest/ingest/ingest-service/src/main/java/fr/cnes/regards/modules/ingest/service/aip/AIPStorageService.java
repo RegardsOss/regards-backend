@@ -192,7 +192,7 @@ public class AIPStorageService implements IAIPStorageService {
         if ((dataObject.getFilename() == null) || dataObject.getFilename().isEmpty()) {
             errors.add("Invalid filename");
         }
-        if (errors.isEmpty()) {
+        if (!errors.isEmpty()) {
             throw new ModuleException(
                     String.format("Invalid entity {}. Information are missing : %s", String.join(", ", errors)));
         }
