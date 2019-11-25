@@ -349,14 +349,12 @@ public class ProductService implements IProductService {
         String session = jobsParameters.get(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION).getValue();
 
         // Compute the  list of products to create or update
-        Set<String> productNames = new HashSet<>();
         Multimap<String, AcquisitionFile> validFilesByProductName = ArrayListMultimap.create();
         for (AcquisitionFile validFile : validFiles) {
 
             try {
                 String productName = productPlugin.getProductName(validFile.getFilePath());
                 if ((productName != null) && !productName.isEmpty()) {
-                    productNames.add(productName);
                     validFilesByProductName.put(productName, validFile);
                 } else {
                     // Continue silently but register error in database
@@ -381,7 +379,7 @@ public class ProductService implements IProductService {
         }
 
         // Find all existing product by using one database request
-        Set<Product> products = productRepository.findByProductNameIn(productNames);
+        Set<Product> products = productRepository.findByProductNameIn(validFilesByProductName.keys());
         Map<String, Product> productMap = products.stream()
                 .collect(Collectors.toMap(Product::getProductName, Function.identity()));
         Set<Product> productsToSchedule = new HashSet<>();
