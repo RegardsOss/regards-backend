@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -57,13 +58,14 @@ public class RequestService implements IRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestService.class);
 
     @Autowired
+    @Lazy
     private IIngestRequestService ingestRequestService;
 
     @Autowired
-    private IIngestRequestRepository ingestRequestRepository;
+    private IAIPStoreMetaDataRequestService aipSaveMetaDataService;
 
     @Autowired
-    private IAIPStoreMetaDataRequestService aipSaveMetaDataService;
+    private IIngestRequestRepository ingestRequestRepository;
 
     @Autowired
     private IAIPStoreMetaDataRepository aipStoreMetaDataRepository;
