@@ -85,7 +85,7 @@ public class IngestRequestEventHandler
     public void handle(TenantWrapper<IngestRequestEvent> wrapper) {
         String tenant = wrapper.getTenant();
         runtimeTenantResolver.forceTenant(tenant);
-        LOGGER.trace("[EVENT] New FileStorageFlowItem received -- {}", wrapper.getContent().toString());
+        LOGGER.trace("[EVENT] New IngestRequestEvent received -- {}", wrapper.getContent().toString());
 
         while ((items.get(tenant) != null) && (items.get(tenant).size() >= (50 * BULK_SIZE))) {
             // Do not overload the concurrent queue if the configured listener does not handle queued message faster
@@ -133,11 +133,11 @@ public class IngestRequestEventHandler
                     }
                     if (!list.isEmpty()) {
                         LOGGER.info("[INGEST RESPONSES HANDLER] Total events queue size={}", tenantItems.size());
-                        LOGGER.info("[INGEST RESPONSES HANDLER] Handling {} FileRequestsGroupEvent...", list.size());
+                        LOGGER.info("[INGEST RESPONSES HANDLER] Handling {} IngestRequestEvent...", list.size());
                         long start = System.currentTimeMillis();
                         handle(list);
-                        LOGGER.info("[INGEST RESPONSES HANDLER] {} FileRequestsGroupEvent handled in {} ms",
-                                    list.size(), System.currentTimeMillis() - start);
+                        LOGGER.info("[INGEST RESPONSES HANDLER] {} IngestRequestEvent handled in {} ms", list.size(),
+                                    System.currentTimeMillis() - start);
                         list.clear();
                     }
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved

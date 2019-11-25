@@ -102,7 +102,7 @@ public class IngestClientIT extends AbstractRegardsWebIT {
     }
 
     @Test
-    public void ingest() throws IngestClientException {
+    public void ingest() throws IngestClientException, InterruptedException {
 
         String providerId = "sipFromClient";
         RequestInfo clientInfo = ingestClient.ingest(IngestMetadataDto
@@ -112,6 +112,8 @@ public class IngestClientIT extends AbstractRegardsWebIT {
 
         Mockito.verify(listener, Mockito.times(1)).onGranted(Mockito.anyCollection());
         Assert.assertEquals(clientInfo.getRequestId(), listener.getGranted().iterator().next().getRequestId());
+
+        Thread.sleep(5_000);
 
         Mockito.verify(listener, Mockito.times(1)).onSuccess(Mockito.anyCollection());
         Assert.assertEquals(clientInfo.getRequestId(), listener.getSuccess().iterator().next().getRequestId());
