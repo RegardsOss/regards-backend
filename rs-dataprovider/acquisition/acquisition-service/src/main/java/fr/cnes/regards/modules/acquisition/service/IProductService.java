@@ -160,12 +160,12 @@ public interface IProductService {
     /**
      * Handle successful SIP submission
      */
-    void handleIngestedSIPSuccess(RequestInfo info);
+    void handleIngestedSIPSuccess(Collection<RequestInfo> infos);
 
     /**
      * Handle failure SIP submission
      */
-    void handleIngestedSIPFailed(RequestInfo info);
+    void handleIngestedSIPFailed(Collection<RequestInfo> infos);
 
     /**
      * Count number of {@link Product} associated to the given {@link AcquisitionProcessingChain}

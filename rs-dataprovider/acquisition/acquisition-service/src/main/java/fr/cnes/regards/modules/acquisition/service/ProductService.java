@@ -478,53 +478,65 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public void handleIngestedSIPSuccess(RequestInfo info) {
-        Product product = productRepository.findByProductName(info.getProviderId());
-        if (product != null) {
-            // Do post processing when SIP properly stored
-            if (product.getProcessingChain().getPostProcessSipPluginConf().isPresent()) {
-                JobInfo jobInfo = new JobInfo(true);
-                jobInfo.setPriority(AcquisitionJobPriority.POST_ACQUISITION_JOB_PRIORITY.getPriority());
-                jobInfo.setParameters(new JobParameter(PostAcquisitionJob.EVENT_PARAMETER, info));
-                jobInfo.setClassName(PostAcquisitionJob.class.getName());
-                jobInfo.setOwner(authResolver.getUser());
-                jobInfo = jobInfoService.createAsQueued(jobInfo);
+    public void handleIngestedSIPSuccess(Collection<RequestInfo> infos) {
+        Set<Product> products = productRepository
+                .findByProductNameIn(infos.stream().map(RequestInfo::getProviderId).collect(Collectors.toSet()));
+        for (RequestInfo info : infos) {
+            Optional<Product> oProduct = products.stream().filter(p -> p.getProductName().equals(info.getProviderId()))
+                    .findFirst();
+            if (oProduct.isPresent()) {
+                Product product = oProduct.get();
+                // Do post processing when SIP properly stored
+                if (product.getProcessingChain().getPostProcessSipPluginConf().isPresent()) {
+                    JobInfo jobInfo = new JobInfo(true);
+                    jobInfo.setPriority(AcquisitionJobPriority.POST_ACQUISITION_JOB_PRIORITY.getPriority());
+                    jobInfo.setParameters(new JobParameter(PostAcquisitionJob.EVENT_PARAMETER, info));
+                    jobInfo.setClassName(PostAcquisitionJob.class.getName());
+                    jobInfo.setOwner(authResolver.getUser());
+                    jobInfo = jobInfoService.createAsQueued(jobInfo);
 
-                // Release lock
-                if (product.getLastPostProductionJobInfo() != null) {
-                    jobInfoService.unlock(product.getLastPostProductionJobInfo());
+                    // Release lock
+                    if (product.getLastPostProductionJobInfo() != null) {
+                        jobInfoService.unlock(product.getLastPostProductionJobInfo());
+                    }
+                    product.setLastPostProductionJobInfo(jobInfo);
                 }
-                product.setLastPostProductionJobInfo(jobInfo);
+                sessionNotifier.notifyProductIngested(product);
+                product.setSipState(SIPState.INGESTED);
+                product.setIpId(info.getSipId());
+                save(product);
+            } else {
+                LOGGER.warn("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider",
+                            info.getSipId(), info.getProviderId());
             }
-            sessionNotifier.notifyProductIngested(product);
-            product.setSipState(SIPState.INGESTED);
-            product.setIpId(info.getSipId());
-            save(product);
-        } else {
-            LOGGER.warn("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider", info.getSipId(),
-                        info.getProviderId());
         }
     }
 
     @Override
-    public void handleIngestedSIPFailed(RequestInfo info) {
-        Product product = productRepository.findByProductName(info.getProviderId());
-        if (product != null) {
-            // Do post processing when SIP properly stored
-            StringBuilder errorMessage = new StringBuilder();
-            errorMessage.append("Ingestion failed with following error :  \\n");
-            for (String error : info.getErrors()) {
-                errorMessage.append(error);
-                errorMessage.append("  \\n");
+    public void handleIngestedSIPFailed(Collection<RequestInfo> infos) {
+        Set<Product> products = productRepository
+                .findByProductNameIn(infos.stream().map(RequestInfo::getProviderId).collect(Collectors.toSet()));
+        for (RequestInfo info : infos) {
+            Optional<Product> oProduct = products.stream().filter(p -> p.getProductName().equals(info.getProviderId()))
+                    .findFirst();
+            if (oProduct.isPresent()) {
+                Product product = oProduct.get();
+                // Do post processing when SIP properly stored
+                StringBuilder errorMessage = new StringBuilder();
+                errorMessage.append("Ingestion failed with following error :  \\n");
+                for (String error : info.getErrors()) {
+                    errorMessage.append(error);
+                    errorMessage.append("  \\n");
+                }
+                product.setSipState(ProductSIPState.INGESTION_FAILED);
+                product.setIpId(info.getSipId());
+                product.setError(errorMessage.toString());
+                save(product);
+                sessionNotifier.notifyProductIngestFailure(product);
+            } else {
+                LOGGER.warn("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider",
+                            info.getSipId(), info.getProviderId());
             }
-            product.setSipState(ProductSIPState.INGESTION_FAILED);
-            product.setIpId(info.getSipId());
-            product.setError(errorMessage.toString());
-            save(product);
-            sessionNotifier.notifyProductIngestFailure(product);
-        } else {
-            LOGGER.warn("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider", info.getSipId(),
-                        info.getProviderId());
         }
     }
 
