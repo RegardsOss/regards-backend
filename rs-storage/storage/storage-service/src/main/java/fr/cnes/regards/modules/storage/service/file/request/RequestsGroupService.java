@@ -198,9 +198,18 @@ public class RequestsGroupService {
     * Check for all current request groups if all requests are terminated. If so send a SUCCESS or ERROR event on the bus message.
     */
     public void checkRequestsGroupsDone() {
-        PageRequest page = PageRequest.of(0, 500);
-        Page<RequestGroup> response = reqGroupRepository.findAll(page);
-        response.getContent().stream().forEach(this::checkRequestsGroupDone);
+        long start = System.currentTimeMillis();
+        Page<RequestGroup> response = reqGroupRepository.findAll(PageRequest.of(0, 1_000));
+        long totalChecked = response.getTotalElements();
+        if (totalChecked > 0) {
+            LOGGER.info("Checking {} request groups status");
+            do {
+                response.getContent().stream().forEach(this::checkRequestsGroupDone);
+                response = reqGroupRepository.findAll(response.getPageable().next());
+            } while (response.hasNext());
+            LOGGER.info("Check {} request groups done terminated in {}ms", totalChecked,
+                        System.currentTimeMillis() - start);
+        }
     }
 
     /**
@@ -285,7 +294,7 @@ public class RequestsGroupService {
      * @param groupId
      * @param type
      */
-    private void groupDone(RequestGroup reqGrp) {
+    public void groupDone(RequestGroup reqGrp) {
         // 1. Get errors
         Set<RequestResultInfo> errors = groupReqInfoRepository.findByGroupIdAndError(reqGrp.getId(), true);
         // 2. Get success

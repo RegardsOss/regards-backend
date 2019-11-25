@@ -86,7 +86,7 @@ public class FileRequestScheduler {
     @Autowired
     private ILockService lockService;
 
-    private final Semaphore semaphore = new Semaphore(1);
+    private final Semaphore semaphore = new Semaphore(1, true);
 
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
     public void handleFileStorageRequests() throws ModuleException {

@@ -62,9 +62,9 @@ public class StorageClientMock implements IStorageClient {
     @Autowired
     private IPublisher publisher;
 
-    private Optional<Boolean> shouldReturnGranted;
+    private Optional<Boolean> shouldReturnGranted = Optional.empty();
 
-    private Optional<Boolean> shouldReturnSuccess;
+    private Optional<Boolean> shouldReturnSuccess = Optional.empty();
 
     /**
      *
