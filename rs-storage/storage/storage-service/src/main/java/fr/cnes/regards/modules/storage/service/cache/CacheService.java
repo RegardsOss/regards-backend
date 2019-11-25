@@ -164,21 +164,24 @@ public class CacheService {
         } while (shouldBeAvailableSet.hasNext());
         toDelete.forEach(id -> cachedFileRepository.deleteById(id));
 
-        page = PageRequest.of(0, BULK_SIZE, Direction.ASC, "id");
-        Page<CacheFile> availableFiles;
-        do {
-            availableFiles = cachedFileRepository.findAll(page);
-            Set<String> availableFilePaths = availableFiles.getContent().stream()
-                    .map(availableFile -> availableFile.getLocation().getPath().toString()).collect(Collectors.toSet());
-            try (Stream<Path> stream = Files.walk(getTenantCachePath())) {
-                stream.filter(path -> availableFilePaths.contains(path.toAbsolutePath().toString()))
-                        .forEach(path -> notificationClient.notify(String
-                                .format("File %s is present in cache directory while it shouldn't be. Please remove this file from the cache directory",
-                                        path.toString()), "Dirty cache", NotificationLevel.WARNING,
-                                                                   DefaultRole.PROJECT_ADMIN));
-            }
-            page = availableFiles.nextPageable();
-        } while (availableFiles.hasNext());
+        if (Files.exists(getTenantCachePath())) {
+            page = PageRequest.of(0, BULK_SIZE, Direction.ASC, "id");
+            Page<CacheFile> availableFiles;
+            do {
+                availableFiles = cachedFileRepository.findAll(page);
+                Set<String> availableFilePaths = availableFiles.getContent().stream()
+                        .map(availableFile -> availableFile.getLocation().getPath().toString())
+                        .collect(Collectors.toSet());
+                try (Stream<Path> stream = Files.walk(getTenantCachePath())) {
+                    stream.filter(path -> availableFilePaths.contains(path.toAbsolutePath().toString()))
+                            .forEach(path -> notificationClient.notify(String
+                                    .format("File %s is present in cache directory while it shouldn't be. Please remove this file from the cache directory",
+                                            path.toString()), "Dirty cache", NotificationLevel.WARNING,
+                                                                       DefaultRole.PROJECT_ADMIN));
+                }
+                page = availableFiles.nextPageable();
+            } while (availableFiles.hasNext());
+        }
     }
 
     /**
