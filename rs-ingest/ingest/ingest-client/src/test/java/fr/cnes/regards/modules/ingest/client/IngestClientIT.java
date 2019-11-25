@@ -23,7 +23,6 @@ import java.nio.file.Paths;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,6 +93,7 @@ public class IngestClientIT extends AbstractRegardsWebIT {
         ingestServiceTest.init();
         procCahinService.initDefaultServiceConfiguration();
         ingestServiceTest.cleanAMQPQueues(IngestRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        listener.clear();
     }
 
     @Configuration
@@ -110,13 +110,11 @@ public class IngestClientIT extends AbstractRegardsWebIT {
                        Sets.newHashSet("cat 1"), StorageMetadata.build("disk")), create(providerId));
         ingestServiceTest.waitForIngestion(1, 5_000, SIPState.STORED);
 
-        ArgumentCaptor<RequestInfo> grantedInfo = ArgumentCaptor.forClass(RequestInfo.class);
-        Mockito.verify(listener, Mockito.times(1)).onGranted(grantedInfo.capture());
-        Assert.assertEquals(clientInfo.getRequestId(), grantedInfo.getValue().getRequestId());
+        Mockito.verify(listener, Mockito.times(1)).onGranted(Mockito.anyCollection());
+        Assert.assertEquals(clientInfo.getRequestId(), listener.getGranted().iterator().next().getRequestId());
 
-        ArgumentCaptor<RequestInfo> successInfo = ArgumentCaptor.forClass(RequestInfo.class);
-        Mockito.verify(listener, Mockito.times(1)).onSuccess(successInfo.capture());
-        Assert.assertEquals(clientInfo.getRequestId(), successInfo.getValue().getRequestId());
+        Mockito.verify(listener, Mockito.times(1)).onSuccess(Mockito.anyCollection());
+        Assert.assertEquals(clientInfo.getRequestId(), listener.getSuccess().iterator().next().getRequestId());
     }
 
     private SIP create(String providerId) {
