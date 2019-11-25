@@ -3,7 +3,9 @@
   "DATA": {
     "showDescription": true,
     "showTags": true,
+    "showCoupling": true,
     "showLinkedDocuments": true,
+    "showLinkedEntities": true,
     "showThumbnail": true,
     "groups": [
       {
@@ -70,12 +72,15 @@
           }
         ]
       }
-    ]
+    ],
+    "attributeToDescriptionFiles": []
   },
   "DATASET": {
     "showDescription": true,
     "showTags": true,
+    "showCoupling": true,
     "showLinkedDocuments": true,
+    "showLinkedEntities": true,
     "showThumbnail": true,
     "groups": [
       {
@@ -142,12 +147,15 @@
           }
         ]
       }
-    ]
+    ],
+    "attributeToDescriptionFiles": []
   },
   "DOCUMENT": {
     "showDescription": true,
     "showTags": true,
+    "showCoupling": true,
     "showLinkedDocuments": false,
+    "showLinkedEntities": true,
     "showThumbnail": true,
     "groups": [
       {
@@ -214,12 +222,15 @@
           }
         ]
       }
-    ]
+    ],
+    "attributeToDescriptionFiles": []
   },
   "COLLECTION": {
     "showDescription": true,
     "showTags": true,
+    "showCoupling": true,
     "showLinkedDocuments": true,
+    "showLinkedEntities": true,
     "showThumbnail": true,
     "groups": [
       {
@@ -286,6 +297,7 @@
           }
         ]
       }
-    ]
+    ],
+    "attributeToDescriptionFiles": []
   }
 }
