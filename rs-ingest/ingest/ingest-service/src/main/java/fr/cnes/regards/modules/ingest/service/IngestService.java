@@ -126,7 +126,7 @@ public class IngestService implements IIngestService {
      * Validate, save and publish a new request
      * @param item request to manage
      */
-    private IngestRequest registerIngestRequest(IngestRequestFlowItem item) {
+    private IngestRequest registerIngestRequest(IngestRequestFlowItem item, InternalRequestStep state) {
 
         // Validate all elements of the flow item
         Errors errors = new MapBindingResult(new HashMap<>(), IngestRequestFlowItem.class.getName());
@@ -147,9 +147,9 @@ public class IngestService implements IIngestService {
         }
 
         // Save granted ingest request
-        IngestRequest request = IngestRequest
-                .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()),
-                       InternalRequestStep.CREATED, IngestRequestStep.LOCAL_SCHEDULED, item.getSip());
+        IngestRequest request = IngestRequest.build(item.getRequestId(),
+                                                    metadataMapper.dtoToMetadata(item.getMetadata()), state,
+                                                    IngestRequestStep.LOCAL_SCHEDULED, item.getSip());
         ingestRequestService.handleRequestGranted(request);
         // return granted request
         return request;
@@ -180,7 +180,7 @@ public class IngestService implements IIngestService {
             }
 
             // Validate and transform to request
-            IngestRequest ingestRequest = registerIngestRequest(item);
+            IngestRequest ingestRequest = registerIngestRequest(item, InternalRequestStep.RUNNING);
             if (ingestRequest != null) {
                 requestPerChain.put(ingestRequest.getMetadata().getIngestChain(), ingestRequest);
                 // Notify session for handled requests
