@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
@@ -265,7 +265,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         Mockito.clearInvocations(ingestRequestService);
         IngestRequest request = ingestRequestCaptor.getValue();
         Assert.assertNotNull(request);
-        Assert.assertEquals(InternalRequestStep.ERROR, request.getState());
+        Assert.assertEquals(InternalRequestState.ERROR, request.getState());
         Assert.assertTrue(!request.getErrors().isEmpty());
 
         Assert.assertNotNull(sipCaptor.getValue());

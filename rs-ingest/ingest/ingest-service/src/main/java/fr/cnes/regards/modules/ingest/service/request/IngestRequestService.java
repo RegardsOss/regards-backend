@@ -51,7 +51,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -237,7 +237,7 @@ public class IngestRequestService implements IIngestRequestService {
                     case REMOTE_STORAGE_REQUESTED:
                         // Save the request was denied at AIP files storage
                         request.setStep(IngestRequestStep.REMOTE_STORAGE_DENIED);
-                        request.setState(InternalRequestStep.ERROR);
+                        request.setState(InternalRequestState.ERROR);
                         // Keep track of the error
                         saveAndPublishErrorRequest(request, String.format("Remote file storage request denied"));
                         break;

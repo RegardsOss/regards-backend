@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -35,10 +34,10 @@ import org.springframework.stereotype.Repository;
 public interface IAIPStoreMetaDataRepository extends JpaRepository<AIPStoreMetaDataRequest, Long> {
 
     default Page<AIPStoreMetaDataRequest> findWaitingRequest(Pageable pageRequest) {
-        return findAllByState(InternalRequestStep.CREATED, pageRequest);
+        return findAllByState(InternalRequestState.CREATED, pageRequest);
     }
 
-    Page<AIPStoreMetaDataRequest> findAllByState(InternalRequestStep step, Pageable page);
+    Page<AIPStoreMetaDataRequest> findAllByState(InternalRequestState step, Pageable page);
 
-    Page<AbstractRequest> findAll(Specification<AbstractRequest> searchAllByFilters, Pageable pageable);
+    List<AIPStoreMetaDataRequest> findAllByAipIdIn(List<Long> aips);
 }

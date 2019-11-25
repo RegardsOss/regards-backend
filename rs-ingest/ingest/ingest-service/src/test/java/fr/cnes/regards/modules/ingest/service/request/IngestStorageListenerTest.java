@@ -30,7 +30,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
@@ -60,10 +60,10 @@ public class IngestStorageListenerTest extends AbstractIngestRequestTest {
                                                 simulatefileReference("checksum", "someone"), null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
         Assert.assertEquals("At initialization no requests should be created", 0, aipUpdateReqService
-                .search(InternalRequestStep.CREATED, PageRequest.of(0, 10)).getTotalElements());
+                .search(InternalRequestState.CREATED, PageRequest.of(0, 10)).getTotalElements());
         storageListener.onCopySuccess(requests);
         Assert.assertEquals("No requests should be created", 0, aipUpdateReqService
-                .search(InternalRequestStep.CREATED, PageRequest.of(0, 10)).getTotalElements());
+                .search(InternalRequestState.CREATED, PageRequest.of(0, 10)).getTotalElements());
     }
 
     @Test
@@ -81,10 +81,10 @@ public class IngestStorageListenerTest extends AbstractIngestRequestTest {
                                                        simulatefileReference(checksum, "someone"), null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
         Assert.assertEquals("At initialization no requests should be created", 0, aipUpdateReqService
-                .search(InternalRequestStep.CREATED, PageRequest.of(0, 10)).getTotalElements());
+                .search(InternalRequestState.CREATED, PageRequest.of(0, 10)).getTotalElements());
         storageListener.onCopySuccess(requests);
         Assert.assertEquals("One request should be created. Two success requests are sent from storage but only one is associated to a known AIP",
-                            1, aipUpdateReqService.search(InternalRequestStep.CREATED, PageRequest.of(0, 10))
+                            1, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
                                     .getTotalElements());
     }
 

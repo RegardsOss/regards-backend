@@ -18,11 +18,27 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications;
+import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
+import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.mapper.IRequestMapper;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
+import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +46,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications;
-import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
-import fr.cnes.regards.modules.ingest.domain.mapper.IRequestMapper;
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
-import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
 
 /**
  * @author Léo Mieulet
@@ -56,10 +60,19 @@ public class RequestService implements IRequestService {
     private IIngestRequestService ingestRequestService;
 
     @Autowired
+    private IIngestRequestRepository ingestRequestRepository;
+
+    @Autowired
     private IAIPStoreMetaDataRequestService aipSaveMetaDataService;
 
     @Autowired
+    private IAIPStoreMetaDataRepository aipStoreMetaDataRepository;
+
+    @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
+
+    @Autowired
+    private IAIPUpdateRequestRepository aipUpdateRequestRepository;
 
     @Autowired
     private IRequestMapper requestMapper;
@@ -128,5 +141,24 @@ public class RequestService implements IRequestService {
             dtoList.add(requestMapper.metadataToDto(request));
         }
         return new PageImpl<>(dtoList, pageable, requests.getTotalElements());
+    }
+
+    @Override
+    public void deleteAllByAip(Set<AIPEntity> aipEntities) {
+        for (AIPEntity aipEntity : aipEntities) {
+            if (aipEntity.getState() == AIPState.GENERATED) {
+                // Check there is no IngestRequest linked to this AIP
+                List<IngestRequest> requests = ingestRequestRepository.findAllByAipsIn(aipEntity);
+                ingestRequestRepository.deleteAll(requests);
+            }
+        }
+        // Make the list of all these AIPs id and remove all requests associated
+        List<Long> aipIds = aipEntities.stream().map(AIPEntity::getId).collect(Collectors.toList());
+
+        List<AIPStoreMetaDataRequest> storeMetaRequests = aipStoreMetaDataRepository.findAllByAipIdIn(aipIds);
+        aipStoreMetaDataRepository.deleteAll(storeMetaRequests);
+
+        List<AIPUpdateRequest> updateRequests = aipUpdateRequestRepository.findAllByAipIdIn(aipIds);
+        aipUpdateRequestRepository.deleteAll(updateRequests);
     }
 }

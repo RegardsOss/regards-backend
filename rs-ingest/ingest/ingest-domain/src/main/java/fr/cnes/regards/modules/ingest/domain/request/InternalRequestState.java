@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request;
 
-public enum InternalRequestStep {
+public enum InternalRequestState {
     /**
      * When the request is ready to be processed
      */

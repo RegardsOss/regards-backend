@@ -18,25 +18,22 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateCategoryTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocationTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import java.util.Set;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test class for {@link AIPUpdateRequestService}
@@ -70,12 +67,12 @@ public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
         catTask.setCategories(Lists.newArrayList("cat1", "cat2"));
         updateTasks.add(catTask);
 
-        Assert.assertEquals(0, aipUpdateReqService.search(InternalRequestStep.CREATED, PageRequest.of(0, 10))
+        Assert.assertEquals(0, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
                 .getTotalElements());
         aipUpdateReqService.create(Sets.newHashSet(aipEntity), updateTasks);
 
         // Two new update requests should be created
-        Assert.assertEquals(2, aipUpdateReqService.search(InternalRequestStep.CREATED, PageRequest.of(0, 10))
+        Assert.assertEquals(2, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
                 .getTotalElements());
     }
 
@@ -97,15 +94,15 @@ public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
         updateTasks.add(task);
         updateTasks.add(catTask);
 
-        Assert.assertEquals(0, aipUpdateReqService.search(InternalRequestStep.CREATED, PageRequest.of(0, 10))
+        Assert.assertEquals(0, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
                 .getTotalElements());
         aipUpdateReqService.create(aipEntity, updateTasks);
         // Two new update requests should be created
-        Assert.assertEquals(2, aipUpdateReqService.search(InternalRequestStep.CREATED, PageRequest.of(0, 10))
+        Assert.assertEquals(2, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
                 .getTotalElements());
 
         // Simulate all requests running
-        aipUpdateReqService.updateState(repo.findAll(), InternalRequestStep.RUNNING);
+        aipUpdateReqService.updateState(repo.findAll(), InternalRequestState.RUNNING);
 
         // Send the same requests
         AIPUpdateFileLocationTask newTask = AIPUpdateFileLocationTask
@@ -114,7 +111,7 @@ public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
                                simulatefileReference(checksum, aipEntity.getAipId()), null)));
         aipUpdateReqService.create(aipEntity, Sets.newHashSet(newTask));
         // The new update request should be blocked as requests are already running for the give aip
-        Assert.assertEquals(1, aipUpdateReqService.search(InternalRequestStep.BLOCKED, PageRequest.of(0, 10))
+        Assert.assertEquals(1, aipUpdateReqService.search(InternalRequestState.BLOCKED, PageRequest.of(0, 10))
                 .getTotalElements());
     }
 

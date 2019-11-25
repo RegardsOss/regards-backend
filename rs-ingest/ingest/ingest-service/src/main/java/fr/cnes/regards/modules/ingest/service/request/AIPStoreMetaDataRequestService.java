@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.StoreLocation;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
@@ -79,7 +79,7 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
 
         // Link to requests the group id of the request sent to storage
         for (AIPStoreMetaDataRequest request : requests) {
-            if (request.getState() != InternalRequestStep.ERROR) {
+            if (request.getState() != InternalRequestState.ERROR) {
                 // Register request info to identify storage callback events
                 request.setRemoteStepGroupIds(Lists.newArrayList(requestId));
             }
@@ -134,7 +134,7 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
     public void handleError(AIPStoreMetaDataRequest request, RequestInfo requestInfo) {
         request.setErrors(requestInfo.getErrorRequests().stream().map(r -> r.getErrorCause())
                 .collect(Collectors.toSet()));
-        request.setState(InternalRequestStep.ERROR);
+        request.setState(InternalRequestState.ERROR);
         aipStoreMetaDataRepository.save(request);
         sessionNotifier.productMetaStoredError(request.getAip());
     }

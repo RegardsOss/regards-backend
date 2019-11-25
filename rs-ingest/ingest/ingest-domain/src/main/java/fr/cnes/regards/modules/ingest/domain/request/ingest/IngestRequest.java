@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.ingest.domain.request.ingest;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -135,21 +135,21 @@ public class IngestRequest extends AbstractRequest {
         return UUID.randomUUID().toString();
     }
 
-    public static IngestRequest build(IngestMetadata metadata, InternalRequestStep state, IngestRequestStep step, SIP sip) {
+    public static IngestRequest build(IngestMetadata metadata, InternalRequestState state, IngestRequestStep step, SIP sip) {
         return build(generateRequestId(), metadata, state, step, sip, null);
     }
 
-    public static IngestRequest build(IngestMetadata metadata, InternalRequestStep state, IngestRequestStep step, SIP sip,
+    public static IngestRequest build(IngestMetadata metadata, InternalRequestState state, IngestRequestStep step, SIP sip,
             @Nullable Set<String> errors) {
         return build(generateRequestId(), metadata, state, step, sip, errors);
     }
 
-    public static IngestRequest build(String requestId, IngestMetadata metadata, InternalRequestStep state,
+    public static IngestRequest build(String requestId, IngestMetadata metadata, InternalRequestState state,
             IngestRequestStep step, SIP sip) {
         return build(requestId, metadata, state, step, sip, null);
     }
 
-    public static IngestRequest build(String requestId, IngestMetadata metadata, InternalRequestStep state,
+    public static IngestRequest build(String requestId, IngestMetadata metadata, InternalRequestState state,
             IngestRequestStep step, SIP sip, @Nullable Set<String> errors) {
         IngestRequest request = new IngestRequest();
         request.setConfig(new IngestPayload());

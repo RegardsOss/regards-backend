@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.ingest.domain.request.manifest;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import java.time.OffsetDateTime;
 import java.util.Set;
@@ -97,7 +97,7 @@ public class AIPStoreMetaDataRequest extends AbstractRequest {
     public static AIPStoreMetaDataRequest build(AIPEntity aip, Set<StoreLocation> storeLocations,
             boolean removeCurrentMetaData, boolean computeChecksum) {
         AIPStoreMetaDataRequest smdr = new AIPStoreMetaDataRequest();
-        smdr.setState(InternalRequestStep.CREATED);
+        smdr.setState(InternalRequestState.CREATED);
         smdr.setAip(aip);
         smdr.setSessionOwner(aip.getSessionOwner());
         smdr.setSession(aip.getSession());

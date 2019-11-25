@@ -18,13 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -33,20 +31,18 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface IAIPUpdateRequestRepository extends JpaRepository<AIPUpdateRequest, Long> {
 
-    Page<AbstractRequest> findAll(Specification<AbstractRequest> searchAllByFilters, Pageable pageable);
-
     default Page<AIPUpdateRequest> findWaitingRequest(Pageable pageRequest) {
-        return findAllByState(InternalRequestStep.CREATED, pageRequest);
+        return findAllByState(InternalRequestState.CREATED, pageRequest);
     }
 
     default List<AIPUpdateRequest> findRunningRequestAndAipIdIn(List<Long> aipIds) {
-        return findAllByAipIdInAndState(aipIds, InternalRequestStep.RUNNING);
+        return findAllByAipIdInAndState(aipIds, InternalRequestState.RUNNING);
     }
 
-    Page<AIPUpdateRequest> findAllByState(InternalRequestStep step, Pageable page);
+    Page<AIPUpdateRequest> findAllByState(InternalRequestState step, Pageable page);
 
     List<AIPUpdateRequest> findAllByAipIdIn(List<Long> aipIds);
 
-    List<AIPUpdateRequest> findAllByAipIdInAndState(List<Long> aipIds, InternalRequestStep state);
+    List<AIPUpdateRequest> findAllByAipIdInAndState(List<Long> aipIds, InternalRequestState state);
     //   TODO List<AIPUpdateRequest> findDistinctByAipIdAndAipIdInAndState(List<Long> aipIds, InternalRequestStep state);
 }

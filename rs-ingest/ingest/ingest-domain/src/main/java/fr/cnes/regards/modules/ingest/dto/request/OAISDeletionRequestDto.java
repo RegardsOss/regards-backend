@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.dto.request;
 
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -35,7 +35,7 @@ public class OAISDeletionRequestDto {
 
     private String requestId;
 
-    private InternalRequestStep state;
+    private InternalRequestState state;
 
     private String sessionOwner;
 
@@ -134,11 +134,11 @@ public class OAISDeletionRequestDto {
         this.requestId = requestId;
     }
 
-    public InternalRequestStep getState() {
+    public InternalRequestState getState() {
         return state;
     }
 
-    public void setState(InternalRequestStep state) {
+    public void setState(InternalRequestState state) {
         this.state = state;
     }
 

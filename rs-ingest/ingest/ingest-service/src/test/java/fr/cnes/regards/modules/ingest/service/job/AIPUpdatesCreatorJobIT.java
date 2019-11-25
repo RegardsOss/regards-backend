@@ -38,7 +38,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTagTask;
@@ -177,7 +177,7 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
         waitForTaskCreated((nbSipConcerned * nbTasksPerSip) + nbInitialTasks, 10_000);
 
         Pageable pageRequest = PageRequest.of(0, 200);
-        Page<AIPUpdateRequest> blocked = aipUpdateRequestRepository.findAllByState(InternalRequestStep.BLOCKED,
+        Page<AIPUpdateRequest> blocked = aipUpdateRequestRepository.findAllByState(InternalRequestState.BLOCKED,
                                                                                    pageRequest);
         Assert.assertEquals(nbSipConcerned * nbTasksPerSip, blocked.getTotalElements());
     }
@@ -190,7 +190,7 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
                     .build(AIPUpdateTaskType.ADD_TAG, AIPUpdateState.READY, Lists.newArrayList("TOTO", "TITI")));
             List<AIPUpdateRequest> requests = AIPUpdateRequest.build(aip, updateTasks, false);
             for (AIPUpdateRequest r : requests) {
-                r.setState(InternalRequestStep.RUNNING);
+                r.setState(InternalRequestState.RUNNING);
             }
             aipUpdateRequestRepository.saveAll(requests);
         }

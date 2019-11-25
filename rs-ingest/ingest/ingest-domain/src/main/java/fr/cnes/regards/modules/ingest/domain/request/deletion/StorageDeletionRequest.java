@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
@@ -79,7 +79,7 @@ public class StorageDeletionRequest extends AbstractRequest {
 
     public static StorageDeletionRequest build(String requestId, SIPEntity sipEntity, SessionDeletionMode deletionMode) {
         StorageDeletionRequest sdr = new StorageDeletionRequest();
-        sdr.setState(InternalRequestStep.RUNNING);
+        sdr.setState(InternalRequestState.RUNNING);
         sdr.setRemoteStepGroupIds(Lists.newArrayList(requestId));
         sdr.setSipId(sipEntity.getSipId());
         sdr.setSessionOwner(sipEntity.getSessionOwner());

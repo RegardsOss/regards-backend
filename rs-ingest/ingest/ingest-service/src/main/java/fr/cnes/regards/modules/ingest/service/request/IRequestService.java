@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import java.util.List;
 import java.util.Set;
 
@@ -58,4 +59,10 @@ public interface IRequestService {
      * @return a page of entities
      */
     Page<RequestDto> searchRequests(SearchRequestsParameters filters, Pageable pageable) throws ModuleException;
+
+    /**
+     * Delete all requests linked to provided aips
+     * @param aipsRelatedToSip
+     */
+    void deleteAllByAip(Set<AIPEntity> aipsRelatedToSip);
 }

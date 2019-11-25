@@ -40,7 +40,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
@@ -123,12 +123,12 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
 
         // Keep only ERROR requests
         List<AIPUpdateRequest> succeedRequestsToDelete = requestByAIP.values().stream()
-                .filter(request -> request.getState() != InternalRequestStep.ERROR).collect(Collectors.toList());
+                .filter(request -> request.getState() != InternalRequestState.ERROR).collect(Collectors.toList());
         aipUpdateRequestRepository.deleteAll(succeedRequestsToDelete);
 
         // Save ERROR requests
         List<AIPUpdateRequest> errorRequests = requestByAIP.values().stream()
-                .filter(request -> request.getState() == InternalRequestStep.ERROR).collect(Collectors.toList());
+                .filter(request -> request.getState() == InternalRequestState.ERROR).collect(Collectors.toList());
         aipUpdateRequestRepository.saveAll(errorRequests);
 
         // Save AIPs
@@ -176,7 +176,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                 LOGGER.warn("An error occured while updating aip {}: {}", aip.getAip().getAipId(), e.getMessage());
                 // Save error inside requests
                 updateRequest.setErrors(Sets.newHashSet(e.getMessage()));
-                updateRequest.setState(InternalRequestStep.ERROR);
+                updateRequest.setState(InternalRequestState.ERROR);
             }
         }
         return aip;

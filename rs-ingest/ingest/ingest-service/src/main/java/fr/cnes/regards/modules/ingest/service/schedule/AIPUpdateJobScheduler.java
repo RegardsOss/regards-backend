@@ -44,7 +44,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.service.job.AIPUpdateRunnerJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
@@ -123,13 +123,13 @@ public class AIPUpdateJobScheduler {
             List<Long> aipIds = contents.stream().map(wr -> wr.getAip().getId()).collect(Collectors.toList());
             List<AIPUpdateRequest> linkedTasks = aipUpdateRequestRepository.findAllByAipIdIn(aipIds);
             requests.addAll(linkedTasks);
-            aipUpdateRequestService.updateState(requests, InternalRequestStep.RUNNING);
+            aipUpdateRequestService.updateState(requests, InternalRequestState.RUNNING);
 
             // Make a list of content ids
             List<Long> requestIds = requests.stream().map(AIPUpdateRequest::getId).collect(Collectors.toList());
 
             // Change request state
-            abstractRequestRepository.updateStates(requestIds, InternalRequestStep.RUNNING);
+            abstractRequestRepository.updateStates(requestIds, InternalRequestState.RUNNING);
 
             // Schedule deletion job
             Set<JobParameter> jobParameters = Sets.newHashSet();

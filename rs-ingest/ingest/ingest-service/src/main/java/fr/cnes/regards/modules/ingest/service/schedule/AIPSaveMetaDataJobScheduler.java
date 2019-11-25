@@ -43,7 +43,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.service.job.AIPSaveMetaDataJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
@@ -118,7 +118,7 @@ public class AIPSaveMetaDataJobScheduler {
             List<Long> requestIds = content.stream().map(AIPStoreMetaDataRequest::getId).collect(Collectors.toList());
 
             // Change request state
-            abstractRequestRepository.updateStates(requestIds, InternalRequestStep.RUNNING);
+            abstractRequestRepository.updateStates(requestIds, InternalRequestState.RUNNING);
 
             // Schedule deletion job
             Set<JobParameter> jobParameters = Sets.newHashSet();

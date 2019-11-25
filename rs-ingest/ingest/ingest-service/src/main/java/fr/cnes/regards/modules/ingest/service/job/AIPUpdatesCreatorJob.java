@@ -35,7 +35,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
@@ -89,7 +89,7 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
         Page<AIPEntity> aipsPage;
         boolean isFirstPage = true;
         // Set the request as running
-        request.setState(InternalRequestStep.RUNNING);
+        request.setState(InternalRequestState.RUNNING);
         aipUpdatesCreatorRepository.save(request);
         do {
             if (!isFirstPage) {

@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.IAIPStoreMetaDataRequestService;
@@ -83,7 +83,7 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
                 aipsToUpdate.add(aip);
             }
             // If everything is still ok, add the AIP to the list of storable aips
-            if (request.getState() != InternalRequestStep.ERROR) {
+            if (request.getState() != InternalRequestState.ERROR) {
                 aipsToStore.add(aip);
             }
             advanceCompletion();
@@ -96,7 +96,7 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
             aipService.computeAndSaveChecksum(aip);
         } catch (ModuleException e) {
             request.addError(e.getMessage());
-            request.setState(InternalRequestStep.ERROR);
+            request.setState(InternalRequestState.ERROR);
         }
     }
 

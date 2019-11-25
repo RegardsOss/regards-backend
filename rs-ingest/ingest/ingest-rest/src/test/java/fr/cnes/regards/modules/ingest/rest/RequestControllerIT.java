@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
@@ -132,7 +132,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
         }
 
         StringJoiner stateValues = new StringJoiner(", ");
-        for (RequestTypeEnum state : RequestTypeEnum.values()) {
+        for (InternalRequestState state : InternalRequestState.values()) {
             stateValues.add(state.name());
         }
 
@@ -146,12 +146,12 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                         .value("Optional. Multiple values allowed. Allowed values : " + queryTypeValues.toString())));
 
-//        params.add(constrainedFields.withPath("state", "state",
-//                "State filter")
-//                .type(JSON_STRING_TYPE)
-//                .optional().attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-//                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-//                        .value("Optional. Multiple values allowed. Allowed values : " + stateValues.toString())));
+        params.add(constrainedFields.withPath("state", "state",
+                "State")
+                .type(JSON_STRING_TYPE)
+                .optional().attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                        .value("Optional. Multiple values allowed. Allowed values : " + stateValues.toString())));
 
         params.add(constrainedFields.withPath("creationDate.from", "from",
                 "ISO Date time filtering on creation date")
@@ -201,9 +201,14 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
 
         String prefix = "content[].content.";
 
-        StringJoiner joiner = new StringJoiner(", ");
-        for (AIPState state : AIPState.values()) {
-            joiner.add(state.name());
+        StringJoiner queryTypeValues = new StringJoiner(", ");
+        for (RequestTypeEnum state : RequestTypeEnum.values()) {
+            queryTypeValues.add(state.name());
+        }
+
+        StringJoiner stateValues = new StringJoiner(", ");
+        for (InternalRequestState state : InternalRequestState.values()) {
+            stateValues.add(state.name());
         }
 
         fields.add(constrainedFields.withPath(prefix + "id", "id", "Request id"));
@@ -213,6 +218,12 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
 
         fields.add(constrainedFields.withPath(prefix + "remoteStepDeadline", "remoteStepDeadline", "Date of Request timeout")
                 .type(OffsetDateTime.class.getSimpleName()).optional());
+
+        fields.add(constrainedFields.withPath(prefix + "state", "state", "Request state. Allowed values : " + stateValues.toString())
+                .type(JSON_STRING_TYPE).optional());
+
+        fields.add(constrainedFields.withPath(prefix + "dtype", "dtype", "Request type. Allowed values : " + queryTypeValues.toString())
+                .type(JSON_STRING_TYPE).optional());
 
         fields.add(constrainedFields.withPath(prefix + "sessionOwner", "sessionOwner", "Session owner")
                 .type(JSON_STRING_TYPE).optional());

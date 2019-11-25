@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
@@ -111,7 +111,7 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
         long end = System.currentTimeMillis() + timeout;
         // Wait
         do {
-            long count = deletionStorageRequestRepository.countByState(InternalRequestStep.ERROR);
+            long count = deletionStorageRequestRepository.countByState(InternalRequestState.ERROR);
             LOGGER.info("{} Current request in error", count);
             if (count == nbError) {
                 break;

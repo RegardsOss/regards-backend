@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
@@ -158,7 +158,7 @@ public class IngestRequestServiceTest extends IngestMultitenantServiceTest {
                            null));
             IngestRequest request = IngestRequest.build(IngestMetadata
                     .build(sessionOwner, session, "ingestChain", Sets.newHashSet(), StorageMetadata.build(storage)),
-                                                        InternalRequestStep.RUNNING, IngestRequestStep.LOCAL_INIT, sip);
+                    InternalRequestState.RUNNING, IngestRequestStep.LOCAL_INIT, sip);
             request.setStep(IngestRequestStep.REMOTE_STORAGE_REQUESTED, 1000);
             // Create associated IngestRequest
             request.setRemoteStepGroupIds(Lists.newArrayList(groupId));
