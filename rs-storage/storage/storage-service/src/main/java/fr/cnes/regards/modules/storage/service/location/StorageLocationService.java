@@ -136,23 +136,27 @@ public class StorageLocationService {
         Optional<StorageLocationConfiguration> oConf = pLocationConfService.search(storageId);
         Long nbStorageError = storageReqService.count(storageId, FileRequestStatus.ERROR);
         Long nbDeletionError = deletionReqService.count(storageId, FileRequestStatus.ERROR);
+        Long nbReferencedFiles = null;
+        Long totalSizeOfReferencedFiles = null;
+        StorageLocationConfiguration conf = null;
         if (oConf.isPresent() && oLoc.isPresent()) {
-            StorageLocationConfiguration conf = oConf.get();
+            conf = oConf.get();
             StorageLocation loc = oLoc.get();
-            return StorageLocationDTO.build(conf.getPluginConfiguration().getBusinessId(),
-                                            loc.getNumberOfReferencedFiles(), loc.getTotalSizeOfReferencedFilesInKo(),
-                                            nbStorageError, nbDeletionError, conf);
+            if (conf.getPluginConfiguration() != null) {
+                nbReferencedFiles = loc.getNumberOfReferencedFiles();
+                totalSizeOfReferencedFiles = loc.getTotalSizeOfReferencedFilesInKo();
+            }
         } else if (oConf.isPresent()) {
-            StorageLocationConfiguration conf = oConf.get();
-            return StorageLocationDTO.build(conf.getPluginConfiguration().getBusinessId(), null, null, nbStorageError,
-                                            nbDeletionError, conf);
+            conf = oConf.get();
         } else if (oLoc.isPresent()) {
             StorageLocation loc = oLoc.get();
-            return StorageLocationDTO.build(storageId, loc.getNumberOfReferencedFiles(),
-                                            loc.getTotalSizeOfReferencedFilesInKo(), 0L, 0L, null);
+            nbReferencedFiles = loc.getNumberOfReferencedFiles();
+            totalSizeOfReferencedFiles = loc.getTotalSizeOfReferencedFilesInKo();
         } else {
             throw new EntityNotFoundException(storageId, StorageLocation.class);
         }
+        return StorageLocationDTO.build(storageId, nbReferencedFiles, totalSizeOfReferencedFiles, nbStorageError,
+                                        nbDeletionError, conf);
     }
 
     /**
@@ -218,7 +222,8 @@ public class StorageLocationService {
             Optional<StorageLocation> oStorage = storageLocationRepo.findByName(agg.getStorage());
             StorageLocation storage = oStorage.orElse(new StorageLocation(agg.getStorage()));
             storage.setLastUpdateDate(monitoringDate);
-            storage.setTotalSizeOfReferencedFilesInKo(storage.getTotalSizeOfReferencedFilesInKo() + (agg.getUsedSize() / 1024));
+            storage.setTotalSizeOfReferencedFilesInKo(storage.getTotalSizeOfReferencedFilesInKo()
+                    + (agg.getUsedSize() / 1024));
             storage.setNumberOfReferencedFiles(storage.getNumberOfReferencedFiles() + agg.getNumberOfFileReference());
 
             if ((storageMonitoring.getLastFileReferenceIdMonitored() == null)
