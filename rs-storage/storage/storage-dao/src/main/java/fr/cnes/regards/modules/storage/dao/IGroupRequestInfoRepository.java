@@ -32,10 +32,31 @@ import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo
  */
 public interface IGroupRequestInfoRepository extends JpaRepository<RequestResultInfo, Long> {
 
-    Set<RequestResultInfo> findByGroupIdAndError(String groupId, boolean error);
+    /**
+     * Retrieve all {@RequestResultInfo}s matching the given group id.
+     * @param groupId
+     * @return {@RequestResultInfo}s
+     */
+    Set<RequestResultInfo> findByGroupId(String groupId);
 
+    /**
+     * Delete all {@RequestResultInfo}s by file id.
+     * @param fileId
+     */
     void deleteByResultFileId(Long fileId);
 
+    /**
+     * Delete all {@RequestResultInfo}s by group id.
+     * @param groupId
+     */
     void deleteByGroupId(String groupId);
+
+    /**
+     * Retrieve all {@RequestResultInfo}s matching the given group id and error status.
+     * @param groupId
+     * @param isError
+     * @return {@RequestResultInfo}s
+     */
+    Set<RequestResultInfo> findByGroupIdAndError(String groupId, boolean isError);
 
 }

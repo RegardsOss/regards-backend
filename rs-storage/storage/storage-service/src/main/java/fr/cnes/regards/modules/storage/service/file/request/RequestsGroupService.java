@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -67,6 +68,12 @@ import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
 public class RequestsGroupService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestsGroupService.class);
+
+    /**
+     * Maximum number of request group to handle in one transaction. This is limited to avoid issue one too much
+     * amqp message to send at a time.
+     */
+    private static final int MAX_REQUEST_PER_TRANSACTION = 100;
 
     @Autowired
     private IPublisher publisher;
@@ -199,17 +206,22 @@ public class RequestsGroupService {
     */
     public void checkRequestsGroupsDone() {
         long start = System.currentTimeMillis();
-        Page<RequestGroup> response = reqGroupRepository.findAll(PageRequest.of(0, 1_000));
+        LOGGER.info("[REQUEST GROUPS] Start checking request groups ... ");
+        Page<RequestGroup> response = reqGroupRepository.findAll(PageRequest.of(0, 500));
+        LOGGER.info("[REQUEST GROUPS] {} request groups found", response.getTotalElements());
         long totalChecked = response.getTotalElements();
+        int nbGroupsDone = 0;
         if (totalChecked > 0) {
-            LOGGER.info("Checking {} request groups status");
             do {
-                response.getContent().stream().forEach(this::checkRequestsGroupDone);
+                Iterator<RequestGroup> it = response.getContent().iterator();
+                do {
+                    nbGroupsDone += checkRequestsGroupDone(it.next()) ? 1 : 0;
+                } while (it.hasNext());
                 response = reqGroupRepository.findAll(response.getPageable().next());
-            } while (response.hasNext());
-            LOGGER.info("Check {} request groups done terminated in {}ms", totalChecked,
-                        System.currentTimeMillis() - start);
+            } while (response.hasNext() && (nbGroupsDone < MAX_REQUEST_PER_TRANSACTION));
         }
+        LOGGER.info("[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}",
+                    System.currentTimeMillis() - start, nbGroupsDone, totalChecked);
     }
 
     /**
@@ -218,7 +230,7 @@ public class RequestsGroupService {
      * @param groupId
      * @param type
      */
-    private void checkRequestsGroupDone(RequestGroup reqGrp) {
+    private boolean checkRequestsGroupDone(RequestGroup reqGrp) {
         boolean isDone = false;
         // Check if there is remaining request not finished
         switch (reqGrp.getType()) {
@@ -244,17 +256,18 @@ public class RequestsGroupService {
         // IF finished send a terminated group request event
         if (isDone) {
             groupDone(reqGrp);
+            return true;
         } else {
-            checkRequestGroupExpired(reqGrp);
+            return checkRequestGroupExpired(reqGrp);
         }
-
     }
 
     /**
      * Check if the given requests group has expired (too old) and can be deleted.
      * @param reqGrp to check for
      */
-    private void checkRequestGroupExpired(RequestGroup reqGrp) {
+    private boolean checkRequestGroupExpired(RequestGroup reqGrp) {
+        boolean expired = false;
         if ((nbDaysBeforeExpiration > 0)
                 && reqGrp.getCreationDate().isBefore(OffsetDateTime.now().minusDays(nbDaysBeforeExpiration))) {
             LOGGER.warn("Request group {} is expired. It will be deleted and all associated requests will be set in ERROR status");
@@ -286,7 +299,9 @@ public class RequestsGroupService {
             // Clear group info
             groupReqInfoRepository.deleteByGroupId(reqGrp.getId());
             reqGroupRepository.delete(reqGrp);
+            expired = true;
         }
+        return expired;
     }
 
     /**
@@ -295,11 +310,18 @@ public class RequestsGroupService {
      * @param type
      */
     public void groupDone(RequestGroup reqGrp) {
-        // 1. Get errors
-        Set<RequestResultInfo> errors = groupReqInfoRepository.findByGroupIdAndError(reqGrp.getId(), true);
-        // 2. Get success
-        Set<RequestResultInfo> successes = groupReqInfoRepository.findByGroupIdAndError(reqGrp.getId(), false);
-        // 3. Publish event
+        // 1. Do only one database request, then dispatch results between success and errors
+        Set<RequestResultInfo> resultInfos = groupReqInfoRepository.findByGroupId(reqGrp.getId());
+        Set<RequestResultInfo> errors = Sets.newHashSet();
+        Set<RequestResultInfo> successes = Sets.newHashSet();
+        for (RequestResultInfo info : resultInfos) {
+            if (info.isError()) {
+                errors.add(info);
+            } else {
+                successes.add(info);
+            }
+        }
+        // 2. Publish events
         if (errors.isEmpty()) {
             LOGGER.debug("[{} GROUP SUCCESS {}] - {} requests success.", reqGrp.getType().toString().toUpperCase(),
                          reqGrp.getId(), successes.size());
@@ -314,9 +336,10 @@ public class RequestsGroupService {
                          reqGrp.getId(), successes.size(), errors.size());
             publisher.publish(FileRequestsGroupEvent.buildError(reqGrp.getId(), reqGrp.getType(), successes, errors));
         }
-        // 4. Clear group info
+        // 3. Clear
         groupReqInfoRepository.deleteByGroupId(reqGrp.getId());
         reqGroupRepository.delete(reqGrp);
+        resultInfos.clear();
     }
 
     /**
