@@ -306,10 +306,9 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Override
     public void handleRemoteStoreError(IngestRequest request, RequestInfo requestInfo) {
-
+        String errorMessage = null;
         // Propagate errors
         requestInfo.getErrorRequests().forEach(e -> request.addError(e.getErrorCause()));
-
         if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
             // Update AIP and SIP with current error
             updateRequestWithErrors(request, requestInfo.getErrorRequests(), "Error occurred while storing AIP files");
@@ -317,12 +316,14 @@ public class IngestRequestService implements IIngestRequestService {
             aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), requestInfo.getSuccessRequests());
             // Save error in request status
             request.setStep(IngestRequestStep.REMOTE_STORAGE_ERROR);
-            // Keep track of the error
-            saveAndPublishErrorRequest(request, null);
+
         } else {
-            // Keep track of the error
-            saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
+            errorMessage = String.format("Unexpected step \"%s\"", request.getStep());
         }
+        // Keep track of the error
+        saveAndPublishErrorRequest(request, errorMessage);
+        // Send session notification
+        sessionNotifier.productStoreError(request.getSessionOwner(), request.getSession(), request.getAips());
     }
 
     @Override
@@ -369,6 +370,7 @@ public class IngestRequestService implements IIngestRequestService {
         // Mutate request
         request.addError(String.format("Storage request error with id \"%s\" and SIP provider id \"%s\"",
                                        request.getRequestId(), request.getSip().getId()));
+        request.setState(InternalRequestStep.ERROR);
         if (message != null) {
             request.addError(message);
         }
