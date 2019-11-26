@@ -18,32 +18,29 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
+import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
+import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
-import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
-import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
-import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
-import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
-import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
  * This job handles session deletion requests
@@ -58,7 +55,7 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
     private OAISDeletionRequestService oaisDeletionRequestService;
 
     @Autowired
-    private ISIPRepository sipRepository;
+    private IAIPRepository aipRepository;
 
     @Autowired
     private ISIPService sipService;
@@ -93,26 +90,23 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
         Pageable pageRequest = PageRequest.of(0, sipIterationLimit, Sort.Direction.ASC, "id");
         List<SIPState> states = new ArrayList<>(Arrays.asList(SIPState.INGESTED, SIPState.STORED));
 
-        Page<SIPEntity> sipsPage;
+        Page<AIPEntity> aipsPage;
         do {
             // Page request isn't modified as the state of entities are modified
-            sipsPage = sipRepository.loadAll(SIPEntitySpecifications
-                    .search(deletionRequest.getProviderIds(), deletionRequest.getSipIds(),
-                            deletionRequest.getSessionOwner(), deletionRequest.getSession(), null, states,
-                            deletionRequest.getSelectionMode() == SessionDeletionSelectionMode.INCLUDE, null, null,
-                            pageRequest), pageRequest);
+            aipsPage = aipRepository.findAll(AIPEntitySpecification
+                    .searchAll(deletionRequest.getConfig(), pageRequest), pageRequest);
             // Save number of pages to publish job advancement
-            if (totalPages < sipsPage.getTotalPages()) {
-                totalPages = sipsPage.getTotalPages();
+            if (totalPages < aipsPage.getTotalPages()) {
+                totalPages = aipsPage.getTotalPages();
             }
-            sipsPage.forEach(sip -> {
+            aipsPage.forEach(aip -> {
                 // Mark SIP and AIP deleted
                 // Send events for files deletion
-                sipService.scheduleDeletion(sip, deletionRequest.getDeletionMode(),
+                sipService.scheduleDeletion(aip.getSip(), deletionRequest.getDeletionMode(),
                                             deletionRequest.getDeletePhysicalFiles());
             });
             advanceCompletion();
-        } while (sipsPage.hasNext());
+        } while (aipsPage.hasNext());
 
         oaisDeletionRequestService.deleteRequest(deletionRequest);
     }

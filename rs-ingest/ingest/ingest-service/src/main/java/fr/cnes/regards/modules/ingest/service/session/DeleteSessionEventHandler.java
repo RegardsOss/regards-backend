@@ -23,9 +23,8 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.sessionmanager.domain.event.DeleteSessionEvent;
 import org.slf4j.Logger;
@@ -67,10 +66,8 @@ public class DeleteSessionEventHandler implements ApplicationListener<Applicatio
         runtimeTenantResolver.forceTenant(wrapper.getTenant());
         // Run a SessionDeletionJob
         try {
-            ingestService.registerOAISDeletionRequest(OAISDeletionRequestDto.build(
-                    event.getSource(), event.getName(),
-                    SessionDeletionMode.IRREVOCABLY, SessionDeletionSelectionMode.INCLUDE
-            ));
+            ingestService.registerOAISDeletionRequest(OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY)
+                    .withSessionOwner(event.getSource()).withSession(event.getName()));
         } catch (ModuleException e) {
             LOGGER.warn(e.getMessage());
         }

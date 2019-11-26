@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -234,7 +235,7 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 1000, SIPState.STORED);
 
         Page<AIPEntity> allAips = aipService.search(SearchAIPsParameters.build(), PageRequest.of(0, 100));
-        Set<String> aipIds = allAips.stream().map(aip -> aip.getAipId()).collect(Collectors.toSet());
+        Set<String> aipIds = allAips.stream().map(AIPEntity::getAipId).collect(Collectors.toSet());
 
         SearchFacetsAIPsParameters filters = SearchFacetsAIPsParameters.build().withState(AIPState.STORED)
                 .withTags(TAG_0);
@@ -250,7 +251,7 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         // Full test (with almost all attributes)
         filters = filters.withProviderIds("provider 1", "provider %")
                 .withLastUpdateFrom(OffsetDateTime.now().minusHours(5))
-                .withLastUpdateTo(OffsetDateTime.now().plusDays(6)).withAIPIds(aipIds)
+                .withLastUpdateTo(OffsetDateTime.now().plusDays(6)).withAipIds(aipIds)
                 .withCategories(Sets.newHashSet(CATEGORIES_0)).withStorages(Sets.newLinkedHashSet(STORAGE_0))
                 .withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0);
         // Test tags
@@ -264,7 +265,8 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(1, results.size());
 
         // Test the aipIdsExcluded
-        filters.withAIPIdsExcluded(aipIds);
+        filters.withSelectionMode(SearchSelectionMode.EXCLUDE);
+        filters.withAipIds(aipIds);
         results = aipService.searchTags(filters);
         Assert.assertEquals(0, results.size());
 

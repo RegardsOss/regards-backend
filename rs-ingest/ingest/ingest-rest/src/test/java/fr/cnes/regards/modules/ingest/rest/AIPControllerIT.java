@@ -18,6 +18,33 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.ConstrainedFields;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
+import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
+import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import fr.cnes.regards.modules.test.IngestServiceTest;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
@@ -26,7 +53,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -45,32 +71,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.ConstrainedFields;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.test.report.annotation.Requirements;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
-import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
-import fr.cnes.regards.modules.test.IngestServiceTest;
 
 /**
 * {@link AIPEntity} REST API testing
@@ -304,10 +304,52 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         AIPUpdateParametersDto body = AIPUpdateParametersDto
                 .build(SearchAIPsParameters.build().withSessionOwner(sessionOwner).withSession(session), null, null,
-                       null, Lists.newArrayList("CAT 1"), null);
+                        null, Lists.newArrayList("CAT 1"), null);
 
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.AIP_UPDATE_PATH, body,
-                           requestBuilderCustomizer, "Should schedule AIP update");
+                requestBuilderCustomizer, "Should schedule AIP update");
+    }
+
+    @Test
+    public void testDeleteAips() {
+        // Create AIP
+        String session = OffsetDateTime.now().toString();
+        String sessionOwner = "ESA";
+        createAIP("my object #11", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner, session, "NAS #1");
+
+        // Wait for ingestion finished
+        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
+        ingestServiceTest.waitAllRequestsFinished(10000);
+
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        // Add request parameters documentation
+        requestBuilderCustomizer.documentRequestBody(documentDeleteAIPRequestParameters());
+
+        OAISDeletionPayloadDto body = OAISDeletionPayloadDto
+                .build(SessionDeletionMode.IRREVOCABLY).withSessionOwner(sessionOwner).withSession(session).withCategory("CAT 1");
+
+        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.OAIS_DELETE_PATH, body,
+                requestBuilderCustomizer, "Should schedule AIP deletion");
+    }
+
+    private List<FieldDescriptor> documentDeleteAIPRequestParameters() {
+        List<FieldDescriptor> params = new ArrayList<>();
+        ConstrainedFields constrainedFields = new ConstrainedFields(OAISDeletionPayloadDto.class);
+
+        StringJoiner joiner = new StringJoiner(", ");
+        for (SessionDeletionMode mode : SessionDeletionMode.values()) {
+            joiner.add(mode.name());
+        }
+        params.add(constrainedFields
+                .withPath("deletionMode", "deletionMode",
+                        "Type of deletion")
+                .type(JSON_STRING_TYPE).optional()
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                        .value("Optional. Allowed values : " + joiner.toString())));
+
+        params.addAll(getSearchBodyDescriptors(""));
+        return params;
     }
 
     private List<FieldDescriptor> documentUpdateAIPRequestParameters() {
@@ -354,9 +396,14 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     private List<FieldDescriptor> getSearchBodyDescriptors(String rootPath) {
         List<FieldDescriptor> params = new ArrayList<>();
 
-        StringJoiner joiner = new StringJoiner(", ");
+        StringJoiner aipJoiner = new StringJoiner(", ");
         for (AIPState state : AIPState.values()) {
-            joiner.add(state.name());
+            aipJoiner.add(state.name());
+        }
+
+        StringJoiner selectionModeJoiner = new StringJoiner(", ");
+        for (SearchSelectionMode mode : SearchSelectionMode.values()) {
+            selectionModeJoiner.add(mode.name());
         }
         ConstrainedFields constrainedFields = new ConstrainedFields(SearchAIPsParameters.class);
 
@@ -366,7 +413,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                 .type(JSON_STRING_TYPE).optional()
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                        .value("Optional. Multiple values allowed. Allowed values : " + joiner.toString())));
+                        .value("Optional. Multiple values allowed. Allowed values : " + aipJoiner.toString())));
 
         params.add(constrainedFields
                 .withPath(rootPath + AIPController.REQUEST_PARAM_FROM, AIPController.REQUEST_PARAM_FROM,
@@ -395,11 +442,11 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         params.add(constrainedFields
                 .withPath(rootPath + AIPController.REQUEST_PARAM_PROVIDER_ID, AIPController.REQUEST_PARAM_PROVIDER_ID,
-                          "Provider id filter")
+                          "A list of provider ids filter")
                 .optional().type(JSON_STRING_TYPE)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                        .value("Optional. If you add the % character, we will use the like operator to match entities")));
+                        .value("Optional. If you add the % character, we will use the like operator to match provider id")));
 
         params.add(constrainedFields
                 .withPath(rootPath + AIPController.REQUEST_PARAM_SESSION_OWNER,
@@ -424,10 +471,34 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         params.add(constrainedFields
                 .withPath(rootPath + AIPController.REQUEST_PARAM_STORAGES, AIPController.REQUEST_PARAM_STORAGES,
-                          "A list of storage names the entity must have, at least one")
+                        "A list of storage names the entity must have, at least one")
                 .optional().type(List.class.getSimpleName())
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+
+        params.add(constrainedFields
+                .withPath(rootPath + AIPController.REQUEST_PARAM_AIP_IDS, AIPController.REQUEST_PARAM_AIP_IDS,
+                        "A list of aip ids")
+                .optional().type(List.class.getSimpleName())
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+
+        params.add(constrainedFields
+                .withPath(rootPath + AIPController.REQUEST_PARAM_AIP_IDS, AIPController.REQUEST_PARAM_AIP_IDS,
+                        "A list of aip ids")
+                .optional().type(List.class.getSimpleName())
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+
+        params.add(constrainedFields
+                .withPath(rootPath + AIPController.REQUEST_PARAM_STATE, AIPController.REQUEST_PARAM_STATE,
+                        "This attribute describe what the aipIds list mean.")
+                .type(JSON_STRING_TYPE).optional()
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                        .value("Optional. Allowed values : " + selectionModeJoiner.toString())));
+
+
         return params;
     }
 

@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionPayload;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -56,13 +59,11 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
-import fr.cnes.regards.modules.ingest.domain.mapper.IOAISDeletionRequestMapper;
+import fr.cnes.regards.modules.ingest.domain.mapper.IOAISDeletionPayloadMapper;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
-import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
@@ -108,7 +109,7 @@ public class IngestService implements IIngestService {
     private IIngestMetadataMapper metadataMapper;
 
     @Autowired
-    private IOAISDeletionRequestMapper deletionRequestMapper;
+    private IOAISDeletionPayloadMapper deletionRequestMapper;
 
     @Autowired
     private Validator validator;
@@ -307,9 +308,9 @@ public class IngestService implements IIngestService {
     }
 
     @Override
-    public OAISDeletionRequestDto registerOAISDeletionRequest(OAISDeletionRequestDto request) throws ModuleException {
-        OAISDeletionRequest deletionRequest = deletionRequestMapper.dtoToEntity(request);
-
+    public void registerOAISDeletionRequest(OAISDeletionPayloadDto request) throws ModuleException {
+        OAISDeletionPayload deletionPayload = deletionRequestMapper.dtoToEntity(request);
+        OAISDeletionRequest deletionRequest = OAISDeletionRequest.build(deletionPayload);
         // TODO check if we can accept this request now
         if (false) {
             String error = String
@@ -335,7 +336,5 @@ public class IngestService implements IIngestService {
 
         // save request (same transaction)
         oaisDeletionRequestService.saveRequest(deletionRequest);
-
-        return deletionRequestMapper.entityToDto(deletionRequest);
     }
 }
