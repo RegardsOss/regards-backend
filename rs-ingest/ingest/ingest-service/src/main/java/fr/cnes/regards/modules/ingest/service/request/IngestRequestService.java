@@ -370,7 +370,7 @@ public class IngestRequestService implements IIngestRequestService {
         // Mutate request
         request.addError(String.format("Storage request error with id \"%s\" and SIP provider id \"%s\"",
                                        request.getRequestId(), request.getSip().getId()));
-        request.setState(InternalRequestStep.ERROR);
+        request.setState(InternalRequestState.ERROR);
         if (message != null) {
             request.addError(message);
         }
