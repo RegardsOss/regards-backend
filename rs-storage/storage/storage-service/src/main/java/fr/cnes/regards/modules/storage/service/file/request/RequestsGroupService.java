@@ -206,9 +206,9 @@ public class RequestsGroupService {
     */
     public void checkRequestsGroupsDone() {
         long start = System.currentTimeMillis();
-        LOGGER.info("[REQUEST GROUPS] Start checking request groups ... ");
+        LOGGER.debug("[REQUEST GROUPS] Start checking request groups ... ");
         Page<RequestGroup> response = reqGroupRepository.findAll(PageRequest.of(0, 500));
-        LOGGER.info("[REQUEST GROUPS] {} request groups found", response.getTotalElements());
+        LOGGER.debug("[REQUEST GROUPS] {} request groups found", response.getTotalElements());
         long totalChecked = response.getTotalElements();
         int nbGroupsDone = 0;
         if (totalChecked > 0) {
@@ -220,8 +220,12 @@ public class RequestsGroupService {
                 response = reqGroupRepository.findAll(response.getPageable().next());
             } while (response.hasNext() && (nbGroupsDone < MAX_REQUEST_PER_TRANSACTION));
         }
-        LOGGER.info("[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}",
-                    System.currentTimeMillis() - start, nbGroupsDone, totalChecked);
+        String message = "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}";
+        if (nbGroupsDone > 0) {
+            LOGGER.info(message, System.currentTimeMillis() - start, nbGroupsDone, totalChecked);
+        } else {
+            LOGGER.debug(message, System.currentTimeMillis() - start, nbGroupsDone, totalChecked);
+        }
     }
 
     /**
