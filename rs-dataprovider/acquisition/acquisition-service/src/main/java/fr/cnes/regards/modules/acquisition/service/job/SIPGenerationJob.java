@@ -148,9 +148,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         errors.clear();
 
         for (String session : sessions) {
-            if (productService
-                    .countSIPGenerationJobInfoByProcessingChainAndSipStateIn(processingChain,
-                                                                             ProductSIPState.SCHEDULED) == 0) {
+            if (!productService.existsByProcessingChainAndSipStateIn(processingChain, ProductSIPState.SCHEDULED)) {
                 sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
                 break;
             }

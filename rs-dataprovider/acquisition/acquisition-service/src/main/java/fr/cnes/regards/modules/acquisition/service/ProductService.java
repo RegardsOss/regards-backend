@@ -558,6 +558,12 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    public boolean existsByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
+            ISipState productSipState) {
+        return productRepository.existsByProcessingChainAndSipStateIn(processingChain, productSipState);
+    }
+
+    @Override
     public long countByChain(AcquisitionProcessingChain chain) {
         return productRepository.countByProcessingChain(chain);
     }

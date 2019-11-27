@@ -143,6 +143,14 @@ public interface IProductService {
             ISipState productSipState);
 
     /**
+     * Check if a product exists for the given chain and the given associated SIP state
+     * @param processingChain {@link AcquisitionProcessingChain}
+     * @param productSipState {@link ISipState}
+     * @return boolean
+     */
+    boolean existsByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain, ISipState productSipState);
+
+    /**
      * Link acquired files to theirs products creating or updating them.<br/>
      * If product is completed or finished, a SIP generation job is scheduled.
      *

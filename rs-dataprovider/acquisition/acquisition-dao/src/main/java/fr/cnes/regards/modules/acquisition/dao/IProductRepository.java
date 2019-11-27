@@ -158,6 +158,8 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     long countDistinctLastSIPGenerationJobInfoByProcessingChainAndSipState(AcquisitionProcessingChain processingChain,
             String productSipState);
 
+    boolean existsByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain, ISipState productSipState);
+
     @Query(value = "select distinct p.lastSIPGenerationJobInfo from  Product p where p.processingChain=?1 and p.sipState=?2")
     Set<JobInfo> findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(
             AcquisitionProcessingChain processingChain, ISipState productSipState);
