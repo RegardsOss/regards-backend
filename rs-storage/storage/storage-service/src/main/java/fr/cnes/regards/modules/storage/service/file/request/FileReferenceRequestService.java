@@ -77,9 +77,10 @@ public class FileReferenceRequestService {
     public void reference(List<ReferenceFlowItem> list) {
         Set<FileReference> existingOnes = fileRefService.search(list.stream().map(ReferenceFlowItem::getFiles)
                 .flatMap(Set::stream).map(FileReferenceRequestDTO::getChecksum).collect(Collectors.toSet()));
+        Set<FileDeletionRequest> existingDeletionRequests = fileDeletionRequestService.search(existingOnes);
         for (ReferenceFlowItem item : list) {
             reqGrpService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size());
-            reference(item.getFiles(), item.getGroupId(), existingOnes);
+            reference(item.getFiles(), item.getGroupId(), existingOnes, existingDeletionRequests);
         }
     }
 
@@ -92,7 +93,8 @@ public class FileReferenceRequestService {
         // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
         Set<FileReference> existingOnes = fileRefService
                 .search(requests.stream().map(FileReferenceRequestDTO::getChecksum).collect(Collectors.toSet()));
-        reference(requests, groupId, existingOnes);
+        Set<FileDeletionRequest> existingDeletionRequests = fileDeletionRequestService.search(existingOnes);
+        reference(requests, groupId, existingOnes, existingDeletionRequests);
     }
 
     /**
@@ -101,19 +103,24 @@ public class FileReferenceRequestService {
     * @param requests
     * @param groupId
     * @param existingOnes
+    * @param existingDeletionRequests
     * @return referenced files
     */
     private Collection<FileReference> reference(Collection<FileReferenceRequestDTO> requests, String groupId,
-            Collection<FileReference> existingOnes) {
+            Collection<FileReference> existingOnes, Collection<FileDeletionRequest> existingDeletionRequests) {
         Set<FileReference> fileRefs = Sets.newHashSet();
         for (FileReferenceRequestDTO file : requests) {
             // Check if the file already exists for the storage destination
             Optional<FileReference> oFileRef = existingOnes.stream()
                     .filter(f -> f.getMetaInfo().getChecksum().equals(file.getChecksum())
-                            && f.getLocation().getStorage().contentEquals(file.getStorage()))
+                            && f.getLocation().getStorage().equals(file.getStorage()))
+                    .findFirst();
+            Optional<FileDeletionRequest> oFileDeletionReq = existingDeletionRequests.stream()
+                    .filter(r -> r.getFileReference().getMetaInfo().getChecksum().equals(file.getChecksum())
+                            && r.getFileReference().getLocation().getStorage().equals(file.getStorage()))
                     .findFirst();
             try {
-                FileReference fileRef = reference(file, oFileRef, Sets.newHashSet(groupId));
+                FileReference fileRef = reference(file, oFileRef, oFileDeletionReq, Sets.newHashSet(groupId));
                 reqGrpService.requestSuccess(groupId, FileRequestType.REFERENCE, fileRef.getMetaInfo().getChecksum(),
                                              fileRef.getLocation().getStorage(), null, fileRef.getOwners(), fileRef);
                 fileRefs.add(fileRef);
@@ -142,12 +149,16 @@ public class FileReferenceRequestService {
     public FileReference reference(String owner, FileReferenceMetaInfo metaInfo, FileLocation location,
             Collection<String> groupIds) throws ModuleException {
         Optional<FileReference> oFileRef = fileRefService.search(location.getStorage(), metaInfo.getChecksum());
+        Optional<FileDeletionRequest> oFileDelReq = Optional.empty();
+        if (oFileRef.isPresent()) {
+            oFileDelReq = fileDeletionRequestService.search(oFileRef.get());
+        }
         return reference(FileReferenceRequestDTO
                 .build(metaInfo.getFileName(), metaInfo.getChecksum(), metaInfo.getAlgorithm(),
                        metaInfo.getMimeType().toString(), metaInfo.getFileSize(), owner, location.getStorage(),
                        location.getUrl())
                 .withHeight(metaInfo.getHeight()).withWidth(metaInfo.getWidth()).withType(metaInfo.getType()), oFileRef,
-                         groupIds);
+                         oFileDelReq, groupIds);
     }
 
     /**
@@ -159,9 +170,9 @@ public class FileReferenceRequestService {
      * @throws ModuleException if the file reference can not be created.
      */
     private FileReference reference(FileReferenceRequestDTO request, Optional<FileReference> fileRef,
-            Collection<String> groupIds) throws ModuleException {
+            Optional<FileDeletionRequest> fileDelReq, Collection<String> groupIds) throws ModuleException {
         if (fileRef.isPresent()) {
-            return handleAlreadyExists(fileRef.get(), request, groupIds);
+            return handleAlreadyExists(fileRef.get(), fileDelReq, request, groupIds);
         } else {
             FileReference newFileRef = fileRefService.create(Lists.newArrayList(request.getOwner()),
                                                              request.buildMetaInfo(),
@@ -188,9 +199,9 @@ public class FileReferenceRequestService {
      * @return {@link FileReference} if the file reference is updated. Null if a new store request is created.
      * @throws ModuleException If file reference can not be created
      */
-    private FileReference handleAlreadyExists(FileReference fileReference, FileReferenceRequestDTO request,
-            Collection<String> groupIds) throws ModuleException {
-        Optional<FileDeletionRequest> deletionRequest = fileDeletionRequestService.search(fileReference);
+    private FileReference handleAlreadyExists(FileReference fileReference,
+            Optional<FileDeletionRequest> deletionRequest, FileReferenceRequestDTO request, Collection<String> groupIds)
+            throws ModuleException {
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
             // A deletion is pending on the existing file reference but the new reference request does not indicates the new file location
             String message = String.format("File %s is being deleted. Please try later.", request.getChecksum());

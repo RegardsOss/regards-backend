@@ -360,16 +360,10 @@ public class RequestsGroupService {
      */
     private void requestDone(String groupId, FileRequestType type, String checksum, String storage, String storePath,
             Collection<String> owners, FileReference fileRef, boolean error, String errorCause) {
-        // Check if associated group exists
-        if (reqGroupRepository.existsById(groupId)) {
-            RequestResultInfo gInfo = new RequestResultInfo(groupId, type, checksum, storage, storePath, owners);
-            gInfo.setResultFile(fileRef);
-            gInfo.setError(error);
-            gInfo.setErrorCause(errorCause);
-            groupReqInfoRepository.save(gInfo);
-        } else {
-            LOGGER.warn("A {} request is terminated with error={} for the request group {} but this group does not exists anymore !",
-                        type.toString(), Boolean.valueOf(error).toString(), groupId);
-        }
+        RequestResultInfo gInfo = new RequestResultInfo(groupId, type, checksum, storage, storePath, owners);
+        gInfo.setResultFile(fileRef);
+        gInfo.setError(error);
+        gInfo.setErrorCause(errorCause);
+        groupReqInfoRepository.save(gInfo);
     }
 }

@@ -41,6 +41,8 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
 
     Optional<FileDeletionRequest> findByFileReferenceId(Long fileReferenceId);
 
+    Set<FileDeletionRequest> findByFileReferenceIdIn(Set<Long> fileReferenceIds);
+
     Page<FileDeletionRequest> findByStorage(String storage, Pageable page);
 
     @Query("select storage from FileDeletionRequest where status = :status")

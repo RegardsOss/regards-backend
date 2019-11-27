@@ -47,7 +47,9 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
  * @author Sébastien Binda
  */
 @Entity
-@Table(name = "t_file_reference", indexes = { @Index(name = "idx_file_reference", columnList = "storage, checksum") },
+@Table(name = "t_file_reference",
+        indexes = { @Index(name = "idx_file_reference_checksum", columnList = "checksum"),
+                @Index(name = "idx_file_reference_storage_checksum", columnList = "storage, checksum") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_t_file_reference_checksum_storage",
                 columnNames = { "checksum", "storage" }) })
 public class FileReference {

@@ -1,0 +1,1 @@
+create index idx_file_reference_checksum on t_file_reference (checksum);

@@ -373,6 +373,12 @@ public class FileDeletionRequestService {
     }
 
     @Transactional(readOnly = true)
+    public Set<FileDeletionRequest> search(Set<FileReference> fileReferences) {
+        return fileDeletionRequestRepo
+                .findByFileReferenceIdIn(fileReferences.stream().map(FileReference::getId).collect(Collectors.toSet()));
+    }
+
+    @Transactional(readOnly = true)
     public Page<FileDeletionRequest> search(String storage, FileRequestStatus status, Pageable page) {
         return fileDeletionRequestRepo.findByStorageAndStatus(storage, status, page);
     }
@@ -489,4 +495,5 @@ public class FileDeletionRequestService {
         lockService.releaseLock(DeletionFlowItem.DELETION_LOCK, new DeletionFlowItem());
         LOGGER.trace("[DELETION PROCESS] Lock released !");
     }
+
 }
