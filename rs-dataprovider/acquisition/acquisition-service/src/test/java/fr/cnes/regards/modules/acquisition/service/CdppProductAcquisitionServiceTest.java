@@ -276,6 +276,9 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
                                                                             Arrays.asList(ProductSIPState.SCHEDULED));
         Assert.assertEquals(1, scheduled);
 
+        Assert.assertTrue(productService.existsByProcessingChainAndSipStateIn(processingChain,
+                                                                              ProductSIPState.SCHEDULED));
+
         // Run the job synchronously
         SIPGenerationJob genJob = new SIPGenerationJob();
         beanFactory.autowireBean(genJob);
@@ -289,6 +292,9 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
 
         genJob.setParameters(parameters);
         genJob.run();
+
+        Assert.assertFalse(productService.existsByProcessingChainAndSipStateIn(processingChain,
+                                                                               ProductSIPState.SCHEDULED));
 
         // Find product to submitted
         long submitted = productService.countByProcessingChainAndSipStateIn(processingChain,
