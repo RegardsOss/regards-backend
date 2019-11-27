@@ -1,5 +1,7 @@
 package fr.cnes.regards.framework.modules.locks.service;
 
+import java.sql.BatchUpdateException;
+
 /**
  * Because i'm awesome
  *
@@ -41,5 +43,5 @@ public interface ILockService {
     * @param expiresIn seconds before lock expiration (at least 1 second)
     * @return <code>true</code> if lock has been obtained
     */
-    boolean obtainLockOrSkipTransactional(String name, Object owner, long expiresIn);
+    boolean obtainLockOrSkipTransactional(String name, Object owner, long expiresIn) throws BatchUpdateException;
 }

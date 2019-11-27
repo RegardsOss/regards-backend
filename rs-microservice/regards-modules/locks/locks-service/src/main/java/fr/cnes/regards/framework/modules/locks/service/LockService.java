@@ -1,5 +1,6 @@
 package fr.cnes.regards.framework.modules.locks.service;
 
+import java.sql.BatchUpdateException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
@@ -45,7 +46,7 @@ public class LockService implements ILockService {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-    public boolean obtainLockOrSkipTransactional(String name, Object owner, long expiresIn) {
+    public boolean obtainLockOrSkipTransactional(String name, Object owner, long expiresIn) throws BatchUpdateException {
         Assert.hasText(name, "Lock name is required");
         Assert.notNull(owner, "Class owner is required");
         Assert.notNull(expiresIn, "Expiration time is required");
@@ -78,7 +79,7 @@ public class LockService implements ILockService {
     public boolean obtainLockOrSkip(String name, Object owner, long expiresIn) {
         try {
             return self.obtainLockOrSkipTransactional(name, owner, expiresIn);
-        } catch (LockAcquisitionException | CannotAcquireLockException | JpaSystemException e) {
+        } catch (LockAcquisitionException | CannotAcquireLockException | JpaSystemException | BatchUpdateException e) {
             LOG.warn(String.format("Error getting database lock %s. Cause: %s.", name, e.getMessage()));
             return false;
         }
