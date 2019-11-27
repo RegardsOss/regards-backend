@@ -64,7 +64,7 @@ public class PluginConfigurationFieldDescriptors {
         lfd.add(pluginConfField.withPath(addPrefix("label"), "label", "A label to identify the configuration")
                 .type("String"));
         lfd.add(pluginConfField.withPath(addPrefix("version"), "version", "The version of the configuration")
-                .type("String"));
+                .type("String").optional());
         lfd.add(pluginConfField
                 .withPath(addPrefix("priorityOrder"), "priorityOrder", "The priority order of the configuration")
                 .type("Integer"));
