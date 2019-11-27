@@ -1,14 +1,14 @@
-#### Request
+### Response
 
 * **Code:** {{statusCode}} {{statusReason}}
 
-        **Headers:**
+**Headers:**
 
-    {{#headers}}
-        `{{name}}:{{value}}`
-    {{/headers}}
+{{#headers}}
+`{{name}}:{{value}}`  
+{{/headers}}
 
-        **Content:**
+**Content:**
 
     {{#responseBody}}
 ```json
