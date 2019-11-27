@@ -304,6 +304,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             container.setConsumerBatchEnabled(true);
             container.setDeBatchingEnabled(true); // Required if consumer batch enabled is true
             container.setBatchSize(batchHandler.getBatchSize());
+            container.setPrefetchCount(batchHandler.getBatchSize());
             container.setReceiveTimeout(batchHandler.getReceiveTimeout());
             BatchMessageListener batchListener = new RabbitBatchMessageListener(messageConverter, batchHandler,
                     errorHandler);
