@@ -155,7 +155,7 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
                                             "target/online-storage/"),
                          IPluginParam.build(SimpleOnlineTestClient.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleOnlineTestClient.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, ONLINE_CONF, parameters, 0);
+            PluginConfiguration dataStorageConf = new PluginConfiguration(ONLINE_CONF, parameters, 0, dataStoMeta.getPluginId());
             return storageLocationConfService.create(ONLINE_CONF, dataStorageConf, 1_000_000L);
         } catch (IOException | ModuleException e) {
             Assert.fail(e.getMessage());

@@ -389,7 +389,7 @@ public class FileCacheRequestService {
      * Schedule a {@link JobInfo} for the given {@link  FileRestorationWorkingSubset}.<br/>
      * NOTE : A new transaction is created for each call at this method. It is mandatory to avoid having too long transactions.
      * @param workingSubset
-     * @param pluginConfId
+     * @param plgBusinessId
      * @return {@link JobInfo} scheduled.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -446,7 +446,7 @@ public class FileCacheRequestService {
      * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
      * <li> the plugin configuration is disabled </li>
      * </ul>
-     * @param fileRefRequest
+     * @param request
      */
     private void handleStorageNotAvailable(FileCacheRequest request) {
         // The storage destination is unknown, we can already set the request in error status

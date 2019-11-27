@@ -519,7 +519,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                                             "target/online-storage/"),
                          IPluginParam.build(SimpleOnlineTestClient.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleOnlineTestClient.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, ONLINE_CONF, parameters, 0);
+            PluginConfiguration dataStorageConf = new PluginConfiguration(ONLINE_CONF, parameters, 0, dataStoMeta.getPluginId());
             return storageLocationConfService.create(ONLINE_CONF, dataStorageConf, 1_000_000L);
         } catch (IOException | ModuleException e) {
             Assert.fail(e.getMessage());
@@ -539,7 +539,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_RESTORATION_ERROR_FILE_PATTERN,
                                             "restoError.*"),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, name, parameters, 0);
+            PluginConfiguration dataStorageConf = new PluginConfiguration(name, parameters, 0, dataStoMeta.getPluginId());
             return storageLocationConfService.create(name, dataStorageConf, 1_000_000L);
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);

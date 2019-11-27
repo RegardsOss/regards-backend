@@ -149,7 +149,7 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
                                             STORAGE_PATH),
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, TARGET_STORAGE, parameters, 0);
+            PluginConfiguration dataStorageConf = new PluginConfiguration(TARGET_STORAGE, parameters, 0, dataStoMeta.getPluginId());
             prioritizedDataStorageService.create(TARGET_STORAGE, dataStorageConf, 1_000_000L);
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
