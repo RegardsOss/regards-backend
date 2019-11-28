@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.modules.plugins.service;
 
-import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
@@ -40,6 +39,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
@@ -71,14 +71,17 @@ public class ComplexPluginTest {
         BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
         blowfishEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked, runtimeTenantResolver,
-                blowfishEncryptionService, null);
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
+                                                publisherMocked,
+                                                runtimeTenantResolver,
+                                                blowfishEncryptionService,
+                                                null);
         PluginUtils.setup();
     }
 
     @Test
     public void test() throws ModuleException, NotAvailablePluginConfigurationException {
-        PluginMetaData result = pluginServiceMocked.getPluginMetaDataById("complexPlugin");
+        PluginMetaData pluginMetaData = pluginServiceMocked.getPluginMetaDataById("complexPlugin");
 
         Long pPluginConfigurationId = 10L;
 
@@ -89,10 +92,16 @@ public class ComplexPluginTest {
         pojo.setOtherPojoParam(pojo2);
 
         List<PluginConfiguration> pluginConfs = new ArrayList<>();
-        PluginConfiguration aPluginConfiguration = new PluginConfiguration(result,
-                "a configuration from PluginServiceUtility",
-                IPluginParam.set(IPluginParam.build(TestPlugin.FIELD_NAME_POJO_PARAM, PluginParameterTransformer.toJson(pojo)).dynamic()), 0);
+        PluginConfiguration aPluginConfiguration = new PluginConfiguration("a configuration from PluginServiceUtility",
+                                                                           IPluginParam.set(IPluginParam.build(
+                                                                                   TestPlugin.FIELD_NAME_POJO_PARAM,
+                                                                                   PluginParameterTransformer
+                                                                                           .toJson(pojo)).dynamic()),
+                                                                           0,
+                                                                           pluginMetaData.getPluginId());
+
         aPluginConfiguration.setId(pPluginConfigurationId);
+        aPluginConfiguration.setVersion(pluginMetaData.getVersion());
 
         pluginConfs.add(aPluginConfiguration);
 

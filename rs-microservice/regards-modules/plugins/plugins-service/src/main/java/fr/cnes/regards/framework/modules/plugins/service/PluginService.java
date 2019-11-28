@@ -749,8 +749,8 @@ public class PluginService implements IPluginService {
     private PluginConfiguration cloneSensiblePlugin(PluginMetaData pluginMeta, PluginConfiguration pluginConf) {
 
         // Create a clone with decrypted value
-        PluginConfiguration exportedConf = new PluginConfiguration(pluginMeta, pluginConf.getLabel(),
-                pluginConf.getPriorityOrder());
+        PluginConfiguration exportedConf = new PluginConfiguration(pluginConf.getLabel(),
+                pluginConf.getPriorityOrder(), pluginConf.getPluginId());
         exportedConf.setBusinessId(pluginConf.getBusinessId());
         exportedConf.setIsActive(false);
         exportedConf.setIconUrl(pluginConf.getIconUrl());

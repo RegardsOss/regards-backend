@@ -250,9 +250,13 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     @Purpose("Unable to load a plugin with a no active configuration")
     public void getPluginNotActiveConfiguration() throws ModuleException, NotAvailablePluginConfigurationException {
 
+        //need to directly call PluginUtils.getPlugins.get(pluginId) to set metadata because of mockito
+        PluginMetaData metaData = PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID);
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
         aPluginConfiguration.setIsActive(Boolean.FALSE);
         aPluginConfiguration.setId(AN_ID);
+        aPluginConfiguration.setMetaData(metaData);
+        aPluginConfiguration.setVersion(metaData.getVersion());
 
         Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                 .thenReturn(aPluginConfiguration);

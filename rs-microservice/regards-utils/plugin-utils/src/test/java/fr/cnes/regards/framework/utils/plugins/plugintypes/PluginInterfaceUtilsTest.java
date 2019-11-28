@@ -160,7 +160,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         Map<String, Object> instantiatedPluginMap = new HashMap<>();
         instantiatedPluginMap.put(pluginConfigurationInterface.getBusinessId(),
                                   PluginUtils.getPlugin(pluginConfigurationInterface,
-                                                        pluginConfigurationInterface.getPluginClassName(),
+                                                        AParameterPluginImplementation.class.getCanonicalName(),
                                                         instantiatedPluginMap));
         /*
          * Instantiate the parent plugin

@@ -165,48 +165,43 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * A constructor with {@link PluginMetaData}.
-     * @param metaData the plugin's metadata
      * @param label the label
      */
-    public PluginConfiguration(PluginMetaData metaData, String label) {
-        this(metaData, label, Lists.newArrayList(), 0);
+    public PluginConfiguration(String label, String pluginId) {
+        this(label, Lists.newArrayList(), 0, pluginId);
     }
 
     /**
      * A constructor with {@link PluginMetaData} and list of {@link AbstractPluginParam}.
-     * @param metaData the plugin's metadata
      * @param label the label
      * @param parameters the list of parameters
      */
-    public PluginConfiguration(PluginMetaData metaData, String label, Set<IPluginParam> parameters) {
-        this(metaData, label, parameters, 0);
+    public PluginConfiguration(String label, Set<IPluginParam> parameters, String pluginId) {
+        this(label, parameters, 0, pluginId);
     }
 
     /**
      * A constructor with {@link PluginMetaData}.
-     * @param metaData the plugin's metadata
      * @param label the label
      * @param order the order
      */
-    public PluginConfiguration(PluginMetaData metaData, String label, int order) {
-        this(metaData, label, Lists.newArrayList(), order);
+    public PluginConfiguration(String label, int order, String pluginId) {
+        this(label, Lists.newArrayList(), order, pluginId);
     }
 
     /**
      * A constructor with {@link PluginMetaData} and list of {@link AbstractPluginParam}.
-     * @param metaData the plugin's metadata
      * @param label the label
      * @param parameters the list of parameters
      * @param order the order
      */
-    public PluginConfiguration(PluginMetaData metaData, String label, Collection<IPluginParam> parameters, int order) {
+    public PluginConfiguration(String label, Collection<IPluginParam> parameters, int order, String pluginId) {
         super();
         generateBusinessIdIfNotSet();
-        this.setMetaData(metaData);
-        this.version = metaData.getVersion();
         if (parameters != null) {
             this.parameters.addAll(parameters);
         }
+        this.pluginId = pluginId;
         priorityOrder = order;
         this.label = label;
         active = Boolean.TRUE;

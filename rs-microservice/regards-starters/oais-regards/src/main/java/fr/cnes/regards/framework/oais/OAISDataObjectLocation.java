@@ -50,11 +50,16 @@ public class OAISDataObjectLocation {
     private String url;
 
     /**
+     * Optional path identifying the base directory where is store the file
+     */
+    private String storePath;
+
+    /**
      * Build a file location directly accessible through FILE or HTTP URL protocol
      */
     public static OAISDataObjectLocation build(String url) {
         Assert.notNull(url, "URL is required");
-        return buildInternal(url, null);
+        return buildInternal(url, null, null);
     }
 
     /**
@@ -65,7 +70,18 @@ public class OAISDataObjectLocation {
     public static OAISDataObjectLocation build(String url, String storage) {
         Assert.notNull(url, "URL is required");
         Assert.hasText(storage, "Storage identifier is required");
-        return buildInternal(url, storage);
+        return buildInternal(url, storage, null);
+    }
+
+    /**
+     * Build a file location
+     * accessible through storage service if storage identifier is recognize
+     * else just treated as a reference.
+     */
+    public static OAISDataObjectLocation build(String url, String storage, String storePath) {
+        Assert.notNull(url, "URL is required");
+        Assert.hasText(storage, "Storage identifier is required");
+        return buildInternal(url, storage, storePath);
     }
 
     /**
@@ -74,7 +90,7 @@ public class OAISDataObjectLocation {
     public static OAISDataObjectLocation build(Path path) {
         Assert.notNull(path, "File path is required");
         try {
-            return buildInternal(path.toUri().toURL().toString(), null);
+            return buildInternal(path.toUri().toURL().toString(), null, null);
         } catch (MalformedURLException e) {
             String errorMessage = String.format("Cannot transform %s to valid URL (MalformedURLException).",
                                                 path.toString());
@@ -83,10 +99,11 @@ public class OAISDataObjectLocation {
         }
     }
 
-    private static OAISDataObjectLocation buildInternal(String url, String storage) {
+    private static OAISDataObjectLocation buildInternal(String url, String storage, String storePath) {
         OAISDataObjectLocation location = new OAISDataObjectLocation();
         location.setUrl(url);
         location.setStorage(storage);
+        location.setStorePath(storePath);
         return location;
     }
 
@@ -104,6 +121,14 @@ public class OAISDataObjectLocation {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getStorePath() {
+        return storePath;
+    }
+
+    public void setStorePath(String storePath) {
+        this.storePath = storePath;
     }
 
     @Override

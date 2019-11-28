@@ -25,6 +25,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -47,8 +49,10 @@ public class PluginFreeTest {
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(PluginWithBoolean.FIELD_NAME_STRING, "string").dynamic(expected, "string2"));
 
+        PluginConfiguration conf = new PluginConfiguration("", parameters, FreePluginWithString.class.getAnnotation(Plugin.class).id());
+
         PluginUtils.setup(this.getClass().getPackage().getName());
-        IFreePlugin plugin = PluginUtils.getPlugin(parameters, FreePluginWithString.class, null,
+        IFreePlugin plugin = PluginUtils.getPlugin(conf, FreePluginWithString.class.getCanonicalName(), null,
                                                    IPluginParam.build(PluginWithBoolean.FIELD_NAME_STRING, expected));
         Assert.assertNotNull(plugin);
         Assert.assertEquals(expected, plugin.doIt());

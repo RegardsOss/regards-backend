@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginDestroy;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
@@ -159,16 +158,19 @@ public final class PluginUtils {
             // Check a plugin does not already exists with the same plugin id
             if (pluginMetadataCache.containsKey(plugin.getPluginId())) {
                 PluginMetaData pMeta = pluginMetadataCache.get(plugin.getPluginId());
-                String message = String
-                        .format("Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
-                                plugin.getPluginId(), plugin.getPluginClassName(), pMeta.getPluginClassName());
+                String message = String.format(
+                        "Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
+                        plugin.getPluginId(),
+                        plugin.getPluginClassName(),
+                        pMeta.getPluginClassName());
                 LOGGER.warn(message);
             }
 
             // Store plugin reference
             pluginMetadataCache.put(plugin.getPluginId(), plugin);
 
-            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.", plugin.getPluginClassName(),
+            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.",
+                                      plugin.getPluginClassName(),
                                       plugin.getPluginId()));
         }
         LOGGER.info("{} Plugins loaded!", HR);
@@ -241,8 +243,10 @@ public final class PluginUtils {
             Map<String, Object> instantiatedPlugins, IPluginParam... dynamicParams)
             throws NotAvailablePluginConfigurationException {
         if (!conf.isActive()) {
-            throw new NotAvailablePluginConfigurationException(
-                    String.format("Plugin configuration <%d - %s> is not active.", conf.getId(), conf.getLabel()));
+            throw new NotAvailablePluginConfigurationException(String.format(
+                    "Plugin configuration <%d - %s> is not active.",
+                    conf.getId(),
+                    conf.getLabel()));
         }
         return getPlugin(conf, pluginMetadata.getPluginClassName(), instantiatedPlugins, dynamicParams);
     }
@@ -273,8 +277,7 @@ public final class PluginUtils {
             // Launch init method if detected
             doInitPlugin(returnPlugin);
 
-        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException
-                | SecurityException | ClassNotFoundException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException | SecurityException | ClassNotFoundException e) {
             throw new PluginUtilsRuntimeException(String.format("Cannot instantiate <%s>", pluginClass), e);
         }
 
@@ -288,14 +291,16 @@ public final class PluginUtils {
      * @param pluginClass the required returned type
      * @param dynamicPlugins an optional {@link List} of {@link IPluginParam}
      * @return a {@link Plugin} instance
+     * @deprecated TODO this method is only used to do tests and should be remove from main code
      */
+    @Deprecated
     public static <T> T getPlugin(Set<IPluginParam> params, Class<T> pluginClass,
             Map<String, Object> instantiatedPlugins, IPluginParam... dynamicPlugins)
             throws NotAvailablePluginConfigurationException {
         // Build plugin metadata
         PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pluginClass);
 
-        PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", params);
+        PluginConfiguration pluginConfiguration = new PluginConfiguration("", params, pluginMetadata.getPluginId());
         return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, instantiatedPlugins, dynamicPlugins);
     }
 
@@ -313,8 +318,7 @@ public final class PluginUtils {
                     method.invoke(plugin);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking destroy method on plugin class <%s>.",
-                                               plugin.getClass()),
-                                 e);
+                                               plugin.getClass()), e);
                     throw new PluginUtilsRuntimeException(e);
                 }
             }
@@ -336,8 +340,7 @@ public final class PluginUtils {
                     method.invoke(plugin);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
-                                               plugin.getClass()),
-                                 e);
+                                               plugin.getClass()), e);
                     if (e.getCause() instanceof PluginUtilsRuntimeException) {
                         throw (PluginUtilsRuntimeException) e.getCause();
                     } else {
@@ -354,12 +357,14 @@ public final class PluginUtils {
      * @param params the plugin parameters
      * @param returnInterfaceType the required returned type
      * @return an instance @ if a problem occurs
+     * @deprecated TODO remove this method from main code because it is only used in test
      */
+    @Deprecated
     public static <T> PluginConfiguration getPluginConfiguration(Set<IPluginParam> params,
             Class<T> returnInterfaceType) {
         // Build plugin metadata
         PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(returnInterfaceType);
-        return new PluginConfiguration(pluginMetadata, UUID.randomUUID().toString(), params);
+        return new PluginConfiguration(UUID.randomUUID().toString(), params, pluginMetadata.getPluginId());
     }
 
     public static List<String> validateOnCreate(PluginConfiguration conf) {
@@ -391,6 +396,10 @@ public final class PluginUtils {
             validationErrors.add("The plugin configuration cannot be null.");
             return validationErrors;
         }
+        if (conf.getPluginId() == null) {
+            validationErrors.add("The plugin configuration pluginId is required");
+            return validationErrors;
+        }
         if (conf.getPriorityOrder() == null) {
             validationErrors.add(String.format("The plugin configuration priority order is required (pluginId: %s).",
                                                conf.getPluginId()));
@@ -401,6 +410,10 @@ public final class PluginUtils {
         }
         // Now lets apply some more complicated validation that required introspection
         PluginMetaData pluginMetadata = getPlugins().get(conf.getPluginId());
+        if(pluginMetadata == null) {
+            validationErrors.add(String.format("Plugin metadata for pluginId %s is unknown", conf.getPluginId()));
+            return validationErrors;
+        }
         // Now that we have the metadata, lets check everything and eventually set some properties
         // as version (a null version means a plugin configuration creation
         if (conf.getVersion() == null) {
@@ -408,20 +421,17 @@ public final class PluginUtils {
         } else {
             // Check that version is the same between plugin one and plugin configuration one
             if (!Objects.equals(pluginMetadata.getVersion(), conf.getVersion())) {
-                validationErrors
-                        .add(String.format("Plugin configuration version (%s) is different from plugin one (%s).",
-                                           conf.getVersion(), pluginMetadata.getVersion()));
+                validationErrors.add(String.format(
+                        "Plugin configuration version (%s) is different from plugin one (%s).",
+                        conf.getVersion(),
+                        pluginMetadata.getVersion()));
             }
         }
-        if (conf.getPluginId() == null) {
-            conf.setPluginId(pluginMetadata.getPluginId());
-        } else {
-            // Check that pluginId is the same between plugin one and plugin configuration one
-            if (!Objects.equals(pluginMetadata.getPluginId(), conf.getPluginId())) {
-                validationErrors
-                        .add(String.format("Plugin configuration pluginId (%s) is different from plugin one (%s).",
-                                           conf.getPluginId(), pluginMetadata.getPluginId()));
-            }
+        // Check that pluginId is the same between plugin one and plugin configuration one
+        if (!Objects.equals(pluginMetadata.getPluginId(), conf.getPluginId())) {
+            validationErrors.add(String.format("Plugin configuration pluginId (%s) is different from plugin one (%s).",
+                                               conf.getPluginId(),
+                                               pluginMetadata.getPluginId()));
         }
 
         // First lets check the plugin parameters
