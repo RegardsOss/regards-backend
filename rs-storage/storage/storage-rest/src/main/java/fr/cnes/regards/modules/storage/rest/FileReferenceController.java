@@ -132,13 +132,18 @@ public class FileReferenceController {
             @RequestParam(name = FileDownloadService.TOKEN_PARAM, required = true) String token)
             throws ModuleException, IOException {
         if (downloadService.checkToken(checksum, token)) {
-            DownloadableFile downloadFile = downloadService.downloadFile(checksum);
-            InputStreamResource isr = new InputStreamResource(downloadFile.getFileInputStream());
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentLength(downloadFile.getRealFileSize());
-            headers.setContentType(asMediaType(downloadFile.getMimeType()));
-            headers.setContentDispositionFormData("attachement;filename=", downloadFile.getFileName());
-            return new ResponseEntity<>(isr, headers, HttpStatus.OK);
+            try {
+                DownloadableFile downloadFile = downloadService.downloadFile(checksum);
+                InputStreamResource isr = new InputStreamResource(downloadFile.getFileInputStream());
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentLength(downloadFile.getRealFileSize());
+                headers.setContentType(asMediaType(downloadFile.getMimeType()));
+                headers.setContentDispositionFormData("attachement;filename=", downloadFile.getFileName());
+                return new ResponseEntity<>(isr, headers, HttpStatus.OK);
+            } catch (ModuleException e) {
+                LOGGER.error(e.getMessage());
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
         } else {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
