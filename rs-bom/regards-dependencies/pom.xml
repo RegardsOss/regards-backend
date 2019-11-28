@@ -134,7 +134,7 @@
         <fr.cnes.regards.modules.opensearch.version>GEODE</fr.cnes.regards.modules.opensearch.version>
         <fr.cnes.regards.modules.order.version>GEODE</fr.cnes.regards.modules.order.version>
         <fr.cnes.regards.modules.ingest.version>GEODE</fr.cnes.regards.modules.ingest.version>
-        <fr.cnes.regards.modules.storage-light.version>GEODE</fr.cnes.regards.modules.storage-light.version>
+        <fr.cnes.regards.modules.storage.version>GEODE</fr.cnes.regards.modules.storage.version>
         <fr.cnes.regards.modules.catalog-services.version>GEODE
         </fr.cnes.regards.modules.catalog-services.version>
         <fr.cnes.regards.modules.access-services.version>GEODE
