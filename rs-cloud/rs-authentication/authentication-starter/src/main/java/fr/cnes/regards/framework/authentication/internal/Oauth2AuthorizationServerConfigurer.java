@@ -76,22 +76,25 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
      */
     private final JWTService jwtService;
 
+    private final Integer acessTokenValidityInSec;
+
     /**
      * OAuth2 authentication manager
      */
     private final AuthenticationManager authenticationManager;
 
-    public Oauth2AuthorizationServerConfigurer(final String pResourceId, final String pJwtSecret,
-            final String pClientUser, final String pClientSecret, final String pGrantType,
-            final AuthenticationManager pAuthenticationManager, final JWTService pJwtService) {
+    public Oauth2AuthorizationServerConfigurer(final String resourceId, final String jwtSecret, final String clientUser,
+            final String clientSecret, final String grantType, final AuthenticationManager authenticationManager,
+            final JWTService jwtService, Integer acessTokenValidityInSec) {
         super();
-        resourceId = pResourceId;
-        jwtSecret = pJwtSecret;
-        clientUser = pClientUser;
-        clientSecret = pClientSecret;
-        grantType = pGrantType;
-        authenticationManager = pAuthenticationManager;
-        jwtService = pJwtService;
+        this.resourceId = resourceId;
+        this.jwtSecret = jwtSecret;
+        this.clientUser = clientUser;
+        this.clientSecret = clientSecret;
+        this.grantType = grantType;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+        this.acessTokenValidityInSec = acessTokenValidityInSec;
     }
 
     /**
@@ -132,7 +135,7 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
     @Override
     public void configure(final ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory().withClient(clientUser).authorizedGrantTypes(grantType).resourceIds(resourceId)
-                .secret(clientSecret).accessTokenValiditySeconds(7200);
+                .secret(clientSecret).accessTokenValiditySeconds(acessTokenValidityInSec);
     }
 
     @Override
