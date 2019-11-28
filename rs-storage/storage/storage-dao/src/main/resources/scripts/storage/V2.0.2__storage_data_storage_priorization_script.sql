@@ -1,3 +1,0 @@
-create table t_prioritized_data_storage (data_storage_conf_id int8 not null, data_storage_type varchar(255), priority int8, primary key (data_storage_conf_id));
-alter table t_prioritized_data_storage add constraint uk_priotitized_data_storage unique (data_storage_type, priority);
-alter table t_prioritized_data_storage add constraint fk_prioritized_data_storage_plugin_conf foreign key (data_storage_conf_id) references t_plugin_configuration;

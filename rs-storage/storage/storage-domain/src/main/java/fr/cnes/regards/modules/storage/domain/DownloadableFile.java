@@ -27,8 +27,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.MimeType;
 
 /**
- * POJO to represent a file inline or in the cache system that is ready to be downloaded.
- * @author sbinda
+ * POJO to represent a file inline or in the cache system that is ready to be downloaded.<br/>
+ *
+ * @author Sébastien Binda
  */
 public class DownloadableFile implements Closeable {
 
@@ -45,16 +46,16 @@ public class DownloadableFile implements Closeable {
     /**
      * File size calculated from the file on disk.
      */
-    private final Long realFileSize;
+    private final Long fileSize;
 
     private final String fileName;
 
     private final MimeType mimeType;
 
-    public DownloadableFile(InputStream fileInputStream, Long realFileSize, String fileName, MimeType mediaType) {
+    public DownloadableFile(InputStream fileInputStream, Long fileSize, String fileName, MimeType mediaType) {
         super();
         this.fileInputStream = fileInputStream;
-        this.realFileSize = realFileSize;
+        this.fileSize = fileSize;
         this.fileName = fileName;
         this.mimeType = mediaType;
     }
@@ -70,7 +71,7 @@ public class DownloadableFile implements Closeable {
      * @return the realFileSize
      */
     public Long getRealFileSize() {
-        return realFileSize;
+        return fileSize;
     }
 
     public String getFileName() {

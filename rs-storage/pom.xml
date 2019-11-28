@@ -54,7 +54,7 @@
 
     <modules>
         <module>bootstrap-storage</module>
-    	<module>storage-light</module>
+    	<module>storage</module>
   </modules>
 
 </project>
