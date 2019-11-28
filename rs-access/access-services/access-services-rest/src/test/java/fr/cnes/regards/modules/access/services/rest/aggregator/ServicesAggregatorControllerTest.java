@@ -31,6 +31,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.rest.AccessServicesITConfiguration;
@@ -67,6 +68,7 @@ public class ServicesAggregatorControllerTest {
      */
     @Before
     public void setUp() throws Exception {
+        PluginUtils.setup();
         // Mock Catalog Services
         catalogServicesClient = Mockito.mock(ICatalogServicesClient.class);
         PluginConfigurationDto dto = new AccessServicesITConfiguration().dummyPluginConfigurationDto();

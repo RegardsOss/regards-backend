@@ -18,23 +18,22 @@
  */
 package fr.cnes.regards.modules.access.services.rest;
 
-import java.util.List;
 import java.util.Set;
 
 import org.assertj.core.util.Lists;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
@@ -49,32 +48,34 @@ import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDt
 @Configuration
 public class AccessServicesITConfiguration {
 
-    private static Long ID = 0L;
-
     private static final String LABEL = "the label";
 
     private static final Set<ServiceScope> APPLICATION_MODES = Sets.newHashSet(ServiceScope.MANY);
 
     private static final Set<EntityType> ENTITY_TYPES = Sets.newHashSet(EntityType.COLLECTION);
 
+    private static Long ID = 0L;
+
     @Bean
     public ICatalogServicesClient catalogServicesClient() {
         ICatalogServicesClient client = Mockito.mock(ICatalogServicesClient.class);
 
-        Mockito.when(client.retrieveServices(Lists.newArrayList("datasetFromConfigClass"),
-                                             Lists.newArrayList(ServiceScope.MANY)))
-                .thenReturn(new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
-                        HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())), HttpStatus.OK));
+        Mockito.doReturn(new ResponseEntity<>(HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())),
+                                              HttpStatus.OK)).when(client)
+                .retrieveServices(Lists.newArrayList("datasetFromConfigClass"), Lists.newArrayList(ServiceScope.MANY));
 
         return client;
     }
 
     @Bean
     public PluginConfigurationDto dummyPluginConfigurationDto() {
-        final PluginMetaData metaData = new PluginMetaData();
-        metaData.setPluginClassName(SampleServicePlugin.class.getName());
-        PluginConfiguration pluginConfiguration = new PluginConfiguration(metaData, "testConf");
+        PluginUtils.setup();
+        PluginMetaData metaData = PluginUtils.createPluginMetaData(SampleServicePlugin.class);
+        PluginConfiguration pluginConfiguration = new PluginConfiguration("testConf",
+                                                                          SampleServicePlugin.class
+                                                                                  .getAnnotation(Plugin.class).id());
         pluginConfiguration.setId(ID);
+        pluginConfiguration.setMetaData(metaData);
         ID = ID + 1;
         return new PluginConfigurationDto(pluginConfiguration);
     }

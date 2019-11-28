@@ -30,8 +30,10 @@ import org.springframework.http.ResponseEntity;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
@@ -59,10 +61,13 @@ public class ServiceAggregatorClientITConfiguration {
     }
 
     public PluginConfigurationDto dummyPluginConfigurationDto() {
+        PluginUtils.setup();
         final PluginMetaData metaData = new PluginMetaData();
         metaData.getInterfaceNames().add(IService.class.getName());
         metaData.setPluginClassName(SampleServicePlugin.class.getName());
-        PluginConfiguration pluginConfiguration = new PluginConfiguration(metaData, "testConf");
+        metaData.setPluginId(SampleServicePlugin.class.getAnnotation(Plugin.class).id());
+        PluginConfiguration pluginConfiguration = new PluginConfiguration("testConf",metaData.getPluginId());
+        pluginConfiguration.setMetaData(metaData);
         pluginConfiguration.setId(ID);
         ID = ID + 1;
         return new PluginConfigurationDto(pluginConfiguration);
