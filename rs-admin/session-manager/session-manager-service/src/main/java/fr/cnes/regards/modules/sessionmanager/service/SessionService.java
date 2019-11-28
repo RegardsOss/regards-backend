@@ -19,7 +19,10 @@
 package fr.cnes.regards.modules.sessionmanager.service;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -31,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -44,7 +48,7 @@ import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOp
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
 
 @Service
-@Transactional
+@MultitenantTransactional
 public class SessionService implements ISessionService {
 
     /**
@@ -121,6 +125,32 @@ public class SessionService implements ISessionService {
     }
 
     @Override
+    public void updateSessionProperties(List<SessionMonitoringEvent> events) {
+        sessionRepository.saveAll(mergeEvents(events));
+    }
+
+    public Collection<Session> mergeEvents(Collection<SessionMonitoringEvent> events) {
+        Map<String, Session> sessionsToUpdate = new HashMap<>();
+        for (SessionMonitoringEvent sessionMonitoringEvent : events) {
+            String sessionKey = sessionMonitoringEvent.getSource() + "__" + sessionMonitoringEvent.getName();
+            Session sessionToUpdate = sessionsToUpdate.get(sessionKey);
+            if (sessionToUpdate == null) {
+                Optional<Session> sessionOpt = sessionRepository
+                        .findOneBySourceAndName(sessionMonitoringEvent.getSource(), sessionMonitoringEvent.getName());
+                if (!sessionOpt.isPresent()) {
+                    sessionToUpdate = createSession(sessionMonitoringEvent.getName(),
+                                                    sessionMonitoringEvent.getSource());
+                } else {
+                    sessionToUpdate = sessionOpt.get();
+                }
+            }
+            sessionToUpdate.setLastUpdateDate(OffsetDateTime.now());
+            sessionsToUpdate.put(sessionKey, updateSessionProperty(sessionToUpdate, sessionMonitoringEvent));
+        }
+        return sessionsToUpdate.values();
+    }
+
+    @Override
     public Session updateSessionProperty(SessionMonitoringEvent sessionMonitoringEvent) {
         // Retrieve the session to update or create it
         Optional<Session> sessionOpt = sessionRepository.findOneBySourceAndName(sessionMonitoringEvent.getSource(),
@@ -131,7 +161,10 @@ public class SessionService implements ISessionService {
         } else {
             sessionToUpdate = sessionOpt.get();
         }
+        return this.updateSession(updateSessionProperty(sessionToUpdate, sessionMonitoringEvent));
+    }
 
+    private Session updateSessionProperty(Session sessionToUpdate, SessionMonitoringEvent sessionMonitoringEvent) {
         // Set the new value inside the map
         boolean isKeyExisting = sessionToUpdate.isStepPropertyExisting(sessionMonitoringEvent.getStep(),
                                                                        sessionMonitoringEvent.getProperty());
@@ -181,8 +214,7 @@ public class SessionService implements ISessionService {
         if (sessionMonitoringEvent.getState() == SessionNotificationState.ERROR) {
             sessionToUpdate.setState(SessionState.ERROR);
         }
-        // Save the session
-        return this.updateSession(sessionToUpdate);
+        return sessionToUpdate;
     }
 
     /**
@@ -192,9 +224,10 @@ public class SessionService implements ISessionService {
      */
     private Session createSession(String name, String source) {
 
+        // Does a session exists for the same source ?
+        Optional<Session> oldLatestSessionOpt = sessionRepository.findOneBySourceAndIsLatestTrue(source);
         Session newSession = sessionRepository.save(new Session(source, name));
         // Remove the flag isLatest to the previous one session sharing the same source
-        Optional<Session> oldLatestSessionOpt = sessionRepository.findOneBySourceAndIsLatestTrue(source);
         if (oldLatestSessionOpt.isPresent()) {
             Session oldLatestSession = oldLatestSessionOpt.get();
             oldLatestSession.setLatest(false);
