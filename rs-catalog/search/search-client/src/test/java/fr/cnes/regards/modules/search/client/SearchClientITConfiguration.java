@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.storagelight.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 
 /**
  * Module-wide configuration for integration tests.

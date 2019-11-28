@@ -53,6 +53,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -138,7 +139,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         // Create two plugin services linked to the same dataset
         // 1. first one
         if (!pluginService.findPluginConfigurationByLabel("testConf").isPresent()) {
-            conf = new PluginConfiguration(metaData, "testConf", parameters);
+            conf = new PluginConfiguration("testConf", parameters, metaData.getPluginId());
             conf = pluginService.savePluginConfiguration(conf);
         } else {
             LOG.warn("----------------------------------> Conf already exists for initialization");
@@ -148,8 +149,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
             parameters = IPluginParam.set(IPluginParam
                     .build(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON)
                     .dynamic());
-            samplePlgConf = new PluginConfiguration(PluginUtils.createPluginMetaData(SampleServicePlugin.class),
-                    PLUGIN_CONF_LABEL_1, parameters);
+            samplePlgConf = new PluginConfiguration(
+                    PLUGIN_CONF_LABEL_1, parameters, SampleServicePlugin.class.getAnnotation(Plugin.class).id());
             pluginService.savePluginConfiguration(samplePlgConf);
         } else {
             LOG.warn("----------------------------------> Conf already exists for initialization {}",
@@ -168,7 +169,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         parameters = IPluginParam.set(IPluginParam
                 .build(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON).dynamic());
         PluginConfiguration samplePlgConf2 = new PluginConfiguration(
-                PluginUtils.createPluginMetaData(SampleServicePlugin.class), PLUGIN_CONF_LABEL_2, parameters);
+                PLUGIN_CONF_LABEL_2, parameters, SampleServicePlugin.class.getAnnotation(Plugin.class).id());
         pluginService.savePluginConfiguration(samplePlgConf2);
 
         linkService.updateLink(DATA_SET_NAME,

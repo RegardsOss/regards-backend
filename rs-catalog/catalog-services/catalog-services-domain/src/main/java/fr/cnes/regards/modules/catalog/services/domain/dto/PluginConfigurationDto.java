@@ -52,8 +52,8 @@ public class PluginConfigurationDto extends PluginConfiguration {
      * @param pluginConfiguration
      */
     public PluginConfigurationDto(PluginConfiguration pluginConfiguration) {
-        super(pluginConfiguration.getMetaData(), pluginConfiguration.getLabel(), pluginConfiguration.getParameters(),
-                pluginConfiguration.getPriorityOrder());
+        super(pluginConfiguration.getLabel(), pluginConfiguration.getParameters(),
+                pluginConfiguration.getPriorityOrder(), pluginConfiguration.getPluginId());
         setIsActive(pluginConfiguration.isActive());
         setPluginId(pluginConfiguration.getPluginId());
         setVersion(pluginConfiguration.getVersion());
