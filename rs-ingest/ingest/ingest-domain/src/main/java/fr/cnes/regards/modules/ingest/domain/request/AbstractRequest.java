@@ -92,7 +92,7 @@ public abstract class AbstractRequest {
 
     /**
      * Remote step dead line <br/>
-     * A daemon controls this and passes this request in {@link RequestState#ERROR} if deadline is outdated!
+     * A daemon controls this and passes this request in {@link InternalRequestState#ERROR} if deadline is outdated!
      */
     @Column(name = "remote_step_deadline")
     private OffsetDateTime remoteStepDeadline;
@@ -110,7 +110,7 @@ public abstract class AbstractRequest {
     @NotNull(message = "Request state is required")
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private InternalRequestStep state;
+    private InternalRequestState state;
 
     @Column(length = 128, name = "dtype", insertable = false, updatable = false)
     private String dtype;
@@ -193,11 +193,11 @@ public abstract class AbstractRequest {
         this.providerId = providerId;
     }
 
-    public InternalRequestStep getState() {
+    public InternalRequestState getState() {
         return state;
     }
 
-    public void setState(InternalRequestStep state) {
+    public void setState(InternalRequestState state) {
         this.state = state;
     }
 

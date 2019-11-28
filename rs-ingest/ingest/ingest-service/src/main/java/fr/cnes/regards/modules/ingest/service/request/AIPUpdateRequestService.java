@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import java.util.Collection;
@@ -110,7 +110,7 @@ public class AIPUpdateRequestService {
      * @return matching {@link AIPUpdateRequest}s
      */
     @Transactional(readOnly = true)
-    public Page<AIPUpdateRequest> search(InternalRequestStep requestState, Pageable page) {
+    public Page<AIPUpdateRequest> search(InternalRequestState requestState, Pageable page) {
         return aipUpdateRequestRepository.findAllByState(requestState, page);
     }
 
@@ -118,9 +118,9 @@ public class AIPUpdateRequestService {
      * Allow to update state of given {@link AIPUpdateRequest}s
      *
      * @param requests {@link AIPUpdateRequest}s to update
-     * @param state new {@link InternalRequestStep} to set for each request
+     * @param state new {@link InternalRequestState} to set for each request
      */
-    public void updateState(Collection<AIPUpdateRequest> requests, InternalRequestStep state) {
+    public void updateState(Collection<AIPUpdateRequest> requests, InternalRequestState state) {
         if ((requests != null) && !requests.isEmpty()) {
             abstractRequestRepository.updateStates(Lists
                     .newArrayList(requests.stream().map(AIPUpdateRequest::getId).collect(Collectors.toList())), state);

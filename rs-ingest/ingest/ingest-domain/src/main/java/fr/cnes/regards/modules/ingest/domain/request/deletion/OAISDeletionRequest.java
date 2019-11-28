@@ -19,15 +19,18 @@
 package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.dto.aip.OAISDateRange;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
+import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -44,8 +47,16 @@ public class OAISDeletionRequest extends AbstractRequest {
      * request configuration
      */
     @Column(columnDefinition = "jsonb", name = "payload")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(type = "jsonb")
     private OAISDeletionPayload config;
+
+    public static OAISDeletionRequest build(OAISDeletionPayload deletionPayload) {
+        OAISDeletionRequest request = new OAISDeletionRequest();
+        request.setConfig(deletionPayload);
+        request.setCreationDate(OffsetDateTime.now());
+        request.setState(InternalRequestState.RUNNING);
+        return request;
+    }
 
     public OAISDeletionRequest() {
         this.config = new OAISDeletionPayload();
@@ -59,21 +70,84 @@ public class OAISDeletionRequest extends AbstractRequest {
         this.config = config;
     }
 
-
-    public SessionDeletionMode getDeletionMode() {
-        return config.getDeletionMode();
+    public AIPState getAIPState() {
+        return config.getState();
     }
 
-    public void setDeletionMode(SessionDeletionMode deletionMode) {
-        config.setDeletionMode(deletionMode);
+    public void setAIPState(AIPState state) {
+        config.setState(state);
     }
 
-    public SessionDeletionSelectionMode getSelectionMode() {
+    public List<String> getTags() {
+        return config.getTags();
+    }
+
+    public void setTags(List<String> tags) {
+        config.setTags(tags);
+    }
+
+    public Set<String> getProviderIds() {
+        return config.getProviderIds();
+    }
+
+    public void setProviderIds(Set<String> providerIds) {
+        config.setProviderIds(providerIds);
+    }
+
+    public String getSessionOwner() {
+        return config.getSessionOwner();
+    }
+
+    public void setSessionOwner(String sessionOwner) {
+        config.setSessionOwner(sessionOwner);
+    }
+
+    public String getSession() {
+        return config.getSession();
+    }
+
+    public void setSession(String session) {
+        config.setSession(session);
+    }
+
+    public Set<String> getStorages() {
+        return config.getStorages();
+    }
+
+    public void setStorages(Set<String> storages) {
+        config.setStorages(storages);
+    }
+
+    public Set<String> getCategories() {
+        return config.getCategories();
+    }
+
+    public void setCategories(Set<String> categories) {
+        config.setCategories(categories);
+    }
+
+    public OAISDateRange getLastUpdate() {
+        return config.getLastUpdate();
+    }
+
+    public void setLastUpdate(OAISDateRange lastUpdate) {
+        config.setLastUpdate(lastUpdate);
+    }
+
+    public SearchSelectionMode getSelectionMode() {
         return config.getSelectionMode();
     }
 
-    public void setSelectionMode(SessionDeletionSelectionMode selectionMode) {
+    public void setSelectionMode(SearchSelectionMode selectionMode) {
         config.setSelectionMode(selectionMode);
+    }
+
+    public List<String> getAipIds() {
+        return config.getAipIds();
+    }
+
+    public void setAipIds(List<String> aipIds) {
+        config.setAipIds(aipIds);
     }
 
     public Boolean getDeletePhysicalFiles() {
@@ -84,19 +158,11 @@ public class OAISDeletionRequest extends AbstractRequest {
         config.setDeletePhysicalFiles(deletePhysicalFiles);
     }
 
-    public Set<String> getSipIds() {
-        return config.getSipIds();
+    public SessionDeletionMode getDeletionMode() {
+        return config.getDeletionMode();
     }
 
-    public void setSipIds(Set<String> sipIds) {
-        config.setSipIds(sipIds);
-    }
-
-    public Set<String> getProviderIds() {
-        return config.getProviderIds();
-    }
-
-    public void setProviderIds(Set<String> providerIds) {
-        config.setProviderIds(providerIds);
+    public void setDeletionMode(SessionDeletionMode deletionMode) {
+        config.setDeletionMode(deletionMode);
     }
 }

@@ -37,7 +37,7 @@ import org.hibernate.annotations.TypeDefs;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 
@@ -89,13 +89,13 @@ public class AIPUpdateRequest extends AbstractRequest {
             updateRequest.setUpdateTask(updateTask);
             updateRequest.setAip(aip);
             updateRequest.setCreationDate(OffsetDateTime.now());
-            updateRequest.setSessionOwner(aip.getIngestMetadata().getSessionOwner());
-            updateRequest.setSession(aip.getIngestMetadata().getSession());
+            updateRequest.setSessionOwner(aip.getSessionOwner());
+            updateRequest.setSession(aip.getSession());
             updateRequest.setProviderId(aip.getProviderId());
             if (pending) {
-                updateRequest.setState(InternalRequestStep.BLOCKED);
+                updateRequest.setState(InternalRequestState.BLOCKED);
             } else {
-                updateRequest.setState(InternalRequestStep.CREATED);
+                updateRequest.setState(InternalRequestState.CREATED);
             }
             result.add(updateRequest);
         }

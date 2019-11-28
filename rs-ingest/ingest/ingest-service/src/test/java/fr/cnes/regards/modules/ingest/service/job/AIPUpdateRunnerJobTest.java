@@ -44,6 +44,9 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
@@ -53,12 +56,12 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
 import fr.cnes.regards.modules.ingest.service.schedule.AIPUpdateJobScheduler;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.client.test.StorageClientMock;
-import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import fr.cnes.regards.modules.storage.domain.database.FileLocation;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * Test {@link AIPUpdateRunnerJob}
@@ -189,7 +192,14 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         }
     }
 
+    /**
+     * Test to add/remove TAGS and categories to an existing list of AIPs.
+     * @throws ModuleException
+     */
     @Test
+    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_420"), @Requirement("REGARDS_DSL_STO_AIP_430"),
+            @Requirement("REGARDS_DSL_STO_AIP_210") })
+    @Purpose("Check that specific informations can be updated in AIP properties")
     public void testUpdateJob() throws ModuleException {
         storageClient.setBehavior(true, true);
         initData();
@@ -211,12 +221,11 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
             Assert.assertEquals(3, aip.getTags().size());
             // TAG_3 are not existing anymore on entities
             Assert.assertFalse(aip.getTags().stream().anyMatch(tag -> TAG_3.contains(tag)));
-            Assert.assertEquals(1, aip.getIngestMetadata().getCategories().size());
+            Assert.assertEquals(1, aip.getCategories().size());
             // Only one category remaining
-            Assert.assertEquals(CATEGORIES_2.get(0), aip.getIngestMetadata().getCategories().iterator().next());
+            Assert.assertEquals(CATEGORIES_2.get(0), aip.getCategories().iterator().next());
             // No more STORAGE_3
-            Assert.assertFalse(aip.getIngestMetadata().getStorages().stream()
-                    .anyMatch(sto -> sto.getPluginBusinessId().equals(STORAGE_3)));
+            Assert.assertFalse(aip.getStorages().contains(STORAGE_3));
         }
     }
 
@@ -242,9 +251,9 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         Set<RequestInfo> requests = Sets.newHashSet();
         String newStorageLocation = "somewhere";
         Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
-        successRequests
-                .add(RequestResultInfoDTO.build("groupId", toUpdateChecksum, newStorageLocation, null,
-                                                simulatefileReference(toUpdateChecksum, toUpdate.getAipId()), null));
+        successRequests.add(RequestResultInfoDTO
+                .build("groupId", toUpdateChecksum, newStorageLocation, null, Sets.newHashSet("someone"),
+                       simulatefileReference(toUpdateChecksum, toUpdate.getAipId()), null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
 
         storageListener.onCopySuccess(requests);

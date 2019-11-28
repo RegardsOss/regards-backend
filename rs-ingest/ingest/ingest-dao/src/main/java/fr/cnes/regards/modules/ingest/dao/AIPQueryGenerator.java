@@ -18,17 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.utils.CustomPostgresDialect;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.dto.NativeSelectQuery;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.dto.NativeSelectQuery;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 
 /**
  * Query generator to build SQL queries to run against OAISEntity repository on {@link fr.cnes.regards.modules.ingest.dto.aip.AIP} entities
@@ -48,7 +48,7 @@ public class AIPQueryGenerator {
 
         query = generatePredicates(query, filters.getState(), filters.getLastUpdate().getFrom(),
                                    filters.getLastUpdate().getTo(), filters.getSessionOwner(), filters.getSession(),
-                                   filters.getProviderIds(), filters.getAipIds(), filters.getAipIdsExcluded(),
+                                   filters.getProviderIds(), filters.getAipIds(), filters.getSelectionMode() == SearchSelectionMode.INCLUDE,
                                    filters.getTags(), filters.getCategories(), filters.getStorages());
 
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
@@ -60,12 +60,12 @@ public class AIPQueryGenerator {
      * @return
      */
     public static NativeSelectQuery searchAipStoragesUsingSQL(SearchFacetsAIPsParameters filters) {
-        NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements(storages)->>'pluginBusinessId'",
+        NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(storages)",
                 "{h-schema}t_aip ");
 
         query = generatePredicates(query, filters.getState(), filters.getLastUpdate().getFrom(),
                                    filters.getLastUpdate().getTo(), filters.getSessionOwner(), filters.getSession(),
-                                   filters.getProviderIds(), filters.getAipIds(), filters.getAipIdsExcluded(),
+                                   filters.getProviderIds(), filters.getAipIds(), filters.getSelectionMode() == SearchSelectionMode.INCLUDE,
                                    filters.getTags(), filters.getCategories(), filters.getStorages());
 
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
@@ -82,7 +82,7 @@ public class AIPQueryGenerator {
 
         query = generatePredicates(query, filters.getState(), filters.getLastUpdate().getFrom(),
                                    filters.getLastUpdate().getTo(), filters.getSessionOwner(), filters.getSession(),
-                                   filters.getProviderIds(), filters.getAipIds(), filters.getAipIdsExcluded(),
+                                   filters.getProviderIds(), filters.getAipIds(), filters.getSelectionMode() == SearchSelectionMode.INCLUDE,
                                    filters.getTags(), filters.getCategories(), filters.getStorages());
 
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
@@ -90,8 +90,8 @@ public class AIPQueryGenerator {
     }
 
     private static NativeSelectQuery generatePredicates(NativeSelectQuery query, AIPState state, OffsetDateTime from,
-            OffsetDateTime to, String sessionOwner, String session, Set<String> providerIds, Set<String> aipIds,
-            Set<String> aipIdsExcluded, List<String> tags, Set<String> categories, Set<String> storages) {
+            OffsetDateTime to, String sessionOwner, String session, Set<String> providerIds, List<String> aipIds,
+            boolean areAipIdsInclude, List<String> tags, Set<String> categories, Set<String> storages) {
         if (state != null) {
             query.andPredicate("(state = :state)", "state", state.toString());
         }
@@ -110,10 +110,11 @@ public class AIPQueryGenerator {
             query.andPredicate("(session_name = :sessionName)", "sessionName", session);
         }
         if ((aipIds != null) && !aipIds.isEmpty()) {
-            query.andListPredicate("(aip_id in (", "))", "aipId", aipIds);
-        }
-        if ((aipIdsExcluded != null) && !aipIdsExcluded.isEmpty()) {
-            query.andListPredicate("(aip_id not in (", "))", "aipIdExcluded", aipIdsExcluded);
+            if (areAipIdsInclude) {
+                query.andListPredicate("(aip_id in (", "))", "aipId", aipIds);
+            } else {
+                query.andListPredicate("(aip_id not in (", "))", "aipIdExcluded", aipIds);
+            }
         }
         if ((providerIds != null) && !providerIds.isEmpty()) {
             query.addOneOfStringLike("provider_id", providerIds);
@@ -126,8 +127,7 @@ public class AIPQueryGenerator {
             query = getConjunctionPredicate("categories", query, categories);
         }
         if ((storages != null) && !storages.isEmpty()) {
-            query.addOneOf("(storages @> jsonb_build_array(json_build_object('pluginBusinessId',", ")))", "storages",
-                           storages);
+            query = getDisjunctionPredicate("storages", query, storages);
         }
         return query;
     }
@@ -135,6 +135,12 @@ public class AIPQueryGenerator {
     private static NativeSelectQuery getConjunctionPredicate(String propertyName, NativeSelectQuery query,
             Set<String> tags) {
         query.andListPredicate("(" + propertyName + " @> jsonb_build_array(", "))", propertyName, tags);
+        return query;
+    }
+
+    private static NativeSelectQuery getDisjunctionPredicate(String propertyName, NativeSelectQuery query,
+            Set<String> tags) {
+        query.andListPredicate("(" + CustomPostgresDialect.JSONB_EXISTS_ANY + "(" + propertyName + ", array[", "]))", propertyName, tags);
         return query;
     }
 }

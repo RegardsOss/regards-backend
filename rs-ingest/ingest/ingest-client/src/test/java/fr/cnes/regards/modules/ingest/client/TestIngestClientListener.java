@@ -18,9 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
+import java.util.Collection;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import com.google.common.collect.Sets;
 
 /**
  * Test listener
@@ -32,24 +37,75 @@ public class TestIngestClientListener implements IIngestClientListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestIngestClientListener.class);
 
-    @Override
-    public void onDenied(RequestInfo info) {
-        LOGGER.debug(info.getRequestId());
+    private final Set<RequestInfo> denied = Sets.newHashSet();
+
+    private final Set<RequestInfo> granted = Sets.newHashSet();
+
+    private final Set<RequestInfo> success = Sets.newHashSet();
+
+    private final Set<RequestInfo> errors = Sets.newHashSet();
+
+    public void clear() {
+        denied.clear();
+        success.clear();
+        errors.clear();
+        granted.clear();
     }
 
     @Override
-    public void onGranted(RequestInfo info) {
-        LOGGER.debug(info.getRequestId());
+    public void onDenied(Collection<RequestInfo> infos) {
+        infos.forEach(info -> LOGGER.debug("DENIED ------------- {}", info.getRequestId()));
+        denied.addAll(infos);
     }
 
     @Override
-    public void onError(RequestInfo info) {
-        LOGGER.debug(info.getRequestId());
+    public void onGranted(Collection<RequestInfo> infos) {
+        if (infos.isEmpty()) {
+            LOGGER.error("empty !!!!!");
+        } else {
+            infos.forEach(info -> LOGGER.debug("GRANTED ------------- {}", info.getRequestId()));
+        }
+        granted.addAll(infos);
     }
 
     @Override
-    public void onSuccess(RequestInfo info) {
-        LOGGER.debug("{} request succeed. URN : {}", info.getRequestId(), info.getSipId());
+    public void onError(Collection<RequestInfo> infos) {
+        infos.forEach(info -> LOGGER.debug("ERROR ------------- {}", info.getRequestId()));
+        errors.addAll(infos);
+    }
+
+    @Override
+    public void onSuccess(Collection<RequestInfo> infos) {
+        infos.forEach(info -> LOGGER.debug("SUCCEED ------------- {}", info.getRequestId(), info.getSipId()));
+        success.addAll(infos);
+    }
+
+    /**
+     * @return the denied
+     */
+    public Set<RequestInfo> getDenied() {
+        return denied;
+    }
+
+    /**
+     * @return the granted
+     */
+    public Set<RequestInfo> getGranted() {
+        return granted;
+    }
+
+    /**
+     * @return the success
+     */
+    public Set<RequestInfo> getSuccess() {
+        return success;
+    }
+
+    /**
+     * @return the errors
+     */
+    public Set<RequestInfo> getErrors() {
+        return errors;
     }
 
 }

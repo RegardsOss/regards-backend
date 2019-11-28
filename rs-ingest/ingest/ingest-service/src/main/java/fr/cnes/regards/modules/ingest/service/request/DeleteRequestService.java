@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.request;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.StorageDeletionReq
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
 
 /**
  * Delete request service
@@ -62,15 +63,18 @@ public class DeleteRequestService implements IDeleteRequestService {
 
     @Override
     public void handleRemoteDeleteSuccess(Set<RequestInfo> requestInfos) {
+        List<AbstractRequest> requests = requestService.findRequestsByGroupIdIn(requestInfos.stream()
+                .map(RequestInfo::getGroupId).collect(Collectors.toList()));
         for (RequestInfo ri : requestInfos) {
-            List<AbstractRequest> requests = requestService.findRequestsByGroupId(ri.getGroupId());
             for (AbstractRequest request : requests) {
-                StorageDeletionRequest deletionRequest = (StorageDeletionRequest) request;
-                boolean deleteIrrevocably = deletionRequest.getDeletionMode() == SessionDeletionMode.IRREVOCABLY;
-                aipService.processDeletion(deletionRequest.getSipId(), deleteIrrevocably);
-                sipService.processDeletion(deletionRequest.getSipId(), deleteIrrevocably);
-                storageDeletionRequestRepo.delete(deletionRequest);
-                // NOTE : Session as been notified in processDeletion method of aipService
+                if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
+                    StorageDeletionRequest deletionRequest = (StorageDeletionRequest) request;
+                    boolean deleteIrrevocably = deletionRequest.getDeletionMode() == SessionDeletionMode.IRREVOCABLY;
+                    aipService.processDeletion(deletionRequest.getSipId(), deleteIrrevocably);
+                    sipService.processDeletion(deletionRequest.getSipId(), deleteIrrevocably);
+                    storageDeletionRequestRepo.delete(deletionRequest);
+                    // NOTE : Session as been notified in processDeletion method of aipService
+                }
             }
         }
     }

@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,9 +29,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
 
 /**
  * @author Léo Mieulet
@@ -60,5 +58,6 @@ public interface IAbstractRequestRepository extends JpaRepository<AbstractReques
      */
     @Modifying
     @Query(value = "UPDATE AbstractRequest SET state = :state WHERE id IN (:ids)")
-    int updateStates(@Param("ids") List<Long> ids, @Param("state") InternalRequestStep state);
+    int updateStates(@Param("ids") List<Long> ids, @Param("state") InternalRequestState state);
+
 }

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +29,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
 
 /**
  * @author Léo Mieulet
@@ -49,7 +50,7 @@ public interface IRequestService {
     /**
      * Retrieve all requests referencing the provided group id
      */
-    List<AbstractRequest> findRequestsByGroupId(String groupId);
+    List<AbstractRequest> findRequestsByGroupIdIn(List<String> groupIds);
 
     /**
      * Retrieve all requests matching provided criteria
@@ -58,4 +59,10 @@ public interface IRequestService {
      * @return a page of entities
      */
     Page<RequestDto> searchRequests(SearchRequestsParameters filters, Pageable pageable) throws ModuleException;
+
+    /**
+     * Delete all requests linked to provided aips
+     * @param aipsRelatedToSip
+     */
+    void deleteAllByAip(Set<AIPEntity> aipsRelatedToSip);
 }

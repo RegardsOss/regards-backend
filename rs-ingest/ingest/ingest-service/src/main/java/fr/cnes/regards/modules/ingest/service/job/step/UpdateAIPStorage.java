@@ -18,14 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.service.job.step;
 
+import java.util.Collection;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPRemoveStorageTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
-import java.util.Collection;
-import org.springframework.beans.factory.annotation.Autowired;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 
 /**
  * @author Léo Mieulet
@@ -36,11 +38,12 @@ public class UpdateAIPStorage implements IUpdateStep {
     private IAIPStorageService aipStorageService;
 
     @Override
-    public AIPEntityUpdateWrapper run(AIPEntityUpdateWrapper aipWrapper, AbstractAIPUpdateTask updateTask) throws ModuleException {
+    public AIPEntityUpdateWrapper run(AIPEntityUpdateWrapper aipWrapper, AbstractAIPUpdateTask updateTask)
+            throws ModuleException {
         AIPRemoveStorageTask removeStorageTask = (AIPRemoveStorageTask) updateTask;
         // Remove the storage from the AIP and retrieve the list of events to send
-        Collection<FileDeletionRequestDTO> deletionRequests = aipStorageService.removeStorages(aipWrapper.getAip(),
-                removeStorageTask.getStorages());
+        Collection<FileDeletionRequestDTO> deletionRequests = aipStorageService
+                .removeStorages(aipWrapper.getAip(), removeStorageTask.getStorages());
 
         if (!deletionRequests.isEmpty()) {
             aipWrapper.markAsUpdated();

@@ -18,12 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.StorageDeletionRequest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -37,7 +33,5 @@ public interface IStorageDeletionRequestRepository extends JpaRepository<Storage
     /**
      * Retrieve the number of entity with the provided state
      */
-    long countByState(InternalRequestStep state);
-
-    Page<AbstractRequest> findAll(Specification<AbstractRequest> searchAllByFilters, Pageable pageable);
+    long countByState(InternalRequestState state);
 }

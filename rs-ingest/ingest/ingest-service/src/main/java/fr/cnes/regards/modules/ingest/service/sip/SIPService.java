@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,8 +77,7 @@ public class SIPService implements ISIPService {
     public Page<SIPEntity> search(SearchSIPsParameters params, Pageable page) {
         return sipRepository.loadAll(SIPEntitySpecifications
                 .search(params.getProviderIds(), null, params.getSessionOwner(), params.getSession(), params.getFrom(),
-                        params.getStates(), params.getProcessing(), true, params.getTags(), params.getStorages(),
-                        params.getCategories(), page), page);
+                        params.getStates(), true, params.getTags(), params.getCategories(), page), page);
     }
 
     @Override
@@ -119,7 +117,6 @@ public class SIPService implements ISIPService {
             if (!deleteIrrevocably) {
                 // Mark the SIP correctly deleted
                 sipEntity.setState(SIPState.DELETED);
-                sipEntity.setErrors(null);
                 save(sipEntity);
             } else {
                 sipRepository.delete(sipEntity);
@@ -130,13 +127,6 @@ public class SIPService implements ISIPService {
     @Override
     public boolean validatedVersionExists(String providerId) {
         return sipRepository.countByProviderIdAndStateIn(providerId) > 0;
-    }
-
-    @Override
-    public void saveErrors(SIPEntity sip, Set<String> errors) {
-        sip.getErrors().addAll(errors);
-        sip.setState(SIPState.ERROR);
-        save(sip);
     }
 
     @Override

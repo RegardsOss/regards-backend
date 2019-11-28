@@ -40,9 +40,9 @@ import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IDeleteRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
-import fr.cnes.regards.modules.storagelight.client.IStorageRequestListener;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.storage.client.IStorageRequestListener;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * This class offers callbacks from storage events

@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionPayload;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,7 +30,6 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -57,13 +59,11 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
-import fr.cnes.regards.modules.ingest.domain.mapper.IOAISDeletionRequestMapper;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.mapper.IOAISDeletionPayloadMapper;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
-import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
@@ -109,7 +109,7 @@ public class IngestService implements IIngestService {
     private IIngestMetadataMapper metadataMapper;
 
     @Autowired
-    private IOAISDeletionRequestMapper deletionRequestMapper;
+    private IOAISDeletionPayloadMapper deletionRequestMapper;
 
     @Autowired
     private Validator validator;
@@ -127,7 +127,7 @@ public class IngestService implements IIngestService {
      * Validate, save and publish a new request
      * @param item request to manage
      */
-    private IngestRequest registerIngestRequest(IngestRequestFlowItem item) {
+    private IngestRequest registerIngestRequest(IngestRequestFlowItem item, InternalRequestState state) {
 
         // Validate all elements of the flow item
         Errors errors = new MapBindingResult(new HashMap<>(), IngestRequestFlowItem.class.getName());
@@ -137,7 +137,7 @@ public class IngestService implements IIngestService {
             // Publish DENIED request (do not persist it in DB)
             ingestRequestService.handleRequestDenied(IngestRequest
                     .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()),
-                           InternalRequestStep.ERROR, IngestRequestStep.LOCAL_DENIED, null, errs));
+                           InternalRequestState.ERROR, IngestRequestStep.LOCAL_DENIED, null, errs));
             if (LOGGER.isDebugEnabled()) {
                 StringJoiner joiner = new StringJoiner(", ");
                 errs.forEach(err -> joiner.add(err));
@@ -148,9 +148,9 @@ public class IngestService implements IIngestService {
         }
 
         // Save granted ingest request
-        IngestRequest request = IngestRequest
-                .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()),
-                       InternalRequestStep.CREATED, IngestRequestStep.LOCAL_SCHEDULED, item.getSip());
+        IngestRequest request = IngestRequest.build(item.getRequestId(),
+                                                    metadataMapper.dtoToMetadata(item.getMetadata()), state,
+                                                    IngestRequestStep.LOCAL_SCHEDULED, item.getSip());
         ingestRequestService.handleRequestGranted(request);
         // return granted request
         return request;
@@ -162,7 +162,6 @@ public class IngestService implements IIngestService {
         ListMultimap<String, IngestRequest> requestPerChain = ArrayListMultimap.create();
         // Store session state (is ingestible ?) by session
         Table<String, String, Boolean> acceptBySession = HashBasedTable.create();
-        Map<String, Long> nbRequestPerSession = new HashMap<>();
         for (IngestRequestFlowItem item : items) {
             String sessionOwner = item.getMetadata().getSessionOwner();
             String session = item.getMetadata().getSession();
@@ -176,13 +175,13 @@ public class IngestService implements IIngestService {
                 // Handle session not ingestible
                 ingestRequestService.handleRequestDenied(IngestRequest
                         .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()),
-                               InternalRequestStep.ERROR, IngestRequestStep.LOCAL_DENIED, null,
+                               InternalRequestState.ERROR, IngestRequestStep.LOCAL_DENIED, null,
                                Sets.newHashSet("Failed to ingest SIP, session is locked")));
                 break;
             }
 
             // Validate and transform to request
-            IngestRequest ingestRequest = registerIngestRequest(item);
+            IngestRequest ingestRequest = registerIngestRequest(item, InternalRequestState.RUNNING);
             if (ingestRequest != null) {
                 requestPerChain.put(ingestRequest.getMetadata().getIngestChain(), ingestRequest);
                 // Notify session for handled requests
@@ -261,7 +260,7 @@ public class IngestService implements IIngestService {
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB) / Warning : request id cannot be known
-            ingestRequestService.handleRequestDenied(IngestRequest.build(ingestMetadata, InternalRequestStep.ERROR,
+            ingestRequestService.handleRequestDenied(IngestRequest.build(ingestMetadata, InternalRequestState.ERROR,
                                                                          IngestRequestStep.LOCAL_DENIED, sip, errs));
 
             StringJoiner joiner = new StringJoiner(", ");
@@ -273,7 +272,7 @@ public class IngestService implements IIngestService {
         }
 
         // Save granted ingest request
-        IngestRequest request = IngestRequest.build(ingestMetadata, InternalRequestStep.CREATED,
+        IngestRequest request = IngestRequest.build(ingestMetadata, InternalRequestState.CREATED,
                                                     IngestRequestStep.LOCAL_SCHEDULED, sip);
         ingestRequestService.handleRequestGranted(request);
         // Trace granted request
@@ -309,9 +308,9 @@ public class IngestService implements IIngestService {
     }
 
     @Override
-    public OAISDeletionRequestDto registerOAISDeletionRequest(OAISDeletionRequestDto request) throws ModuleException {
-        OAISDeletionRequest deletionRequest = deletionRequestMapper.dtoToEntity(request);
-
+    public void registerOAISDeletionRequest(OAISDeletionPayloadDto request) throws ModuleException {
+        OAISDeletionPayload deletionPayload = deletionRequestMapper.dtoToEntity(request);
+        OAISDeletionRequest deletionRequest = OAISDeletionRequest.build(deletionPayload);
         // TODO check if we can accept this request now
         if (false) {
             String error = String
@@ -321,7 +320,7 @@ public class IngestService implements IIngestService {
             throw new ModuleException(error);
         }
         deletionRequest.setCreationDate(OffsetDateTime.now());
-        deletionRequest.setState(InternalRequestStep.RUNNING);
+        deletionRequest.setState(InternalRequestState.RUNNING);
         // Save deletion request
         oaisDeletionRequestService.saveRequest(deletionRequest);
 
@@ -337,7 +336,5 @@ public class IngestService implements IIngestService {
 
         // save request (same transaction)
         oaisDeletionRequestService.saveRequest(deletionRequest);
-
-        return deletionRequestMapper.entityToDto(deletionRequest);
     }
 }

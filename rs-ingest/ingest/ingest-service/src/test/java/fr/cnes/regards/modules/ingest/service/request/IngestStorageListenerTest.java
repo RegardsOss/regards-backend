@@ -30,10 +30,10 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * Test class for {@link StorageResponseFlowHandler}
@@ -55,14 +55,15 @@ public class IngestStorageListenerTest extends AbstractIngestRequestTest {
     public void testCopySuccessForUnknownFiles() {
         Set<RequestInfo> requests = Sets.newHashSet();
         Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
-        successRequests.add(RequestResultInfoDTO.build("groupId", "checksum", "somewhere", null,
-                                                       simulatefileReference("checksum", "someone"), null));
+        successRequests
+                .add(RequestResultInfoDTO.build("groupId", "checksum", "somewhere", null, Sets.newHashSet("someone"),
+                                                simulatefileReference("checksum", "someone"), null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
         Assert.assertEquals("At initialization no requests should be created", 0, aipUpdateReqService
-                .search(InternalRequestStep.CREATED, PageRequest.of(0, 10)).getTotalElements());
+                .search(InternalRequestState.CREATED, PageRequest.of(0, 10)).getTotalElements());
         storageListener.onCopySuccess(requests);
         Assert.assertEquals("No requests should be created", 0, aipUpdateReqService
-                .search(InternalRequestStep.CREATED, PageRequest.of(0, 10)).getTotalElements());
+                .search(InternalRequestState.CREATED, PageRequest.of(0, 10)).getTotalElements());
     }
 
     @Test
@@ -72,16 +73,18 @@ public class IngestStorageListenerTest extends AbstractIngestRequestTest {
         initSipAndAip(checksum, providerId);
         Set<RequestInfo> requests = Sets.newHashSet();
         Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
-        successRequests.add(RequestResultInfoDTO.build("groupId", checksum, "somewhere", null,
-                                                       simulatefileReference(checksum, aipEntity.getAipId()), null));
+        successRequests
+                .add(RequestResultInfoDTO.build("groupId", checksum, "somewhere", null, Sets.newHashSet("someone"),
+                                                simulatefileReference(checksum, aipEntity.getAipId()), null));
         successRequests.add(RequestResultInfoDTO.build("groupId", "other-file-checksum", "somewhere", null,
+                                                       Sets.newHashSet("someone"),
                                                        simulatefileReference(checksum, "someone"), null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
         Assert.assertEquals("At initialization no requests should be created", 0, aipUpdateReqService
-                .search(InternalRequestStep.CREATED, PageRequest.of(0, 10)).getTotalElements());
+                .search(InternalRequestState.CREATED, PageRequest.of(0, 10)).getTotalElements());
         storageListener.onCopySuccess(requests);
         Assert.assertEquals("One request should be created. Two success requests are sent from storage but only one is associated to a known AIP",
-                            1, aipUpdateReqService.search(InternalRequestStep.CREATED, PageRequest.of(0, 10))
+                            1, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
                                     .getTotalElements());
     }
 

@@ -19,12 +19,15 @@
 package fr.cnes.regards.modules.ingest.domain.aip;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
+import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -38,8 +41,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -49,7 +54,6 @@ import org.hibernate.annotations.TypeDefs;
         indexes = { @Index(name = "idx_aip_id", columnList = "id,aip_id,sip_id"),
             @Index(name = "idx_search_aip", columnList = "session_owner,session_name,state,last_update"),
             @Index(name = "idx_aip_provider_id", columnList = "provider_id"),
-            @Index(name = "idx_aip_ingest_chain", columnList = "ingest_chain"),
             @Index(name = "idx_aip_storage", columnList = "storages"),
             @Index(name = "idx_aip_tags", columnList = "tags"),
             @Index(name = "idx_aip_categories", columnList = "categories"),
@@ -92,6 +96,22 @@ public class AIPEntity extends AbstractOAISEntity {
      */
     @Column(name = "checksum", length = SIPEntity.CHECKSUM_MAX_LENGTH)
     private String checksum;
+
+    /**
+     * Manifest locations (the manifest itself can be stored at several locations)
+     */
+    @Valid
+    @Column(columnDefinition = "jsonb", name = "manifest_locations", nullable = false)
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+            value = "fr.cnes.regards.framework.oais.OAISDataObjectLocation") })
+    private Set<OAISDataObjectLocation> manifestLocations = new HashSet<>();
+
+    /**
+     * Storage lists used by this AIP to store its files
+     */
+    @Column(columnDefinition = "jsonb", name = "storages", nullable = false)
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    private Set<String> storages = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -145,6 +165,22 @@ public class AIPEntity extends AbstractOAISEntity {
         this.checksum = checksum;
     }
 
+    public Set<OAISDataObjectLocation> getManifestLocations() {
+        return manifestLocations;
+    }
+
+    public void setManifestLocations(Set<OAISDataObjectLocation> manifestLocations) {
+        this.manifestLocations = manifestLocations;
+    }
+
+    public Set<String> getStorages() {
+        return storages;
+    }
+
+    public void setStorages(Set<String> storages) {
+        this.storages = storages;
+    }
+
     public static AIPEntity build(SIPEntity sip, AIPState state, AIP aip) {
         AIPEntity aipEntity = new AIPEntity();
         aipEntity.setAip(aip);
@@ -153,9 +189,12 @@ public class AIPEntity extends AbstractOAISEntity {
         aipEntity.setAipId(aip.getId());
         aipEntity.setCreationDate(OffsetDateTime.now());
         aipEntity.setLastUpdate(aipEntity.getCreationDate());
-        // Extracted from SIP for search purpose
+        // Extracted from SIP
         aipEntity.setProviderId(sip.getProviderId());
-        aipEntity.setIngestMetadata(sip.getIngestMetadata());
+        aipEntity.setSessionOwner(sip.getSessionOwner());
+        aipEntity.setSession(sip.getSession());
+        aipEntity.setCategories(sip.getCategories());
+
         // Extracted from AIP for search purpose
         aipEntity.setTags(new HashSet<>(aip.getTags()));
         return aipEntity;

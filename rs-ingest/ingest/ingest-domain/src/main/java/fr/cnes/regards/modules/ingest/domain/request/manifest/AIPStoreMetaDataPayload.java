@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.manifest;
 
+import java.util.Set;
+
 /**
  * @author Léo Mieulet
  */
@@ -26,6 +28,9 @@ public class AIPStoreMetaDataPayload {
     private boolean removeCurrentMetaData;
 
     private boolean computeChecksum;
+
+    private Set<StoreLocation> storeLocations;
+
 
     public boolean isRemoveCurrentMetaData() {
         return removeCurrentMetaData;
@@ -43,8 +48,17 @@ public class AIPStoreMetaDataPayload {
         this.computeChecksum = computeChecksum;
     }
 
-    public static AIPStoreMetaDataPayload build (boolean removeCurrentMetaData, boolean computeChecksum) {
+    public Set<StoreLocation> getStoreLocations() {
+        return storeLocations;
+    }
+
+    public void setStoreLocations(Set<StoreLocation> storeLocations) {
+        this.storeLocations = storeLocations;
+    }
+
+    public static AIPStoreMetaDataPayload build(Set<StoreLocation> storeLocations, boolean removeCurrentMetaData, boolean computeChecksum) {
         AIPStoreMetaDataPayload aipStoreMetaDataPayload = new AIPStoreMetaDataPayload();
+        aipStoreMetaDataPayload.setStoreLocations(storeLocations);
         aipStoreMetaDataPayload.setComputeChecksum(computeChecksum);
         aipStoreMetaDataPayload.setRemoveCurrentMetaData(removeCurrentMetaData);
         return aipStoreMetaDataPayload;

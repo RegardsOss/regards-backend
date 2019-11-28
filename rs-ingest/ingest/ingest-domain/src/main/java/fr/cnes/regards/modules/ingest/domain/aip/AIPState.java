@@ -36,9 +36,5 @@ public enum AIPState {
     /**
      * AIP is deleted but we still keep it in database
      */
-    DELETED,
-    /**
-     * AIP has encountered an issue
-     */
-    ERROR;
+    DELETED
 }

@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.dto.request;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.aip.OAISDateRange;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -42,7 +42,7 @@ public class SearchRequestsParameters {
 
     private RequestTypeEnum requestType;
 
-    private InternalRequestStep state;
+    private InternalRequestState state;
 
     public static SearchRequestsParameters build() {
         return new SearchRequestsParameters();
@@ -90,7 +90,7 @@ public class SearchRequestsParameters {
         return this;
     }
 
-    public SearchRequestsParameters withState(InternalRequestStep state) {
+    public SearchRequestsParameters withState(InternalRequestState state) {
         this.state = state;
         return this;
     }
@@ -135,11 +135,11 @@ public class SearchRequestsParameters {
         this.requestType = requestType;
     }
 
-    public InternalRequestStep getState() {
+    public InternalRequestState getState() {
         return state;
     }
 
-    public void setState(InternalRequestStep state) {
+    public void setState(InternalRequestState state) {
         this.state = state;
     }
 }

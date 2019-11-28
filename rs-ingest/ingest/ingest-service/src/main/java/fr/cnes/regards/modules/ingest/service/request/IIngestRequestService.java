@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
 
 /**
  * Ingest request service

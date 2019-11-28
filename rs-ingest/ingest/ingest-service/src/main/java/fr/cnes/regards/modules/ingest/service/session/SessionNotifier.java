@@ -1,18 +1,14 @@
 package fr.cnes.regards.modules.ingest.service.session;
 
-import java.util.Collection;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
+import java.util.Collection;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 @MultitenantTransactional
@@ -43,7 +39,8 @@ public class SessionNotifier {
 
     /**
      * Notify session that an error product ingest has been retried
-     * @param sip {@link SIPEntity} for which ingest is retried
+     * @param sessionOwner
+     * @param session
      */
     public void productRetry(String sessionOwner, String session) {
         // -1 product_generation_error
@@ -83,27 +80,12 @@ public class SessionNotifier {
             // +1 product_generation_error
             notifyIncrementSession(sessionOwner, session, PRODUCT_GEN_ERROR, SessionNotificationState.ERROR, 1);
         } else {
-            int nbErrors = 0;
-            int nbGenerated = 0;
-            for (AIPEntity aip : generatedAips) {
-                if (aip.getState() == AIPState.ERROR) {
-                    // +1 product_generation_error
-                    nbErrors++;
-                } else {
-                    // +1 product_storing
-                    nbGenerated++;
-                }
-            }
-            if (nbErrors > 0) {
-                notifyIncrementSession(sessionOwner, session, PRODUCT_GEN_ERROR, SessionNotificationState.ERROR,
-                                       nbErrors);
-            }
-            if (nbGenerated > 0) {
-                notifyIncrementSession(sessionOwner, session, PRODUCT_STORE_PENDING, SessionNotificationState.OK,
-                                       nbGenerated);
-            }
+            notifyIncrementSession(sessionOwner, session, PRODUCT_STORE_PENDING, SessionNotificationState.OK,
+                    generatedAips.size());
             if (generatedAips.size() > 1) {
                 // Increment number of total products (case of one SIP for many AIPs)
+                // In this way, there is the same count of products stored and total.
+                // 1 request => 1 product, but can produce several AIPs, so we add more product to match the number of AIPs
                 notifyIncrementSession(sessionOwner, session, PRODUCT_COUNT, SessionNotificationState.OK,
                                        generatedAips.size() - 1);
             }
@@ -145,7 +127,6 @@ public class SessionNotifier {
 
     /**
      * Notify session that a product metadata storage is pending
-     * @param aip {@link AIPEntity}
      */
     public void productMetaStorePending(String sessionOwner, String session, Collection<AIPEntity> aips) {
         if (!aips.isEmpty()) {
@@ -161,10 +142,10 @@ public class SessionNotifier {
      */
     public void productMetaStoredSuccess(AIPEntity aip) {
         // -1 product_meta_storing
-        notifyDecrementSession(aip.getIngestMetadata().getSessionOwner(), aip.getIngestMetadata().getSession(),
+        notifyDecrementSession(aip.getSessionOwner(), aip.getSession(),
                                PRODUCT_META_STORE_PENDING, SessionNotificationState.OK, 1);
         // +1 product_meta_stored
-        notifyIncrementSession(aip.getIngestMetadata().getSessionOwner(), aip.getIngestMetadata().getSession(),
+        notifyIncrementSession(aip.getSessionOwner(), aip.getSession(),
                                PRODUCT_META_STORED, SessionNotificationState.OK, 1);
     }
 
@@ -174,10 +155,10 @@ public class SessionNotifier {
      */
     public void productMetaStoredError(AIPEntity aip) {
         // -1 product_meta_storing
-        notifyDecrementSession(aip.getIngestMetadata().getSessionOwner(), aip.getIngestMetadata().getSession(),
+        notifyDecrementSession(aip.getSessionOwner(), aip.getSession(),
                                PRODUCT_META_STORE_PENDING, SessionNotificationState.OK, 1);
         // +1 product_meta_stored
-        notifyIncrementSession(aip.getIngestMetadata().getSessionOwner(), aip.getIngestMetadata().getSession(),
+        notifyIncrementSession(aip.getSessionOwner(), aip.getSession(),
                                PRODUCT_META_STORE_ERROR, SessionNotificationState.ERROR, 1);
     }
 
@@ -198,7 +179,6 @@ public class SessionNotifier {
                 case STORED:
                     nbStored++;
                     break;
-                case ERROR:
                 case DELETED:
                 default:
                     break;

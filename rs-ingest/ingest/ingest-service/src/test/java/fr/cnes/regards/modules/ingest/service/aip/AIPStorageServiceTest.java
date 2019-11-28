@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +32,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
@@ -42,6 +42,8 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
@@ -50,10 +52,10 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileLocationDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.FileReferenceMetaInfoDTO;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
+import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
+import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * @author Léo Mieulet
@@ -88,7 +90,7 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
 
     private static final String LOCATION_4 = "Cordillera de los Andes";
 
-    private static Set<String> categories = Sets.newLinkedHashSet("CAT 1", "CAT 2");
+    private static Set<String> categories = Sets.newHashSet("CAT 1", "CAT 2");
 
     private static SIPEntity sipEntity;
 
@@ -123,21 +125,23 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
                                  UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
                                                                      getDefaultTenant(), 1),
                                  Optional.ofNullable(sipEntity.getSipIdUrn()), providerId));
+        aipEntity1.setStorages(Sets.newHashSet(LOCATION, LOCATION_2, LOCATION_3));
+        aipEntity1.setChecksum("some checksum");
     }
 
     @Test
+    @Requirement("REGARDS_DSL_STO_AIP_040")
+    @Purpose("System should update AIPs with their location when a file is successfully stored")
     public void testAddAIPLocation() {
         // Test usual behavior
         init();
-        Assert.assertEquals("3 storage in ingest metadata at the beginning", 3,
-                            aipEntity1.getIngestMetadata().getStorages().size());
+        Assert.assertEquals("3 storage in ingest metadata at the beginning", 3, aipEntity1.getStorages().size());
         Assert.assertEquals("No event before", 0, aipEntity1.getAip().getHistory().size());
         Collection<RequestResultInfoDTO> storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_3, LOCATION_4);
 
         boolean isUpdated = storageService.addAIPLocations(aipEntity1, storeRequestsInfos);
         Assert.assertTrue("Should detect some change", isUpdated);
-        Assert.assertEquals("Now 4 storages should be defined in ingest metadata", 4,
-                            aipEntity1.getIngestMetadata().getStorages().size());
+        Assert.assertEquals("Now 4 storages should be defined in ingest metadata", 4, aipEntity1.getStorages().size());
         Optional<ContentInformation> ciOp = aipEntity1.getAip().getProperties().getContentInformations().stream()
                 .filter(ci -> ci.getDataObject().getChecksum().equals(FAKE_CHECKSUM_3)).findFirst();
         Assert.assertTrue(ciOp.isPresent());
@@ -150,8 +154,7 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
         storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_3, LOCATION_2);
         isUpdated = storageService.addAIPLocations(aipEntity1, storeRequestsInfos);
         Assert.assertTrue("Should detect some change", isUpdated);
-        Assert.assertEquals("Sill 3 storages should be defined in ingest metadata", 3,
-                            aipEntity1.getIngestMetadata().getStorages().size());
+        Assert.assertEquals("Sill 3 storages should be defined in ingest metadata", 3, aipEntity1.getStorages().size());
         ciOp = aipEntity1.getAip().getProperties().getContentInformations().stream()
                 .filter(ci -> ci.getDataObject().getChecksum().equals(FAKE_CHECKSUM_3)).findFirst();
         Assert.assertTrue(ciOp.isPresent());
@@ -177,15 +180,13 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
     public void testRemoveAIPLocation() {
         // Test usual behavior
         init();
-        Assert.assertEquals("3 storage in ingest metadata at the beginning", 3,
-                            aipEntity1.getIngestMetadata().getStorages().size());
+        Assert.assertEquals("3 storage in ingest metadata at the beginning", 3, aipEntity1.getStorages().size());
         Assert.assertEquals("No event before", 0, aipEntity1.getAip().getHistory().size());
         Collection<RequestResultInfoDTO> storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_2, LOCATION_2);
 
         boolean isUpdated = storageService.removeAIPLocations(aipEntity1, storeRequestsInfos);
         Assert.assertTrue("Should detect some change", isUpdated);
-        Assert.assertEquals("Now 2 storages in ingest metadata remaining", 2,
-                            aipEntity1.getIngestMetadata().getStorages().size());
+        Assert.assertEquals("Now 2 storages in ingest metadata remaining", 2, aipEntity1.getStorages().size());
         Optional<ContentInformation> ciOp = aipEntity1.getAip().getProperties().getContentInformations().stream()
                 .filter(ci -> ci.getDataObject().getChecksum().equals(FAKE_CHECKSUM_2)).findFirst();
         Assert.assertTrue(ciOp.isPresent());
@@ -201,8 +202,7 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
         isUpdated = storageService.removeAIPLocations(aipEntity1, storeRequestsInfos);
 
         Assert.assertTrue("Should detect some change", isUpdated);
-        Assert.assertEquals("Still 3 storages in ingest metadata", 3,
-                            aipEntity1.getIngestMetadata().getStorages().size());
+        Assert.assertEquals("Still 3 storages in ingest metadata", 3, aipEntity1.getStorages().size());
         ciOp = aipEntity1.getAip().getProperties().getContentInformations().stream()
                 .filter(ci -> ci.getDataObject().getChecksum().equals(FAKE_CHECKSUM_3)).findFirst();
         Assert.assertTrue(ciOp.isPresent());
@@ -226,7 +226,7 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
 
     private ArrayList<RequestResultInfoDTO> getStorageQueryResult(String fakeChecksum3, String location) {
         return Lists.newArrayList(RequestResultInfoDTO
-                .build("groupId", fakeChecksum3, location, null,
+                .build("groupId", fakeChecksum3, location, null, Sets.newHashSet("someone"),
                        FileReferenceDTO.build(OffsetDateTime.now(),
                                               FileReferenceMetaInfoDTO.build(fakeChecksum3, null, null, null, null,
                                                                              null, null, null),
