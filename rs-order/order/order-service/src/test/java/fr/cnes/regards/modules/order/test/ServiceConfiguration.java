@@ -33,9 +33,9 @@ import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
-import fr.cnes.regards.modules.storagelight.client.IStorageClient;
-import fr.cnes.regards.modules.storagelight.client.IStorageFileListener;
-import fr.cnes.regards.modules.storagelight.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.IStorageClient;
+import fr.cnes.regards.modules.storage.client.IStorageFileListener;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 
 /**
  * @author oroussel
@@ -111,13 +111,13 @@ public class ServiceConfiguration {
     /**
      * TODO : Replace by new storage client
     private class AipClientProxy {
-
+    
         private final IPublisher publisher;
-
+    
         public AipClientProxy(IPublisher publisher) {
             this.publisher = publisher;
         }
-
+    
         @SuppressWarnings("unused")
         public ResponseEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
             for (String checksum : availabilityRequest.getChecksums()) {
@@ -130,7 +130,7 @@ public class ServiceConfiguration {
             return ResponseEntity.ok(new AvailabilityResponse(Collections.emptySet(), Collections.emptySet(),
                     Collections.emptySet()));
         }
-
+    
         @SuppressWarnings("unused")
         public Response downloadFile(String aipId, String checksum) {
             Response mockResp = Mockito.mock(Response.class);
@@ -142,7 +142,7 @@ public class ServiceConfiguration {
             }
             return mockResp;
         }
-
+    
     }
     */
 
