@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.storage.service.file;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -117,21 +116,27 @@ public class FileDownloadService {
     @Transactional(noRollbackFor = { EntityNotFoundException.class })
     public DownloadableFile downloadFile(String checksum) throws ModuleException {
         // 1. Retrieve all the FileReference matching the given checksum
+        LOGGER.info("Search file for download {} ... ", checksum);
         Set<FileReference> fileRefs = fileRefService.search(checksum);
         if (fileRefs.isEmpty()) {
+            LOGGER.error("File {} not found ", checksum);
             throw new EntityNotFoundException(checksum, FileReferenceDTO.class);
         }
+        LOGGER.info("File {} found ", checksum);
         Map<String, FileReference> storages = fileRefs.stream()
                 .collect(Collectors.toMap(f -> f.getLocation().getStorage(), f -> f));
         // 2. get the storage location with the higher priority
         Optional<StorageLocationConfiguration> storageLocation = storageLocationConfService
                 .searchActiveHigherPriority(storages.keySet());
         if (storageLocation.isPresent()) {
+            LOGGER.info("Downloading file {} ...", checksum);
             PluginConfiguration conf = storageLocation.get().getPluginConfiguration();
             FileReference fileToDownload = storages.get(conf.getLabel());
-            return new DownloadableFile(downloadFileReference(fileToDownload),
+            DownloadableFile df = new DownloadableFile(downloadFileReference(fileToDownload),
                     fileToDownload.getMetaInfo().getFileSize(), fileToDownload.getMetaInfo().getFileName(),
                     fileToDownload.getMetaInfo().getMimeType());
+            LOGGER.info("File {} download ok", checksum);
+            return df;
 
         } else {
             throw new ModuleException(String
@@ -186,7 +191,7 @@ public class FileDownloadService {
                             fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getChecksum(),
                             fileToDownload.getLocation().toString()),
                     e);
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             throw new ModuleException(e.getMessage(), e);
         }
