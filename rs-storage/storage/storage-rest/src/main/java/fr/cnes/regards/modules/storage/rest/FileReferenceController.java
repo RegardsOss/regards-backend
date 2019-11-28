@@ -116,7 +116,7 @@ public class FileReferenceController {
             LOGGER.debug(e.getMessage(), e);
             return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
         } catch (ModuleException e) {
-            LOGGER.debug(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
         }
     }
