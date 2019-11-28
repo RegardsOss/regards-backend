@@ -19,11 +19,8 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.io.IOException;
-import java.nio.channels.ClosedByInterruptException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -35,6 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +63,6 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.acquisition.dao.AcquisitionProcessingChainSpecifications;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
@@ -626,22 +623,17 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                         .of(OffsetDateTime.ofInstant(fileInfo.getLastModificationDate().toInstant(), ZoneOffset.UTC));
             }
 
-            long totalCount = 0;
-            long startTime = System.currentTimeMillis();
             if (scanPlugin instanceof IFluxScanPlugin) {
-                totalCount = streamAndRegisterFiles(fileInfo, (IFluxScanPlugin) scanPlugin, scanningDate, session,
-                                                    processingChain.getLabel());
+                streamAndRegisterFiles(fileInfo, (IFluxScanPlugin) scanPlugin, scanningDate, session,
+                                       processingChain.getLabel());
             } else {
-                totalCount = scanAndRegisterFilesByDirectory(fileInfo, scanPlugin, scanningDate, session,
-                                                             processingChain.getLabel());
+                scanAndRegisterFiles(fileInfo, scanPlugin, scanningDate, session, processingChain.getLabel());
             }
-            LOGGER.info("All {} new file(s) registered in {} milliseconds", totalCount,
-                        System.currentTimeMillis() - startTime);
         }
 
     }
 
-    private long scanAndRegisterFilesByDirectory(AcquisitionFileInfo fileInfo, IScanPlugin scanPlugin,
+    private void scanAndRegisterFiles(AcquisitionFileInfo fileInfo, IScanPlugin scanPlugin,
             Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
         // Do scan
         List<Path> scannedFiles = scanPlugin.scan(scanningDate);
@@ -655,166 +647,105 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 return 0;
             }
         });
-
-        int fromIndex = 0;
-        int toIndex = AcquisitionProperties.WORKING_UNIT;
-        long totalCount = 0;
-        while ((toIndex <= scannedFiles.size()) && !Thread.currentThread().isInterrupted()) {
-            long transactionStartTime = System.currentTimeMillis();
-            // Do it in one transaction
-            LOGGER.debug("Trying to register {}/{} of the new file(s) scanned", toIndex, scannedFiles.size());
-            int count = self.registerFiles(scannedFiles.subList(fromIndex, toIndex), fileInfo, scanningDate, true,
-                                           session, sessionOwner);
-            totalCount += count;
-            LOGGER.debug("{}/{} new file(s) registered in {} milliseconds", count, toIndex,
-                         System.currentTimeMillis() - transactionStartTime);
-            fromIndex = toIndex;
-            toIndex = toIndex + AcquisitionProperties.WORKING_UNIT;
-        }
-        // Do it in one transaction
-        long transactionStartTime = System.currentTimeMillis();
-        List<Path> remainingFiles = scannedFiles.subList(fromIndex, scannedFiles.size());
-        LOGGER.debug("Trying to register the last {} of the new file(s) scanned", remainingFiles.size());
-        int count = self.registerFiles(remainingFiles, fileInfo, scanningDate, true, session, sessionOwner);
-        totalCount += count;
-        LOGGER.debug("{}/{} new file(s) registered in {} milliseconds", count, remainingFiles.size(),
-                     System.currentTimeMillis() - transactionStartTime);
-        return totalCount;
+        registerFiles(scannedFiles.iterator(), fileInfo, scanningDate, session, sessionOwner);
     }
 
-    private long streamAndRegisterFiles(AcquisitionFileInfo fileInfo, IFluxScanPlugin scanPlugin,
+    private void streamAndRegisterFiles(AcquisitionFileInfo fileInfo, IFluxScanPlugin scanPlugin,
             Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
-        long totalCount = 0;
-        try {
-            List<DirectoryStream<Path>> streams = scanPlugin.stream(scanningDate);
-            Iterator<DirectoryStream<Path>> streamsIt = streams.iterator();
-            OffsetDateTime lmd = null;
-            while (streamsIt.hasNext() && !Thread.currentThread().isInterrupted()) {
-                try (DirectoryStream<Path> stream = streamsIt.next()) {
-                    Iterator<Path> it = stream.iterator();
-                    RegisterFilesResponse response;
-                    do {
-                        long startTime = System.currentTimeMillis();
-                        response = self.registerFiles(it, fileInfo, scanningDate, false, BATCH_SIZE, session,
-                                                      sessionOwner);
-                        totalCount += response.getNumberOfRegisteredFiles();
-                        if ((lmd == null) || (lmd.isBefore(response.getLastUpdateDate())
-                                && !Thread.currentThread().isInterrupted())) {
-                            lmd = response.getLastUpdateDate();
-                        }
-                        sessionNotifier.notifyFileAcquired(session, sessionOwner,
-                                                           response.getNumberOfRegisteredFiles());
-                        LOGGER.info("{} new file(s) registered in {} milliseconds",
-                                    response.getNumberOfRegisteredFiles(), System.currentTimeMillis() - startTime);
-                    } while (response.hasNext());
-                }
+        List<Stream<Path>> streams = scanPlugin.stream(scanningDate);
+        Iterator<Stream<Path>> streamsIt = streams.iterator();
+        while (streamsIt.hasNext() && !Thread.currentThread().isInterrupted()) {
+            try (Stream<Path> stream = streamsIt.next()) {
+                registerFiles(stream.iterator(), fileInfo, scanningDate, session, sessionOwner);
             }
+        }
+    }
 
-            if ((fileInfo.getLastModificationDate() == null) || ((fileInfo.getLastModificationDate().isBefore(lmd)
-                    && !Thread.currentThread().isInterrupted()))) {
-                fileInfo.setLastModificationDate(lmd);
-                fileInfoRepository.save(fileInfo);
+    @Override
+    public long registerFiles(Iterator<Path> filePathsIt, AcquisitionFileInfo fileInfo,
+            Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
+        RegisterFilesResponse response;
+        long totalCount = 0;
+        OffsetDateTime lmd = null;
+        do {
+            long startTime = System.currentTimeMillis();
+            response = self.registerFilesBatch(filePathsIt, fileInfo, scanningDate, BATCH_SIZE, session, sessionOwner);
+            totalCount += response.getNumberOfRegisteredFiles();
+            // Calculate most recent file registered.
+            if ((lmd == null)
+                    || (lmd.isBefore(response.getLastUpdateDate()) && !Thread.currentThread().isInterrupted())) {
+                lmd = response.getLastUpdateDate();
             }
-        } catch (IOException e) {
-            throw new ModuleException(e);
+            sessionNotifier.notifyFileAcquired(session, sessionOwner, response.getNumberOfRegisteredFiles());
+            LOGGER.info("{} new file(s) registered in {} milliseconds", response.getNumberOfRegisteredFiles(),
+                        System.currentTimeMillis() - startTime);
+        } while (response.hasNext());
+        // Update file info last update date with the most recent file registered.
+        if ((lmd != null)
+                && ((fileInfo.getLastModificationDate() == null) || lmd.isAfter(fileInfo.getLastModificationDate()))) {
+            fileInfo.setLastModificationDate(lmd);
+            fileInfoRepository.save(fileInfo);
         }
         return totalCount;
     }
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public int registerFiles(List<Path> filePaths, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate,
-            boolean updateFileInfo, String session, String sessionOwner) throws ModuleException {
-        int countRegistered = 0;
-        Iterator<Path> filePathIter = filePaths.iterator();
-        while (filePathIter.hasNext() && !Thread.currentThread().isInterrupted()) {
-            if (registerFile(filePathIter.next(), info, scanningDate, updateFileInfo)) {
-                countRegistered++;
-            }
-        }
-        sessionNotifier.notifyFileAcquired(session, sessionOwner, countRegistered);
-        return countRegistered;
-    }
-
-    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
-    @Override
-    public RegisterFilesResponse registerFiles(Iterator<Path> filePaths, AcquisitionFileInfo info,
-            Optional<OffsetDateTime> scanningDate, boolean updateFileInfo, int limit, String session,
-            String sessionOwner) throws ModuleException {
+    public RegisterFilesResponse registerFilesBatch(Iterator<Path> filePaths, AcquisitionFileInfo info,
+            Optional<OffsetDateTime> scanningDate, int limit, String session, String sessionOwner)
+            throws ModuleException {
         int countRegistered = 0;
         OffsetDateTime lastUpdateDate = null;
-        while (filePaths.hasNext() && (countRegistered < limit) && !Thread.currentThread().isInterrupted()) {
-            Path filePath = filePaths.next();
-            if (registerFile(filePath, info, scanningDate, updateFileInfo)) {
-                countRegistered++;
-                OffsetDateTime lmd;
-                try {
-                    lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(), ZoneOffset.UTC);
-                    if ((lastUpdateDate == null) || lmd.isAfter(lastUpdateDate)) {
-                        lastUpdateDate = lmd;
+        // We catch general exception to avoid AccessDeniedException thrown by FileTreeIterator provided to this method.
+        boolean nextPath = true;
+        // First calculate
+        while (nextPath && (countRegistered < limit) && !Thread.currentThread().isInterrupted()) {
+            try {
+                Path filePath = filePaths.next();
+                if (registerFile(filePath, info, scanningDate)) {
+                    countRegistered++;
+                    OffsetDateTime lmd;
+                    try {
+                        lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(), ZoneOffset.UTC);
+                        if ((lastUpdateDate == null) || lmd.isAfter(lastUpdateDate)) {
+                            lastUpdateDate = lmd;
+                        }
+                    } catch (IOException e) {
+                        LOGGER.error("Error getting last update date for file {} cause : {}.", filePath.toString(),
+                                     e.getMessage());
                     }
-                } catch (IOException e) {
-                    LOGGER.error("Error getting last update date for file {} cause : {}.", filePath.toString(),
-                                 e.getMessage());
                 }
+                nextPath = filePaths.hasNext();
+            } catch (Exception e) { // NOSONAR
+                LOGGER.error("Error parsing file. {}", e.getMessage());
             }
         }
         return RegisterFilesResponse.build(countRegistered, lastUpdateDate, filePaths.hasNext());
     }
 
     @Override
-    public boolean registerFile(Path filePath, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate,
-            boolean updateFileInfo) throws ModuleException {
-
-        // Initialize new file
-        AcquisitionFile scannedFile = new AcquisitionFile();
-        scannedFile.setAcqDate(OffsetDateTime.now());
-        scannedFile.setFileInfo(info);
-        scannedFile.setFilePath(filePath);
-        scannedFile.setChecksumAlgorithm(AcquisitionProcessingChain.CHECKSUM_ALGORITHM);
-
-        // Compute checksum and manage last modification date
+    public boolean registerFile(Path filePath, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate) {
+        OffsetDateTime lmd;
         try {
-            // Compute and set checksum
-            String checksum = ChecksumUtils.computeHexChecksum(filePath, AcquisitionProcessingChain.CHECKSUM_ALGORITHM);
-            scannedFile.setChecksum(checksum);
-            scannedFile.setState(AcquisitionFileState.IN_PROGRESS);
-
-            // Update last modification date
-            OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(),
-                                                          ZoneOffset.UTC);
-            // Prevent duplicates for files in the same second as the scanning one
-            if (scanningDate.isPresent() && scanningDate.get().isEqual(lmd)) {
-                // Check if file not already registered
-                if (acqFileRepository.countByFileInfoAndChecksum(info, scannedFile.getChecksum()) != 0) {
-                    LOGGER.debug("Duplicate file with path \"{}\" and checksum \"{}\" detected, skipping registration",
-                                 scannedFile.getFilePath(), scannedFile.getChecksum());
-                    return false;
-                }
+            // If new file to register date is exactly the same as the last scanning date, check if file is not already acquired.
+            lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(), ZoneOffset.UTC);
+            if (scanningDate.isPresent() && lmd.equals(scanningDate.get())
+                    && acqFileRepository.findOneByFilePath(filePath).isPresent()) {
+                return false;
+            } else {
+                // Initialize new file
+                AcquisitionFile scannedFile = new AcquisitionFile();
+                scannedFile.setAcqDate(OffsetDateTime.now());
+                scannedFile.setFileInfo(info);
+                scannedFile.setFilePath(filePath);
+                scannedFile.setState(AcquisitionFileState.IN_PROGRESS);
+                acqFileRepository.save(scannedFile);
+                return true;
             }
-
-            if (updateFileInfo) {
-                info.setLastModificationDate(lmd);
-                fileInfoRepository.save(info);
-            }
-        } catch (ClosedByInterruptException e) {
-            // This exception happens when you try to access files while thread has been interrupted.
-            // In this case lets ignore the file and act as we did not scanned it.
-            LOGGER.warn(String.format("File %s scanning has been interrupted during acquisition chain execution.",
-                                      filePath),
-                        e);
-        } catch (NoSuchAlgorithmException | IOException e) {
-            // Continue silently but register error in database
-            String errorMessage = String.format("Error registering file %s : %s", scannedFile.getFilePath().toString(),
-                                                e.getMessage());
-            LOGGER.error(errorMessage, e);
-            scannedFile.setError(errorMessage);
-            scannedFile.setState(AcquisitionFileState.ERROR);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            return false;
         }
-
-        // Save file
-        acqFileRepository.save(scannedFile);
-        return true;
     }
 
     @Override

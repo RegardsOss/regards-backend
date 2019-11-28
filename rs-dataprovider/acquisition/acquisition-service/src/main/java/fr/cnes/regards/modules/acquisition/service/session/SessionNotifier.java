@@ -40,7 +40,7 @@ public class SessionNotifier {
     /**
      * The name of the property gathering all metadata about this processing step
      */
-    private static final String GLOBAL_SESSION_STEP = "PRODUCTS";
+    private static final String GLOBAL_SESSION_STEP = "dataprovider";
 
     /**
      * Name of the property that stores the current state (running, done)

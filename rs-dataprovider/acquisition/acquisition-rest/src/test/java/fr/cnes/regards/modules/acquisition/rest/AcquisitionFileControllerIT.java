@@ -82,8 +82,7 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
         Path basePath = Paths.get("src", "test", "resources", "input");
         for (int i = 1; i < 3; i++) {
             Path file1 = basePath.resolve("data_" + i + ".txt");
-            processingService.registerFile(file1, processingChain.getFileInfos().iterator().next(), Optional.empty(),
-                                           true);
+            processingService.registerFile(file1, processingChain.getFileInfos().iterator().next(), Optional.empty());
         }
     }
 
@@ -180,9 +179,6 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
                 .type(JSON_STRING_TYPE));
 
         fields.add(constrainedFields.withPath(prefix + "acqDate", "acqDate", "ISO 8601 acquisition date"));
-
-        fields.add(constrainedFields.withPath(prefix + "checksum", "checksum", "File checksum"));
-        fields.add(constrainedFields.withPath(prefix + "checksumAlgorithm", "checksumAlgorithm", "Checksum algorithm"));
 
         return fields;
     }

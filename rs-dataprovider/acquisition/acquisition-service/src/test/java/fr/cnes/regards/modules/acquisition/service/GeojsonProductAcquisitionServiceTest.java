@@ -206,7 +206,7 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
             Page<AcquisitionFile> inProgressFiles = acqFileRepository
                     .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo,
                                                         PageRequest.of(0, 1));
-            Assert.assertTrue(inProgressFiles.getTotalElements() == 1);
+            Assert.assertEquals(1, inProgressFiles.getTotalElements());
         }
 
         processingService.manageRegisteredFiles(processingChain);
