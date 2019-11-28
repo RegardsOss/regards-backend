@@ -83,6 +83,9 @@ public class Oauth2AutoConfiguration {
     @Value("${regards.authentication.granttype}")
     private String grantType;
 
+    @Value("${access_token.validity_period:7200}")
+    private Integer acessTokenValidityInSec;
+
     @Autowired
     private IRuntimeTenantResolver runTimeTenantResolver;
 
@@ -113,7 +116,7 @@ public class Oauth2AutoConfiguration {
     @Bean
     public Oauth2AuthorizationServerConfigurer authorizationServer() {
         return new Oauth2AuthorizationServerConfigurer(resourceId, jwtSecret, clientUser, clientSecret, grantType,
-                authenticationManager(), jwtService);
+                authenticationManager(), jwtService, acessTokenValidityInSec);
     }
 
     /**
