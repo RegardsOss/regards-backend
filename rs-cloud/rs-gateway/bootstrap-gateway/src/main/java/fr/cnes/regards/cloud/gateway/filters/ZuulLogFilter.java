@@ -29,6 +29,7 @@ import ch.qos.logback.classic.ClassicConstants;
 import com.google.common.net.HttpHeaders;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import fr.cnes.regards.framwork.logbackappender.LogConstants;
 
 /**
  * This class is a Zuul proxy filter. It aims to log the HTTP method and the URL.</br>
@@ -77,7 +78,10 @@ public class ZuulLogFilter extends ZuulFilter {
         MDC.put(ClassicConstants.REQUEST_X_FORWARDED_FOR, xForwardedFor);
 
         String remoteAddr = request.getRemoteAddr();
-        LOGGER.info("Request received : {}@{} from {}", requestURI, requestMethod, remoteAddr);
+        LOGGER.info(LogConstants.SECURITY_MARKER + "Request received : {}@{} from {}",
+                    requestURI,
+                    requestMethod,
+                    remoteAddr);
 
         if (xForwardedFor != null && !xForwardedFor.isEmpty() && !xForwardedFor.contains(remoteAddr)) {
             xForwardedFor = xForwardedFor + COMMA + remoteAddr;

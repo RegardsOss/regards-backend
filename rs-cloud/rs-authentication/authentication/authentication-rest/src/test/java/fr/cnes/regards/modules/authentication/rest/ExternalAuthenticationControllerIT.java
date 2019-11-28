@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.authentication.rest;
 
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,15 +27,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.authentication.plugins.IServiceProviderPlugin;
 import fr.cnes.regards.modules.authentication.plugins.domain.ExternalAuthenticationInformations;
+import fr.cnes.regards.modules.authentication.plugins.impl.kerberos.KerberosSPParameters;
 import fr.cnes.regards.modules.authentication.plugins.impl.kerberos.KerberosServiceProviderPlugin;
 
 /**
@@ -68,25 +74,15 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     private static final String AUTHENTICATE_URL = "/authentication/sps/{sp_id}/authenticate";
 
     /**
-     * Default plugin version
-     */
-    private static final String DEFAULT_PLUGIN_VERSION = "1.0";
-
-    /**
      * Default plugin label
      */
     private static final String DEFAULT_PLUGIN_LABEL = "plugin1";
 
     /**
-     * LDAP plugin id
-     */
-    private static final String PLUGIN_ID_KERBEROS = "KerberosServiceProviderPlugin";
-
-    /**
      * Repository stub
      */
     @Autowired
-    private IPluginConfigurationRepository pluginConfRepo;
+    private IPluginService pluginService;
 
     /**
      * A {@link PluginConfiguration} used in the test
@@ -102,14 +98,25 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
      * Init the context of the tests
      */
     @Before
-    public void init() {
-        PluginMetaData metadata = new PluginMetaData();
-        metadata.setPluginId(PLUGIN_ID_KERBEROS);
-        metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
-        metadata.getInterfaceNames().add(IServiceProviderPlugin.class.getName());
-        metadata.setVersion(DEFAULT_PLUGIN_VERSION);
-        PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
-        aPluginConfSaved = pluginConfRepo.save(conf);
+    public void init() throws EncryptionException, EntityNotFoundException, EntityInvalidException {
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(KerberosSPParameters.PRINCIPAL_PARAMETER, "principal"),
+                     IPluginParam.build(KerberosSPParameters.LDAP_ADRESS_PARAMETER, "test"),
+                     IPluginParam.build(KerberosSPParameters.LDAP_PORT_PARAMETER, "8080"),
+                     IPluginParam.build(KerberosSPParameters.PARAM_LDAP_CN, "ou=people,ou=commun"),
+                     IPluginParam.build(KerberosSPParameters.PARAM_LDAP_EMAIL_ATTTRIBUTE, "email"),
+                     IPluginParam.build(KerberosSPParameters.REALM_PARAMETER, "realm"),
+                     IPluginParam.build(KerberosSPParameters.PARAM_LDAP_USER_FILTER_ATTTRIBUTE, "userfilter"),
+                     IPluginParam.build(KerberosSPParameters.PARAM_LDAP_USER_LOGIN_ATTTRIBUTE, "userLogin"),
+                     IPluginParam.build(KerberosSPParameters.KRB5_FILEPATH_PARAMETER, "krb5FilePath"),
+                     IPluginParam.build(KerberosSPParameters.KEYTAB_FILEPATH_PARAMETER, "keytabFilePath"));
+
+        PluginConfiguration conf = new PluginConfiguration(DEFAULT_PLUGIN_LABEL,
+                                                           parameters,
+                                                           0,
+                                                           KerberosServiceProviderPlugin.class
+                                                                   .getAnnotation(Plugin.class).id());
+        aPluginConfSaved = pluginService.savePluginConfiguration(conf);
     }
 
     /**
@@ -133,10 +140,10 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void retrieveServiceProvider() {
-        performDefaultGet(SPS_URL + URL_PATH_SEPARATOR + aPluginConfSaved.getId().toString(),
+        performDefaultGet(SPS_URL + "/{sp_id}",
                           customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_CONTENT)
                                   .expectIsNotEmpty(JSON_PATH_LINKS).expectIsArray(JSON_PATH_LINKS),
-                          "retrieveServiceProvider : Error getting Service provider");
+                          "retrieveServiceProvider : Error getting Service provider", aPluginConfSaved.getId().toString());
     }
 
     /**
@@ -147,8 +154,10 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void retrieveInexistantServiceProvider() {
-        performDefaultGet(SP_URL, customizer().expectStatusNotFound(),
-                          "retrieveInexistantServiceProvider : Error getting Service provider", 123);
+        performDefaultGet(SP_URL,
+                          customizer().expectStatusNotFound(),
+                          "retrieveInexistantServiceProvider : Error getting Service provider",
+                          123);
     }
 
     /**
@@ -160,15 +169,14 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     @Test
     @Ignore("FIXME V3.0.0 : plugin validation")
     public void createServiceProvider() {
-
-        PluginMetaData metadata = new PluginMetaData();
-        metadata.setPluginId(PLUGIN_ID_KERBEROS);
-        metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
-        metadata.setVersion(DEFAULT_PLUGIN_VERSION);
-        PluginConfiguration conf = new PluginConfiguration(metadata, "Plugin2", 0);
+        PluginConfiguration conf = new PluginConfiguration("Plugin2",
+                                                           0,
+                                                           KerberosServiceProviderPlugin.class
+                                                                   .getAnnotation(Plugin.class).id());
         conf.setId(1L);
 
-        performDefaultPost(SPS_URL, conf,
+        performDefaultPost(SPS_URL,
+                           conf,
                            customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_CONTENT)
                                    .expectIsNotEmpty(JSON_PATH_LINKS).expectIsArray(JSON_PATH_LINKS),
                            "createServiceProvider : Error getting Service provider");
@@ -186,11 +194,13 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
         String newVersion = "2.0";
         aPluginConfSaved.setVersion(newVersion);
 
-        performDefaultPut(SP_URL, aPluginConfSaved,
+        performDefaultPut(SP_URL,
+                          aPluginConfSaved,
                           customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_CONTENT)
                                   .expectIsNotEmpty(JSON_PATH_LINKS).expectIsArray(JSON_PATH_LINKS)
                                   .expectValue(JSON_PATH_CONTENT + ".version", newVersion),
-                          "updateServiceProvider : Error getting Service provider", aPluginConfSaved.getId());
+                          "updateServiceProvider : Error getting Service provider",
+                          aPluginConfSaved.getId());
     }
 
     /**
@@ -201,13 +211,14 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void updateInexistantServiceProvider() {
-        PluginMetaData metadata = new PluginMetaData();
-        metadata.setPluginId(PLUGIN_ID_KERBEROS);
-        metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
-        metadata.setVersion(DEFAULT_PLUGIN_VERSION);
-        PluginConfiguration unSavedPluginConf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
+        PluginConfiguration unSavedPluginConf = new PluginConfiguration(DEFAULT_PLUGIN_LABEL,
+                                                                        0,
+                                                                        KerberosServiceProviderPlugin.class
+                                                                                .getAnnotation(Plugin.class).id());
         unSavedPluginConf.setId(12345L);
-        performDefaultPut(SP_URL, unSavedPluginConf, customizer().expectStatusNotFound(),
+        performDefaultPut(SP_URL,
+                          unSavedPluginConf,
+                          customizer().expectStatusNotFound(),
                           "updateInexistantServiceProvider : Error getting Service provider",
                           unSavedPluginConf.getId());
     }
@@ -220,14 +231,16 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void updateInvalidServiceProvider() {
-        PluginMetaData metadata = new PluginMetaData();
-        metadata.setPluginId(PLUGIN_ID_KERBEROS);
-        metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
-        metadata.setVersion(DEFAULT_PLUGIN_VERSION);
-        PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
+        PluginConfiguration conf = new PluginConfiguration(DEFAULT_PLUGIN_LABEL,
+                                                           0,
+                                                           KerberosServiceProviderPlugin.class
+                                                                   .getAnnotation(Plugin.class).id());
         conf.setId(123L);
-        performDefaultPut(SP_URL, conf, customizer().expectStatusBadRequest(),
-                          "updateInvalidServiceProvider : Error getting Service provider", 12);
+        performDefaultPut(SP_URL,
+                          conf,
+                          customizer().expectStatusBadRequest(),
+                          "updateInvalidServiceProvider : Error getting Service provider",
+                          12);
     }
 
     /**
@@ -238,16 +251,10 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void deleteIdentityProvider() {
-        PluginMetaData metadata = new PluginMetaData();
-        metadata.setPluginId(PLUGIN_ID_KERBEROS);
-        metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
-        metadata.getInterfaceNames().add("fr.cnes.regards.framework.some.modules.PluginToDelete");
-        metadata.setVersion(DEFAULT_PLUGIN_VERSION);
-        PluginConfiguration aPluginConfToDelete = new PluginConfiguration(metadata, "PluginToDelete", 0);
-        aPluginConfToDelete = pluginConfRepo.save(aPluginConfToDelete);
-        performDefaultDelete(SP_URL, customizer().expectStatusOk(),
+        performDefaultDelete(SP_URL,
+                             customizer().expectStatusOk(),
                              "deleteIdentityProvider : Error getting Service provider",
-                             aPluginConfToDelete.getBusinessId());
+                             aPluginConfSaved.getBusinessId());
     }
 
     /**
@@ -266,10 +273,14 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     @Test
     public void authenticateKerberosServiceProvider() {
 
-        ExternalAuthenticationInformations infos = new ExternalAuthenticationInformations("usernma", getDefaultTenant(),
-                "ticket".getBytes(), "key");
+        ExternalAuthenticationInformations infos = new ExternalAuthenticationInformations("usernma",
+                                                                                          getDefaultTenant(),
+                                                                                          "ticket".getBytes(),
+                                                                                          "key");
 
-        performDefaultPost("/authentication/sps/0/authenticate", infos, customizer().expectStatusOk(),
+        performDefaultPost("/authentication/sps/0/authenticate",
+                           infos,
+                           customizer().expectStatusOk(),
                            "kerberos authenticate : Authentication error");
 
     }
