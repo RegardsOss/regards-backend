@@ -267,7 +267,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                 .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, STORAGE_PATH),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-        return new PluginConfiguration(dataStoMeta, name, parameters, 0);
+        return new PluginConfiguration(name, parameters, 0, dataStoMeta.getPluginId());
     }
 
     private void initDataStoragePluginConfiguration() throws ModuleException {

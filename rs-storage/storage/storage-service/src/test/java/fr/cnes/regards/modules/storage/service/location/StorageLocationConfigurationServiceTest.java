@@ -122,7 +122,7 @@ public class StorageLocationConfigurationServiceTest extends AbstractMultitenant
                                         baseStorageLocation.toString()),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-        return new PluginConfiguration(dataStoMeta, label, parameters, 0);
+        return new PluginConfiguration(label, parameters, 0, dataStoMeta.getPluginId());
     }
 
     private StorageLocationConfiguration createStorageLocationConf(String name)
