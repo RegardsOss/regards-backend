@@ -120,7 +120,7 @@ public class IngestRequestServiceTest extends IngestMultitenantServiceTest {
         sipEntity = sipRepo.save(sipEntity);
         UniformResourceName sipId = sipEntity.getSipIdUrn();
         UniformResourceName aipId = UniformResourceName.fromString(sipEntity.getSipIdUrn().toString());
-        aipId.setOaisIdentifier(OAISIdentifier.AIP);
+        aipId.setIdentifier(OAISIdentifier.AIP);
         String fileName = UUID.randomUUID().toString();
         String storedUrl = "storage://in/the/place/" + fileToStoreChecksum;
         AIP aip = AIP.build(EntityType.DATA, aipId, Optional.of(sipId), providerId);
@@ -158,7 +158,8 @@ public class IngestRequestServiceTest extends IngestMultitenantServiceTest {
                            null));
             IngestRequest request = IngestRequest.build(IngestMetadata
                     .build(sessionOwner, session, "ingestChain", Sets.newHashSet(), StorageMetadata.build(storage)),
-                    InternalRequestState.RUNNING, IngestRequestStep.LOCAL_INIT, sip);
+                                                        InternalRequestState.RUNNING, IngestRequestStep.LOCAL_INIT,
+                                                        sip);
             request.setStep(IngestRequestStep.REMOTE_STORAGE_REQUESTED, 1000);
             // Create associated IngestRequest
             request.setRemoteStepGroupIds(Lists.newArrayList(groupId));
