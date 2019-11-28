@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,6 +28,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
@@ -65,55 +66,41 @@ public class GlobDiskStreamScanning implements IFluxScanPlugin {
     private String glob;
 
     @Override
-    public List<DirectoryStream<Path>> stream(Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
-
-        List<DirectoryStream<Path>> scannedFiles = Lists.newArrayList();
-
+    public List<Stream<Path>> stream(Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
+        List<Stream<Path>> dirStreams = Lists.newArrayList();
         for (String dir : directories) {
             Path dirPath = Paths.get(dir);
             if (Files.isDirectory(dirPath)) {
-                scannedFiles = scanDirectory(dirPath, lastModificationDate);
+                dirStreams.add(scanDirectory(dirPath, lastModificationDate));
             } else {
                 LOGGER.error("Invalid directory path : {}", dirPath.toString());
             }
         }
-        return scannedFiles;
+        return dirStreams;
     }
 
-    private static void walk(List<DirectoryStream<Path>> paths, Path path, DirectoryStream.Filter<Path> filter)
-            throws IOException {
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
-            for (Path entry : stream) {
-                if (Files.isDirectory(entry)) {
-                    paths.add(Files.newDirectoryStream(entry, filter));
-                    walk(paths, entry, filter);
-                }
-            }
-        }
-    }
-
-    private List<DirectoryStream<Path>> scanDirectory(Path dirPath, Optional<OffsetDateTime> lastModificationDate)
+    private Stream<Path> scanDirectory(Path dirPath, Optional<OffsetDateTime> lastModificationDate)
             throws ModuleException {
         try {
             FileSystem fs = dirPath.getFileSystem();
             final PathMatcher matcher = fs.getPathMatcher("glob:" + glob);
-            List<DirectoryStream<Path>> paths = Lists.newArrayList();
-            DirectoryStream.Filter<Path> filter = entry -> {
-                boolean match = Files.isRegularFile(entry) && matcher.matches(entry.getFileName());
+            Predicate<Path> filter = entry -> {
+                boolean match = Files.isReadable(entry) && Files.isRegularFile(entry)
+                        && matcher.matches(entry.getFileName());
                 if (match && lastModificationDate.isPresent()) {
-                    OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(entry).toInstant(),
-                                                                  ZoneOffset.UTC);
-                    return lmd.isAfter(lastModificationDate.get()) || lmd.isEqual(lastModificationDate.get());
-                } else {
-                    return match;
+                    OffsetDateTime lmd;
+                    try {
+                        lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(entry).toInstant(), ZoneOffset.UTC);
+                        return lmd.isAfter(lastModificationDate.get()) || lmd.isEqual(lastModificationDate.get());
+                    } catch (IOException e) {
+                        LOGGER.error(e.getMessage(), e);
+                        match = false;
+                    }
                 }
+                return match;
             };
-            // Add files from the root directory
-            paths.add(Files.newDirectoryStream(dirPath, filter));
-            // Walk trough sub directories
-            walk(paths, dirPath, filter);
-            // Return all files matching
-            return paths;
+            return Files.walk(dirPath).filter(filter);
+
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }

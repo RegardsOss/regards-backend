@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.util.Collection;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,23 +43,23 @@ public class AcquisitionIngestClientListener implements IIngestClientListener {
     private IProductService productService;
 
     @Override
-    public void onDenied(RequestInfo info) {
-        productService.handleIngestedSIPFailed(info);
+    public void onDenied(Collection<RequestInfo> infos) {
+        productService.handleIngestedSIPFailed(infos);
     }
 
     @Override
-    public void onGranted(RequestInfo info) {
+    public void onGranted(Collection<RequestInfo> infos) {
         // Nothing to do
     }
 
     @Override
-    public void onError(RequestInfo info) {
-        productService.handleIngestedSIPFailed(info);
+    public void onError(Collection<RequestInfo> infos) {
+        productService.handleIngestedSIPFailed(infos);
     }
 
     @Override
-    public void onSuccess(RequestInfo info) {
-        productService.handleIngestedSIPSuccess(info);
+    public void onSuccess(Collection<RequestInfo> infos) {
+        productService.handleIngestedSIPSuccess(infos);
     }
 
 }

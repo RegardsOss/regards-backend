@@ -190,8 +190,6 @@ public class AcquisitionFileServiceTest extends AbstractMultitenantServiceTest {
         for (AcquisitionFileState fileState : AcquisitionFileState.values()) {
             AcquisitionFile file = new AcquisitionFile();
             file.setAcqDate(OffsetDateTime.now());
-            file.setChecksum("123445");
-            file.setChecksumAlgorithm("MD5");
             file.setError("");
             file.setFileInfo(processingChain.getFileInfos().iterator().next());
             file.setFilePath(Paths.get("/chain2/file" + idx));
@@ -205,8 +203,6 @@ public class AcquisitionFileServiceTest extends AbstractMultitenantServiceTest {
         for (AcquisitionFileState fileState : AcquisitionFileState.values()) {
             AcquisitionFile file = new AcquisitionFile();
             file.setAcqDate(OffsetDateTime.now());
-            file.setChecksum("123445");
-            file.setChecksumAlgorithm("MD5");
             file.setError("");
             file.setFileInfo(processingChain2.getFileInfos().iterator().next());
             file.setFilePath(Paths.get("/chain2/file" + idx));

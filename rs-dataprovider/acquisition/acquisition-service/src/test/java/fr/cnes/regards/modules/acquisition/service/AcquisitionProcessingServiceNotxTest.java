@@ -109,7 +109,7 @@ public class AcquisitionProcessingServiceNotxTest extends AbstractMultitenantSer
         Path searchDir = Paths.get("src", "test", "resources", "data", "plugins", "scan");
         // Register file
         Path first = searchDir.resolve("CSSI_PRODUCT_01.md");
-        Assert.assertTrue(processingService.registerFile(first, fileInfo, Optional.empty(), true));
+        Assert.assertTrue(processingService.registerFile(first, fileInfo, Optional.empty()));
 
         // Register same file with its lmd
         OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(first).toInstant(), ZoneOffset.UTC);
@@ -117,8 +117,8 @@ public class AcquisitionProcessingServiceNotxTest extends AbstractMultitenantSer
         filePaths.add(first);
         filePaths.add(searchDir.resolve("CSSI_PRODUCT_02.md"));
         filePaths.add(searchDir.resolve("CSSI_PRODUCT_03.md"));
-        Assert.assertTrue(processingService.registerFiles(filePaths, fileInfo, Optional.of(lmd), true, "chain1",
-                                                          "session1") == 2);
+        Assert.assertEquals(2, processingService.registerFiles(filePaths.iterator(), fileInfo, Optional.of(lmd),
+                                                               "chain1", "session1"));
 
     }
 }

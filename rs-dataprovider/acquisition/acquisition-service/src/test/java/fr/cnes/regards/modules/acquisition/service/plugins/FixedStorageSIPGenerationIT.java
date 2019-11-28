@@ -31,6 +31,7 @@ import org.springframework.util.MimeType;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
@@ -54,13 +55,12 @@ public class FixedStorageSIPGenerationIT extends AbstractMultitenantServiceTest 
     public void testPlugin() throws ModuleException, NotAvailablePluginConfigurationException {
 
         // Init plugin conf
-        PluginMetaData plugin = PluginUtils.createPluginMetaData(FixedStorageSIPGeneration.class);
 
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(FixedStorageSIPGeneration.STAF_STORAGE_NODE, "node1"),
                      IPluginParam.build(FixedStorageSIPGeneration.DATASET, "dataset1"));
         PluginConfiguration pluginConf = pluginService
-                .savePluginConfiguration(new PluginConfiguration(plugin, "sipGenerationPlugin", parameters));
+                .savePluginConfiguration(new PluginConfiguration("sipGenerationPlugin", parameters, FixedStorageSIPGeneration.class.getAnnotation(Plugin.class).id()));
 
         FixedStorageSIPGeneration pluginImp = pluginService.getPlugin(pluginConf.getBusinessId());
 
@@ -71,8 +71,6 @@ public class FixedStorageSIPGenerationIT extends AbstractMultitenantServiceTest 
         info.setDataType(DataType.RAWDATA);
         info.setMimeType(MimeType.valueOf("application/octet-stream"));
         acqFile.setFileInfo(info);
-        acqFile.setChecksum("checksum");
-        acqFile.setChecksumAlgorithm("MD5");
         acqFile.setFilePath(Paths.get("/tmp/file.txt"));
         product.addAcquisitionFile(acqFile);
         SIP sip = pluginImp.generate(product);

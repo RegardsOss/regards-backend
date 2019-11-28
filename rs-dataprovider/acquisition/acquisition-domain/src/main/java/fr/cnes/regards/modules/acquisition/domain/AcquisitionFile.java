@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.acquisition.domain;
 
 import java.nio.file.Path;
-import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 
 import javax.persistence.CascadeType;
@@ -37,7 +36,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
@@ -56,8 +54,10 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
  *
  */
 @Entity
-@Table(name = "t_acquisition_file", indexes = { @Index(name = "idx_acq_file_state", columnList = "state"),
-        @Index(name = "idx_acq_file_info", columnList = "acq_file_info_id") })
+@Table(name = "t_acquisition_file",
+        indexes = { @Index(name = "idx_acq_file_state", columnList = "state"),
+                @Index(name = "idx_acq_file_state_file_info", columnList = "state, acq_file_info_id"),
+                @Index(name = "idx_acq_file_info", columnList = "acq_file_info_id") })
 public class AcquisitionFile {
 
     @Id
@@ -98,20 +98,6 @@ public class AcquisitionFile {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime acqDate;
 
-    /**
-     * Data file checksum. It can be null in case the checksum could not be computed
-     */
-    @Column(name = "checksum", length = 255)
-    private String checksum;
-
-    /**
-     * Algorithm used to calculate the checksum
-     * see {@link MessageDigest}
-     */
-    @NotBlank(message = "Checksum algorithm is required")
-    @Column(name = "checksumAlgorithm", length = 16)
-    private String checksumAlgorithm;
-
     @GsonIgnore
     @NotNull(message = "Acquisition file information is required")
     @ManyToOne
@@ -150,22 +136,6 @@ public class AcquisitionFile {
         this.acqDate = acqDate;
     }
 
-    public String getChecksum() {
-        return checksum;
-    }
-
-    public void setChecksum(String checksum) {
-        this.checksum = checksum;
-    }
-
-    public String getChecksumAlgorithm() {
-        return checksumAlgorithm;
-    }
-
-    public void setChecksumAlgorithm(String checksumAlgorithm) {
-        this.checksumAlgorithm = checksumAlgorithm;
-    }
-
     public AcquisitionFileInfo getFileInfo() {
         return fileInfo;
     }
@@ -194,10 +164,9 @@ public class AcquisitionFile {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (acqDate == null ? 0 : acqDate.hashCode());
-        result = prime * result + (checksum == null ? 0 : checksum.hashCode());
-        result = prime * result + (checksumAlgorithm == null ? 0 : checksumAlgorithm.hashCode());
-        result = prime * result + (fileInfo == null ? 0 : fileInfo.hashCode());
+        result = (prime * result) + (acqDate == null ? 0 : acqDate.hashCode());
+        result = (prime * result) + (filePath == null ? 0 : filePath.hashCode());
+        result = (prime * result) + (fileInfo == null ? 0 : fileInfo.hashCode());
         return result;
     }
 
@@ -218,20 +187,6 @@ public class AcquisitionFile {
                 return false;
             }
         } else if (!acqDate.equals(other.acqDate)) {
-            return false;
-        }
-        if (checksum == null) {
-            if (other.checksum != null) {
-                return false;
-            }
-        } else if (!checksum.equals(other.checksum)) {
-            return false;
-        }
-        if (checksumAlgorithm == null) {
-            if (other.checksumAlgorithm != null) {
-                return false;
-            }
-        } else if (!checksumAlgorithm.equals(other.checksumAlgorithm)) {
             return false;
         }
         if (fileInfo == null) {
