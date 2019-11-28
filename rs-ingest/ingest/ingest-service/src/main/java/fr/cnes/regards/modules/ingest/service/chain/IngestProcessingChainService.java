@@ -56,6 +56,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -122,13 +123,12 @@ public class IngestProcessingChainService implements IIngestProcessingChainServi
 
             // Create default validation plugin configuration
             PluginConfiguration validationDefaultConf = new PluginConfiguration(
-                    PluginUtils.createPluginMetaData(DefaultSipValidation.class), DEFAULT_VALIDATION_PLUGIN_CONF_LABEL);
+                    DEFAULT_VALIDATION_PLUGIN_CONF_LABEL, DefaultSipValidation.class.getAnnotation(Plugin.class).id());
             defaultChain.setValidationPlugin(validationDefaultConf);
 
             // Create default generation plugin configuration
             PluginConfiguration generationDefaultConf = new PluginConfiguration(
-                    PluginUtils.createPluginMetaData(DefaultSingleAIPGeneration.class),
-                    DEFAULT_GENERATION_PLUGIN_CONF_LABEL);
+                    DEFAULT_GENERATION_PLUGIN_CONF_LABEL, DefaultSingleAIPGeneration.class.getAnnotation(Plugin.class).id());
             defaultChain.setGenerationPlugin(generationDefaultConf);
 
             createNewChain(defaultChain);
