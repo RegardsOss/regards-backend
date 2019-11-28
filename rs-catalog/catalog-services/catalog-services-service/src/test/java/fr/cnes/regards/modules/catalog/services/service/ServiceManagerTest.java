@@ -32,10 +32,12 @@ import org.mockito.Mockito;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
@@ -54,9 +56,12 @@ public class ServiceManagerTest {
      */
     private static final Set<PluginConfiguration> PLUGIN_CONFIGURATIONS_WRONG_PLUGIN = new HashSet<>();
     static {
-        final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setPluginClassName("FakePlugin");
-        PLUGIN_CONFIGURATIONS_WRONG_PLUGIN.add(new PluginConfiguration(pluginMetaData, "First configuration"));
+        //This plugin being non-existent, lets create PluginMetadata by hand and put some random values.
+        final PluginMetaData fakePluginMeta = new PluginMetaData();
+        fakePluginMeta.setPluginClassName("FakePlugin");
+        PluginConfiguration fakePluginConf = new PluginConfiguration("First configuration", "FakePluginId");
+        fakePluginConf.setMetaData(fakePluginMeta);
+        PLUGIN_CONFIGURATIONS_WRONG_PLUGIN.add(fakePluginConf);
     };
 
     /**
@@ -64,15 +69,20 @@ public class ServiceManagerTest {
      */
     private static final Set<PluginConfiguration> PLUGIN_CONFIGURATIONS = new HashSet<>();
     static {
-        final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setPluginClassName(ExampleOneManyPlugin.class.getName());
-        PLUGIN_CONFIGURATIONS.add(new PluginConfiguration(pluginMetaData, "First configuration"));
-        final PluginMetaData pluginMetaDataMany = new PluginMetaData();
-        pluginMetaDataMany.setPluginClassName(ExampleManyPlugin.class.getName());
-        PLUGIN_CONFIGURATIONS.add(new PluginConfiguration(pluginMetaDataMany, "Second configuration"));
-        final PluginMetaData pluginMetaDataOne = new PluginMetaData();
-        pluginMetaDataOne.setPluginClassName(ExampleOnePlugin.class.getName());
-        PLUGIN_CONFIGURATIONS.add(new PluginConfiguration(pluginMetaDataOne, "Third configuration"));
+        // Thanks to mockito, we have to put plugin metadata ourselves and call PluginUtils.setup
+        PluginUtils.setup();
+        PluginMetaData exampleOneManyMeta = PluginUtils.getPlugins().get(ExampleOneManyPlugin.class.getAnnotation(Plugin.class).id());
+        PluginConfiguration exampleOneManyConf = new PluginConfiguration("First configuration", exampleOneManyMeta.getPluginId());
+        exampleOneManyConf.setMetaData(exampleOneManyMeta);
+        PLUGIN_CONFIGURATIONS.add(exampleOneManyConf);
+        PluginMetaData exampleManyMeta = PluginUtils.getPlugins().get(ExampleManyPlugin.class.getAnnotation(Plugin.class).id());
+        PluginConfiguration exampleManyConf = new PluginConfiguration("Second configuration", exampleManyMeta.getPluginId());
+        exampleManyConf.setMetaData(exampleManyMeta);
+        PLUGIN_CONFIGURATIONS.add(exampleManyConf);
+        PluginMetaData exampleOneMeta = PluginUtils.getPlugins().get(ExampleOnePlugin.class.getAnnotation(Plugin.class).id());
+        PluginConfiguration exampleOneConf = new PluginConfiguration("Third configuration", exampleOneMeta.getPluginId());
+        exampleOneConf.setMetaData(exampleOneMeta);
+        PLUGIN_CONFIGURATIONS.add(exampleOneConf);
     };
 
     /**

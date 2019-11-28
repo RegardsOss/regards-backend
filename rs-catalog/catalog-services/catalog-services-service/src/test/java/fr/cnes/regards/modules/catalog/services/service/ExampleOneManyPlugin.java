@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFact
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
 import fr.cnes.regards.modules.catalog.services.plugins.AbstractCatalogServicePlugin;
 
-@Plugin(description = "Example many plugin.", id = "ManyTestPlugin", version = "1.0.0", author = "REGARDS Team",
+@Plugin(description = "Example many plugin.", id = "OneManyTestPlugin", version = "1.0.0", author = "REGARDS Team",
         contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 @CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.MANY }, entityTypes = { EntityType.DATA })
 public class ExampleOneManyPlugin extends AbstractCatalogServicePlugin implements IEntitiesServicePlugin {
