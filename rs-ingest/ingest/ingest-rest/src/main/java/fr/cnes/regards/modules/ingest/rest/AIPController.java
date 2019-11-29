@@ -18,24 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import fr.cnes.regards.modules.ingest.service.IIngestService;
-import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import java.io.IOException;
 import java.util.List;
+
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +43,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+import fr.cnes.regards.modules.ingest.service.IIngestService;
+import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 
 /**
  * This controller manages AIP.
@@ -189,7 +192,7 @@ public class AIPController implements IResourceController<AIPEntity> {
     @RequestMapping(value = CATEGORIES_SEARCH_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Search categories used by aips")
     public ResponseEntity<List<String>> retrieveAIPCategories(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
-        List<String> aipTags = aipService.searchStorages(filters);
+        List<String> aipTags = aipService.searchCategories(filters);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 
@@ -215,7 +218,6 @@ public class AIPController implements IResourceController<AIPEntity> {
         response.setStatus(HttpStatus.OK.value());
     }
 
-
     @RequestMapping(value = AIP_UPDATE_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Update an AIP set with provided params", role = DefaultRole.PUBLIC)
     public void updateAips(@Valid @RequestBody AIPUpdateParametersDto params) {
@@ -229,7 +231,6 @@ public class AIPController implements IResourceController<AIPEntity> {
         LOGGER.debug("Received request to delete OAIS entities");
         ingestService.registerOAISDeletionRequest(deletionRequest);
     }
-
 
     @Override
     public Resource<AIPEntity> toResource(AIPEntity element, Object... extras) {
