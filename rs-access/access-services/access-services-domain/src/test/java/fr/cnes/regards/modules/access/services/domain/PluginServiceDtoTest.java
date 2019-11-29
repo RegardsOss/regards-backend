@@ -69,10 +69,13 @@ public class PluginServiceDtoTest {
     public final void testFromPluginConfiguration() {
         PluginMetaData pluginMetaData = new PluginMetaData();
         pluginMetaData.setPluginClassName("fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin");
+        pluginMetaData.setPluginId("SampleServicePlugin");
 
-        PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetaData, LABEL);
+        PluginConfiguration pluginConfiguration = new PluginConfiguration(LABEL, "SampleServicePlugin");
         pluginConfiguration.setBusinessId(BUSINESS_ID);
         pluginConfiguration.setIconUrl(ICON_URL);
+
+        pluginConfiguration.setMetaData(pluginMetaData);
 
         PluginConfigurationDto pluginConfigurationDto = new PluginConfigurationDto(pluginConfiguration);
 

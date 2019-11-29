@@ -1,48 +1,65 @@
 {
   "primaryPane": "ALWAYS_EXPANDED",
+  "facets": {
+    "enabledFor": {
+      "DATA": false,
+      "DATASET": false
+    },
+    "initiallyEnabled": false,
+    "list": []
+  },
+  "restrictions": {
+    "byDataset": {
+      "type": "NONE",
+      "selection": []
+    }
+  },
   "viewsGroups": {
     "DATA": {
       "enableDownload": true,
-      "tabTitle": {"en":"","fr":""},
+      "tabTitle": {
+        "en": "",
+        "fr": ""
+      },
       "initialMode": "TABLE",
       "sorting": [],
       "enabled": true,
       "views": {
         "TABLE": {
           "attributes": [
-	          {
-	          	"attributes": [
-					{
-						"name": "label"
-					}
-				],
-				"label": {
-					"en": "Label",
-					"fr": "Libellé"
-				}
-	          },
-	          {
-	          	"attributes": [
-					{
-						"name": "id"
-					}
-				],
-				"label": {
-					"en": "Identifier",
-					"fr": "Identifiant"
-				}
-	          },
-	          {
-	          	"attributes": [
-					{
-						"name": "files.THUMBNAIL[0]"
-					}
-				],
-				"label": {
-					"en": "Thumbnail",
-					"fr": "Vignette"
-				}
-	          }
+            {
+              "attributes": [
+                {
+                  "name": "label"
+                }
+              ],
+              "label": {
+                "en": "Label",
+                "fr": "Libellé"
+              }
+            },
+            {
+              "attributes": [
+                {
+                  "name": "id"
+                }
+              ],
+              "label": {
+                "en": "Identifier",
+                "fr": "Identifiant"
+              }
+            },
+            {
+              "attributes": [
+                {
+                  "name": "files.THUMBNAIL[0]"
+                }
+              ],
+              "label": {
+                "en": "Thumbnail",
+                "fr": "Vignette"
+              }
+            }
           ],
           "enabled": true
         },
@@ -63,29 +80,6 @@
     },
     "DATASET": {
       "tabTitle": {},
-      "initialMode": "LIST",
-      "sorting": [],
-      "enabled": false,
-      "views": {
-        "TABLE": {
-          "attributes": [],
-          "enabled": false
-        },
-        "QUICKLOOK": {
-          "attributes": [],
-          "enabled": false
-        },
-        "MAP": {
-          "attributes": [],
-          "enabled": false
-        }
-      }
-    },
-    "DOCUMENT": {
-      "tabTitle": {
-        "en": "",
-        "fr": ""
-      },
       "initialMode": "LIST",
       "sorting": [],
       "enabled": false,
