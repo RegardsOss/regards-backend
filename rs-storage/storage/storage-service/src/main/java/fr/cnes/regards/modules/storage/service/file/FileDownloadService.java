@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.storage.service.file;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -129,9 +128,10 @@ public class FileDownloadService {
         if (storageLocation.isPresent()) {
             PluginConfiguration conf = storageLocation.get().getPluginConfiguration();
             FileReference fileToDownload = storages.get(conf.getLabel());
-            return new DownloadableFile(downloadFileReference(fileToDownload),
+            DownloadableFile df = new DownloadableFile(downloadFileReference(fileToDownload),
                     fileToDownload.getMetaInfo().getFileSize(), fileToDownload.getMetaInfo().getFileName(),
                     fileToDownload.getMetaInfo().getMimeType());
+            return df;
 
         } else {
             throw new ModuleException(String
@@ -186,7 +186,7 @@ public class FileDownloadService {
                             fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getChecksum(),
                             fileToDownload.getLocation().toString()),
                     e);
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             throw new ModuleException(e.getMessage(), e);
         }
