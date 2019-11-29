@@ -18,8 +18,37 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.snippet.Attributes;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -45,32 +74,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import fr.cnes.regards.modules.test.IngestServiceTest;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.MediaType;
-import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.restdocs.snippet.Attributes;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 
 /**
 * {@link AIPEntity} REST API testing
@@ -304,10 +307,10 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         AIPUpdateParametersDto body = AIPUpdateParametersDto
                 .build(SearchAIPsParameters.build().withSessionOwner(sessionOwner).withSession(session), null, null,
-                        null, Lists.newArrayList("CAT 1"), null);
+                       null, Lists.newArrayList("CAT 1"), null);
 
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.AIP_UPDATE_PATH, body,
-                requestBuilderCustomizer, "Should schedule AIP update");
+                           requestBuilderCustomizer, "Should schedule AIP update");
     }
 
     @Test
@@ -325,11 +328,11 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // Add request parameters documentation
         requestBuilderCustomizer.documentRequestBody(documentDeleteAIPRequestParameters());
 
-        OAISDeletionPayloadDto body = OAISDeletionPayloadDto
-                .build(SessionDeletionMode.IRREVOCABLY).withSessionOwner(sessionOwner).withSession(session).withCategory("CAT 1");
+        OAISDeletionPayloadDto body = OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY)
+                .withSessionOwner(sessionOwner).withSession(session).withCategory("CAT 1");
 
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.OAIS_DELETE_PATH, body,
-                requestBuilderCustomizer, "Should schedule AIP deletion");
+                           requestBuilderCustomizer, "Should schedule AIP deletion");
     }
 
     private List<FieldDescriptor> documentDeleteAIPRequestParameters() {
@@ -340,11 +343,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         for (SessionDeletionMode mode : SessionDeletionMode.values()) {
             joiner.add(mode.name());
         }
-        params.add(constrainedFields
-                .withPath("deletionMode", "deletionMode",
-                        "Type of deletion")
-                .type(JSON_STRING_TYPE).optional()
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+        params.add(constrainedFields.withPath("deletionMode", "deletionMode", "Type of deletion").type(JSON_STRING_TYPE)
+                .optional().attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                         .value("Optional. Allowed values : " + joiner.toString())));
 
@@ -471,33 +471,32 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         params.add(constrainedFields
                 .withPath(rootPath + AIPController.REQUEST_PARAM_STORAGES, AIPController.REQUEST_PARAM_STORAGES,
-                        "A list of storage names the entity must have, at least one")
+                          "A list of storage names the entity must have, at least one")
                 .optional().type(List.class.getSimpleName())
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
 
         params.add(constrainedFields
                 .withPath(rootPath + AIPController.REQUEST_PARAM_AIP_IDS, AIPController.REQUEST_PARAM_AIP_IDS,
-                        "A list of aip ids")
+                          "A list of aip ids")
                 .optional().type(List.class.getSimpleName())
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
 
         params.add(constrainedFields
                 .withPath(rootPath + AIPController.REQUEST_PARAM_AIP_IDS, AIPController.REQUEST_PARAM_AIP_IDS,
-                        "A list of aip ids")
+                          "A list of aip ids")
                 .optional().type(List.class.getSimpleName())
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
 
         params.add(constrainedFields
                 .withPath(rootPath + AIPController.REQUEST_PARAM_STATE, AIPController.REQUEST_PARAM_STATE,
-                        "This attribute describe what the aipIds list mean.")
+                          "This attribute describe what the aipIds list mean.")
                 .type(JSON_STRING_TYPE).optional()
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                         .value("Optional. Allowed values : " + selectionModeJoiner.toString())));
-
 
         return params;
     }
@@ -528,8 +527,6 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         fields.add(constrainedFields.withPath(prefix + "tags", "tags", "List of tags").type(JSON_ARRAY_TYPE));
 
-        fields.add(constrainedFields.withPath(prefix + "sip", "sip", "Generated SIP").type(JSON_OBJECT_TYPE));
-
         fields.add(constrainedFields.withPath(prefix + "aip", "aip", "Generated AIP").type(JSON_OBJECT_TYPE));
 
         fields.add(constrainedFields.withPath(prefix + "sessionOwner", "sessionOwner", "Session owner")
@@ -542,20 +539,6 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         fields.add(constrainedFields.withPath(prefix + "categories", "categories", "List of categories")
                 .type(JSON_ARRAY_TYPE));
-
-        String prefixManifestLocation = "content[].content.manifestLocations[].";
-
-        fields.add(constrainedFields
-                .withPath(prefixManifestLocation + "storage", "storage", "Destination storage identifier")
-                .type(JSON_STRING_TYPE));
-
-        fields.add(constrainedFields
-                .withPath(prefixManifestLocation + "storePath", "storePath",
-                          "Optional path identifying the base directory in which to store related files")
-                .type(JSON_STRING_TYPE).optional());
-
-        fields.add(constrainedFields.withPath(prefixManifestLocation + "url", "url", "URL to the AIP manifest file")
-                .type(JSON_ARRAY_TYPE).optional());
 
         return fields;
     }

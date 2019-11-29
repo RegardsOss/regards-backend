@@ -50,7 +50,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
@@ -67,7 +67,7 @@ import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
  */
 @RestController
 @RequestMapping(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH)
-public class AIPController implements IResourceController<AIPEntity> {
+public class AIPController implements IResourceController<AIPEntityLight> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPController.class);
 
@@ -153,10 +153,11 @@ public class AIPController implements IResourceController<AIPEntity> {
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Return a page of AIPs")
-    public ResponseEntity<PagedResources<Resource<AIPEntity>>> searchAIPs(@RequestBody SearchAIPsParameters filters,
+    public ResponseEntity<PagedResources<Resource<AIPEntityLight>>> searchAIPs(
+            @RequestBody SearchAIPsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<AIPEntity> assembler) {
-        Page<AIPEntity> aips = aipService.search(filters, pageable);
+            PagedResourcesAssembler<AIPEntityLight> assembler) {
+        Page<AIPEntityLight> aips = aipService.searchLight(filters, pageable);
         return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
     }
 
@@ -233,8 +234,8 @@ public class AIPController implements IResourceController<AIPEntity> {
     }
 
     @Override
-    public Resource<AIPEntity> toResource(AIPEntity element, Object... extras) {
-        Resource<AIPEntity> resource = resourceService.toResource(element);
+    public Resource<AIPEntityLight> toResource(AIPEntityLight element, Object... extras) {
+        Resource<AIPEntityLight> resource = resourceService.toResource(element);
         return resource;
     }
 
