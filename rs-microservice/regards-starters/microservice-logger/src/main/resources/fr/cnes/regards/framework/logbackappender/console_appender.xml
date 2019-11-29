@@ -23,11 +23,8 @@
     <include
             resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
-    <springProperty scope="context" name="springAppName"
-                    source="spring.application.name"/>
-
     <property name="CONSOLE_LOG_PATTERN"
-              value="%date [${springAppName}] [%-16thread] %-5level %logger{36} [%mdc{tenant}] %mdc{req.remoteHost} %mdc{req.xForwardedFor} %mdc{username} - %msg%n"/>
+              value="%date [${APP_NAME}] [%-16thread] %-5level %logger{36} [%mdc{tenant}] %mdc{req.remoteHost} %mdc{req.xForwardedFor} %mdc{username} - %msg%n"/>
 
 
     <appender name="STDOUT"
@@ -36,8 +33,4 @@
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
         </encoder>
     </appender>
-
-    <root level="INFO">
-        <appender-ref ref="STDOUT"/>
-    </root>
 </included>
