@@ -565,6 +565,10 @@ public class PluginService implements IPluginService {
         // Get last saved plugin configuration
         PluginConfiguration pluginConf = loadPluginConfiguration(businessId);
 
+        if(pluginConf == null) {
+            LOGGER.error("Plugin Configuration with business id {} does not seems to exists. Did you confuse businessId and id?");
+            throw new EntityNotFoundException(businessId, PluginConfiguration.class);
+        }
         // Get the plugin implementation associated
         PluginMetaData pluginMetadata = PluginUtils.getPluginMetadata(pluginConf.getPluginId());
 
