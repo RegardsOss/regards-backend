@@ -177,11 +177,11 @@ public class PluginService implements IPluginService {
         }
 
         StringBuilder msg = new StringBuilder("Cannot save plugin configuration");
-        PluginConfiguration pluginConfInDb = repos.findOneByLabel(plgConf.getLabel());
+        PluginConfiguration pluginConfInDb = repos.findCompleteByBusinessId(plgConf.getBusinessId());
         if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), plgConf.getId())
-                && pluginConfInDb.getLabel().equals(plgConf.getLabel())) {
-            msg.append(String.format(". A plugin configuration with same label (%s) already exists.",
-                                     plgConf.getLabel()));
+                && pluginConfInDb.getBusinessId().equals(plgConf.getBusinessId())) {
+            msg.append(String.format(". A plugin configuration with same businessId (%s) already exists.",
+                                     plgConf.getBusinessId()));
             throw new EntityInvalidException(msg.toString());
         }
 
@@ -270,8 +270,8 @@ public class PluginService implements IPluginService {
                     if (!conf.getId().equals(plgConf.getId()) && conf.isActive()
                             && !Collections.disjoint(conf.getInterfaceNames(), uniqueActiveConfInterfaces)) {
                         conf.setIsActive(false);
-                        LOGGER.info("As only one active configuration is allowed, the plugin {} is disabled. The new active plugin is {}",
-                                    conf.getLabel(), plgConf.getLabel());
+                        LOGGER.info("As only one active configuration is allowed, the plugin <{} bId={}> is disabled. The new active plugin is <{} bId={}>",
+                                    conf.getLabel(), conf.getBusinessId(), plgConf.getLabel(), plgConf.getBusinessId());
                         updatePluginConfiguration(conf);
                     }
                 }
@@ -565,7 +565,7 @@ public class PluginService implements IPluginService {
         // Get last saved plugin configuration
         PluginConfiguration pluginConf = loadPluginConfiguration(businessId);
 
-        if(pluginConf == null) {
+        if (pluginConf == null) {
             LOGGER.error("Plugin Configuration with business id {} does not seems to exists. Did you confuse businessId and id?");
             throw new EntityNotFoundException(businessId, PluginConfiguration.class);
         }
@@ -753,8 +753,8 @@ public class PluginService implements IPluginService {
     private PluginConfiguration cloneSensiblePlugin(PluginMetaData pluginMeta, PluginConfiguration pluginConf) {
 
         // Create a clone with decrypted value
-        PluginConfiguration exportedConf = new PluginConfiguration(pluginConf.getLabel(),
-                pluginConf.getPriorityOrder(), pluginConf.getPluginId());
+        PluginConfiguration exportedConf = new PluginConfiguration(pluginConf.getLabel(), pluginConf.getPriorityOrder(),
+                pluginConf.getPluginId());
         exportedConf.setBusinessId(pluginConf.getBusinessId());
         exportedConf.setIsActive(false);
         exportedConf.setIconUrl(pluginConf.getIconUrl());
