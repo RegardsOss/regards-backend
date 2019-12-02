@@ -57,8 +57,9 @@ public class AIPUpdatesCreatorRequest extends AbstractRequest {
     public static AIPUpdatesCreatorRequest build(AIPUpdateParametersDto params) {
         AIPUpdatesCreatorRequest result = new AIPUpdatesCreatorRequest();
         result.setCreationDate(OffsetDateTime.now());
-        result.setState(InternalRequestState.CREATED);
+        result.setState(InternalRequestState.TO_SCHEDULE);
         result.setConfig(params);
+        result.setDtype(RequestTypeConstant.AIP_UPDATES_CREATOR_VALUE);
         return result;
     }
 }

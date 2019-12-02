@@ -54,7 +54,8 @@ public class OAISDeletionRequest extends AbstractRequest {
         OAISDeletionRequest request = new OAISDeletionRequest();
         request.setConfig(deletionPayload);
         request.setCreationDate(OffsetDateTime.now());
-        request.setState(InternalRequestState.RUNNING);
+        request.setDtype(RequestTypeConstant.OAIS_DELETION_VALUE);
+        request.setState(InternalRequestState.TO_SCHEDULE);
         return request;
     }
 

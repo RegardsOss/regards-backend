@@ -24,6 +24,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
  * {@link AIPUpdateRequest} repository
@@ -36,13 +38,20 @@ public interface IAIPUpdateRequestRepository extends JpaRepository<AIPUpdateRequ
     }
 
     default List<AIPUpdateRequest> findRunningRequestAndAipIdIn(List<Long> aipIds) {
-        return findAllByAipIdInAndState(aipIds, InternalRequestState.RUNNING);
+        return findAllAipDistinctByAipIdInAndState(aipIds, InternalRequestState.RUNNING.name());
     }
 
     Page<AIPUpdateRequest> findAllByState(InternalRequestState step, Pageable page);
 
     List<AIPUpdateRequest> findAllByAipIdIn(List<Long> aipIds);
 
-    List<AIPUpdateRequest> findAllByAipIdInAndState(List<Long> aipIds, InternalRequestState state);
-    //   TODO List<AIPUpdateRequest> findDistinctByAipIdAndAipIdInAndState(List<Long> aipIds, InternalRequestStep state);
+    /**
+     * Retrieve only one request for each AIP matching provided criteria
+     * @param aipIds
+     * @param state
+     * @return a list of AIPUpdateRequest with corresponding AIP loaded
+     */
+    @Query(value = "SELECT DISTINCT ON (t_request.aip_id) * FROM t_request  inner join t_aip on t_request.aip_id=t_aip.id " +
+            "WHERE t_request.aip_id IN (:ids) AND t_request.state = :state", nativeQuery = true)
+    List<AIPUpdateRequest> findAllAipDistinctByAipIdInAndState(@Param("ids") List<Long> aipIds, @Param("state") String state);
 }

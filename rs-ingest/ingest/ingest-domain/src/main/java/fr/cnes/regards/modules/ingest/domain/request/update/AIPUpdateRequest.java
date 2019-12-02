@@ -92,10 +92,11 @@ public class AIPUpdateRequest extends AbstractRequest {
             updateRequest.setSessionOwner(aip.getSessionOwner());
             updateRequest.setSession(aip.getSession());
             updateRequest.setProviderId(aip.getProviderId());
+            updateRequest.setDtype(RequestTypeConstant.UPDATE_VALUE);
             if (pending) {
                 updateRequest.setState(InternalRequestState.BLOCKED);
             } else {
-                updateRequest.setState(InternalRequestState.CREATED);
+                updateRequest.setState(InternalRequestState.TO_SCHEDULE);
             }
             result.add(updateRequest);
         }

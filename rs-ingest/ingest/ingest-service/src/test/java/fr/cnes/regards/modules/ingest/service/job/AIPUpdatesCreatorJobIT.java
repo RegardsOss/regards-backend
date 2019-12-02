@@ -18,25 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
@@ -50,6 +36,18 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import java.time.OffsetDateTime;
+import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Léo Mieulet
@@ -67,6 +65,10 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
+
+
+    @Autowired
+    private IAbstractRequestRepository abstractRequestRepository;
 
     @Autowired
     private IAIPService aipService;
@@ -119,6 +121,8 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
         publishSIPEvent(create("6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        // Wait STORE_META request over
+        ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000);
     }
 
     /**
@@ -150,11 +154,13 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
         } while (true);
     }
 
+
+
     @Test
     public void testScanJob() throws ModuleException {
         storageClient.setBehavior(true, true);
         initData();
-        aipService.scheduleAIPEntityUpdate(AIPUpdateParametersDto
+        aipService.registerAIPEntityUpdate(AIPUpdateParametersDto
                 .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0), TAG_2,
                        TAG_1, CATEGORIES_2, CATEGORIES_1, Lists.newArrayList(STORAGE_3)));
         long nbSipConcerned = 2;
@@ -168,7 +174,7 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
         initData();
         generateFakeRunningTasks();
 
-        aipService.scheduleAIPEntityUpdate(AIPUpdateParametersDto
+        aipService.registerAIPEntityUpdate(AIPUpdateParametersDto
                 .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0), TAG_2,
                        TAG_1, CATEGORIES_2, CATEGORIES_1, Lists.newArrayList(STORAGE_3)));
         long nbInitialTasks = 6;

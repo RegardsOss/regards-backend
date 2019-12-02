@@ -20,6 +20,10 @@ package fr.cnes.regards.modules.ingest.domain.request;
 
 public enum InternalRequestState {
     /**
+     * When the request is not scheduled yet
+     */
+    TO_SCHEDULE,
+    /**
      * When the request is ready to be processed
      */
     CREATED,

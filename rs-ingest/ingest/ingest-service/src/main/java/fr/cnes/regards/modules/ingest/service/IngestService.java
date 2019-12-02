@@ -18,48 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionPayload;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
-import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.StringJoiner;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
-
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
-
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
-import fr.cnes.regards.modules.ingest.domain.mapper.IOAISDeletionPayloadMapper;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
@@ -69,11 +37,25 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
-import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
-import fr.cnes.regards.modules.ingest.service.job.OAISEntityDeletionJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
-import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.StringJoiner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
 
 /**
  * Ingest management service
@@ -100,25 +82,13 @@ public class IngestService implements IIngestService {
     private Gson gson;
 
     @Autowired
-    private IAuthenticationResolver authResolver;
-
-    @Autowired
-    private IJobInfoService jobInfoService;
-
-    @Autowired
     private IIngestMetadataMapper metadataMapper;
-
-    @Autowired
-    private IOAISDeletionPayloadMapper deletionRequestMapper;
 
     @Autowired
     private Validator validator;
 
     @Autowired
     private IIngestRequestService ingestRequestService;
-
-    @Autowired
-    private OAISDeletionRequestService oaisDeletionRequestService;
 
     @Autowired
     private SessionNotifier sessionNotifier;
@@ -160,25 +130,9 @@ public class IngestService implements IIngestService {
     public void handleIngestRequests(Collection<IngestRequestFlowItem> items) {
         // Store requests per chain
         ListMultimap<String, IngestRequest> requestPerChain = ArrayListMultimap.create();
-        // Store session state (is ingestible ?) by session
-        Table<String, String, Boolean> acceptBySession = HashBasedTable.create();
         for (IngestRequestFlowItem item : items) {
             String sessionOwner = item.getMetadata().getSessionOwner();
             String session = item.getMetadata().getSession();
-            // Compute the session state if not already available
-            if (!acceptBySession.contains(sessionOwner, session)) {
-                // Store if the current session can be ingested now
-                // TODO : Check if request can be proceed
-                acceptBySession.put(sessionOwner, session, true);
-            }
-            if (!acceptBySession.get(sessionOwner, session)) {
-                // Handle session not ingestible
-                ingestRequestService.handleRequestDenied(IngestRequest
-                        .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()),
-                               InternalRequestState.ERROR, IngestRequestStep.LOCAL_DENIED, null,
-                               Sets.newHashSet("Failed to ingest SIP, session is locked")));
-                break;
-            }
 
             // Validate and transform to request
             IngestRequest ingestRequest = registerIngestRequest(item, InternalRequestState.RUNNING);
@@ -305,36 +259,5 @@ public class IngestService implements IIngestService {
             LOGGER.error("Cannot read JSON file containing SIP collection", e);
             throw new EntityInvalidException(e.getMessage(), e);
         }
-    }
-
-    @Override
-    public void registerOAISDeletionRequest(OAISDeletionPayloadDto request) throws ModuleException {
-        OAISDeletionPayload deletionPayload = deletionRequestMapper.dtoToEntity(request);
-        OAISDeletionRequest deletionRequest = OAISDeletionRequest.build(deletionPayload);
-        // TODO check if we can accept this request now
-        if (false) {
-            String error = String
-                    .format("Cannot delete AIPs on sessionOwner %s session %s, this index is locked. Please ensure there is no"
-                            + " ingestion or update before asking AIPs deletion", request.getSessionOwner(),
-                            request.getSession());
-            throw new ModuleException(error);
-        }
-        deletionRequest.setCreationDate(OffsetDateTime.now());
-        deletionRequest.setState(InternalRequestState.RUNNING);
-        // Save deletion request
-        oaisDeletionRequestService.saveRequest(deletionRequest);
-
-        // Schedule deletion job
-        Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(OAISEntityDeletionJob.ID, deletionRequest.getId()));
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.SESSION_DELETION_JOB_PRIORITY.getPriority(),
-                jobParameters, authResolver.getUser(), OAISEntityDeletionJob.class.getName());
-        // Lock job to avoid automatic deletion. The job must be unlock when the link to the request is removed.
-        jobInfo.setLocked(true);
-        jobInfoService.createAsQueued(jobInfo);
-        deletionRequest.setJobInfo(jobInfo);
-
-        // save request (same transaction)
-        oaisDeletionRequestService.saveRequest(deletionRequest);
     }
 }

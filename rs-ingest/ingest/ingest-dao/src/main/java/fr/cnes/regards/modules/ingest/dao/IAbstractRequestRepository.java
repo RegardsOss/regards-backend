@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import java.util.List;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -49,6 +50,15 @@ public interface IAbstractRequestRepository extends JpaRepository<AbstractReques
      * @return a list of {@link AbstractRequest}
      */
     List<AbstractRequest> findAll(Specification<AbstractRequest> aipEntitySpecification);
+
+    /**
+     * @param specification criteria spec
+     * @return true when there is at least one request matching the provided spec
+     */
+    default boolean exists(Specification<AbstractRequest> specification) {
+        Page<AbstractRequest> results = findAll(specification, PageRequest.of(0, 1));
+        return results.getTotalElements() > 0;
+    }
 
     /**
      * Update the state of list of entities using their ids

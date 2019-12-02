@@ -18,12 +18,24 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
 import java.io.IOException;
 import java.util.List;
-
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,21 +55,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import fr.cnes.regards.modules.ingest.service.IIngestService;
-import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 
 /**
  * This controller manages AIP.
@@ -141,7 +138,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     private IAIPService aipService;
 
     @Autowired
-    private IIngestService ingestService;
+    private OAISDeletionRequestService oaisDeletionRequestService;
 
     /**
      * Retrieve a page of aip metadata according to the given filters
@@ -223,14 +220,14 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     @ResourceAccess(description = "Update an AIP set with provided params", role = DefaultRole.PUBLIC)
     public void updateAips(@Valid @RequestBody AIPUpdateParametersDto params) {
         LOGGER.debug("Received request to update AIPs");
-        aipService.scheduleAIPEntityUpdate(params);
+        aipService.registerAIPEntityUpdate(params);
     }
 
     @ResourceAccess(description = "Delete OAIS entities")
     @RequestMapping(value = OAIS_DELETE_PATH, method = RequestMethod.POST)
     public void delete(@Valid @RequestBody OAISDeletionPayloadDto deletionRequest) throws ModuleException {
         LOGGER.debug("Received request to delete OAIS entities");
-        ingestService.registerOAISDeletionRequest(deletionRequest);
+        oaisDeletionRequestService.registerOAISDeletionRequest(deletionRequest);
     }
 
     @Override

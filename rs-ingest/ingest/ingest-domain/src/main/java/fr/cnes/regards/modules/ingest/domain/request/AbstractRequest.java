@@ -112,9 +112,6 @@ public abstract class AbstractRequest {
     @Column(length = 50)
     private InternalRequestState state;
 
-    @Column(length = 128, name = "dtype", insertable = false, updatable = false)
-    private String dtype;
-
     public Long getId() {
         return id;
     }
@@ -122,6 +119,9 @@ public abstract class AbstractRequest {
     public void setId(Long id) {
         this.id = id;
     }
+
+    @Column(length = 128, name = "dtype", insertable = false, updatable = false)
+    private String dtype;
 
     public List<String> getRemoteStepGroupIds() {
         return remoteStepGroupIds;

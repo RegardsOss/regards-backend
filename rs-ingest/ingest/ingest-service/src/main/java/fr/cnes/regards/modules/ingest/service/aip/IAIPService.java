@@ -18,6 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
@@ -62,10 +71,15 @@ public interface IAIPService {
     String scheduleAIPEntityDeletion(String sipId);
 
     /**
-     * Create an AIPUpdatesCreatorRequest and
-     * schedule a job to select all AIPs matching provided criteria and save the associated task to run with
+     * Save an AIPUpdatesCreatorRequest and try to schedule it in a job
+     * @param params the AIPUpdateParametersDto payload
      */
-    void scheduleAIPEntityUpdate(AIPUpdateParametersDto params);
+    void registerAIPEntityUpdate(AIPUpdateParametersDto params);
+
+    /**
+     * Try to run the AIPUpdate request in a job
+     */
+    void scheduleAIPEntityUpdate(AIPUpdatesCreatorRequest request);
 
     /**
      * Remove all {@link AIPEntity} linked to an {@link SIPEntity#getSipId()}
@@ -89,7 +103,7 @@ public interface IAIPService {
      * @throws NoSuchAlgorithmException
      * @throws IOException
      */
-    public String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException;
+    String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException;
 
     /**
      * Retrieve all {@link AIPEntity}s matching parameters.
@@ -145,4 +159,5 @@ public interface IAIPService {
      * @return
      */
     Collection<AIPEntity> getAips(Collection<String> aipIds);
+
 }

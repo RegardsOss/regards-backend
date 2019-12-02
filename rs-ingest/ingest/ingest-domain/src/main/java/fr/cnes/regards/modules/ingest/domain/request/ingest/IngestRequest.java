@@ -154,6 +154,7 @@ public class IngestRequest extends AbstractRequest {
         IngestRequest request = new IngestRequest();
         request.setConfig(new IngestPayload());
         request.setRequestId(requestId);
+        request.setDtype(RequestTypeConstant.INGEST_VALUE);
         request.setMetadata(metadata);
         request.setState(state);
         request.setStep(step);
