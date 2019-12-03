@@ -168,7 +168,7 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         publishSIPEvent(create("provider 7", TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 1000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
 
         Page<AIPEntity> results = aipService
                 .search(SearchAIPsParameters.build().withTags(TAG_0).withStorages(STORAGE_0), PageRequest.of(0, 100));
@@ -232,7 +232,7 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         publishSIPEvent(create("provider 7", TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 1000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
 
         Page<AIPEntity> allAips = aipService.search(SearchAIPsParameters.build(), PageRequest.of(0, 100));
         Set<String> aipIds = allAips.stream().map(AIPEntity::getAipId).collect(Collectors.toSet());
