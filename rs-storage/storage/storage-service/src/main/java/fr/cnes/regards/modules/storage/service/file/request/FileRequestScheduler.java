@@ -120,7 +120,7 @@ public class FileRequestScheduler {
         });
     }
 
-    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:1000}", initialDelay = 1_400)
+    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_400)
     public void handleGroupRequests() throws ModuleException {
         schedule("handleGroupRequests", () -> {
             reqGrpService.checkRequestsGroupsDone();
