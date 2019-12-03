@@ -165,6 +165,8 @@ public class PluginServiceTest extends PluginServiceUtility {
             aPluginConfiguration.setId(AN_ID);
             Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                     .thenReturn(aPluginConfiguration);
+            Mockito.when(pluginConfRepositoryMocked.existsByBusinessId(aPluginConfiguration.getBusinessId()))
+                    .thenReturn(true);
             Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
 
             PluginConfiguration aConf;
@@ -200,8 +202,8 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     private PluginConfiguration clone(PluginConfiguration source) {
-        PluginConfiguration conf = new PluginConfiguration(source.getLabel(),
-                source.getParameters(), source.getPriorityOrder(), source.getPluginId());
+        PluginConfiguration conf = new PluginConfiguration(source.getLabel(), source.getParameters(),
+                source.getPriorityOrder(), source.getPluginId());
         return conf;
     }
 
@@ -238,6 +240,35 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     @Test(expected = ModuleException.class)
+    public void saveTwoPluginConfigurationWithSameBusinessId() throws ModuleException {
+        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
+        final PluginConfiguration aPluginConfigurationWithId = clone(aPluginConfiguration);
+        aPluginConfigurationWithId.setBusinessId(aPluginConfiguration.getBusinessId());
+        aPluginConfigurationWithId.setId(AN_ID);
+        //need to directly call PluginUtils.getPlugins.get(pluginId) to set metadata because of mockito
+        aPluginConfigurationWithId.setMetaData(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
+
+        final PluginConfiguration theSamePluginConfiguration = getPluginConfigurationWithParameters();
+        theSamePluginConfiguration.setBusinessId(aPluginConfiguration.getBusinessId());
+
+        // save a first plugin configuration
+        Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfigurationWithId);
+        try {
+            pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
+        } catch (ModuleException e) {
+            Assert.fail();
+        }
+
+        // save a second plugin configuration with the same businessId
+        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfigurationWithId.getBusinessId()))
+                .thenReturn(aPluginConfigurationWithId);
+        pluginServiceMocked.savePluginConfiguration(theSamePluginConfiguration);
+
+        // An exception is throw, otherwise the test is failed
+        Assert.fail();
+    }
+
+    @Test
     public void saveTwoPluginConfigurationWithSameLabel() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         final PluginConfiguration aPluginConfigurationWithId = clone(aPluginConfiguration);
@@ -256,12 +287,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         }
 
         // save a second plugin configuration with the same label
-        Mockito.when(pluginConfRepositoryMocked.findOneByLabel(theSamePluginConfiguration.getLabel()))
-                .thenReturn(aPluginConfigurationWithId);
         pluginServiceMocked.savePluginConfiguration(theSamePluginConfiguration);
-
-        // An exception is throw, otherwise the test is failed
-        Assert.fail();
     }
 
     /**

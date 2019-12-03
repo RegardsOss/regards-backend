@@ -21,10 +21,10 @@
 <included>
 
     <property name="SYSLOG_PATTERN"
-              value="%date [${springAppName}] [%-16thread] %-5level %logger{36} [%mdc{tenant}] %mdc{req.remoteHost} %mdc{req.xForwardedFor} %mdc{username} - %msg%n"/>
+              value="%date [${APP_NAME}] [%-16thread] %-5level %logger{36} [%mdc{tenant}] %mdc{req.remoteHost} %mdc{req.xForwardedFor} %mdc{username} - %msg%n"/>
 
     <property name="SYSLOG_SECURITY_PATTERN"
-              value="%date [${springAppName}] [%-16thread] %-5level %logger{36} [%mdc{tenant}] %mdc{req.remoteHost} %mdc{req.xForwardedFor} %mdc{username} - %msg%n"/>
+              value="%date [${APP_NAME}] [%-16thread] %-5level %logger{36} [%mdc{tenant}] %mdc{req.remoteHost} %mdc{req.xForwardedFor} %mdc{username} - %msg%n"/>
 
     <appender name="SYSLOG-SECU" class="ch.qos.logback.classic.net.SyslogAppender">
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
