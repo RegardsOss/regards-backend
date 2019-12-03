@@ -39,11 +39,14 @@ import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.dam.dto.FeatureEvent;
 import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
 import fr.cnes.regards.modules.ingest.dao.AIPQueryGenerator;
+import fr.cnes.regards.modules.ingest.dao.IAIPLightRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.ICustomAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
@@ -53,6 +56,7 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.job.AIPUpdatesCreatorJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
+import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
@@ -87,6 +91,7 @@ import org.springframework.stereotype.Service;
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
+ * @author Léo Mieulet
  */
 @Service
 @MultitenantTransactional
@@ -102,7 +107,13 @@ public class AIPService implements IAIPService {
     private IAIPRepository aipRepository;
 
     @Autowired
+    private IAIPLightRepository aipLigthRepository;
+
+    @Autowired
     private IAIPUpdatesCreatorRepository aipUpdatesCreatorRepository;
+
+    @Autowired
+    private OAISDeletionRequestService oaisDeletionRequestService;
 
     @Autowired
     private ICustomAIPRepository customAIPRepository;
@@ -153,8 +164,17 @@ public class AIPService implements IAIPService {
 
     @Override
     public Page<AIPEntity> search(SearchAIPsParameters filters, Pageable pageable) {
-
         return aipRepository.findAll(AIPEntitySpecification.searchAll(filters, pageable), pageable);
+    }
+
+    @Override
+    public Page<AIPEntityLight> searchLight(SearchAIPsParameters filters, Pageable pageable) {
+        LOGGER.debug("Searching AIPS with categories=[{}]...", String.join(",", filters.getCategories()));
+        long start = System.currentTimeMillis();
+        Page<AIPEntityLight> response = aipLigthRepository.findAll(AIPEntitySpecification.searchAll(filters, pageable),
+                                                                   pageable);
+        LOGGER.debug("{} AIPS found in  {}ms", response.getSize(), System.currentTimeMillis() - start);
+        return response;
     }
 
     @Override
@@ -252,15 +272,23 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void scheduleAIPEntityUpdate(AIPUpdateParametersDto params) {
+    public void registerAIPEntityUpdate(AIPUpdateParametersDto params) {
         AIPUpdatesCreatorRequest request = AIPUpdatesCreatorRequest.build(params);
-        request = aipUpdatesCreatorRepository.save(request);
-        // Schedule deletion job
-        Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(AIPUpdatesCreatorJob.REQUEST_ID, request.getId()));
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_SCAN_JOB_PRIORITY.getPriority(),
-                jobParameters, authResolver.getUser(), AIPUpdatesCreatorJob.class.getName());
-        jobInfoService.createAsQueued(jobInfo);
+        scheduleAIPEntityUpdate(request);
+    }
+
+    @Override
+    public void scheduleAIPEntityUpdate(AIPUpdatesCreatorRequest request) {
+        request = (AIPUpdatesCreatorRequest) requestService.scheduleRequest(request);
+        if (request.getState() != InternalRequestState.BLOCKED) {
+            request.setState(InternalRequestState.RUNNING);
+            // Schedule deletion job
+            Set<JobParameter> jobParameters = Sets.newHashSet();
+            jobParameters.add(new JobParameter(AIPUpdatesCreatorJob.REQUEST_ID, request.getId()));
+            JobInfo jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_SCAN_JOB_PRIORITY.getPriority(),
+                    jobParameters, authResolver.getUser(), AIPUpdatesCreatorJob.class.getName());
+            jobInfoService.createAsQueued(jobInfo);
+        }
     }
 
     @Override

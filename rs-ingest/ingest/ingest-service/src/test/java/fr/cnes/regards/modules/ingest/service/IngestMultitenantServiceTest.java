@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.test.IngestServiceTest;
 import java.nio.file.Paths;
 import java.util.List;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -117,6 +118,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
                 StorageMetadata.build(storage));
         ingestServiceTest.sendIngestRequestEvent(sip, mtd);
     }
+
 
 
 }

@@ -18,25 +18,21 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
+import java.util.List;
+import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * @author Léo Mieulet
  */
 public interface IRequestService {
-
-    void handleRemoteRequestDenied(Set<RequestInfo> requests);
 
     void handleRemoteStoreError(Set<RequestInfo> requests);
 
@@ -65,4 +61,20 @@ public interface IRequestService {
      * @param aipsRelatedToSip
      */
     void deleteAllByAip(Set<AIPEntity> aipsRelatedToSip);
+
+
+    /**
+     * Save provided requests into the repository
+     * If requests cannot be run right now, their status will change to pending
+     * @param requests of the same type. Can concern several sessions
+     */
+    void scheduleRequests(List<AbstractRequest> requests);
+
+    /**
+     * Save provided request into the repository
+     * If the request cannot be run right now, the request status will change to pending
+     * @param request the request to save
+     * @return
+     */
+    AbstractRequest scheduleRequest(AbstractRequest request);
 }

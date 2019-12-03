@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.service.aip;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
@@ -32,9 +33,21 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
 import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 
 /**
  * AIP Service interface. Service to handle business around {@link AIPEntity}s
@@ -58,10 +71,15 @@ public interface IAIPService {
     String scheduleAIPEntityDeletion(String sipId);
 
     /**
-     * Create an AIPUpdatesCreatorRequest and
-     * schedule a job to select all AIPs matching provided criteria and save the associated task to run with
+     * Save an AIPUpdatesCreatorRequest and try to schedule it in a job
+     * @param params the AIPUpdateParametersDto payload
      */
-    void scheduleAIPEntityUpdate(AIPUpdateParametersDto params);
+    void registerAIPEntityUpdate(AIPUpdateParametersDto params);
+
+    /**
+     * Try to run the AIPUpdate request in a job
+     */
+    void scheduleAIPEntityUpdate(AIPUpdatesCreatorRequest request);
 
     /**
      * Remove all {@link AIPEntity} linked to an {@link SIPEntity#getSipId()}
@@ -85,12 +103,14 @@ public interface IAIPService {
      * @throws NoSuchAlgorithmException
      * @throws IOException
      */
-    public String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException;
+    String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException;
 
     /**
      * Retrieve all {@link AIPEntity}s matching parameters.
      */
     Page<AIPEntity> search(SearchAIPsParameters filters, Pageable pageable);
+
+    Page<AIPEntityLight> searchLight(SearchAIPsParameters filters, Pageable pageable);
 
     /**
      * Compute the checksum of the AIP and save it
@@ -139,4 +159,5 @@ public interface IAIPService {
      * @return
      */
     Collection<AIPEntity> getAips(Collection<String> aipIds);
+
 }

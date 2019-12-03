@@ -97,8 +97,9 @@ public class AIPStoreMetaDataRequest extends AbstractRequest {
     public static AIPStoreMetaDataRequest build(AIPEntity aip, Set<StoreLocation> storeLocations,
             boolean removeCurrentMetaData, boolean computeChecksum) {
         AIPStoreMetaDataRequest smdr = new AIPStoreMetaDataRequest();
-        smdr.setState(InternalRequestState.CREATED);
+        smdr.setState(InternalRequestState.TO_SCHEDULE);
         smdr.setAip(aip);
+        smdr.setDtype(RequestTypeConstant.STORE_METADATA_VALUE);
         smdr.setSessionOwner(aip.getSessionOwner());
         smdr.setSession(aip.getSession());
         smdr.setProviderId(aip.getProviderId());

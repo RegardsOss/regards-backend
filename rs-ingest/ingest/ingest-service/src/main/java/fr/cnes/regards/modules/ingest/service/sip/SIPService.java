@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip;
 
+import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,6 +74,9 @@ public class SIPService implements ISIPService {
     @Autowired
     private IAIPService aipService;
 
+    @Autowired
+    private IRequestService requestService;
+
     @Override
     public Page<SIPEntity> search(SearchSIPsParameters params, Pageable page) {
         return sipRepository.loadAll(SIPEntitySpecifications
@@ -101,7 +105,7 @@ public class SIPService implements ISIPService {
             String deleteRequestId = aipService.scheduleAIPEntityDeletion(sipEntity.getSipId());
             // Save the request id sent to storage
             StorageDeletionRequest sdr = StorageDeletionRequest.build(deleteRequestId, sipEntity, deletionMode);
-            storageDeletionRequestRepo.save(sdr);
+            requestService.scheduleRequest(sdr);
         } else {
             aipService.processDeletion(sipEntity.getSipId(), deletionMode == SessionDeletionMode.IRREVOCABLY);
             processDeletion(sipEntity.getSipId(), deletionMode == SessionDeletionMode.IRREVOCABLY);

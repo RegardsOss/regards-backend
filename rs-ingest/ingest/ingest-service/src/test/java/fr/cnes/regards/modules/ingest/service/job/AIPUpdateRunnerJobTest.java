@@ -142,6 +142,8 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         publishSIPEvent(create("5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        // Wait STORE_META request over
+        ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000);
     }
 
     /**
@@ -203,7 +205,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
     public void testUpdateJob() throws ModuleException {
         storageClient.setBehavior(true, true);
         initData();
-        aipService.scheduleAIPEntityUpdate(AIPUpdateParametersDto
+        aipService.registerAIPEntityUpdate(AIPUpdateParametersDto
                 .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0), TAG_2,
                        TAG_3, CATEGORIES_2, CATEGORIES_0, Lists.newArrayList(STORAGE_3)));
         long nbSipConcerned = 2;

@@ -16,27 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.request;
+package fr.cnes.regards.modules.ingest.domain.aip;
 
-public enum InternalRequestState {
-    /**
-     * When the request is not scheduled yet
-     */
-    TO_SCHEDULE,
-    /**
-     * When the request is ready to be processed
-     */
-    CREATED,
-    /**
-     * When the request cannot be processed for now
-     */
-    BLOCKED,
-    /**
-     * When the request is running
-     */
-    RUNNING,
-    /**
-     * When the request stopped with an error
-     */
-    ERROR,
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+/**
+ * Light version of {@link AIPEntity}. Does not contains SIP information.
+ *
+ * @author Sébastien Binda
+ */
+@Entity
+@Table(name = "t_aip")
+public class AIPEntityLight extends AbstractAIPEntity {
+
 }
