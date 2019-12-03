@@ -715,9 +715,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                      e.getMessage());
                     }
                 }
-                nextPath = filePaths.hasNext();
             } catch (Exception e) { // NOSONAR
                 LOGGER.error("Error parsing file. {}", e.getMessage());
+            } finally {
+                nextPath = filePaths.hasNext();
             }
         }
         return RegisterFilesResponse.build(countRegistered, lastUpdateDate, filePaths.hasNext());
