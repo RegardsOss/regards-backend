@@ -176,11 +176,11 @@ public class PluginService implements IPluginService {
         }
 
         StringBuilder msg = new StringBuilder("Cannot save plugin configuration");
-        PluginConfiguration pluginConfInDb = repos.findOneByLabel(plgConf.getLabel());
-        if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), plgConf.getId()) && pluginConfInDb
-                .getLabel().equals(plgConf.getLabel())) {
-            msg.append(String.format(". A plugin configuration with same label (%s) already exists.",
-                                     plgConf.getLabel()));
+        PluginConfiguration pluginConfInDb = repos.findCompleteByBusinessId(plgConf.getBusinessId());
+        if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), plgConf.getId())
+                && pluginConfInDb.getBusinessId().equals(plgConf.getBusinessId())) {
+            msg.append(String.format(". A plugin configuration with same businessId (%s) already exists.",
+                                     plgConf.getBusinessId()));
             throw new EntityInvalidException(msg.toString());
         }
 
@@ -272,10 +272,8 @@ public class PluginService implements IPluginService {
                     if (!conf.getId().equals(plgConf.getId()) && conf.isActive() && !Collections
                             .disjoint(conf.getInterfaceNames(), uniqueActiveConfInterfaces)) {
                         conf.setIsActive(false);
-                        LOGGER.info(
-                                "As only one active configuration is allowed, the plugin {} is disabled. The new active plugin is {}",
-                                conf.getLabel(),
-                                plgConf.getLabel());
+                        LOGGER.info("As only one active configuration is allowed, the plugin <{} bId={}> is disabled. The new active plugin is <{} bId={}>",
+                                    conf.getLabel(), conf.getBusinessId(), plgConf.getLabel(), plgConf.getBusinessId());
                         updatePluginConfiguration(conf);
                     }
                 }
