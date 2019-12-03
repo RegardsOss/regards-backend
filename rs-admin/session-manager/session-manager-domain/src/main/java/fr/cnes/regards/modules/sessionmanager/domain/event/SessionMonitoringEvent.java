@@ -53,16 +53,31 @@ public class SessionMonitoringEvent implements ISubscribable {
      */
     Object value;
 
+    private boolean global = false;
+
     public static SessionMonitoringEvent build(String source, String name, SessionNotificationState state, String step, SessionNotificationOperator operator, String property, String value) {
         SessionMonitoringEvent sessionMonitoringEvent = build(source, name, state, step, operator, property);
         sessionMonitoringEvent.setValue(value);
         return sessionMonitoringEvent;
     }
 
+    public static SessionMonitoringEvent buildGlobal(SessionNotificationState state, String step, SessionNotificationOperator operator, String property, String value) {
+        SessionMonitoringEvent sessionMonitoringEvent = build(null, null, state, step, operator, property);
+        sessionMonitoringEvent.setValue(value);
+        sessionMonitoringEvent.setGlobal(true);
+        return sessionMonitoringEvent;
+    }
 
     public static SessionMonitoringEvent build(String source, String name, SessionNotificationState state, String step, SessionNotificationOperator operator, String property, long value) {
         SessionMonitoringEvent sessionMonitoringEvent = build(source, name, state, step, operator, property);
         sessionMonitoringEvent.setValue(value);
+        return sessionMonitoringEvent;
+    }
+
+    public static SessionMonitoringEvent buildGlobal(SessionNotificationState state, String step, SessionNotificationOperator operator, String property, long value) {
+        SessionMonitoringEvent sessionMonitoringEvent = build(null, null, state, step, operator, property);
+        sessionMonitoringEvent.setValue(value);
+        sessionMonitoringEvent.setGlobal(true);
         return sessionMonitoringEvent;
     }
 
@@ -131,5 +146,13 @@ public class SessionMonitoringEvent implements ISubscribable {
 
     public void setValue(Object value) {
         this.value = value;
+    }
+
+    public boolean isGlobal() {
+        return global;
+    }
+
+    public void setGlobal(boolean global) {
+        this.global = global;
     }
 }
