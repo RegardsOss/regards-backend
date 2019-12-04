@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
+import fr.cnes.regards.modules.acquisition.domain.ProductsPage;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
@@ -239,14 +240,15 @@ public interface IProductService {
 
     /**
      * Manage product state of updated products and schedule them for SIP generation as soon as possible
+     * @return Number of scheduled products
      */
-    void manageUpdatedProducts(AcquisitionProcessingChain processingChain);
+    long manageUpdatedProducts(AcquisitionProcessingChain processingChain);
 
     /**
      * Same action as {@link #manageUpdatedProducts(AcquisitionProcessingChain)} but in a new transaction and by page
      * @return whether there is a product page remaining to managed
      */
-    boolean manageUpdatedProductsByPage(AcquisitionProcessingChain processingChain);
+    ProductsPage manageUpdatedProductsByPage(AcquisitionProcessingChain processingChain);
 
     /**
      * Save success and errors products in DB and submit success ones to ingest microservice for ingestion

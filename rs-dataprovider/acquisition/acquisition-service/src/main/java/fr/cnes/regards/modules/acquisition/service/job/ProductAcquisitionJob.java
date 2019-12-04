@@ -89,7 +89,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-
+        long productsScheduled = 0L;
         try {
             sessionNotifier.notifyStartingChain(processingChain.getLabel(), session);
             // Trying to restart products that fail during SIP generation
@@ -108,13 +108,15 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             // Third step : compute new product state for already completed or finished products and schedule SIP generation.
             // Doing this in a third step and not within the second one allows us to
             // schedule update products only once for SIP generation
-            productService.manageUpdatedProducts(processingChain);
+            productsScheduled = productService.manageUpdatedProducts(processingChain);
         } catch (ModuleException e) {
-            // We stop the chain here, the process may be broken
-            sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
             logger.error("Business error", e);
             throw new JobRuntimeException(e);
         } finally {
+            // If no products has been scheduled for generation. The chain is over.
+            if (productsScheduled == 0) {
+                sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
+            }
             // Job is terminated ... release processing chain
             processingService.unlockChain(processingChain.getId());
         }
