@@ -18,6 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.session;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -26,19 +33,14 @@ import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
 import fr.cnes.regards.modules.sessionmanager.domain.event.DeleteSessionEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
 
 /**
  * Handler to remove SIP related to a session
  * @author Léo Mieulet
  */
 @Component
-public class DeleteSessionEventHandler implements ApplicationListener<ApplicationReadyEvent>, IHandler<DeleteSessionEvent> {
+public class DeleteSessionEventHandler
+        implements ApplicationListener<ApplicationReadyEvent>, IHandler<DeleteSessionEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeleteSessionEventHandler.class);
 
@@ -59,13 +61,13 @@ public class DeleteSessionEventHandler implements ApplicationListener<Applicatio
     @Override
     public void handle(TenantWrapper<DeleteSessionEvent> wrapper) {
         DeleteSessionEvent event = wrapper.getContent();
-        LOGGER.debug("Event receive to program the deletion of all SIP from session {} {}", event.getSource(),
-                event.getName());
+        LOGGER.info("Event receive to program the deletion of all SIP from session {} {}", event.getSource(),
+                    event.getName());
         // Set working tenant
         runtimeTenantResolver.forceTenant(wrapper.getTenant());
         // Run a SessionDeletionJob
         deletionService.registerOAISDeletionRequest(OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY)
-            .withSessionOwner(event.getSource()).withSession(event.getName()));
+                .withSessionOwner(event.getSource()).withSession(event.getName()));
     }
 
 }
