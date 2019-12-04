@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -104,23 +107,16 @@ public class SessionService implements ISessionService {
     @Override
     public void deleteSession(Long id, boolean force) throws ModuleException {
         Session s = getSession(id);
-        if ((s.getState() == SessionState.DELETED) && !force) {
-            String errorMessage = String.format("Can't delete the session %s %s as it's already marked as deleted",
-                                                s.getSource(), s.getName());
-            LOG.debug(errorMessage);
-            throw new EntityOperationForbiddenException(String.valueOf(s.getId()), Session.class, errorMessage);
-        }
-        // If the Session is already mark as deleted, don't send the notification
-        if (s.getState() != SessionState.DELETED) {
-            this.sendDeleteNotification(s);
-        }
+        this.sendDeleteNotification(s);
         if (force) {
             LOG.info("Delete definitely session {} {}", s.getSource(), s.getName());
             sessionRepository.delete(s);
         } else {
             LOG.info("Mark session {} {} as deleted", s.getSource(), s.getName());
-            s.setState(SessionState.DELETED);
-            updateSession(s);
+            if (s.getState() != SessionState.DELETED) {
+                s.setState(SessionState.DELETED);
+                updateSession(s);
+            }
         }
     }
 
@@ -129,89 +125,105 @@ public class SessionService implements ISessionService {
         sessionRepository.saveAll(mergeEvents(events));
     }
 
-    public Collection<Session> mergeEvents(Collection<SessionMonitoringEvent> events) {
+    private Collection<Session> mergeEvents(Collection<SessionMonitoringEvent> events) {
         Map<String, Session> sessionsToUpdate = new HashMap<>();
+        // events have to be dismantle to be used by handleEventMerge so code is the same in both cases
         for (SessionMonitoringEvent sessionMonitoringEvent : events) {
-            String sessionKey = sessionMonitoringEvent.getSource() + "__" + sessionMonitoringEvent.getName();
-            Session sessionToUpdate = sessionsToUpdate.get(sessionKey);
-            if (sessionToUpdate == null) {
-                Optional<Session> sessionOpt = sessionRepository
-                        .findOneBySourceAndName(sessionMonitoringEvent.getSource(), sessionMonitoringEvent.getName());
-                if (!sessionOpt.isPresent()) {
-                    sessionToUpdate = createSession(sessionMonitoringEvent.getName(),
-                                                    sessionMonitoringEvent.getSource());
-                } else {
-                    sessionToUpdate = sessionOpt.get();
+            if (sessionMonitoringEvent.isGlobal()) {
+                // alreadyCreated = session in DB + session already handled by mergeEvents
+                Set<Session> alreadyCreatedSessions = Sets.newHashSet(sessionRepository.findAll());
+                alreadyCreatedSessions.addAll(sessionsToUpdate.values());
+                for (Session session : alreadyCreatedSessions) {
+                    handleEventMerge(sessionsToUpdate, session.getSource(), session.getName(),
+                                     sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty(),
+                                     sessionMonitoringEvent.getOperator(), sessionMonitoringEvent.getValue(),
+                                     sessionMonitoringEvent.getState());
                 }
+            } else {
+                handleEventMerge(sessionsToUpdate, sessionMonitoringEvent.getSource(), sessionMonitoringEvent.getName(),
+                                 sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty(),
+                                 sessionMonitoringEvent.getOperator(), sessionMonitoringEvent.getValue(),
+                                 sessionMonitoringEvent.getState());
             }
-            sessionToUpdate.setLastUpdateDate(OffsetDateTime.now());
-            sessionsToUpdate.put(sessionKey, updateSessionProperty(sessionToUpdate, sessionMonitoringEvent));
         }
         return sessionsToUpdate.values();
     }
 
+    private void handleEventMerge(Map<String, Session> sessionsToUpdate, String source, String name, String step,
+            String property, SessionNotificationOperator operator, Object value, SessionNotificationState state) {
+        String sessionKey = source + "__" + name;
+        Session sessionToUpdate = sessionsToUpdate.get(sessionKey);
+        if (sessionToUpdate == null) {
+            Optional<Session> sessionOpt = sessionRepository.findOneBySourceAndName(source, name);
+            if (!sessionOpt.isPresent()) {
+                sessionToUpdate = createSession(name, source);
+            } else {
+                sessionToUpdate = sessionOpt.get();
+            }
+        }
+        sessionToUpdate.setLastUpdateDate(OffsetDateTime.now());
+        sessionsToUpdate.put(sessionKey,
+                             updateSessionProperty(sessionToUpdate, step, property, operator, value, state));
+    }
+
+    //FIXME: method only used by tests!!!!!!!!!!!!!!!!!!!!!!!!
     @Override
     public Session updateSessionProperty(SessionMonitoringEvent sessionMonitoringEvent) {
         // Retrieve the session to update or create it
         Optional<Session> sessionOpt = sessionRepository.findOneBySourceAndName(sessionMonitoringEvent.getSource(),
                                                                                 sessionMonitoringEvent.getName());
-        Session sessionToUpdate;
-        if (!sessionOpt.isPresent()) {
-            sessionToUpdate = createSession(sessionMonitoringEvent.getName(), sessionMonitoringEvent.getSource());
-        } else {
-            sessionToUpdate = sessionOpt.get();
-        }
-        return this.updateSession(updateSessionProperty(sessionToUpdate, sessionMonitoringEvent));
+        Session sessionToUpdate = sessionOpt
+                .orElseGet(() -> createSession(sessionMonitoringEvent.getName(), sessionMonitoringEvent.getSource()));
+        return this.updateSession(updateSessionProperty(sessionToUpdate, sessionMonitoringEvent.getStep(),
+                                                        sessionMonitoringEvent.getProperty(),
+                                                        sessionMonitoringEvent.getOperator(),
+                                                        sessionMonitoringEvent.getValue(),
+                                                        sessionMonitoringEvent.getState()));
     }
 
-    private Session updateSessionProperty(Session sessionToUpdate, SessionMonitoringEvent sessionMonitoringEvent) {
+    private Session updateSessionProperty(Session sessionToUpdate, String step, String property,
+            SessionNotificationOperator operator, Object value, SessionNotificationState state) {
         // Set the new value inside the map
-        boolean isKeyExisting = sessionToUpdate.isStepPropertyExisting(sessionMonitoringEvent.getStep(),
-                                                                       sessionMonitoringEvent.getProperty());
-        if (isKeyExisting && ((sessionMonitoringEvent.getOperator() == SessionNotificationOperator.INC)
-                || (sessionMonitoringEvent.getOperator() == SessionNotificationOperator.DEC))) {
+        boolean isKeyExisting = sessionToUpdate.isStepPropertyExisting(step, property);
+        if (isKeyExisting
+                && ((operator == SessionNotificationOperator.INC) || (operator == SessionNotificationOperator.DEC))) {
             // Handle mathematical operators
-            Object previousValueAsObject = sessionToUpdate.getStepPropertyValue(sessionMonitoringEvent.getStep(),
-                                                                                sessionMonitoringEvent.getProperty());
+            Object previousValueAsObject = sessionToUpdate.getStepPropertyValue(step, property);
             Long previousValue;
             // We support only numerical value, so we fallback previousValue to zero if its type is string
             if (previousValueAsObject instanceof String) {
                 previousValue = 0L;
             } else {
-                previousValue = getLongValue(sessionToUpdate.getStepPropertyValue(sessionMonitoringEvent.getStep(),
-                                                                                  sessionMonitoringEvent.getProperty()))
-                                                                                          .orElse(0L);
+                previousValue = getLongValue(previousValueAsObject).orElse(0L);
             }
             Long updatedValue;
-            switch (sessionMonitoringEvent.getOperator()) {
+            // Only possible operators are INC and DEC thanks to if condition
+            switch (operator) {
                 case INC:
-                    updatedValue = previousValue + getLongValue(sessionMonitoringEvent.getValue()).orElse(0L);
+                    updatedValue = previousValue + getLongValue(value).orElse(0L);
                     break;
                 case DEC:
                 default:
-                    updatedValue = previousValue - getLongValue(sessionMonitoringEvent.getValue()).orElse(0L);
+                    updatedValue = previousValue - getLongValue(value).orElse(0L);
+                    break;
             }
-            sessionToUpdate.setStepPropertyValue(sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty(),
-                                                 updatedValue);
+            sessionToUpdate.setStepPropertyValue(step, property, updatedValue);
         } else {
-            switch (sessionMonitoringEvent.getOperator()) {
+            switch (operator) {
                 case INC:
                 case REPLACE:
                     // Just use the provided value
-                    sessionToUpdate.setStepPropertyValue(sessionMonitoringEvent.getStep(),
-                                                         sessionMonitoringEvent.getProperty(),
-                                                         sessionMonitoringEvent.getValue());
+                    sessionToUpdate.setStepPropertyValue(step, property, value);
                     break;
                 case DEC:
                     // If we create using the DEC operator, we use the opposite value
-                    Long valueDec = -getLongValue(sessionMonitoringEvent.getValue()).orElse(0L);
-                    sessionToUpdate.setStepPropertyValue(sessionMonitoringEvent.getStep(),
-                                                         sessionMonitoringEvent.getProperty(), valueDec);
+                    Long valueDec = -getLongValue(value).orElse(0L);
+                    sessionToUpdate.setStepPropertyValue(step, property, valueDec);
                     break;
             }
         }
         // Update the state if we receive an error
-        if (sessionMonitoringEvent.getState() == SessionNotificationState.ERROR) {
+        if (state == SessionNotificationState.ERROR) {
             sessionToUpdate.setState(SessionState.ERROR);
         }
         return sessionToUpdate;
@@ -266,11 +278,11 @@ public class SessionService implements ISessionService {
     private Optional<Long> getLongValue(Object value) {
         Long longValue = null;
         if (value instanceof Integer) {
-            longValue = new Long((Integer) value);
+            longValue = ((Integer) value).longValue();
         } else if (value instanceof Long) {
-            longValue = new Long((Long) value);
+            longValue = ((Long) value);
         } else if (value instanceof Double) {
-            longValue = new Long(((Double) value).longValue());
+            longValue = ((Double) value).longValue();
         } else {
             LOG.error("Error getting long value from object", value);
         }

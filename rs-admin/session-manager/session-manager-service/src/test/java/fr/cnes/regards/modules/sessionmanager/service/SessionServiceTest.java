@@ -155,6 +155,19 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
                                                 SessionNotificationOperator.INC, "PROPERTY1", 2));
         events.add(SessionMonitoringEvent.build("source2", "name1", SessionNotificationState.OK, "STEP1",
                                                 SessionNotificationOperator.DEC, "PROPERTY1", 1));
+        // lets add a trap and put a REPLACE in the middle of everything
+        events.add(SessionMonitoringEvent.build("source2", "name1", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.REPLACE, "PROPERTY1", 9));
+        // for the trap to work properly, lets decrease so we get back to previous value:(2-1)=> 9-(2-1)=8 times
+        for(int i=0;i<8;i++) {
+            events.add(SessionMonitoringEvent.build("source2",
+                                                    "name1",
+                                                    SessionNotificationState.OK,
+                                                    "STEP1",
+                                                    SessionNotificationOperator.DEC,
+                                                    "PROPERTY1",
+                                                    1));
+        }
         events.add(SessionMonitoringEvent.build("source2", "name1", SessionNotificationState.OK, "STEP1",
                                                 SessionNotificationOperator.INC, "PROPERTY1", 1));
         sessionService.updateSessionProperties(events);
@@ -169,6 +182,64 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
         Assert.assertEquals(1L, session.get().getStepPropertyValue("STEP2", "PROPERTY1"));
         session = sessionRepository.findOneBySourceAndName("source2", "name1");
         Assert.assertTrue(session.isPresent());
+        Assert.assertEquals(2L, session.get().getStepPropertyValue("STEP1", "PROPERTY1"));
+
+    }
+
+
+    @Test
+    public void testUpdateSessionsPropertiesWithGlobalEvent() {
+        List<SessionMonitoringEvent> events = new ArrayList<>();
+        // source1/name1@step1.property1=2
+        // source1/name1@step1.property2=10
+        events.add(SessionMonitoringEvent.build("source1", "name1", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.INC, "PROPERTY1", 1));
+        events.add(SessionMonitoringEvent.build("source1", "name1", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.INC, "PROPERTY1", 1));
+        events.add(SessionMonitoringEvent.build("source1", "name1", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.INC, "PROPERTY2", 10));
+
+        // source1/name2@step1.property1=1
+        events.add(SessionMonitoringEvent.build("source1", "name2", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.INC, "PROPERTY1", 1));
+
+        // source1/name2@step2.property1=1
+        events.add(SessionMonitoringEvent.build("source1", "name2", SessionNotificationState.OK, "STEP2",
+                                                SessionNotificationOperator.INC, "PROPERTY1", 1));
+
+        // source2/name1@step1.property1=2
+        events.add(SessionMonitoringEvent.build("source2", "name1", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.INC, "PROPERTY1", 2));
+        events.add(SessionMonitoringEvent.build("source2", "name1", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.DEC, "PROPERTY1", 1));
+        // lets add a trap and put a REPLACE global in the middle of everything ONLY FOR STEP1, PROPERTY1 of all sessions
+        events.add(SessionMonitoringEvent.buildGlobal(SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.REPLACE, "PROPERTY1", 9));
+        // for the trap to work properly, lets decrease, only for source2/name1@step1.property1 so we get back to previous value:(2-1)=> 9-(2-1)=8 times
+        for(int i=0;i<8;i++) {
+            events.add(SessionMonitoringEvent.build("source2",
+                                                    "name1",
+                                                    SessionNotificationState.OK,
+                                                    "STEP1",
+                                                    SessionNotificationOperator.DEC,
+                                                    "PROPERTY1",
+                                                    1));
+        }
+        events.add(SessionMonitoringEvent.build("source2", "name1", SessionNotificationState.OK, "STEP1",
+                                                SessionNotificationOperator.INC, "PROPERTY1", 1));
+        sessionService.updateSessionProperties(events);
+
+        Optional<Session> session = sessionRepository.findOneBySourceAndName("source1", "name1");
+        Assert.assertTrue(session.isPresent());
+        Assert.assertEquals(9L, session.get().getStepPropertyValue("STEP1", "PROPERTY1"));
+        Assert.assertEquals(10L, session.get().getStepPropertyValue("STEP1", "PROPERTY2"));
+        session = sessionRepository.findOneBySourceAndName("source1", "name2");
+        Assert.assertTrue(session.isPresent());
+        Assert.assertEquals(9L, session.get().getStepPropertyValue("STEP1", "PROPERTY1"));
+        Assert.assertEquals(1L, session.get().getStepPropertyValue("STEP2", "PROPERTY1"));
+        session = sessionRepository.findOneBySourceAndName("source2", "name1");
+        Assert.assertTrue(session.isPresent());
+        // Thats 2 because we put every STEP1.PROPERTY1 to 9 but we decreased only on this session by 2 times before incrementing by 1
         Assert.assertEquals(2L, session.get().getStepPropertyValue("STEP1", "PROPERTY1"));
 
     }
