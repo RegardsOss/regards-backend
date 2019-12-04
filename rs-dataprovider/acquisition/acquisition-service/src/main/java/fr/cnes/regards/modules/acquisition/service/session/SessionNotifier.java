@@ -112,7 +112,7 @@ public class SessionNotifier {
         // Check if an event must be sent
         if (probe.shouldUpdateState()) {
             // First decrement the old state, if the product existed before
-            if (probe.getInitialProductState() != null) {
+            if ((probe.getInitialProductState() != null) && !probe.isSessionChanged()) {
                 notifyDecrementSession(probe.getIngestionChain(), probe.getSession(), probe.getInitialProductState());
             }
             // Increment the new state
