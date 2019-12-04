@@ -62,6 +62,7 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
+import fr.cnes.regards.modules.acquisition.domain.ProductsPage;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
@@ -651,19 +652,23 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public void manageUpdatedProducts(AcquisitionProcessingChain processingChain) {
-        while (!Thread.currentThread().isInterrupted() && self.manageUpdatedProductsByPage(processingChain)) {
-            // Works as long as there is at least one page left
-        }
+    public long manageUpdatedProducts(AcquisitionProcessingChain processingChain) {
+        ProductsPage page;
+        long totalProductScheduled = 0L;
+        do {
+            page = self.manageUpdatedProductsByPage(processingChain);
+            totalProductScheduled += page.getScheduled();
+        } while (!Thread.currentThread().isInterrupted() && page.hasNext());
         // Just trace interruption
         if (Thread.currentThread().isInterrupted()) {
             LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
         }
+        return totalProductScheduled;
     }
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public boolean manageUpdatedProductsByPage(AcquisitionProcessingChain processingChain) {
+    public ProductsPage manageUpdatedProductsByPage(AcquisitionProcessingChain processingChain) {
         // - Retrieve first page
         Page<Product> page = productRepository
                 .findByProcessingChainAndStateOrderByIdAsc(processingChain, ProductState.UPDATED,
@@ -687,7 +692,7 @@ public class ProductService implements IProductService {
         }
 
         productRepository.saveAll(page.getContent());
-        return page.hasNext();
+        return ProductsPage.build(page.hasNext(), productsToSchedule.size());
     }
 
     @Override
