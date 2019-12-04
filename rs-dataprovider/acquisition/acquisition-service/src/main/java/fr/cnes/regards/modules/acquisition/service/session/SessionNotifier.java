@@ -105,8 +105,9 @@ public class SessionNotifier {
     public void notifyProductStateChange(SessionChangingStateProbe probe) {
         // Handle session change
         if (probe.isSessionChanged()) {
-            notifyDecrementSession(probe.getIngestionChain(), probe.getInitialSession(),
-                                   getSessionProperty(probe.getInitialProductState()));
+            notifyProductChangeSession(probe.getIngestionChain(), probe.getInitialSession(),
+                                       probe.getInitialProductState(), probe.getInitialProductSIPState(),
+                                       probe.getInitalNbAcquiredFiles());
         }
         // Check if an event must be sent
         if (probe.shouldUpdateState()) {
@@ -131,9 +132,24 @@ public class SessionNotifier {
         }
     }
 
+    /**
+     * Notify session to remove a product and its files to the current session
+     * @param label
+     * @param product
+     */
+    public void notifyProductChangeSession(String sessionOwner, String session, ProductState productState,
+            ISipState sipState, long nbAcquiredFiles) {
+        // Decrement number of scanned files
+        notifyDecrementSession(sessionOwner, session, PROPERTY_FILES_ACQUIRED, SessionNotificationState.OK,
+                               nbAcquiredFiles);
+        // Decrement from product state
+        notifyDecrementSession(sessionOwner, session, getSessionProperty(productState), SessionNotificationState.OK, 1);
+        // Decrement from sip state
+        notifyDecrementSession(sessionOwner, session, getProductStateProperty(sipState), SessionNotificationState.OK,
+                               1);
+    }
+
     public void notifySipSubmitting(Product product) {
-        // Remove one generated
-        notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(), PROPERTY_GENERATED);
         // Add a submitting
         notifyIncrementSession(product.getProcessingChain().getLabel(), product.getSession(), product.getSipState());
     }
