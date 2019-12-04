@@ -387,10 +387,11 @@ public class ProductService implements IProductService {
 
         // Build all current products
         for (String productName : validFilesByProductName.keySet()) {
-
+            Collection<AcquisitionFile> productNewValidFiles = validFilesByProductName.get(productName);
             // Get product
             Product currentProduct = productMap.get(productName);
-            SessionChangingStateProbe changingStateProbe = SessionChangingStateProbe.build(currentProduct);
+            SessionChangingStateProbe changingStateProbe = SessionChangingStateProbe.build(currentProduct,
+                                                                                           productNewValidFiles);
             if (currentProduct == null) {
                 // It is a new Product, create it
                 currentProduct = new Product();
@@ -404,7 +405,7 @@ public class ProductService implements IProductService {
             }
 
             // Fulfill product with new valid acquired files
-            fulfillProduct(validFilesByProductName.get(productName), currentProduct);
+            fulfillProduct(productNewValidFiles, currentProduct);
 
             // Store for scheduling
             if ((currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED)

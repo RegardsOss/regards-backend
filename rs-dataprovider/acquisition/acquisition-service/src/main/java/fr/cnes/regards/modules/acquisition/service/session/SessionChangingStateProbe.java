@@ -1,7 +1,10 @@
 package fr.cnes.regards.modules.acquisition.service.session;
 
+import java.util.Collection;
+
 import com.google.common.base.Strings;
 
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
@@ -33,13 +36,19 @@ public class SessionChangingStateProbe {
         productSIPState = updatedProduct.getSipState();
     }
 
-    public static SessionChangingStateProbe build(Product initialProduct) {
+    public static SessionChangingStateProbe build(Product initialProduct, Collection<AcquisitionFile> newProductFiles) {
         SessionChangingStateProbe sessionChangingStateProbe = new SessionChangingStateProbe();
         if (initialProduct != null) {
             sessionChangingStateProbe.initialSession = initialProduct.getSession();
             sessionChangingStateProbe.initialProductState = initialProduct.getState();
             sessionChangingStateProbe.initialProductSIPState = initialProduct.getSipState();
-            sessionChangingStateProbe.setInitalNbAcquiredFiles(initialProduct.getAcquisitionFiles().size());
+            // In case product changed from session we have to calculate number of files scanned in the previous session.
+            // This count is used after to decrement files acquired in the old session.
+            long nbFilesInInitialProduct = 0L;
+            if (newProductFiles.size() < initialProduct.getAcquisitionFiles().size()) {
+                nbFilesInInitialProduct = initialProduct.getAcquisitionFiles().size() - newProductFiles.size();
+            }
+            sessionChangingStateProbe.setInitalNbAcquiredFiles(nbFilesInInitialProduct);
         }
         return sessionChangingStateProbe;
     }
