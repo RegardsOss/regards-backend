@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -74,8 +75,8 @@ public class SessionService implements ISessionService {
     @Transactional(readOnly = true)
     public Page<Session> retrieveSessions(String source, String name, OffsetDateTime from, OffsetDateTime to,
             SessionState state, boolean onlyLastSession, Pageable page) {
-        return sessionRepository
-                .findAll(SessionSpecifications.search(source, name, from, to, state, onlyLastSession), page);
+        return sessionRepository.findAll(SessionSpecifications.search(source, name, from, to, state, onlyLastSession),
+                                         page);
     }
 
     @Override
@@ -106,24 +107,16 @@ public class SessionService implements ISessionService {
     @Override
     public void deleteSession(Long id, boolean force) throws ModuleException {
         Session s = getSession(id);
-        if ((s.getState() == SessionState.DELETED) && !force) {
-            String errorMessage = String.format("Can't delete the session %s %s as it's already marked as deleted",
-                                                s.getSource(),
-                                                s.getName());
-            LOG.debug(errorMessage);
-            throw new EntityOperationForbiddenException(String.valueOf(s.getId()), Session.class, errorMessage);
-        }
-        // If the Session is already mark as deleted, don't send the notification
-        if (s.getState() != SessionState.DELETED) {
-            this.sendDeleteNotification(s);
-        }
+        this.sendDeleteNotification(s);
         if (force) {
             LOG.info("Delete definitely session {} {}", s.getSource(), s.getName());
             sessionRepository.delete(s);
         } else {
             LOG.info("Mark session {} {} as deleted", s.getSource(), s.getName());
-            s.setState(SessionState.DELETED);
-            updateSession(s);
+            if (s.getState() != SessionState.DELETED) {
+                s.setState(SessionState.DELETED);
+                updateSession(s);
+            }
         }
     }
 
@@ -141,23 +134,15 @@ public class SessionService implements ISessionService {
                 Set<Session> alreadyCreatedSessions = Sets.newHashSet(sessionRepository.findAll());
                 alreadyCreatedSessions.addAll(sessionsToUpdate.values());
                 for (Session session : alreadyCreatedSessions) {
-                    handleEventMerge(sessionsToUpdate,
-                                     session.getSource(),
-                                     session.getName(),
-                                     sessionMonitoringEvent.getStep(),
-                                     sessionMonitoringEvent.getProperty(),
-                                     sessionMonitoringEvent.getOperator(),
-                                     sessionMonitoringEvent.getValue(),
+                    handleEventMerge(sessionsToUpdate, session.getSource(), session.getName(),
+                                     sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty(),
+                                     sessionMonitoringEvent.getOperator(), sessionMonitoringEvent.getValue(),
                                      sessionMonitoringEvent.getState());
                 }
             } else {
-                handleEventMerge(sessionsToUpdate,
-                                 sessionMonitoringEvent.getSource(),
-                                 sessionMonitoringEvent.getName(),
-                                 sessionMonitoringEvent.getStep(),
-                                 sessionMonitoringEvent.getProperty(),
-                                 sessionMonitoringEvent.getOperator(),
-                                 sessionMonitoringEvent.getValue(),
+                handleEventMerge(sessionsToUpdate, sessionMonitoringEvent.getSource(), sessionMonitoringEvent.getName(),
+                                 sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty(),
+                                 sessionMonitoringEvent.getOperator(), sessionMonitoringEvent.getValue(),
                                  sessionMonitoringEvent.getState());
             }
         }
@@ -177,20 +162,19 @@ public class SessionService implements ISessionService {
             }
         }
         sessionToUpdate.setLastUpdateDate(OffsetDateTime.now());
-        sessionsToUpdate
-                .put(sessionKey, updateSessionProperty(sessionToUpdate, step, property, operator, value, state));
+        sessionsToUpdate.put(sessionKey,
+                             updateSessionProperty(sessionToUpdate, step, property, operator, value, state));
     }
 
     //FIXME: method only used by tests!!!!!!!!!!!!!!!!!!!!!!!!
     @Override
     public Session updateSessionProperty(SessionMonitoringEvent sessionMonitoringEvent) {
         // Retrieve the session to update or create it
-        Optional<Session> sessionOpt = sessionRepository
-                .findOneBySourceAndName(sessionMonitoringEvent.getSource(), sessionMonitoringEvent.getName());
+        Optional<Session> sessionOpt = sessionRepository.findOneBySourceAndName(sessionMonitoringEvent.getSource(),
+                                                                                sessionMonitoringEvent.getName());
         Session sessionToUpdate = sessionOpt
                 .orElseGet(() -> createSession(sessionMonitoringEvent.getName(), sessionMonitoringEvent.getSource()));
-        return this.updateSession(updateSessionProperty(sessionToUpdate,
-                                                        sessionMonitoringEvent.getStep(),
+        return this.updateSession(updateSessionProperty(sessionToUpdate, sessionMonitoringEvent.getStep(),
                                                         sessionMonitoringEvent.getProperty(),
                                                         sessionMonitoringEvent.getOperator(),
                                                         sessionMonitoringEvent.getValue(),
@@ -201,8 +185,8 @@ public class SessionService implements ISessionService {
             SessionNotificationOperator operator, Object value, SessionNotificationState state) {
         // Set the new value inside the map
         boolean isKeyExisting = sessionToUpdate.isStepPropertyExisting(step, property);
-        if (isKeyExisting && ((operator == SessionNotificationOperator.INC)
-                || (operator == SessionNotificationOperator.DEC))) {
+        if (isKeyExisting
+                && ((operator == SessionNotificationOperator.INC) || (operator == SessionNotificationOperator.DEC))) {
             // Handle mathematical operators
             Object previousValueAsObject = sessionToUpdate.getStepPropertyValue(step, property);
             Long previousValue;

@@ -18,19 +18,11 @@
  */
 package fr.cnes.regards.modules.sessionmanager.rest;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.sessionmanager.domain.Session;
-import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
-import fr.cnes.regards.modules.sessionmanager.domain.dto.UpdateSession;
-import fr.cnes.regards.modules.sessionmanager.service.ISessionService;
 import java.time.OffsetDateTime;
 import java.util.List;
+
 import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +40,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.sessionmanager.domain.Session;
+import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
+import fr.cnes.regards.modules.sessionmanager.domain.dto.UpdateSession;
+import fr.cnes.regards.modules.sessionmanager.service.ISessionService;
 
 /**
  * REST module controller for session
@@ -88,13 +91,16 @@ public class SessionController implements IResourceController<Session> {
     public ResponseEntity<PagedResources<Resource<Session>>> getSessions(
             @RequestParam(value = "source", required = false) String source,
             @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @RequestParam(value = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
+            @RequestParam(value = "from",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(value = "to",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
             @RequestParam(value = "state", required = false) SessionState state,
             @RequestParam(value = "onlyLastSession", required = false) boolean onlyLastSession,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<Session> assembler) {
-        Page<Session> sessions = sessionService.retrieveSessions(source, name, from, to, state, onlyLastSession, pageable);
+        Page<Session> sessions = sessionService.retrieveSessions(source, name, from, to, state, onlyLastSession,
+                                                                 pageable);
         PagedResources<Resource<Session>> resources = toPagedResources(sessions, assembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
@@ -107,7 +113,8 @@ public class SessionController implements IResourceController<Session> {
 
     @RequestMapping(method = RequestMethod.GET, value = SOURCE_MAPPING)
     @ResourceAccess(description = "Retrieve a subset of session sources")
-    public ResponseEntity<List<String>> getSessionSources(@RequestParam(value = "source", required = false) String source) {
+    public ResponseEntity<List<String>> getSessionSources(
+            @RequestParam(value = "source", required = false) String source) {
         return new ResponseEntity<>(sessionService.retrieveSessionSources(source), HttpStatus.OK);
     }
 
@@ -122,7 +129,8 @@ public class SessionController implements IResourceController<Session> {
     @RequestMapping(method = RequestMethod.DELETE, value = SESSION_MAPPING)
     @ResourceAccess(description = "Delete the session using its id")
     public ResponseEntity<Void> deleteSession(@PathVariable("session_id") Long id,
-            @RequestParam(value = "source", required = false, defaultValue = "false") boolean force) throws ModuleException {
+            @RequestParam(value = "force", required = false, defaultValue = "false") boolean force)
+            throws ModuleException {
         sessionService.deleteSession(id, force);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -132,11 +140,13 @@ public class SessionController implements IResourceController<Session> {
         final Resource<Session> resource = resourceService.toResource(element);
         if (element.getState() == SessionState.ERROR) {
             resourceService.addLink(resource, this.getClass(), "updateSession", LinkRels.UPDATE,
-                    MethodParamFactory.build(Long.class, element.getId()), MethodParamFactory.build(UpdateSession.class));
+                                    MethodParamFactory.build(Long.class, element.getId()),
+                                    MethodParamFactory.build(UpdateSession.class));
         }
         if (element.getState() != SessionState.DELETED) {
             resourceService.addLink(resource, this.getClass(), "deleteSession", LinkRels.DELETE,
-                    MethodParamFactory.build(Long.class, element.getId()), MethodParamFactory.build(boolean.class));
+                                    MethodParamFactory.build(Long.class, element.getId()),
+                                    MethodParamFactory.build(boolean.class));
         }
         return resource;
     }
