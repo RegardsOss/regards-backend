@@ -49,7 +49,7 @@ public class SessionChangingStateProbe {
     }
 
     public boolean shouldUpdateState() {
-        return isSessionChanged() || ((getInitialProductState() != getProductState()) && !(
+        return ((getInitialProductState() != getProductState()) && !(
         // Ignore FINISHED -> COMPLETED state change
         (getProductState() == ProductState.FINISHED) && (getInitialProductState() == ProductState.COMPLETED)));
     }
