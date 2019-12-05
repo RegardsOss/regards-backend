@@ -452,11 +452,21 @@ public class StorageLocationService {
     }
 
     private FileRequestInfoDTO toRequestInfosDto(FileStorageRequest request) {
-        return FileRequestInfoDTO.build(FileRequestType.STORAGE, request.getStatus(), request.getErrorCause());
+        String fileName = "";
+        if (request.getMetaInfo() != null) {
+            fileName = request.getMetaInfo().getFileName();
+        }
+        return FileRequestInfoDTO.build(fileName, FileRequestType.STORAGE, request.getStatus(),
+                                        request.getErrorCause());
     }
 
     private FileRequestInfoDTO toRequestInfosDto(FileDeletionRequest request) {
-        return FileRequestInfoDTO.build(FileRequestType.DELETION, request.getStatus(), request.getErrorCause());
+        String fileName = "";
+        if ((request.getFileReference() != null) && (request.getFileReference().getMetaInfo() != null)) {
+            fileName = request.getFileReference().getMetaInfo().getFileName();
+        }
+        return FileRequestInfoDTO.build(fileName, FileRequestType.DELETION, request.getStatus(),
+                                        request.getErrorCause());
     }
 
 }
