@@ -226,7 +226,7 @@ public interface IProductService {
     /**
      * Retry SIP generation jobs for products in {@link ProductSIPState#GENERATION_ERROR}
      */
-    boolean retrySIPGenerationByPage(AcquisitionProcessingChain processingChain);
+    boolean retrySIPGenerationByPage(AcquisitionProcessingChain processingChain, Optional<String> sessionToRetry);
 
     /**
      * Change sip states by acquisition chain

@@ -501,6 +501,8 @@ public class ProductService implements IProductService {
                     }
                     product.setLastPostProductionJobInfo(jobInfo);
                 }
+                // Notification must be before the state is changed as the notifier use the current
+                // state to decrement/increment session properties
                 sessionNotifier.notifyProductIngested(product);
                 product.setSipState(SIPState.INGESTED);
                 product.setIpId(info.getSipId());
@@ -528,11 +530,13 @@ public class ProductService implements IProductService {
                     errorMessage.append(error);
                     errorMessage.append("  \\n");
                 }
+                // Notification must be before the state is changed as the notifier use the current
+                // state to decrement/increment session properties
+                sessionNotifier.notifyProductIngestFailure(product);
                 product.setSipState(ProductSIPState.INGESTION_FAILED);
                 product.setIpId(info.getSipId());
                 product.setError(errorMessage.toString());
                 save(product);
-                sessionNotifier.notifyProductIngestFailure(product);
             } else {
                 LOGGER.warn("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider",
                             info.getSipId(), info.getProviderId());
@@ -626,13 +630,26 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public boolean retrySIPGenerationByPage(AcquisitionProcessingChain processingChain) {
+    public boolean retrySIPGenerationByPage(AcquisitionProcessingChain processingChain,
+            Optional<String> sessionToRetry) {
 
-        Page<Product> products = productRepository
-                .findByProcessingChainAndSipStateInOrderByIdAsc(processingChain,
-                                                                Arrays.asList(ProductSIPState.GENERATION_ERROR,
-                                                                              ProductSIPState.INGESTION_FAILED),
-                                                                PageRequest.of(0, AcquisitionProperties.WORKING_UNIT));
+        Page<Product> products;
+        if (!sessionToRetry.isPresent()) {
+            products = productRepository
+                    .findByProcessingChainAndSipStateInOrderByIdAsc(processingChain,
+                                                                    Arrays.asList(ProductSIPState.GENERATION_ERROR,
+                                                                                  ProductSIPState.INGESTION_FAILED),
+                                                                    PageRequest.of(0,
+                                                                                   AcquisitionProperties.WORKING_UNIT));
+        } else {
+            products = productRepository
+                    .findByProcessingChainAndSessionAndSipStateInOrderByIdAsc(processingChain, sessionToRetry
+                            .get(), Arrays.asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.INGESTION_FAILED),
+                                                                              PageRequest
+                                                                                      .of(0,
+                                                                                          AcquisitionProperties.WORKING_UNIT));
+        }
+
         // Schedule SIP generation
         if (products.hasContent()) {
             LOGGER.debug("Retrying SIP generation for {} product(s)", products.getContent().size());

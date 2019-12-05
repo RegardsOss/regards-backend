@@ -18,7 +18,27 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -42,23 +62,6 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * Launch a chain with very long plugin actions and stop it.
@@ -93,6 +96,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
     public void before() {
         pluginRepo.deleteAll();
     }
+
     /**
      * Create chain with slow SIP generation plugin
      */
@@ -115,7 +119,9 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS, PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))));
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
+                                        PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))));
 
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
@@ -147,7 +153,6 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
 
         // SIP post processing
         // Not required
-
 
         List<StorageMetadataProvider> storages = new ArrayList<>();
         storages.add(StorageMetadataProvider.build("AWS", "/path/to/file", new HashSet<>()));
@@ -188,7 +193,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                 .get("src", "test", "resources", "startstop", "fake").toAbsolutePath());
 
         // Start chain
-        processingService.startManualChain(processingChain.getId(), Optional.empty());
+        processingService.startManualChain(processingChain.getId(), Optional.empty(), false);
 
         // Check all products are registered
         long productCount;
@@ -197,7 +202,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
             Thread.sleep(1_000);
             loops--;
             productCount = productRepository.count();
-        } while (productCount < 100 && loops != 0);
+        } while ((productCount < 100) && (loops != 0));
 
         if (loops == 0) {
             Assert.fail();
@@ -211,7 +216,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
             loops--;
             runningGenerationJobs = jobInfoService.retrieveJobsCount(SIPGenerationJob.class.getName(),
                                                                      JobStatus.RUNNING);
-        } while (runningGenerationJobs < 1 && loops != 0);
+        } while ((runningGenerationJobs < 1) && (loops != 0));
 
         if (loops == 0) {
             Assert.fail();
@@ -230,7 +235,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                                                                       JobStatus.RUNNING);
             runningGenerationJobs = jobInfoService.retrieveJobsCount(SIPGenerationJob.class.getName(),
                                                                      JobStatus.RUNNING);
-        } while ((runningAcquisitionJobs != 0 || runningGenerationJobs != 0) && loops != 0);
+        } while (((runningAcquisitionJobs != 0) || (runningGenerationJobs != 0)) && (loops != 0));
 
         if (loops == 0) {
             Assert.fail();
@@ -241,7 +246,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
 
         // Restart chain verifying all re-run properly
         updateProcessingChain(processingChain.getId());
-        processingService.startManualChain(processingChain.getId(), Optional.empty());
+        processingService.startManualChain(processingChain.getId(), Optional.empty(), false);
 
         // At the end, all product must be valid
         loops = 100;
@@ -251,7 +256,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
             loops--;
             validProducts = productRepository
                     .countByProcessingChainAndSipStateIn(processingChain, Arrays.asList(ProductSIPState.SUBMITTED));
-        } while (validProducts < 100 && loops != 0);
+        } while ((validProducts < 100) && (loops != 0));
 
         if (loops == 0) {
             Assert.fail();

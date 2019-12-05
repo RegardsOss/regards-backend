@@ -88,6 +88,8 @@ public class AcquisitionProcessingChainController implements IResourceController
 
     public static final String START_MANUAL_CHAIN_PATH = CHAIN_PATH + "/start";
 
+    public static final String RELAUNCH_ERRORS_PATH = "/{chainName}/{session}/relaunch";
+
     public static final String STOP_CHAIN_PATH = CHAIN_PATH + "/stop";
 
     public static final String CHAIN_SESSION_PRODUCTS_PATH = "/{chainName}/products";
@@ -182,7 +184,7 @@ public class AcquisitionProcessingChainController implements IResourceController
     @ResourceAccess(description = "Start a manual chain", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<AcquisitionProcessingChain>> startManualChain(@PathVariable Long chainId,
             @RequestParam(name = "session", required = false) Optional<String> session) throws ModuleException {
-        return ResponseEntity.ok(toResource(processingService.startManualChain(chainId, session)));
+        return ResponseEntity.ok(toResource(processingService.startManualChain(chainId, session, false)));
     }
 
     @RequestMapping(method = RequestMethod.GET, value = STOP_CHAIN_PATH)
@@ -190,6 +192,14 @@ public class AcquisitionProcessingChainController implements IResourceController
     public ResponseEntity<Resource<AcquisitionProcessingChain>> stopChain(@PathVariable Long chainId)
             throws ModuleException {
         return ResponseEntity.ok(toResource(processingService.stopAndCleanChain(chainId)));
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = RELAUNCH_ERRORS_PATH)
+    @ResourceAccess(description = "Get a product", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Void> relaunchErrors(@PathVariable String chainName, @PathVariable String session)
+            throws ModuleException {
+        processingService.relaunchErrors(chainName, session);
+        return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = CHAIN_SESSION_PRODUCTS_PATH)

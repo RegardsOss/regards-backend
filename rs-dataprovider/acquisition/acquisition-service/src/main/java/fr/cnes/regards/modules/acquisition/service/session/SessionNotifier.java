@@ -197,19 +197,17 @@ public class SessionNotifier {
 
     public void notifyProductIngested(Product product) {
         // Remove a product in submitting
-        notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(),
-                               ProductSIPState.SUBMITTED);
+        notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(), product.getState());
         // Add to submitting
         notifyIncrementSession(product.getProcessingChain().getLabel(), product.getSession(), SIPState.INGESTED);
     }
 
     public void notifyProductIngestFailure(Product product) {
         // Remove a product in submitting
-        notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(),
-                               ProductSIPState.SUBMITTED);
+        notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(), product.getState());
         // Add to ingest failure
         notifyIncrementSessionWithError(product.getProcessingChain().getLabel(), product.getSession(),
-                                        product.getSipState());
+                                        ProductSIPState.INGESTION_FAILED);
     }
 
     public void notifyStartingChain(String sessionOwner, String session) {
