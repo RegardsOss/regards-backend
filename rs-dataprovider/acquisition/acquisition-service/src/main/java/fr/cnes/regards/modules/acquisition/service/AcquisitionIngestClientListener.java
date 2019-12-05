@@ -20,8 +20,6 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.Collection;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,8 +34,6 @@ import fr.cnes.regards.modules.ingest.client.RequestInfo;
 @Component
 @MultitenantTransactional
 public class AcquisitionIngestClientListener implements IIngestClientListener {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionIngestClientListener.class);
 
     @Autowired
     private IProductService productService;
