@@ -2,6 +2,8 @@ package fr.cnes.regards.modules.acquisition.service.session;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +40,8 @@ import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationSt
  */
 @Service
 public class SessionNotifier {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SessionNotifier.class);
 
     /**
      * The name of the property gathering all metadata about this processing step
@@ -107,7 +111,8 @@ public class SessionNotifier {
     public void notifyProductStateChange(SessionChangingStateProbe probe) {
         // Handle session change
         if (probe.isSessionChanged()) {
-            notifyProductChangeSession(probe.getIngestionChain(), probe.getInitialSession(), probe.getSession(),
+            notifyProductChangeSession(probe.getProductName(), probe.getInitialSessionOwner(),
+                                       probe.getInitialSession(), probe.getSessionOwner(), probe.getSession(),
                                        probe.getInitialProductState(), probe.getInitialProductSIPState(),
                                        probe.getInitalNbAcquiredFiles());
         }
@@ -139,25 +144,29 @@ public class SessionNotifier {
      * @param label
      * @param product
      */
-    public void notifyProductChangeSession(String sessionOwner, String session, String newSession,
-            ProductState productState, ISipState sipState, long nbAcquiredFiles) {
+    public void notifyProductChangeSession(String productName, String sessionOwner, String session,
+            String newSessionOwner, String newSession, ProductState productState, ISipState sipState,
+            long nbAcquiredFiles) {
         // Decrement number of scanned files
         if (nbAcquiredFiles > 0) {
             notifyDecrementSession(sessionOwner, session, PROPERTY_FILES_ACQUIRED, SessionNotificationState.OK,
                                    nbAcquiredFiles);
-            notifyIncrementSession(sessionOwner, newSession, PROPERTY_FILES_ACQUIRED, SessionNotificationState.OK,
+            notifyIncrementSession(newSessionOwner, newSession, PROPERTY_FILES_ACQUIRED, SessionNotificationState.OK,
                                    nbAcquiredFiles);
         }
         // Decrement from product state
-        Optional<String> prop = getSessionProperty(productState);
-        if (prop.isPresent()) {
-            notifyDecrementSession(sessionOwner, session, prop.get(), SessionNotificationState.OK, 1);
+        Optional<String> productStateProp = getSessionProperty(productState);
+        if (productStateProp.isPresent()) {
+            notifyDecrementSession(sessionOwner, session, productStateProp.get(), SessionNotificationState.OK, 1);
         }
         // Decrement from sip state
-        prop = getProductStateProperty(sipState);
-        if (prop.isPresent()) {
-            notifyDecrementSession(sessionOwner, session, prop.get(), SessionNotificationState.OK, 1);
+        Optional<String> sipStateProp = getProductStateProperty(sipState);
+        if (sipStateProp.isPresent()) {
+            notifyDecrementSession(sessionOwner, session, sipStateProp.get(), SessionNotificationState.OK, 1);
         }
+        LOGGER.info("Product {} changed from session {}:{} to session {}:{}. Nb Files switching={}. Old session decrement properties : {},{}",
+                    productName, sessionOwner, session, newSessionOwner, newSession, nbAcquiredFiles,
+                    productStateProp.orElse(""), sipStateProp.orElse(""));
     }
 
     public void notifySipSubmitting(Product product) {

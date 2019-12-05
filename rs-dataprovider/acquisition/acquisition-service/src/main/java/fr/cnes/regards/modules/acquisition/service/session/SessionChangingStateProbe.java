@@ -14,6 +14,10 @@ public class SessionChangingStateProbe {
     // Gathers info about initial product
     private String initialSession;
 
+    private String initialSessionOwner;
+
+    private String productName;
+
     private ProductState initialProductState;
 
     private ISipState initialProductSIPState;
@@ -25,6 +29,8 @@ public class SessionChangingStateProbe {
 
     private String session;
 
+    private String sessionOwner;
+
     private ProductState productState;
 
     private ISipState productSIPState;
@@ -32,6 +38,7 @@ public class SessionChangingStateProbe {
     public void addUpdatedProduct(Product updatedProduct) {
         ingestionChain = updatedProduct.getProcessingChain().getLabel();
         session = updatedProduct.getSession();
+        sessionOwner = updatedProduct.getProcessingChain().getLabel();
         productState = updatedProduct.getState();
         productSIPState = updatedProduct.getSipState();
     }
@@ -39,7 +46,9 @@ public class SessionChangingStateProbe {
     public static SessionChangingStateProbe build(Product initialProduct, Collection<AcquisitionFile> newProductFiles) {
         SessionChangingStateProbe sessionChangingStateProbe = new SessionChangingStateProbe();
         if (initialProduct != null) {
+            sessionChangingStateProbe.productName = initialProduct.getProductName();
             sessionChangingStateProbe.initialSession = initialProduct.getSession();
+            sessionChangingStateProbe.initialSessionOwner = initialProduct.getProcessingChain().getLabel();
             sessionChangingStateProbe.initialProductState = initialProduct.getState();
             sessionChangingStateProbe.initialProductSIPState = initialProduct.getSipState();
             // In case product changed from session we have to calculate number of files scanned in the previous session.
@@ -98,4 +107,17 @@ public class SessionChangingStateProbe {
     public void setInitalNbAcquiredFiles(long initalNbAcquiredFiles) {
         this.initalNbAcquiredFiles = initalNbAcquiredFiles;
     }
+
+    public String getInitialSessionOwner() {
+        return initialSessionOwner;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public String getSessionOwner() {
+        return sessionOwner;
+    }
+
 }
