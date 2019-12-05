@@ -118,6 +118,9 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     Page<Product> findByProcessingChainAndSipStateInOrderByIdAsc(AcquisitionProcessingChain processingChain,
             List<ProductSIPState> sipState, Pageable pageable);
 
+    Page<Product> findByProcessingChainAndSessionAndSipStateInOrderByIdAsc(AcquisitionProcessingChain processingChain,
+            String session, List<ProductSIPState> sipState, PageRequest pageable);
+
     /**
      * Find {@link Product} by state
      * @param sipState {@link ISipState}

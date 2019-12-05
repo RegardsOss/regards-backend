@@ -534,14 +534,14 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                              processingChain.getLabel());
             } else {
                 // Schedule job
-                scheduleProductAcquisitionJob(processingChain, Optional.empty());
+                scheduleProductAcquisitionJob(processingChain, Optional.empty(), false);
             }
         }
     }
 
     @Override
-    public AcquisitionProcessingChain startManualChain(Long processingChainId, Optional<String> session)
-            throws ModuleException {
+    public AcquisitionProcessingChain startManualChain(Long processingChainId, Optional<String> session,
+            boolean onlyErrors) throws ModuleException {
 
         // Load chain
         AcquisitionProcessingChain processingChain = getChain(processingChainId);
@@ -560,9 +560,25 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         // Schedule job
-        scheduleProductAcquisitionJob(processingChain, session);
+        scheduleProductAcquisitionJob(processingChain, session, onlyErrors);
 
         return processingChain;
+    }
+
+    @Override
+    public void relaunchErrors(String chainName, String session) throws ModuleException {
+        // Search for chain to relaunch
+        List<AcquisitionProcessingChain> chains = getChainsByLabel(chainName);
+        if (chains.size() == 1) {
+            AcquisitionProcessingChain chain = chains.get(0);
+            startManualChain(chain.getId(), Optional.of(session), true);
+        } else {
+            if (chains.isEmpty()) {
+                throw new ModuleException("Chain %s not found.");
+            } else {
+                throw new ModuleException("Chain label %s is associated to multiple chains.");
+            }
+        }
     }
 
     /**
@@ -570,7 +586,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
      * @param processingChain processing chain
      * @param session user defined session name
      */
-    private void scheduleProductAcquisitionJob(AcquisitionProcessingChain processingChain, Optional<String> session) {
+    private void scheduleProductAcquisitionJob(AcquisitionProcessingChain processingChain, Optional<String> session,
+            boolean onlyErrors) {
 
         // Mark processing chain as running
         lockChain(processingChain.getId());
@@ -584,7 +601,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         JobInfo jobInfo = new JobInfo(true);
         jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY.getPriority());
         jobInfo.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()),
-                              new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, sessionName));
+                              new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, sessionName),
+                              new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ONLY_ERRORS, onlyErrors));
         jobInfo.setClassName(ProductAcquisitionJob.class.getName());
         jobInfo.setOwner(authResolver.getUser());
 
@@ -846,8 +864,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
-    public void retrySIPGeneration(AcquisitionProcessingChain processingChain) {
-        while (!Thread.currentThread().isInterrupted() && productService.retrySIPGenerationByPage(processingChain)) {
+    public void retrySIPGeneration(AcquisitionProcessingChain processingChain, Optional<String> sessionToRetry) {
+        while (!Thread.currentThread().isInterrupted()
+                && productService.retrySIPGenerationByPage(processingChain, sessionToRetry)) {
             // Works as long as there is at least one page left
         }
     }
