@@ -54,7 +54,7 @@ public interface IRequestService {
      * @param pageable
      * @return a page of entities
      */
-    Page<RequestDto> searchRequests(SearchRequestsParameters filters, Pageable pageable) throws ModuleException;
+    Page<RequestDto> findRequests(SearchRequestsParameters filters, Pageable pageable) throws ModuleException;
 
     /**
      * Delete all requests linked to provided aips

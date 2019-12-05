@@ -154,7 +154,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
             @RequestBody SearchAIPsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AIPEntityLight> assembler) {
-        Page<AIPEntityLight> aips = aipService.searchLight(filters, pageable);
+        Page<AIPEntityLight> aips = aipService.findLightByFilters(filters, pageable);
         return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
     }
 
@@ -166,7 +166,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     @RequestMapping(value = TAG_SEARCH_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Search tags used by aips")
     public ResponseEntity<List<String>> retrieveAIPTags(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
-        List<String> aipTags = aipService.searchTags(filters);
+        List<String> aipTags = aipService.findTags(filters);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 
@@ -178,7 +178,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     @RequestMapping(value = STORAGE_SEARCH_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Search tags used by aips")
     public ResponseEntity<List<String>> retrieveAIPStorage(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
-        List<String> aipTags = aipService.searchStorages(filters);
+        List<String> aipTags = aipService.findStorages(filters);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 
@@ -190,7 +190,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     @RequestMapping(value = CATEGORIES_SEARCH_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Search categories used by aips")
     public ResponseEntity<List<String>> retrieveAIPCategories(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
-        List<String> aipTags = aipService.searchCategories(filters);
+        List<String> aipTags = aipService.findCategories(filters);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 

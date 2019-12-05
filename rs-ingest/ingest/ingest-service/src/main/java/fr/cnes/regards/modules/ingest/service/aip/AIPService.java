@@ -163,12 +163,12 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Page<AIPEntity> search(SearchAIPsParameters filters, Pageable pageable) {
+    public Page<AIPEntity> findByFilters(SearchAIPsParameters filters, Pageable pageable) {
         return aipRepository.findAll(AIPEntitySpecification.searchAll(filters, pageable), pageable);
     }
 
     @Override
-    public Page<AIPEntityLight> searchLight(SearchAIPsParameters filters, Pageable pageable) {
+    public Page<AIPEntityLight> findLightByFilters(SearchAIPsParameters filters, Pageable pageable) {
         LOGGER.debug("Searching AIPS with categories=[{}]...", String.join(",", filters.getCategories()));
         long start = System.currentTimeMillis();
         Page<AIPEntityLight> response = aipLigthRepository.findAll(AIPEntitySpecification.searchAll(filters, pageable),
@@ -178,17 +178,17 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public List<String> searchTags(SearchFacetsAIPsParameters filters) {
+    public List<String> findTags(SearchFacetsAIPsParameters filters) {
         return customAIPRepository.getDistinct(AIPQueryGenerator.searchAipTagsUsingSQL(filters));
     }
 
     @Override
-    public List<String> searchStorages(SearchFacetsAIPsParameters filters) {
+    public List<String> findStorages(SearchFacetsAIPsParameters filters) {
         return customAIPRepository.getDistinct(AIPQueryGenerator.searchAipStoragesUsingSQL(filters));
     }
 
     @Override
-    public List<String> searchCategories(SearchFacetsAIPsParameters filters) {
+    public List<String> findCategories(SearchFacetsAIPsParameters filters) {
         return customAIPRepository.getDistinct(AIPQueryGenerator.searchAipCategoriesUsingSQL(filters));
     }
 

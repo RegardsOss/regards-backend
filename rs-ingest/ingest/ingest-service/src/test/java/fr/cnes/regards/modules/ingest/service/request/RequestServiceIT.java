@@ -216,30 +216,30 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         initData();
         PageRequest pr = PageRequest.of(0, 100);
         Page<RequestDto> requests = requestService
-                .searchRequests(SearchRequestsParameters.build().withState(InternalRequestState.ERROR), pr);
+                .findRequests(SearchRequestsParameters.build().withState(InternalRequestState.ERROR), pr);
         Assert.assertEquals(6, requests.getTotalElements());
 
-        requests = requestService.searchRequests(SearchRequestsParameters.build()
+        requests = requestService.findRequests(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.INGEST).withState(InternalRequestState.ERROR), pr);
         Assert.assertEquals(1, requests.getTotalElements());
 
-        requests = requestService.searchRequests(SearchRequestsParameters.build()
+        requests = requestService.findRequests(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR).withState(InternalRequestState.ERROR), pr);
         Assert.assertEquals(1, requests.getTotalElements());
 
-        requests = requestService.searchRequests(SearchRequestsParameters.build()
+        requests = requestService.findRequests(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.OAIS_DELETION).withState(InternalRequestState.ERROR), pr);
         Assert.assertEquals(1, requests.getTotalElements());
 
-        requests = requestService.searchRequests(SearchRequestsParameters.build()
+        requests = requestService.findRequests(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.STORAGE_DELETION).withState(InternalRequestState.ERROR), pr);
         Assert.assertEquals(1, requests.getTotalElements());
 
-        requests = requestService.searchRequests(SearchRequestsParameters.build()
+        requests = requestService.findRequests(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.STORE_METADATA).withState(InternalRequestState.ERROR), pr);
         Assert.assertEquals(1, requests.getTotalElements());
 
-        requests = requestService.searchRequests(SearchRequestsParameters.build()
+        requests = requestService.findRequests(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.UPDATE).withState(InternalRequestState.ERROR), pr);
         Assert.assertEquals(1, requests.getTotalElements());
     }

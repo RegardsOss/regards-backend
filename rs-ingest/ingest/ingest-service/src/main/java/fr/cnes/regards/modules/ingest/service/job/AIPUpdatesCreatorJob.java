@@ -94,7 +94,7 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
                 pageRequest.next();
             }
             AIPUpdateParametersDto updateTask = request.getConfig();
-            aipsPage = aipRepository.search(updateTask.getCriteria(), pageRequest);
+            aipsPage = aipRepository.findByFilters(updateTask.getCriteria(), pageRequest);
             // Save number of pages to publish job advancement
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();

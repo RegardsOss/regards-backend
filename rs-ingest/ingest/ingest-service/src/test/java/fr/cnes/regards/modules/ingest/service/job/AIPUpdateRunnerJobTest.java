@@ -217,7 +217,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         Pageable pageRequest = PageRequest.of(0, 200);
 
         Page<AIPEntity> aips = aipService
-                .search(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
+                .findByFilters(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
                         pageRequest);
         List<AIPEntity> aipsContent = aips.getContent();
         for (AIPEntity aip : aipsContent) {
@@ -239,7 +239,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         initData();
 
         Page<AIPEntity> aips = aipService
-                .search(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
+                .findByFilters(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
                         PageRequest.of(0, 200));
         AIPEntity toUpdate = aips.getContent().get(0);
         String providerId = toUpdate.getProviderId();
@@ -265,7 +265,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         runAndWaitJob(Lists.newArrayList(updateJob));
 
         // Check that the new location is added to the AIP in DB.
-        aips = aipService.search(SearchAIPsParameters.build().withProviderId(providerId), PageRequest.of(0, 10));
+        aips = aipService.findByFilters(SearchAIPsParameters.build().withProviderId(providerId), PageRequest.of(0, 10));
         AIPEntity updateAIP = aips.getContent().get(0);
         Assert.assertEquals("After adding the new location the data object should contains two locations", 2, updateAIP
                 .getAip().getProperties().getContentInformations().get(0).getDataObject().getLocations().size());

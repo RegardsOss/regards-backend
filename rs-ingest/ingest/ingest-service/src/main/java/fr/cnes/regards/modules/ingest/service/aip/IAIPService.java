@@ -108,9 +108,9 @@ public interface IAIPService {
     /**
      * Retrieve all {@link AIPEntity}s matching parameters.
      */
-    Page<AIPEntity> search(SearchAIPsParameters filters, Pageable pageable);
+    Page<AIPEntity> findByFilters(SearchAIPsParameters filters, Pageable pageable);
 
-    Page<AIPEntityLight> searchLight(SearchAIPsParameters filters, Pageable pageable);
+    Page<AIPEntityLight> findLightByFilters(SearchAIPsParameters filters, Pageable pageable);
 
     /**
      * Compute the checksum of the AIP and save it
@@ -123,21 +123,21 @@ public interface IAIPService {
      * @param filters
      * @return list of tags
      */
-    List<String> searchTags(SearchFacetsAIPsParameters filters);
+    List<String> findTags(SearchFacetsAIPsParameters filters);
 
     /**
      * Retrieve all storages used by a set of AIPS matching provided filters
      * @param filters
      * @return list of storage business id
      */
-    List<String> searchStorages(SearchFacetsAIPsParameters filters);
+    List<String> findStorages(SearchFacetsAIPsParameters filters);
 
     /**
      * Retrieve all storages used by a set of AIPS matching provided filters
      * @param filters
      * @return list of storage business id
      */
-    List<String> searchCategories(SearchFacetsAIPsParameters filters);
+    List<String> findCategories(SearchFacetsAIPsParameters filters);
 
     /**
      * Search for a {@link AIPEntity} by its ipId

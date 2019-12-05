@@ -134,7 +134,7 @@ public class RequestService implements IRequestService {
     }
 
     @Override
-    public Page<RequestDto> searchRequests(SearchRequestsParameters filters, Pageable pageable) throws ModuleException {
+    public Page<RequestDto> findRequests(SearchRequestsParameters filters, Pageable pageable) throws ModuleException {
         List<RequestDto> dtoList = new ArrayList<>();
         Page<AbstractRequest> requests = abstractRequestRepository
                 .findAll(AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
