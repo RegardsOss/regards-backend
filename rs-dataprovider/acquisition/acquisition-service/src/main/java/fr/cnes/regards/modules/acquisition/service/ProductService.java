@@ -408,8 +408,7 @@ public class ProductService implements IProductService {
             Collection<AcquisitionFile> productNewValidFiles = validFilesByProductName.get(productName);
             // Get product
             Product currentProduct = productMap.get(productName);
-            SessionChangingStateProbe changingStateProbe = SessionChangingStateProbe.build(currentProduct,
-                                                                                           productNewValidFiles);
+            SessionChangingStateProbe changingStateProbe = SessionChangingStateProbe.build(currentProduct);
             if (currentProduct == null) {
                 // It is a new Product, create it
                 currentProduct = new Product();

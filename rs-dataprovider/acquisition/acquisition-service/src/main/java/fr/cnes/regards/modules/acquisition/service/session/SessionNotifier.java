@@ -18,26 +18,29 @@ import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOp
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
 
 /**
- * Service that sends notification to collect stats about acquisition
- * This service works by session owner, in this µservice it corresponds to the chain label,
+ * Service that sends notification to collect statistics about acquisition
+ * This service works by session owner, in this service it corresponds to the chain label,
  * and a session name, provided by the user when he starts manually the chain or when the chain starts automatically the current date
- *
+ * {@link SessionProductPropertyEnum}
  * <pre>
  *
- *         INCOMPLETE
- *             |
- *         GENERATED
- *             |
- *             | _________ INVALID
- *             |       GENERATION_ERROR
- *             |
- *         SUBMITTED
- *             | ______ INGESTION_FAILED
- *             |
- *          INGESTED
+ *         /    |         \
+ *        /     |          \
+ *       /      |           \
+ * INVALID  INCOMPLETE ___ COMPLETE
+ *                            |
+ *                            |
+ *                            |______ GENERATION_ERROR
+ *                            |
+ *                         GENERATED
+ *                            |
+ *                            | ______ INGESTION_FAILED
+ *                            |
+ *                         INGESTED
  *
  * </pre>
  * @author Léo Mieulet
+ * @author Sébastien Binda
  */
 @Service
 public class SessionNotifier {
