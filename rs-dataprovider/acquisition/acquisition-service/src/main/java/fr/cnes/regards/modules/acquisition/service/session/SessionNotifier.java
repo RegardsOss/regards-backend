@@ -24,14 +24,15 @@ import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationSt
  *
  * <pre>
  *
- *          INCOMPLETE
+ *         INCOMPLETE
  *             |
- *          GENERATED
+ *         GENERATED
  *             |
- *             | _________ INVALID or GENERATION_ERROR
+ *             | _________ INVALID
+ *             |       GENERATION_ERROR
  *             |
  *         SUBMITTED
- *             | _________ INGESTION_FAILED
+ *             | ______ INGESTION_FAILED
  *             |
  *          INGESTED
  *
@@ -63,52 +64,47 @@ public class SessionNotifier {
      */
     private static final String STATE_VALUE_STOP = "DONE";
 
-    /**
-     * Name of the property that collects number of products generated
-     */
-    public static final String PROPERTY_GENERATED = "generated";
-
-    /**
-     * Name of the property that collects number of products incomplete
-     */
-    public static final String PROPERTY_INCOMPLETE = "incomplete";
-
-    /**
-     * Name of the property that collects number of products invalid (too many files attached to a single product)
-     */
-    public static final String PROPERTY_INVALID = "invalid";
-
-    /**
-     * Name of the property that collects number of products generated
-     */
-    public static final String PROPERTY_GENERATION_ERROR = "generation_error";
-
-    /**
-     * Name of the property that collects number of products sent to INGEST
-     */
-    public static final String PROPERTY_SUBMITTED = "submitted";
-
-    public static final String PROPERTY_INGESTION_FAILED = "ingestion_failed";
-
-    public static final String PROPERTY_INGESTED = "ingested";
-
-    public static final String PROPERTY_FILES_ACQUIRED = "files_acquired";
-
     @Autowired
     private IPublisher publisher;
 
+    public void notifyChangeProductState(Product product, ProductState nextState) {
+        notifyChangeProductState(product, Optional.of(nextState), Optional.empty());
+    }
+
+    public void notifyChangeProductState(Product product, ISipState nextSipState) {
+        notifyChangeProductState(product, Optional.empty(), Optional.of(nextSipState));
+    }
+
+    public void notifyChangeProductState(Product product, Optional<ProductState> nextState,
+            Optional<ISipState> nexSipState) {
+        if (getProperty(product.getState(), product.getSipState()) != getProperty(nextState
+                .orElse(product.getState()), nexSipState.orElse(product.getSipState()))) {
+            notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(), product.getState(),
+                                   product.getSipState());
+            // Add to submitting
+            notifyIncrementSession(product.getProcessingChain().getLabel(), product.getSession(),
+                                   nextState.orElse(product.getState()), nexSipState.orElse(product.getSipState()));
+        }
+    }
+
+    public void notifyStartingChain(String sessionOwner, String session) {
+        publisher.publish(SessionMonitoringEvent.build(sessionOwner, session, SessionNotificationState.OK,
+                                                       GLOBAL_SESSION_STEP, SessionNotificationOperator.REPLACE,
+                                                       PROPERTY_STATE, STATE_VALUE_START));
+    }
+
     public void notifyProductDeleted(String sessionOwner, Product product) {
-        notifyDecrementSession(sessionOwner, product.getSession(), product.getState());
-        notifyDecrementSession(sessionOwner, product.getSession(), PROPERTY_FILES_ACQUIRED, SessionNotificationState.OK,
+        notifyDecrementSession(sessionOwner, product.getSession(), product.getState(), product.getSipState());
+        notifyDecrementSession(sessionOwner, product.getSession(), SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
                                product.getAcquisitionFiles().size());
     }
 
     public void notifyFileAcquired(String session, String sessionOwner, long nbFilesAcquired) {
-        notifyIncrementSession(sessionOwner, session, PROPERTY_FILES_ACQUIRED, SessionNotificationState.OK,
+        notifyIncrementSession(sessionOwner, session, SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
                                nbFilesAcquired);
     }
 
-    public void notifyProductStateChange(SessionChangingStateProbe probe) {
+    public void notifyChangeProductState(SessionChangingStateProbe probe) {
         // Handle session change
         if (probe.isSessionChanged()) {
             notifyProductChangeSession(probe.getProductName(), probe.getInitialSessionOwner(),
@@ -118,24 +114,13 @@ public class SessionNotifier {
         }
         // Check if an event must be sent
         if (probe.shouldUpdateState()) {
-            // First decrement the old state, if the product existed before
+            // First decrement the old state, if the product existed before and was in the same session
             if ((probe.getInitialProductState() != null) && !probe.isSessionChanged()) {
-                notifyDecrementSession(probe.getIngestionChain(), probe.getSession(), probe.getInitialProductState());
+                notifyDecrementSession(probe.getIngestionChain(), probe.getSession(), probe.getInitialProductState(),
+                                       probe.getInitialProductSIPState());
             }
-            // Increment the new state
-            switch (probe.getProductState()) {
-                case ACQUIRING:
-                case COMPLETED:
-                case FINISHED:
-                    notifyIncrementSession(probe.getIngestionChain(), probe.getSession(), probe.getProductState());
-                    break;
-                case INVALID:
-                    notifyIncrementSessionWithError(probe.getIngestionChain(), probe.getSession(),
-                                                    probe.getProductState());
-                    break;
-                case UPDATED:
-                    // Don't need to track such products
-            }
+            notifyIncrementSession(probe.getIngestionChain(), probe.getSession(), probe.getProductState(),
+                                   probe.getProductSIPState());
         }
     }
 
@@ -149,71 +134,16 @@ public class SessionNotifier {
             long nbAcquiredFiles) {
         // Decrement number of scanned files
         if (nbAcquiredFiles > 0) {
-            notifyDecrementSession(sessionOwner, session, PROPERTY_FILES_ACQUIRED, SessionNotificationState.OK,
+            notifyDecrementSession(sessionOwner, session, SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
                                    nbAcquiredFiles);
-            notifyIncrementSession(newSessionOwner, newSession, PROPERTY_FILES_ACQUIRED, SessionNotificationState.OK,
+            notifyIncrementSession(newSessionOwner, newSession, SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
                                    nbAcquiredFiles);
         }
-        // Decrement from product state
-        Optional<String> productStateProp = getSessionProperty(productState);
-        if (productStateProp.isPresent()) {
-            notifyDecrementSession(sessionOwner, session, productStateProp.get(), SessionNotificationState.OK, 1);
-        }
-        // Decrement from sip state
-        Optional<String> sipStateProp = getProductStateProperty(sipState);
-        if (sipStateProp.isPresent()) {
-            notifyDecrementSession(sessionOwner, session, sipStateProp.get(), SessionNotificationState.OK, 1);
-        }
-        LOGGER.info("Product {} changed from session {}:{} to session {}:{}. Nb Files switching={}. Old session decrement properties : {},{}",
+        // Decrement from product from previous session
+        notifyDecrementSession(sessionOwner, session, getProperty(productState, sipState), 1);
+        LOGGER.info("Product {} changed from session {}:{} to session {}:{}. Nb Files switching={}. Old session decrement property : {}",
                     productName, sessionOwner, session, newSessionOwner, newSession, nbAcquiredFiles,
-                    productStateProp.orElse(""), sipStateProp.orElse(""));
-    }
-
-    public void notifySipSubmitting(Product product) {
-        // Add a submitting
-        notifyIncrementSession(product.getProcessingChain().getLabel(), product.getSession(), product.getSipState());
-    }
-
-    public void notifySipGenerationFailed(Product product) {
-        // Remove one generated
-        notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(), PROPERTY_GENERATED);
-
-        // Add a submitting
-        notifyIncrementSessionWithError(product.getProcessingChain().getLabel(), product.getSession(),
-                                        product.getSipState());
-    }
-
-    public void notifyRelaunchSIPGeneration(Product product) {
-        // This method is intented to reset from INVALID or GENERATION_ERROR to GENERATED
-        if (product.getSipState() != ProductSIPState.NOT_SCHEDULED) {
-            // Remove a product from errors
-            notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(),
-                                   product.getSipState());
-            // Add to submitting
-            notifyIncrementSession(product.getProcessingChain().getLabel(), product.getSession(),
-                                   ProductState.COMPLETED);
-        }
-    }
-
-    public void notifyProductIngested(Product product) {
-        // Remove a product in submitting
-        notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(), product.getState());
-        // Add to submitting
-        notifyIncrementSession(product.getProcessingChain().getLabel(), product.getSession(), SIPState.INGESTED);
-    }
-
-    public void notifyProductIngestFailure(Product product) {
-        // Remove a product in submitting
-        notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(), product.getState());
-        // Add to ingest failure
-        notifyIncrementSessionWithError(product.getProcessingChain().getLabel(), product.getSession(),
-                                        ProductSIPState.INGESTION_FAILED);
-    }
-
-    public void notifyStartingChain(String sessionOwner, String session) {
-        publisher.publish(SessionMonitoringEvent.build(sessionOwner, session, SessionNotificationState.OK,
-                                                       GLOBAL_SESSION_STEP, SessionNotificationOperator.REPLACE,
-                                                       PROPERTY_STATE, STATE_VALUE_START));
+                    getProperty(productState, sipState).getValue());
     }
 
     public void notifyEndingChain(String sessionOwner, String session) {
@@ -222,100 +152,89 @@ public class SessionNotifier {
                                                        PROPERTY_STATE, STATE_VALUE_STOP));
     }
 
-    private void notifyIncrementSessionWithError(String sessionOwner, String session, ISipState sipState) {
-        Optional<String> prop = getProductStateProperty(sipState);
-        if (prop.isPresent()) {
-            notifyIncrementSession(sessionOwner, session, prop.get(), SessionNotificationState.ERROR, 1L);
-        }
+    private void notifyIncrementSession(String sessionOwner, String session, ProductState state, ISipState sipState) {
+        SessionProductPropertyEnum property = getProperty(state, sipState);
+        LOGGER.trace("Notify increment {}:{} property {}", state.toString(), sipState.toString(), property.getValue());
+        notifyIncrementSession(sessionOwner, session, property);
     }
 
-    private void notifyIncrementSession(String sessionOwner, String session, ISipState sipState) {
-        Optional<String> prop = getProductStateProperty(sipState);
-        if (prop.isPresent()) {
-            notifyIncrementSession(sessionOwner, session, prop.get());
-        }
+    private void notifyIncrementSession(String sessionOwner, String session, SessionProductPropertyEnum property) {
+        notifyIncrementSession(sessionOwner, session, property, 1L);
     }
 
-    private void notifyIncrementSessionWithError(String sessionOwner, String session, ProductState property) {
-        Optional<String> prop = getSessionProperty(property);
-        if (prop.isPresent()) {
-            notifyIncrementSession(sessionOwner, session, prop.get(), SessionNotificationState.ERROR, 1L);
-        }
-    }
-
-    private void notifyIncrementSession(String sessionOwner, String session, ProductState property) {
-        Optional<String> prop = getSessionProperty(property);
-        if (prop.isPresent()) {
-            notifyIncrementSession(sessionOwner, session, prop.get());
-        }
-    }
-
-    private void notifyIncrementSession(String sessionOwner, String session, String property) {
-        notifyIncrementSession(sessionOwner, session, property, SessionNotificationState.OK, 1L);
-    }
-
-    private void notifyIncrementSession(String sessionOwner, String session, String property,
-            SessionNotificationState notifState, long nbItems) {
+    private void notifyIncrementSession(String sessionOwner, String session, SessionProductPropertyEnum property,
+            long nbItems) {
         // Add one to the new state
-        SessionMonitoringEvent event = SessionMonitoringEvent.build(sessionOwner, session, notifState,
-                                                                    GLOBAL_SESSION_STEP,
-                                                                    SessionNotificationOperator.INC, property, nbItems);
+        SessionMonitoringEvent event = SessionMonitoringEvent
+                .build(sessionOwner, session, property.getState(), GLOBAL_SESSION_STEP, SessionNotificationOperator.INC,
+                       property.getValue(), nbItems);
         publisher.publish(event);
     }
 
-    private void notifyDecrementSession(String sessionOwner, String session, ISipState sipState) {
-        Optional<String> prop = getProductStateProperty(sipState);
-        if (prop.isPresent()) {
-            notifyDecrementSession(sessionOwner, session, prop.get());
-        }
+    private void notifyDecrementSession(String sessionOwner, String session, ProductState state, ISipState sipState) {
+        SessionProductPropertyEnum property = getProperty(state, sipState);
+        LOGGER.trace("Notify decrement {}:{} property {}", state.toString(), sipState.toString(), property.getValue());
+        notifyDecrementSession(sessionOwner, session, property);
     }
 
-    private void notifyDecrementSession(String sessionOwner, String session, ProductState property) {
-        Optional<String> prop = getSessionProperty(property);
-        if (prop.isPresent()) {
-            notifyDecrementSession(sessionOwner, session, prop.get());
-        }
+    private void notifyDecrementSession(String sessionOwner, String session, SessionProductPropertyEnum property) {
+        notifyDecrementSession(sessionOwner, session, property, 1L);
     }
 
-    private void notifyDecrementSession(String sessionOwner, String session, String property) {
-        notifyDecrementSession(sessionOwner, session, property, SessionNotificationState.OK, 1L);
-    }
-
-    private void notifyDecrementSession(String sessionOwner, String session, String property,
-            SessionNotificationState notifState, long nbItems) {
+    private void notifyDecrementSession(String sessionOwner, String session, SessionProductPropertyEnum property,
+            long nbItems) {
         // Add one to the new state
-        SessionMonitoringEvent event = SessionMonitoringEvent.build(sessionOwner, session, notifState,
-                                                                    GLOBAL_SESSION_STEP,
-                                                                    SessionNotificationOperator.DEC, property, nbItems);
+        SessionMonitoringEvent event = SessionMonitoringEvent
+                .build(sessionOwner, session, SessionNotificationState.OK, GLOBAL_SESSION_STEP,
+                       SessionNotificationOperator.DEC, property.getValue(), nbItems);
         publisher.publish(event);
     }
 
-    private Optional<String> getProductStateProperty(ISipState sipState) {
+    private SessionProductPropertyEnum getProperty(ProductState state, ISipState sipState) {
+        SessionProductPropertyEnum property = getProperty(state);
+        // If product is complete so check sip status
+        if (property == SessionProductPropertyEnum.PROPERTY_COMPLETED) {
+            Optional<SessionProductPropertyEnum> sipProp = getProperty(sipState);
+            if (sipProp.isPresent()) {
+                property = sipProp.get();
+            }
+        }
+        return property;
+    }
+
+    private Optional<SessionProductPropertyEnum> getProperty(ISipState sipState) {
+        Optional<SessionProductPropertyEnum> property = Optional.empty();
         if (sipState == ProductSIPState.SUBMITTED) {
-            return Optional.of(PROPERTY_SUBMITTED);
+            property = Optional.of(SessionProductPropertyEnum.PROPERTY_GENERATED);
         } else if (sipState == ProductSIPState.GENERATION_ERROR) {
-            return Optional.of(PROPERTY_GENERATION_ERROR);
+            property = Optional.of(SessionProductPropertyEnum.PROPERTY_GENERATION_ERROR);
         } else if (sipState == ProductSIPState.INGESTION_FAILED) {
-            return Optional.of(PROPERTY_INGESTION_FAILED);
+            property = Optional.of(SessionProductPropertyEnum.PROPERTY_INGESTION_FAILED);
         } else if (sipState == SIPState.INGESTED) {
-            return Optional.of(PROPERTY_INGESTED);
+            property = Optional.of(SessionProductPropertyEnum.PROPERTY_INGESTED);
         }
-        return Optional.empty();
+        return property;
     }
 
-    private Optional<String> getSessionProperty(ProductState state) {
+    private SessionProductPropertyEnum getProperty(ProductState state) {
+        SessionProductPropertyEnum property;
         switch (state) {
             case ACQUIRING:
-                return Optional.of(PROPERTY_INCOMPLETE);
+                property = SessionProductPropertyEnum.PROPERTY_INCOMPLETE;
+                break;
             case COMPLETED:
             case FINISHED:
-                return Optional.of(PROPERTY_GENERATED);
-            case INVALID:
-                return Optional.of(PROPERTY_INVALID);
             case UPDATED:
-                // Don't need to track such products
+                property = SessionProductPropertyEnum.PROPERTY_COMPLETED;
+                break;
+            case INVALID:
+                property = SessionProductPropertyEnum.PROPERTY_INVALID;
+                break;
+            default:
+                property = null;
+                break;
         }
-        return Optional.empty();
+        return property;
     }
 
 }
