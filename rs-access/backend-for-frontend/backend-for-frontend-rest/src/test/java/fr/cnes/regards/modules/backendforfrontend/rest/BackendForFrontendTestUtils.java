@@ -166,7 +166,7 @@ public class BackendForFrontendTestUtils {
 
     static {
         DOCUMENT_MODEL = new Model();
-        DOCUMENT_MODEL.setType(EntityType.DOCUMENT);
+        DOCUMENT_MODEL.setType(EntityType.DATA);
         DOCUMENT_MODEL.setName("documentModel");
     }
 
