@@ -458,8 +458,6 @@ public class CatalogSearchService implements ICatalogSearchService {
                 return (SimpleSearchKey<T>) Searches.onSingleEntity(EntityType.DATA);
             case DATASETS:
                 return (SimpleSearchKey<T>) Searches.onSingleEntity(EntityType.DATASET);
-            case DOCUMENTS:
-                return (SimpleSearchKey<T>) Searches.onSingleEntity(EntityType.DOCUMENT);
             default:
                 throw new UnsupportedOperationException("Unsupported search type : " + searchType);
         }
@@ -476,8 +474,6 @@ public class CatalogSearchService implements ICatalogSearchService {
                 return (SearchKey<S, R>) Searches.onSingleEntity(EntityType.DATA);
             case DATASETS:
                 return (SearchKey<S, R>) Searches.onSingleEntity(EntityType.DATASET);
-            case DOCUMENTS:
-                return (SearchKey<S, R>) Searches.onSingleEntity(EntityType.DOCUMENT);
             case DATAOBJECTS_RETURN_DATASETS:
                 return (SearchKey<S, R>) Searches.onSingleEntityReturningJoinEntity(EntityType.DATA,
                                                                                     EntityType.DATASET);

@@ -35,10 +35,6 @@ public enum SearchType {
      */
     COLLECTIONS,
     /**
-     * Document search
-     */
-    DOCUMENTS,
-    /**
      * Dataset search
      */
     DATASETS,

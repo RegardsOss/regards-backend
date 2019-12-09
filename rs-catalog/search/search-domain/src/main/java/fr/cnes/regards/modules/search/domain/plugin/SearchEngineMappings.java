@@ -91,18 +91,6 @@ public final class SearchEngineMappings {
 
     public static final String GET_COLLECTION_MAPPING = COLLECTIONS_MAPPING + URN_MAPPING;
 
-    // Document mappings
-
-    private static final String DOCUMENTS_MAPPING = "/documents";
-
-    public static final String SEARCH_DOCUMENTS_MAPPING = DOCUMENTS_MAPPING + SEARCH_MAPPING;
-
-    public static final String SEARCH_DOCUMENTS_MAPPING_EXTRA = SEARCH_DOCUMENTS_MAPPING + EXTRA_MAPPING;
-
-    public static final String SEARCH_DOCUMENTS_PROPERTY_VALUES = SEARCH_DOCUMENTS_MAPPING + PROPERTY_VALUES_MAPPING;
-
-    public static final String GET_DOCUMENT_MAPPING = DOCUMENTS_MAPPING + URN_MAPPING;
-
     // Dataset mapping
 
     private static final String DATASETS_MAPPING = "/datasets";

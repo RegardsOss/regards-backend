@@ -221,10 +221,6 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         relativeUrlPaths.add(SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING_EXTRA);
         relativeUrlPaths.add(SearchEngineMappings.GET_COLLECTION_MAPPING);
 
-        relativeUrlPaths.add(SearchEngineMappings.SEARCH_DOCUMENTS_MAPPING);
-        relativeUrlPaths.add(SearchEngineMappings.SEARCH_DOCUMENTS_MAPPING_EXTRA);
-        relativeUrlPaths.add(SearchEngineMappings.GET_DOCUMENT_MAPPING);
-
         relativeUrlPaths.add(SearchEngineMappings.SEARCH_DATASETS_MAPPING);
         relativeUrlPaths.add(SearchEngineMappings.SEARCH_DATASETS_MAPPING_EXTRA);
         relativeUrlPaths.add(SearchEngineMappings.GET_DATASET_MAPPING);

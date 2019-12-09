@@ -79,10 +79,6 @@ public class SearchEngineController {
 
     private static final String GET_COLLECTION_METHOD = "getCollection";
 
-    private static final String SEARCH_ALL_DOCUMENTS_METHOD = "searchAllDocuments";
-
-    private static final String GET_DOCUMENT_METHOD = "getDocument";
-
     private static final String SEARCH_ALL_DATASETS_METHOD = "searchAllDatasets";
 
     private static final String GET_DATASET_METHOD = "getDataset";
@@ -216,64 +212,6 @@ public class SearchEngineController {
             throws ModuleException {
         LOGGER.debug("Get collection \"{}\" delegated to engine \"{}\"", urn.toString(), engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.COLLECTIONS, engineType, headers, null, null)
-                .withUrn(urn));
-    }
-
-    // Document mappings
-
-    /**
-     * Search on all documents
-     */
-    @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DOCUMENTS_MAPPING)
-    @ResourceAccess(description = "Search engines dispatcher for document search", role = DefaultRole.PUBLIC)
-    public ResponseEntity<?> searchAllDocuments(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
-            Pageable pageable) throws ModuleException {
-        LOGGER.debug("Search on all documents delegated to engine \"{}\"", engineType);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.DOCUMENTS, engineType, headers, queryParams, pageable));
-    }
-
-    /**
-     * Extra mapping related to search on all documents request
-     */
-    @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DOCUMENTS_MAPPING_EXTRA)
-    @ResourceAccess(description = "Extra mapping for document search", role = DefaultRole.PUBLIC)
-    public ResponseEntity<?> searchAllDocumentsExtra(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @PathVariable(SearchEngineMappings.EXTRA) String extra, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
-        LOGGER.debug("Search all documents extra mapping \"{}\" handling delegated to engine \"{}\"", extra,
-                     engineType);
-        return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DOCUMENTS, engineType, headers, queryParams, pageable).withExtra(extra));
-    }
-
-    /**
-     * Search property values on all documents request
-     */
-    @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DOCUMENTS_PROPERTY_VALUES)
-    @ResourceAccess(description = "Get document property values", role = DefaultRole.PUBLIC)
-    public ResponseEntity<?> searchDocumentPropertyValues(
-            @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams,
-            @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount) throws ModuleException {
-        LOGGER.debug("Search document property values for \"{}\" delegated to engine \"{}\"", propertyName, engineType);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.DOCUMENTS, engineType, headers, queryParams, null)
-                        .withPropertyName(propertyName).withMaxCount(maxCount));
-    }
-
-    /**
-     * Get a document from its URN
-     */
-    @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_DOCUMENT_MAPPING)
-    @ResourceAccess(description = "Allows to retrieve a document", role = DefaultRole.PUBLIC)
-    public ResponseEntity<?> getDocument(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers)
-            throws ModuleException {
-        LOGGER.debug("Get document \"{}\" delegated to engine \"{}\"", urn.toString(), engineType);
-        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DOCUMENTS, engineType, headers, null, null)
                 .withUrn(urn));
     }
 
@@ -589,8 +527,6 @@ public class SearchEngineController {
                 }
             case DATASETS:
                 return SearchEngineController.SEARCH_ALL_DATASETS_METHOD;
-            case DOCUMENTS:
-                return SearchEngineController.SEARCH_ALL_DOCUMENTS_METHOD;
             case DATAOBJECTS_RETURN_DATASETS:
                 return SearchEngineController.SEARCH_DATAOBJECTS_DATASETS;
             default:
@@ -652,14 +588,7 @@ public class SearchEngineController {
                                                   MethodParamFactory.build(MultiValueMap.class),
                                                   MethodParamFactory.build(Pageable.class)));
                 break;
-            case DOCUMENT:
-                addLink(links,
-                        resourceService.buildLink(SearchEngineController.class,
-                                                  SearchEngineController.GET_DOCUMENT_METHOD, LinkRels.SELF,
-                                                  MethodParamFactory.build(String.class, context.getEngineType()),
-                                                  MethodParamFactory.build(UniformResourceName.class, id),
-                                                  MethodParamFactory.build(HttpHeaders.class)));
-                break;
+                
             default:
                 // Nothing to do
                 LOGGER.warn("Unknown entity type \"{}\"", entityType);

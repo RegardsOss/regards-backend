@@ -94,33 +94,6 @@ public interface ILegacySearchEngineClient {
     ResponseEntity<Resource<EntityFeature>> getCollection(
             @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
-    // Document mappings
-
-    /**
-     * Search on all documents
-     */
-    @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DOCUMENTS_MAPPING)
-    ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllDocuments(
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
-            @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER, required = false) String engineParserType,
-            @RequestParam(SearchEngineMappings.PAGE) int page, @RequestParam(SearchEngineMappings.SIZE) int size);
-
-    /**
-     * Search property values on all documents request
-     */
-    @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DOCUMENTS_PROPERTY_VALUES)
-    ResponseEntity<List<String>> searchDocumentPropertyValues(
-            @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams,
-            @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount);
-
-    /**
-     * Get a document from its URN
-     */
-    @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_DOCUMENT_MAPPING)
-    ResponseEntity<Resource<EntityFeature>> getDocument(
-            @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
-
     // Dataset mappings
 
     /**

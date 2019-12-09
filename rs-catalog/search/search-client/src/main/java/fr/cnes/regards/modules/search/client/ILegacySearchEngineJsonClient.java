@@ -57,6 +57,4 @@ public interface ILegacySearchEngineJsonClient {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASETS_MAPPING)
     ResponseEntity<JsonObject> searchDatasets(@RequestParam MultiValueMap<String, String> allParams);
 
-    @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DOCUMENTS_MAPPING)
-    ResponseEntity<JsonObject> searchDocuments(@RequestParam MultiValueMap<String, String> allParams);
 }
