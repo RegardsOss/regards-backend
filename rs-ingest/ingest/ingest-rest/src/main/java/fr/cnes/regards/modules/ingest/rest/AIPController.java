@@ -223,7 +223,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
         aipService.registerAIPEntityUpdate(params);
     }
 
-    @ResourceAccess(description = "Delete OAIS entities")
+    @ResourceAccess(description = "Delete OAIS entities", role = DefaultRole.ADMIN)
     @RequestMapping(value = OAIS_DELETE_PATH, method = RequestMethod.POST)
     public void delete(@Valid @RequestBody OAISDeletionPayloadDto deletionRequest) throws ModuleException {
         LOGGER.debug("Received request to delete OAIS entities");
