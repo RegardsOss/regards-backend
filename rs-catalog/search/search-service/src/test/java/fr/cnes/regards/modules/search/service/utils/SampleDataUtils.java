@@ -48,7 +48,6 @@ import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.entities.Document;
 import fr.cnes.regards.modules.dam.domain.models.Model;
 import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModelBuilder;
@@ -241,12 +240,6 @@ public class SampleDataUtils {
             .mock(PagedResourcesAssembler.class);
 
     /**
-     * A dummy assembler for documents
-     */
-    public static final PagedResourcesAssembler<Document> ASSEMBLER_DOCUMENT = Mockito
-            .mock(PagedResourcesAssembler.class);
-
-    /**
      * A dummy assembler for entities
      */
     public static final PagedResourcesAssembler<AbstractEntity> ASSEMBLER_ABSTRACT_ENTITIES = Mockito
@@ -261,8 +254,6 @@ public class SampleDataUtils {
 
     public static final Model DATASET_MODEL = Model.build("dataSetModel", "dataSetModel", EntityType.DATASET);
 
-    public static final Model DOCUMENT_MODEL = Model.build("docModel", "docModel", EntityType.DOCUMENT);
-
     /**
      * A dummy dataobject
      */
@@ -272,11 +263,6 @@ public class SampleDataUtils {
      * A dummy dataset
      */
     public static final Dataset DATASET = new Dataset(DATASET_MODEL, "tenant", "DS1", "DS1");
-
-    /**
-     * A dummy document
-     */
-    public static final Document DOCUMENT = new Document(DOCUMENT_MODEL, "tenant", "DOC1", "DOC1");
 
     /**
      * A dummy list of facets
@@ -369,11 +355,6 @@ public class SampleDataUtils {
      * A dummy urn for a dataset
      */
     public static final UniformResourceName URN_DATASET = new UniformResourceName();
-
-    /**
-     * A dummy urn for a document
-     */
-    public static final UniformResourceName URN_DOCUMENT = new UniformResourceName();
 
     /**
      * A sample email representing the current user
