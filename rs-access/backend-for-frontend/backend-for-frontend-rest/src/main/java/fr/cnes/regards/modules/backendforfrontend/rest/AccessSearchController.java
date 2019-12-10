@@ -78,8 +78,6 @@ public class AccessSearchController {
 
     public static final String DATAOBJECTS_DATASETS_SEARCH = "/dataobjects/datasets/search";
 
-    public static final String DOCUMENTS_SEARCH = "/documents/search";
-
     public static final String DATAOBJECTS_SEARCH = "/dataobjects/search";
 
     public static final String DATASETS_SEARCH = "/datasets/search";
@@ -196,27 +194,6 @@ public class AccessSearchController {
         // and which is not encoded by feign which is respecting RFC1738 on URI
         encodePlus(allParams);
         JsonObject entities = searchClient.searchDataobjectsReturnDatasets(allParams).getBody();
-        injectApplicableServices(entities);
-        return new ResponseEntity<>(entities, HttpStatus.OK);
-    }
-
-    /**
-     * Perform an OpenSearch request on documents.
-     * <p>
-     * Also injects the applicable Ui Services and Catalog Services.
-     * @param allParams all query parameters
-     * @return the search result with services injected
-     */
-    @RequestMapping(path = DOCUMENTS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(
-            description = "Perform an OpenSearch request on documents. Injects applicable UI Services and Catalog "
-                    + "Services.",
-            role = DefaultRole.PUBLIC)
-    public ResponseEntity<JsonObject> searchDocuments(@RequestParam final MultiValueMap<String, String> allParams) {
-        // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
-        // and which is not encoded by feign which is respecting RFC1738 on URI
-        encodePlus(allParams);
-        JsonObject entities = searchClient.searchDocuments(allParams).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
     }

@@ -96,18 +96,6 @@ public class AccessSearchControllerIT extends AbstractRegardsIT {
     @Test
     @Requirement("REGARDS_DSL_ACC_USE_700")
     @Purpose("Check the system can inject applicable services to the result of a search")
-    public void searchDocuments() {
-        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DOCUMENTS_SEARCH, customizer()
-                .expectStatusOk().expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 3)
-                .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services[*].content.label",
-                                                       Matchers.containsInAnyOrder("conf0", "conf1",
-                                                                                   "uiPluginConfiguration2")))
-                .addParameter("q", BackendForFrontendTestUtils.OPENSEARCH_QUERY), "Error searching datasets");
-    }
-
-    @Test
-    @Requirement("REGARDS_DSL_ACC_USE_700")
-    @Purpose("Check the system can inject applicable services to the result of a search")
     public void searchDataobjectsReturnDatasets() {
         // Define customizer
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
