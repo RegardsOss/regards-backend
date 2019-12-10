@@ -70,26 +70,6 @@ public class LegacySearchClientMock implements ILegacySearchEngineClient {
     }
 
     @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllDocuments(HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, String engineParserType, int page, int size) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<List<String>> searchDocumentPropertyValues(String propertyName, HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, int maxCount) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Resource<EntityFeature>> getDocument(UniformResourceName urn, HttpHeaders headers) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllDatasets(HttpHeaders headers,
             MultiValueMap<String, String> queryParams, String engineParserType, int page, int size) {
         // TODO Auto-generated method stub
