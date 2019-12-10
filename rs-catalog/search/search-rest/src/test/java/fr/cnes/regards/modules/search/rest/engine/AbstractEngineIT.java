@@ -60,12 +60,6 @@ import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.entities.attribute.builder.AttributeBuilder;
-import fr.cnes.regards.modules.dam.domain.models.Model;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
-import fr.cnes.regards.modules.dam.gson.entities.MultitenantFlattenedAttributeAdapterFactory;
-import fr.cnes.regards.modules.dam.service.models.IAttributeModelService;
-import fr.cnes.regards.modules.dam.service.models.ModelService;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.service.IIndexerService;
@@ -477,7 +471,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         planet.addProperty(IProperty.buildString(PLANET_TYPE, type));
         planet.addProperty(IProperty.buildInteger(PLANET_DIAMETER, diameter));
         planet.addProperty(IProperty.buildLong(PLANET_SUN_DISTANCE, sunDistance));
-        if (params != null && !params.isEmpty()) {
+        if ((params != null) && !params.isEmpty()) {
             planet.addProperty(IProperty.buildStringArray(PLANET_PARAMS, params.toArray(new String[params.size()])));
         }
         return planet;
