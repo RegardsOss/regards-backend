@@ -23,6 +23,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -67,6 +68,7 @@ import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storage.domain.plugin.FileRestorationWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.storage.domain.plugin.PreparationResponse;
 import fr.cnes.regards.modules.storage.service.JobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
@@ -373,9 +375,14 @@ public class FileCacheRequestService {
             try {
                 PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
                 IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
-                Collection<FileRestorationWorkingSubset> workingSubSets = storagePlugin.prepareForRestoration(requests);
-                for (FileRestorationWorkingSubset ws : workingSubSets) {
+                PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> response = storagePlugin
+                        .prepareForRestoration(requests);
+                for (FileRestorationWorkingSubset ws : response.getWorkingSubsets()) {
                     jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId()));
+                }
+                // Handle errors
+                for (Entry<FileCacheRequest, String> error : response.getPreparationErrors().entrySet()) {
+                    this.handleStorageNotAvailable(error.getKey(), Optional.ofNullable(error.getValue()));
                 }
             } catch (ModuleException | NotAvailablePluginConfigurationException e) {
                 LOGGER.error(e.getMessage(), e);
@@ -437,7 +444,7 @@ public class FileCacheRequestService {
      * @param fileRefRequests
      */
     private void handleStorageNotAvailable(Collection<FileCacheRequest> fileRefRequests) {
-        fileRefRequests.forEach(this::handleStorageNotAvailable);
+        fileRefRequests.forEach((r) -> this.handleStorageNotAvailable(r, Optional.empty()));
     }
 
     /**
@@ -448,11 +455,11 @@ public class FileCacheRequestService {
      * </ul>
      * @param request
      */
-    private void handleStorageNotAvailable(FileCacheRequest request) {
+    private void handleStorageNotAvailable(FileCacheRequest request, Optional<String> errorCause) {
         // The storage destination is unknown, we can already set the request in error status
-        String message = String
+        String message = errorCause.orElse(String
                 .format("File <%s> cannot be handle for restoration as origin storage <%s> is unknown or disabled.",
-                        request.getFileReference().getMetaInfo().getFileName(), request.getStorage());
+                        request.getFileReference().getMetaInfo().getFileName(), request.getStorage()));
         request.setStatus(FileRequestStatus.ERROR);
         request.setErrorCause(message);
         repository.save(request);

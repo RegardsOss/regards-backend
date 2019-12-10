@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -50,6 +51,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.IDeletionProgressManager;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.PreparationResponse;
 
 /**
  * @author Binda sébastien
@@ -113,11 +115,11 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public Collection<FileStorageWorkingSubset> prepareForStorage(
+    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequest> prepareForStorage(
             Collection<FileStorageRequest> fileReferenceRequests) {
         Collection<FileStorageWorkingSubset> workingSubSets = Lists.newArrayList();
         workingSubSets.add(new FileStorageWorkingSubset(fileReferenceRequests));
-        return workingSubSets;
+        return PreparationResponse.build(workingSubSets, Maps.newHashMap());
     }
 
     @Override
@@ -173,11 +175,11 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public Collection<FileDeletionWorkingSubset> prepareForDeletion(
+    public PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequest> prepareForDeletion(
             Collection<FileDeletionRequest> fileDeletionRequests) {
         Collection<FileDeletionWorkingSubset> workingSubSets = Lists.newArrayList();
         workingSubSets.add(new FileDeletionWorkingSubset(Sets.newHashSet(fileDeletionRequests)));
-        return workingSubSets;
+        return PreparationResponse.build(workingSubSets, Maps.newHashMap());
     }
 
     @Override
@@ -208,10 +210,11 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public Collection<FileRestorationWorkingSubset> prepareForRestoration(Collection<FileCacheRequest> requests) {
+    public PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> prepareForRestoration(
+            Collection<FileCacheRequest> requests) {
         Collection<FileRestorationWorkingSubset> workingSubSets = Lists.newArrayList();
         workingSubSets.add(new FileRestorationWorkingSubset(Sets.newHashSet(requests)));
-        return workingSubSets;
+        return PreparationResponse.build(workingSubSets, Maps.newHashMap());
     }
 
     @Override

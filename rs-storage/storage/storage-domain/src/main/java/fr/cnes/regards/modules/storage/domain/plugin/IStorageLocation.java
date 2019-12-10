@@ -38,21 +38,24 @@ public interface IStorageLocation {
      * @param fileReferenceRequests {@link FileStorageRequest}s to dispatch
      * @return generated subsets.
      */
-    Collection<FileStorageWorkingSubset> prepareForStorage(Collection<FileStorageRequest> fileReferenceRequests);
+    PreparationResponse<FileStorageWorkingSubset, FileStorageRequest> prepareForStorage(
+            Collection<FileStorageRequest> fileReferenceRequests);
 
     /**
      * Dispatch given deletion requests in one or many working subsets. Each subset will result to a deletion job.
      * @param fileDeletionRequests {@link FileDeletionRequest}s to dispatch
      * @return generated subsets.
      */
-    Collection<FileDeletionWorkingSubset> prepareForDeletion(Collection<FileDeletionRequest> fileDeletionRequests);
+    PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequest> prepareForDeletion(
+            Collection<FileDeletionRequest> fileDeletionRequests);
 
     /**
      * Dispatch given cache requests in one or many working subsets. Each subset will result to a restoration job.
      * @param requests {@link FileCacheRequest}s to dispatch
      * @return generated subsets.
      */
-    Collection<FileRestorationWorkingSubset> prepareForRestoration(Collection<FileCacheRequest> requests);
+    PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> prepareForRestoration(
+            Collection<FileCacheRequest> requests);
 
     /**
      * Delete files included in the given working subset. Subset has been prepared by {@link #prepareForDeletion(Collection)}.
