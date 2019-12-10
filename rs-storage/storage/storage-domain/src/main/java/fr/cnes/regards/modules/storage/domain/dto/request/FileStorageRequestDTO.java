@@ -68,7 +68,7 @@ public class FileStorageRequestDTO {
     @NotBlank(message = "Storage is mandatory")
     private String storage;
 
-    private Optional<String> subDirectory;
+    private String subDirectory;
 
     public static FileStorageRequestDTO build(String fileName, String checksum, String algorithm, String mimeType,
             String owner, String originUrl, String storage, Optional<String> subDirectory) {
@@ -89,11 +89,7 @@ public class FileStorageRequestDTO {
         request.owner = owner;
         request.originUrl = originUrl;
         request.storage = storage;
-        if (subDirectory != null) {
-            request.subDirectory = subDirectory;
-        } else {
-            request.subDirectory = Optional.empty();
-        }
+        request.subDirectory = subDirectory.orElse(null);
         return request;
     }
 
@@ -135,7 +131,7 @@ public class FileStorageRequestDTO {
     }
 
     public Optional<String> getSubDirectory() {
-        return subDirectory;
+        return Optional.ofNullable(subDirectory);
     }
 
     public String getType() {
