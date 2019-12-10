@@ -31,12 +31,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import io.jsonwebtoken.ExpiredJwtException;
 
 /**
  * Stateless JWT filter set in the SPRING security chain to authenticate request issuer.<br/>
@@ -67,6 +69,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response,
             final FilterChain filterChain) throws ServletException, IOException {
+        // Clear forced tenant if any
+        runtimeTenantResolver.clearTenant();
 
         // Retrieve authentication header
         String jwt = request.getHeader(HttpConstants.AUTHORIZATION);
@@ -96,19 +100,23 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 // Init authentication object
                 final Authentication jwtAuthentication = new JWTAuthentication(jwt);
                 // Authenticate user with JWT
-                final Authentication authentication = authenticationManager.authenticate(jwtAuthentication);
-                // Set security context
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                // Clear forced tenant if any
-                runtimeTenantResolver.clearTenant();
+                try {
+                    final Authentication authentication = authenticationManager.authenticate(jwtAuthentication);
+                    // Set security context
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                MDC.put("tenant", runtimeTenantResolver.getTenant());
-                MDC.put("username", authentication.getName());
+                    MDC.put("username", authentication.getName());
 
-                LOGGER.debug("[REGARDS JWT FILTER] Access granted");
+                    LOGGER.debug("[REGARDS JWT FILTER] Access granted");
 
-                // Continue the filtering chain
-                filterChain.doFilter(request, response);
+                    // Continue the filtering chain
+                    filterChain.doFilter(request, response);
+                } catch (AuthenticationException e)  {
+                    if (e.getCause() instanceof ExpiredJwtException) {
+                        MDC.put("username", ((ExpiredJwtException) e.getCause()).getClaims().getSubject());
+                    }
+                    throw e;
+                }
             }
         }
     }
