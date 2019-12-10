@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.domain.dto.request;
 
 import java.util.Optional;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
 
 import org.springframework.http.MediaType;
@@ -68,6 +69,7 @@ public class FileStorageRequestDTO {
     @NotBlank(message = "Storage is mandatory")
     private String storage;
 
+    @Nullable
     private String subDirectory;
 
     public static FileStorageRequestDTO build(String fileName, String checksum, String algorithm, String mimeType,
@@ -132,8 +134,12 @@ public class FileStorageRequestDTO {
         return storage;
     }
 
-    public Optional<String> getSubDirectory() {
+    public Optional<String> getOptionalSubDirectory() {
         return Optional.ofNullable(subDirectory);
+    }
+
+    public String getSubDirectory() {
+        return subDirectory;
     }
 
     public String getType() {

@@ -211,7 +211,7 @@ public class FileStorageRequestService {
                 cause = Optional.of(errorMessage);
             }
             create(Sets.newHashSet(request.getOwner()), request.buildMetaInfo(), request.getOriginUrl(),
-                   request.getStorage(), request.getSubDirectory(), status, groupId, cause);
+                   request.getStorage(), request.getOptionalSubDirectory(), status, groupId, cause);
             return Optional.empty();
         }
     }
@@ -601,7 +601,7 @@ public class FileStorageRequestService {
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
             // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
             create(Sets.newHashSet(request.getOwner()), newMetaInfo, request.getOriginUrl(), request.getStorage(),
-                   request.getSubDirectory(), FileRequestStatus.DELAYED, groupId, Optional.empty());
+                   request.getOptionalSubDirectory(), FileRequestStatus.DELAYED, groupId, Optional.empty());
         } else {
             if (deletionRequest.isPresent()) {
                 // Delete not running deletion request to add the new owner
@@ -614,7 +614,7 @@ public class FileStorageRequestService {
             eventPublisher.storeSuccess(fileReference, message, Sets.newHashSet(groupId));
             updatedFileRef = fileRefService.addOwner(fileReference, request.getOwner());
             reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE, request.getChecksum(),
-                                           request.getStorage(), request.getSubDirectory().orElse(null),
+                                           request.getStorage(), request.getOptionalSubDirectory().orElse(null),
                                            Sets.newHashSet(request.getOwner()), updatedFileRef);
         }
         return Optional.ofNullable(updatedFileRef);
