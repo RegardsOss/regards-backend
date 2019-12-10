@@ -173,34 +173,11 @@ public class SIPController implements IResourceController<SIPEntity> {
         return new ResponseEntity<>(toResource(sip), HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Retry SIP ingestion by its sipId.")
-    @RequestMapping(value = SIPID_PATH + RETRY_PATH, method = RequestMethod.POST)
-    public ResponseEntity<Void> retrySipEntityIngest(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
-            throws ModuleException {
-        // TODO
-        // ingestService.retryIngest(UniformResourceName.fromString(sipId));
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
     @Override
     public Resource<SIPEntity> toResource(SIPEntity sipEntity, Object... pExtras) {
         final Resource<SIPEntity> resource = resourceService.toResource(sipEntity);
         resourceService.addLink(resource, this.getClass(), "getSipEntity", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
-        // FIXME
-        //        try {
-        //            if (sipService.isDeletable(sipEntity.getSipIdUrn())) {
-        //                resourceService.addLink(resource, this.getClass(), "deleteSipEntity", LinkRels.DELETE,
-        //                                        MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
-        //            }
-        //            if (ingestService.isRetryable(sipEntity.getSipIdUrn())) {
-        //                resourceService.addLink(resource, this.getClass(), "retrySipEntityIngest", "retry",
-        //                                        MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
-        //            }
-        //        } catch (EntityNotFoundException e) {
-        //            LOGGER.error(e.getMessage(), e);
-        //        }
-
         return resource;
     }
 }

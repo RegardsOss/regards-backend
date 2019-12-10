@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -28,8 +27,6 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
@@ -53,8 +50,6 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import fr.cnes.regards.modules.ingest.service.job.AIPUpdatesCreatorJob;
-import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
@@ -281,13 +276,7 @@ public class AIPService implements IAIPService {
     public void scheduleAIPEntityUpdate(AIPUpdatesCreatorRequest request) {
         request = (AIPUpdatesCreatorRequest) requestService.scheduleRequest(request);
         if (request.getState() != InternalRequestState.BLOCKED) {
-            request.setState(InternalRequestState.RUNNING);
-            // Schedule deletion job
-            Set<JobParameter> jobParameters = Sets.newHashSet();
-            jobParameters.add(new JobParameter(AIPUpdatesCreatorJob.REQUEST_ID, request.getId()));
-            JobInfo jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_SCAN_JOB_PRIORITY.getPriority(),
-                    jobParameters, authResolver.getUser(), AIPUpdatesCreatorJob.class.getName());
-            jobInfoService.createAsQueued(jobInfo);
+            requestService.scheduleJob(request);
         }
     }
 

@@ -163,6 +163,7 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
     }
 
     public void initData() {
+        LOGGER.info("=========================> BEGIN INIT DATA FOR TESTS <=====================");
         storageClient.setBehavior(true, true);
         long nbSIP = 7;
         publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
@@ -209,38 +210,53 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
                 .build("some request id", aips.get(0).getSip(), SessionDeletionMode.BY_STATE);
         storageDeletionRequest.setState(InternalRequestState.ERROR);
         storageDeletionRequestRepository.save(storageDeletionRequest);
+        LOGGER.info("=========================> END INIT DATA FOR TESTS <=====================");
     }
 
     @Test
     public void testSearchRequests() throws ModuleException {
         initData();
         PageRequest pr = PageRequest.of(0, 100);
+        LOGGER.info("=========================> BEGIN SEARCH ALL IN ERROR <=====================");
         Page<RequestDto> requests = requestService
                 .findRequests(SearchRequestsParameters.build().withState(InternalRequestState.ERROR), pr);
+        LOGGER.info("=========================> END SEARCH ALL IN ERROR <=====================");
         Assert.assertEquals(6, requests.getTotalElements());
 
+        LOGGER.info("=========================> BEGIN SEARCH INGEST IN ERROR <=====================");
         requests = requestService.findRequests(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.INGEST).withState(InternalRequestState.ERROR), pr);
+        LOGGER.info("=========================> END SEARCH INGEST IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 
+        LOGGER.info("=========================> BEGIN SEARCH AIP UPDATE CREATOR IN ERROR <=====================");
         requests = requestService.findRequests(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR).withState(InternalRequestState.ERROR), pr);
+        LOGGER.info("=========================> END SEARCH AIP UPDATE CREATOR IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 
+        LOGGER.info("=========================> BEGIN SEARCH OAIS DELETION IN ERROR <=====================");
         requests = requestService.findRequests(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.OAIS_DELETION).withState(InternalRequestState.ERROR), pr);
+        LOGGER.info("=========================> END SEARCH OAIS DELETION IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 
+        LOGGER.info("=========================> BEGIN SEARCH STORAGE DELETEION IN ERROR <=====================");
         requests = requestService.findRequests(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.STORAGE_DELETION).withState(InternalRequestState.ERROR), pr);
+        LOGGER.info("=========================> END SEARCH STORAGE DELETION IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 
+        LOGGER.info("=========================> BEGIN SEARCH STORE META IN ERROR <=====================");
         requests = requestService.findRequests(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.STORE_METADATA).withState(InternalRequestState.ERROR), pr);
+        LOGGER.info("=========================> END SEARCH STORE META IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 
+        LOGGER.info("=========================> BEGIN SEARCH UPDATE IN ERROR <=====================");
         requests = requestService.findRequests(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.UPDATE).withState(InternalRequestState.ERROR), pr);
+        LOGGER.info("=========================> END SEARCH UPDATE IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
     }
 

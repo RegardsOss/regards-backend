@@ -89,14 +89,14 @@ alter table t_request add constraint fk_update_request_aip foreign key (aip_id) 
 
 --
 -- Join table to link AIP to ingest request
-create table t_ingest_request_aip (
+create table ta_ingest_request_aip (
   ingest_request_id int8 not null,
   aip_id int8 not null,
   primary key (ingest_request_id,aip_id)
 );
-alter table t_ingest_request_aip add constraint uk_ingest_request_aip_aip_id unique (aip_id);
-alter table t_ingest_request_aip add constraint fk_ingest_request_aip_aip_id foreign key (aip_id) references t_aip;
-alter table t_ingest_request_aip add constraint fk_ingest_request_aip_request_id foreign key (ingest_request_id) references t_request;
+alter table ta_ingest_request_aip add constraint uk_ingest_request_aip_aip_id unique (aip_id);
+alter table ta_ingest_request_aip add constraint fk_ingest_request_aip_aip_id foreign key (aip_id) references t_aip;
+alter table ta_ingest_request_aip add constraint fk_ingest_request_aip_request_id foreign key (ingest_request_id) references t_request;
 
 create table t_update_task (
     dtype varchar(30) not null,

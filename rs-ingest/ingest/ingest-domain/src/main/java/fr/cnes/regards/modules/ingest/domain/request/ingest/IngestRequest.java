@@ -60,7 +60,7 @@ public class IngestRequest extends AbstractRequest {
      * The {@link List} of AIPEntity created by this request
      */
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "t_ingest_request_aip", joinColumns = @JoinColumn(name = "ingest_request_id"),
+    @JoinTable(name = "ta_ingest_request_aip", joinColumns = @JoinColumn(name = "ingest_request_id"),
             inverseJoinColumns = @JoinColumn(name = "aip_id"),
             uniqueConstraints = {
                     @UniqueConstraint(name = "uk_ingest_request_aip_aip_id", columnNames = { "aip_id" }) },

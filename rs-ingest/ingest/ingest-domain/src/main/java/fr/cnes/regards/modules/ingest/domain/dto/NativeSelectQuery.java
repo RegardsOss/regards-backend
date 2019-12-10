@@ -117,7 +117,6 @@ public class NativeSelectQuery {
         predicates.add("(" + oneOf + ")");
     }
 
-    //TODO test
     public void addOneOfStringLike(String rootParamName, Collection<String> paramValues) {
         Set<String> internalPredicates = Sets.newHashSet();
         int i = 0;

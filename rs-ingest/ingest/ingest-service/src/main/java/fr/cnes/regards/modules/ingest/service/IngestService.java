@@ -67,8 +67,6 @@ import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
  *
  * TODO : retry ingestion
  * TODO : retry deletion?
- * TODO : Check handleIngestRequests. Requests can be be proceed ?
- * TODO : Check registerOAISDeletionRequest Requests can be be proceed ?
  */
 @Service
 @MultitenantTransactional

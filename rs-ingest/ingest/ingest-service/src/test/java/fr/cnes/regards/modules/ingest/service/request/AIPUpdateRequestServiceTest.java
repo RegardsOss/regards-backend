@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.request;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateCategoryTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocationTask;
@@ -47,6 +48,9 @@ public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
 
     @Autowired
     private AIPUpdateRequestService aipUpdateReqService;
+
+    @Autowired
+    protected IAIPUpdateRequestRepository repo;
 
     @Test
     public void createNewUpdateRequestWithMultipleTasks() {
