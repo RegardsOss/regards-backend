@@ -27,6 +27,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -132,9 +133,14 @@ public class BasketController implements IResourceController<Basket> {
      */
     @ResourceAccess(description = "Get the basket", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<Resource<Basket>> get() throws EmptyBasketException {
-        Basket basket = basketService.find(authResolver.getUser());
-        return ResponseEntity.ok(toResource(basket));
+    public ResponseEntity<Resource<Basket>> get() {
+        try {
+            Basket basket = basketService.find(authResolver.getUser());
+            return ResponseEntity.ok(toResource(basket));
+        }catch (EmptyBasketException e) {
+            // This is a normal case, no log needed
+            return new ResponseEntity<Resource<Basket>>(HttpStatus.NO_CONTENT);
+        }
     }
 
     /**

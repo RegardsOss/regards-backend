@@ -44,11 +44,6 @@ import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 @Order(0)
 public class OrderControllerAdvice {
 
-    @ExceptionHandler(EmptyBasketException.class)
-    public ResponseEntity<ServerErrorResponse> handleEmptyBasketException(EmptyBasketException ebe) {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ServerErrorResponse(ebe.getMessage(), ebe));
-    }
-
     @ExceptionHandler(EmptySelectionException.class)
     public ResponseEntity<ServerErrorResponse> handleEmptySelectionException(EmptySelectionException ebe) {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ServerErrorResponse(ebe.getMessage(), ebe));

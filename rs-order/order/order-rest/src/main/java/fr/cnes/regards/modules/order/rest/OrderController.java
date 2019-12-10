@@ -148,12 +148,17 @@ public class OrderController implements IResourceController<OrderDto> {
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, path = USER_ROOT_PATH)
     public ResponseEntity<Resource<OrderDto>> createOrder(@RequestBody OrderRequest orderRequest)
-            throws EmptyBasketException, IllegalStateException {
-        String user = authResolver.getUser();
-        Basket basket = basketService.find(user);
+            throws IllegalStateException {
+        try {
+            String user = authResolver.getUser();
+            Basket basket = basketService.find(user);
 
-        Order order = orderService.createOrder(basket, orderRequest.getOnSuccessUrl());
-        return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
+            Order order = orderService.createOrder(basket, orderRequest.getOnSuccessUrl());
+            return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
+        } catch (EmptyBasketException e) {
+            // This not an error case
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
     }
 
     @ResourceAccess(description = "Retrieve specified order", role = DefaultRole.REGISTERED_USER)
