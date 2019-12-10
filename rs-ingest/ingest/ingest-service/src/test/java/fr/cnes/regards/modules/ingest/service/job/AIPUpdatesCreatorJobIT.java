@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.job;
 
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
@@ -76,6 +77,10 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
     @Autowired
     protected IJobService jobService;
 
+    @Autowired
+    private IJobInfoRepository jobInfoRepository;
+
+
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
 
     private static final List<String> CATEGORIES_1 = Lists.newArrayList("CATEGORY1");
@@ -107,7 +112,8 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        aipUpdateRequestRepository.deleteAll();
+        abstractRequestRepository.deleteAll();
+        jobInfoRepository.deleteAll();
     }
 
     public void initData() {

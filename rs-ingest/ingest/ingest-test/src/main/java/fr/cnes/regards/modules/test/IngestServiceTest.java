@@ -152,7 +152,7 @@ public class IngestServiceTest {
             } else {
                 sipCount = sipRepository.count();
             }
-            LOGGER.debug("{} SIP(s) created in database", sipCount);
+            LOGGER.info("{} SIP(s) created in database", sipCount);
             if (sipCount >= expectedSips) {
                 break;
             }
