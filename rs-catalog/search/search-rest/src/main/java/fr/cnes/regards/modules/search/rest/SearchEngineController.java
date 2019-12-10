@@ -588,6 +588,7 @@ public class SearchEngineController {
                                                   MethodParamFactory.build(MultiValueMap.class),
                                                   MethodParamFactory.build(Pageable.class)));
                 break;
+                
             default:
                 // Nothing to do
                 LOGGER.warn("Unknown entity type \"{}\"", entityType);

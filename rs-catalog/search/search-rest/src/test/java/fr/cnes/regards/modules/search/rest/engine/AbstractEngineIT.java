@@ -60,6 +60,12 @@ import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.attribute.builder.AttributeBuilder;
+import fr.cnes.regards.modules.dam.domain.models.Model;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
+import fr.cnes.regards.modules.dam.gson.entities.MultitenantFlattenedAttributeAdapterFactory;
+import fr.cnes.regards.modules.dam.service.models.IAttributeModelService;
+import fr.cnes.regards.modules.dam.service.models.ModelService;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.service.IIndexerService;
@@ -220,10 +226,6 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         relativeUrlPaths.add(SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING);
         relativeUrlPaths.add(SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING_EXTRA);
         relativeUrlPaths.add(SearchEngineMappings.GET_COLLECTION_MAPPING);
-
-        relativeUrlPaths.add(SearchEngineMappings.SEARCH_DOCUMENTS_MAPPING);
-        relativeUrlPaths.add(SearchEngineMappings.SEARCH_DOCUMENTS_MAPPING_EXTRA);
-        relativeUrlPaths.add(SearchEngineMappings.GET_DOCUMENT_MAPPING);
 
         relativeUrlPaths.add(SearchEngineMappings.SEARCH_DATASETS_MAPPING);
         relativeUrlPaths.add(SearchEngineMappings.SEARCH_DATASETS_MAPPING_EXTRA);
