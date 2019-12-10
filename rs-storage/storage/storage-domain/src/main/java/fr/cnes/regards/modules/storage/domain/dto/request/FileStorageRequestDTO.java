@@ -89,7 +89,9 @@ public class FileStorageRequestDTO {
         request.owner = owner;
         request.originUrl = originUrl;
         request.storage = storage;
-        request.subDirectory = subDirectory.orElse(null);
+        if (subDirectory != null) {
+            request.subDirectory = subDirectory.orElse(null);
+        }
         return request;
     }
 
