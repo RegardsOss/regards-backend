@@ -77,7 +77,7 @@ import org.springframework.test.context.TestPropertySource;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_service_test",
         "regards.aips.save-metadata.bulk.delay=20000000", "regards.amqp.enabled=true", "eureka.client.enabled=false",
-        "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100", "spring.jpa.show-sql=true" })
+        "regards.scheduler.pool.size=0", "regards.ingest.maxBulkSize=100", "spring.jpa.show-sql=true" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class RequestServiceTest extends AbstractIngestRequestTest {
 
@@ -90,31 +90,13 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
     private ISIPRepository sipRepository;
 
     @Autowired
-    private IAIPStoreMetaDataRepository storeMetaDataRepository;
-
-    @Autowired
-    private IAIPUpdatesCreatorRepository aipUpdatesCreatorRepository;
-
-    @Autowired
-    private IAIPUpdateRequestRepository aipUpdateRequestRepository;
-
-    @Autowired
     private IIngestRequestRepository ingestRequestRepository;
-
-    @Autowired
-    private IOAISDeletionRequestRepository oaisDeletionRequestRepository;
-
-    @Autowired
-    private IStorageDeletionRequestRepository storageDeletionRequestRepository;
 
     @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
 
     @Autowired
     private RequestService requestService;
-
-    @Autowired
-    private IIngestMetadataMapper mapper;
 
     @Autowired
     private IJobInfoRepository jobInfoRepository;
@@ -240,13 +222,14 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
     }
 
     public void clearRequest() {
-        LOGGER.info("Let's remove {} jobs info", jobInfoRepository.count());
-        jobInfoRepository.deleteAll();
         List<AbstractRequest> entities = abstractRequestRepository.findAll();
         LOGGER.info("Let's remove {} entities", entities.size());
         abstractRequestRepository.deleteAll(entities);
         LOGGER.info("Entities still existing count : {} ", abstractRequestRepository.count());
+
         LOGGER.info("Jobs stil existing : {}", jobInfoRepository.count());
+        LOGGER.info("Let's remove {} jobs info", jobInfoRepository.count());
+        jobInfoRepository.deleteAll();
 
     }
 
@@ -465,4 +448,5 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         storageDeletionRequest = (StorageDeletionRequest) abstractRequestRepository.findById(storageDeletionRequest.getId()).get();
         Assert.assertEquals("The request should not be blocked", InternalRequestState.CREATED, storageDeletionRequest.getState());
     }
+
 }
