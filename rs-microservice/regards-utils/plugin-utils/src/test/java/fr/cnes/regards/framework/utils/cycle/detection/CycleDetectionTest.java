@@ -26,15 +26,17 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.gson.Gson;
-
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.utils.cycle.detection.invalid1.SamplePluginWithPojoCycleDetected;
+import fr.cnes.regards.framework.utils.cycle.detection.invalid2.SamplePluginWithPojoCycleDetectedLevelThree;
+import fr.cnes.regards.framework.utils.cycle.detection.valid.SamplePluginWithPojo;
+import fr.cnes.regards.framework.utils.cycle.detection.valid.SamplePluginWithPojoWithSet;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
@@ -50,15 +52,11 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class CycleDetectionTest {
 
-    private static final String PLUGIN_PACKAGE = "fr.cnes.regards.framework.utils.plugins";
-
-    @Before
-    public void doInit() {
-        PluginParameterTransformer.setup(new Gson());
-    }
-
     @Test
     public void cycleDetectionOK() throws NotAvailablePluginConfigurationException {
+
+        PluginUtils.setup(SamplePluginWithPojo.class.getPackage().getName());
+
         List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");
@@ -80,11 +78,8 @@ public class CycleDetectionTest {
                                         PluginParameterTransformer.toJson(pojoParam)),
                      IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "chris_test_1"));
 
-        // instantiate plugin
-        PluginUtils.setup(PLUGIN_PACKAGE);
-
-        SamplePluginWithPojo samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojo.class,
-                                                                  new HashMap<>());
+        PluginConfiguration conf = PluginConfiguration.build(SamplePluginWithPojo.class, "", parameters);
+        SamplePluginWithPojo samplePlugin = PluginUtils.getPlugin(conf, new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -100,54 +95,15 @@ public class CycleDetectionTest {
 
     @Test(expected = PluginUtilsRuntimeException.class)
     public void cycleDetectedWithTwoLevel() throws NotAvailablePluginConfigurationException {
-        List<String> values = new ArrayList<>();
-        values.add("test1");
-        values.add("test2");
-        values.add("test3");
-        values.add("test4");
-        OffsetDateTime ofdt = OffsetDateTime.now().minusYears(10);
-
-        TestPojoParent pojoParent = new TestPojoParent();
-        pojoParent.setValue("parent");
-        pojoParent.setValues(values);
-        pojoParent.setDate(ofdt.minusHours(55).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        pojoParent.addIntValues(99);
-        pojoParent.addIntValues(98);
-        pojoParent.addIntValues(97);
-
-        TestPojoChild pojoChild = new TestPojoChild();
-        pojoChild.setValue("child");
-        pojoChild.setValues(values);
-        pojoChild.setDate(ofdt.minusHours(1999).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        pojoChild.addIntValues(101);
-        pojoChild.addIntValues(102);
-        pojoChild.addIntValues(103);
-
-        TestPojoParent otherPojoParent = new TestPojoParent();
-        pojoParent.setValue("other parent");
-        pojoParent.setValues(values);
-        pojoParent.setDate(ofdt.minusSeconds(3333).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        pojoParent.addIntValues(501);
-        pojoParent.addIntValues(502);
-
-        pojoParent.setChild(pojoChild);
-        pojoChild.setParent(otherPojoParent);
-
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
-                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_COEF, 12345),
-                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO,
-                                        PluginParameterTransformer.toJson(pojoParent)));
-
-        // instantiate plugin
-        PluginUtils.setup(PLUGIN_PACKAGE);
-        PluginUtils.getPlugin(parameters, SamplePluginWithPojoCycleDetected.class, new HashMap<>());
-
+        PluginUtils.setup(SamplePluginWithPojoCycleDetected.class.getPackage().getName());
         Assert.fail();
     }
 
     @Test
     public void cycleDetectedWithSet() throws NotAvailablePluginConfigurationException {
+
+        PluginUtils.setup(SamplePluginWithPojoWithSet.class.getPackage().getName());
+
         TestPojoWithSet pojoParent = new TestPojoWithSet();
 
         TestPojoChildWithSet pojoChild = new TestPojoChildWithSet();
@@ -160,16 +116,16 @@ public class CycleDetectionTest {
         pojoChild.addPojo(pojoParam);
 
         Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
-                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_COEF, 12345),
-                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO,
+                .set(IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
+                     IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_COEF, 12345),
+                     IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_POJO,
                                         PluginParameterTransformer.toJson(pojoParent)),
-                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "suffix"));
+                     IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_SUFFIX, "suffix"));
 
         // instantiate plugin
-        PluginUtils.setup(PLUGIN_PACKAGE);
-        SamplePluginWithPojoWithSet samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojoWithSet.class,
-                                                                         new HashMap<>());
+
+        PluginConfiguration conf = PluginConfiguration.build(SamplePluginWithPojoWithSet.class, "", parameters);
+        SamplePluginWithPojoWithSet samplePlugin = PluginUtils.getPlugin(conf, new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -181,56 +137,7 @@ public class CycleDetectionTest {
 
     @Test(expected = PluginUtilsRuntimeException.class)
     public void cycleDetectedWithThreeLevel() throws NotAvailablePluginConfigurationException {
-        List<String> values = new ArrayList<>();
-        values.add("test1");
-        values.add("test2");
-        values.add("test3");
-        values.add("test4");
-        OffsetDateTime ofdt = OffsetDateTime.now().minusYears(10);
-
-        TestPojoGrandParent pojoGrandParent = new TestPojoGrandParent();
-        pojoGrandParent.setValue("grand parent");
-        pojoGrandParent.setValues(values);
-        pojoGrandParent.setDate(ofdt.minusHours(55).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        pojoGrandParent.addIntValues(65);
-
-        TestPojoParent pojoParent = new TestPojoParent();
-        pojoParent.setValue("parent");
-        pojoParent.setValues(values);
-        pojoParent.setDate(ofdt.minusHours(55).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        pojoParent.addIntValues(99);
-        pojoParent.addIntValues(98);
-        pojoParent.addIntValues(97);
-
-        TestPojoChild pojoChild = new TestPojoChild();
-        pojoChild.setValue("child");
-        pojoChild.setValues(values);
-        pojoChild.setDate(ofdt.minusHours(1999).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        pojoChild.addIntValues(101);
-        pojoChild.addIntValues(102);
-        pojoChild.addIntValues(103);
-
-        TestPojoParent otherPojoParent = new TestPojoParent();
-        pojoParent.setValue("other parent");
-        pojoParent.setValues(values);
-        pojoParent.setDate(ofdt.minusSeconds(3333).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        pojoParent.addIntValues(501);
-        pojoParent.addIntValues(502);
-
-        pojoGrandParent.setChild(pojoParent);
-        pojoParent.setChild(pojoChild);
-        pojoChild.setParent(otherPojoParent);
-
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
-                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_COEF, 12345),
-                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO,
-                                        PluginParameterTransformer.toJson(pojoGrandParent)));
-
-        // instantiate plugin
-        PluginUtils.setup(PLUGIN_PACKAGE);
-        PluginUtils.getPlugin(parameters, SamplePluginWithPojoCycleDetectedLevelThree.class, new HashMap<>());
-
+        PluginUtils.setup(SamplePluginWithPojoCycleDetectedLevelThree.class.getPackage().getName());
         Assert.fail();
     }
 }

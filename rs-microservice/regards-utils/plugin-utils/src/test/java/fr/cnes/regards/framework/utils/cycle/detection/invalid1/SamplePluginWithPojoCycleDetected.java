@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.utils.cycle.detection;
+package fr.cnes.regards.framework.utils.cycle.detection.invalid1;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,15 +24,18 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.utils.cycle.detection.TestPojo;
+import fr.cnes.regards.framework.utils.cycle.detection.TestPojoParent;
 import fr.cnes.regards.framework.utils.plugins.basic.ISamplePlugin;
 
 /**
  * SamplePlugin
  * @author Christophe Mertz
  */
-@Plugin(description = "Sample plugin test", id = "SamplePluginWithPojo", version = "0.0.1", author = "REGARDS Team",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class SamplePluginWithPojoWithSet implements ISamplePlugin {
+@Plugin(description = "Sample plugin test", id = "SamplePluginWithPojoCycleDetected", version = "0.0.1",
+        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
+public class SamplePluginWithPojoCycleDetected implements ISamplePlugin {
 
     public static final String FIELD_NAME_SUFFIX = "suffix";
 
@@ -42,7 +45,7 @@ public class SamplePluginWithPojoWithSet implements ISamplePlugin {
 
     public static final String FIELD_NAME_POJO = "pojo";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SamplePluginWithPojoWithSet.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SamplePluginWithPojoCycleDetected.class);
 
     /**
      * A {@link String} parameter
@@ -66,7 +69,7 @@ public class SamplePluginWithPojoWithSet implements ISamplePlugin {
      * A {@link TestPojo} parameter
      */
     @PluginParameter(description = "Pojo parameter", label = "Pojo")
-    private TestPojoWithSet pojo;
+    private TestPojoParent pojo;
 
     @Override
     public String echo(final String pMessage) {
@@ -96,7 +99,7 @@ public class SamplePluginWithPojoWithSet implements ISamplePlugin {
                 + "|coeff:" + coef);
     }
 
-    public TestPojoWithSet getPojo() {
+    public TestPojoParent getPojo() {
         return pojo;
     }
 }
