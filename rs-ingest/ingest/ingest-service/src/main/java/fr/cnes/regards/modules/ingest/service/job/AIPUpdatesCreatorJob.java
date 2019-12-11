@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTas
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
+import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,9 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
 
     @Autowired
     private AIPUpdateRequestService aipUpdateReqService;
+
+    @Autowired
+    private RequestService requestService;
 
     @Autowired
     private IAIPUpdatesCreatorRepository aipUpdatesCreatorRepository;
@@ -94,7 +98,7 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
                 pageRequest.next();
             }
             AIPUpdateParametersDto updateTask = request.getConfig();
-            aipsPage = aipRepository.search(updateTask.getCriteria(), pageRequest);
+            aipsPage = aipRepository.findByFilters(updateTask.getCriteria(), pageRequest);
             // Save number of pages to publish job advancement
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();
@@ -107,7 +111,7 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
             pageRequest.next();
         } while (aipsPage.hasNext());
         // Delete the request
-        aipUpdatesCreatorRepository.delete(request);
+        requestService.cleanRequestJob(request);
     }
 
     @Override

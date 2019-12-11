@@ -121,7 +121,7 @@ public class IngestServiceTest {
                 vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
                 amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
             } catch (AmqpIOException e) {
-                //todo
+                LOGGER.warn("Failed to clean AMQP queues");
             } finally {
                 vhostAdmin.unbind();
             }
@@ -152,7 +152,7 @@ public class IngestServiceTest {
             } else {
                 sipCount = sipRepository.count();
             }
-            LOGGER.debug("{} SIP(s) created in database", sipCount);
+            LOGGER.info("{} SIP(s) created in database", sipCount);
             if (sipCount >= expectedSips) {
                 break;
             }

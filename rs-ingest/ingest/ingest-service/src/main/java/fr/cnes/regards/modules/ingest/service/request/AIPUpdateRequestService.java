@@ -126,5 +126,4 @@ public class AIPUpdateRequestService {
                     .newArrayList(requests.stream().map(AIPUpdateRequest::getId).collect(Collectors.toList())), state);
         }
     }
-
 }

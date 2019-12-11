@@ -75,7 +75,7 @@ public class RequestController implements IResourceController<RequestDto> {
             @RequestBody SearchRequestsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<RequestDto> assembler) throws ModuleException {
-        Page<RequestDto> requests = requestService.searchRequests(filters, pageable);
+        Page<RequestDto> requests = requestService.findRequests(filters, pageable);
         return new ResponseEntity<>(toPagedResources(requests, assembler), HttpStatus.OK);
     }
 

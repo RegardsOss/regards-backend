@@ -1,14 +1,19 @@
 package fr.cnes.regards.modules.ingest.service.session;
 
+import java.util.Collection;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
-import java.util.Collection;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 @MultitenantTransactional
@@ -81,7 +86,7 @@ public class SessionNotifier {
             notifyIncrementSession(sessionOwner, session, PRODUCT_GEN_ERROR, SessionNotificationState.ERROR, 1);
         } else {
             notifyIncrementSession(sessionOwner, session, PRODUCT_STORE_PENDING, SessionNotificationState.OK,
-                    generatedAips.size());
+                                   generatedAips.size());
             if (generatedAips.size() > 1) {
                 // Increment number of total products (case of one SIP for many AIPs)
                 // In this way, there is the same count of products stored and total.
@@ -142,11 +147,11 @@ public class SessionNotifier {
      */
     public void productMetaStoredSuccess(AIPEntity aip) {
         // -1 product_meta_storing
-        notifyDecrementSession(aip.getSessionOwner(), aip.getSession(),
-                               PRODUCT_META_STORE_PENDING, SessionNotificationState.OK, 1);
+        notifyDecrementSession(aip.getSessionOwner(), aip.getSession(), PRODUCT_META_STORE_PENDING,
+                               SessionNotificationState.OK, 1);
         // +1 product_meta_stored
-        notifyIncrementSession(aip.getSessionOwner(), aip.getSession(),
-                               PRODUCT_META_STORED, SessionNotificationState.OK, 1);
+        notifyIncrementSession(aip.getSessionOwner(), aip.getSession(), PRODUCT_META_STORED,
+                               SessionNotificationState.OK, 1);
     }
 
     /**
@@ -155,11 +160,53 @@ public class SessionNotifier {
      */
     public void productMetaStoredError(AIPEntity aip) {
         // -1 product_meta_storing
-        notifyDecrementSession(aip.getSessionOwner(), aip.getSession(),
-                               PRODUCT_META_STORE_PENDING, SessionNotificationState.OK, 1);
+        notifyDecrementSession(aip.getSessionOwner(), aip.getSession(), PRODUCT_META_STORE_PENDING,
+                               SessionNotificationState.OK, 1);
         // +1 product_meta_stored
-        notifyIncrementSession(aip.getSessionOwner(), aip.getSession(),
-                               PRODUCT_META_STORE_ERROR, SessionNotificationState.ERROR, 1);
+        notifyIncrementSession(aip.getSessionOwner(), aip.getSession(), PRODUCT_META_STORE_ERROR,
+                               SessionNotificationState.ERROR, 1);
+    }
+
+    /**
+     * Decrement product meta store errors.
+     * @param request
+     */
+    public void aipStoreMetaRequestErrorDeleted(AIPStoreMetaDataRequest request) {
+        if (request.getState() == InternalRequestState.ERROR) {
+            notifyDecrementSession(request.getSessionOwner(), request.getSession(), PRODUCT_META_STORE_ERROR,
+                                   SessionNotificationState.OK, 1);
+        }
+    }
+
+    /**
+     * Decrement product store errors or product gen errors
+     * @param request
+     */
+    public void ingestRequestErrorDeleted(IngestRequest request) {
+        if (request.getState() == InternalRequestState.ERROR) {
+            switch (request.getStep()) {
+                case LOCAL_DENIED:
+                case LOCAL_FINAL:
+                case LOCAL_GENERATION:
+                case LOCAL_INIT:
+                case LOCAL_POST_PROCESSING:
+                case LOCAL_PRE_PROCESSING:
+                case LOCAL_SCHEDULED:
+                case LOCAL_TAGGING:
+                case LOCAL_VALIDATION:
+                    notifyDecrementSession(request.getSessionOwner(), request.getSession(), PRODUCT_GEN_ERROR,
+                                           SessionNotificationState.OK, 1);
+                    break;
+                case REMOTE_STORAGE_REQUESTED:
+                case REMOTE_STORAGE_DENIED:
+                case REMOTE_STORAGE_ERROR:
+                    notifyDecrementSession(request.getSessionOwner(), request.getSession(), PRODUCT_STORE_ERROR,
+                                           SessionNotificationState.OK, 1);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     /**

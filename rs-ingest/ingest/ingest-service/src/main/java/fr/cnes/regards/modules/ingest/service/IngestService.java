@@ -18,10 +18,30 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
+
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -39,23 +59,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.StringJoiner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
 
 /**
  * Ingest management service
@@ -64,8 +67,6 @@ import org.springframework.validation.Validator;
  *
  * TODO : retry ingestion
  * TODO : retry deletion?
- * TODO : Check handleIngestRequests. Requests can be be proceed ?
- * TODO : Check registerOAISDeletionRequest Requests can be be proceed ?
  */
 @Service
 @MultitenantTransactional
@@ -122,6 +123,8 @@ public class IngestService implements IIngestService {
                                                     metadataMapper.dtoToMetadata(item.getMetadata()), state,
                                                     IngestRequestStep.LOCAL_SCHEDULED, item.getSip());
         ingestRequestService.handleRequestGranted(request);
+        // Notify session for handled requests
+        sessionNotifier.productsGranted(item.getMetadata().getSessionOwner(), item.getMetadata().getSession(), 1);
         // return granted request
         return request;
     }
@@ -131,18 +134,12 @@ public class IngestService implements IIngestService {
         // Store requests per chain
         ListMultimap<String, IngestRequest> requestPerChain = ArrayListMultimap.create();
         for (IngestRequestFlowItem item : items) {
-            String sessionOwner = item.getMetadata().getSessionOwner();
-            String session = item.getMetadata().getSession();
-
             // Validate and transform to request
             IngestRequest ingestRequest = registerIngestRequest(item, InternalRequestState.RUNNING);
             if (ingestRequest != null) {
                 requestPerChain.put(ingestRequest.getMetadata().getIngestChain(), ingestRequest);
-                // Notify session for handled requests
-                sessionNotifier.productsGranted(sessionOwner, session, 1);
             }
         }
-
         // Schedule job per chain
         for (String chainName : requestPerChain.keySet()) {
             ingestRequestService.scheduleIngestProcessingJobByChain(chainName, requestPerChain.get(chainName));
@@ -207,7 +204,6 @@ public class IngestService implements IIngestService {
      */
     private void registerIngestRequest(SIP sip, IngestMetadata ingestMetadata, RequestInfoDto info,
             Collection<IngestRequest> grantedRequests) {
-
         // Validate SIP
         Errors errors = new MapBindingResult(new HashMap<>(), SIP.class.getName());
         validator.validate(sip, errors);
@@ -216,7 +212,6 @@ public class IngestService implements IIngestService {
             // Publish DENIED request (do not persist it in DB) / Warning : request id cannot be known
             ingestRequestService.handleRequestDenied(IngestRequest.build(ingestMetadata, InternalRequestState.ERROR,
                                                                          IngestRequestStep.LOCAL_DENIED, sip, errs));
-
             StringJoiner joiner = new StringJoiner(", ");
             errs.forEach(err -> joiner.add(err));
             LOGGER.debug("SIP ingestion request rejected for following reason(s) : {}", joiner.toString());
@@ -231,6 +226,8 @@ public class IngestService implements IIngestService {
         ingestRequestService.handleRequestGranted(request);
         // Trace granted request
         info.addGrantedRequest(sip.getId(), request.getRequestId());
+        // Add New product to product count
+        sessionNotifier.productsGranted(ingestMetadata.getSessionOwner(), ingestMetadata.getSession(), 1);
         // Add to granted request collection
         grantedRequests.add(request);
     }

@@ -20,11 +20,13 @@ package fr.cnes.regards.modules.ingest.service.job;
 
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
+import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
@@ -33,7 +35,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
@@ -63,9 +64,6 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
     private StorageClientMock storageClient;
 
     @Autowired
-    private IIngestService ingestService;
-
-    @Autowired
     private IStorageDeletionRequestRepository deletionStorageRequestRepository;
 
     @Autowired
@@ -73,6 +71,12 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IAIPRepository aipRepository;
+
+    @Autowired
+    private IJobInfoRepository jobInfoRepository;
+
+    @Autowired
+    private IAbstractRequestRepository abstractRequestRepository;
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
 
@@ -99,6 +103,8 @@ public class OAISEntityDeletionJobIT extends IngestMultitenantServiceTest {
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        abstractRequestRepository.deleteAll();
+        jobInfoRepository.deleteAll();
     }
 
     public void waitUntilNbSIPStoredReach(long nbSIPRemaining) {

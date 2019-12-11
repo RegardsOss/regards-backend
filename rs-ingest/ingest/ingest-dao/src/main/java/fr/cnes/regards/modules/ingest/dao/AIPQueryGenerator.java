@@ -18,17 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.jpa.utils.CustomPostgresDialect;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.dto.NativeSelectQuery;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
+
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.jpa.utils.CustomPostgresDialect;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.dto.NativeSelectQuery;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
 
 /**
  * Query generator to build SQL queries to run against OAISEntity repository on {@link fr.cnes.regards.modules.ingest.dto.aip.AIP} entities
@@ -48,8 +50,9 @@ public class AIPQueryGenerator {
 
         query = generatePredicates(query, filters.getState(), filters.getLastUpdate().getFrom(),
                                    filters.getLastUpdate().getTo(), filters.getSessionOwner(), filters.getSession(),
-                                   filters.getProviderIds(), filters.getAipIds(), filters.getSelectionMode() == SearchSelectionMode.INCLUDE,
-                                   filters.getTags(), filters.getCategories(), filters.getStorages());
+                                   filters.getProviderIds(), filters.getAipIds(),
+                                   filters.getSelectionMode() == SearchSelectionMode.INCLUDE, filters.getTags(),
+                                   filters.getCategories(), filters.getStorages());
 
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
         return query;
@@ -65,8 +68,9 @@ public class AIPQueryGenerator {
 
         query = generatePredicates(query, filters.getState(), filters.getLastUpdate().getFrom(),
                                    filters.getLastUpdate().getTo(), filters.getSessionOwner(), filters.getSession(),
-                                   filters.getProviderIds(), filters.getAipIds(), filters.getSelectionMode() == SearchSelectionMode.INCLUDE,
-                                   filters.getTags(), filters.getCategories(), filters.getStorages());
+                                   filters.getProviderIds(), filters.getAipIds(),
+                                   filters.getSelectionMode() == SearchSelectionMode.INCLUDE, filters.getTags(),
+                                   filters.getCategories(), filters.getStorages());
 
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
         return query;
@@ -82,8 +86,9 @@ public class AIPQueryGenerator {
 
         query = generatePredicates(query, filters.getState(), filters.getLastUpdate().getFrom(),
                                    filters.getLastUpdate().getTo(), filters.getSessionOwner(), filters.getSession(),
-                                   filters.getProviderIds(), filters.getAipIds(), filters.getSelectionMode() == SearchSelectionMode.INCLUDE,
-                                   filters.getTags(), filters.getCategories(), filters.getStorages());
+                                   filters.getProviderIds(), filters.getAipIds(),
+                                   filters.getSelectionMode() == SearchSelectionMode.INCLUDE, filters.getTags(),
+                                   filters.getCategories(), filters.getStorages());
 
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
         return query;
@@ -121,10 +126,10 @@ public class AIPQueryGenerator {
         }
 
         if ((tags != null) && !tags.isEmpty()) {
-            query = getConjunctionPredicate("tags", query, Sets.newHashSet(tags));
+            query = getDisjunctionPredicate("tags", query, Sets.newHashSet(tags));
         }
         if ((categories != null) && !categories.isEmpty()) {
-            query = getConjunctionPredicate("categories", query, categories);
+            query = getDisjunctionPredicate("categories", query, categories);
         }
         if ((storages != null) && !storages.isEmpty()) {
             query = getDisjunctionPredicate("storages", query, storages);
@@ -140,7 +145,8 @@ public class AIPQueryGenerator {
 
     private static NativeSelectQuery getDisjunctionPredicate(String propertyName, NativeSelectQuery query,
             Set<String> tags) {
-        query.andListPredicate("(" + CustomPostgresDialect.JSONB_EXISTS_ANY + "(" + propertyName + ", array[", "]))", propertyName, tags);
+        query.andListPredicate("(" + CustomPostgresDialect.JSONB_EXISTS_ANY + "(" + propertyName + ", array[", "]))",
+                               propertyName, tags);
         return query;
     }
 }

@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import java.util.List;
@@ -54,7 +55,7 @@ public interface IRequestService {
      * @param pageable
      * @return a page of entities
      */
-    Page<RequestDto> searchRequests(SearchRequestsParameters filters, Pageable pageable) throws ModuleException;
+    Page<RequestDto> findRequests(SearchRequestsParameters filters, Pageable pageable) throws ModuleException;
 
     /**
      * Delete all requests linked to provided aips
@@ -62,6 +63,12 @@ public interface IRequestService {
      */
     void deleteAllByAip(Set<AIPEntity> aipsRelatedToSip);
 
+
+    /**
+     * Schedule a job that will relaunch requests matching provided criteria
+     * @param filters requests filters
+     */
+    void relaunchRequests(SearchRequestsParameters filters);
 
     /**
      * Save provided requests into the repository
@@ -77,4 +84,23 @@ public interface IRequestService {
      * @return
      */
     AbstractRequest scheduleRequest(AbstractRequest request);
+
+    /**
+     * Fetch a page of requests and try to unblock them
+     * @param requestType the type of requests to retrieve and test
+     */
+    void unblockRequests(RequestTypeEnum requestType);
+
+    /**
+     * Associate a job to a {@link AbstractRequest}
+     * @param request the request that will start shortly
+     */
+    void scheduleJob(AbstractRequest request);
+
+
+    /**
+     * Delete the provided {@link AbstractRequest} and ensure the job is not locked and can be removed later
+     * @param request the request to delete
+     */
+    void cleanRequestJob(AbstractRequest request);
 }

@@ -64,7 +64,7 @@ public interface IAbstractRequestRepository extends JpaRepository<AbstractReques
      * Update the state of list of entities using their ids
      * @param ids request ids
      * @param state new state
-     * @return
+     * @return number of entities updated
      */
     @Modifying
     @Query(value = "UPDATE AbstractRequest SET state = :state WHERE id IN (:ids)")

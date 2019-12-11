@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
+import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,6 +54,9 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
 
     @Autowired
     private OAISDeletionRequestService oaisDeletionRequestService;
+
+    @Autowired
+    private RequestService requestService;
 
     @Autowired
     private IAIPRepository aipRepository;
@@ -108,7 +112,7 @@ public class OAISEntityDeletionJob extends AbstractJob<Void> {
             advanceCompletion();
         } while (aipsPage.hasNext());
 
-        oaisDeletionRequestService.deleteRequest(deletionRequest);
+        requestService.cleanRequestJob(deletionRequest);
     }
 
     @Override
