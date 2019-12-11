@@ -27,6 +27,7 @@ import org.mockito.Mockito;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
@@ -90,9 +91,9 @@ public class BorrowRoleServiceTest {
         // mock JWTAuthentication
         JwtService.injectToken("test", "ADMIN", "test@test.test", "test@test.test");
 
-        CoupleJwtRole newToken = borrowRoleService.switchTo(DefaultRole.PUBLIC.toString());
+        DefaultOAuth2AccessToken newToken = borrowRoleService.switchTo(DefaultRole.PUBLIC.toString());
 
-        JWTAuthentication newAuthentication = new JWTAuthentication(newToken.getAccessToken());
+        JWTAuthentication newAuthentication = new JWTAuthentication(newToken.getValue());
         newAuthentication = JwtService.parseToken(newAuthentication);
         Assert.assertNotNull(newToken);
         Assert.assertEquals("test@test.test", newAuthentication.getName());
