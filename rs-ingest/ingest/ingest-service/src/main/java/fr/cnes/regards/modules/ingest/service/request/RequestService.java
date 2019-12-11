@@ -18,9 +18,27 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -33,7 +51,6 @@ import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.mapper.IRequestMapper;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
@@ -49,22 +66,8 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.job.AIPUpdatesCreatorJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.OAISEntityDeletionJob;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
 
 /**
  * @author Léo Mieulet
@@ -107,6 +110,9 @@ public class RequestService implements IRequestService {
 
     @Autowired
     private IJobInfoService jobInfoService;
+
+    @Autowired
+    private SessionNotifier sessionNotifier;
 
     @Override
     public void handleRemoteStoreError(Set<RequestInfo> requestInfos) {
@@ -171,17 +177,15 @@ public class RequestService implements IRequestService {
 
     @Override
     public void deleteAllByAip(Set<AIPEntity> aipEntities) {
-        for (AIPEntity aipEntity : aipEntities) {
-            if (aipEntity.getState() == AIPState.GENERATED) {
-                // Check there is no IngestRequest linked to this AIP
-                List<IngestRequest> requests = ingestRequestRepository.findAllByAipsIn(aipEntity);
-                ingestRequestRepository.deleteAll(requests);
-            }
-        }
         // Make the list of all these AIPs id and remove all requests associated
         List<Long> aipIds = aipEntities.stream().map(AIPEntity::getId).collect(Collectors.toList());
 
+        List<IngestRequest> requests = ingestRequestRepository.findAllByAipsIdIn(aipIds);
+        requests.forEach(sessionNotifier::ingestRequestErrorDeleted);
+        ingestRequestRepository.deleteAll(requests);
+
         List<AIPStoreMetaDataRequest> storeMetaRequests = aipStoreMetaDataRepository.findAllByAipIdIn(aipIds);
+        storeMetaRequests.forEach(sessionNotifier::aipStoreMetaRequestErrorDeleted);
         aipStoreMetaDataRepository.deleteAll(storeMetaRequests);
 
         List<AIPUpdateRequest> updateRequests = aipUpdateRequestRepository.findAllByAipIdIn(aipIds);
@@ -238,7 +242,6 @@ public class RequestService implements IRequestService {
         return abstractRequestRepository.save(request);
     }
 
-
     @Override
     public void scheduleJob(AbstractRequest request) {
         request.setState(InternalRequestState.RUNNING);
@@ -249,17 +252,17 @@ public class RequestService implements IRequestService {
         if (request instanceof OAISDeletionRequest) {
             // Schedule OAIS Deletion job
             jobParameters.add(new JobParameter(OAISEntityDeletionJob.ID, request.getId()));
-            jobInfo = new JobInfo(false, IngestJobPriority.SESSION_DELETION_JOB_PRIORITY.getPriority(),
-                    jobParameters, authResolver.getUser(), OAISEntityDeletionJob.class.getName());
+            jobInfo = new JobInfo(false, IngestJobPriority.SESSION_DELETION_JOB_PRIORITY.getPriority(), jobParameters,
+                    authResolver.getUser(), OAISEntityDeletionJob.class.getName());
             // Lock job to avoid automatic deletion. The job must be unlock when the link to the request is removed.
         } else if (request instanceof AIPUpdatesCreatorRequest) {
             // Schedule Updates Creator job
             jobParameters.add(new JobParameter(AIPUpdatesCreatorJob.REQUEST_ID, request.getId()));
-            jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_SCAN_JOB_PRIORITY.getPriority(),
-                    jobParameters, authResolver.getUser(), AIPUpdatesCreatorJob.class.getName());
+            jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_SCAN_JOB_PRIORITY.getPriority(), jobParameters,
+                    authResolver.getUser(), AIPUpdatesCreatorJob.class.getName());
         } else {
-            throw new IllegalArgumentException(String.format("You should not use this method for requests having [%s] type",
-                    request.getDtype()));
+            throw new IllegalArgumentException(
+                    String.format("You should not use this method for requests having [%s] type", request.getDtype()));
         }
 
         jobInfo.setLocked(true);
@@ -290,7 +293,8 @@ public class RequestService implements IRequestService {
             if (!stateBySession.contains(sessionOwner, session)) {
                 // Check if the request can be processed right now
                 boolean shouldDelayRequest = shouldDelayRequest(request);
-                InternalRequestState state = shouldDelayRequest ? InternalRequestState.BLOCKED : InternalRequestState.CREATED;
+                InternalRequestState state = shouldDelayRequest ? InternalRequestState.BLOCKED
+                        : InternalRequestState.CREATED;
                 // Store if request for this session can be executed right now
                 stateBySession.put(sessionOwner, session, state);
             }
@@ -300,7 +304,7 @@ public class RequestService implements IRequestService {
         }
 
         // For macro job, create a job
-        if (requestType == RequestTypeEnum.AIP_UPDATES_CREATOR || requestType == RequestTypeEnum.OAIS_DELETION) {
+        if ((requestType == RequestTypeEnum.AIP_UPDATES_CREATOR) || (requestType == RequestTypeEnum.OAIS_DELETION)) {
             for (AbstractRequest request : requests) {
                 if (request.getState() == InternalRequestState.CREATED) {
                     scheduleJob(request);
@@ -311,7 +315,7 @@ public class RequestService implements IRequestService {
 
     @Override
     public void cleanRequestJob(AbstractRequest request) {
-        if (request instanceof OAISDeletionRequest || request instanceof AIPUpdatesCreatorRequest) {
+        if ((request instanceof OAISDeletionRequest) || (request instanceof AIPUpdatesCreatorRequest)) {
             // Unlock job to allow automatic deletion
             if ((request.getJobInfo() != null) && request.getJobInfo().isLocked()) {
                 JobInfo jobInfoToUnlock = request.getJobInfo();
@@ -321,8 +325,8 @@ public class RequestService implements IRequestService {
             abstractRequestRepository.delete(request);
             return;
         }
-        throw new IllegalArgumentException(String.format("You should not use this method for requests having [%s] type",
-                request.getDtype()));
+        throw new IllegalArgumentException(
+                String.format("You should not use this method for requests having [%s] type", request.getDtype()));
     }
 
     private boolean shouldDelayRequest(AbstractRequest request) {
@@ -348,8 +352,8 @@ public class RequestService implements IRequestService {
             case RequestTypeConstant.INGEST_VALUE:
                 // Ingest cannot be blocked, don't call this method to save that kind of request
             default:
-                throw new IllegalArgumentException(String.format("You should not use this method for requests having [%s] type",
-                        request.getDtype()));
+                throw new IllegalArgumentException(String
+                        .format("You should not use this method for requests having [%s] type", request.getDtype()));
         }
         return abstractRequestRepository.exists(spec);
     }
