@@ -329,11 +329,10 @@ public class FileDeletionRequestService {
                     .findFirst();
             if (oFileRef.isPresent()) {
                 removeOwner(oFileRef.get(), request.getOwner(), request.isForceDelete(), groupId);
-            } else {
-                // File does not exists. Handle has deletion success
-                reqGroupService.requestSuccess(groupId, FileRequestType.DELETION, request.getChecksum(),
-                                               request.getStorage(), null, Sets.newHashSet(request.getOwner()), null);
             }
+            // In all case, inform caller that deletion request is success.
+            reqGroupService.requestSuccess(groupId, FileRequestType.DELETION, request.getChecksum(),
+                                           request.getStorage(), null, Sets.newHashSet(request.getOwner()), null);
         }
     }
 
@@ -355,9 +354,6 @@ public class FileDeletionRequestService {
                 fileRefService.delete(fileReference, groupId);
             }
         }
-        // In all case request is successful for callers
-        reqGroupService.requestSuccess(groupId, FileRequestType.DELETION, fileReference.getMetaInfo().getChecksum(),
-                                       fileReference.getLocation().getStorage(), null, fileReference.getOwners(), null);
     }
 
     /**
