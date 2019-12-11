@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -64,6 +65,7 @@ import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.storage.domain.plugin.PreparationResponse;
 import fr.cnes.regards.modules.storage.service.JobsPriority;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
@@ -209,7 +211,7 @@ public class FileStorageRequestService {
                 cause = Optional.of(errorMessage);
             }
             create(Sets.newHashSet(request.getOwner()), request.buildMetaInfo(), request.getOriginUrl(),
-                   request.getStorage(), request.getSubDirectory(), status, groupId, cause);
+                   request.getStorage(), request.getOptionalSubDirectory(), status, groupId, cause);
             return Optional.empty();
         }
     }
@@ -366,11 +368,15 @@ public class FileStorageRequestService {
         try {
             PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
             IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
-            Collection<FileStorageWorkingSubset> workingSubSets = storagePlugin.prepareForStorage(fileStorageRequests);
-            for (FileStorageWorkingSubset ws : workingSubSets) {
+            PreparationResponse<FileStorageWorkingSubset, FileStorageRequest> response = storagePlugin
+                    .prepareForStorage(fileStorageRequests);
+            for (FileStorageWorkingSubset ws : response.getWorkingSubsets()) {
                 if (!ws.getFileReferenceRequests().isEmpty()) {
                     jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId(), storage));
                 }
+            }
+            for (Entry<FileStorageRequest, String> request : response.getPreparationErrors().entrySet()) {
+                this.handleStorageNotAvailable(request.getKey(), Optional.ofNullable(request.getValue()));
             }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             LOGGER.error(e.getMessage(), e);
@@ -424,7 +430,7 @@ public class FileStorageRequestService {
             fileStorageRequest.setErrorCause(errorCause.orElse(null));
             if (!storageHandler.getConfiguredStorages().contains(storage)) {
                 // The storage destination is unknown, we can already set the request in error status
-                handleStorageNotAvailable(fileStorageRequest);
+                handleStorageNotAvailable(fileStorageRequest, Optional.empty());
             } else {
                 fileStorageRequestRepo.save(fileStorageRequest);
                 LOGGER.trace("New file storage request created for file <{}> to store to {} with status {}",
@@ -485,7 +491,7 @@ public class FileStorageRequestService {
      * @param fileStorageRequests
      */
     private void handleStorageNotAvailable(Collection<FileStorageRequest> fileStorageRequests) {
-        fileStorageRequests.forEach(r -> handleStorageNotAvailable(r));
+        fileStorageRequests.forEach(r -> handleStorageNotAvailable(r, Optional.empty()));
     }
 
     /**
@@ -496,13 +502,13 @@ public class FileStorageRequestService {
      * </ul>
      * @param fileStorageRequest
      */
-    private void handleStorageNotAvailable(FileStorageRequest fileStorageRequest) {
+    private void handleStorageNotAvailable(FileStorageRequest fileStorageRequest, Optional<String> errorCause) {
         // The storage destination is unknown, we can already set the request in error status
-        String errorCause = String
+        String lErrorCause = errorCause.orElse(String
                 .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown or disabled.",
-                        fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage());
+                        fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage()));
         fileStorageRequest.setStatus(FileRequestStatus.ERROR);
-        fileStorageRequest.setErrorCause(errorCause);
+        fileStorageRequest.setErrorCause(lErrorCause);
         update(fileStorageRequest);
         LOGGER.error(fileStorageRequest.getErrorCause());
         // Send notification for file storage error
@@ -514,7 +520,7 @@ public class FileStorageRequestService {
             reqGroupService.requestError(groupId, FileRequestType.STORAGE,
                                          fileStorageRequest.getMetaInfo().getChecksum(),
                                          fileStorageRequest.getStorage(), fileStorageRequest.getStorageSubDirectory(),
-                                         fileStorageRequest.getOwners(), errorCause);
+                                         fileStorageRequest.getOwners(), lErrorCause);
         }
     }
 
@@ -595,7 +601,7 @@ public class FileStorageRequestService {
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
             // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
             create(Sets.newHashSet(request.getOwner()), newMetaInfo, request.getOriginUrl(), request.getStorage(),
-                   request.getSubDirectory(), FileRequestStatus.DELAYED, groupId, Optional.empty());
+                   request.getOptionalSubDirectory(), FileRequestStatus.DELAYED, groupId, Optional.empty());
         } else {
             if (deletionRequest.isPresent()) {
                 // Delete not running deletion request to add the new owner
@@ -608,7 +614,7 @@ public class FileStorageRequestService {
             eventPublisher.storeSuccess(fileReference, message, Sets.newHashSet(groupId));
             updatedFileRef = fileRefService.addOwner(fileReference, request.getOwner());
             reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE, request.getChecksum(),
-                                           request.getStorage(), request.getSubDirectory().orElse(null),
+                                           request.getStorage(), request.getOptionalSubDirectory().orElse(null),
                                            Sets.newHashSet(request.getOwner()), updatedFileRef);
         }
         return Optional.ofNullable(updatedFileRef);

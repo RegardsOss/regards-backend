@@ -332,7 +332,7 @@ public class RequestsGroupService {
             publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(), reqGrp.getType(), FlowItemStatus.SUCCESS,
                                                            successes));
             if (successes.isEmpty()) {
-                LOGGER.error("[{} GROUP SUCCESS {}] No success requests associated to terminated group {}",
+                LOGGER.error("[{} GROUP SUCCESS {}] No success requests associated to terminated group",
                              reqGrp.getType(), reqGrp.getId());
             }
         } else {

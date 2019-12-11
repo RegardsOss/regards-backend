@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -62,6 +63,7 @@ import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storage.domain.plugin.FileDeletionWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.storage.domain.plugin.PreparationResponse;
 import fr.cnes.regards.modules.storage.service.JobsPriority;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
@@ -174,7 +176,7 @@ public class FileDeletionRequestService {
                     if (storageHandler.getConfiguredStorages().contains(storage)) {
                         jobList = scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
                     } else {
-                        handleStorageNotAvailable(deletionRequestPage.getContent());
+                        handleStorageNotAvailable(deletionRequestPage.getContent(), Optional.empty());
                     }
                     page = deletionRequestPage.nextPageable();
                 } while (deletionRequestPage.hasNext());
@@ -203,14 +205,18 @@ public class FileDeletionRequestService {
             PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
             IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
 
-            Collection<FileDeletionWorkingSubset> workingSubSets = storagePlugin
+            PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequest> response = storagePlugin
                     .prepareForDeletion(fileDeletionRequests);
-            for (FileDeletionWorkingSubset ws : workingSubSets) {
+            for (FileDeletionWorkingSubset ws : response.getWorkingSubsets()) {
                 jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId()));
+            }
+            // Handle error requests
+            for (Entry<FileDeletionRequest, String> error : response.getPreparationErrors().entrySet()) {
+                this.handleStorageNotAvailable(error.getKey(), Optional.ofNullable(error.getValue()));
             }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             LOGGER.error(e.getMessage(), e);
-            this.handleStorageNotAvailable(fileDeletionRequests);
+            this.handleStorageNotAvailable(fileDeletionRequests, Optional.empty());
         }
         return jobInfoList;
     }
@@ -244,8 +250,9 @@ public class FileDeletionRequestService {
      * </ul>
      * @param fileDeletionRequests
      */
-    private void handleStorageNotAvailable(Collection<FileDeletionRequest> fileDeletionRequests) {
-        fileDeletionRequests.forEach(this::handleStorageNotAvailable);
+    private void handleStorageNotAvailable(Collection<FileDeletionRequest> fileDeletionRequests,
+            Optional<String> errorCause) {
+        fileDeletionRequests.forEach((r) -> this.handleStorageNotAvailable(r, errorCause));
     }
 
     /**
@@ -256,13 +263,15 @@ public class FileDeletionRequestService {
      * </ul>
      * @param fileDeletionRequest
      */
-    private void handleStorageNotAvailable(FileDeletionRequest fileDeletionRequest) {
-        // The storage destination is unknown, we can already set the request in error status
-        fileDeletionRequest.setStatus(FileRequestStatus.ERROR);
-        fileDeletionRequest.setErrorCause(String
+    private void handleStorageNotAvailable(FileDeletionRequest fileDeletionRequest, Optional<String> errorCause) {
+        String lErrorCause = errorCause.orElse(String
                 .format("File <%s> cannot be handle for deletion as destination storage <%s> is unknown or disabled.",
                         fileDeletionRequest.getFileReference().getMetaInfo().getFileName(),
                         fileDeletionRequest.getStorage()));
+        // The storage destination is unknown, we can already set the request in error status
+        fileDeletionRequest.setStatus(FileRequestStatus.ERROR);
+        fileDeletionRequest.setErrorCause(lErrorCause);
+        updateFileDeletionRequest(fileDeletionRequest);
     }
 
     /**
@@ -344,12 +353,11 @@ public class FileDeletionRequestService {
             } else {
                 // Else, directly delete the file reference
                 fileRefService.delete(fileReference, groupId);
-                reqGroupService.requestSuccess(groupId, FileRequestType.DELETION,
-                                               fileReference.getMetaInfo().getChecksum(),
-                                               fileReference.getLocation().getStorage(), null,
-                                               fileReference.getOwners(), null);
             }
         }
+        // In all case request is successful for callers
+        reqGroupService.requestSuccess(groupId, FileRequestType.DELETION, fileReference.getMetaInfo().getChecksum(),
+                                       fileReference.getLocation().getStorage(), null, fileReference.getOwners(), null);
     }
 
     /**
@@ -428,11 +436,6 @@ public class FileDeletionRequestService {
         delete(fileDeletionRequest);
         // 2. Delete the file reference in database
         fileRefService.delete(deletedFileRef, fileDeletionRequest.getGroupId());
-        // 3. Publish request success
-        reqGroupService.requestSuccess(fileDeletionRequest.getGroupId(), FileRequestType.DELETION,
-                                       deletedFileRef.getMetaInfo().getChecksum(),
-                                       deletedFileRef.getLocation().getStorage(), null, deletedFileRef.getOwners(),
-                                       null);
     }
 
     /**
