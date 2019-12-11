@@ -353,12 +353,11 @@ public class FileDeletionRequestService {
             } else {
                 // Else, directly delete the file reference
                 fileRefService.delete(fileReference, groupId);
-                reqGroupService.requestSuccess(groupId, FileRequestType.DELETION,
-                                               fileReference.getMetaInfo().getChecksum(),
-                                               fileReference.getLocation().getStorage(), null,
-                                               fileReference.getOwners(), null);
             }
         }
+        // In all case request is successful for callers
+        reqGroupService.requestSuccess(groupId, FileRequestType.DELETION, fileReference.getMetaInfo().getChecksum(),
+                                       fileReference.getLocation().getStorage(), null, fileReference.getOwners(), null);
     }
 
     /**
@@ -437,11 +436,6 @@ public class FileDeletionRequestService {
         delete(fileDeletionRequest);
         // 2. Delete the file reference in database
         fileRefService.delete(deletedFileRef, fileDeletionRequest.getGroupId());
-        // 3. Publish request success
-        reqGroupService.requestSuccess(fileDeletionRequest.getGroupId(), FileRequestType.DELETION,
-                                       deletedFileRef.getMetaInfo().getChecksum(),
-                                       deletedFileRef.getLocation().getStorage(), null, deletedFileRef.getOwners(),
-                                       null);
     }
 
     /**
