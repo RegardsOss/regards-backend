@@ -20,15 +20,17 @@ package fr.cnes.regards.modules.acquisition.domain;
 
 /**
  *
- *          ACQUIRING
- *           /      \
- *          /        \
- *     COMPLETED --> INVALID
- *         |
- *      FINISHED
+ *                   ACQUIRING
+ *                   /      \
+ *                  /        \
+ *  UPDATED -- COMPLETED --> INVALID
+ *     \           |
+ *      \______ FINISHED
+ *
  * @author Christophe Mertz
  */
 public enum ProductState {
+
     /**
      * At least one mandatory file is missing
      */

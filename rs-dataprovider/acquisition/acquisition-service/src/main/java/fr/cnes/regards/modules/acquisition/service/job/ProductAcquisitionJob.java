@@ -20,6 +20,7 @@
 package fr.cnes.regards.modules.acquisition.service.job;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,6 +57,8 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
 
     public static final String CHAIN_PARAMETER_SESSION = "session";
 
+    public static final String CHAIN_PARAMETER_ONLY_ERRORS = "onlyErr";
+
     @Autowired
     private IAcquisitionProcessingService processingService;
 
@@ -75,11 +78,17 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
      */
     private String session;
 
+    /**
+     * Only retry generation errors ?
+     */
+    private Boolean onlyErrors = Boolean.FALSE;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
         Long acqProcessingChainId = getValue(parameters, CHAIN_PARAMETER_ID);
         session = getValue(parameters, CHAIN_PARAMETER_SESSION);
+        onlyErrors = getValue(parameters, CHAIN_PARAMETER_ONLY_ERRORS);
         try {
             processingChain = processingService.getChain(acqProcessingChainId);
         } catch (ModuleException e) {
@@ -89,32 +98,37 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-
+        long productsScheduled = 0L;
         try {
             sessionNotifier.notifyStartingChain(processingChain.getLabel(), session);
             // Trying to restart products that fail during SIP generation
-            if (processingChain.isGenerationRetryEnabled()) {
-                processingService.retrySIPGeneration(processingChain);
+            if (onlyErrors) {
+                processingService.retrySIPGeneration(processingChain, Optional.of(session));
+            } else {
+                if (processingChain.isGenerationRetryEnabled()) {
+                    processingService.retrySIPGeneration(processingChain, Optional.empty());
+                }
+                // Restart interrupted jobs
+                processingService.restartInterruptedJobs(processingChain);
+                // Nominal process
+                // First step : scan and register files (Not interruptible at the moment)
+                processingService.scanAndRegisterFiles(processingChain, session);
+                // Second step : validate in progress files, build and
+                // schedule SIP generation for newly completed or finished products
+                processingService.manageRegisteredFiles(processingChain);
+                // Third step : compute new product state for already completed or finished products and schedule SIP generation.
+                // Doing this in a third step and not within the second one allows us to
+                // schedule update products only once for SIP generation
+                productsScheduled = productService.manageUpdatedProducts(processingChain);
             }
-            // Restart interrupted jobs
-            processingService.restartInterruptedJobs(processingChain);
-
-            // Nominal process
-            // First step : scan and register files (Not interruptible at the moment)
-            processingService.scanAndRegisterFiles(processingChain, session);
-            // Second step : validate in progress files, build and
-            // schedule SIP generation for newly completed or finished products
-            processingService.manageRegisteredFiles(processingChain);
-            // Third step : compute new product state for already completed or finished products and schedule SIP generation.
-            // Doing this in a third step and not within the second one allows us to
-            // schedule update products only once for SIP generation
-            productService.manageUpdatedProducts(processingChain);
         } catch (ModuleException e) {
-            // We stop the chain here, the process may be broken
-            sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
             logger.error("Business error", e);
             throw new JobRuntimeException(e);
         } finally {
+            // If no products has been scheduled for generation. The chain is over.
+            if (productsScheduled == 0) {
+                sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
+            }
             // Job is terminated ... release processing chain
             processingService.unlockChain(processingChain.getId());
         }
