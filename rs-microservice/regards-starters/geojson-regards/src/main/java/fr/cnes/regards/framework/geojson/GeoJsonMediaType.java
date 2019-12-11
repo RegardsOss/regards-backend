@@ -43,7 +43,9 @@ public final class GeoJsonMediaType {
 
     /**
      * A String equivalent of {@link MediaType#APPLICATION_JSON_UTF8}.
+     * @deprecated in favor of {@link #APPLICATION_GEOJSON_VALUE}
      */
+    @Deprecated
     public static final String APPLICATION_GEOJSON_UTF8_VALUE = APPLICATION_GEOJSON_VALUE + ";charset=UTF-8";
 
     static {

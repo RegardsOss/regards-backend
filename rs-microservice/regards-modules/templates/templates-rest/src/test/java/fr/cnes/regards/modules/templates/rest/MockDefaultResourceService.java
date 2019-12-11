@@ -22,8 +22,8 @@ import java.lang.reflect.Method;
 import java.net.URI;
 
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.core.AnnotationMappingDiscoverer;
-import org.springframework.hateoas.core.MappingDiscoverer;
+import org.springframework.hateoas.server.core.AnnotationMappingDiscoverer;
+import org.springframework.hateoas.server.core.MappingDiscoverer;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;

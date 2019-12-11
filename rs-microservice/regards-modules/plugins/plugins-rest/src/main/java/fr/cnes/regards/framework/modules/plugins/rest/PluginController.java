@@ -27,7 +27,7 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -143,7 +143,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @ResourceAccess(
             description = "Get all the class annotaded with @Plugin or only the one that implemented an optional pluginType",
             role = DefaultRole.PUBLIC)
-    public ResponseEntity<List<Resource<PluginMetaData>>> getPlugins(
+    public ResponseEntity<List<EntityModel<PluginMetaData>>> getPlugins(
             @RequestParam(value = "pluginType", required = false) String pluginType) throws EntityInvalidException {
         List<PluginMetaData> metadaData;
 
@@ -160,7 +160,8 @@ public class PluginController implements IResourceController<PluginConfiguration
             }
         }
 
-        List<Resource<PluginMetaData>> resources = metadaData.stream().map(Resource::new).collect(Collectors.toList());
+        List<EntityModel<PluginMetaData>> resources = metadaData.stream().map(EntityModel::new)
+                .collect(Collectors.toList());
 
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
@@ -171,15 +172,15 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PLUGIN_TYPES, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get all the plugin types (ie interface annotated with @PluginInterface)")
-    public ResponseEntity<List<Resource<String>>> getPluginTypes(
+    public ResponseEntity<List<EntityModel<String>>> getPluginTypes(
             @RequestParam(name = "available", required = false) Boolean available) {
         if (available != null && available) {
             Set<String> types = pluginService.getAvailablePluginTypes();
-            List<Resource<String>> resources = types.stream().map(Resource::new).collect(Collectors.toList());
+            List<EntityModel<String>> resources = types.stream().map(EntityModel::new).collect(Collectors.toList());
             return new ResponseEntity<>(resources, HttpStatus.OK);
         }
         Set<String> types = pluginService.getPluginTypes();
-        List<Resource<String>> resources = types.stream().map(Resource::new).collect(Collectors.toList());
+        List<EntityModel<String>> resources = types.stream().map(EntityModel::new).collect(Collectors.toList());
 
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
@@ -191,9 +192,10 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PLUGINS_PLUGINID, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get the plugin Meta data for a specific plugin id", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Resource<PluginMetaData>> getPluginMetaDataById(@PathVariable("pluginId") String pluginId) {
+    public ResponseEntity<EntityModel<PluginMetaData>> getPluginMetaDataById(
+            @PathVariable("pluginId") String pluginId) {
         PluginMetaData metaData = pluginService.getPluginMetaDataById(pluginId);
-        Resource<PluginMetaData> resource = new Resource<>(metaData);
+        EntityModel<PluginMetaData> resource = new EntityModel<>(metaData);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
@@ -206,7 +208,7 @@ public class PluginController implements IResourceController<PluginConfiguration
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get all the plugin configuration for a specific plugin id",
             role = DefaultRole.PUBLIC)
-    public ResponseEntity<List<Resource<PluginConfiguration>>> getPluginConfigurations(
+    public ResponseEntity<List<EntityModel<PluginConfiguration>>> getPluginConfigurations(
             @PathVariable("pluginId") String pluginId) {
         return ResponseEntity.ok(toResources(pluginService.getPluginConfigurations(pluginId)));
     }
@@ -221,7 +223,7 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PLUGINS_CONFIGS, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get all the plugin configuration for a specific type", role = DefaultRole.PUBLIC)
-    public ResponseEntity<List<Resource<PluginConfiguration>>> getPluginConfigurationsByType(
+    public ResponseEntity<List<EntityModel<PluginConfiguration>>> getPluginConfigurationsByType(
             @RequestParam(value = "pluginType", required = false) String pluginType) throws EntityNotFoundException {
 
         List<PluginConfiguration> pluginConfs;
@@ -251,7 +253,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Create a plugin configuration")
-    public ResponseEntity<Resource<PluginConfiguration>> savePluginConfiguration(
+    public ResponseEntity<EntityModel<PluginConfiguration>> savePluginConfiguration(
             @Valid @RequestBody PluginConfiguration pluginConf) throws ModuleException {
         try {
             return new ResponseEntity<>(toResource(pluginService.savePluginConfiguration(pluginConf)),
@@ -272,7 +274,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get a the plugin configuration of a specific plugin", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Resource<PluginConfiguration>> getPluginConfiguration(
+    public ResponseEntity<EntityModel<PluginConfiguration>> getPluginConfiguration(
             @PathVariable("pluginId") String pluginId, @PathVariable("configId") String configId)
             throws ModuleException {
         PluginConfiguration pluginConfig = pluginService.getPluginConfiguration(configId);
@@ -287,9 +289,9 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PLUGINS_CONFIGID, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get a the plugin configuration", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Resource<PluginConfiguration>> getPluginConfigurationDirectAccess(
+    public ResponseEntity<EntityModel<PluginConfiguration>> getPluginConfigurationDirectAccess(
             @PathVariable("configId") String configId) throws ModuleException {
-        return new ResponseEntity<>(new Resource<>(pluginService.getPluginConfiguration(configId)), HttpStatus.OK);
+        return new ResponseEntity<>(new EntityModel<>(pluginService.getPluginConfiguration(configId)), HttpStatus.OK);
     }
 
     /**
@@ -303,7 +305,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Update a plugin configuration")
-    public ResponseEntity<Resource<PluginConfiguration>> updatePluginConfiguration(
+    public ResponseEntity<EntityModel<PluginConfiguration>> updatePluginConfiguration(
             @PathVariable("pluginId") String pluginId, @PathVariable("configId") String configId,
             @Valid @RequestBody PluginConfiguration pluginConf) throws ModuleException {
 
@@ -354,8 +356,8 @@ public class PluginController implements IResourceController<PluginConfiguration
     }
 
     @Override
-    public Resource<PluginConfiguration> toResource(PluginConfiguration element, Object... extras) {
-        Resource<PluginConfiguration> resource = null;
+    public EntityModel<PluginConfiguration> toResource(PluginConfiguration element, Object... extras) {
+        EntityModel<PluginConfiguration> resource = null;
         if (element != null && element.getId() != null) {
             resource = resourceService.toResource(element);
             resourceService.addLink(resource, this.getClass(), "getPluginConfiguration", LinkRels.SELF,
