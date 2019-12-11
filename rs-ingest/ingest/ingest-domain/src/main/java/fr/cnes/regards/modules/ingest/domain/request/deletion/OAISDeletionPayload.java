@@ -18,28 +18,29 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
+import javax.validation.constraints.NotNull;
+
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 
 /**
- * @author Léo Mieulet
+ * Payload for {@link OAISDeletionRequest}
+ *
+ * @author Sébastien Binda
  */
 public class OAISDeletionPayload extends AbstractSearchAIPsParameters<OAISDeletionPayload> {
 
-    /**
-     * This boolean is sent to storage
-     */
-    private Boolean deletePhysicalFiles = true;
-
+    @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_MODE)
     private SessionDeletionMode deletionMode;
 
-    public Boolean getDeletePhysicalFiles() {
-        return deletePhysicalFiles;
-    }
+    private boolean deleteFiles;
 
-    public void setDeletePhysicalFiles(Boolean deletePhysicalFiles) {
-        this.deletePhysicalFiles = deletePhysicalFiles;
-    }
+    /**
+     * All internal request steps including local and remote ones
+     */
+    @NotNull(message = "Deletion request step is required")
+    private DeletionRequestStep step;
 
     public SessionDeletionMode getDeletionMode() {
         return deletionMode;
@@ -48,4 +49,25 @@ public class OAISDeletionPayload extends AbstractSearchAIPsParameters<OAISDeleti
     public void setDeletionMode(SessionDeletionMode deletionMode) {
         this.deletionMode = deletionMode;
     }
+
+    public static OAISDeletionPayload build(SessionDeletionMode deletionMode, boolean deleteFiles) {
+        OAISDeletionPayload odp = new OAISDeletionPayload();
+        odp.setDeletionMode(deletionMode);
+        odp.step = DeletionRequestStep.INITIAL;
+        odp.deleteFiles = deleteFiles;
+        return odp;
+    }
+
+    public DeletionRequestStep getStep() {
+        return step;
+    }
+
+    public void setStep(DeletionRequestStep step) {
+        this.step = step;
+    }
+
+    public boolean isDeleteFiles() {
+        return deleteFiles;
+    }
+
 }

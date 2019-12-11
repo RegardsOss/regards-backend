@@ -74,11 +74,11 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
-import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
+import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
@@ -112,7 +112,7 @@ public class AIPService implements IAIPService {
     private IAIPUpdatesCreatorRepository aipUpdatesCreatorRepository;
 
     @Autowired
-    private OAISDeletionRequestService oaisDeletionRequestService;
+    private OAISDeletionService oaisDeletionRequestService;
 
     @Autowired
     private ICustomAIPRepository customAIPRepository;
@@ -162,12 +162,12 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Page<AIPEntity> findByFilters(SearchAIPsParameters filters, Pageable pageable) {
+    public Page<AIPEntity> findByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable) {
         return aipRepository.findAll(AIPEntitySpecification.searchAll(filters, pageable), pageable);
     }
 
     @Override
-    public Page<AIPEntityLight> findLightByFilters(SearchAIPsParameters filters, Pageable pageable) {
+    public Page<AIPEntityLight> findLightByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable) {
         LOGGER.debug("Searching AIPS with categories=[{}]...", String.join(",", filters.getCategories()));
         long start = System.currentTimeMillis();
         Page<AIPEntityLight> response = aipLigthRepository.findAll(AIPEntitySpecification.searchAll(filters, pageable),

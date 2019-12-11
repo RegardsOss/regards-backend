@@ -18,8 +18,24 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -31,16 +47,16 @@ import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IOAISDeletionCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.StorageDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
@@ -62,19 +78,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Léo Mieulet
@@ -136,7 +139,7 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
     private IOAISDeletionRequestRepository oaisDeletionRequestRepository;
 
     @Autowired
-    private IStorageDeletionRequestRepository storageDeletionRequestRepository;
+    private IOAISDeletionCreatorRepository oaisDeletionCreatorRepository;
 
     @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
@@ -174,10 +177,9 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         publishSIPEvent(create("provider 7", TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
 
-        IngestMetadataDto mtd = IngestMetadataDto.build(SESSION_OWNER_0, SESSION_0,
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                Sets.newHashSet(CATEGORIES_0),
-                StorageMetadata.build(STORAGE_0));
+        IngestMetadataDto mtd = IngestMetadataDto
+                .build(SESSION_OWNER_0, SESSION_0, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                       Sets.newHashSet(CATEGORIES_0), StorageMetadata.build(STORAGE_0));
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 1000);
 
@@ -199,17 +201,18 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         updateRequest.get(0).setState(InternalRequestState.ERROR);
         aipUpdateRequestRepository.saveAll(updateRequest);
 
-        ingestRequestRepository.save(IngestRequest.build(mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
-                IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip()));
-        OAISDeletionRequest deletionRequest = new OAISDeletionRequest();
+        ingestRequestRepository
+                .save(IngestRequest.build(mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
+                                          IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip()));
+        OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest();
         deletionRequest.setCreationDate(OffsetDateTime.now());
         deletionRequest.setState(InternalRequestState.ERROR);
-        oaisDeletionRequestRepository.save(deletionRequest);
+        oaisDeletionCreatorRepository.save(deletionRequest);
 
-        StorageDeletionRequest storageDeletionRequest = StorageDeletionRequest
-                .build("some request id", aips.get(0).getSip(), SessionDeletionMode.BY_STATE);
-        storageDeletionRequest.setState(InternalRequestState.ERROR);
-        storageDeletionRequestRepository.save(storageDeletionRequest);
+        OAISDeletionRequest oaisDeletionRequest = OAISDeletionRequest.build(aips.get(0), SessionDeletionMode.BY_STATE,
+                                                                            true);
+        oaisDeletionRequest.setState(InternalRequestState.ERROR);
+        oaisDeletionRequestRepository.save(oaisDeletionRequest);
         LOGGER.info("=========================> END INIT DATA FOR TESTS <=====================");
     }
 
@@ -224,8 +227,8 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(6, requests.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH INGEST IN ERROR <=====================");
-        requests = requestService.findRequests(SearchRequestsParameters.build()
-                .withRequestType(RequestTypeEnum.INGEST).withState(InternalRequestState.ERROR), pr);
+        requests = requestService.findRequests(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.INGEST)
+                .withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH INGEST IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 
@@ -254,8 +257,8 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(1, requests.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH UPDATE IN ERROR <=====================");
-        requests = requestService.findRequests(SearchRequestsParameters.build()
-                .withRequestType(RequestTypeEnum.UPDATE).withState(InternalRequestState.ERROR), pr);
+        requests = requestService.findRequests(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.UPDATE)
+                .withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH UPDATE IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
     }
@@ -280,26 +283,23 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         sip4 = sipRepository.save(sip4);
 
         AIP aip = AIP.build(sip4.getSip(),
-                UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
-                Optional.empty(), "SIP_001"
-        );
+                            UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                            Optional.empty(), "SIP_001");
         AIPEntity aipEntity = AIPEntity.build(sip4, AIPState.GENERATED, aip);
 
         aipEntity = aipRepository.save(aipEntity);
 
-
-
         AIP aip2 = AIP.build(sip4.getSip(),
-                UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
-                Optional.empty(), "SIP_002"
-        );
+                             UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                             Optional.empty(), "SIP_002");
         AIPEntity aipEntity2 = AIPEntity.build(sip4, AIPState.GENERATED, aip2);
 
         aipEntity2 = aipRepository.save(aipEntity2);
 
-        IngestRequest ingestRequest = IngestRequest.build(IngestMetadata.build("SESSION_OWNER", "SESSION", "ingestChain",
-                new HashSet<>(), StorageMetadata.build("RAS"))
-                , InternalRequestState.ERROR, IngestRequestStep.LOCAL_SCHEDULED, aipEntity.getSip().getSip());
+        IngestRequest ingestRequest = IngestRequest.build(IngestMetadata
+                .build("SESSION_OWNER", "SESSION", "ingestChain", new HashSet<>(), StorageMetadata.build("RAS")),
+                                                          InternalRequestState.ERROR, IngestRequestStep.LOCAL_SCHEDULED,
+                                                          aipEntity.getSip().getSip());
         ingestRequest.setAips(Lists.newArrayList(aipEntity));
         abstractRequestRepository.save(ingestRequest);
 
@@ -307,7 +307,8 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         storeMetaDataRequest.setState(InternalRequestState.ERROR);
         abstractRequestRepository.save(storeMetaDataRequest);
 
-        List<AIPUpdateRequest> updateRequest = AIPUpdateRequest.build(aipEntity2, AIPUpdateParametersDto.build(SearchAIPsParameters.build()).withAddTags(Lists.newArrayList("TEST")), false);
+        List<AIPUpdateRequest> updateRequest = AIPUpdateRequest.build(aipEntity2, AIPUpdateParametersDto
+                .build(SearchAIPsParameters.build()).withAddTags(Lists.newArrayList("TEST")), false);
         updateRequest.get(0).setState(InternalRequestState.ERROR);
         abstractRequestRepository.saveAll(updateRequest);
         return Sets.newHashSet(aipEntity, aipEntity2);

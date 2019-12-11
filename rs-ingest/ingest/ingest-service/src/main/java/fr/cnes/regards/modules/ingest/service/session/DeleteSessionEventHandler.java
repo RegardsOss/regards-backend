@@ -31,12 +31,13 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
+import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
 import fr.cnes.regards.modules.sessionmanager.domain.event.DeleteSessionEvent;
 
 /**
  * Handler to remove SIP related to a session
  * @author Léo Mieulet
+ * @author Sébastien Binda
  */
 @Component
 public class DeleteSessionEventHandler
@@ -48,7 +49,7 @@ public class DeleteSessionEventHandler
     private ISubscriber subscriber;
 
     @Autowired
-    private OAISDeletionRequestService deletionService;
+    private OAISDeletionService deletionService;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -66,7 +67,7 @@ public class DeleteSessionEventHandler
         // Set working tenant
         runtimeTenantResolver.forceTenant(wrapper.getTenant());
         // Run a SessionDeletionJob
-        deletionService.registerOAISDeletionRequest(OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY)
+        deletionService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY)
                 .withSessionOwner(event.getSource()).withSession(event.getName()));
     }
 

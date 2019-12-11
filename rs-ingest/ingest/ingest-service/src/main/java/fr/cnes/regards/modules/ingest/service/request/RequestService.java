@@ -54,7 +54,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.mapper.IRequestMapper;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
@@ -65,12 +65,15 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.job.AIPUpdatesCreatorJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
-import fr.cnes.regards.modules.ingest.service.job.OAISEntityDeletionJob;
+import fr.cnes.regards.modules.ingest.service.job.OAISDeletionsCreatorJob;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 
 /**
+ * Service to handle all {@link AbstractRequest}s
+ *
  * @author Léo Mieulet
+ * @author Sébastien Binda
  */
 @Service
 @MultitenantTransactional
@@ -249,11 +252,11 @@ public class RequestService implements IRequestService {
         Set<JobParameter> jobParameters = Sets.newHashSet();
         JobInfo jobInfo;
 
-        if (request instanceof OAISDeletionRequest) {
+        if (request instanceof OAISDeletionCreatorRequest) {
             // Schedule OAIS Deletion job
-            jobParameters.add(new JobParameter(OAISEntityDeletionJob.ID, request.getId()));
+            jobParameters.add(new JobParameter(OAISDeletionsCreatorJob.REQUEST_ID, request.getId()));
             jobInfo = new JobInfo(false, IngestJobPriority.SESSION_DELETION_JOB_PRIORITY.getPriority(), jobParameters,
-                    authResolver.getUser(), OAISEntityDeletionJob.class.getName());
+                    authResolver.getUser(), OAISDeletionsCreatorJob.class.getName());
             // Lock job to avoid automatic deletion. The job must be unlock when the link to the request is removed.
         } else if (request instanceof AIPUpdatesCreatorRequest) {
             // Schedule Updates Creator job
@@ -315,7 +318,7 @@ public class RequestService implements IRequestService {
 
     @Override
     public void cleanRequestJob(AbstractRequest request) {
-        if ((request instanceof OAISDeletionRequest) || (request instanceof AIPUpdatesCreatorRequest)) {
+        if ((request instanceof OAISDeletionCreatorRequest) || (request instanceof AIPUpdatesCreatorRequest)) {
             // Unlock job to allow automatic deletion
             if ((request.getJobInfo() != null) && request.getJobInfo().isLocked()) {
                 JobInfo jobInfoToUnlock = request.getJobInfo();
@@ -337,6 +340,10 @@ public class RequestService implements IRequestService {
             case RequestTypeConstant.AIP_UPDATES_CREATOR_VALUE:
                 spec = AbstractRequestSpecifications.searchRequestBlockingAipUpdatesCreator(sessionOwnerOp, sessionOp);
                 break;
+            case RequestTypeConstant.OAIS_DELETION_CREATOR_VALUE:
+                spec = AbstractRequestSpecifications.searchRequestBlockingOAISDeletionCreator(sessionOwnerOp,
+                                                                                              sessionOp);
+                break;
             case RequestTypeConstant.OAIS_DELETION_VALUE:
                 spec = AbstractRequestSpecifications.searchRequestBlockingOAISDeletion(sessionOwnerOp, sessionOp);
                 break;
@@ -344,7 +351,7 @@ public class RequestService implements IRequestService {
                 spec = AbstractRequestSpecifications.searchRequestBlockingStorageDeletion(sessionOwnerOp, sessionOp);
                 break;
             case RequestTypeConstant.STORE_METADATA_VALUE:
-                spec = AbstractRequestSpecifications.searchRequestBlockingStore(sessionOwnerOp, sessionOp);
+                spec = AbstractRequestSpecifications.searchRequestBlockingStoreMeta(sessionOwnerOp, sessionOp);
                 break;
             case RequestTypeConstant.UPDATE_VALUE:
                 spec = AbstractRequestSpecifications.searchRequestBlockingUpdate(sessionOwnerOp, sessionOp);
