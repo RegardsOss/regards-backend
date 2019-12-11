@@ -204,6 +204,7 @@ public class SIPEntity extends AbstractOAISEntity {
         sipEntity.setSipId(urn);
         sipEntity.setCreationDate(OffsetDateTime.now());
         sipEntity.setState(state);
+        sipEntity.setIpType(sip.getIpType());
         sipEntity.setSip(sip);
         // Extract from IngestMetadata
         sipEntity.setSession(metadata.getSession());

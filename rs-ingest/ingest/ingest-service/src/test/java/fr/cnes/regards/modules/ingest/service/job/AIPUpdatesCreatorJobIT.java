@@ -54,7 +54,8 @@ import org.springframework.test.context.TestPropertySource;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=update_scanner_job",
-        "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false" })
+        "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
+        "spring.jpa.show-sql=true" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
 

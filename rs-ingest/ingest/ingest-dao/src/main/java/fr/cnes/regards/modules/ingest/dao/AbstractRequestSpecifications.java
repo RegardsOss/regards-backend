@@ -65,7 +65,7 @@ public final class AbstractRequestSpecifications {
         };
     }
 
-    public static Specification<AbstractRequest> searchAllByFilters(SearchRequestsParameters filters) {
+    public static Specification<AbstractRequest> searchAllByFilters(SearchRequestsParameters filters, Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 
@@ -100,6 +100,15 @@ public final class AbstractRequestSpecifications {
             if (filters.getState() != null) {
                 predicates.add(cb.equal(root.get("state"), filters.getState()));
             }
+            if (filters.getStateExcluded() != null) {
+                predicates.add(cb.notEqual(root.get("state"), filters.getStateExcluded()));
+            }
+
+            // Add order
+            Sort.Direction defaultDirection = Sort.Direction.ASC;
+            String defaultAttribute = "id";
+            query.orderBy(SpecificationUtils.buildOrderBy(page, root, cb, defaultAttribute, defaultDirection));
+
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

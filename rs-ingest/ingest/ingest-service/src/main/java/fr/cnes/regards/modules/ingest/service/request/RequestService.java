@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import fr.cnes.regards.modules.ingest.service.job.RequestDeletionJob;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +42,6 @@ import com.google.common.collect.Table;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
@@ -165,10 +165,16 @@ public class RequestService implements IRequestService {
         return abstractRequestRepository.findAll(AbstractRequestSpecifications.searchAllByRemoteStepGroupId(groupIds));
     }
 
+
     @Override
-    public Page<RequestDto> findRequests(SearchRequestsParameters filters, Pageable pageable) throws ModuleException {
-        Page<AbstractRequest> requests = abstractRequestRepository
-                .findAll(AbstractRequestSpecifications.searchAllByFilters(filters), pageable);
+    public Page<AbstractRequest> findRequests(SearchRequestsParameters filters, Pageable pageable) {
+        return abstractRequestRepository
+                .findAll(AbstractRequestSpecifications.searchAllByFilters(filters, pageable), pageable);
+    }
+
+    @Override
+    public Page<RequestDto> findRequestDtos(SearchRequestsParameters filters, Pageable pageable) {
+        Page<AbstractRequest> requests = findRequests(filters, pageable);
 
         // Transform AbstractRequests to DTO
         List<RequestDto> dtoList = new ArrayList<>();
@@ -281,8 +287,7 @@ public class RequestService implements IRequestService {
         SearchRequestsParameters searchFilters = SearchRequestsParameters.build().withRequestType(requestType)
                 .withState(InternalRequestState.BLOCKED);
         // Retrieve PENDING requests
-        Page<AbstractRequest> pageRequests = abstractRequestRepository
-                .findAll(AbstractRequestSpecifications.searchAllByFilters(searchFilters), PageRequest.of(0, 500));
+        Page<AbstractRequest> pageRequests = findRequests(searchFilters, PageRequest.of(0, 500));
 
         // Store request state (can be scheduled right now ?) by session
         Table<String, String, InternalRequestState> stateBySession = HashBasedTable.create();
@@ -330,6 +335,29 @@ public class RequestService implements IRequestService {
         }
         throw new IllegalArgumentException(
                 String.format("You should not use this method for requests having [%s] type", request.getDtype()));
+    }
+
+    @Override
+    public void registerRequestDeletion(SearchRequestsParameters filters) {
+        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestDeletionJob.CRITERIA, filters));
+        // Schedule OAIS Deletion job
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_DELETION_JOB_PRIORITY.getPriority(), jobParameters,
+                authResolver.getUser(), RequestDeletionJob.class.getName());
+        jobInfoService.createAsQueued(jobInfo);
+    }
+
+    @Override
+    public void registerRequestRetry(SearchRequestsParameters filters) {
+
+    }
+
+    @Override
+    public void deleteRequest(AbstractRequest request) {
+        if (request instanceof OAISDeletionRequest || request instanceof AIPUpdatesCreatorRequest) {
+            cleanRequestJob(request);
+        } else {
+            abstractRequestRepository.delete(request);
+        }
     }
 
     private boolean shouldDelayRequest(AbstractRequest request) {

@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
@@ -55,7 +54,15 @@ public interface IRequestService {
      * @param pageable
      * @return a page of entities
      */
-    Page<RequestDto> findRequests(SearchRequestsParameters filters, Pageable pageable) throws ModuleException;
+    Page<AbstractRequest> findRequests(SearchRequestsParameters filters, Pageable pageable);
+
+    /**
+     * Retrieve all requests matching provided criteria
+     * @param filters
+     * @param pageable
+     * @return a page of DTO entities
+     */
+    Page<RequestDto> findRequestDtos(SearchRequestsParameters filters, Pageable pageable);
 
     /**
      * Delete all requests linked to provided aips
@@ -103,4 +110,18 @@ public interface IRequestService {
      * @param request the request to delete
      */
     void cleanRequestJob(AbstractRequest request);
+
+    /**
+     * Schedule a job to delete all requests matching provided filters
+     * @param filters
+     */
+    void registerRequestDeletion(SearchRequestsParameters filters);
+
+    /**
+     * Schedule a job to retry all requests matching provided filters from {@link fr.cnes.regards.modules.ingest.domain.request.InternalRequestState} ERROR to CREATED
+     * @param filters
+     */
+    void registerRequestRetry(SearchRequestsParameters filters);
+
+    void deleteRequest(AbstractRequest request);
 }

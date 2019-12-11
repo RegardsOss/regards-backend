@@ -44,6 +44,8 @@ public class SearchRequestsParameters {
 
     private InternalRequestState state;
 
+    private InternalRequestState stateExcluded;
+
     public static SearchRequestsParameters build() {
         return new SearchRequestsParameters();
     }
@@ -141,5 +143,13 @@ public class SearchRequestsParameters {
 
     public void setState(InternalRequestState state) {
         this.state = state;
+    }
+
+    public InternalRequestState getStateExcluded() {
+        return stateExcluded;
+    }
+
+    public void setStateExcluded(InternalRequestState stateExcluded) {
+        this.stateExcluded = stateExcluded;
     }
 }

@@ -86,6 +86,7 @@ public class AIPEntity extends AbstractAIPEntity {
         aipEntity.setSip(sip);
         // Extracted from SIP
         aipEntity.setProviderId(sip.getProviderId());
+        aipEntity.setIpType(sip.getIpType());
         aipEntity.setSessionOwner(sip.getSessionOwner());
         aipEntity.setSession(sip.getSession());
         aipEntity.setCategories(sip.getCategories());

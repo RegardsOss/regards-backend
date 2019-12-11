@@ -19,9 +19,12 @@
 package fr.cnes.regards.modules.ingest.domain;
 
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import java.time.OffsetDateTime;
 import java.util.Set;
 import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -67,6 +70,10 @@ public abstract class AbstractOAISEntity {
     @NotNull(message = "Last update date is required")
     @Column(name = "last_update", nullable = false)
     private OffsetDateTime lastUpdate;
+
+    @Column(length = 20, name = "ip_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private EntityType ipType;
 
     public OffsetDateTime getCreationDate() {
         return creationDate;
@@ -122,5 +129,13 @@ public abstract class AbstractOAISEntity {
 
     public void setCategories(Set<String> categories) {
         this.categories = categories;
+    }
+
+    public EntityType getIpType() {
+        return ipType;
+    }
+
+    public void setIpType(EntityType ipType) {
+        this.ipType = ipType;
     }
 }

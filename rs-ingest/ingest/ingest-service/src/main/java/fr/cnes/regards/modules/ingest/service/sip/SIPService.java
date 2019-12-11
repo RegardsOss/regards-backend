@@ -66,8 +66,9 @@ public class SIPService implements ISIPService {
     @Override
     public Page<SIPEntity> search(SearchSIPsParameters params, Pageable page) {
         return sipRepository.loadAll(SIPEntitySpecifications
-                .search(params.getProviderIds(), null, params.getSessionOwner(), params.getSession(), params.getFrom(),
-                        params.getStates(), true, params.getTags(), params.getCategories(), page), page);
+                .search(params.getProviderIds(), null, params.getSessionOwner(), params.getSession(), params.getIpType(),
+                        params.getFrom(), params.getStates(), true, params.getTags(),
+                        params.getCategories(), page), page);
     }
 
     @Override

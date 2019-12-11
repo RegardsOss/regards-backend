@@ -18,34 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.assertj.core.util.Sets;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
@@ -59,6 +35,28 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.assertj.core.util.Sets;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
         "spring.jpa.show-sql=false", "regards.amqp.enabled=true", "regards.scheduler.pool.size=4",
@@ -220,7 +218,8 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
         results = aipService.findByFilters(SearchAIPsParameters.build().withState(AIPState.STORED)
                 .withLastUpdateFrom(OffsetDateTime.now().minusHours(5))
                 .withLastUpdateTo(OffsetDateTime.now().plusDays(5)).withTags(TAG_1).withSessionOwner(SESSION_OWNER_1)
-                .withSession(SESSION_1).withStorages(STORAGE_2).withCategories(CATEGORIES_2), PageRequest.of(0, 100));
+                .withSession(SESSION_1).withStorages(STORAGE_2).withCategories(CATEGORIES_2).withIpType(EntityType.DATA),
+                PageRequest.of(0, 100));
         Assert.assertEquals(1, results.getTotalElements());
     }
 

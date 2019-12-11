@@ -222,7 +222,7 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         PageRequest pr = PageRequest.of(0, 100);
         LOGGER.info("=========================> BEGIN SEARCH ALL IN ERROR <=====================");
         Page<RequestDto> requests = requestService
-                .findRequests(SearchRequestsParameters.build().withState(InternalRequestState.ERROR), pr);
+                .findRequestDtos(SearchRequestsParameters.build().withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH ALL IN ERROR <=====================");
         Assert.assertEquals(6, requests.getTotalElements());
 
@@ -233,25 +233,25 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(1, requests.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH AIP UPDATE CREATOR IN ERROR <=====================");
-        requests = requestService.findRequests(SearchRequestsParameters.build()
+        requests = requestService.findRequestDtos(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR).withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH AIP UPDATE CREATOR IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH OAIS DELETION IN ERROR <=====================");
-        requests = requestService.findRequests(SearchRequestsParameters.build()
+        requests = requestService.findRequestDtos(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.OAIS_DELETION).withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH OAIS DELETION IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH STORAGE DELETEION IN ERROR <=====================");
-        requests = requestService.findRequests(SearchRequestsParameters.build()
+        requests = requestService.findRequestDtos(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.STORAGE_DELETION).withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH STORAGE DELETION IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH STORE META IN ERROR <=====================");
-        requests = requestService.findRequests(SearchRequestsParameters.build()
+        requests = requestService.findRequestDtos(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.STORE_METADATA).withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH STORE META IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());

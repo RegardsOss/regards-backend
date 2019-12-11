@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,6 +53,8 @@ public class SearchSIPsParameters {
     private String session;
 
     private String processing;
+
+    private EntityType ipType;
 
     private Set<String> providerIds = Sets.newHashSet();
 
@@ -149,6 +152,11 @@ public class SearchSIPsParameters {
         return this;
     }
 
+    public SearchSIPsParameters withIpType(EntityType ipType) {
+        this.ipType = ipType;
+        return this;
+    }
+
     public OffsetDateTime getFrom() {
         return from;
     }
@@ -203,5 +211,21 @@ public class SearchSIPsParameters {
 
     public void setProviderIds(Set<String> providerIds) {
         this.providerIds = providerIds;
+    }
+
+    public EntityType getIpType() {
+        return ipType;
+    }
+
+    public void setIpType(EntityType ipType) {
+        this.ipType = ipType;
+    }
+
+    public String getProcessing() {
+        return processing;
+    }
+
+    public void setProcessing(String processing) {
+        this.processing = processing;
     }
 }
