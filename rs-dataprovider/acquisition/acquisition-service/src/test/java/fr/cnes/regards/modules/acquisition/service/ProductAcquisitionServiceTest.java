@@ -77,8 +77,9 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskStreamScanning;
-import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
+import fr.cnes.regards.modules.acquisition.service.session.SessionProductPropertyEnum;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 
 /**
@@ -345,21 +346,6 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
                                                                             Arrays.asList(ProductSIPState.SCHEDULED));
         Assert.assertTrue(scheduled == 4);
 
-        //        // Test job algo synchronously
-        //        for (Product product : products) {
-        //
-        //            SIPGenerationJob genJob = new SIPGenerationJob();
-        //            beanFactory.autowireBean(genJob);
-        //
-        //            Map<String, JobParameter> parameters = new HashMap<>();
-        //            parameters.put(SIPGenerationJob.CHAIN_PARAMETER_ID,
-        //                           new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, processingChain.getId()));
-        //            parameters.put(SIPGenerationJob.PRODUCT_ID, new JobParameter(SIPGenerationJob.PRODUCT_ID, product.getId()));
-        //
-        //            genJob.setParameters(parameters);
-        //            genJob.run();
-        //        }
-
         Assert.assertTrue(fileService.countByChain(processingChain) == 4);
         Assert.assertTrue(fileService.countByChainAndStateIn(processingChain,
                                                              Arrays.asList(AcquisitionFileState.ACQUIRED)) == 4);
@@ -389,6 +375,9 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
                 .countByChainAndStateIn(processingChain,
                                         Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID)));
 
+        // Wait for job ends
+        Thread.sleep(5000);
+
         // Let's test SessionNotifier
         ArgumentCaptor<SessionMonitoringEvent> grantedInfo = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(grantedInfo.capture());
@@ -398,15 +387,28 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
             // We ignore all others types of events
             if (event instanceof SessionMonitoringEvent) {
                 SessionMonitoringEvent monitoringEvent = (SessionMonitoringEvent) event;
-                if (callByProperty.containsKey(monitoringEvent.getProperty())) {
-                    callByProperty.put(monitoringEvent.getProperty(),
-                                       callByProperty.get(monitoringEvent.getProperty()) + 1);
+                String key = monitoringEvent.getProperty() + "_" + monitoringEvent.getOperator().toString();
+                if (callByProperty.containsKey(key)) {
+                    callByProperty.put(key, callByProperty.get(key) + 1);
                 } else {
-                    callByProperty.put(monitoringEvent.getProperty(), 1);
+                    callByProperty.put(key, 1);
                 }
             }
         }
-        Assert.assertEquals(4, (int) callByProperty.get(SessionNotifier.PROPERTY_GENERATED));
+        Integer incCompleted = callByProperty
+                .get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getValue() + "_" + SessionNotificationOperator.INC);
+        Assert.assertNotNull(incCompleted);
+        Assert.assertEquals(4, incCompleted.intValue());
+
+        Integer decCompleted = callByProperty
+                .get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getValue() + "_" + SessionNotificationOperator.DEC);
+        Assert.assertNotNull(decCompleted);
+        Assert.assertEquals(4, decCompleted.intValue());
+
+        Integer incGenerated = callByProperty
+                .get(SessionProductPropertyEnum.PROPERTY_GENERATED.getValue() + "_" + SessionNotificationOperator.INC);
+        Assert.assertNotNull(incGenerated);
+        Assert.assertEquals(4, incGenerated.intValue());
     }
 
     //    @Test

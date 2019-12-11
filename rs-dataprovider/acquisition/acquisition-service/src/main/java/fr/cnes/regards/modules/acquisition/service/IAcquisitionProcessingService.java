@@ -135,10 +135,11 @@ public interface IAcquisitionProcessingService {
      * Start a chain manually
      * @param processingChainId identifier of the chain to start
      * @param session optional, replace the name of the acquisition session
+     * @param onlyErrors, launch session only to retry generation errors.
      * @return started processing chain
      * @throws ModuleException if error occurs!
      */
-    AcquisitionProcessingChain startManualChain(Long processingChainId, Optional<String> session)
+    AcquisitionProcessingChain startManualChain(Long processingChainId, Optional<String> session, boolean onlyErrors)
             throws ModuleException;
 
     /**
@@ -243,7 +244,7 @@ public interface IAcquisitionProcessingService {
      * Retry SIP generation for products in {@link ProductSIPState#GENERATION_ERROR} or
      *  {@link ProductSIPState#INGESTION_FAILED}
      */
-    void retrySIPGeneration(AcquisitionProcessingChain processingChain);
+    void retrySIPGeneration(AcquisitionProcessingChain processingChain, Optional<String> sessionToRetry);
 
     /**
      * Build summaries list of {@link AcquisitionProcessingChain}s.
@@ -263,4 +264,6 @@ public interface IAcquisitionProcessingService {
     List<AcquisitionProcessingChain> findAllBootableAutomaticChains();
 
     List<AcquisitionProcessingChain> findByModeAndActiveTrueAndLockedFalse(AcquisitionProcessingChainMode manual);
+
+    void relaunchErrors(String chainName, String session) throws ModuleException;
 }

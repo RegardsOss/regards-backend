@@ -90,7 +90,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
         if (Files.isDirectory(dirPath)) {
             scannedFiles.addAll(scanDirectory(dirPath, lastModificationDate));
         } else {
-            throw new PluginUtilsRuntimeException(String.format("Invalid directory path : {}", dirPath.toString()));
+            throw new PluginUtilsRuntimeException(String.format("Invalid directory path : %s", dirPath.toString()));
         }
         return scannedFiles;
 
