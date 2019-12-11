@@ -91,8 +91,8 @@ public class JWTService {
     /**
      * validity delay expressed in minutes. Defaults to 120.
      */
-    @Value("${jwt.validityDelay:120}")
-    private long validityDelay = 120;
+    @Value("${access_token.validity_period:7200}")
+    private long validityDelay = 7200;
 
     /**
      * Inject a generated token in the {@link SecurityContextHolder}
@@ -184,7 +184,6 @@ public class JWTService {
     }
 
     /**
-     * FIXME : JWT should be completed with expiration date
      *
      * FIXME : JWT generate must manage RSA keys
      *
@@ -196,13 +195,11 @@ public class JWTService {
      * @return a Json Web Token
      */
     public String generateToken(String tenant, String user, String email, String role) {
-        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(tenant, role, user, email)).setSubject(user)
-                .signWith(ALGO, TextCodec.BASE64.encode(secret))
-                .setExpiration(Date.from(OffsetDateTime.now().plusMinutes(validityDelay).toInstant())).compact();
+        return generateToken(tenant, user, email, role, getExpirationDate(OffsetDateTime.now()),
+                             null, secret, false);
     }
 
     /**
-     * FIXME : JWT should be completed with expiration date
      *
      * FIXME : JWT generate must manage RSA keys
      *
@@ -230,6 +227,8 @@ public class JWTService {
      */
     public String generateToken(String tenant, String user, String email, String role, OffsetDateTime expirationDate,
             Map<String, Object> additionalParams, String secret, boolean shorter) {
+        // THIS METHOD IS NOT USED BY OAUTH2 AUTHENTICATION
+        // I.E. NOT USED TO GENERATE TOKENS FOR AUTHENTICATION ON REGARDS PRIVATE USER BASE
         return Jwts.builder().setIssuer("regards")
                 .setClaims(generateClaims(tenant, role, user, email, additionalParams)).setSubject(user)
                 .signWith(shorter ? SHORT_ALGO : ALGO, TextCodec.BASE64.encode(secret))
@@ -311,11 +310,7 @@ public class JWTService {
         secret = pSecret;
     }
 
-    public void setValidityDelay(long pValidityDelay) {
-        validityDelay = pValidityDelay;
-    }
-
     public OffsetDateTime getExpirationDate(OffsetDateTime generationDate) {
-        return generationDate.plusMinutes(validityDelay);
+        return generationDate.plusSeconds(validityDelay);
     }
 }
