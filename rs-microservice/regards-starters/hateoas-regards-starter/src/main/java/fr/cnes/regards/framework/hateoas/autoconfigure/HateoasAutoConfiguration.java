@@ -40,7 +40,7 @@ public class HateoasAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public IResourceService resourceService(AccessDecisionManager pAccessDecisionManager) {
-        return new DefaultResourceService(pAccessDecisionManager);
+    public IResourceService resourceService(AccessDecisionManager accessDecisionManager) {
+        return new DefaultResourceService(accessDecisionManager);
     }
 }

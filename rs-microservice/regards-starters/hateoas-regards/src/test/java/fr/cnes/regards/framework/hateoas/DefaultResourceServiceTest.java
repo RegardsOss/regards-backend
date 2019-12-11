@@ -27,7 +27,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -108,9 +108,9 @@ public class DefaultResourceServiceTest {
     public void testAuthorizedLinkCreation() {
 
         final PojoController pojoController = new PojoController(resourceServiceMock);
-        final List<Resource<Pojo>> pojos = pojoController.getPojos();
+        final List<EntityModel<Pojo>> pojos = pojoController.getPojos();
         Assert.assertEquals(2, pojos.size());
-        Assert.assertEquals(2, pojos.get(0).getLinks().size());
+        Assert.assertTrue(pojos.get(0).getLinks().hasSize(2));
     }
 
     /**
@@ -126,9 +126,9 @@ public class DefaultResourceServiceTest {
                 .decide(Mockito.eq(jwtAuth), Mockito.any(), Mockito.eq(null));
 
         final PojoController pojoController = new PojoController(resourceServiceMock);
-        final List<Resource<Pojo>> pojos = pojoController.getPojos();
+        final List<EntityModel<Pojo>> pojos = pojoController.getPojos();
         Assert.assertEquals(2, pojos.size());
-        Assert.assertEquals(0, pojos.get(0).getLinks().size());
+        Assert.assertTrue(pojos.get(0).getLinks().hasSize(0));
     }
 
     /**
@@ -188,7 +188,7 @@ public class DefaultResourceServiceTest {
 
         @ResourceAccess(description = "Get all pojos")
         @RequestMapping(method = RequestMethod.GET)
-        public List<Resource<Pojo>> getPojos() {
+        public List<EntityModel<Pojo>> getPojos() {
             final List<Pojo> pojos = new ArrayList<>();
             pojos.add(new Pojo(1L, "first"));
             pojos.add(new Pojo(2L, "second"));
@@ -197,21 +197,21 @@ public class DefaultResourceServiceTest {
 
         @ResourceAccess(description = "Get single pojo")
         @RequestMapping(method = RequestMethod.GET, value = "/{pPojoId}")
-        public Resource<Pojo> getPojo(Long pPojoId) {
+        public EntityModel<Pojo> getPojo(Long pPojoId) {
             final Pojo pojo = new Pojo(3L, "third");
             return toResource(pojo);
         }
 
         @ResourceAccess(description = "Update pojo")
         @RequestMapping(method = RequestMethod.PUT)
-        public Resource<Pojo> updatePojo(@Valid @RequestBody Pojo pPojo) {
+        public EntityModel<Pojo> updatePojo(@Valid @RequestBody Pojo pPojo) {
             final Pojo pojo = new Pojo(4L, "fourth");
             return toResource(pojo);
         }
 
         @Override
-        public Resource<Pojo> toResource(Pojo element, Object... extras) {
-            final Resource<Pojo> resource = resourceService.toResource(element);
+        public EntityModel<Pojo> toResource(Pojo element, Object... extras) {
+            final EntityModel<Pojo> resource = resourceService.toResource(element);
             resourceService.addLink(resource, PojoController.class, GET_METHOD_NAME, LinkRels.SELF,
                                     MethodParamFactory.build(Long.class, element.getId()));
             resourceService.addLink(resource, PojoController.class, UPDATE_METHOD_NAME, LinkRels.UPDATE,

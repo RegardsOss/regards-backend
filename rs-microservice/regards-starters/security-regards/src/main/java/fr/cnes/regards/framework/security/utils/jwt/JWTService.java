@@ -36,8 +36,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.impl.TextCodec;
+import io.jsonwebtoken.io.Encoders;
+import io.jsonwebtoken.security.Keys;
 
 /**
  * Utility service based on JJWT library to generate or part a JWT based on a secret.
@@ -140,47 +140,41 @@ public class JWTService {
      */
     public JWTAuthentication parseToken(final JWTAuthentication pAuthentication) throws JwtException {
 
-        try {
-            final Jws<Claims> claims = Jwts.parser().setSigningKey(TextCodec.BASE64.encode(secret))
-                    .parseClaimsJws(pAuthentication.getJwt());
-            // OK, trusted JWT parsed and validated
+        final Jws<Claims> claims = Jwts.parser().setSigningKey(Encoders.BASE64.encode(secret.getBytes()))
+                .parseClaimsJws(pAuthentication.getJwt());
+        // OK, trusted JWT parsed and validated
 
-            final String tenant = claims.getBody().get(CLAIM_TENANT, String.class);
-            if (tenant == null) {
-                LOG.error("The tenant cannot be null");
-                throw new MissingClaimException(CLAIM_TENANT);
-            }
-
-            final String login = claims.getBody().getSubject();
-            if (login == null) {
-                LOG.error("The subject cannot be null");
-                throw new MissingClaimException(CLAIM_SUBJECT);
-            }
-
-            final String role = claims.getBody().get(CLAIM_ROLE, String.class);
-            if (role == null) {
-                LOG.error("The role cannot be null");
-                throw new MissingClaimException(CLAIM_ROLE);
-            }
-
-            final String email = claims.getBody().get(CLAIM_EMAIL, String.class);
-            if (email == null) {
-                LOG.error("The email cannot be null");
-                throw new MissingClaimException(CLAIM_EMAIL);
-            }
-
-            pAuthentication.setUser(new UserDetails(tenant, email, login, role));
-
-            pAuthentication.setRole(role);
-
-            pAuthentication.setAuthenticated(Boolean.TRUE);
-
-            return pAuthentication;
-        } catch (final SignatureException e) {
-            final String message = "JWT signature validation failed";
-            LOG.error(message, e);
-            throw new InvalidJwtException(message);
+        final String tenant = claims.getBody().get(CLAIM_TENANT, String.class);
+        if (tenant == null) {
+            LOG.error("The tenant cannot be null");
+            throw new MissingClaimException(CLAIM_TENANT);
         }
+
+        final String login = claims.getBody().getSubject();
+        if (login == null) {
+            LOG.error("The subject cannot be null");
+            throw new MissingClaimException(CLAIM_SUBJECT);
+        }
+
+        final String role = claims.getBody().get(CLAIM_ROLE, String.class);
+        if (role == null) {
+            LOG.error("The role cannot be null");
+            throw new MissingClaimException(CLAIM_ROLE);
+        }
+
+        final String email = claims.getBody().get(CLAIM_EMAIL, String.class);
+        if (email == null) {
+            LOG.error("The email cannot be null");
+            throw new MissingClaimException(CLAIM_EMAIL);
+        }
+
+        pAuthentication.setUser(new UserDetails(tenant, email, login, role));
+
+        pAuthentication.setRole(role);
+
+        pAuthentication.setAuthenticated(Boolean.TRUE);
+
+        return pAuthentication;
     }
 
     /**
@@ -196,8 +190,8 @@ public class JWTService {
      * @return a Json Web Token
      */
     public String generateToken(String tenant, String user, String email, String role) {
-        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(tenant, role, user, email)).setSubject(user)
-                .signWith(ALGO, TextCodec.BASE64.encode(secret))
+        return Jwts.builder().setIssuer("REGARDS").setClaims(generateClaims(tenant, role, user, email)).setSubject(user)
+                .signWith(Keys.hmacShaKeyFor(secret.getBytes()), ALGO)
                 .setExpiration(Date.from(OffsetDateTime.now().plusMinutes(validityDelay).toInstant())).compact();
     }
 
@@ -230,9 +224,9 @@ public class JWTService {
      */
     public String generateToken(String tenant, String user, String email, String role, OffsetDateTime expirationDate,
             Map<String, Object> additionalParams, String secret, boolean shorter) {
-        return Jwts.builder().setIssuer("regards")
+        return Jwts.builder().setIssuer("REGARDS")
                 .setClaims(generateClaims(tenant, role, user, email, additionalParams)).setSubject(user)
-                .signWith(shorter ? SHORT_ALGO : ALGO, TextCodec.BASE64.encode(secret))
+                .signWith(Keys.hmacShaKeyFor(secret.getBytes()), shorter ? SHORT_ALGO : ALGO)
                 .setExpiration(Date.from(expirationDate.toInstant())).compact();
     }
 
@@ -243,13 +237,7 @@ public class JWTService {
      * @return parsed {@link Claims}
      */
     public Claims parseToken(String token, String secret) throws InvalidJwtException {
-        try {
-            return Jwts.parser().setSigningKey(TextCodec.BASE64.encode(secret)).parseClaimsJws(token).getBody();
-        } catch (final SignatureException e) {
-            final String message = "Invalid token";
-            LOG.error(message, e);
-            throw new InvalidJwtException(message);
-        }
+        return Jwts.parser().setSigningKey(Keys.hmacShaKeyFor(secret.getBytes())).parseClaimsJws(token).getBody();
     }
 
     /**

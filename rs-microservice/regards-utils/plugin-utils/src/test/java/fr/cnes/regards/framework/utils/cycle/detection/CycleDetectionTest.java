@@ -82,6 +82,7 @@ public class CycleDetectionTest {
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_PACKAGE);
+
         SamplePluginWithPojo samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojo.class,
                                                                   new HashMap<>());
 

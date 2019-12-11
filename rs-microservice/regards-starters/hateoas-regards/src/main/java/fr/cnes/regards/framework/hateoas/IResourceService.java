@@ -19,9 +19,9 @@
 package fr.cnes.regards.framework.hateoas;
 
 import org.springframework.cglib.core.Converter;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.util.Assert;
 
 /**
@@ -34,17 +34,17 @@ public interface IResourceService {
      * Convert object to resource
      * @param <T> element to convert
      * @param object object
-     * @return {@link Resource}
+     * @return {@link EntityModel}
      */
-    default <T> Resource<T> toResource(T object) {
+    default <T> EntityModel<T> toResource(T object) {
         Assert.notNull(object, "Object is required");
-        return new Resource<>(object);
+        return new EntityModel<>(object);
     }
 
     /**
-     * Utility method to add a build link to the specified {@link ResourceSupport}
+     * Utility method to add a build link to the specified {@link RepresentationModel}
      */
-    void addLink(ResourceSupport resource, Class<?> controller, String methodName, String rel,
+    void addLink(RepresentationModel<?> resource, Class<?> controller, String methodName, String rel,
             MethodParam<?>... methodParams);
 
     /**
@@ -57,9 +57,9 @@ public interface IResourceService {
     Link buildLink(Class<?> controller, String methodName, String rel, MethodParam<?>... methodParams);
 
     /**
-     * Utility method to add a build link with parameters to the specified {@link ResourceSupport}
+     * Utility method to add a build link with parameters to the specified {@link RepresentationModel}
      */
-    <C> void addLinkWithParams(ResourceSupport resource, Class<C> controller, String methodName, String rel,
+    <C> void addLinkWithParams(RepresentationModel<?> resource, Class<C> controller, String methodName, String rel,
             MethodParam<?>... methodParams);
 
     /**

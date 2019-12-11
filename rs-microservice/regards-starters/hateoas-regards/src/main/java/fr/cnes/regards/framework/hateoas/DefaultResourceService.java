@@ -28,8 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cglib.core.Converter;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
@@ -65,8 +65,8 @@ public class DefaultResourceService implements IResourceService {
     }
 
     @Override
-    public void addLink(ResourceSupport resource, final Class<?> controller, final String methodName, final String rel,
-            final MethodParam<?>... methodParams) {
+    public void addLink(RepresentationModel<?> resource, final Class<?> controller, final String methodName,
+            final String rel, final MethodParam<?>... methodParams) {
 
         Assert.notNull(resource, "Resource should not be null");
         Link link = buildLink(controller, methodName, rel, methodParams);
@@ -113,7 +113,7 @@ public class DefaultResourceService implements IResourceService {
     }
 
     protected Link buildLink(final Method pMethod, final String pRel, final Object... pParameterValues) {
-        return ControllerLinkBuilder.linkTo(pMethod, pParameterValues).withRel(pRel);
+        return WebMvcLinkBuilder.linkTo(pMethod, pParameterValues).withRel(pRel);
     }
 
     /**
@@ -134,8 +134,8 @@ public class DefaultResourceService implements IResourceService {
      * even if you defined in your classpath a converter implementing Converter<ComplexEntity, String>
      */
     @Override
-    public <C> void addLinkWithParams(ResourceSupport resource, final Class<C> controller, final String methodName,
-            final String rel, final MethodParam<?>... methodParams) {
+    public <C> void addLinkWithParams(RepresentationModel<?> resource, final Class<C> controller,
+            final String methodName, final String rel, final MethodParam<?>... methodParams) {
 
         Assert.notNull(resource, "Resource should not be null");
         Link link = buildLinkWithParams(controller, methodName, rel, methodParams);
@@ -166,14 +166,14 @@ public class DefaultResourceService implements IResourceService {
 
         try {
             Method method = getMethod(controller, methodName, parameterTypes);
-            C proxyControllerInstance = ControllerLinkBuilder.methodOn(controller);
+            C proxyControllerInstance = WebMvcLinkBuilder.methodOn(controller);
             Object invoke;
             if (parameterValues != null) {
                 invoke = method.invoke(proxyControllerInstance, parameterValues.toArray());
             } else {
                 invoke = method.invoke(proxyControllerInstance);
             }
-            return ControllerLinkBuilder.linkTo(invoke).withRel(rel);
+            return WebMvcLinkBuilder.linkTo(invoke).withRel(rel);
         } catch (MethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             // Do not insert link
             LOGGER.trace("HATEOAS link skipped silently due to introspection error or access denied", e);
@@ -196,14 +196,13 @@ public class DefaultResourceService implements IResourceService {
             checkAuthorization(method);
             return method;
         } catch (final NoSuchMethodException e) {
-            final String message = MessageFormat
-                    .format("No such method {0} in controller {1}.", pMethodName, pController.getCanonicalName());
+            final String message = MessageFormat.format("No such method {0} in controller {1}.", pMethodName,
+                                                        pController.getCanonicalName());
             LOGGER.error(message, e);
             throw new MethodException(message);
         } catch (final SecurityException e) {
-            final String message = MessageFormat
-                    .format("Security exception accessing method {0} in controller {1}.", pMethodName,
-                            pController.getCanonicalName());
+            final String message = MessageFormat.format("Security exception accessing method {0} in controller {1}.",
+                                                        pMethodName, pController.getCanonicalName());
             LOGGER.error(message, e);
             throw new MethodException(message);
         }
