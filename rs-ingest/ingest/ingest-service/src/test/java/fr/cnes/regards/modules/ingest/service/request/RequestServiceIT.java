@@ -18,24 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -78,6 +62,19 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Léo Mieulet
@@ -227,7 +224,7 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(6, requests.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH INGEST IN ERROR <=====================");
-        requests = requestService.findRequests(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.INGEST)
+        requests = requestService.findRequestDtos(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.INGEST)
                 .withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH INGEST IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
@@ -257,7 +254,7 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(1, requests.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH UPDATE IN ERROR <=====================");
-        requests = requestService.findRequests(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.UPDATE)
+        requests = requestService.findRequestDtos(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.UPDATE)
                 .withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH UPDATE IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());

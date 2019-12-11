@@ -32,16 +32,16 @@ import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IOAISDeletionCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.StorageDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
@@ -130,7 +130,7 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
     private IOAISDeletionRequestRepository oaisDeletionRequestRepository;
 
     @Autowired
-    private IStorageDeletionRequestRepository storageDeletionRequestRepository;
+    private IOAISDeletionCreatorRepository oaisDeletionCreatorRepository;
 
     @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
@@ -219,17 +219,18 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         updateRequest.get(0).setState(InternalRequestState.ERROR);
         aipUpdateRequestRepository.saveAll(updateRequest);
 
-        ingestRequestRepository.save(IngestRequest.build(mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
-                IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip()));
-        OAISDeletionRequest deletionRequest = new OAISDeletionRequest();
+        ingestRequestRepository
+                .save(IngestRequest.build(mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
+                        IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip()));
+        OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest();
         deletionRequest.setCreationDate(OffsetDateTime.now());
         deletionRequest.setState(InternalRequestState.ERROR);
-        oaisDeletionRequestRepository.save(deletionRequest);
+        oaisDeletionCreatorRepository.save(deletionRequest);
 
-        StorageDeletionRequest storageDeletionRequest = StorageDeletionRequest
-                .build("some request id", aips.get(0).getSip(), SessionDeletionMode.BY_STATE);
-        storageDeletionRequest.setState(InternalRequestState.ERROR);
-        storageDeletionRequestRepository.save(storageDeletionRequest);
+        OAISDeletionRequest oaisDeletionRequest = OAISDeletionRequest.build(aips.get(0), SessionDeletionMode.BY_STATE,
+                true);
+        oaisDeletionRequest.setState(InternalRequestState.ERROR);
+        oaisDeletionRequestRepository.save(oaisDeletionRequest);
         LOGGER.info("=========================> END INIT DATA FOR TESTS <=====================");
     }
 

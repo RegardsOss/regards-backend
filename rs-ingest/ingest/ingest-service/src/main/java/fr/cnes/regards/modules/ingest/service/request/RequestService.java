@@ -353,7 +353,7 @@ public class RequestService implements IRequestService {
 
     @Override
     public void deleteRequest(AbstractRequest request) {
-        if (request instanceof OAISDeletionRequest || request instanceof AIPUpdatesCreatorRequest) {
+        if (request instanceof OAISDeletionCreatorRequest || request instanceof AIPUpdatesCreatorRequest) {
             cleanRequestJob(request);
         } else {
             abstractRequestRepository.delete(request);
