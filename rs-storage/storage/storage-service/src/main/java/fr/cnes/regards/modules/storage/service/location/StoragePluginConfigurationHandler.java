@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -49,7 +50,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
  * @author Sébastien Binda
  */
 @Component
-public class StoragePluginConfigurationHandler implements IHandler<PluginConfEvent> {
+public class StoragePluginConfigurationHandler implements IHandler<BroadcastPluginConfEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StoragePluginConfigurationHandler.class);
 
@@ -68,14 +69,14 @@ public class StoragePluginConfigurationHandler implements IHandler<PluginConfEve
 
     @PostConstruct
     public void init() {
-        subscriber.subscribeTo(PluginConfEvent.class, this);
+        subscriber.subscribeTo(BroadcastPluginConfEvent.class, this);
     }
 
     /**
      * When a {@link PluginConfiguration} is created, updated or deleted handle the event to update the list of plugin configurations.
      */
     @Override
-    public void handle(TenantWrapper<PluginConfEvent> wrapper) {
+    public void handle(TenantWrapper<BroadcastPluginConfEvent> wrapper) {
         String tenant = wrapper.getTenant();
         if ((wrapper.getContent().getPluginTypes().contains(IStorageLocation.class.getName()))) {
             runtimeTenantResolver.forceTenant(tenant);
