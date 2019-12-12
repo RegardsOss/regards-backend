@@ -4,6 +4,8 @@ DROP INDEX idx_sip_session;
 
 alter table t_sip add column session_owner varchar(128) NOT NULL;
 alter table t_sip add column session_name varchar(128) NOT NULL;
+alter table t_sip add column ip_type varchar(20) NOT NULL;
+
 alter table t_sip RENAME column providerid to provider_id;
 alter table t_sip DROP COLUMN processing;
 alter table t_sip RENAME COLUMN ingestDate TO creation_date;
@@ -16,6 +18,7 @@ ALTER TABLE t_sip ADD COLUMN errors jsonb;
 
 create index idx_sip_session_owner on t_sip (session_owner);
 create index idx_sip_session on t_sip (session_name);
+create index idx_sip_ip_type on t_sip (ip_type);
 CREATE INDEX idx_sip_storage ON t_sip USING gin (storages);
 
 
@@ -29,6 +32,7 @@ create index idx_sip_version on t_sip (version);
 
 alter table t_aip add column session_owner varchar(128) NOT NULL;
 alter table t_aip add column session_name varchar(128) NOT NULL;
+alter table t_aip add column ip_type varchar(20) NOT NULL;
 alter table t_aip ADD COLUMN checksum varchar(128);
 ALTER TABLE t_aip ADD COLUMN storages jsonb;
 ALTER TABLE t_aip ADD COLUMN errors jsonb;
@@ -43,7 +47,7 @@ alter table t_aip add column tags jsonb;
 alter table t_aip drop column error_message;
 alter table t_aip rename column aipId to aip_id;
 
-CREATE INDEX idx_search_aip ON t_aip (session_owner, session_name, state, last_update);
+CREATE INDEX idx_search_aip ON t_aip (session_owner, session_name, state, last_update, ip_type);
 
 CREATE INDEX idx_aip_storage ON t_aip USING gin (storages);
 CREATE INDEX idx_aip_provider_id ON t_aip (provider_id);

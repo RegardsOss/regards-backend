@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.dto.aip;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
 import java.time.OffsetDateTime;
@@ -37,6 +38,8 @@ import org.apache.commons.compress.utils.Lists;
 public abstract class AbstractSearchAIPsParameters <T extends AbstractSearchAIPsParameters> {
 
     private AIPState state;
+
+    private EntityType ipType;
 
     private OAISDateRange lastUpdate = new OAISDateRange();
 
@@ -177,6 +180,11 @@ public abstract class AbstractSearchAIPsParameters <T extends AbstractSearchAIPs
         return (T) this;
     }
 
+    public T withIpType(EntityType ipType) {
+        this.ipType = ipType;
+        return (T) this;
+    }
+
     public AIPState getState() {
         return state;
     }
@@ -255,5 +263,13 @@ public abstract class AbstractSearchAIPsParameters <T extends AbstractSearchAIPs
 
     public void setAipIds(List<String> aipIds) {
         this.aipIds = aipIds;
+    }
+
+    public EntityType getIpType() {
+        return ipType;
+    }
+
+    public void setIpType(EntityType ipType) {
+        this.ipType = ipType;
     }
 }

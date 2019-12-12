@@ -33,10 +33,15 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
+ * JPA {@link Specification} to search for {@link AbstractRequest}s
+ *
  * @author Léo Mieulet
+ * @author Sébastien Binda
  */
 public final class AbstractRequestSpecifications {
 
@@ -58,7 +63,7 @@ public final class AbstractRequestSpecifications {
         };
     }
 
-    public static Specification<AbstractRequest> searchAllByFilters(SearchRequestsParameters filters) {
+    public static Specification<AbstractRequest> searchAllByFilters(SearchRequestsParameters filters, Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 
@@ -93,19 +98,30 @@ public final class AbstractRequestSpecifications {
             if (filters.getState() != null) {
                 predicates.add(cb.equal(root.get("state"), filters.getState()));
             }
+            if (filters.getStateExcluded() != null) {
+                predicates.add(cb.notEqual(root.get("state"), filters.getStateExcluded()));
+            }
+
+            // Add order
+            Sort.Direction defaultDirection = Sort.Direction.ASC;
+            String defaultAttribute = "id";
+            query.orderBy(SpecificationUtils.buildOrderBy(page, root, cb, defaultAttribute, defaultDirection));
+
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
 
-    public static Specification<AbstractRequest> searchRequestBlockingAipUpdatesCreator(Optional<String> sessionOwner, Optional<String> session) {
+    public static Specification<AbstractRequest> searchRequestBlockingAipUpdatesCreator(Optional<String> sessionOwner,
+            Optional<String> session) {
 
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 
-            predicates.add(AbstractRequestSpecifications.aggregateRequest(cb,
-                    AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner, session),
-                    AbstractRequestSpecifications.searchOAISDeletion(root, cb)
-            ));
+            predicates.add(AbstractRequestSpecifications
+                    .aggregateRequest(cb,
+                                      AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
+                                                                                        session),
+                                      AbstractRequestSpecifications.searchOAISDeletion(root, cb)));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
@@ -113,17 +129,19 @@ public final class AbstractRequestSpecifications {
         };
     }
 
-
-    public static Specification<AbstractRequest> searchRequestBlockingUpdate(Optional<String> sessionOwner, Optional<String> session) {
+    public static Specification<AbstractRequest> searchRequestBlockingUpdate(Optional<String> sessionOwner,
+            Optional<String> session) {
 
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 
-            predicates.add(AbstractRequestSpecifications.aggregateRequest(cb,
-                    AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner, session),
-                    AbstractRequestSpecifications.searchStorageDeletion(root, cb, sessionOwner, session),
-                    AbstractRequestSpecifications.searchOAISDeletion(root, cb)
-            ));
+            predicates.add(AbstractRequestSpecifications
+                    .aggregateRequest(cb,
+                                      AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
+                                                                                        session),
+                                      AbstractRequestSpecifications.searchStorageDeletion(root, cb, sessionOwner,
+                                                                                          session),
+                                      AbstractRequestSpecifications.searchOAISDeletion(root, cb)));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
@@ -131,18 +149,18 @@ public final class AbstractRequestSpecifications {
         };
     }
 
-
-    public static Specification<AbstractRequest> searchRequestBlockingStore(Optional<String> sessionOwner, Optional<String> session) {
+    public static Specification<AbstractRequest> searchRequestBlockingStoreMeta(Optional<String> sessionOwner,
+            Optional<String> session) {
 
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 
-            predicates.add(AbstractRequestSpecifications.aggregateRequest(cb,
-                    AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
-                    AbstractRequestSpecifications.searchStorageDeletion(root, cb, sessionOwner, session),
-                    AbstractRequestSpecifications.searchAipUpdatesCreator(root, cb),
-                    AbstractRequestSpecifications.searchOAISDeletion(root, cb)
-            ));
+            predicates.add(AbstractRequestSpecifications
+                    .aggregateRequest(cb, AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
+                                      AbstractRequestSpecifications.searchStorageDeletion(root, cb, sessionOwner,
+                                                                                          session),
+                                      AbstractRequestSpecifications.searchAipUpdatesCreator(root, cb),
+                                      AbstractRequestSpecifications.searchOAISDeletion(root, cb)));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
@@ -150,17 +168,18 @@ public final class AbstractRequestSpecifications {
         };
     }
 
-
-    public static Specification<AbstractRequest> searchRequestBlockingOAISDeletion(Optional<String> sessionOwner, Optional<String> session) {
+    public static Specification<AbstractRequest> searchRequestBlockingOAISDeletion(Optional<String> sessionOwner,
+            Optional<String> session) {
 
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 
-            predicates.add(AbstractRequestSpecifications.aggregateRequest(cb,
-                    AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner, session),
-                    AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
-                    AbstractRequestSpecifications.searchAipUpdatesCreator(root, cb)
-            ));
+            predicates.add(AbstractRequestSpecifications
+                    .aggregateRequest(cb,
+                                      AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
+                                                                                        session),
+                                      AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
+                                      AbstractRequestSpecifications.searchAipUpdatesCreator(root, cb)));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
@@ -168,17 +187,18 @@ public final class AbstractRequestSpecifications {
         };
     }
 
-
-    public static Specification<AbstractRequest> searchRequestBlockingStorageDeletion(Optional<String> sessionOwner, Optional<String> session) {
+    public static Specification<AbstractRequest> searchRequestBlockingStorageDeletion(Optional<String> sessionOwner,
+            Optional<String> session) {
 
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 
-            predicates.add(AbstractRequestSpecifications.aggregateRequest(cb,
-                    AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner, session),
-                    AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
-                    AbstractRequestSpecifications.searchAipUpdatesCreator(root, cb)
-            ));
+            predicates.add(AbstractRequestSpecifications
+                    .aggregateRequest(cb,
+                                      AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
+                                                                                        session),
+                                      AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
+                                      AbstractRequestSpecifications.searchAipUpdatesCreator(root, cb)));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
@@ -186,20 +206,45 @@ public final class AbstractRequestSpecifications {
         };
     }
 
-    public static Predicate searchStorageDeletion(Root<AbstractRequest> root, CriteriaBuilder cb, Optional<String> sessionOwner, Optional<String> session) {
-        return AbstractRequestSpecifications.searchMicroRequest(root, cb, sessionOwner, session, RequestTypeConstant.STORAGE_DELETION_VALUE);
+    public static Specification<AbstractRequest> searchRequestBlockingOAISDeletionCreator(Optional<String> sessionOwner,
+            Optional<String> session) {
+        return (root, query, cb) -> {
+            Set<Predicate> predicates = Sets.newHashSet();
+
+            predicates.add(AbstractRequestSpecifications
+                    .aggregateRequest(cb,
+                                      AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
+                                                                                        session),
+                                      AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session)));
+
+            predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
+
+            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
     }
 
-    public static Predicate searchIngest(Root<AbstractRequest> root, CriteriaBuilder cb, Optional<String> sessionOwner, Optional<String> session) {
-        return AbstractRequestSpecifications.searchMicroRequest(root, cb, sessionOwner, session, RequestTypeConstant.INGEST_VALUE);
+    public static Predicate searchStorageDeletion(Root<AbstractRequest> root, CriteriaBuilder cb,
+            Optional<String> sessionOwner, Optional<String> session) {
+        return AbstractRequestSpecifications.searchMicroRequest(root, cb, sessionOwner, session,
+                                                                RequestTypeConstant.STORAGE_DELETION_VALUE);
     }
 
-    public static Predicate searchStoreMetadata(Root<AbstractRequest> root, CriteriaBuilder cb, Optional<String> sessionOwner, Optional<String> session) {
-        return AbstractRequestSpecifications.searchMicroRequest(root, cb, sessionOwner, session, RequestTypeConstant.STORE_METADATA_VALUE);
+    public static Predicate searchIngest(Root<AbstractRequest> root, CriteriaBuilder cb, Optional<String> sessionOwner,
+            Optional<String> session) {
+        return AbstractRequestSpecifications.searchMicroRequest(root, cb, sessionOwner, session,
+                                                                RequestTypeConstant.INGEST_VALUE);
     }
 
-    public static Predicate searchUpdate(Root<AbstractRequest> root, CriteriaBuilder cb, Optional<String> sessionOwner, Optional<String> session) {
-        return AbstractRequestSpecifications.searchMicroRequest(root, cb, sessionOwner, session, RequestTypeConstant.UPDATE_VALUE);
+    public static Predicate searchStoreMetadata(Root<AbstractRequest> root, CriteriaBuilder cb,
+            Optional<String> sessionOwner, Optional<String> session) {
+        return AbstractRequestSpecifications.searchMicroRequest(root, cb, sessionOwner, session,
+                                                                RequestTypeConstant.STORE_METADATA_VALUE);
+    }
+
+    public static Predicate searchUpdate(Root<AbstractRequest> root, CriteriaBuilder cb, Optional<String> sessionOwner,
+            Optional<String> session) {
+        return AbstractRequestSpecifications.searchMicroRequest(root, cb, sessionOwner, session,
+                                                                RequestTypeConstant.UPDATE_VALUE);
     }
 
     public static Predicate searchOAISDeletion(Root<AbstractRequest> root, CriteriaBuilder cb) {
@@ -207,7 +252,8 @@ public final class AbstractRequestSpecifications {
     }
 
     public static Predicate searchAipUpdatesCreator(Root<AbstractRequest> root, CriteriaBuilder cb) {
-        return AbstractRequestSpecifications.searchMacroRequest(root, cb, RequestTypeConstant.AIP_UPDATES_CREATOR_VALUE);
+        return AbstractRequestSpecifications.searchMacroRequest(root, cb,
+                                                                RequestTypeConstant.AIP_UPDATES_CREATOR_VALUE);
     }
 
     public static Predicate searchMicroRequest(Root<AbstractRequest> root, CriteriaBuilder cb,
@@ -230,7 +276,7 @@ public final class AbstractRequestSpecifications {
     public static Predicate getRunningRequestFilter(Root<AbstractRequest> root, CriteriaBuilder cb) {
         Set<Predicate> statePredicates = Sets.newHashSet();
         ArrayList<InternalRequestState> runningStates = Lists.newArrayList(InternalRequestState.CREATED,
-                InternalRequestState.RUNNING);
+                                                                           InternalRequestState.RUNNING);
         for (InternalRequestState state : runningStates) {
             statePredicates.add(cb.equal(root.get("state"), state));
         }
@@ -239,8 +285,7 @@ public final class AbstractRequestSpecifications {
         return cb.or(statePredicates.toArray(new Predicate[statePredicates.size()]));
     }
 
-
-    public static Predicate aggregateRequest(CriteriaBuilder cb, Predicate ... predicates) {
+    public static Predicate aggregateRequest(CriteriaBuilder cb, Predicate... predicates) {
         // Use the OR operator between each state
         return cb.or(predicates);
     }

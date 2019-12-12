@@ -178,7 +178,7 @@ public class IngestRequestServiceTest extends IngestMultitenantServiceTest {
         System.out.printf("Duration : %d ms", System.currentTimeMillis() - start);
         // Check results
         Assert.assertEquals(0,
-                            service.findRequests(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
+                            service.findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
                                     .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10))
                                     .getTotalElements());
         aipRepo.findAll().forEach(a -> {
@@ -206,7 +206,7 @@ public class IngestRequestServiceTest extends IngestMultitenantServiceTest {
             System.out.printf("Duration : %d ms \n", System.currentTimeMillis() - start);
             // Check results
             Assert.assertEquals(remaining,
-                                service.findRequests(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
+                                service.findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
                                         .withRequestType(RequestTypeEnum.STORE_METADATA), PageRequest.of(0, 10))
                                         .getTotalElements());
             aipRepo.findAll().forEach(a -> {

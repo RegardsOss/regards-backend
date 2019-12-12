@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,22 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dao;
-
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.StorageDeletionRequest;
-import org.springframework.data.jpa.repository.JpaRepository;
+package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
 /**
- * {@link StorageDeletionRequest} repository
+ * Available steps to follow to properly handle SIP/AIP deletion
  *
- * @author Léo Mieulet
- *
+ * @author Sébastien Binda
  */
-public interface IStorageDeletionRequestRepository extends JpaRepository<StorageDeletionRequest, Long> {
+public enum DeletionRequestStep {
 
-    /**
-     * Retrieve the number of entity with the provided state
-     */
-    long countByState(InternalRequestState state);
+    INITIAL,
+
+    STORAGE_DELETION_REQUESTED,
+
+    STORAGE_DELETION_ERROR;
+
 }

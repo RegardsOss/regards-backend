@@ -80,8 +80,7 @@ public final class AIPEntitySpecification {
             }
             predicates.addAll(OAISEntitySpecification
                     .buildCommonPredicate(root, cb, filters.getTags(), filters.getSessionOwner(), filters.getSession(),
-                                          filters.getProviderIds(), filters.getCategories()));
-            query.orderBy(cb.desc(root.get("creationDate")));
+                            filters.getIpType(), filters.getProviderIds(), filters.getCategories()));
 
             // Add order
             Sort.Direction defaultDirection = Sort.Direction.ASC;

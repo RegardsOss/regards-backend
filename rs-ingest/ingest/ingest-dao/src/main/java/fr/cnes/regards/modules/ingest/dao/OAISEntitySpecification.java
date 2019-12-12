@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.ingest.dao;
 
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import java.util.List;
 import java.util.Set;
 
@@ -24,7 +25,7 @@ public final class OAISEntitySpecification {
     }
 
     public static Set<Predicate> buildCommonPredicate(Root<?> root, CriteriaBuilder cb, List<String> tags,
-            String sessionOwner, String session, Set<String> providerIds, Set<String> categories) {
+            String sessionOwner, String session, EntityType ipType, Set<String> providerIds, Set<String> categories) {
 
         Set<Predicate> predicates = Sets.newHashSet();
         if ((tags != null) && !tags.isEmpty()) {
@@ -37,6 +38,9 @@ public final class OAISEntitySpecification {
         }
         if (session != null) {
             predicates.add(cb.equal(root.get("session"), session));
+        }
+        if (ipType != null) {
+            predicates.add(cb.equal(root.get("ipType"), ipType));
         }
         if ((providerIds != null) && !providerIds.isEmpty()) {
             Set<Predicate> providerIdsPredicates = Sets.newHashSet();

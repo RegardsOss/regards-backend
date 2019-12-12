@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
@@ -43,9 +34,10 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 
@@ -108,9 +100,9 @@ public interface IAIPService {
     /**
      * Retrieve all {@link AIPEntity}s matching parameters.
      */
-    Page<AIPEntity> findByFilters(SearchAIPsParameters filters, Pageable pageable);
+    Page<AIPEntity> findByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable);
 
-    Page<AIPEntityLight> findLightByFilters(SearchAIPsParameters filters, Pageable pageable);
+    Page<AIPEntityLight> findLightByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable);
 
     /**
      * Compute the checksum of the AIP and save it

@@ -22,20 +22,15 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
-import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
-import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.service.request.OAISDeletionRequestService;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
-import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -44,75 +39,53 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 /**
- * This job handles session deletion requests
+ * This job handles request deletion
  *
  * @author Léo Mieulet
  */
-public class OAISEntityDeletionJob extends AbstractJob<Void> {
+public class RequestDeletionJob extends AbstractJob<Void> {
 
-    public static final String ID = "ID";
-
-    @Autowired
-    private OAISDeletionRequestService oaisDeletionRequestService;
+    public static final String CRITERIA = "CRITERIA";
 
     @Autowired
     private RequestService requestService;
 
-    @Autowired
-    private IAIPRepository aipRepository;
-
-    @Autowired
-    private ISIPService sipService;
-
-    private OAISDeletionRequest deletionRequest;
-
     /**
-     * Limit number of SIPs to retrieve in one page.
+     * Limit number of requests to retrieve in one page.
      */
-    @Value("${regards.ingest.sips.deletion.iteration-limit:100}")
-    private Integer sipIterationLimit;
+    @Value("${regards.request.deletion.iteration-limit:100}")
+    private Integer requestIterationLimit;
 
     private int totalPages = 0;
+
+    private SearchRequestsParameters criteria;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
 
-        // Retrieve deletion request
-        Long databaseId = getValue(parameters, ID);
-        Optional<OAISDeletionRequest> oDeletionRequest = oaisDeletionRequestService.search(databaseId);
-
-        if (!oDeletionRequest.isPresent()) {
-            throw new JobRuntimeException(String.format("Unknown deletion request with id %d", databaseId));
-        }
-
-        deletionRequest = oDeletionRequest.get();
+        // Retrieve deletion payload
+        criteria = getValue(parameters, CRITERIA);
     }
 
     @Override
     public void run() {
-        Pageable pageRequest = PageRequest.of(0, sipIterationLimit, Sort.Direction.ASC, "id");
+        Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
         List<SIPState> states = new ArrayList<>(Arrays.asList(SIPState.INGESTED, SIPState.STORED));
-
-        Page<AIPEntity> aipsPage;
+        criteria.setStateExcluded(InternalRequestState.RUNNING);
+        Page<AbstractRequest> requestsPage;
         do {
-            // Page request isn't modified as the state of entities are modified
-            aipsPage = aipRepository.findAll(AIPEntitySpecification
-                    .searchAll(deletionRequest.getConfig(), pageRequest), pageRequest);
+            // Page request isn't modified as entities are removed on every page fetched
+            requestsPage = requestService.findRequests(criteria, pageRequest);
             // Save number of pages to publish job advancement
-            if (totalPages < aipsPage.getTotalPages()) {
-                totalPages = aipsPage.getTotalPages();
+            if (totalPages < requestsPage.getTotalPages()) {
+                totalPages = requestsPage.getTotalPages();
             }
-            aipsPage.forEach(aip -> {
-                // Mark SIP and AIP deleted
-                // Send events for files deletion
-                sipService.scheduleDeletion(aip.getSip(), deletionRequest.getDeletionMode(),
-                                            deletionRequest.getDeletePhysicalFiles());
-            });
+            for (AbstractRequest request : requestsPage) {
+                requestService.deleteRequest(request);
+            }
             advanceCompletion();
-        } while (aipsPage.hasNext());
-
-        requestService.cleanRequestJob(deletionRequest);
+        } while (requestsPage.hasNext());
     }
 
     @Override

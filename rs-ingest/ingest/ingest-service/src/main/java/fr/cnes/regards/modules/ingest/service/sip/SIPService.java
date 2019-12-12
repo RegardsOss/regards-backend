@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip;
 
-import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,15 +38,11 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.StorageDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -68,20 +63,12 @@ public class SIPService implements ISIPService {
     @Autowired
     private ISIPRepository sipRepository;
 
-    @Autowired
-    private IStorageDeletionRequestRepository storageDeletionRequestRepo;
-
-    @Autowired
-    private IAIPService aipService;
-
-    @Autowired
-    private IRequestService requestService;
-
     @Override
     public Page<SIPEntity> search(SearchSIPsParameters params, Pageable page) {
         return sipRepository.loadAll(SIPEntitySpecifications
-                .search(params.getProviderIds(), null, params.getSessionOwner(), params.getSession(), params.getFrom(),
-                        params.getStates(), true, params.getTags(), params.getCategories(), page), page);
+                .search(params.getProviderIds(), null, params.getSessionOwner(), params.getSession(), params.getIpType(),
+                        params.getFrom(), params.getStates(), true, params.getTags(),
+                        params.getCategories(), page), page);
     }
 
     @Override
@@ -91,25 +78,6 @@ public class SIPService implements ISIPService {
             return sipEntity.get();
         } else {
             throw new EntityNotFoundException(sipEntity.toString(), SIPEntity.class);
-        }
-    }
-
-    @Override
-    public void scheduleDeletion(SIPEntity sipEntity, SessionDeletionMode deletionMode, Boolean deleteFiles) {
-        // Update SIPEntity
-        sipEntity.setState(SIPState.DELETED);
-        save(sipEntity);
-        // Update AIPs state as deleted and retrieve events to delete associated files and AIPs
-        if (deleteFiles) {
-            // Schedule deletion of AIPs associated to SIP
-            String deleteRequestId = aipService.scheduleAIPEntityDeletion(sipEntity.getSipId());
-            // Save the request id sent to storage
-            StorageDeletionRequest sdr = StorageDeletionRequest.build(deleteRequestId, sipEntity, deletionMode);
-            requestService.scheduleRequest(sdr);
-        } else {
-            aipService.processDeletion(sipEntity.getSipId(), deletionMode == SessionDeletionMode.IRREVOCABLY);
-            processDeletion(sipEntity.getSipId(), deletionMode == SessionDeletionMode.IRREVOCABLY);
-            // NOTE : Session is notified in processDeletion method of AIPService.
         }
     }
 
