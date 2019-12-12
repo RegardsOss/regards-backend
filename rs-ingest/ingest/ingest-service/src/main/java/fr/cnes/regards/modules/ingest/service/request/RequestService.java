@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import fr.cnes.regards.modules.ingest.service.job.RequestDeletionJob;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -66,6 +65,7 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.job.AIPUpdatesCreatorJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.OAISDeletionsCreatorJob;
+import fr.cnes.regards.modules.ingest.service.job.RequestDeletionJob;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 
@@ -165,11 +165,10 @@ public class RequestService implements IRequestService {
         return abstractRequestRepository.findAll(AbstractRequestSpecifications.searchAllByRemoteStepGroupId(groupIds));
     }
 
-
     @Override
     public Page<AbstractRequest> findRequests(SearchRequestsParameters filters, Pageable pageable) {
-        return abstractRequestRepository
-                .findAll(AbstractRequestSpecifications.searchAllByFilters(filters, pageable), pageable);
+        return abstractRequestRepository.findAll(AbstractRequestSpecifications.searchAllByFilters(filters, pageable),
+                                                 pageable);
     }
 
     @Override
@@ -341,8 +340,8 @@ public class RequestService implements IRequestService {
     public void registerRequestDeletion(SearchRequestsParameters filters) {
         Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestDeletionJob.CRITERIA, filters));
         // Schedule OAIS Deletion job
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_DELETION_JOB_PRIORITY.getPriority(), jobParameters,
-                authResolver.getUser(), RequestDeletionJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_DELETION_JOB_PRIORITY.getPriority(),
+                jobParameters, authResolver.getUser(), RequestDeletionJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
     }
 
@@ -353,7 +352,7 @@ public class RequestService implements IRequestService {
 
     @Override
     public void deleteRequest(AbstractRequest request) {
-        if (request instanceof OAISDeletionCreatorRequest || request instanceof AIPUpdatesCreatorRequest) {
+        if ((request instanceof OAISDeletionCreatorRequest) || (request instanceof AIPUpdatesCreatorRequest)) {
             cleanRequestJob(request);
         } else {
             abstractRequestRepository.delete(request);
