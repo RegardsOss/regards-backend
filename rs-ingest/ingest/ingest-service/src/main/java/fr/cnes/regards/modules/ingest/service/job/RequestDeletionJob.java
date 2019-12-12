@@ -18,25 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
-import fr.cnes.regards.modules.ingest.service.request.RequestService;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.service.request.RequestService;
 
 /**
  * This job handles request deletion
@@ -71,7 +69,6 @@ public class RequestDeletionJob extends AbstractJob<Void> {
     @Override
     public void run() {
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
-        List<SIPState> states = new ArrayList<>(Arrays.asList(SIPState.INGESTED, SIPState.STORED));
         criteria.setStateExcluded(InternalRequestState.RUNNING);
         Page<AbstractRequest> requestsPage;
         do {

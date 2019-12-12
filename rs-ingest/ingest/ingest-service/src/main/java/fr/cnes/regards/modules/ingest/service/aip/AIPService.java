@@ -48,13 +48,11 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
@@ -65,7 +63,6 @@ import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
 import fr.cnes.regards.modules.ingest.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.ingest.dao.IAIPLightRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.ICustomAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
@@ -78,7 +75,6 @@ import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
-import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
@@ -109,12 +105,6 @@ public class AIPService implements IAIPService {
     private IAIPLightRepository aipLigthRepository;
 
     @Autowired
-    private IAIPUpdatesCreatorRepository aipUpdatesCreatorRepository;
-
-    @Autowired
-    private OAISDeletionService oaisDeletionRequestService;
-
-    @Autowired
     private ICustomAIPRepository customAIPRepository;
 
     @Autowired
@@ -122,12 +112,6 @@ public class AIPService implements IAIPService {
 
     @Autowired
     private SessionNotifier sessionNotifier;
-
-    @Autowired
-    private IJobInfoService jobInfoService;
-
-    @Autowired
-    private IAuthenticationResolver authResolver;
 
     @Autowired
     private IPublisher publisher;
