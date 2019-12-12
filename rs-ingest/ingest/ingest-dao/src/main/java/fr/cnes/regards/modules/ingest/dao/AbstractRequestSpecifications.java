@@ -121,7 +121,7 @@ public final class AbstractRequestSpecifications {
                     .aggregateRequest(cb,
                                       AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
                                                                                         session),
-                                      AbstractRequestSpecifications.searchOAISDeletion(root, cb)));
+                                      AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
@@ -139,9 +139,9 @@ public final class AbstractRequestSpecifications {
                     .aggregateRequest(cb,
                                       AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
                                                                                         session),
-                                      AbstractRequestSpecifications.searchStorageDeletion(root, cb, sessionOwner,
+                                      AbstractRequestSpecifications.searchOAISDeletion(root, cb, sessionOwner,
                                                                                           session),
-                                      AbstractRequestSpecifications.searchOAISDeletion(root, cb)));
+                                      AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
@@ -157,10 +157,10 @@ public final class AbstractRequestSpecifications {
 
             predicates.add(AbstractRequestSpecifications
                     .aggregateRequest(cb, AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
-                                      AbstractRequestSpecifications.searchStorageDeletion(root, cb, sessionOwner,
+                                      AbstractRequestSpecifications.searchOAISDeletion(root, cb, sessionOwner,
                                                                                           session),
                                       AbstractRequestSpecifications.searchAipUpdatesCreator(root, cb),
-                                      AbstractRequestSpecifications.searchOAISDeletion(root, cb)));
+                                      AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
@@ -223,10 +223,10 @@ public final class AbstractRequestSpecifications {
         };
     }
 
-    public static Predicate searchStorageDeletion(Root<AbstractRequest> root, CriteriaBuilder cb,
+    public static Predicate searchOAISDeletion(Root<AbstractRequest> root, CriteriaBuilder cb,
             Optional<String> sessionOwner, Optional<String> session) {
         return AbstractRequestSpecifications.searchMicroRequest(root, cb, sessionOwner, session,
-                                                                RequestTypeConstant.STORAGE_DELETION_VALUE);
+                                                                RequestTypeConstant.OAIS_DELETION_VALUE);
     }
 
     public static Predicate searchIngest(Root<AbstractRequest> root, CriteriaBuilder cb, Optional<String> sessionOwner,
@@ -247,8 +247,8 @@ public final class AbstractRequestSpecifications {
                                                                 RequestTypeConstant.UPDATE_VALUE);
     }
 
-    public static Predicate searchOAISDeletion(Root<AbstractRequest> root, CriteriaBuilder cb) {
-        return AbstractRequestSpecifications.searchMacroRequest(root, cb, RequestTypeConstant.OAIS_DELETION_VALUE);
+    public static Predicate searchOAISDeletionCreator(Root<AbstractRequest> root, CriteriaBuilder cb) {
+        return AbstractRequestSpecifications.searchMacroRequest(root, cb, RequestTypeConstant.OAIS_DELETION_CREATOR_VALUE);
     }
 
     public static Predicate searchAipUpdatesCreator(Root<AbstractRequest> root, CriteriaBuilder cb) {

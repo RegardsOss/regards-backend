@@ -259,10 +259,6 @@ public class AIPService implements IAIPService {
                 filesToDelete.add(FileDeletionRequestDTO.build(aipEntity.getChecksum(), location.getStorage(),
                                                                aipEntity.getAipId(), false));
             }
-
-            // Mark the AIP as deleted
-            aipEntity.setState(AIPState.DELETED);
-            aipRepository.save(aipEntity);
         }
 
         // Publish event to delete AIP files and AIPs itself
@@ -289,12 +285,17 @@ public class AIPService implements IAIPService {
         // Retrieve all AIP relative to this SIP id
         Set<AIPEntity> aipsRelatedToSip = aipRepository.findBySipSipId(sipId);
         if (!aipsRelatedToSip.isEmpty()) {
-            AIPEntity entity = aipsRelatedToSip.stream().findFirst().get();
-            sessionNotifier.productDeleted(entity.getSessionOwner(), entity.getSession(), aipsRelatedToSip);
+            aipsRelatedToSip.forEach(entity -> {
+                entity.setState(AIPState.DELETED);
+                sessionNotifier.productDeleted(entity.getSessionOwner(), entity.getSession(), aipsRelatedToSip);
+            });
             if (deleteIrrevocably) {
                 requestService.deleteAllByAip(aipsRelatedToSip);
                 // Delete them
                 aipRepository.deleteAll(aipsRelatedToSip);
+            } else {
+                // Mark the AIP as deleted
+                aipRepository.saveAll(aipsRelatedToSip);
             }
             // Send notification to data mangement for feature deleted
             aipsRelatedToSip.forEach(aip -> publisher.publish(FeatureEvent.buildFeatureDeleted(aip.getAipId())));

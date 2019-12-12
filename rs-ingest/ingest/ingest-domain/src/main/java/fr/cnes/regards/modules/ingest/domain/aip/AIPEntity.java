@@ -79,6 +79,7 @@ public class AIPEntity extends AbstractAIPEntity {
 
     public void setSip(SIPEntity sip) {
         this.sip = sip;
+        this.setIpType(sip.getIpType());
     }
 
     public static AIPEntity build(SIPEntity sip, AIPState state, AIP aip) {
@@ -86,7 +87,6 @@ public class AIPEntity extends AbstractAIPEntity {
         aipEntity.setSip(sip);
         // Extracted from SIP
         aipEntity.setProviderId(sip.getProviderId());
-        aipEntity.setIpType(sip.getIpType());
         aipEntity.setSessionOwner(sip.getSessionOwner());
         aipEntity.setSession(sip.getSession());
         aipEntity.setCategories(sip.getCategories());

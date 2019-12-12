@@ -235,15 +235,15 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         LOGGER.info("=========================> END SEARCH AIP UPDATE CREATOR IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 
-        LOGGER.info("=========================> BEGIN SEARCH OAIS DELETION IN ERROR <=====================");
+        LOGGER.info("=========================> BEGIN SEARCH OAIS DELETION CREATOR IN ERROR <=====================");
         requests = requestService.findRequestDtos(SearchRequestsParameters.build()
-                .withRequestType(RequestTypeEnum.OAIS_DELETION).withState(InternalRequestState.ERROR), pr);
-        LOGGER.info("=========================> END SEARCH OAIS DELETION IN ERROR <=====================");
+                .withRequestType(RequestTypeEnum.OAIS_DELETION_CREATOR).withState(InternalRequestState.ERROR), pr);
+        LOGGER.info("=========================> END SEARCH OAIS DELETION CREATOR IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 
-        LOGGER.info("=========================> BEGIN SEARCH STORAGE DELETEION IN ERROR <=====================");
+        LOGGER.info("=========================> BEGIN SEARCH STORAGE DELETION IN ERROR <=====================");
         requests = requestService.findRequestDtos(SearchRequestsParameters.build()
-                .withRequestType(RequestTypeEnum.STORAGE_DELETION).withState(InternalRequestState.ERROR), pr);
+                .withRequestType(RequestTypeEnum.OAIS_DELETION).withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH STORAGE DELETION IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 

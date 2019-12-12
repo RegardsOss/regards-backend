@@ -150,6 +150,7 @@ public class SIPEntity extends AbstractOAISEntity {
 
     public void setSip(SIP sip) {
         this.sip = sip;
+        this.setIpType(sip.getIpType());
     }
 
     public Long getId() {
@@ -204,7 +205,6 @@ public class SIPEntity extends AbstractOAISEntity {
         sipEntity.setSipId(urn);
         sipEntity.setCreationDate(OffsetDateTime.now());
         sipEntity.setState(state);
-        sipEntity.setIpType(sip.getIpType());
         sipEntity.setSip(sip);
         // Extract from IngestMetadata
         sipEntity.setSession(metadata.getSession());
