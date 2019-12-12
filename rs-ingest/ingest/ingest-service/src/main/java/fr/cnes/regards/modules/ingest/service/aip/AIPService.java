@@ -270,8 +270,8 @@ public class AIPService implements IAIPService {
         Set<AIPEntity> aipsRelatedToSip = aipRepository.findBySipSipId(sipId);
         if (!aipsRelatedToSip.isEmpty()) {
             aipsRelatedToSip.forEach(entity -> {
-                entity.setState(AIPState.DELETED);
                 sessionNotifier.productDeleted(entity.getSessionOwner(), entity.getSession(), aipsRelatedToSip);
+                entity.setState(AIPState.DELETED);
             });
             if (deleteIrrevocably) {
                 requestService.deleteAllByAip(aipsRelatedToSip);
