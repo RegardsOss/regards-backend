@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.ingest.service.job;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -93,17 +92,9 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
 
     private static final String STORAGE_0 = "fake";
 
-    private static final String STORAGE_1 = "AWS";
-
-    private static final String STORAGE_2 = "Azure";
-
     private static final String SESSION_OWNER_0 = "NASA";
 
-    private static final String SESSION_OWNER_1 = "CNES";
-
     public static final String SESSION_0 = OffsetDateTime.now().toString();
-
-    public static final String SESSION_1 = OffsetDateTime.now().minusDays(4).toString();
 
     @Autowired
     private IRequestService requestService;
@@ -162,12 +153,11 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         sip4.setSip(SIP.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
         sip4.setSipId(UniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
-        sip4.setIpType(EntityType.DATA);
         sip4.setProviderId("SIP_003");
         sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
         sip4.setLastUpdate(OffsetDateTime.now().minusHours(6));
-        sip4.setSessionOwner("SESSION_OWNER");
-        sip4.setSession("SESSION");
+        sip4.setSessionOwner(SESSION_OWNER_0);
+        sip4.setSession(SESSION_0);
         sip4.setCategories(org.assertj.core.util.Sets.newLinkedHashSet("CATEGORIES"));
         sip4.setState(SIPState.INGESTED);
         sip4.setVersion(2);
@@ -209,7 +199,8 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         storeMetaDataRepository.save(storeMetaDataRequest);
 
         AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest
-                .build(AIPUpdateParametersDto.build(SearchAIPsParameters.build().withSession(SESSION_0)));
+                .build(AIPUpdateParametersDto.build(SearchAIPsParameters.build().withSession(SESSION_0)
+                        .withSessionOwner(SESSION_OWNER_0)));
         updateCreatorRequest.setState(InternalRequestState.ERROR);
         aipUpdatesCreatorRepository.save(updateCreatorRequest);
 
@@ -246,7 +237,7 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         long taskCount;
         do {
             taskCount = abstractRequestRepository.count();
-            LOGGER.debug("{} UpdateRequest(s) created in database", taskCount);
+            LOGGER.info("{} UpdateRequest(s) existing in database", taskCount);
             if (taskCount == expectedTasks) {
                 break;
             }
@@ -264,16 +255,17 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
     }
 
     @Test
-    public void testScanJob() throws ModuleException {
+    public void testDeleteJob() {
         initData();
         Assert.assertEquals("Something went wrong while creating requests", 6, abstractRequestRepository.count());
-        requestService.registerRequestDeletion(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR)
-                .withSessionOwner(SESSION_OWNER_0));
-        waitForRequestReach(5, 10_000);
-
+        requestService.registerRequestDeletion(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR));
+        waitForRequestReach(5, 20_000);
 
         requestService.registerRequestDeletion(SearchRequestsParameters.build().withSession(SESSION_0)
                 .withSessionOwner(SESSION_OWNER_0));
+        waitForRequestReach(1, 10_000);
+
+        requestService.registerRequestDeletion(SearchRequestsParameters.build());
         waitForRequestReach(0, 10_000);
     }
 

@@ -36,8 +36,6 @@ public class RequestTypeConstant {
 
     public static final String INGEST_VALUE = "INGEST";
 
-    public static final String STORAGE_DELETION_VALUE = "STORAGE_DELETION";
-
     public static final String OAIS_DELETION_CREATOR_VALUE = "OAIS_DELETION_CREATOR";
 
     public static final String OAIS_DELETION_VALUE = "OAIS_DELETION";

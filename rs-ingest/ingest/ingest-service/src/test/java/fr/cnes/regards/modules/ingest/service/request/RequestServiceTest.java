@@ -414,7 +414,7 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
                             oaisDeletionRequest.getState());
 
-        requestService.unblockRequests(RequestTypeEnum.STORAGE_DELETION);
+        requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION_CREATOR);
         oaisDeletionRequest = (OAISDeletionRequest) abstractRequestRepository
                 .findById(oaisDeletionRequest.getId()).get();
         Assert.assertEquals("The request should not be blocked", InternalRequestState.CREATED,

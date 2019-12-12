@@ -18,11 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import org.slf4j.Logger;
@@ -30,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -65,7 +62,7 @@ public class RequestPendingScheduler {
 
     @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:3000}", initialDelay = 1_000)
     public void handleUpdatesCreatorRequests() throws ModuleException {
-        schedule("handleFileStorageRequests", () -> {
+        schedule("handleUpdatesCreatorRequests", () -> {
             requestService.unblockRequests(RequestTypeEnum.AIP_UPDATES_CREATOR);
             return null;
         });
@@ -73,23 +70,23 @@ public class RequestPendingScheduler {
 
     @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:3000}", initialDelay = 1_100)
     public void handleOAISDeletionRequests() throws ModuleException {
-        schedule("handleFileCacheRequests", () -> {
+        schedule("handleOAISDeletionRequests", () -> {
             requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION);
             return null;
         });
     }
 
     @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:3000}", initialDelay = 1_200)
-    public void handleStorageDeletionRequests() throws ModuleException {
-        schedule("handleFileDeletionRequests", () -> {
-            requestService.unblockRequests(RequestTypeEnum.STORAGE_DELETION);
+    public void handleOAISDeletionCreator() throws ModuleException {
+        schedule("handleOAISDeletionCreator", () -> {
+            requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION_CREATOR);
             return null;
         });
     }
 
     @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:3000}", initialDelay = 1_300)
     public void handleStorageMetaDataRequests() throws ModuleException {
-        schedule("handleFileCopyRequests", () -> {
+        schedule("handleStorageMetaDataRequests", () -> {
             requestService.unblockRequests(RequestTypeEnum.STORE_METADATA);
             return null;
         });
@@ -97,7 +94,7 @@ public class RequestPendingScheduler {
 
     @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:1000}", initialDelay = 1_400)
     public void handleUpdateRequests() throws ModuleException {
-        schedule("handleGroupRequests", () -> {
+        schedule("handleUpdateRequests", () -> {
             requestService.unblockRequests(RequestTypeEnum.UPDATE);
             return null;
         });

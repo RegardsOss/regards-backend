@@ -375,9 +375,6 @@ public class RequestService implements IRequestService {
             case RequestTypeConstant.OAIS_DELETION_VALUE:
                 spec = AbstractRequestSpecifications.searchRequestBlockingOAISDeletion(sessionOwnerOp, sessionOp);
                 break;
-            case RequestTypeConstant.STORAGE_DELETION_VALUE:
-                spec = AbstractRequestSpecifications.searchRequestBlockingStorageDeletion(sessionOwnerOp, sessionOp);
-                break;
             case RequestTypeConstant.STORE_METADATA_VALUE:
                 spec = AbstractRequestSpecifications.searchRequestBlockingStoreMeta(sessionOwnerOp, sessionOp);
                 break;
