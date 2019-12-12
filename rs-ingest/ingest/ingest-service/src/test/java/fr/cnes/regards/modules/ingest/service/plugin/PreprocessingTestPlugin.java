@@ -20,8 +20,6 @@ package fr.cnes.regards.modules.ingest.service.plugin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.oais.urn.EntityType;

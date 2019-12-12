@@ -80,7 +80,6 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
         }
 
         // Wait
-        long countSip;
         ingestServiceTest.waitForIngestion(maxloops, maxloops * 1000);
 
         LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", maxloops + existingItems,

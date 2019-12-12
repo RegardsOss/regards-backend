@@ -18,6 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -59,15 +70,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Léo Mieulet
@@ -79,16 +81,6 @@ import org.springframework.test.context.TestPropertySource;
 public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
-
-    private static final List<String> CATEGORIES_1 = Lists.newArrayList("CATEGORY1");
-
-    private static final List<String> CATEGORIES_2 = Lists.newArrayList("CATEGORY", "CATEGORY2");
-
-    private static final List<String> TAG_0 = Lists.newArrayList("toto", "tata");
-
-    private static final List<String> TAG_1 = Lists.newArrayList("toto", "tutu");
-
-    private static final List<String> TAG_2 = Lists.newArrayList("antonio", "farra's");
 
     private static final String STORAGE_0 = "fake";
 
@@ -127,12 +119,6 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
     private IAbstractRequestRepository abstractRequestRepository;
 
     @Autowired
-    private ISubscriber subscriber;
-
-    @Autowired
-    private IJobInfoRepository jobInfoRepository;
-
-    @Autowired
     private IIngestMetadataMapper mapper;
 
     private List<AIPEntity> aips;
@@ -166,30 +152,22 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         sip4 = sipRepository.save(sip4);
 
         AIP aip = AIP.build(sip4.getSip(),
-                UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
-                Optional.empty(), "SIP_001"
-        );
+                            UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                            Optional.empty(), "SIP_001");
         aip.setIpType(EntityType.DATA);
         AIPEntity aipEntity = AIPEntity.build(sip4, AIPState.GENERATED, aip);
 
         aipEntity = aipRepository.save(aipEntity);
 
-
-
         AIP aip2 = AIP.build(sip4.getSip(),
-                UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
-                Optional.empty(), "SIP_002"
-        );
+                             UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                             Optional.empty(), "SIP_002");
         AIPEntity aipEntity2 = AIPEntity.build(sip4, AIPState.GENERATED, aip2);
 
         aipEntity2 = aipRepository.save(aipEntity2);
 
-
-
-        mtd = IngestMetadataDto.build(SESSION_OWNER_0, SESSION_0,
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                Sets.newHashSet(CATEGORIES_0),
-                StorageMetadata.build(STORAGE_0));
+        mtd = IngestMetadataDto.build(SESSION_OWNER_0, SESSION_0, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                      Sets.newHashSet(CATEGORIES_0), StorageMetadata.build(STORAGE_0));
 
         aips = aipRepository.findAll();
 
@@ -205,21 +183,21 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         aipUpdatesCreatorRepository.save(updateCreatorRequest);
 
         List<AIPUpdateRequest> updateRequest = AIPUpdateRequest.build(aips.get(0), AIPUpdateParametersDto
-                        .build(SearchAIPsParameters.build().withSession(SESSION_0)).withAddTags(Lists.newArrayList("SOME TAG")),
-                true);
+                .build(SearchAIPsParameters.build().withSession(SESSION_0)).withAddTags(Lists.newArrayList("SOME TAG")),
+                                                                      true);
         updateRequest.get(0).setState(InternalRequestState.ERROR);
         aipUpdateRequestRepository.saveAll(updateRequest);
 
         ingestRequestRepository
                 .save(IngestRequest.build(mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
-                        IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip()));
+                                          IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip()));
         OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest();
         deletionRequest.setCreationDate(OffsetDateTime.now());
         deletionRequest.setState(InternalRequestState.ERROR);
         oaisDeletionCreatorRepository.save(deletionRequest);
 
         OAISDeletionRequest oaisDeletionRequest = OAISDeletionRequest.build(aips.get(0), SessionDeletionMode.BY_STATE,
-                true);
+                                                                            true);
         oaisDeletionRequest.setState(InternalRequestState.ERROR);
         oaisDeletionRequestRepository.save(oaisDeletionRequest);
         LOGGER.info("=========================> END INIT DATA FOR TESTS <=====================");
@@ -268,6 +246,5 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         requestService.registerRequestDeletion(SearchRequestsParameters.build());
         waitForRequestReach(0, 10_000);
     }
-
 
 }
