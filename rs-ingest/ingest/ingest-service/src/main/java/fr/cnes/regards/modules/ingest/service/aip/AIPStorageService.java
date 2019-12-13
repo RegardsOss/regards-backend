@@ -525,7 +525,7 @@ public class AIPStorageService implements IAIPStorageService {
                 if (!storeLocation.getStorePath().endsWith(apiStorageSubDirectory)) {
                     storePath = Paths.get(storeLocation.getStorePath(), apiStorageSubDirectory).toString();
                 } else {
-                    storePath = storeLocation.getStorePath().toString();
+                    storePath = storeLocation.getStorePath();
                 }
             }
             files.add(FileStorageRequestDTO.build(aip.getId().toString(), checksum, AIPService.MD5_ALGORITHM,
