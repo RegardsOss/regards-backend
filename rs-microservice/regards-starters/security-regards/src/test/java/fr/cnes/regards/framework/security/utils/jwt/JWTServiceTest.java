@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.security.utils.jwt;
 
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtExceptio
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.security.SignatureException;
 
 /**
  * @author msordi
@@ -62,9 +64,10 @@ public class JWTServiceTest {
 
     /**
      * Test JWT generation without group
+     * @throws IOException
      */
     @Test
-    public void generateJWT() {
+    public void generateJWT() throws IOException {
 
         // Generate token
         final String jwt = jwtService.generateToken(TENANT, LOGIN, EMAIL, ROLE);
@@ -89,29 +92,32 @@ public class JWTServiceTest {
 
     @Test
     public void generateUserSpecificToken() throws InterruptedException, InvalidJwtException {
-        @SuppressWarnings("serial") Map<String, Object> addParams = new HashMap<String, Object>() {
+        @SuppressWarnings("serial")
+        Map<String, Object> addParams = new HashMap<String, Object>() {
 
             {
                 put("toto", "titi");
             }
         };
-        String token = jwtService
-                .generateToken(TENANT, LOGIN, EMAIL, ROLE, OffsetDateTime.now().plus(3, ChronoUnit.DAYS), addParams,
-                               "pouet", true);
+
+        String secret = "pouet!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!";
+
+        String token = jwtService.generateToken(TENANT, LOGIN, EMAIL, ROLE,
+                                                OffsetDateTime.now().plus(3, ChronoUnit.DAYS), addParams, secret, true);
 
         try {
-            jwtService.parseToken(token, "teuop");
+            jwtService.parseToken(token, "teuop!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!");
             Assert.fail("An exception should have been thrown here caused to an invalid secret key");
-        } catch (JwtException e) {
+        } catch (SignatureException e) {
         }
-        Claims claims = jwtService.parseToken(token, "pouet");
+        Claims claims = jwtService.parseToken(token, secret);
         Assert.assertNotNull(claims.get("toto"));
 
-        String expiredToken = jwtService
-                .generateToken(TENANT, LOGIN, EMAIL, ROLE, OffsetDateTime.now(), addParams, "pouet", false);
+        String expiredToken = jwtService.generateToken(TENANT, LOGIN, EMAIL, ROLE, OffsetDateTime.now(), addParams,
+                                                       secret, false);
         Thread.sleep(1_000);
         try {
-            claims = jwtService.parseToken(expiredToken, "pouet");
+            claims = jwtService.parseToken(expiredToken, secret);
             Assert.fail("An exception should have been thrown here caused to an expired token");
         } catch (ExpiredJwtException e) {
         }

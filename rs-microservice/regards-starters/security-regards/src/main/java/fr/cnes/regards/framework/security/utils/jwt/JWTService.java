@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.security.utils.jwt;
 
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.HashMap;
@@ -85,14 +86,14 @@ public class JWTService {
     /**
      * JWT Secret. Default value is only useful for testing purpose.
      */
-    @Value("${jwt.secret:123456789}")
+    @Value("${jwt.secret:!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!}")
     private String secret;
 
     /**
      * validity delay expressed in minutes. Defaults to 120.
      */
     @Value("${access_token.validity_period:7200}")
-    private long validityDelay = 7200;
+    private final long validityDelay = 7200;
 
     /**
      * Inject a generated token in the {@link SecurityContextHolder}
@@ -189,8 +190,7 @@ public class JWTService {
      * @return a Json Web Token
      */
     public String generateToken(String tenant, String user, String email, String role) {
-        return generateToken(tenant, user, email, role, getExpirationDate(OffsetDateTime.now()),
-                             null, secret, false);
+        return generateToken(tenant, user, email, role, getExpirationDate(OffsetDateTime.now()), null, secret, false);
     }
 
     /**
@@ -225,7 +225,7 @@ public class JWTService {
         // I.E. NOT USED TO GENERATE TOKENS FOR AUTHENTICATION ON REGARDS PRIVATE USER BASE
         return Jwts.builder().setIssuer("regards")
                 .setClaims(generateClaims(tenant, role, user, email, additionalParams)).setSubject(user)
-                .signWith(Keys.hmacShaKeyFor(secret.getBytes()), shorter ? SHORT_ALGO : ALGO)
+                .signWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)), shorter ? SHORT_ALGO : ALGO)
                 .setExpiration(Date.from(expirationDate.toInstant())).compact();
     }
 
@@ -236,7 +236,8 @@ public class JWTService {
      * @return parsed {@link Claims}
      */
     public Claims parseToken(String token, String secret) throws InvalidJwtException {
-        return Jwts.parser().setSigningKey(Keys.hmacShaKeyFor(secret.getBytes())).parseClaimsJws(token).getBody();
+        return Jwts.parser().setSigningKey(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
+                .parseClaimsJws(token).getBody();
     }
 
     /**
