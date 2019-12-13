@@ -180,7 +180,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
     @Purpose("The system allows to list all the plugin's type of a microservice")
     public void getAllPluginTypes() {
         performGet(PluginController.PLUGIN_TYPES, token,
-                   customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_VALUE)
+                   customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
                            .expectToHaveSize(JSON_PATH_STAR, pluginService.getPluginTypes().size()),
                    "unable to load all plugin types");
     }
@@ -191,7 +191,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         performGet(PluginController.PLUGINS_PLUGINID_CONFIGS, token,
-                   customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_VALUE)
+                   customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
                            .expectToHaveToString("$..content.active", "[true]")
                            .expectToHaveToString("$..content.parameters[?(@.name == 'param31')].dynamic", "[true]")
                            .expectToHaveToString("$..content.parameters[?(@.name == 'param32')].dynamic", "[false]"),
@@ -204,7 +204,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         performGet(PluginController.PLUGINS_CONFIGID, token,
-                   customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_VALUE)
+                   customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
                            .expectToHaveToString("$..content.active", "[true]")
                            .expectToHaveToString("$..content.parameters[?(@.name == 'param31')].dynamic", "[true]")
                            .expectToHaveToString("$..content.parameters[?(@.name == 'param32')].dynamic", "[false]"),
@@ -220,7 +220,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
         createPluginConfiguration(LABEL + " - second");
 
         performDefaultGet(PluginController.PLUGINS_CONFIGS,
-                          customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_VALUE)
+                          customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
                                   .expectToHaveToString("$.[0].content.active", TRUE)
                                   .expectToHaveToString("$.[1].content.active", TRUE),
                           "unable to load all plugin configuration");
@@ -231,7 +231,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         performGet(PluginController.PLUGINS_CONFIGS, token,
-                   customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_VALUE)
+                   customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
                            .expectToHaveToString("$.[0].content.pluginId", aPluginConfiguration.getPluginId())
                            .addParameter("pluginType", ISamplePlugin.class.getCanonicalName()),
                    "unable to load all plugin configuration");
@@ -244,7 +244,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         performGet(PluginController.PLUGINS_CONFIGS, token,
-                   customizer().expectStatusNotFound().expectContentType(MediaType.APPLICATION_JSON_VALUE)
+                   customizer().expectStatusNotFound().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
                            .addParameter("pluginType", "HelloWorld"),
                    "unable to load all plugin configuration", aPluginConfiguration.getPluginId());
     }
@@ -272,7 +272,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
-                .expectContentType(MediaType.APPLICATION_JSON_VALUE)
+                .expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
                 .expectToHaveToString("$.content.pluginId", aPluginConfiguration.getPluginId())
                 .expectToHaveToString("$.content.version", VERSION).expectToHaveToString("$.content.active", TRUE)
                 .expectToHaveToString("$.content.parameters[?(@.name == 'param31')].dynamic", "[true]")
@@ -335,7 +335,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
         aPluginConfiguration.setIconUrl(new URL("http://google.fr/svg/logo.svg"));
 
         RequestBuilderCustomizer customizer = customizer().expectStatusCreated()
-                .expectContentType(MediaType.APPLICATION_JSON_VALUE)
+                .expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
                 .expectToHaveToString("$.content.pluginId", aPluginConfiguration.getPluginId())
                 .expectToHaveToString("$.content.version", VERSION).expectToHaveToString("$.content.active", TRUE)
                 .expectToHaveToString("$.content.parameters[?(@.name == 'param31')].dynamic", "[true]")
