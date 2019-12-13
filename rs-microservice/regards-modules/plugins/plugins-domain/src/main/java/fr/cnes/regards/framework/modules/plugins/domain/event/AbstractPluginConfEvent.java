@@ -12,6 +12,10 @@ public abstract class AbstractPluginConfEvent {
      */
     private Long pluginConfId;
 
+    private final String pluginBusinnessId;
+
+    private final String label;
+
     /**
      * The action this event reflects
      */
@@ -22,15 +26,18 @@ public abstract class AbstractPluginConfEvent {
      */
     private Set<String> pluginTypes;
 
-    protected AbstractPluginConfEvent(Long pPluginConfId, PluginServiceAction pAction, Set<String> pPluginTypes) {
+    protected AbstractPluginConfEvent(Long pPluginConfId, String pluginBusinnessId, String label,
+            PluginServiceAction pAction, Set<String> pPluginTypes) {
         super();
-        pluginConfId = pPluginConfId;
-        action = pAction;
-        pluginTypes = pPluginTypes;
+        this.pluginConfId = pPluginConfId;
+        this.pluginBusinnessId = pluginBusinnessId;
+        this.label = label;
+        this.action = pAction;
+        this.pluginTypes = pPluginTypes;
     }
 
     protected AbstractPluginConfEvent() {
-        this(null, null, null);
+        this(null, null, null, null, null);
     }
 
     /**
@@ -75,6 +82,20 @@ public abstract class AbstractPluginConfEvent {
         pluginTypes = pPluginTypes;
     }
 
+    /**
+     * @return the pluginBusinnessId
+     */
+    public String getPluginBusinnessId() {
+        return pluginBusinnessId;
+    }
+
+    /**
+     * @return the label
+     */
+    public String getLabel() {
+        return label;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -109,8 +130,9 @@ public abstract class AbstractPluginConfEvent {
         }
         if (pluginTypes == null) {
             return other.pluginTypes == null;
-        } else
+        } else {
             return pluginTypes.equals(other.pluginTypes);
+        }
     }
 
 }

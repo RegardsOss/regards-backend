@@ -209,10 +209,10 @@ public class PluginService implements IPluginService {
 
         PluginConfiguration newConf = repos.save(plgConf);
         if (shouldPublishCreation) {
-            publisher.publish(new BroadcastPluginConfEvent(newConf.getId(), PluginServiceAction.CREATE,
-                    newConf.getInterfaceNames()));
-            publisher.publish(new PluginConfEvent(newConf.getId(), PluginServiceAction.CREATE,
-                    newConf.getInterfaceNames()));
+            publisher.publish(new BroadcastPluginConfEvent(newConf.getId(), newConf.getBusinessId(), newConf.getLabel(),
+                    PluginServiceAction.CREATE, newConf.getInterfaceNames()));
+            publisher.publish(new PluginConfEvent(newConf.getId(), newConf.getBusinessId(), newConf.getLabel(),
+                    PluginServiceAction.CREATE, newConf.getInterfaceNames()));
 
         }
         return newConf;
@@ -363,16 +363,16 @@ public class PluginService implements IPluginService {
 
         if (oldConfActive != newConf.isActive()) {
             // For CATALOG
-            publisher.publish(new BroadcastPluginConfEvent(pluginConf.getId(),
-                    newConf.isActive() ? PluginServiceAction.ACTIVATE : PluginServiceAction.DISABLE,
+            publisher.publish(new BroadcastPluginConfEvent(pluginConf.getId(), newConf.getBusinessId(),
+                    newConf.getLabel(), newConf.isActive() ? PluginServiceAction.ACTIVATE : PluginServiceAction.DISABLE,
                     pluginMeta.getInterfaceNames()));
             // For DAM
-            publisher.publish(new PluginConfEvent(pluginConf.getId(),
+            publisher.publish(new PluginConfEvent(pluginConf.getId(), newConf.getBusinessId(), newConf.getLabel(),
                     newConf.isActive() ? PluginServiceAction.ACTIVATE : PluginServiceAction.DISABLE,
                     pluginMeta.getInterfaceNames()));
         } else {
-            publisher.publish(new PluginConfEvent(pluginConf.getId(), PluginServiceAction.UPDATE,
-                    pluginMeta.getInterfaceNames()));
+            publisher.publish(new PluginConfEvent(pluginConf.getId(), newConf.getBusinessId(), newConf.getLabel(),
+                    PluginServiceAction.UPDATE, pluginMeta.getInterfaceNames()));
         }
         // Remove the plugin configuration from cache
         cleanRecursively(pluginConf);
@@ -419,8 +419,8 @@ public class PluginService implements IPluginService {
             throw new EntityOperationForbiddenException("Operation cancelled: dependent plugin configurations exist.");
         }
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(toDelete.getPluginId());
-        publisher.publish(new BroadcastPluginConfEvent(toDelete.getId(), PluginServiceAction.DELETE,
-                pluginMeta.getInterfaceNames()));
+        publisher.publish(new BroadcastPluginConfEvent(toDelete.getId(), toDelete.getBusinessId(), toDelete.getLabel(),
+                PluginServiceAction.DELETE, pluginMeta.getInterfaceNames()));
         repos.deleteById(toDelete.getId());
 
         // Remove the PluginConfiguration from the map
