@@ -49,6 +49,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
@@ -95,6 +96,9 @@ public class AIPService implements IAIPService {
     public static final String MD5_ALGORITHM = "MD5";
 
     private static final String JSON_INDENT = "  ";
+
+    @Autowired
+    private IOAISDeletionService oaisDeletionRequestService;
 
     @Autowired
     private IAIPRepository aipRepository;
