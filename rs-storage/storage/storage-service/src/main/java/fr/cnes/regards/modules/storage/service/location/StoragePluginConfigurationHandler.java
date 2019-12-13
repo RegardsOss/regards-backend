@@ -37,7 +37,6 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
-import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
@@ -81,17 +80,20 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
         if ((wrapper.getContent().getPluginTypes().contains(IStorageLocation.class.getName()))) {
             runtimeTenantResolver.forceTenant(tenant);
             try {
-                PluginConfiguration conf = pluginService.getPluginConfiguration(wrapper.getContent().getPluginConfId());
+
                 switch (wrapper.getContent().getAction()) {
                     case CREATE:
+                        PluginConfiguration conf = pluginService
+                                .getPluginConfiguration(wrapper.getContent().getPluginBusinnessId());
                         this.storages.put(tenant, conf.getLabel());
                         if (conf.getInterfaceNames().contains(IOnlineStorageLocation.class.getName())) {
                             this.onlineStorages.put(tenant, conf.getLabel());
                         }
                         break;
                     case DELETE:
-                        this.storages.remove(tenant, conf.getLabel());
-                        this.onlineStorages.remove(tenant, conf.getLabel());
+                        BroadcastPluginConfEvent pluginEvent = wrapper.getContent();
+                        this.storages.remove(tenant, pluginEvent.getLabel());
+                        this.onlineStorages.remove(tenant, pluginEvent.getLabel());
                         break;
                     case ACTIVATE:
                     case DISABLE:
