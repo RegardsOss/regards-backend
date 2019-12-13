@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -311,7 +312,7 @@ public class FileCacheRequestService {
                                  oRequest.get().getExpirationDate(), fileReq.getGroupId());
             delete(oRequest.get());
         }
-        publisher.available(fileReq.getChecksum(), "cache", cacheLocation.toString(), owners, successMessage,
+        publisher.available(fileReq.getChecksum(), "cache", cacheLocation, owners, successMessage,
                             fileReq.getGroupId());
         // Inform group that a request is done
         reqGrpService.requestSuccess(fileReq.getGroupId(), FileRequestType.AVAILABILITY, fileReq.getChecksum(), null,
@@ -485,10 +486,10 @@ public class FileCacheRequestService {
             try {
                 // For online files we have to generate access url though storage microservice
                 String url = downloadService.generateDownloadUrl(checksum);
-                publisher.available(checksum, storage, url, fileRef.getOwners(), message, availabilityGroupId);
+                publisher.available(checksum, storage, new URL(url), fileRef.getOwners(), message, availabilityGroupId);
                 reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, null,
                                              fileRef.getOwners(), fileRef);
-            } catch (ModuleException e) {
+            } catch (ModuleException | MalformedURLException e) {
                 publisher.notAvailable(checksum, e.getMessage(), availabilityGroupId);
                 reqGrpService.requestError(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, null,
                                            fileRef.getOwners(), e.getMessage());
@@ -507,10 +508,16 @@ public class FileCacheRequestService {
             String storage = fileRef.getLocation().getStorage();
             String message = String.format("File %s (checksum %s) is available for download.",
                                            fileRef.getMetaInfo().getFileName(), checksum);
-            publisher.available(checksum, "cache", cacheService.getFilePath(checksum), fileRef.getOwners(), message,
-                                groupId);
-            reqGrpService.requestSuccess(groupId, FileRequestType.AVAILABILITY, checksum, storage, null,
-                                         fileRef.getOwners(), fileRef);
+            URL availableUrl;
+            try {
+                availableUrl = new URL("file", null, cacheService.getFilePath(checksum));
+                publisher.available(checksum, "cache", availableUrl, fileRef.getOwners(), message, groupId);
+                reqGrpService.requestSuccess(groupId, FileRequestType.AVAILABILITY, checksum, storage, null,
+                                             fileRef.getOwners(), fileRef);
+            } catch (MalformedURLException e) {
+                // Should not happen
+                LOGGER.error(e.getMessage(), e);
+            }
         }
     }
 
