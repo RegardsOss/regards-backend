@@ -107,7 +107,8 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
 
     @Override
     public void onCopyError(Set<RequestInfo> requests) {
-        // Nothing to do
+        // handle success requests if any
+        onCopySuccess(requests);
     }
 
     @Override
