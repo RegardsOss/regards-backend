@@ -99,17 +99,17 @@ public class RequestController implements IResourceController<RequestDto> {
 
 
     @RequestMapping(value = REQUEST_RETRY_PATH, method = RequestMethod.POST)
-    @ResourceAccess(description = "Retry all requests in ERROR state", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.PUBLIC)
     public void retryRequests(@Valid @RequestBody SearchRequestsParameters filters) {
-        LOGGER.debug("Received request to update AIPs");
-        requestService.registerRequestRetry(filters);
+        LOGGER.debug("Received request to retry requests");
+        requestService.scheduleRequestRetryJob(filters);
     }
 
     @ResourceAccess(description = "Delete requests", role = DefaultRole.ADMIN)
     @RequestMapping(value = REQUEST_DELETE_PATH, method = RequestMethod.POST)
     public void delete(@Valid @RequestBody SearchRequestsParameters filters) {
         LOGGER.debug("Received request to delete OAIS entities");
-        requestService.registerRequestDeletion(filters);
+        requestService.scheduleRequestDeletionJob(filters);
     }
 
     @Override

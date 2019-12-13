@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -35,6 +26,9 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,11 +38,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 /**
- * This job handles request deletion
+ * This job handles request retry
  *
  * @author Léo Mieulet
  */
-public class RequestDeletionJob extends AbstractJob<Void> {
+public class RequestRetryJob extends AbstractJob<Void> {
 
     public static final String CRITERIA = "CRITERIA";
 
@@ -58,7 +52,7 @@ public class RequestDeletionJob extends AbstractJob<Void> {
     /**
      * Limit number of requests to retrieve in one page.
      */
-    @Value("${regards.request.deletion.iteration-limit:100}")
+    @Value("${regards.request.retry.iteration-limit:100}")
     private Integer requestIterationLimit;
 
     private int totalPages = 0;
@@ -69,24 +63,34 @@ public class RequestDeletionJob extends AbstractJob<Void> {
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
 
-        // Retrieve deletion payload
+        // Retrieve request criteria payload
         criteria = getValue(parameters, CRITERIA);
     }
 
     @Override
     public void run() {
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
-        criteria.setStateExcluded(InternalRequestState.RUNNING);
+        criteria.setState(InternalRequestState.ERROR);
+        criteria.setStateExcluded(null);
         Page<AbstractRequest> requestsPage;
         do {
-            // Page request isn't modified as entities are removed on every page fetched
+            // Page request isn't modified, as entities doesn't keep the ERROR state, on every page fetched
             requestsPage = requestService.findRequests(criteria, pageRequest);
             // Save number of pages to publish job advancement
             if (totalPages < requestsPage.getTotalPages()) {
                 totalPages = requestsPage.getTotalPages();
             }
-            for (AbstractRequest request : requestsPage) {
-                requestService.deleteRequest(request);
+            // Sort out requests by type
+            Map<String, List<AbstractRequest>> byRequestType = new HashMap<>();
+            for (AbstractRequest ar : requestsPage) {
+                if (!byRequestType.containsKey(ar.getDtype())) {
+                    byRequestType.put(ar.getDtype(), new ArrayList<>());
+                }
+                byRequestType.get(ar.getDtype()).add(ar);
+            }
+            // Call the service with each list of requests sorted by type
+            for (List<AbstractRequest> requestsByType : byRequestType.values()) {
+                requestService.relaunchRequests(requestsByType);
             }
             advanceCompletion();
         } while (requestsPage.hasNext());

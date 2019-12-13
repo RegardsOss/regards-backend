@@ -135,6 +135,10 @@ public abstract class AbstractRequest {
         return remoteStepDeadline;
     }
 
+    public void clearRemoteStepGroupIds() {
+        remoteStepGroupIds.clear();
+    }
+
     public void setRemoteStepDeadline(OffsetDateTime remoteStepDeadline) {
         this.remoteStepDeadline = remoteStepDeadline;
     }
@@ -153,6 +157,13 @@ public abstract class AbstractRequest {
         }
         errors.add(error);
     }
+
+    public void clearError() {
+        if (errors != null) {
+            errors.clear();
+        }
+    }
+
     public JobInfo getJobInfo() {
         return jobInfo;
     }

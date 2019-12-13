@@ -120,7 +120,7 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
             pageRequest.next();
         } while (aipsPage.hasNext());
         // Delete the request
-        requestService.cleanRequestJob(deletionCreator);
+        requestService.deleteRequest(deletionCreator);
     }
 
     @Override

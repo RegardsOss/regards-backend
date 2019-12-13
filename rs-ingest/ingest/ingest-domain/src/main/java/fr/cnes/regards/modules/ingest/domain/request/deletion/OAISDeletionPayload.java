@@ -37,6 +37,16 @@ public class OAISDeletionPayload extends AbstractSearchAIPsParameters<OAISDeleti
     private boolean deleteFiles;
 
     /**
+     * True when the request wait a storage event
+     */
+    private boolean waitStorageAnswer = false;
+
+    /**
+     * True when the storage answer have been received
+     */
+    private boolean requestFilesDeleted = false;
+
+    /**
      * All internal request steps including local and remote ones
      */
     @NotNull(message = "Deletion request step is required")
@@ -70,4 +80,19 @@ public class OAISDeletionPayload extends AbstractSearchAIPsParameters<OAISDeleti
         return deleteFiles;
     }
 
+    public void setWaitStorageAnswer() {
+        waitStorageAnswer = true;
+    }
+
+    public boolean isRequestFilesDeleted() {
+        return requestFilesDeleted;
+    }
+
+    public void setRequestFilesDeleted() {
+        this.requestFilesDeleted = true;
+    }
+
+    public void setDeleteFiles(boolean deleteFiles) {
+        this.deleteFiles = deleteFiles;
+    }
 }

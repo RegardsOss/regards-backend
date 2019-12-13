@@ -18,6 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.locks.service.ILockService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 

@@ -122,6 +122,31 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
                 "Should retrieve Request");
     }
 
+    @Test
+    public void retryRequests() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        SearchRequestsParameters body = SearchRequestsParameters.build();
+
+        // Add request parameters documentation
+        requestBuilderCustomizer.documentRequestBody(getSearchBodyDescriptors());
+
+        performDefaultPost(RequestController.TYPE_MAPPING + RequestController.REQUEST_RETRY_PATH,
+                body, requestBuilderCustomizer, "Should schedule a job to retry requests");
+    }
+
+    @Test
+    public void deleteRequests() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        SearchRequestsParameters body = SearchRequestsParameters.build();
+
+        // Add request parameters documentation
+        requestBuilderCustomizer.documentRequestBody(getSearchBodyDescriptors());
+
+        performDefaultPost(RequestController.TYPE_MAPPING + RequestController.REQUEST_DELETE_PATH,
+                body, requestBuilderCustomizer, "Should schedule a job to delete requests");
+    }
+
+
     private List<FieldDescriptor> getSearchBodyDescriptors() {
 
         List<FieldDescriptor> params = new ArrayList<>();
@@ -138,7 +163,6 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
 
         ConstrainedFields constrainedFields = new ConstrainedFields(SearchRequestsParameters.class);
 
-
         params.add(constrainedFields.withPath("requestType", "requestType",
                 "Request type filter")
                 .type(JSON_STRING_TYPE)
@@ -148,6 +172,13 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
 
         params.add(constrainedFields.withPath("state", "state",
                 "State")
+                .type(JSON_STRING_TYPE)
+                .optional().attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                        .value("Optional. Multiple values allowed. Allowed values : " + stateValues.toString())));
+
+        params.add(constrainedFields.withPath("stateExcluded", "stateExcluded",
+                "State excluded (ignored)")
                 .type(JSON_STRING_TYPE)
                 .optional().attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)

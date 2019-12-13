@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * OAIS Deletion process service.
@@ -42,44 +40,26 @@ public interface IOAISDeletionService {
      * @param requestId
      * @return {@link OAISDeletionCreatorRequest}
      */
-    public Optional<OAISDeletionCreatorRequest> searchCreator(Long requestId);
+    Optional<OAISDeletionCreatorRequest> searchCreator(Long requestId);
 
     /**
      * Search {@link OAISDeletionCreatorRequest}s by ids.
      * @param deleteRequestIds
      * @return {@link OAISDeletionCreatorRequest}
      */
-    public List<OAISDeletionRequest> searchRequests(List<Long> deleteRequestIds);
-
-    /**
-     * Delete given request from repository
-     * @param request
-     */
-    public void deleteRequest(OAISDeletionRequest request);
-
-    /**
-     * Delete given requests from repository
-     * @param request
-     */
-    public void deleteRequests(Collection<OAISDeletionRequest> requests);
+    List<OAISDeletionRequest> searchRequests(List<Long> deleteRequestIds);
 
     /**
      * Update given request
      * @param request
      */
-    public void update(OAISDeletionRequest request);
+    void update(OAISDeletionRequest request);
 
     /**
      * Register deletion request from flow item
      * @param request to register as deletion request
      */
-    public void registerOAISDeletionCreator(OAISDeletionPayloadDto request);
-
-    /**
-     * Try to schedule the deletion job
-     * @param deletionRequest
-     */
-    public void scheduleOAISDeletionCreatorJob(OAISDeletionCreatorRequest deletionRequest);
+    void registerOAISDeletionCreator(OAISDeletionPayloadDto request);
 
     /**
      * Handle file deletion error

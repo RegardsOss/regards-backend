@@ -18,20 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -50,6 +39,13 @@ import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPSimpleProperty;
 import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPStorage;
 import fr.cnes.regards.modules.ingest.service.request.IAIPStoreMetaDataRequestService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 /**
  * @author Léo Mieulet
@@ -171,7 +167,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
             } catch (ModuleException e) {
                 LOGGER.warn("An error occured while updating aip {}: {}", aip.getAip().getAipId(), e.getMessage());
                 // Save error inside requests
-                updateRequest.setErrors(Sets.newHashSet(e.getMessage()));
+                updateRequest.addError(e.getMessage());
                 updateRequest.setState(InternalRequestState.ERROR);
             }
         }

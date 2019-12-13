@@ -111,7 +111,7 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
             pageRequest.next();
         } while (aipsPage.hasNext());
         // Delete the request
-        requestService.cleanRequestJob(request);
+        requestService.deleteRequest(request);
     }
 
     @Override

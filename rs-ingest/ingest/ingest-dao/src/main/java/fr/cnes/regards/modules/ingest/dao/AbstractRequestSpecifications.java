@@ -187,25 +187,6 @@ public final class AbstractRequestSpecifications {
         };
     }
 
-    public static Specification<AbstractRequest> searchRequestBlockingStorageDeletion(Optional<String> sessionOwner,
-            Optional<String> session) {
-
-        return (root, query, cb) -> {
-            Set<Predicate> predicates = Sets.newHashSet();
-
-            predicates.add(AbstractRequestSpecifications
-                    .aggregateRequest(cb,
-                                      AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
-                                                                                        session),
-                                      AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
-                                      AbstractRequestSpecifications.searchAipUpdatesCreator(root, cb)));
-
-            predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
-
-            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
-        };
-    }
-
     public static Specification<AbstractRequest> searchRequestBlockingOAISDeletionCreator(Optional<String> sessionOwner,
             Optional<String> session) {
         return (root, query, cb) -> {

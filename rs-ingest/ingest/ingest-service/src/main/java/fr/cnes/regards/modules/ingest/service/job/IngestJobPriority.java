@@ -79,6 +79,14 @@ public enum IngestJobPriority {
         public int getPriority() {
             return 0;
         }
+    },
+
+    REQUEST_RETRY_JOB_PRIORITY {
+
+        @Override
+        public int getPriority() {
+            return 0;
+        }
     };
 
     public abstract int getPriority();

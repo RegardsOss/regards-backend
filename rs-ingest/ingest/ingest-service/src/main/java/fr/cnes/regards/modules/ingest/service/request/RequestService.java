@@ -18,28 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import fr.cnes.regards.modules.ingest.service.job.RequestDeletionJob;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -66,8 +48,25 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.job.AIPUpdatesCreatorJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.OAISDeletionsCreatorJob;
+import fr.cnes.regards.modules.ingest.service.job.RequestDeletionJob;
+import fr.cnes.regards.modules.ingest.service.job.RequestRetryJob;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
 
 /**
  * Service to handle all {@link AbstractRequest}s
@@ -202,56 +201,6 @@ public class RequestService implements IRequestService {
     }
 
     @Override
-    public void relaunchRequests(SearchRequestsParameters filters) {
-        //TODO
-    }
-
-    @Override
-    public void scheduleRequests(List<AbstractRequest> requests) {
-        // Store request state (can be scheduled right now ?) by session
-        Table<String, String, InternalRequestState> stateBySession = HashBasedTable.create();
-
-        for (AbstractRequest request : requests) {
-            // Ignore BLOCKED requests
-            if (request.getState() != InternalRequestState.BLOCKED) {
-                String sessionOwner = Optional.ofNullable(request.getSessionOwner()).orElse(GLOBAL_REQUEST_SESSION);
-                String session = Optional.ofNullable(request.getSession()).orElse(GLOBAL_REQUEST_SESSION);
-
-                // Compute the session state if not already available
-                if (!stateBySession.contains(sessionOwner, session)) {
-                    // Check if the request can be processed right now
-                    request = scheduleRequest(request);
-
-                    // Store if request for this session can be executed right now
-                    stateBySession.put(sessionOwner, session, request.getState());
-                } else {
-                    InternalRequestState state = stateBySession.get(sessionOwner, session);
-                    request.setState(state);
-                    abstractRequestRepository.save(request);
-                }
-            } else {
-                // Just save the request as BLOCKED
-                abstractRequestRepository.save(request);
-            }
-
-        }
-    }
-
-    @Override
-    public AbstractRequest scheduleRequest(AbstractRequest request) {
-        boolean shouldDelayCurrentRequest = shouldDelayRequest(request);
-        if (shouldDelayCurrentRequest) {
-            // Block the request
-            request.setState(InternalRequestState.BLOCKED);
-        } else if (request.getState() == InternalRequestState.TO_SCHEDULE) {
-            // If the request is accepted but was in TO_SCHEDULE, put it in CREATED
-            request.setState(InternalRequestState.CREATED);
-        }
-        // Save to repo
-        return abstractRequestRepository.save(request);
-    }
-
-    @Override
     public void scheduleJob(AbstractRequest request) {
         request.setState(InternalRequestState.RUNNING);
 
@@ -275,10 +224,30 @@ public class RequestService implements IRequestService {
         }
 
         jobInfo.setLocked(true);
-        jobInfoService.createAsQueued(jobInfo);
+        jobInfo = jobInfoService.createAsQueued(jobInfo);
         request.setJobInfo(jobInfo);
         // save request (same transaction)
         abstractRequestRepository.save(request);
+    }
+
+    @Override
+    public void scheduleRequestDeletionJob(SearchRequestsParameters filters) {
+        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestDeletionJob.CRITERIA, filters));
+        // Schedule request deletion job
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_DELETION_JOB_PRIORITY.getPriority(), jobParameters,
+                authResolver.getUser(), RequestDeletionJob.class.getName());
+        jobInfo = jobInfoService.createAsQueued(jobInfo);
+        LOGGER.debug("Schedule {} job with id {}", RequestDeletionJob.class.getName(), jobInfo.getId());
+    }
+
+    @Override
+    public void scheduleRequestRetryJob(SearchRequestsParameters filters) {
+        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestRetryJob.CRITERIA, filters));
+        // Schedule request retry job
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_RETRY_JOB_PRIORITY.getPriority(), jobParameters,
+                authResolver.getUser(), RequestRetryJob.class.getName());
+        jobInfoService.createAsQueued(jobInfo);
+        LOGGER.debug("Schedule {} job with id {}", RequestRetryJob.class.getName(), jobInfo.getId());
     }
 
     @Override
@@ -288,31 +257,16 @@ public class RequestService implements IRequestService {
                 .withState(InternalRequestState.BLOCKED);
         // Retrieve PENDING requests
         Page<AbstractRequest> pageRequests = findRequests(searchFilters, PageRequest.of(0, 500));
-
-        // Store request state (can be scheduled right now ?) by session
-        Table<String, String, InternalRequestState> stateBySession = HashBasedTable.create();
-
         List<AbstractRequest> requests = pageRequests.getContent();
-        for (AbstractRequest request : requests) {
-            String sessionOwner = Optional.ofNullable(request.getSessionOwner()).orElse(GLOBAL_REQUEST_SESSION);
-            String session = Optional.ofNullable(request.getSession()).orElse(GLOBAL_REQUEST_SESSION);
 
-            // Compute the session state if not already available
-            if (!stateBySession.contains(sessionOwner, session)) {
-                // Check if the request can be processed right now
-                boolean shouldDelayRequest = shouldDelayRequest(request);
-                InternalRequestState state = shouldDelayRequest ? InternalRequestState.BLOCKED
-                        : InternalRequestState.CREATED;
-                // Store if request for this session can be executed right now
-                stateBySession.put(sessionOwner, session, state);
-            }
-            InternalRequestState state = stateBySession.get(sessionOwner, session);
-            request.setState(state);
-            abstractRequestRepository.save(request);
+        for (AbstractRequest request : requests) {
+            // Rollback the state to TO_SCHEDULE
+            request.setState(InternalRequestState.TO_SCHEDULE);
         }
+        scheduleRequests(requests);
 
         // For macro job, create a job
-        if ((requestType == RequestTypeEnum.AIP_UPDATES_CREATOR) || (requestType == RequestTypeEnum.OAIS_DELETION)) {
+        if (isJobRequest(requestType)) {
             for (AbstractRequest request : requests) {
                 if (request.getState() == InternalRequestState.CREATED) {
                     scheduleJob(request);
@@ -322,44 +276,124 @@ public class RequestService implements IRequestService {
     }
 
     @Override
-    public void cleanRequestJob(AbstractRequest request) {
-        if ((request instanceof OAISDeletionCreatorRequest) || (request instanceof AIPUpdatesCreatorRequest)) {
+    public void relaunchRequests(List<AbstractRequest> requests) {
+        // Change requests states
+        for (AbstractRequest request : requests) {
+            // Requests must be in ERROR state
+            if (request.getState() == InternalRequestState.ERROR) {
+                // Rollback the state to TO_SCHEDULE
+                switchRequestState(request);
+            } else {
+                LOGGER.error("Cannot relaunch the request {} because this request is not in ERROR state. It was in {} state",
+                        request.getId(), request.getState());
+            }
+        }
+        scheduleRequests(requests);
+
+        // For macro job, create a job
+        for (AbstractRequest request : requests) {
+            if (request.getState() == InternalRequestState.CREATED && isJobRequest(request)) {
+                scheduleJob(request);
+            }
+        }
+    }
+
+    /**
+     * Notify if necessary the sessionNotifier, then switch the state
+     * @param request
+     */
+    private void switchRequestState(AbstractRequest request) {
+        // Handle requests tracked by notifications
+        if (request instanceof IngestRequest) {
+            sessionNotifier.ingestRequestErrorDeleted((IngestRequest) request);
+        } else if (request instanceof AIPStoreMetaDataRequest) {
+            sessionNotifier.aipStoreMetaRequestErrorDeleted((AIPStoreMetaDataRequest) request);
+        }
+        request.setState(InternalRequestState.TO_SCHEDULE);
+        request.clearError();
+    }
+
+    @Override
+    public void deleteRequest(AbstractRequest request) {
+        // Check if the request is linked to a job
+        if (isJobRequest(request)) {
             // Unlock job to allow automatic deletion
             if ((request.getJobInfo() != null) && request.getJobInfo().isLocked()) {
                 JobInfo jobInfoToUnlock = request.getJobInfo();
                 jobInfoToUnlock.setLocked(false);
                 jobInfoService.save(jobInfoToUnlock);
             }
-            abstractRequestRepository.delete(request);
-            return;
         }
-        throw new IllegalArgumentException(
-                String.format("You should not use this method for requests having [%s] type", request.getDtype()));
+        abstractRequestRepository.delete(request);
     }
 
+    /**
+     * Schedule a list of requests and save them into repository
+     * Use the history to predict the state of a request having the same type
+     * You must call this method only with a list of requests having the same {@link AbstractRequest#getDtype()}
+     * @param requests to schedule
+     */
     @Override
-    public void registerRequestDeletion(SearchRequestsParameters filters) {
-        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestDeletionJob.CRITERIA, filters));
-        // Schedule OAIS Deletion job
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_DELETION_JOB_PRIORITY.getPriority(), jobParameters,
-                authResolver.getUser(), RequestDeletionJob.class.getName());
-        jobInfoService.createAsQueued(jobInfo);
-    }
+    public void scheduleRequests(List<AbstractRequest> requests) {
+        // Store request state (can be scheduled right now ?) by session
+        Table<String, String, InternalRequestState> history = HashBasedTable.create();
 
-    @Override
-    public void registerRequestRetry(SearchRequestsParameters filters) {
+        for (AbstractRequest request : requests) {
+            // Ignore BLOCKED request
+            if (request.getState() != InternalRequestState.BLOCKED) {
+                // Do not use history if the request is also a jobRequest or session values are missing
+                if (!isJobRequest(request) && request.getSessionOwner() != null && request.getSession() != null) {
+                    if (!history.contains(request.getSessionOwner(), request.getSession())) {
+                        // Check if the request can be processed right now
+                        request = scheduleRequest(request);
 
-    }
-
-    @Override
-    public void deleteRequest(AbstractRequest request) {
-        if (request instanceof OAISDeletionCreatorRequest || request instanceof AIPUpdatesCreatorRequest) {
-            cleanRequestJob(request);
-        } else {
-            abstractRequestRepository.delete(request);
+                        // Store if request for this session can be executed right now
+                        history.put(request.getSessionOwner(), request.getSession(), request.getState());
+                    }
+                    InternalRequestState state = history.get(request.getSessionOwner(), request.getSession());
+                    request.setState(state);
+                    abstractRequestRepository.save(request);
+                } else {
+                    // Schedule the request
+                    scheduleRequest(request);
+                }
+            } else {
+                abstractRequestRepository.save(request);
+            }
         }
     }
 
+    @Override
+    public AbstractRequest scheduleRequest(AbstractRequest request) {
+        boolean shouldDelayCurrentRequest = shouldDelayRequest(request);
+        if (shouldDelayCurrentRequest) {
+            // Block the request
+            request.setState(InternalRequestState.BLOCKED);
+        } else if (request.getState() == InternalRequestState.TO_SCHEDULE) {
+            // If the request is accepted but was in TO_SCHEDULE, put it in CREATED
+            request.setState(InternalRequestState.CREATED);
+        }
+        // Save to repo
+        return abstractRequestRepository.save(request);
+    }
+
+    /**
+     * @param request
+     * @return true when the concrete {@link AbstractRequest} is run in a job
+     *         false when the request is processed by bulk
+     */
+    private boolean isJobRequest(AbstractRequest request) {
+        return (request instanceof OAISDeletionCreatorRequest) || (request instanceof AIPUpdatesCreatorRequest);
+    }
+
+    private boolean isJobRequest(RequestTypeEnum requestType) {
+        return Lists.newArrayList(RequestTypeEnum.OAIS_DELETION_CREATOR, RequestTypeEnum.AIP_UPDATES_CREATOR).contains(requestType);
+    }
+
+    /**
+     * Try to find some request in a ready state that can prevent the provided {@link AbstractRequest} request
+     * to be executed right now
+     */
     private boolean shouldDelayRequest(AbstractRequest request) {
         Specification<AbstractRequest> spec;
         Optional<String> sessionOwnerOp = Optional.ofNullable(request.getSessionOwner());
@@ -382,7 +416,8 @@ public class RequestService implements IRequestService {
                 spec = AbstractRequestSpecifications.searchRequestBlockingUpdate(sessionOwnerOp, sessionOp);
                 break;
             case RequestTypeConstant.INGEST_VALUE:
-                // Ingest cannot be blocked, don't call this method to save that kind of request
+                // Ingest cannot be blocked
+                return false;
             default:
                 throw new IllegalArgumentException(String
                         .format("You should not use this method for requests having [%s] type", request.getDtype()));

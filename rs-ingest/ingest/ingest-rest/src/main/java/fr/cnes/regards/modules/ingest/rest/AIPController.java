@@ -224,7 +224,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     @ResourceAccess(description = "Update an AIP set with provided params", role = DefaultRole.PUBLIC)
     public void updateAips(@Valid @RequestBody AIPUpdateParametersDto params) {
         LOGGER.debug("Received request to update AIPs");
-        aipService.registerAIPEntityUpdate(params);
+        aipService.registerUpdatesCreator(params);
     }
 
     @ResourceAccess(description = "Delete OAIS entities", role = DefaultRole.ADMIN)

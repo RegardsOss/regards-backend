@@ -167,7 +167,7 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
     public void testScanJob() throws ModuleException {
         storageClient.setBehavior(true, true);
         initData();
-        aipService.registerAIPEntityUpdate(AIPUpdateParametersDto
+        aipService.registerUpdatesCreator(AIPUpdateParametersDto
                 .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0), TAG_2,
                        TAG_1, CATEGORIES_2, CATEGORIES_1, Lists.newArrayList(STORAGE_3)));
         long nbSipConcerned = 2;
@@ -181,7 +181,7 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
         initData();
         generateFakeRunningTasks();
 
-        aipService.registerAIPEntityUpdate(AIPUpdateParametersDto
+        aipService.registerUpdatesCreator(AIPUpdateParametersDto
                 .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0), TAG_2,
                        TAG_1, CATEGORIES_2, CATEGORIES_1, Lists.newArrayList(STORAGE_3)));
         long nbInitialTasks = 6;
