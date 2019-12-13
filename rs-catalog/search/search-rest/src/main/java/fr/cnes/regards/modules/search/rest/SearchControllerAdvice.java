@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import fr.cnes.regards.modules.search.service.SearchException;
 
 /**
@@ -46,6 +47,15 @@ public class SearchControllerAdvice {
      */
     @ExceptionHandler(SearchException.class)
     public ResponseEntity<ServerErrorResponse> searchException(final SearchException exception) {
+        String message = exception.getMessage();
+        if (exception.getCause() != null) {
+            message += ". Cause: " + exception.getCause().getMessage();
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(message, exception));
+    }
+
+    @ExceptionHandler(OpenSearchParseException.class)
+    public ResponseEntity<ServerErrorResponse> openSearchParseException(final OpenSearchParseException exception) {
         String message = exception.getMessage();
         if (exception.getCause() != null) {
             message += ". Cause: " + exception.getCause().getMessage();
