@@ -28,8 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
@@ -95,7 +95,7 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
 
     @Test
     public void retrieveMicroserviceResourcesFromFeignClient() {
-        final ResponseEntity<PagedResources<Resource<ResourcesAccess>>> response = client
+        final ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> response = client
                 .getAllResourceAccessesByMicroservice("rs-test", 0, 20);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }

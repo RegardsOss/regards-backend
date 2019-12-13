@@ -24,8 +24,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,8 +50,8 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
  * @author Christophe Mertz
  */
 @RestClient(name = TARGET_NAME, contextId = "rs-admin.project-user-client")
-@RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE)
 public interface IProjectUsersClient {
 
     String TARGET_NAME = "rs-admin";
@@ -61,7 +61,7 @@ public interface IProjectUsersClient {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveProjectUserList(@RequestParam("page") int pPage,
+    ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(@RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
     /**
@@ -74,34 +74,34 @@ public interface IProjectUsersClient {
      */
     @ResponseBody
     @RequestMapping(value = "/pendingaccesses", method = RequestMethod.GET)
-    ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveAccessRequestList(@RequestParam("page") int pPage,
+    ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(@RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
-    ResponseEntity<Resource<ProjectUser>> createUser(@Valid @RequestBody final AccessRequestDto pDto);
+    ResponseEntity<EntityModel<ProjectUser>> createUser(@Valid @RequestBody final AccessRequestDto pDto);
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.
      *
      * @param pUserId
      *            The {@link ProjectUser}'s <code>id</code>
-     * @return {@link PagedResources} of {@link ProjectUser}
+     * @return {@link ProjectUser}
      */
     @ResponseBody
     @RequestMapping(value = "/{user_id}", method = RequestMethod.GET)
-    ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long pUserId);
+    ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long pUserId);
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>email</code>.
      *
      * @param pUserEmail
      *            The {@link ProjectUser}'s <code>email</code>
-     * @return {@link PagedResources} of {@link ProjectUser}
+     * @return {@link ProjectUser}
      */
     @ResponseBody
     @RequestMapping(value = "/email/{user_email}", method = RequestMethod.GET)
-    ResponseEntity<Resource<ProjectUser>> retrieveProjectUserByEmail(@PathVariable("user_email") String pUserEmail);
+    ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUserByEmail(@PathVariable("user_email") String pUserEmail);
 
     @ResponseBody
     @RequestMapping(value = "/email/{user_email}/admin", method = RequestMethod.GET)
@@ -114,11 +114,11 @@ public interface IProjectUsersClient {
      *            The {@link ProjectUser} <code>id</code>
      * @param pUpdatedProjectUser
      *            The new {@link ProjectUser}
-     * @return {@link PagedResources} of {@link ProjectUser}
+     * @return{@link ProjectUser}
      */
     @ResponseBody
     @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT)
-    ResponseEntity<Resource<ProjectUser>> updateProjectUser(@PathVariable("user_id") Long pUserId,
+    ResponseEntity<EntityModel<ProjectUser>> updateProjectUser(@PathVariable("user_id") Long pUserId,
             @RequestBody ProjectUser pUpdatedProjectUser);
 
     /**
@@ -141,12 +141,12 @@ public interface IProjectUsersClient {
      *            page index
      * @param pSize
      *            page size
-     * @return {@link PagedResources} of {@link ProjectUser}
+     * @return {@link PagedModel} of {@link ProjectUser}
     
      */
     @ResponseBody
     @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.GET)
-    ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(
+    ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(
             @PathVariable("role_id") final Long pRoleId, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
@@ -159,6 +159,6 @@ public interface IProjectUsersClient {
      * @return page of project user which role, represented by its name, is the one provided
      */
     @RequestMapping(value = "/roles", method = RequestMethod.GET)
-    ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUsersList(
+    ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(
             @RequestParam("role_name") String pRole, @RequestParam("page") int pPage, @RequestParam("size") int pSize);
 }

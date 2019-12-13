@@ -40,8 +40,8 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
  *
  */
 @RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.tenant-connection-client")
-@RequestMapping(value = "/connections/{microservice}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/connections/{microservice}", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface ITenantConnectionClient {
 
     /**

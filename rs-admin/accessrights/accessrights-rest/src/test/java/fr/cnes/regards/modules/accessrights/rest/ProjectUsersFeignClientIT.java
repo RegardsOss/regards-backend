@@ -26,8 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
@@ -95,12 +95,12 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-
+    
      */
     @Ignore
     @Test
     public void retrieveProjectUserListFromFeignClient() {
-        final ResponseEntity<PagedResources<Resource<ProjectUser>>> response = client.retrieveProjectUserList(0, 10);
+        final ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = client.retrieveProjectUserList(0, 10);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }
 
@@ -108,11 +108,11 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-
+    
      */
     @Test
     public void retrieveAccessRequestListFromFeignClient() {
-        final ResponseEntity<PagedResources<Resource<ProjectUser>>> response = client.retrieveAccessRequestList(0, 10);
+        final ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = client.retrieveAccessRequestList(0, 10);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }
 
@@ -120,11 +120,12 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-
+    
      */
     @Test
     public void retrieveProjectUserByEmailFromFeignClient() {
-        final ResponseEntity<Resource<ProjectUser>> response = client.retrieveProjectUserByEmail("unkown@regards.de");
+        final ResponseEntity<EntityModel<ProjectUser>> response = client
+                .retrieveProjectUserByEmail("unkown@regards.de");
         Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
     }
 
@@ -132,12 +133,12 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-
+    
      */
     @Ignore
     @Test
     public void retrieveProjectUserFromFeignClient() {
-        final ResponseEntity<Resource<ProjectUser>> response = client.retrieveProjectUser(1L);
+        final ResponseEntity<EntityModel<ProjectUser>> response = client.retrieveProjectUser(1L);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
     }
 
@@ -145,7 +146,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-
+    
      */
     @Test
     public void removeProjectUserFromFeignClient() {
@@ -160,7 +161,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      * @throws EntityInvalidException
      * @throws EntityAlreadyExistsException
      *
-
+    
      */
     @Test
     @Ignore

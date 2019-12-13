@@ -22,7 +22,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,8 +45,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  *
  */
 @RestClient(name = "rs-admin", contextId = "rs-admin.user-resource-client")
-@RequestMapping(value = IUserResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = IUserResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IUserResourceClient {
 
     /**
@@ -65,7 +65,7 @@ public interface IUserResourceClient {
      *
      */
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserResources(
+    ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveProjectUserResources(
             @PathVariable("user_email") final String pUserLogin,
             @RequestParam(value = "borrowedRoleName", required = false) final String pBorrowedRoleName);
 

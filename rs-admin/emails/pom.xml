@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>emails</artifactId>
-	<version>GEODE</version>
 	<packaging>pom</packaging>
 	<name>Emails</name>
 	<description>Module for sending emails through the system</description>

@@ -23,8 +23,6 @@
 
 	<groupId>fr.cnes.regards.microservices.administration</groupId>
 	<artifactId>bootstrap-administration</artifactId>
-	<version>GEODE</version>
-
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>

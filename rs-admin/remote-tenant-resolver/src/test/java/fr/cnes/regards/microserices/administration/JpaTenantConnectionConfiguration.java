@@ -29,9 +29,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.PagedResources.PageMetadata;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -63,7 +63,7 @@ public class JpaTenantConnectionConfiguration {
      * Stub administration client
      *
      * @return IProjectsClient
-
+    
      */
     @Bean
     @Qualifier("initProjectConnectionsClient")
@@ -85,7 +85,7 @@ public class JpaTenantConnectionConfiguration {
      * Stub administration client
      *
      * @return IProjectsClient
-
+    
      */
     @Bean
     @Primary
@@ -98,7 +98,7 @@ public class JpaTenantConnectionConfiguration {
      * Stub administration client
      *
      * @return {@link IProjectsClient}
-
+    
      */
     @Bean
     @Primary
@@ -113,7 +113,7 @@ public class JpaTenantConnectionConfiguration {
      * Mock AMQP Publisher
      *
      * @return {@link IPublisher}
-
+    
      */
     @Bean
     IPublisher publisher() {
@@ -125,7 +125,7 @@ public class JpaTenantConnectionConfiguration {
      * Mock AMQP Subscriber
      *
      * @return {@link ISubscriber}
-
+    
      */
     @Bean
     ISubscriber subsriber() {
@@ -137,7 +137,7 @@ public class JpaTenantConnectionConfiguration {
      * Stub administration client
      *
      * @return IProjectsClient
-
+    
      */
     @Bean
     @Primary
@@ -147,9 +147,9 @@ public class JpaTenantConnectionConfiguration {
         Mockito.when(mock.registerMicroserviceEndpoints(Mockito.anyString(), Mockito.any())).thenReturn(response);
 
         final PageMetadata md = new PageMetadata(0, 0, 0);
-        final PagedResources<Resource<ResourcesAccess>> pagedResources = new PagedResources<>(new ArrayList<>(), md,
+        final PagedModel<EntityModel<ResourcesAccess>> pagedResources = new PagedModel<>(new ArrayList<>(), md,
                 new ArrayList<>());
-        final ResponseEntity<PagedResources<Resource<ResourcesAccess>>> resourcesResponse = ResponseEntity
+        final ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> resourcesResponse = ResponseEntity
                 .ok(pagedResources);
         Mockito.when(mock.getAllResourceAccessesByMicroservice(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(resourcesResponse);

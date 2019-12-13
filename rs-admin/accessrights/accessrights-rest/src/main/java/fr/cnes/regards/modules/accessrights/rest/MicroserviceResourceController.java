@@ -18,16 +18,17 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -98,7 +99,7 @@ public class MicroserviceResourceController implements IResourceController<Resou
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the given microservice",
             role = DefaultRole.PUBLIC)
-    public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> getAllResourceAccessesByMicroservice(
+    public ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> getAllResourceAccessesByMicroservice(
             @PathVariable("microservicename") String microserviceName,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<ResourcesAccess> assembler) throws ModuleException {
@@ -131,8 +132,8 @@ public class MicroserviceResourceController implements IResourceController<Resou
             role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<String>> retrieveMicroserviceControllers(
             @PathVariable("microservicename") String microserviceName) {
-        final List<String> controllers = resourceService
-                .retrieveMicroserviceControllers(microserviceName, authResolver.getRole());
+        final List<String> controllers = resourceService.retrieveMicroserviceControllers(microserviceName,
+                                                                                         authResolver.getRole());
         controllers.sort(null);
         return new ResponseEntity<>(controllers, HttpStatus.OK);
     }
@@ -146,7 +147,7 @@ public class MicroserviceResourceController implements IResourceController<Resou
     @RequestMapping(method = RequestMethod.GET, value = CONTROLLER_MAPPING)
     @ResourceAccess(description = "Retrieve all resources for the given microservice and the given controller",
             role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveMicroserviceControllerEndpoints(
+    public ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveMicroserviceControllerEndpoints(
             @PathVariable("microservicename") String microserviceName,
             @PathVariable("controllername") String controllerName) {
         final List<ResourcesAccess> resources = resourceService
@@ -155,7 +156,7 @@ public class MicroserviceResourceController implements IResourceController<Resou
     }
 
     @Override
-    public Resource<ResourcesAccess> toResource(ResourcesAccess element, Object... extras) {
+    public EntityModel<ResourcesAccess> toResource(ResourcesAccess element, Object... extras) {
         return hateoasService.toResource(element);
     }
 }

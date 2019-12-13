@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.accessrights.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -76,7 +76,7 @@ public class LicenseController implements IResourceController<LicenseDTO> {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve if the current user has accepted the license of the project",
             role = DefaultRole.PUBLIC)
-    public ResponseEntity<Resource<LicenseDTO>> retrieveLicense() throws EntityNotFoundException {
+    public ResponseEntity<EntityModel<LicenseDTO>> retrieveLicense() throws EntityNotFoundException {
         LicenseDTO licenseDto = licenseService.retrieveLicenseState();
         return new ResponseEntity<>(toResource(licenseDto), HttpStatus.OK);
     }
@@ -88,7 +88,7 @@ public class LicenseController implements IResourceController<LicenseDTO> {
      */
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "Allow current user to accept the license of the project", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Resource<LicenseDTO>> acceptLicense() throws EntityException {
+    public ResponseEntity<EntityModel<LicenseDTO>> acceptLicense() throws EntityException {
         LicenseDTO licenseDto = licenseService.acceptLicense();
         return new ResponseEntity<>(toResource(licenseDto), HttpStatus.OK);
     }
@@ -115,8 +115,8 @@ public class LicenseController implements IResourceController<LicenseDTO> {
      * @return {@link LicenseDTO}
      */
     @Override
-    public Resource<LicenseDTO> toResource(LicenseDTO element, Object... extras) {
-        Resource<LicenseDTO> resource = resourceService.toResource(element);
+    public EntityModel<LicenseDTO> toResource(LicenseDTO element, Object... extras) {
+        EntityModel<LicenseDTO> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveLicense", LinkRels.SELF);
         resourceService.addLink(resource, this.getClass(), "acceptLicense", LinkRels.UPDATE);
         resourceService.addLink(resource, this.getClass(), "resetLicense", LinkRels.DELETE);

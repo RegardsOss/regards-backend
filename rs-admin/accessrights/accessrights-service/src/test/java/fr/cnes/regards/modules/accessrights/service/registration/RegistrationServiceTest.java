@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -194,7 +194,7 @@ public class RegistrationServiceTest {
         final List<ProjectUser> projectUsers = new ArrayList<>();
         projectUsers.add(projectUser);
         Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail()))
-                .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(new ProjectUser()));
 
         // Make sur they have the same email, in order to throw the expected exception
@@ -220,7 +220,7 @@ public class RegistrationServiceTest {
     public void requestAccess() throws EntityException {
         // Mock
         Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail()))
-                .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
         Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
 
@@ -248,7 +248,7 @@ public class RegistrationServiceTest {
     public void requestExternalAccess() throws EntityException {
         // Mock
         Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail()))
-                .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
         Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
 
@@ -280,28 +280,28 @@ public class RegistrationServiceTest {
         // Mock.
         // First call : Account not found
         // Second call : Return created account
-        Answer<ResponseEntity<Resource<Account>>> accountsClientResponse = new Answer<ResponseEntity<Resource<Account>>>() {
+        Answer<ResponseEntity<EntityModel<Account>>> accountsClientResponse = new Answer<ResponseEntity<EntityModel<Account>>>() {
 
             private int nbCalls = 0;
 
             @Override
-            public ResponseEntity<Resource<Account>> answer(InvocationOnMock invocation) {
+            public ResponseEntity<EntityModel<Account>> answer(InvocationOnMock invocation) {
                 nbCalls++;
                 if (nbCalls == 1) {
                     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
                 } else {
-                    return new ResponseEntity<>(new Resource<>(newAccountToCreate), HttpStatus.OK);
+                    return new ResponseEntity<>(new EntityModel<>(newAccountToCreate), HttpStatus.OK);
                 }
             }
 
         };
         Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail())).then(accountsClientResponse);
         Mockito.when(accountsClient.createAccount(Mockito.any()))
-                .thenReturn(new ResponseEntity<>(new Resource<>(newAccountToCreate), HttpStatus.CREATED));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(newAccountToCreate), HttpStatus.CREATED));
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
         Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
         Mockito.when(accountSettingsClient.retrieveAccountSettings())
-                .thenReturn(new ResponseEntity<>(new Resource<>(accountSettings), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(accountSettings), HttpStatus.OK));
 
         // Call the service
         registrationService.requestAccess(dto, true);
@@ -332,12 +332,12 @@ public class RegistrationServiceTest {
         // The second call to the repository should then return the account, because it was creted
         Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail()))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
-                            new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
+                            new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
         AccountNPassword accountWithPassword = new AccountNPassword(account, account.getPassword());
         Mockito.when(accountsClient.createAccount(accountWithPassword))
-                .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.CREATED));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.CREATED));
         Mockito.when(accountSettingsClient.retrieveAccountSettings())
-                .thenReturn(new ResponseEntity<>(new Resource<>(accountSettings), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(accountSettings), HttpStatus.OK));
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
         Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
 
@@ -367,7 +367,7 @@ public class RegistrationServiceTest {
     public void requestAccountEmailAlreadyUsed() throws EntityException {
         // Mock
         Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail()))
-                .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
         // Trigger the exception

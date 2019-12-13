@@ -22,7 +22,7 @@ import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -121,16 +121,15 @@ public class RegistrationService implements IRegistrationService {
         // Check existence
         try {
             FeignSecurityManager.asSystem();
-            ResponseEntity<Resource<Account>> accountResponse = accountsClient
+            ResponseEntity<EntityModel<Account>> accountResponse = accountsClient
                     .retrieveAccounByEmail(accountDto.getEmail());
             if (accountResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
                 LOG.info("Requesting access with an existing account. Ok, no account created");
                 return;
             } else {
                 // Check that all information are provided to create account
-                if ((accountDto.getEmail() == null) || (accountDto.getFirstName() == null)
-                        || (accountDto.getLastName() == null)
-                        || ((accountDto.getPassword() == null) && !isExternalAccess)) {
+                if (accountDto.getEmail() == null || accountDto.getFirstName() == null
+                        || accountDto.getLastName() == null || accountDto.getPassword() == null && !isExternalAccess) {
                     LOG.error("Account does not exists for user {} and there not enought information to create a new one.",
                               accountDto.getEmail());
                     throw new EntityNotFoundException(accountDto.getEmail(), Account.class);
@@ -151,7 +150,7 @@ public class RegistrationService implements IRegistrationService {
             account = accountsClient.createAccount(accountNPassword).getBody().getContent();
 
             // Auto-accept if configured so
-            ResponseEntity<Resource<AccountSettings>> accountSettingsResponse = accountSettingsClient
+            ResponseEntity<EntityModel<AccountSettings>> accountSettingsResponse = accountSettingsClient
                     .retrieveAccountSettings();
             if (accountSettingsResponse.getStatusCode().is2xxSuccessful() && accountSettingsResponse.getBody()
                     .getContent().getMode().equals(AccountSettings.AUTO_ACCEPT_MODE)) {
@@ -172,7 +171,7 @@ public class RegistrationService implements IRegistrationService {
         try {
             FeignSecurityManager.asSystem();
             // Check that an associated account exists
-            ResponseEntity<Resource<Account>> accountResponse = accountsClient
+            ResponseEntity<EntityModel<Account>> accountResponse = accountsClient
                     .retrieveAccounByEmail(accountDto.getEmail());
             if (accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
                 throw new EntityNotFoundException(accountDto.getEmail(), Account.class);

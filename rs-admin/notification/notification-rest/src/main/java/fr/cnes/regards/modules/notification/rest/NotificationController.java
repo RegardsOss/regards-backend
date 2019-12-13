@@ -28,8 +28,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -136,7 +136,7 @@ public class NotificationController implements IResourceController<Notification>
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve the list of notifications for the logged user",
             role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<PagedResources<Resource<INotificationWithoutMessage>>> retrieveNotifications(
+    public ResponseEntity<PagedModel<EntityModel<INotificationWithoutMessage>>> retrieveNotifications(
             @RequestParam(name = "state", required = false) NotificationStatus state,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable page,
             PagedResourcesAssembler<INotificationWithoutMessage> assembler) throws EntityNotFoundException {
@@ -144,10 +144,10 @@ public class NotificationController implements IResourceController<Notification>
         return new ResponseEntity<>(notifWithoutMsgPagedResources(notifications, assembler), HttpStatus.OK);
     }
 
-    private PagedResources<Resource<INotificationWithoutMessage>> notifWithoutMsgPagedResources(
+    private PagedModel<EntityModel<INotificationWithoutMessage>> notifWithoutMsgPagedResources(
             Page<INotificationWithoutMessage> notifications,
             PagedResourcesAssembler<INotificationWithoutMessage> assembler) {
-        final PagedResources<Resource<INotificationWithoutMessage>> pageResources = assembler.toResource(notifications);
+        final PagedModel<EntityModel<INotificationWithoutMessage>> pageResources = assembler.toModel(notifications);
         pageResources.forEach(resource -> resource.add(notifWithoutMsgToResource(resource.getContent()).getLinks()));
         return pageResources;
     }
@@ -245,7 +245,6 @@ public class NotificationController implements IResourceController<Notification>
 
     /**
      * Define the endpoint for deleting a notification
-     * @param id The notification <code>id</code>
      * @return void
      * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
@@ -270,7 +269,7 @@ public class NotificationController implements IResourceController<Notification>
     }
 
     /**
-     * Define the endpoint for updating the {@link Notification#status}
+     * Define the endpoint for updating the {@link Notification#getStatus()}
      * @param notificationSettings The facade exposing user updatable fields of notification settings
      * @return The updated {@link NotificationSettings} wrapped in a {@link ResponseEntity}
      * @throws EntityNotFoundException Thrown when no notification settings with passed <code>id</code> could be found
@@ -293,8 +292,8 @@ public class NotificationController implements IResourceController<Notification>
     }
 
     @Override
-    public Resource<Notification> toResource(Notification element, Object... extras) {
-        Resource<Notification> resource = resourceService.toResource(element);
+    public EntityModel<Notification> toResource(Notification element, Object... extras) {
+        EntityModel<Notification> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveNotification", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
         resourceService.addLink(resource, this.getClass(), "deleteNotification", LinkRels.DELETE,
@@ -309,9 +308,9 @@ public class NotificationController implements IResourceController<Notification>
         return resource;
     }
 
-    public Resource<INotificationWithoutMessage> notifWithoutMsgToResource(INotificationWithoutMessage element,
+    public EntityModel<INotificationWithoutMessage> notifWithoutMsgToResource(INotificationWithoutMessage element,
             Object... extras) {
-        Resource<INotificationWithoutMessage> resource = new Resource<>(element);
+        EntityModel<INotificationWithoutMessage> resource = new EntityModel<>(element);
         resourceService.addLink(resource, this.getClass(), "retrieveNotification", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
         resourceService.addLink(resource, this.getClass(), "deleteNotification", LinkRels.DELETE,

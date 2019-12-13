@@ -25,8 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
@@ -69,8 +69,7 @@ public class ProjectConnectionsFeignClientsIT extends AbstractRegardsWebIT {
     @Before
     public void init() {
         client = FeignClientBuilder.build(new TokenClientProvider<>(IProjectConnectionClient.class,
-                                                                    "http://" + serverAddress + ":" + getPort(),
-                                                                    feignSecurityManager));
+                "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
         FeignSecurityManager.asSystem();
     }
 
@@ -79,7 +78,7 @@ public class ProjectConnectionsFeignClientsIT extends AbstractRegardsWebIT {
      */
     @Test
     public void retrieveAllProjectsByPageFromFeignClient() {
-        ResponseEntity<PagedResources<Resource<ProjectConnection>>> connections = client
+        ResponseEntity<PagedModel<EntityModel<ProjectConnection>>> connections = client
                 .getAllProjectConnections("test");
         Assert.assertEquals(connections.getStatusCode(), HttpStatus.OK);
     }

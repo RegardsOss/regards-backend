@@ -23,7 +23,6 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>accessrights-instance</artifactId>
-    <version>GEODE</version>
     <packaging>pom</packaging>
 
     <parent>

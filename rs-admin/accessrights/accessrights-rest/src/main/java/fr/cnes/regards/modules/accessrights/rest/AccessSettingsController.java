@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.accessrights.rest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -76,7 +76,7 @@ public class AccessSettingsController implements IResourceController<AccessSetti
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves the settings managing the access requests",
             role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<AccessSettings>> retrieveAccessSettings() {
+    public ResponseEntity<EntityModel<AccessSettings>> retrieveAccessSettings() {
         AccessSettings accessSettings = accessSettingsService.retrieve();
         return new ResponseEntity<>(toResource(accessSettings), HttpStatus.OK);
     }
@@ -90,15 +90,15 @@ public class AccessSettingsController implements IResourceController<AccessSetti
     @ResponseBody
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "Updates the setting managing the access requests", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<AccessSettings>> updateAccessSettings(
+    public ResponseEntity<EntityModel<AccessSettings>> updateAccessSettings(
             @Valid @RequestBody AccessSettings accessSettings) throws EntityNotFoundException {
         accessSettings = accessSettingsService.update(accessSettings);
         return new ResponseEntity<>(toResource(accessSettings), HttpStatus.OK);
     }
 
     @Override
-    public Resource<AccessSettings> toResource(final AccessSettings element, final Object... extras) {
-        Resource<AccessSettings> resource = resourceService.toResource(element);
+    public EntityModel<AccessSettings> toResource(final AccessSettings element, final Object... extras) {
+        EntityModel<AccessSettings> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveAccessSettings", LinkRels.SELF);
         resourceService.addLink(resource, this.getClass(), "updateAccessSettings", LinkRels.UPDATE,
                                 MethodParamFactory.build(AccessSettings.class));

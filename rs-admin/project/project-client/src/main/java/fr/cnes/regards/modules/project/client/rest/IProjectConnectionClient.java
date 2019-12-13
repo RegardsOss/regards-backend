@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.project.client.rest;
 
 import javax.validation.Valid;
 
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,8 +39,8 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author sbinda
  */
 @RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.project-connection-client")
-@RequestMapping(value = "/projects/{projectName}/connections", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/projects/{projectName}/connections", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IProjectConnectionClient {
 
     /**
@@ -51,7 +51,7 @@ public interface IProjectConnectionClient {
      * @return all project connections
      */
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<PagedResources<Resource<ProjectConnection>>> getAllProjectConnections(
+    ResponseEntity<PagedModel<EntityModel<ProjectConnection>>> getAllProjectConnections(
             @PathVariable("projectName") String projectName);
 
     /**
@@ -61,7 +61,7 @@ public interface IProjectConnectionClient {
      * @return a project connection
      */
     @RequestMapping(method = RequestMethod.GET, value = "/{connectionId}")
-    ResponseEntity<Resource<ProjectConnection>> getProjectConnection(@PathVariable("projectName") String projectName,
+    ResponseEntity<EntityModel<ProjectConnection>> getProjectConnection(@PathVariable("projectName") String projectName,
             @PathVariable("connectionId") Long connectionId);
 
     /**
@@ -71,7 +71,8 @@ public interface IProjectConnectionClient {
      * @return the create project connection
      */
     @RequestMapping(method = RequestMethod.POST)
-    ResponseEntity<Resource<ProjectConnection>> createProjectConnection(@PathVariable("projectName") String projectName,
+    ResponseEntity<EntityModel<ProjectConnection>> createProjectConnection(
+            @PathVariable("projectName") String projectName,
             @Valid @RequestBody final ProjectConnection pProjectConnection);
 
     /**
@@ -82,8 +83,8 @@ public interface IProjectConnectionClient {
      * @return updated connection
      */
     @RequestMapping(method = RequestMethod.PUT, value = "/{connectionId}")
-    ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(@PathVariable("projectName") String projectName,
-            @PathVariable("connectionId") Long connectionId,
+    ResponseEntity<EntityModel<ProjectConnection>> updateProjectConnection(
+            @PathVariable("projectName") String projectName, @PathVariable("connectionId") Long connectionId,
             @Valid @RequestBody final ProjectConnection pProjectConnection);
 
     /**

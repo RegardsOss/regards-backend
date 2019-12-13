@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import javax.validation.Valid;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Preconditions;
+
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -85,12 +87,12 @@ public class UserResourceController implements IResourceController<ResourcesAcce
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve the list of specific user accesses", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserResources(
+    public ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveProjectUserResources(
             @PathVariable("user_email") String userLogin,
             @RequestParam(value = "borrowedRoleName", required = false) String borrowedRoleName)
             throws ModuleException {
-        List<ResourcesAccess> permissions = projectUserService
-                .retrieveProjectUserAccessRights(userLogin, borrowedRoleName);
+        List<ResourcesAccess> permissions = projectUserService.retrieveProjectUserAccessRights(userLogin,
+                                                                                               borrowedRoleName);
         return new ResponseEntity<>(toResources(permissions, userLogin), HttpStatus.OK);
     }
 
@@ -124,12 +126,12 @@ public class UserResourceController implements IResourceController<ResourcesAcce
     }
 
     @Override
-    public Resource<ResourcesAccess> toResource(final ResourcesAccess element, final Object... extras) {
+    public EntityModel<ResourcesAccess> toResource(final ResourcesAccess element, final Object... extras) {
 
         Preconditions.checkNotNull(extras);
         String email = (String) extras[0];
 
-        Resource<ResourcesAccess> resource = hateoasService.toResource(element);
+        EntityModel<ResourcesAccess> resource = hateoasService.toResource(element);
         hateoasService.addLink(resource, this.getClass(), "retrieveProjectUserResources", LinkRels.SELF,
                                MethodParamFactory.build(String.class, email), MethodParamFactory.build(String.class));
         hateoasService.addLink(resource, this.getClass(), "updateProjectUserResources", LinkRels.UPDATE,
