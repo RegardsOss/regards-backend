@@ -34,8 +34,9 @@ import fr.cnes.regards.framework.amqp.event.Target;
 @Event(target = Target.MICROSERVICE)
 public class BroadcastPluginConfEvent extends AbstractPluginConfEvent implements ISubscribable {
 
-    public BroadcastPluginConfEvent(Long pPluginConfId, PluginServiceAction pAction, Set<String> pPluginTypes) {
-        super(pPluginConfId, pAction, pPluginTypes);
+    public BroadcastPluginConfEvent(Long pPluginConfId, String pluginBusinnessId, String label,
+            PluginServiceAction pAction, Set<String> pPluginTypes) {
+        super(pPluginConfId, pluginBusinnessId, label, pAction, pPluginTypes);
     }
 
     public BroadcastPluginConfEvent() {

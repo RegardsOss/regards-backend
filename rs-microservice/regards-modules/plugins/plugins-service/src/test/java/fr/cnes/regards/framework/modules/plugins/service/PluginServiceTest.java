@@ -193,8 +193,10 @@ public class PluginServiceTest extends PluginServiceUtility {
                     .thenReturn(aPluginConfiguration);
             pluginServiceMocked.deletePluginConfiguration(aPluginConfiguration.getBusinessId());
             Mockito.verify(pluginConfRepositoryMocked).deleteById(aPluginConfiguration.getId());
-            Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
-                    PluginServiceAction.DELETE, aPluginConfiguration.getInterfaceNames()));
+            Mockito.verify(publisherMocked)
+                    .publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
+                            aPluginConfiguration.getBusinessId(), aPluginConfiguration.getLabel(),
+                            PluginServiceAction.DELETE, aPluginConfiguration.getInterfaceNames()));
 
         } catch (final ModuleException e) {
             Assert.fail();
@@ -232,8 +234,10 @@ public class PluginServiceTest extends PluginServiceUtility {
             Assert.assertEquals(aPluginConfiguration.getParameters().size(),
                                 savedPluginConfiguration.getParameters().size());
 
-            Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfigurationWithId.getId(),
-                    PluginServiceAction.CREATE, aPluginConfigurationWithId.getInterfaceNames()));
+            Mockito.verify(publisherMocked)
+                    .publish(new BroadcastPluginConfEvent(aPluginConfigurationWithId.getId(),
+                            aPluginConfigurationWithId.getBusinessId(), aPluginConfigurationWithId.getLabel(),
+                            PluginServiceAction.CREATE, aPluginConfigurationWithId.getInterfaceNames()));
         } catch (final ModuleException e) {
             Assert.fail();
         }
@@ -331,8 +335,10 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(toBeUpdated);
         Assert.assertEquals(updatedConf.getLabel(), aPluginConfiguration.getLabel());
         Assert.assertEquals(updatedConf.getPluginId(), aPluginConfiguration.getPluginId());
-        Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
-                PluginServiceAction.DISABLE, aPluginConfiguration.getInterfaceNames()));
+        Mockito.verify(publisherMocked)
+                .publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
+                        aPluginConfiguration.getBusinessId(), aPluginConfiguration.getLabel(),
+                        PluginServiceAction.DISABLE, aPluginConfiguration.getInterfaceNames()));
     }
 
     @Test
@@ -360,8 +366,10 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(toBeUpdated);
         Assert.assertEquals(updatedConf.getLabel(), aPluginConfiguration.getLabel());
         Assert.assertEquals(updatedConf.getPluginId(), aPluginConfiguration.getPluginId());
-        Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
-                PluginServiceAction.ACTIVATE, aPluginConfiguration.getInterfaceNames()));
+        Mockito.verify(publisherMocked)
+                .publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
+                        aPluginConfiguration.getBusinessId(), aPluginConfiguration.getLabel(),
+                        PluginServiceAction.ACTIVATE, aPluginConfiguration.getInterfaceNames()));
     }
 
     @Test
