@@ -60,10 +60,6 @@ public interface IFileCopyRequestRepository
     boolean existsByGroupIdAndStatusNot(String groupId, FileRequestStatus error);
 
     @Modifying
-    @Query("update FileCopyRequest fcr set fcr.status = :status where fcr.id = :id")
-    int updateStatus(@Param("status") FileRequestStatus status, @Param("id") Long id);
-
-    @Modifying
     @Query("update FileCopyRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
     int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
             @Param("id") Long id);
