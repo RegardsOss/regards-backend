@@ -634,4 +634,14 @@ public class FileStorageRequestService {
         }
     }
 
+    /**
+     * @param storageId
+     * @return
+     */
+    public boolean isStorageRunning(String storageId) {
+        return fileStorageRequestRepo
+                .existsByStorageAndStatusIn(storageId,
+                                            Sets.newHashSet(FileRequestStatus.TO_DO, FileRequestStatus.PENDING));
+    }
+
 }

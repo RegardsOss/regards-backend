@@ -192,6 +192,24 @@ public class FileDeletionRequestService {
     }
 
     /**
+     * Inform if for the given storage a deletion process is running
+     * @param storage
+     * @return boolean
+     */
+    public boolean isDeletionRunning(String storage) {
+        boolean isRunning = false;
+        // Does a deletion job exists ?
+        isRunning = jobInfoService.retrieveJobsCount(FileDeletionRequestsCreatorJob.class.getName(), JobStatus.PENDING,
+                                                     JobStatus.QUEUED, JobStatus.RUNNING, JobStatus.TO_BE_RUN) > 0;
+        if (!isRunning) {
+            isRunning = fileDeletionRequestRepo
+                    .existsByStorageAndStatusIn(storage,
+                                                Sets.newHashSet(FileRequestStatus.TO_DO, FileRequestStatus.PENDING));
+        }
+        return isRunning;
+    }
+
+    /**
      * Schedule {@link FileDeletionRequestJob}s for given {@link FileDeletionRequest}s and given storage location.
      * @param storage of the {@link FileDeletionRequest}s to handle
      * @param fileDeletionRequests {@link FileDeletionRequest}s to schedule

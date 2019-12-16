@@ -42,6 +42,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -364,6 +365,24 @@ public class FileCopyRequestService {
         } else {
             copyRepository.deleteByStorage(storageLocationId);
         }
+    }
+
+    /**
+     * Inform if for the given storage a deletion process is running
+     * @param storage
+     * @return boolean
+     */
+    public boolean isCopyRunning(String storage) {
+        boolean isRunning = false;
+        // Does a deletion job exists ?
+        isRunning = jobInfoService.retrieveJobsCount(FileCopyRequestsCreatorJob.class.getName(), JobStatus.PENDING,
+                                                     JobStatus.QUEUED, JobStatus.RUNNING, JobStatus.TO_BE_RUN) > 0;
+        if (!isRunning) {
+            isRunning = copyRepository
+                    .existsByStorageAndStatusIn(storage,
+                                                Sets.newHashSet(FileRequestStatus.TO_DO, FileRequestStatus.PENDING));
+        }
+        return isRunning;
     }
 
     /**
