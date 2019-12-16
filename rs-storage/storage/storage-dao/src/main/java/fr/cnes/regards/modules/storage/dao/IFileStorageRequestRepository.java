@@ -79,4 +79,6 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     Long countByStorageAndStatus(String storage, FileRequestStatus status);
 
+    boolean existsByStorage(String storageId);
+
 }

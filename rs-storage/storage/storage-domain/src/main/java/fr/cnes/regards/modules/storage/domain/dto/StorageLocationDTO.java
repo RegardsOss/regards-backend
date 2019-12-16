@@ -36,6 +36,8 @@ public class StorageLocationDTO {
 
     private Long nbDeletionError;
 
+    private boolean storageRunning = false;
+
     private boolean deletionRunning = false;
 
     private boolean copyRunning = false;
@@ -43,8 +45,8 @@ public class StorageLocationDTO {
     private StorageLocationConfiguration configuration;
 
     public static StorageLocationDTO build(String name, Long nbFilesStored, Long totalStoredFilesSizeKo,
-            Long nbStorageError, Long nbDeletionError, boolean deletionRunning, boolean copyRunning,
-            StorageLocationConfiguration configuration) {
+            Long nbStorageError, Long nbDeletionError, boolean storageRunnig, boolean deletionRunning,
+            boolean copyRunning, StorageLocationConfiguration configuration) {
         StorageLocationDTO dto = new StorageLocationDTO();
         dto.name = name;
         dto.nbFilesStored = nbFilesStored;
@@ -54,6 +56,7 @@ public class StorageLocationDTO {
         dto.configuration = configuration;
         dto.deletionRunning = deletionRunning;
         dto.copyRunning = copyRunning;
+        dto.storageRunning = storageRunnig;
         return dto;
     }
 
@@ -79,6 +82,10 @@ public class StorageLocationDTO {
 
     public StorageLocationConfiguration getConfiguration() {
         return configuration;
+    }
+
+    public boolean isStorageRunning() {
+        return storageRunning;
     }
 
     public boolean isDeletionRunning() {

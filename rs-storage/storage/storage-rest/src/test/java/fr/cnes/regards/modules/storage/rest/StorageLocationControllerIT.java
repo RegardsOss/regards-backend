@@ -102,7 +102,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                 .expectValue("content.configuration.name", name)
                 .expectValue("content.configuration.storageType", StorageType.OFFLINE.toString());
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           StorageLocationDTO.build(name, null, null, null, null, false, false,
+                           StorageLocationDTO.build(name, null, null, null, null, false, false, false,
                                                     new StorageLocationConfiguration(name, null, null)),
                            requestBuilderCustomizer, "Should be created");
 
@@ -113,7 +113,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                 .expectValue("content.configuration.storageType", StorageType.ONLINE.toString());
         performDefaultPost(StorageLocationController.BASE_PATH,
                            StorageLocationDTO
-                                   .build("plop2", null, null, null, null, false, false,
+                                   .build("plop2", null, null, null, null, false, false, false,
                                           new StorageLocationConfiguration("plop2", getPluginConf("plop2"), 10_000L)),
                            requestBuilderCustomizer, "Should be created");
     }
@@ -122,13 +122,13 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     public void configureLocation_alreadyExists() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           StorageLocationDTO.build("plop", null, null, null, null, false, false,
+                           StorageLocationDTO.build("plop", null, null, null, null, false, false, false,
                                                     new StorageLocationConfiguration("plop", null, null)),
                            requestBuilderCustomizer, "Should be created");
 
         requestBuilderCustomizer = customizer().expectStatusConflict();
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           StorageLocationDTO.build("plop", null, null, null, null, false, false,
+                           StorageLocationDTO.build("plop", null, null, null, null, false, false, false,
                                                     new StorageLocationConfiguration("plop", null, null)),
                            requestBuilderCustomizer, "Should not be created");
     }
@@ -139,7 +139,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated()
                 .expectValue("content.configuration.allocatedSizeInKo", 100L);
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           StorageLocationDTO.build(name, null, null, null, null, false, false,
+                           StorageLocationDTO.build(name, null, null, null, null, false, false, false,
                                                     new StorageLocationConfiguration(name, getPluginConf(name), 100L)),
                            requestBuilderCustomizer, "Should be created");
 
@@ -156,7 +156,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     public void retreiveAll() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           StorageLocationDTO.build("plop", null, null, null, null, false, false,
+                           StorageLocationDTO.build("plop", null, null, null, null, false, false, false,
                                                     new StorageLocationConfiguration("plop", null, null)),
                            requestBuilderCustomizer, "Should be created");
 
@@ -211,7 +211,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                 .expectValue("content.configuration.priority", 1);
         performDefaultPost(StorageLocationController.BASE_PATH,
                            StorageLocationDTO
-                                   .build(name, null, null, null, null, false, false,
+                                   .build(name, null, null, null, null, false, false, false,
                                           new StorageLocationConfiguration(name, getPluginConf(name), 10_000L)),
                            requestBuilderCustomizer, "Should be created");
 
@@ -240,7 +240,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                 .expectValue("content.configuration.priority", 1);
         performDefaultPost(StorageLocationController.BASE_PATH,
                            StorageLocationDTO
-                                   .build(name, null, null, null, null, false, false,
+                                   .build(name, null, null, null, null, false, false, false,
                                           new StorageLocationConfiguration(name, getPluginConf(name), 10_000L)),
                            requestBuilderCustomizer, "Should be created");
 
