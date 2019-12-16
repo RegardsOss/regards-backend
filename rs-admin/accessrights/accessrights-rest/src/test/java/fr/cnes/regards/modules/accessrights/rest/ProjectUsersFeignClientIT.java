@@ -32,6 +32,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -83,11 +85,16 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private Gson gson;
+
     @Before
     public void init() {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        client = FeignClientBuilder.build(new TokenClientProvider<>(IProjectUsersClient.class,
-                "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
+        client = FeignClientBuilder.build(
+                                          new TokenClientProvider<>(IProjectUsersClient.class,
+                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
+                                          gson);
         FeignSecurityManager.asSystem();
     }
 
@@ -95,7 +102,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-    
+
      */
     @Ignore
     @Test
@@ -108,7 +115,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-    
+
      */
     @Test
     public void retrieveAccessRequestListFromFeignClient() {
@@ -120,7 +127,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-    
+
      */
     @Test
     public void retrieveProjectUserByEmailFromFeignClient() {
@@ -133,7 +140,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-    
+
      */
     @Ignore
     @Test
@@ -146,7 +153,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-    
+
      */
     @Test
     public void removeProjectUserFromFeignClient() {
@@ -161,7 +168,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      * @throws EntityInvalidException
      * @throws EntityAlreadyExistsException
      *
-    
+
      */
     @Test
     @Ignore

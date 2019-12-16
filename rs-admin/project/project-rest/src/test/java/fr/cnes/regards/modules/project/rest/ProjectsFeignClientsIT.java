@@ -31,6 +31,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -66,10 +68,15 @@ public class ProjectsFeignClientsIT extends AbstractRegardsWebIT {
      */
     private IProjectsClient client;
 
+    @Autowired
+    private Gson gson;
+
     @Before
     public void init() {
-        client = FeignClientBuilder.build(new TokenClientProvider<>(IProjectsClient.class,
-                "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
+        client = FeignClientBuilder.build(
+                                          new TokenClientProvider<>(IProjectsClient.class,
+                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
+                                          gson);
         FeignSecurityManager.asSystem();
     }
 
