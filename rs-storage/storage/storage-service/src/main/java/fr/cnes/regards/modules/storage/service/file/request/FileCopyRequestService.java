@@ -115,8 +115,8 @@ public class FileCopyRequestService {
      */
     public void copy(Collection<CopyFlowItem> items) {
         for (CopyFlowItem item : items) {
-            reqGrpService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size());
             copy(item.getFiles(), item.getGroupId());
+            reqGrpService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size());
         }
     }
 
@@ -158,6 +158,7 @@ public class FileCopyRequestService {
                 notificationClient.notify(message, "File copy request refused", NotificationLevel.WARNING,
                                           DefaultRole.PROJECT_ADMIN);
             } else {
+                LOGGER.info("[COPY REQUEST] Create copy request for group {}", groupId);
                 FileCopyRequest newRequest = copyRepository
                         .save(new FileCopyRequest(groupId, refs.stream().findFirst().get().getMetaInfo(),
                                 requestDto.getSubDirectory(), requestDto.getStorage()));

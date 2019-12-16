@@ -291,11 +291,10 @@ public class StorageLocationController implements IResourceController<StorageLoc
             }
             resourceService.addLink(resource, this.getClass(), "copyFiles", "copy",
                                     MethodParamFactory.build(CopyFilesParametersDTO.class));
+            resourceService.addLink(resource, this.getClass(), "deleteFiles", "deleteFiles",
+                                    MethodParamFactory.build(String.class, location.getName()),
+                                    MethodParamFactory.build(Boolean.class));
         }
-        // Delete files End-point is always available.
-        resourceService.addLink(resource, this.getClass(), "deleteFiles", "deleteFiles",
-                                MethodParamFactory.build(String.class, location.getName()),
-                                MethodParamFactory.build(Boolean.class));
         // If storage location is configured so delete & edit End-point is also available
         if ((location.getConfiguration() != null) && (location.getConfiguration().getId() != null)) {
             resourceService.addLink(resource, this.getClass(), "updateLocationConfiguration", LinkRels.UPDATE,
