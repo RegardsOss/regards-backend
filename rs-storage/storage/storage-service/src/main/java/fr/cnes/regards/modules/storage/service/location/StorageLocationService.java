@@ -136,6 +136,8 @@ public class StorageLocationService {
         Optional<StorageLocationConfiguration> oConf = pLocationConfService.search(storageId);
         Long nbStorageError = storageReqService.count(storageId, FileRequestStatus.ERROR);
         Long nbDeletionError = deletionReqService.count(storageId, FileRequestStatus.ERROR);
+        boolean deletionRunning = deletionReqService.isDeletionRunning(storageId);
+        boolean copyRunning = copyService.isCopyRunning(storageId);
         Long nbReferencedFiles = null;
         Long totalSizeOfReferencedFiles = null;
         StorageLocationConfiguration conf = null;
@@ -156,7 +158,7 @@ public class StorageLocationService {
             throw new EntityNotFoundException(storageId, StorageLocation.class);
         }
         return StorageLocationDTO.build(storageId, nbReferencedFiles, totalSizeOfReferencedFiles, nbStorageError,
-                                        nbDeletionError, conf);
+                                        nbDeletionError, deletionRunning, copyRunning, conf);
     }
 
     /**
@@ -174,15 +176,17 @@ public class StorageLocationService {
         for (StorageLocationConfiguration conf : confs) {
             Long nbStorageError = storageReqService.count(conf.getName(), FileRequestStatus.ERROR);
             Long nbDeletionError = deletionReqService.count(conf.getName(), FileRequestStatus.ERROR);
+            boolean deletionRunning = deletionReqService.isDeletionRunning(conf.getName());
+            boolean copyRunning = copyService.isCopyRunning(conf.getName());
             StorageLocation monitored = monitoredLocations.get(conf.getName());
             if (monitored != null) {
                 locationsDto.add(StorageLocationDTO.build(conf.getName(), monitored.getNumberOfReferencedFiles(),
                                                           monitored.getTotalSizeOfReferencedFilesInKo(), nbStorageError,
-                                                          nbDeletionError, conf));
+                                                          nbDeletionError, deletionRunning, copyRunning, conf));
                 monitoredLocations.remove(monitored.getName());
             } else {
-                locationsDto
-                        .add(StorageLocationDTO.build(conf.getName(), 0L, 0L, nbStorageError, nbDeletionError, conf));
+                locationsDto.add(StorageLocationDTO.build(conf.getName(), 0L, 0L, nbStorageError, nbDeletionError,
+                                                          deletionRunning, copyRunning, conf));
             }
         }
         // Handle not configured storage as OFFLINE ones
@@ -191,7 +195,7 @@ public class StorageLocationService {
             Long nbDeletionError = 0L;
             locationsDto.add(StorageLocationDTO
                     .build(monitored.getName(), monitored.getNumberOfReferencedFiles(),
-                           monitored.getTotalSizeOfReferencedFilesInKo(), nbStorageError, nbDeletionError,
+                           monitored.getTotalSizeOfReferencedFilesInKo(), nbStorageError, nbDeletionError, false, false,
                            new StorageLocationConfiguration(monitored.getName(), null, null)));
         }
         return locationsDto;
@@ -369,7 +373,7 @@ public class StorageLocationService {
         StorageLocationConfiguration newConf = pLocationConfService
                 .create(storageLocation.getName(), storageLocation.getConfiguration().getPluginConfiguration(),
                         storageLocation.getConfiguration().getAllocatedSizeInKo());
-        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L, 0L, 0L, newConf);
+        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L, 0L, 0L, false, false, newConf);
     }
 
     /**
@@ -385,7 +389,7 @@ public class StorageLocationService {
         Assert.notNull(storageLocation.getConfiguration(), "Storage location / Configuration can not be null");
         StorageLocationConfiguration newConf = pLocationConfService.update(storageId,
                                                                            storageLocation.getConfiguration());
-        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L, 0L, 0L, newConf);
+        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L, 0L, 0L, false, false, newConf);
     }
 
     /**

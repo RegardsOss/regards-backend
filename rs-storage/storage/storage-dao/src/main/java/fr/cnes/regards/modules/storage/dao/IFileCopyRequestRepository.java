@@ -72,4 +72,6 @@ public interface IFileCopyRequestRepository
 
     void deleteByStorage(String storageLocationId);
 
+    int existsByStorage(String storageLocationId);
+
 }
