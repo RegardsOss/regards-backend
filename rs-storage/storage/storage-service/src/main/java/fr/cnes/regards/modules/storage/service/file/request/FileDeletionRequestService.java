@@ -202,8 +202,9 @@ public class FileDeletionRequestService {
         isRunning = jobInfoService.retrieveJobsCount(FileDeletionRequestsCreatorJob.class.getName(), JobStatus.PENDING,
                                                      JobStatus.QUEUED, JobStatus.RUNNING, JobStatus.TO_BE_RUN) > 0;
         if (!isRunning) {
-            isRunning = jobInfoService.retrieveJobsCount(FileDeletionRequestJob.class.getName(), JobStatus.PENDING,
-                                                         JobStatus.QUEUED, JobStatus.RUNNING, JobStatus.TO_BE_RUN) > 0;
+            isRunning = fileDeletionRequestRepo
+                    .existsByStorageAndStatusIn(storage,
+                                                Sets.newHashSet(FileRequestStatus.TO_DO, FileRequestStatus.PENDING));
         }
         return isRunning;
     }
