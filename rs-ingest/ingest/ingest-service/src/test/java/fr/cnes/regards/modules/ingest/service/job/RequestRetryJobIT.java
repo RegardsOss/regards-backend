@@ -18,22 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
@@ -68,17 +58,38 @@ import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_deletion_job",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_retry_job",
         "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
-        "spring.jpa.show-sql=true" })
+       })
 @ActiveProfiles(value = { "testAmqp" })
-public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
+public class RequestRetryJobIT extends IngestMultitenantServiceTest {
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
+
+    private static final List<String> CATEGORIES_1 = Lists.newArrayList("CATEGORY1");
+
+    private static final List<String> CATEGORIES_2 = Lists.newArrayList("CATEGORY", "CATEGORY2");
+
+    private static final List<String> TAG_0 = Lists.newArrayList("toto", "tata");
+
+    private static final List<String> TAG_1 = Lists.newArrayList("toto", "tutu");
+
+    private static final List<String> TAG_2 = Lists.newArrayList("antonio", "farra's");
 
     private static final String STORAGE_0 = "fake";
 
@@ -150,27 +161,35 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         sip4 = sipRepository.save(sip4);
 
         AIP aip = AIP.build(sip4.getSip(),
-                            UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
-                            Optional.empty(), "SIP_001");
+                UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                Optional.empty(), "SIP_001"
+        );
         aip.setIpType(EntityType.DATA);
         AIPEntity aipEntity = AIPEntity.build(sip4, AIPState.GENERATED, aip);
 
         aipEntity = aipRepository.save(aipEntity);
 
+
+
         AIP aip2 = AIP.build(sip4.getSip(),
-                             UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
-                             Optional.empty(), "SIP_002");
+                UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                Optional.empty(), "SIP_002"
+        );
         AIPEntity aipEntity2 = AIPEntity.build(sip4, AIPState.GENERATED, aip2);
 
         aipEntity2 = aipRepository.save(aipEntity2);
 
-        mtd = IngestMetadataDto.build(SESSION_OWNER_0, SESSION_0, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                      Sets.newHashSet(CATEGORIES_0), StorageMetadata.build(STORAGE_0));
+
+
+        mtd = IngestMetadataDto.build(SESSION_OWNER_0, SESSION_0,
+                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                Sets.newHashSet(CATEGORIES_0),
+                StorageMetadata.build(STORAGE_0));
 
         aips = aipRepository.findAll();
 
         // Create an event of each type and ensure they are not consummed by jobs / queue / whatever
-        AIPStoreMetaDataRequest storeMetaDataRequest = AIPStoreMetaDataRequest.build(aips.get(0), null, true, true);
+        AIPStoreMetaDataRequest storeMetaDataRequest = AIPStoreMetaDataRequest.build(aips.get(0), new HashSet<>(), true, true);
         storeMetaDataRequest.setState(InternalRequestState.ERROR);
         storeMetaDataRepository.save(storeMetaDataRequest);
 
@@ -181,21 +200,21 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         aipUpdatesCreatorRepository.save(updateCreatorRequest);
 
         List<AIPUpdateRequest> updateRequest = AIPUpdateRequest.build(aips.get(0), AIPUpdateParametersDto
-                .build(SearchAIPsParameters.build().withSession(SESSION_0)).withAddTags(Lists.newArrayList("SOME TAG")),
-                                                                      true);
+                        .build(SearchAIPsParameters.build().withSession(SESSION_0)).withAddTags(Lists.newArrayList("SOME TAG")),
+                true);
         updateRequest.get(0).setState(InternalRequestState.ERROR);
         aipUpdateRequestRepository.saveAll(updateRequest);
 
         ingestRequestRepository
                 .save(IngestRequest.build(mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
-                                          IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip()));
+                        IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip()));
         OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest();
         deletionRequest.setCreationDate(OffsetDateTime.now());
         deletionRequest.setState(InternalRequestState.ERROR);
         oaisDeletionCreatorRepository.save(deletionRequest);
 
         OAISDeletionRequest oaisDeletionRequest = OAISDeletionRequest.build(aips.get(0), SessionDeletionMode.BY_STATE,
-                                                                            true);
+                true);
         oaisDeletionRequest.setState(InternalRequestState.ERROR);
         oaisDeletionRequestRepository.save(oaisDeletionRequest);
         LOGGER.info("=========================> END INIT DATA FOR TESTS <=====================");
@@ -207,14 +226,16 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
      * @param timeout in ms
      * @throws InterruptedException
      */
-    public void waitForRequestReach(long expectedTasks, long timeout) {
+    public void waitForErrorRequestReach(long expectedTasks, long timeout) {
         long end = System.currentTimeMillis() + timeout;
         // Wait
-        long taskCount;
+        long errorRequestCount;
         do {
-            taskCount = abstractRequestRepository.count();
-            LOGGER.info("{} UpdateRequest(s) existing in database", taskCount);
-            if (taskCount == expectedTasks) {
+            Pageable unpaged = Pageable.unpaged();
+            errorRequestCount = abstractRequestRepository.findAll(AbstractRequestSpecifications
+                    .searchAllByFilters(SearchRequestsParameters.build().withState(InternalRequestState.ERROR), unpaged), unpaged).getTotalElements();
+            LOGGER.info("{} UpdateRequest(s) existing in database", errorRequestCount);
+            if (errorRequestCount == expectedTasks) {
                 break;
             }
             long now = System.currentTimeMillis();
@@ -231,18 +252,19 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
     }
 
     @Test
-    public void testDeleteJob() {
+    public void testRetryJob() {
         initData();
         Assert.assertEquals("Something went wrong while creating requests", 6, abstractRequestRepository.count());
-        requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR));
-        waitForRequestReach(5, 20_000);
+        requestService.scheduleRequestRetryJob(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR));
+        waitForErrorRequestReach(5, 20_000);
 
-        requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build().withSession(SESSION_0)
+        requestService.scheduleRequestRetryJob(SearchRequestsParameters.build().withSession(SESSION_0)
                 .withSessionOwner(SESSION_OWNER_0));
-        waitForRequestReach(1, 10_000);
+        waitForErrorRequestReach(1, 10_000 * 5);
 
-        requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build());
-        waitForRequestReach(0, 10_000);
+        requestService.scheduleRequestRetryJob(SearchRequestsParameters.build());
+        waitForErrorRequestReach(0, 10_000);
     }
+
 
 }

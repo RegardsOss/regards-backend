@@ -55,7 +55,7 @@ import org.springframework.test.context.TestPropertySource;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=update_scanner_job",
         "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
-        "spring.jpa.show-sql=true" })
+        "spring.jpa.show-sql=true", "regards.ingest.request.schedule.delay=100000000" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
 
@@ -167,7 +167,7 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
     public void testScanJob() throws ModuleException {
         storageClient.setBehavior(true, true);
         initData();
-        aipService.registerAIPEntityUpdate(AIPUpdateParametersDto
+        aipService.registerUpdatesCreator(AIPUpdateParametersDto
                 .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0), TAG_2,
                        TAG_1, CATEGORIES_2, CATEGORIES_1, Lists.newArrayList(STORAGE_3)));
         long nbSipConcerned = 2;
@@ -181,7 +181,7 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
         initData();
         generateFakeRunningTasks();
 
-        aipService.registerAIPEntityUpdate(AIPUpdateParametersDto
+        aipService.registerUpdatesCreator(AIPUpdateParametersDto
                 .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0), TAG_2,
                        TAG_1, CATEGORIES_2, CATEGORIES_1, Lists.newArrayList(STORAGE_3)));
         long nbInitialTasks = 6;

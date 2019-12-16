@@ -93,9 +93,23 @@ public class OAISDeletionRequest extends AbstractRequest {
     public boolean isDeleteFiles() {
         return config.isDeleteFiles();
     }
+    public void setDeleteFiles(boolean deleteFiles) {
+        config.setDeleteFiles(deleteFiles);
+    }
 
     public SessionDeletionMode getDeletionMode() {
         return config.getDeletionMode();
     }
 
+    public void setWaitStorageAnswer() {
+        config.setWaitStorageAnswer();
+    }
+
+    public boolean isRequestFilesDeleted() {
+        return config.isRequestFilesDeleted();
+    }
+
+    public void setRequestFilesDeleted() {
+        config.setRequestFilesDeleted();
+    }
 }

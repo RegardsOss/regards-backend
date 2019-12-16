@@ -18,27 +18,24 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.Lists;
 import com.google.gson.reflect.TypeToken;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
+import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Job to run deletion of a given {@link AIPEntity}.<br/>
@@ -58,6 +55,9 @@ public class OAISDeletionJob extends AbstractJob<Void> {
 
     @Autowired
     private OAISDeletionService oaisDeletionRequestService;
+
+    @Autowired
+    private RequestService requestService;
 
     @Autowired
     private IAIPService aipService;
@@ -81,17 +81,15 @@ public class OAISDeletionJob extends AbstractJob<Void> {
         for (OAISDeletionRequest request : requests) {
             AIPEntity aipToDelete = request.getAip();
             SIPEntity sipToDelete = aipToDelete.getSip();
-            if (request.isDeleteFiles()) {
-                String deleteRequestId = aipService.scheduleAIPEntityDeletion(sipToDelete.getSipId());
-                request.setRemoteStepGroupIds(Lists.newArrayList(deleteRequestId));
-                request.setStep(DeletionRequestStep.STORAGE_DELETION_REQUESTED);
-                oaisDeletionRequestService.update(request);
+            if (request.isDeleteFiles() && !request.isRequestFilesDeleted()) {
+                aipService.scheduleLinkedFilesDeletion(request);
             } else {
+                // Start by deleting the request itself
+                requestService.deleteRequest(request);
                 aipService.processDeletion(sipToDelete.getSipId(),
                                            request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
                 sipService.processDeletion(sipToDelete.getSipId(),
                                            request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
-                oaisDeletionRequestService.deleteRequest(request);
             }
             advanceCompletion();
         }

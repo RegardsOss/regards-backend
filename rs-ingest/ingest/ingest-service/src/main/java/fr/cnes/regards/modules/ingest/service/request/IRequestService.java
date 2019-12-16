@@ -72,17 +72,17 @@ public interface IRequestService {
 
 
     /**
-     * Schedule a job that will relaunch requests matching provided criteria
-     * @param filters requests filters
-     */
-    void relaunchRequests(SearchRequestsParameters filters);
-
-    /**
      * Save provided requests into the repository
      * If requests cannot be run right now, their status will change to pending
      * @param requests of the same type. Can concern several sessions
      */
     void scheduleRequests(List<AbstractRequest> requests);
+
+    /**
+     * Retry provided requests and put these requests in CREATED or PENDING
+     * @param requests a list of requests in ERROR state
+     */
+    void relaunchRequests(List<AbstractRequest> requests);
 
     /**
      * Save provided request into the repository
@@ -94,34 +94,32 @@ public interface IRequestService {
 
     /**
      * Fetch a page of requests and try to unblock them
-     * @param requestType the type of requests to retrieve and test
+     * @param requestType the type of requests to retrieve and unblock, if possible
      */
     void unblockRequests(RequestTypeEnum requestType);
 
     /**
      * Associate a job to a {@link AbstractRequest}
      * @param request the request that will start shortly
+     *                must be a request type that needs to be run by jobs
      */
     void scheduleJob(AbstractRequest request);
-
-
-    /**
-     * Delete the provided {@link AbstractRequest} and ensure the job is not locked and can be removed later
-     * @param request the request to delete
-     */
-    void cleanRequestJob(AbstractRequest request);
 
     /**
      * Schedule a job to delete all requests matching provided filters
      * @param filters
      */
-    void registerRequestDeletion(SearchRequestsParameters filters);
+    void scheduleRequestDeletionJob(SearchRequestsParameters filters);
 
     /**
      * Schedule a job to retry all requests matching provided filters from {@link fr.cnes.regards.modules.ingest.domain.request.InternalRequestState} ERROR to CREATED
      * @param filters
      */
-    void registerRequestRetry(SearchRequestsParameters filters);
+    void scheduleRequestRetryJob(SearchRequestsParameters filters);
 
+    /**
+     * Delete the provided {@link AbstractRequest}, ensure related jobs are unlocked
+     * @param request the request to delete
+     */
     void deleteRequest(AbstractRequest request);
 }

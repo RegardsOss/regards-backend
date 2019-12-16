@@ -161,7 +161,8 @@ public class IngestService implements IIngestService {
 
         // Register requests
         Collection<IngestRequest> grantedRequests = new ArrayList<>();
-        RequestInfoDto info = RequestInfoDto.build("SIP Collection ingestion scheduled");
+        RequestInfoDto info = RequestInfoDto.build(ingestMetadata.getSessionOwner(), ingestMetadata.getSession(),
+                                                   "SIP Collection ingestion scheduled");
 
         for (SIP sip : sips.getFeatures()) {
             // Validate and transform to request

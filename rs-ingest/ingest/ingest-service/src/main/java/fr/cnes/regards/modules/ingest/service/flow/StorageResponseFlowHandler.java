@@ -90,7 +90,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
             }
         }
         // To improve performance, retrieve all requested AIPs in one request
-        Collection<AIPEntity> aips = aipService.getAips(newFileLocations.keySet());
+        Collection<AIPEntity> aips = aipService.findByAipIds(newFileLocations.keySet());
         // Then dispatch each update task by AIPentity
         Multimap<AIPEntity, AbstractAIPUpdateTask> newFileLocationsWithAIP = ArrayListMultimap.create();
         newFileLocations.asMap().forEach((aipId, tasks) -> {
@@ -107,7 +107,8 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
 
     @Override
     public void onCopyError(Set<RequestInfo> requests) {
-        // Nothing to do
+        // handle success requests if any
+        onCopySuccess(requests);
     }
 
     @Override

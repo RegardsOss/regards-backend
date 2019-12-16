@@ -187,7 +187,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                   OffsetDateTime.now().toString(), "NAS #1");
 
         // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(2, 10000, SIPState.STORED);
         ingestServiceTest.waitAllRequestsFinished(10000);
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.expectToHaveSize("$.content", 2);

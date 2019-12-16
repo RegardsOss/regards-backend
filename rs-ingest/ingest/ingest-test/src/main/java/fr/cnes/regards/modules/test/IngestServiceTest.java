@@ -153,20 +153,27 @@ public class IngestServiceTest {
                 sipCount = sipRepository.count();
             }
             LOGGER.info("{} SIP(s) created in database", sipCount);
-            if (sipCount >= expectedSips) {
+            if (timerStop(expectedSips, end, sipCount)) {
                 break;
             }
-            long now = System.currentTimeMillis();
-            if (end > now) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Assert.fail("Thread interrupted");
-                }
-            } else {
-                Assert.fail("Timeout");
-            }
         } while (true);
+    }
+
+    private boolean timerStop(long expectedSips, long end, long sipCount) {
+        if (sipCount == expectedSips) {
+            return true;
+        }
+        long now = System.currentTimeMillis();
+        if (end > now) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Assert.fail("Thread interrupted");
+            }
+        } else {
+            Assert.fail("Timeout");
+        }
+        return false;
     }
 
     /**
@@ -182,18 +189,8 @@ public class IngestServiceTest {
         do {
             taskCount = abstractRequestRepository.count();
             LOGGER.debug("{} UpdateRequest(s) created in database", taskCount);
-            if (taskCount == expectedTasks) {
+            if (timerStop(expectedTasks, end, taskCount)) {
                 break;
-            }
-            long now = System.currentTimeMillis();
-            if (end > now) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Assert.fail("Thread interrupted");
-                }
-            } else {
-                Assert.fail("Timeout");
             }
         } while (true);
     }

@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
@@ -36,12 +27,14 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorPayload;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
-import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Service to handle {@link OAISDeletionCreatorRequest}s
@@ -63,12 +56,6 @@ public class OAISDeletionService implements IOAISDeletionService {
     private IRequestService requestService;
 
     @Autowired
-    private IAIPService aipService;
-
-    @Autowired
-    private ISIPService sipService;
-
-    @Autowired
     private IOAISDeletionPayloadMapper deletionRequestMapper;
 
     @Override
@@ -82,16 +69,6 @@ public class OAISDeletionService implements IOAISDeletionService {
     }
 
     @Override
-    public void deleteRequest(OAISDeletionRequest request) {
-        requestRepository.delete(request);
-    }
-
-    @Override
-    public void deleteRequests(Collection<OAISDeletionRequest> requests) {
-        requestRepository.deleteAll(requests);
-    }
-
-    @Override
     public void update(OAISDeletionRequest request) {
         requestRepository.save(request);
     }
@@ -100,11 +77,6 @@ public class OAISDeletionService implements IOAISDeletionService {
     public void registerOAISDeletionCreator(OAISDeletionPayloadDto request) {
         OAISDeletionCreatorPayload deletionPayload = deletionRequestMapper.dtoToEntity(request);
         OAISDeletionCreatorRequest deletionRequest = OAISDeletionCreatorRequest.build(deletionPayload);
-        scheduleOAISDeletionCreatorJob(deletionRequest);
-    }
-
-    @Override
-    public void scheduleOAISDeletionCreatorJob(OAISDeletionCreatorRequest deletionRequest) {
         deletionRequest = (OAISDeletionCreatorRequest) requestService.scheduleRequest(deletionRequest);
         if (deletionRequest.getState() != InternalRequestState.BLOCKED) {
             requestService.scheduleJob(deletionRequest);
@@ -124,12 +96,12 @@ public class OAISDeletionService implements IOAISDeletionService {
         for (RequestInfo ri : requestInfos) {
             for (AbstractRequest request : requests) {
                 if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
+                    // Storage knows files are deleted
+                    // Put back request as CREATED
                     OAISDeletionRequest deletionRequest = (OAISDeletionRequest) request;
-                    SIPEntity sipToDelete = deletionRequest.getAip().getSip();
-                    boolean deleteIrrevocably = deletionRequest.getDeletionMode() == SessionDeletionMode.IRREVOCABLY;
-                    aipService.processDeletion(sipToDelete.getSipId(), deleteIrrevocably);
-                    sipService.processDeletion(sipToDelete.getSipId(), deleteIrrevocably);
-                    deleteRequest(deletionRequest);
+                    deletionRequest.setRequestFilesDeleted();
+                    deletionRequest.clearRemoteStepGroupIds();
+                    requestService.scheduleRequest(deletionRequest);
                 }
             }
         }

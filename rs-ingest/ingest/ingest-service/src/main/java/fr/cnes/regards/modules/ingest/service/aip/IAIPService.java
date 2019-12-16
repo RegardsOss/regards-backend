@@ -18,28 +18,25 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 
 /**
  * AIP Service interface. Service to handle business around {@link AIPEntity}s
@@ -56,22 +53,17 @@ public interface IAIPService {
     List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips);
 
     /**
-     * Mark all {@link AIPEntity} linked to this {@link SIPEntity#getSipId()} as deleted and send events to remove
-     * all files associated to these deleted AIPs
-     * @return the request group id sent to storage
+     * Send a group of event to remove all referenced files, including manifests, that any {@link AIPEntity}
+     * linked to the provided {@link SIPEntity#getSipId()}
+     * Update the provided request in the same transaction
      */
-    String scheduleAIPEntityDeletion(String sipId);
+    void scheduleLinkedFilesDeletion(OAISDeletionRequest request);
 
     /**
      * Save an AIPUpdatesCreatorRequest and try to schedule it in a job
      * @param params the AIPUpdateParametersDto payload
      */
-    void registerAIPEntityUpdate(AIPUpdateParametersDto params);
-
-    /**
-     * Try to run the AIPUpdate request in a job
-     */
-    void scheduleAIPEntityUpdate(AIPUpdatesCreatorRequest request);
+    void registerUpdatesCreator(AIPUpdateParametersDto params);
 
     /**
      * Remove all {@link AIPEntity} linked to an {@link SIPEntity#getSipId()}
@@ -141,7 +133,7 @@ public interface IAIPService {
      * @param sipId
      * @return
      */
-    Set<AIPEntity> getAips(String sipId);
+    Set<AIPEntity> findByAipIds(String sipId);
 
     List<AIPEntity> saveAll(Collection<AIPEntity> updates);
 
@@ -150,6 +142,6 @@ public interface IAIPService {
      * @param aipIds
      * @return
      */
-    Collection<AIPEntity> getAips(Collection<String> aipIds);
+    Collection<AIPEntity> findByAipIds(Collection<String> aipIds);
 
 }
