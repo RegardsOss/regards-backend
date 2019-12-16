@@ -378,7 +378,9 @@ public class FileCopyRequestService {
         isRunning = jobInfoService.retrieveJobsCount(FileCopyRequestsCreatorJob.class.getName(), JobStatus.PENDING,
                                                      JobStatus.QUEUED, JobStatus.RUNNING, JobStatus.TO_BE_RUN) > 0;
         if (!isRunning) {
-            isRunning = copyRepository.existsByStorage(storage);
+            isRunning = copyRepository
+                    .existsByStorageAndStatusIn(storage,
+                                                Sets.newHashSet(FileRequestStatus.TO_DO, FileRequestStatus.PENDING));
         }
         return isRunning;
     }

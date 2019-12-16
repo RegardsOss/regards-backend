@@ -72,6 +72,6 @@ public interface IFileCopyRequestRepository
 
     void deleteByStorage(String storageLocationId);
 
-    boolean existsByStorage(String storageLocationId);
+    boolean existsByStorageAndStatusIn(String storageId, Set<FileRequestStatus> status);
 
 }
