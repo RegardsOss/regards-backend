@@ -37,7 +37,7 @@ import com.google.common.collect.Lists;
  * @author Sébastien Binda
  */
 @Configuration
-@TestPropertySource(locations = { "classpath:application-test.properties" })
+@TestPropertySource(locations = { "classpath:src/test/resources/application-test.properties" })
 public class TestConfiguration {
 
     @Bean

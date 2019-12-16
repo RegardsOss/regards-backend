@@ -104,9 +104,6 @@ public class StorageLocationService {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private FileStorageRequestService storageReqService;
-
-    @Autowired
     private FileDeletionRequestService deletionReqService;
 
     @Autowired
@@ -134,8 +131,11 @@ public class StorageLocationService {
     public StorageLocationDTO getById(String storageId) throws EntityNotFoundException {
         Optional<StorageLocation> oLoc = storageLocationRepo.findByName(storageId);
         Optional<StorageLocationConfiguration> oConf = pLocationConfService.search(storageId);
-        Long nbStorageError = storageReqService.count(storageId, FileRequestStatus.ERROR);
+        Long nbStorageError = storageService.count(storageId, FileRequestStatus.ERROR);
         Long nbDeletionError = deletionReqService.count(storageId, FileRequestStatus.ERROR);
+        boolean deletionRunning = deletionReqService.isDeletionRunning(storageId);
+        boolean copyRunning = copyService.isCopyRunning(storageId);
+        boolean storageRunning = storageService.isStorageRunning(storageId);
         Long nbReferencedFiles = null;
         Long totalSizeOfReferencedFiles = null;
         StorageLocationConfiguration conf = null;
@@ -156,7 +156,7 @@ public class StorageLocationService {
             throw new EntityNotFoundException(storageId, StorageLocation.class);
         }
         return StorageLocationDTO.build(storageId, nbReferencedFiles, totalSizeOfReferencedFiles, nbStorageError,
-                                        nbDeletionError, conf);
+                                        nbDeletionError, storageRunning, deletionRunning, copyRunning, conf);
     }
 
     /**
@@ -172,17 +172,21 @@ public class StorageLocationService {
         List<StorageLocationConfiguration> confs = pLocationConfService.searchAll();
         // Handle all online storage configured
         for (StorageLocationConfiguration conf : confs) {
-            Long nbStorageError = storageReqService.count(conf.getName(), FileRequestStatus.ERROR);
+            Long nbStorageError = storageService.count(conf.getName(), FileRequestStatus.ERROR);
             Long nbDeletionError = deletionReqService.count(conf.getName(), FileRequestStatus.ERROR);
+            boolean deletionRunning = deletionReqService.isDeletionRunning(conf.getName());
+            boolean copyRunning = copyService.isCopyRunning(conf.getName());
+            boolean storageRunning = storageService.isStorageRunning(conf.getName());
             StorageLocation monitored = monitoredLocations.get(conf.getName());
             if (monitored != null) {
                 locationsDto.add(StorageLocationDTO.build(conf.getName(), monitored.getNumberOfReferencedFiles(),
                                                           monitored.getTotalSizeOfReferencedFilesInKo(), nbStorageError,
-                                                          nbDeletionError, conf));
+                                                          nbDeletionError, storageRunning, deletionRunning, copyRunning,
+                                                          conf));
                 monitoredLocations.remove(monitored.getName());
             } else {
-                locationsDto
-                        .add(StorageLocationDTO.build(conf.getName(), 0L, 0L, nbStorageError, nbDeletionError, conf));
+                locationsDto.add(StorageLocationDTO.build(conf.getName(), 0L, 0L, nbStorageError, nbDeletionError,
+                                                          storageRunning, deletionRunning, copyRunning, conf));
             }
         }
         // Handle not configured storage as OFFLINE ones
@@ -191,8 +195,8 @@ public class StorageLocationService {
             Long nbDeletionError = 0L;
             locationsDto.add(StorageLocationDTO
                     .build(monitored.getName(), monitored.getNumberOfReferencedFiles(),
-                           monitored.getTotalSizeOfReferencedFilesInKo(), nbStorageError, nbDeletionError,
-                           new StorageLocationConfiguration(monitored.getName(), null, null)));
+                           monitored.getTotalSizeOfReferencedFilesInKo(), nbStorageError, nbDeletionError, false, false,
+                           false, new StorageLocationConfiguration(monitored.getName(), null, null)));
         }
         return locationsDto;
     }
@@ -305,7 +309,7 @@ public class StorageLocationService {
         storageLocationRepo.deleteByName(storageLocationId);
         storageMonitoringRepo.deleteAll();
         // Delete requests
-        storageReqService.deleteByStorage(storageLocationId, Optional.empty());
+        storageService.deleteByStorage(storageLocationId, Optional.empty());
         deletionReqService.deleteByStorage(storageLocationId, Optional.empty());
         cacheReqService.deleteByStorage(storageLocationId, Optional.empty());
     }
@@ -369,7 +373,7 @@ public class StorageLocationService {
         StorageLocationConfiguration newConf = pLocationConfService
                 .create(storageLocation.getName(), storageLocation.getConfiguration().getPluginConfiguration(),
                         storageLocation.getConfiguration().getAllocatedSizeInKo());
-        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L, 0L, 0L, newConf);
+        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L, 0L, 0L, false, false, false, newConf);
     }
 
     /**
@@ -385,7 +389,7 @@ public class StorageLocationService {
         Assert.notNull(storageLocation.getConfiguration(), "Storage location / Configuration can not be null");
         StorageLocationConfiguration newConf = pLocationConfService.update(storageId,
                                                                            storageLocation.getConfiguration());
-        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L, 0L, 0L, newConf);
+        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L, 0L, 0L, false, false, false, newConf);
     }
 
     /**
@@ -406,7 +410,7 @@ public class StorageLocationService {
             case REFERENCE:
                 break;
             case STORAGE:
-                storageReqService.deleteByStorage(storageLocationId, status);
+                storageService.deleteByStorage(storageLocationId, status);
                 break;
             default:
                 break;
@@ -437,9 +441,9 @@ public class StorageLocationService {
             case STORAGE:
                 Page<FileStorageRequest> requests;
                 if (status.isPresent()) {
-                    requests = storageReqService.search(storageLocationId, status.get(), page);
+                    requests = storageService.search(storageLocationId, status.get(), page);
                 } else {
-                    requests = storageReqService.search(storageLocationId, page);
+                    requests = storageService.search(storageLocationId, page);
                 }
                 results = new PageImpl<FileRequestInfoDTO>(
                         requests.getContent().stream().map(this::toRequestInfosDto).collect(Collectors.toList()), page,
@@ -452,11 +456,21 @@ public class StorageLocationService {
     }
 
     private FileRequestInfoDTO toRequestInfosDto(FileStorageRequest request) {
-        return FileRequestInfoDTO.build(FileRequestType.STORAGE, request.getStatus(), request.getErrorCause());
+        String fileName = "";
+        if (request.getMetaInfo() != null) {
+            fileName = request.getMetaInfo().getFileName();
+        }
+        return FileRequestInfoDTO.build(fileName, FileRequestType.STORAGE, request.getStatus(),
+                                        request.getErrorCause());
     }
 
     private FileRequestInfoDTO toRequestInfosDto(FileDeletionRequest request) {
-        return FileRequestInfoDTO.build(FileRequestType.DELETION, request.getStatus(), request.getErrorCause());
+        String fileName = "";
+        if ((request.getFileReference() != null) && (request.getFileReference().getMetaInfo() != null)) {
+            fileName = request.getFileReference().getMetaInfo().getFileName();
+        }
+        return FileRequestInfoDTO.build(fileName, FileRequestType.DELETION, request.getStatus(),
+                                        request.getErrorCause());
     }
 
 }

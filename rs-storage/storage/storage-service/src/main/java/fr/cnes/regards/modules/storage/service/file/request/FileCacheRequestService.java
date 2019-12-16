@@ -18,11 +18,13 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -67,6 +69,7 @@ import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storage.domain.plugin.FileRestorationWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.storage.domain.plugin.PreparationResponse;
 import fr.cnes.regards.modules.storage.service.JobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
@@ -309,7 +312,7 @@ public class FileCacheRequestService {
                                  oRequest.get().getExpirationDate(), fileReq.getGroupId());
             delete(oRequest.get());
         }
-        publisher.available(fileReq.getChecksum(), "cache", cacheLocation.toString(), owners, successMessage,
+        publisher.available(fileReq.getChecksum(), "cache", cacheLocation, owners, successMessage,
                             fileReq.getGroupId());
         // Inform group that a request is done
         reqGrpService.requestSuccess(fileReq.getGroupId(), FileRequestType.AVAILABILITY, fileReq.getChecksum(), null,
@@ -373,9 +376,14 @@ public class FileCacheRequestService {
             try {
                 PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
                 IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
-                Collection<FileRestorationWorkingSubset> workingSubSets = storagePlugin.prepareForRestoration(requests);
-                for (FileRestorationWorkingSubset ws : workingSubSets) {
+                PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> response = storagePlugin
+                        .prepareForRestoration(requests);
+                for (FileRestorationWorkingSubset ws : response.getWorkingSubsets()) {
                     jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId()));
+                }
+                // Handle errors
+                for (Entry<FileCacheRequest, String> error : response.getPreparationErrors().entrySet()) {
+                    this.handleStorageNotAvailable(error.getKey(), Optional.ofNullable(error.getValue()));
                 }
             } catch (ModuleException | NotAvailablePluginConfigurationException e) {
                 LOGGER.error(e.getMessage(), e);
@@ -437,7 +445,7 @@ public class FileCacheRequestService {
      * @param fileRefRequests
      */
     private void handleStorageNotAvailable(Collection<FileCacheRequest> fileRefRequests) {
-        fileRefRequests.forEach(this::handleStorageNotAvailable);
+        fileRefRequests.forEach((r) -> this.handleStorageNotAvailable(r, Optional.empty()));
     }
 
     /**
@@ -448,11 +456,11 @@ public class FileCacheRequestService {
      * </ul>
      * @param request
      */
-    private void handleStorageNotAvailable(FileCacheRequest request) {
+    private void handleStorageNotAvailable(FileCacheRequest request, Optional<String> errorCause) {
         // The storage destination is unknown, we can already set the request in error status
-        String message = String
+        String message = errorCause.orElse(String
                 .format("File <%s> cannot be handle for restoration as origin storage <%s> is unknown or disabled.",
-                        request.getFileReference().getMetaInfo().getFileName(), request.getStorage());
+                        request.getFileReference().getMetaInfo().getFileName(), request.getStorage()));
         request.setStatus(FileRequestStatus.ERROR);
         request.setErrorCause(message);
         repository.save(request);
@@ -478,10 +486,10 @@ public class FileCacheRequestService {
             try {
                 // For online files we have to generate access url though storage microservice
                 String url = downloadService.generateDownloadUrl(checksum);
-                publisher.available(checksum, storage, url, fileRef.getOwners(), message, availabilityGroupId);
+                publisher.available(checksum, storage, new URL(url), fileRef.getOwners(), message, availabilityGroupId);
                 reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, null,
                                              fileRef.getOwners(), fileRef);
-            } catch (ModuleException e) {
+            } catch (ModuleException | MalformedURLException e) {
                 publisher.notAvailable(checksum, e.getMessage(), availabilityGroupId);
                 reqGrpService.requestError(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, null,
                                            fileRef.getOwners(), e.getMessage());
@@ -500,10 +508,16 @@ public class FileCacheRequestService {
             String storage = fileRef.getLocation().getStorage();
             String message = String.format("File %s (checksum %s) is available for download.",
                                            fileRef.getMetaInfo().getFileName(), checksum);
-            publisher.available(checksum, "cache", cacheService.getFilePath(checksum), fileRef.getOwners(), message,
-                                groupId);
-            reqGrpService.requestSuccess(groupId, FileRequestType.AVAILABILITY, checksum, storage, null,
-                                         fileRef.getOwners(), fileRef);
+            URL availableUrl;
+            try {
+                availableUrl = new URL("file", null, cacheService.getFilePath(checksum));
+                publisher.available(checksum, "cache", availableUrl, fileRef.getOwners(), message, groupId);
+                reqGrpService.requestSuccess(groupId, FileRequestType.AVAILABILITY, checksum, storage, null,
+                                             fileRef.getOwners(), fileRef);
+            } catch (MalformedURLException e) {
+                // Should not happen
+                LOGGER.error(e.getMessage(), e);
+            }
         }
     }
 

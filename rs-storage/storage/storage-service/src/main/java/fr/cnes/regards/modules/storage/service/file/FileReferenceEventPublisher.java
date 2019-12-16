@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file;
 
+import java.net.URL;
 import java.util.Collection;
 
 import org.apache.commons.compress.utils.Sets;
@@ -197,11 +198,12 @@ public class FileReferenceEventPublisher {
      * @param groupId
      * @param notifyRequest
      */
-    public void available(String checksum, String storage, String url, Collection<String> owners, String message,
+    public void available(String checksum, String storage, URL url, Collection<String> owners, String message,
             String groupId) {
         LOGGER.trace("Publishing FileReferenceEvent AVAILABLE. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum, FileReferenceEventType.AVAILABLE, owners, message,
-                                                   new FileLocation(storage, url), null, Sets.newHashSet(groupId)));
+                                                   new FileLocation(storage, url.toString()), null,
+                                                   Sets.newHashSet(groupId)));
     }
 
     public void updated(String checksum, String storage, FileReference updatedFile) {

@@ -42,6 +42,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -115,8 +116,8 @@ public class FileCopyRequestService {
      */
     public void copy(Collection<CopyFlowItem> items) {
         for (CopyFlowItem item : items) {
-            reqGrpService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size());
             copy(item.getFiles(), item.getGroupId());
+            reqGrpService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size());
         }
     }
 
@@ -158,6 +159,7 @@ public class FileCopyRequestService {
                 notificationClient.notify(message, "File copy request refused", NotificationLevel.WARNING,
                                           DefaultRole.PROJECT_ADMIN);
             } else {
+                LOGGER.info("[COPY REQUEST] Create copy request for group {}", groupId);
                 FileCopyRequest newRequest = copyRepository
                         .save(new FileCopyRequest(groupId, refs.stream().findFirst().get().getMetaInfo(),
                                 requestDto.getSubDirectory(), requestDto.getStorage()));
@@ -363,6 +365,24 @@ public class FileCopyRequestService {
         } else {
             copyRepository.deleteByStorage(storageLocationId);
         }
+    }
+
+    /**
+     * Inform if for the given storage a deletion process is running
+     * @param storage
+     * @return boolean
+     */
+    public boolean isCopyRunning(String storage) {
+        boolean isRunning = false;
+        // Does a deletion job exists ?
+        isRunning = jobInfoService.retrieveJobsCount(FileCopyRequestsCreatorJob.class.getName(), JobStatus.PENDING,
+                                                     JobStatus.QUEUED, JobStatus.RUNNING, JobStatus.TO_BE_RUN) > 0;
+        if (!isRunning) {
+            isRunning = copyRepository
+                    .existsByStorageAndStatusIn(storage,
+                                                Sets.newHashSet(FileRequestStatus.TO_DO, FileRequestStatus.PENDING));
+        }
+        return isRunning;
     }
 
     /**

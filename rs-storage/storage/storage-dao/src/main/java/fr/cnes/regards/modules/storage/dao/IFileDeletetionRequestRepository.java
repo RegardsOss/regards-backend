@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
@@ -74,5 +75,7 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
     @Query("update FileDeletionRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
     int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
             @Param("id") Long id);
+
+    boolean existsByStorageAndStatusIn(String storage, Collection<FileRequestStatus> status);
 
 }

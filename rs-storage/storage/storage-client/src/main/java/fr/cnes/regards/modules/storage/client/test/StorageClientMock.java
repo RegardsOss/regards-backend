@@ -90,7 +90,7 @@ public class StorageClientMock implements IStorageClient {
         }
 
         RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(), FileRequestType.STORAGE,
-                file.getChecksum(), file.getStorage(), file.getSubDirectory().orElse(null),
+                file.getChecksum(), file.getStorage(), file.getOptionalSubDirectory().orElse(null),
                 Sets.newHashSet(file.getOwner()));
 
         resultInfo.setResultFile(new FileReference(file.getOwner(),

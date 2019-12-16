@@ -29,6 +29,8 @@ import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
  */
 public class FileRequestInfoDTO {
 
+    private String fileName;
+
     /**
      * Request type
      */
@@ -44,11 +46,13 @@ public class FileRequestInfoDTO {
      */
     private String errorCause;
 
-    public static FileRequestInfoDTO build(FileRequestType type, FileRequestStatus status, String errorCause) {
+    public static FileRequestInfoDTO build(String fileName, FileRequestType type, FileRequestStatus status,
+            String errorCause) {
         FileRequestInfoDTO dto = new FileRequestInfoDTO();
         dto.type = type;
         dto.status = status;
         dto.errorCause = errorCause;
+        dto.fileName = fileName;
         return dto;
     }
 
@@ -62,6 +66,10 @@ public class FileRequestInfoDTO {
 
     public String getErrorCause() {
         return errorCause;
+    }
+
+    public String getFileName() {
+        return fileName;
     }
 
 }
