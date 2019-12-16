@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.rest;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -46,6 +47,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -99,25 +101,38 @@ public class FileReferenceController {
      */
     @RequestMapping(path = DOWNLOAD_PATH, method = RequestMethod.GET, produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("checksum") String checksum)
-            throws ModuleException, IOException {
+    public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("checksum") String checksum,
+            HttpServletResponse response) throws ModuleException, IOException {
         try {
             DownloadableFile downloadFile = downloadService.downloadFile(checksum);
-            InputStreamResource isr = new InputStreamResource(downloadFile.getFileInputStream());
             HttpHeaders headers = new HttpHeaders();
             headers.setContentLength(downloadFile.getRealFileSize());
             headers.setContentType(asMediaType(downloadFile.getMimeType()));
             headers.setContentDispositionFormData("attachement;filename=", downloadFile.getFileName());
-            return new ResponseEntity<>(isr, headers, HttpStatus.OK);
+            StreamingResponseBody stream = out -> {
+                try (OutputStream outs = response.getOutputStream()) {
+                    byte[] bytes = new byte[1024];
+                    int length;
+                    while ((length = downloadFile.getFileInputStream().read(bytes)) >= 0) {
+                        outs.write(bytes, 0, length);
+                    }
+                    outs.close();
+                } catch (final IOException e) {
+                    LOGGER.error("Exception while reading and streaming data {} ", e);
+                } finally {
+                    downloadFile.close();
+                }
+            };
+            return new ResponseEntity<>(stream, headers, HttpStatus.OK);
         } catch (EntityNotFoundException e) {
             LOGGER.error(String
                     .format("Unable to download file with checksum=%s. Cause file does not exists on any known storage location",
                             checksum));
             LOGGER.debug(e.getMessage(), e);
-            return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<StreamingResponseBody>(HttpStatus.NOT_FOUND);
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
-            return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<StreamingResponseBody>(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -131,18 +146,31 @@ public class FileReferenceController {
     @RequestMapping(path = FileDownloadService.DOWNLOAD_TOKEN_PATH, method = RequestMethod.GET,
             produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<InputStreamResource> downloadFileWithToken(@PathVariable("checksum") String checksum,
-            @RequestParam(name = FileDownloadService.TOKEN_PARAM, required = true) String token)
-            throws ModuleException, IOException {
+    public ResponseEntity<StreamingResponseBody> downloadFileWithToken(@PathVariable("checksum") String checksum,
+            @RequestParam(name = FileDownloadService.TOKEN_PARAM, required = true) String token,
+            HttpServletResponse response) throws ModuleException, IOException {
         if (downloadService.checkToken(checksum, token)) {
             try {
                 DownloadableFile downloadFile = downloadService.downloadFile(checksum);
-                InputStreamResource isr = new InputStreamResource(downloadFile.getFileInputStream());
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentLength(downloadFile.getRealFileSize());
                 headers.setContentType(asMediaType(downloadFile.getMimeType()));
                 headers.setContentDispositionFormData("attachement;filename=", downloadFile.getFileName());
-                return new ResponseEntity<>(isr, headers, HttpStatus.OK);
+                StreamingResponseBody stream = out -> {
+                    try (OutputStream outs = response.getOutputStream()) {
+                        byte[] bytes = new byte[1024];
+                        int length;
+                        while ((length = downloadFile.getFileInputStream().read(bytes)) >= 0) {
+                            outs.write(bytes, 0, length);
+                        }
+                        outs.close();
+                    } catch (final IOException e) {
+                        LOGGER.error("Exception while reading and streaming data {} ", e);
+                    } finally {
+                        downloadFile.close();
+                    }
+                };
+                return new ResponseEntity<>(stream, headers, HttpStatus.OK);
             } catch (ModuleException e) {
                 LOGGER.error(e.getMessage());
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
