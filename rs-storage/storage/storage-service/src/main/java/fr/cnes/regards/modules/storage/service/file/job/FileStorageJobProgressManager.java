@@ -75,16 +75,21 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
         // We do not save the new error stored file to avoid performance leak by committing files one by one in the database.
         // Files are saved in one transaction thanks to the bulkSave method.
         LOG.error("[STORE ERROR {}] - Store error for file {} (id={})in {}. Cause : {}",
-                  request.getMetaInfo().getFileName(), request.getId(), request.getStorage(),
-                  request.getMetaInfo().getChecksum(), cause);
+                  request.getMetaInfo().getChecksum(), request.getMetaInfo().getFileName(), request.getId(),
+                  request.getStorage(), cause);
         handledRequest.add(FileStorageRequestResultDTO.build(request, null, null).error(cause));
         job.advanceCompletion();
     }
 
     public void bulkSave() {
-        storageRequestService
-                .handleSuccess(handledRequest.stream().filter(r -> !r.isError()).collect(Collectors.toSet()));
-        storageRequestService.handleError(handledRequest.stream().filter(r -> r.isError()).collect(Collectors.toSet()));
+        Set<FileStorageRequestResultDTO> successes = handledRequest.stream().filter(r -> !r.isError())
+                .collect(Collectors.toSet());
+        Set<FileStorageRequestResultDTO> errors = handledRequest.stream().filter(r -> r.isError())
+                .collect(Collectors.toSet());
+        LOG.info("[STORE END] Saving job requests final status ({} successes & {} errors).", successes.size(),
+                 errors.size());
+        storageRequestService.handleSuccess(successes);
+        storageRequestService.handleError(errors);
     }
 
     /**
