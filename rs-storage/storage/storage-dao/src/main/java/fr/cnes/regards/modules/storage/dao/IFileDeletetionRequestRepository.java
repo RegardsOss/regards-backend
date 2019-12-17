@@ -78,4 +78,9 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
 
     boolean existsByStorageAndStatusIn(String storage, Collection<FileRequestStatus> status);
 
+    boolean existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(String storage, String checksum,
+            Set<FileRequestStatus> ruuninstatus);
+
+    boolean existsByFileReferenceMetaInfoChecksumAndStatusIn(String checksum, Set<FileRequestStatus> ruuninstatus);
+
 }

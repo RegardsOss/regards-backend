@@ -38,7 +38,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.domain.IUpdateFileReferenceOnAvailable;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
@@ -47,6 +46,7 @@ import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
+import fr.cnes.regards.modules.storage.service.file.request.RequestStatusService;
 import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
 
 /**
@@ -84,6 +84,9 @@ public class FileReferenceEventHandler
     private RequestsGroupService reqGrpService;
 
     @Autowired
+    private RequestStatusService reqStatusService;
+
+    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
@@ -106,11 +109,6 @@ public class FileReferenceEventHandler
             switch (wrapper.getContent().getType()) {
                 case FULLY_DELETED:
                 case DELETION_ERROR:
-                    // When a file reference deletion is over, schedule the delayed reference requests if any
-                    // Indeed, when a file reference deletion process is running, every file reference request are delayed until
-                    // the deletion process is over.
-                    scheduleDelayedFileRefRequests(wrapper.getContent().getChecksum(),
-                                                   wrapper.getContent().getLocation().getStorage());
                     break;
                 case AVAILABLE:
                     // Check if a copy request is linked to this available file
@@ -132,28 +130,6 @@ public class FileReferenceEventHandler
             }
         } finally {
             runtimeTenantResolver.clearTenant();
-        }
-    }
-
-    /**
-     * After a deletion success, we can schedule the file reference request delayed. Those request was waiting for deletion ends.
-     * @param fileRefChecksum
-     * @param fileRefStorage
-     */
-    private void scheduleDelayedFileRefRequests(String fileRefChecksum, String fileRefStorage) {
-        Optional<FileStorageRequest> oRequest = fileReferenceRequestService.search(fileRefStorage, fileRefChecksum);
-        if (oRequest.isPresent() && (oRequest.get().getStatus() == FileRequestStatus.DELAYED)) {
-            // As a storage is scheduled, we can delete the deletion request
-            Optional<FileReference> oFileRef = fileReferenceService.search(fileRefStorage, fileRefChecksum);
-            if (oFileRef.isPresent()) {
-                Optional<FileDeletionRequest> oDeletionRequest = fileDeletionRequestService.search(oFileRef.get());
-                if (oDeletionRequest.isPresent()) {
-                    fileDeletionRequestService.delete(oDeletionRequest.get());
-                }
-            }
-            FileStorageRequest request = oRequest.get();
-            request.setStatus(FileRequestStatus.TO_DO);
-            fileReferenceRequestService.update(request);
         }
     }
 

@@ -132,6 +132,9 @@ public class FileCacheRequestService {
     @Autowired
     private FileDownloadService downloadService;
 
+    @Autowired
+    private RequestStatusService reqStatusService;
+
     /**
      * Search for a {@link FileCacheRequest} on the file given checksum.
      * @param checksum
@@ -163,7 +166,7 @@ public class FileCacheRequestService {
         } else {
             request = oFcr.get();
             if (request.getStatus() == FileRequestStatus.ERROR) {
-                request.setStatus(FileRequestStatus.TO_DO);
+                request.setStatus(reqStatusService.getNewStatus(request));
                 request = repository.save(request);
             }
             LOGGER.trace("File {} (checksum {}) is already requested for cache.",
@@ -250,7 +253,7 @@ public class FileCacheRequestService {
      */
     public void retryRequest(String groupId) {
         for (FileCacheRequest request : repository.findByGroupIdAndStatus(groupId, FileRequestStatus.ERROR)) {
-            request.setStatus(FileRequestStatus.TO_DO);
+            request.setStatus(reqStatusService.getNewStatus(request));
             request.setErrorCause(null);
             repository.save(request);
         }

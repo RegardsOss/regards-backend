@@ -96,10 +96,11 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         // check that there is always a deletion request in pending state
         Optional<FileDeletionRequest> ofdr = fileDeletionRequestRepo.findByFileReferenceId(fdr.getId());
         oFileRef = fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum());
-        Assert.assertTrue("File deletion request should elawys exists", ofdr.isPresent());
+        Assert.assertTrue("File deletion request should always exists", ofdr.isPresent());
         Assert.assertEquals("File deletion request should always be running", FileRequestStatus.PENDING,
                             ofdr.get().getStatus());
         // check that a new reference request is made to store again the file after deletion request is done
+        reqStatusService.checkDelayedStorageRequests();
         Optional<FileStorageRequest> frr = stoReqService.search(fileRefStorage, fileRefChecksum);
         Assert.assertTrue("A new file reference request should exists", frr.isPresent());
         Assert.assertEquals("A new file reference request should exists with DELAYED status", FileRequestStatus.DELAYED,
@@ -124,7 +125,12 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         runtimeTenantResolver.forceTenant(tenant);
         frr = stoReqService.search(fileRefStorage, fileRefChecksum);
         Assert.assertTrue("File storage request still exists", frr.isPresent());
-        Assert.assertEquals("File storage request still exists with TO_DO status", FileRequestStatus.TO_DO,
+        Assert.assertEquals("File storage request should still exists with DELAYED status", FileRequestStatus.DELAYED,
+                            frr.get().getStatus());
+        reqStatusService.checkDelayedStorageRequests();
+        frr = stoReqService.search(fileRefStorage, fileRefChecksum);
+        Assert.assertTrue("File storage request still exists", frr.isPresent());
+        Assert.assertEquals("File storage request should exists with TO_DO status", FileRequestStatus.TO_DO,
                             frr.get().getStatus());
 
         // Now the deletion job is ended, the file reference request is in {@link FileRequestStatus#TO_DO} state.

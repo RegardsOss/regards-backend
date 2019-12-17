@@ -84,6 +84,7 @@ import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestServi
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
+import fr.cnes.regards.modules.storage.service.file.request.RequestStatusService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
@@ -178,6 +179,9 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     @Autowired
     protected IDownloadTokenRepository downloadTokenRepo;
 
+    @Autowired
+    protected RequestStatusService reqStatusService;
+
     protected String originUrl = "file://in/this/directory/file.test";
 
     protected void init() throws ModuleException {
@@ -229,7 +233,8 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"),
                          IPluginParam.build(SimpleOnlineDataStorage.ALLOW_PHYSICAL_DELETION, allowPhysicalDeletion));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(label, parameters, 0, dataStoMeta.getPluginId());
+            PluginConfiguration dataStorageConf = new PluginConfiguration(label, parameters, 0,
+                    dataStoMeta.getPluginId());
             dataStorageConf.setIsActive(true);
             return storageLocationConfService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
         } catch (IOException | URISyntaxException e) {
@@ -248,7 +253,8 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_RESTORATION_ERROR_FILE_PATTERN,
                                             "restoError.*"),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(label, parameters, 0, dataStoMeta.getPluginId());
+            PluginConfiguration dataStorageConf = new PluginConfiguration(label, parameters, 0,
+                    dataStoMeta.getPluginId());
             dataStorageConf.setIsActive(true);
             return storageLocationConfService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
         } catch (IOException | URISyntaxException e) {
