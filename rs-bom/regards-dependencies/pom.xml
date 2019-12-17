@@ -118,7 +118,7 @@
 		<modules.model.version>${regards.version}</modules.model.version>
 		<modules.feature.version>${regards.version}</modules.feature.version>
 		<modules.emails.version>${regards.version}</modules.emails.version>
-		<modules.notifier.version>GEOD</modules.notifier.version>
+		<modules.notifier.version>${regards.version}</modules.notifier.version>
 		<modules.notification.version>${regards.version}</modules.notification.version>
 		<modules.notification-instance.version>${regards.version}</modules.notification-instance.version>
 		<modules.metrics.version>${regards.version}</modules.metrics.version>
