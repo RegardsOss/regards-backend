@@ -212,19 +212,22 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Build a new plugin configuration
      * @param pluginId the {@link Plugin#id()}.
-     * @param label the configuration label
+     * @param label the configuration label (if <code>null</code>, a random label is generated)
      * @param parameters the list of parameters
      * @param order the order
      */
     public static PluginConfiguration build(String pluginId, String label, Collection<IPluginParam> parameters,
             int order) {
+        if (label == null) {
+            label = UUID.randomUUID().toString();
+        }
         return new PluginConfiguration(label, parameters, 0, pluginId);
     }
 
     /**
      * Build a new plugin configuration
      * @param pluginId the {@link Plugin#id()}.
-     * @param label the configuration label
+     * @param label the configuration label (if <code>null</code>, a random label is generated)
      * @param parameters the list of parameters
      */
     public static PluginConfiguration build(String pluginId, String label, Collection<IPluginParam> parameters) {
@@ -234,7 +237,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Build a new plugin configuration
      * @param pluginType the {@link Class} annotated with {@link Plugin}.
-     * @param label the configuration label
+     * @param label the configuration label (if <code>null</code>, a random label is generated)
      * @param parameters the list of parameters
      */
     public static PluginConfiguration build(Class<?> pluginType, String label, Collection<IPluginParam> parameters) {
