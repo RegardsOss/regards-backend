@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.storage.domain.database.request;
 
+import java.util.Set;
+
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 
 /**
@@ -46,5 +50,8 @@ public enum FileRequestStatus {
      * Request is finished in error.
      */
     ERROR;
+
+    public final static Set<FileRequestStatus> RUNNING_STATUS = Sets.newHashSet(FileRequestStatus.TO_DO,
+                                                                                FileRequestStatus.PENDING);
 
 }

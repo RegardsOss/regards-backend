@@ -119,6 +119,9 @@ public class FileStorageRequestService {
     @Autowired
     private FileReferenceRequestService fileRefReqService;
 
+    @Autowired
+    private RequestStatusService reqStatusService;
+
     /**
      * Initialize new storage requests from Flow items.
      * @param list
@@ -283,7 +286,7 @@ public class FileStorageRequestService {
     public void retryRequest(String groupId) {
         for (FileStorageRequest request : fileStorageRequestRepo.findByGroupIdsAndStatus(groupId,
                                                                                          FileRequestStatus.ERROR)) {
-            request.setStatus(FileRequestStatus.TO_DO);
+            request.setStatus(reqStatusService.getNewStatus(request, Optional.empty()));
             request.setErrorCause(null);
             update(request);
         }
@@ -298,7 +301,7 @@ public class FileStorageRequestService {
         do {
             results = fileStorageRequestRepo.findByOwnersInAndStatus(owners, FileRequestStatus.ERROR, page);
             for (FileStorageRequest request : results) {
-                request.setStatus(FileRequestStatus.TO_DO);
+                request.setStatus(reqStatusService.getNewStatus(request, Optional.empty()));
                 request.setErrorCause(null);
                 update(request);
             }
@@ -424,11 +427,11 @@ public class FileStorageRequestService {
         // Check if file storage request already exists
         Optional<FileStorageRequest> oFileRefRequest = search(storage, fileMetaInfo.getChecksum());
         if (oFileRefRequest.isPresent()) {
-            handleAlreadyExists(oFileRefRequest.get(), originUrl, fileMetaInfo, owners, groupId);
+            handleAlreadyExists(oFileRefRequest.get(), originUrl, fileMetaInfo, owners, groupId, status);
         } else {
             FileStorageRequest fileStorageRequest = new FileStorageRequest(owners, fileMetaInfo, originUrl, storage,
                     storageSubDirectory, groupId);
-            fileStorageRequest.setStatus(status);
+            fileStorageRequest.setStatus(reqStatusService.getNewStatus(fileStorageRequest, Optional.of(status)));
             fileStorageRequest.setErrorCause(errorCause.orElse(null));
             if (!storageHandler.getConfiguredStorages().contains(storage)) {
                 // The storage destination is unknown, we can already set the request in error status
@@ -455,7 +458,8 @@ public class FileStorageRequestService {
      * @param newGroupId business requests group identifier
      */
     private void handleAlreadyExists(FileStorageRequest fileStorageRequest, String originUrl,
-            FileReferenceMetaInfo newMetaInfo, Collection<String> owners, String newGroupId) {
+            FileReferenceMetaInfo newMetaInfo, Collection<String> owners, String newGroupId,
+            FileRequestStatus newStatus) {
         LOGGER.trace("Storage request already exists for file {}", newMetaInfo.getFileName());
         fileStorageRequest.getOwners().addAll(owners);
         fileStorageRequest.getGroupIds().add(newGroupId);
@@ -471,7 +475,7 @@ public class FileStorageRequestService {
         switch (fileStorageRequest.getStatus()) {
             case ERROR:
                 // Allows storage retry.
-                fileStorageRequest.setStatus(FileRequestStatus.TO_DO);
+                fileStorageRequest.setStatus(newStatus);
                 break;
             case PENDING:
                 // A storage is already in progress for this request.
@@ -479,6 +483,7 @@ public class FileStorageRequestService {
             case TO_DO:
             default:
                 // Request has not been handled yet, we can update it.
+                fileStorageRequest.setStatus(newStatus);
                 break;
         }
         fileStorageRequestRepo.save(fileStorageRequest);

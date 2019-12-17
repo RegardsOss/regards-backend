@@ -217,10 +217,9 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         Assert.assertEquals("There should be 5000 file storage request created", 5000, stoReqService
                 .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
 
-        Assert.assertEquals("No file ref should be created", 0, fileRefService
-                .search(FileReferenceSpecification.search(null, null, null, Lists.newArrayList(ONLINE_CONF_LABEL), null,
-                                                          now, null),
-                        PageRequest.of(0, 1, Direction.ASC, "id"))
+        PageRequest pageable = PageRequest.of(0, 1, Direction.ASC, "id");
+        Assert.assertEquals("No file ref should be created", 0, fileRefService.search(FileReferenceSpecification
+                .search(null, null, null, Lists.newArrayList(ONLINE_CONF_LABEL), null, now, null, pageable), pageable)
                 .getTotalElements());
         long start = System.currentTimeMillis();
         Collection<JobInfo> jobs = stoReqService
@@ -231,10 +230,8 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         LOGGER.info("...{} jobs handled in {} ms", jobs.size(), System.currentTimeMillis() - start);
         Assert.assertEquals("There should be no file storage request created", 0, stoReqService
                 .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
-        Assert.assertEquals("5000 file ref should be created", 5000, fileRefService
-                .search(FileReferenceSpecification.search(null, null, null, Lists.newArrayList(ONLINE_CONF_LABEL), null,
-                                                          now, null),
-                        PageRequest.of(0, 1, Direction.ASC, "id"))
+        Assert.assertEquals("5000 file ref should be created", 5000, fileRefService.search(FileReferenceSpecification
+                .search(null, null, null, Lists.newArrayList(ONLINE_CONF_LABEL), null, now, null, pageable), pageable)
                 .getTotalElements());
     }
 

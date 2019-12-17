@@ -84,6 +84,9 @@ public class FileRequestScheduler {
     private RequestsGroupService reqGrpService;
 
     @Autowired
+    private RequestStatusService reqStatusService;
+
+    @Autowired
     private ILockService lockService;
 
     private final Semaphore semaphore = new Semaphore(1, true);
@@ -91,6 +94,7 @@ public class FileRequestScheduler {
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_000)
     public void handleFileStorageRequests() throws ModuleException {
         schedule("handleFileStorageRequests", () -> {
+            reqStatusService.checkDelayedStorageRequests();
             fileStorageRequestService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet(), Sets.newHashSet());
             return null;
         });
@@ -99,6 +103,7 @@ public class FileRequestScheduler {
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_100)
     public void handleFileCacheRequests() throws ModuleException {
         schedule("handleFileCacheRequests", () -> {
+            reqStatusService.checkDelayedCacheRequests();
             fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
             return null;
         });
@@ -107,6 +112,7 @@ public class FileRequestScheduler {
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_200)
     public void handleFileDeletionRequests() throws ModuleException {
         schedule("handleFileDeletionRequests", () -> {
+            reqStatusService.checkDelayedDeleteRequests();
             fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet());
             return null;
         });
@@ -115,6 +121,7 @@ public class FileRequestScheduler {
     @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:3000}", initialDelay = 1_300)
     public void handleFileCopyRequests() throws ModuleException {
         schedule("handleFileCopyRequests", () -> {
+            reqStatusService.checkDelayedCopyRequests();
             fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
             return null;
         });
