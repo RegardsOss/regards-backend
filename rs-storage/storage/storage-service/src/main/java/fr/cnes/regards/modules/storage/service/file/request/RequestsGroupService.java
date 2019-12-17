@@ -59,7 +59,7 @@ import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
  * When all requests of a group has been rejected by the associated service, then a {@link FileRequestsGroupEvent} is published
  *  with {@link FlowItemStatus#DENIED} status.<br>
  * When all requests of a group are done (successfully or with errors), a {@link FileRequestsGroupEvent} is published
- * with {@link FlowItemStatus#DONE} or with {@link FlowItemStatus#ERROR} status.<br>
+ * with {@link FlowItemStatus#SUCCESS} or with {@link FlowItemStatus#ERROR} status.<br>
  *
  * @author Sébastien Binda
  */
@@ -116,15 +116,6 @@ public class RequestsGroupService {
 
     /**
      * Handle new request error for the given groupId.<br>
-     *
-     * @param groupId
-     * @param type
-     * @param checksum
-     * @param storage
-     * @param storePath
-     * @param owners
-     * @param errorCause
-     * @param checkGroupDone
      */
     public void requestError(String groupId, FileRequestType type, String checksum, String storage, String storePath,
             Set<String> owners, String errorCause) {
@@ -180,9 +171,6 @@ public class RequestsGroupService {
 
     /**
      * Save new granted request groups and send bus messages to inform that the given groupIds are granted.
-     *
-     * @param groupId
-     * @param type
      */
     public void granted(Set<String> groupIds, FileRequestType type) {
         // Create new group request
@@ -218,7 +206,7 @@ public class RequestsGroupService {
                     nbGroupsDone += checkRequestsGroupDone(it.next()) ? 1 : 0;
                 } while (it.hasNext());
                 response = reqGroupRepository.findAll(response.getPageable().next());
-            } while (response.hasNext() && (nbGroupsDone < MAX_REQUEST_PER_TRANSACTION));
+            } while (response.hasNext() && nbGroupsDone < MAX_REQUEST_PER_TRANSACTION);
         }
         String message = "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}";
         if (nbGroupsDone > 0) {
@@ -272,7 +260,7 @@ public class RequestsGroupService {
      */
     private boolean checkRequestGroupExpired(RequestGroup reqGrp) {
         boolean expired = false;
-        if ((nbDaysBeforeExpiration > 0)
+        if (nbDaysBeforeExpiration > 0
                 && reqGrp.getCreationDate().isBefore(OffsetDateTime.now().minusDays(nbDaysBeforeExpiration))) {
             LOGGER.warn("Request group {} is expired. It will be deleted and all associated requests will be set in ERROR status");
             String errorCause = "Associated group request expired.";
@@ -310,8 +298,6 @@ public class RequestsGroupService {
 
     /**
      * Handle a group request done. All requests of the given group has terminated (success or error).
-     * @param groupId
-     * @param type
      */
     public void groupDone(RequestGroup reqGrp) {
         // 1. Do only one database request, then dispatch results between success and errors

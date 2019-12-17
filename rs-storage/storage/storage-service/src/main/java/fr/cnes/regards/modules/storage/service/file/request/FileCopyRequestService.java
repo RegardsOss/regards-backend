@@ -225,7 +225,7 @@ public class FileCopyRequestService {
 
     /**
      * Handle many {@link FileCopyRequestDTO} to copy files to a given storage location.
-     * @param files copy requests
+     * @param requests copy requests
      * @param groupId business request identifier
      */
     public void handle(Collection<FileCopyRequestDTO> requests, String groupId) {
@@ -325,8 +325,6 @@ public class FileCopyRequestService {
 
     /**
      * Update in database the given {@link FileCopyRequest}.
-     * @param request
-     * @return
      */
     public FileCopyRequest update(FileCopyRequest request) {
         Assert.notNull(request, "FileCopyRequest to update can not be null.");
@@ -336,10 +334,6 @@ public class FileCopyRequestService {
 
     /**
      * Schedule a job to create {@link FileCopyRequest}s for the given criterion
-     * @param storageLocationId
-     * @param destinationStorageId
-     * @param pathToCopy
-     * @return
      */
     public JobInfo scheduleJob(String storageLocationId, String sourcePath, String destinationStorageId,
             Optional<String> destinationPath) {

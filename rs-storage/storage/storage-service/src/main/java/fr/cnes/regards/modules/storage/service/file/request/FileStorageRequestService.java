@@ -229,8 +229,6 @@ public class FileStorageRequestService {
 
     /**
      * Search for {@link FileStorageRequest}s matching the given destination storage and checksum
-     * @param destinationStorage
-     * @param checksum
      * @return {@link FileStorageRequest}
      */
     @Transactional(readOnly = true)
@@ -326,7 +324,7 @@ public class FileStorageRequestService {
             Collection<String> owners) {
         Collection<JobInfo> jobList = Lists.newArrayList();
         Set<String> allStorages = fileStorageRequestRepo.findStoragesByStatus(status);
-        Set<String> storagesToSchedule = (storages != null) && !storages.isEmpty()
+        Set<String> storagesToSchedule = storages != null && !storages.isEmpty()
                 ? allStorages.stream().filter(storages::contains).collect(Collectors.toSet())
                 : allStorages;
         long start = System.currentTimeMillis();
@@ -335,7 +333,7 @@ public class FileStorageRequestService {
             Page<FileStorageRequest> filesPage;
             Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by("id"));
             do {
-                if ((owners != null) && !owners.isEmpty()) {
+                if (owners != null && !owners.isEmpty()) {
                     filesPage = fileStorageRequestRepo.findAllByStorageAndStatusAndOwnersIn(storage, status, owners,
                                                                                             page);
                 } else {
@@ -600,7 +598,7 @@ public class FileStorageRequestService {
         FileReference updatedFileRef = null;
         FileReferenceMetaInfo newMetaInfo = request.buildMetaInfo();
         Optional<FileDeletionRequest> deletionRequest = fileDelReqService.search(fileReference);
-        if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
+        if (deletionRequest.isPresent() && deletionRequest.get().getStatus() == FileRequestStatus.PENDING) {
             // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
             create(Sets.newHashSet(request.getOwner()), newMetaInfo, request.getOriginUrl(), request.getStorage(),
                    request.getOptionalSubDirectory(), FileRequestStatus.DELAYED, groupId, Optional.empty());

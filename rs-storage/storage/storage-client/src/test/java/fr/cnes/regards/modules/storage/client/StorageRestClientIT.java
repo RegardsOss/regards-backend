@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -121,7 +121,7 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
         for (int i = 0; i < 100; i++) {
             fileRefService.create(Sets.newHashSet("someone", "someone-else"),
                                   new FileReferenceMetaInfo("123456" + i, "MD5", "file.test_" + i, 10L,
-                                          MediaType.APPLICATION_JSON_UTF8),
+                                          MediaType.APPLICATION_JSON),
                                   new FileLocation("somewhere", "file://plop/plip.file_" + i));
         }
         Response response = client.export();
@@ -139,7 +139,7 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
 
     @Test
     public void retrieveStorageLocations() {
-        ResponseEntity<List<Resource<StorageLocationDTO>>> response = client.retrieve();
+        ResponseEntity<List<EntityModel<StorageLocationDTO>>> response = client.retrieve();
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assert.assertEquals(1, response.getBody().size());
         Assert.assertEquals(ONLINE_CONF, response.getBody().get(0).getContent().getName());
@@ -155,7 +155,8 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
                                             "target/online-storage/"),
                          IPluginParam.build(SimpleOnlineTestClient.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleOnlineTestClient.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(ONLINE_CONF, parameters, 0, dataStoMeta.getPluginId());
+            PluginConfiguration dataStorageConf = new PluginConfiguration(ONLINE_CONF, parameters, 0,
+                    dataStoMeta.getPluginId());
             return storageLocationConfService.create(ONLINE_CONF, dataStorageConf, 1_000_000L);
         } catch (IOException | ModuleException e) {
             Assert.fail(e.getMessage());

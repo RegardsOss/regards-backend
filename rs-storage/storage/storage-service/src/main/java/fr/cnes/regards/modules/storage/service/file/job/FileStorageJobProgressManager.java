@@ -95,7 +95,6 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
     /**
      * Does the given requests has been handled by the current job ?
      * @param req {@link FileStorageRequest} to check for
-     * @return
      */
     public boolean isHandled(FileStorageRequest req) {
         return this.handledRequest.stream().filter(f -> f.getRequest().equals(req)).findFirst().isPresent();

@@ -53,7 +53,7 @@ import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestServi
  * JOB to handle copy requests on many {@link FileReference}s.<br>
  * This jobs requests database to retrieve {@link FileReference}s with search criterion and for each, send a {@link CopyFlowItem} events.<br>
  * Events can be then handled by the first available storage microservice to create associated {@link FileCopyRequest}.<br>
- * NOTE : Be careful that the {@link this#run()} stays not transactional.
+ * NOTE : Be careful that the {@link #run()} stays not transactional.
  *
  * @author Sébastien Binda
  */
@@ -155,7 +155,6 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
      * @param fileUrl
      * @param sourcePathToCopy
      * @param destinationPath
-     * @return
      * @throws MalformedURLException
      * @throws ModuleException
      */

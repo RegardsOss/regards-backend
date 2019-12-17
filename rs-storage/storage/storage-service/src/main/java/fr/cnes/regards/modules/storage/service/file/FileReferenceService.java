@@ -79,7 +79,6 @@ public class FileReferenceService {
      * @param owners new file owners
      * @param fileMetaInfo file information
      * @param location file location
-     * @param groupIds business request identifiers
      */
     public FileReference create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo, FileLocation location) {
         FileReference fileRef = new FileReference(owners, fileMetaInfo, location);
@@ -143,9 +142,6 @@ public class FileReferenceService {
 
     /**
      * Search for a {@link FileReference} associated to the given storage location and matching the given checksum.
-     * @param storage
-     * @param checksum
-     * @return
      */
     @Transactional(readOnly = true)
     public Optional<FileReference> search(String storage, String checksum) {
@@ -164,7 +160,6 @@ public class FileReferenceService {
 
     /**
      * Search for all {@link FileReference}s associated to the given checksum.
-     * @param checksums
      * @return {@link FileReference}s
      */
     @Transactional(readOnly = true)
@@ -205,11 +200,6 @@ public class FileReferenceService {
         return saved;
     }
 
-    /**
-     * @param fileReference
-     * @param owner
-     * @return
-     */
     public FileReference addOwner(FileReference fileReference, String owner) {
         if (!fileReference.getOwners().contains(owner)) {
             fileReference.getOwners().add(owner);
