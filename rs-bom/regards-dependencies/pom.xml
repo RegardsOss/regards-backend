@@ -1075,6 +1075,11 @@
                 <artifactId>notifier-dao</artifactId>
                 <version>${fr.cnes.regards.modules.notifier.version}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.notifier</groupId>
+                <artifactId>notifier-dto</artifactId>
+                <version>${fr.cnes.regards.modules.notifier.version}</version>
+            </dependency>
             <!-- Notification Instance -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.notification-instance</groupId>
