@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import java.io.IOException;
 import java.util.List;
 
@@ -51,33 +50,37 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
 
 /**
  * This controller manages AIP.
  *
  * @author Léo Mieulet
  * @author Marc Sordi
+ * @author Sébastien Binda
  */
 @RestController
 @RequestMapping(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH)
-public class AIPController implements IResourceController<AIPEntity> {
+public class AIPController implements IResourceController<AIPEntityLight> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPController.class);
 
     public static final String REQUEST_PARAM_STATE = "state";
 
-    public static final String REQUEST_PARAM_FROM = "from";
+    public static final String REQUEST_PARAM_FROM = "lastUpdate.from";
 
-    public static final String REQUEST_PARAM_TO = "to";
+    public static final String REQUEST_PARAM_TO = "lastUpdate.to";
 
     public static final String REQUEST_PARAM_TAGS = "tags";
 
-    public static final String REQUEST_PARAM_PROVIDER_ID = "providerId";
+    public static final String REQUEST_PARAM_PROVIDER_ID = "providerIds";
 
     public static final String REQUEST_PARAM_SESSION_OWNER = "sessionOwner";
 
@@ -86,6 +89,8 @@ public class AIPController implements IResourceController<AIPEntity> {
     public static final String REQUEST_PARAM_CATEGORIES = "categories";
 
     public static final String REQUEST_PARAM_STORAGES = "storages";
+
+    public static final String REQUEST_PARAM_AIP_IDS = "aipIds";
 
     /**
      * Controller path to manage tags of multiple AIPs
@@ -123,6 +128,11 @@ public class AIPController implements IResourceController<AIPEntity> {
     public static final String AIP_UPDATE_PATH = "/update";
 
     /**
+     * Controller path to delete several OAIS entities
+     */
+    public static final String OAIS_DELETE_PATH = "/delete";
+
+    /**
      * {@link IResourceService} instance
      */
     @Autowired
@@ -130,6 +140,9 @@ public class AIPController implements IResourceController<AIPEntity> {
 
     @Autowired
     private IAIPService aipService;
+
+    @Autowired
+    private OAISDeletionService oaisDeletionRequestService;
 
     /**
      * Retrieve a page of aip metadata according to the given filters
@@ -141,10 +154,11 @@ public class AIPController implements IResourceController<AIPEntity> {
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Return a page of AIPs")
-    public ResponseEntity<PagedResources<Resource<AIPEntity>>> searchAIPs(@RequestBody SearchAIPsParameters filters,
+    public ResponseEntity<PagedResources<Resource<AIPEntityLight>>> searchAIPs(
+            @RequestBody SearchAIPsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<AIPEntity> assembler) {
-        Page<AIPEntity> aips = aipService.search(filters, pageable);
+            PagedResourcesAssembler<AIPEntityLight> assembler) {
+        Page<AIPEntityLight> aips = aipService.findLightByFilters(filters, pageable);
         return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
     }
 
@@ -156,7 +170,7 @@ public class AIPController implements IResourceController<AIPEntity> {
     @RequestMapping(value = TAG_SEARCH_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Search tags used by aips")
     public ResponseEntity<List<String>> retrieveAIPTags(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
-        List<String> aipTags = aipService.searchTags(filters);
+        List<String> aipTags = aipService.findTags(filters);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 
@@ -168,7 +182,7 @@ public class AIPController implements IResourceController<AIPEntity> {
     @RequestMapping(value = STORAGE_SEARCH_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Search tags used by aips")
     public ResponseEntity<List<String>> retrieveAIPStorage(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
-        List<String> aipTags = aipService.searchStorages(filters);
+        List<String> aipTags = aipService.findStorages(filters);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 
@@ -180,7 +194,7 @@ public class AIPController implements IResourceController<AIPEntity> {
     @RequestMapping(value = CATEGORIES_SEARCH_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Search categories used by aips")
     public ResponseEntity<List<String>> retrieveAIPCategories(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
-        List<String> aipTags = aipService.searchStorages(filters);
+        List<String> aipTags = aipService.findCategories(filters);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 
@@ -206,17 +220,23 @@ public class AIPController implements IResourceController<AIPEntity> {
         response.setStatus(HttpStatus.OK.value());
     }
 
-
     @RequestMapping(value = AIP_UPDATE_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Update an AIP set with provided params", role = DefaultRole.PUBLIC)
     public void updateAips(@Valid @RequestBody AIPUpdateParametersDto params) {
         LOGGER.debug("Received request to update AIPs");
-        aipService.scheduleAIPEntityUpdate(params);
+        aipService.registerUpdatesCreator(params);
+    }
+
+    @ResourceAccess(description = "Delete OAIS entities", role = DefaultRole.ADMIN)
+    @RequestMapping(value = OAIS_DELETE_PATH, method = RequestMethod.POST)
+    public void delete(@Valid @RequestBody OAISDeletionPayloadDto deletionRequest) throws ModuleException {
+        LOGGER.debug("Received request to delete OAIS entities");
+        oaisDeletionRequestService.registerOAISDeletionCreator(deletionRequest);
     }
 
     @Override
-    public Resource<AIPEntity> toResource(AIPEntity element, Object... extras) {
-        Resource<AIPEntity> resource = resourceService.toResource(element);
+    public Resource<AIPEntityLight> toResource(AIPEntityLight element, Object... extras) {
+        Resource<AIPEntityLight> resource = resourceService.toResource(element);
         return resource;
     }
 

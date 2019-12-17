@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.domain.dto;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -91,7 +92,7 @@ public class NativeSelectQuery {
         predicates.add(predicate);
     }
 
-    public void andListPredicate(String predicateStart, String predicateStop, String rootParamName, Set<String> paramValues) {
+    public void andListPredicate(String predicateStart, String predicateStop, String rootParamName, Collection<String> paramValues) {
         Set<String> preparedPredicates = Sets.newHashSet();
         int i = 0;
         for (String paramValue : paramValues) {
@@ -103,7 +104,7 @@ public class NativeSelectQuery {
         predicates.add(predicateStart + String.join(" , ", preparedPredicates) + predicateStop);
     }
 
-    public void addOneOf(String predicateStart, String predicateStop, String rootParamName, Set<String> paramValues) {
+    public void addOneOf(String predicateStart, String predicateStop, String rootParamName, Collection<String> paramValues) {
         Set<String> internalPredicates = Sets.newHashSet();
         int i = 0;
         for (String paramValue : paramValues) {
@@ -116,8 +117,7 @@ public class NativeSelectQuery {
         predicates.add("(" + oneOf + ")");
     }
 
-    //TODO test
-    public void addOneOfStringLike(String rootParamName, Set<String> paramValues) {
+    public void addOneOfStringLike(String rootParamName, Collection<String> paramValues) {
         Set<String> internalPredicates = Sets.newHashSet();
         int i = 0;
         for (String paramValue : paramValues) {

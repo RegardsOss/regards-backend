@@ -33,7 +33,7 @@ public enum RequestTypeEnum {
      */
     UPDATE(RequestTypeConstant.UPDATE_VALUE),
     /**
-     * A list of AIP modification + a list of criteria to find AIP requests
+     * A list of AIP modification + a list of criteria to find AIP
      */
     AIP_UPDATES_CREATOR(RequestTypeConstant.AIP_UPDATES_CREATOR_VALUE),
     /**
@@ -41,13 +41,13 @@ public enum RequestTypeEnum {
      */
     STORE_METADATA(RequestTypeConstant.STORE_METADATA_VALUE),
     /**
-     * Requests removing a set of OAIS entities
+     * 1 OAIS (SIP and AIP) Remove request
      */
     OAIS_DELETION(RequestTypeConstant.OAIS_DELETION_VALUE),
     /**
-     * Request for 1 entity removed
+     * A list of criteria to find AIP. It creates an OAIS_DELETION request foreach OAIS entity to remove
      */
-    STORAGE_DELETION(RequestTypeConstant.STORAGE_DELETION_VALUE);
+    OAIS_DELETION_CREATOR(RequestTypeConstant.OAIS_DELETION_CREATOR_VALUE);
 
     RequestTypeEnum(String value) {
         if(!value.equals(this.name())) {

@@ -37,17 +37,18 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocatio
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.service.aip.AIPService;
 import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
-import fr.cnes.regards.modules.ingest.service.request.IDeleteRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
-import fr.cnes.regards.modules.storagelight.client.IStorageRequestListener;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.storage.client.IStorageRequestListener;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * This class offers callbacks from storage events
  *
  * @author Marc SORDI
+ * @author Sébastien Binda
  */
 @Component
 public class StorageResponseFlowHandler implements IStorageRequestListener {
@@ -62,7 +63,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
     private IRequestService requestService;
 
     @Autowired
-    private IDeleteRequestService deleteRequestService;
+    private IOAISDeletionService deleteRequestService;
 
     @Autowired
     private AIPUpdateRequestService aipUpdateRequestService;
@@ -89,7 +90,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
             }
         }
         // To improve performance, retrieve all requested AIPs in one request
-        Collection<AIPEntity> aips = aipService.getAips(newFileLocations.keySet());
+        Collection<AIPEntity> aips = aipService.findByAipIds(newFileLocations.keySet());
         // Then dispatch each update task by AIPentity
         Multimap<AIPEntity, AbstractAIPUpdateTask> newFileLocationsWithAIP = ArrayListMultimap.create();
         newFileLocations.asMap().forEach((aipId, tasks) -> {
@@ -106,7 +107,8 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
 
     @Override
     public void onCopyError(Set<RequestInfo> requests) {
-        // Nothing to do
+        // handle success requests if any
+        onCopySuccess(requests);
     }
 
     @Override

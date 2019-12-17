@@ -21,10 +21,12 @@ package fr.cnes.regards.modules.ingest.service.request;
 import java.util.List;
 import java.util.Set;
 
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 
 /**
  * Service to handle {@link AIPStoreMetaDataRequest}s
@@ -46,10 +48,22 @@ public interface IAIPStoreMetaDataRequestService {
     /**
      * Schedule new {@link AIPStoreMetaDataRequest}s associated to given {@link AIPEntity}s
      * @param aips list of aips
+     * @param storages the list of StorageMetadata during the ingestion
      * @param removeCurrentMetaData true when a legacy metadata exists and should be removed
      * @param computeChecksum true when the aip does not contains a reliable checksum and should be recomputed
      */
-    void schedule(List<AIPEntity> aips, boolean removeCurrentMetaData, boolean computeChecksum);
+    void schedule(List<AIPEntity> aips, Set<StorageMetadata> storages, boolean removeCurrentMetaData,
+            boolean computeChecksum);
+
+    /**
+     * Schedule new {@link AIPStoreMetaDataRequest}s associated to given {@link AIPEntity}s
+     * @param aip
+     * @param manifestLocations current location where the AIP is store
+     * @param removeCurrentMetaData true when a legacy metadata exists and should be removed
+     * @param computeChecksum true when the aip does not contains a reliable checksum and should be recomputed
+     */
+    void schedule(AIPEntity aip, Set<OAISDataObjectLocation> manifestLocations, boolean removeCurrentMetaData,
+            boolean computeChecksum);
 
     /**
      * @param ids a list of request id
@@ -60,13 +74,14 @@ public interface IAIPStoreMetaDataRequestService {
     /**
      * Callback when a {@link AIPStoreMetaDataRequest} is terminated successfully.
      * @param request {@link AIPStoreMetaDataRequest}
-     * @param requestInfos {@link RequestInfo}s
+     * @param requestInfo {@link RequestInfo}
      */
-    void handleSuccess(AIPStoreMetaDataRequest request, Set<RequestInfo> requestInfos);
+    void handleSuccess(AIPStoreMetaDataRequest request, RequestInfo requestInfo);
 
     /**
      * Callback when a  {@link AIPStoreMetaDataRequest} is terminated with errors.
-     * @param requestInfos {@link RequestInfo}s
+     * @param request {@link AIPStoreMetaDataRequest}
+     * @param requestInfo {@link RequestInfo}
      */
-    void handleError(Set<RequestInfo> requestInfos);
+    void handleError(AIPStoreMetaDataRequest request, RequestInfo requestInfo);
 }

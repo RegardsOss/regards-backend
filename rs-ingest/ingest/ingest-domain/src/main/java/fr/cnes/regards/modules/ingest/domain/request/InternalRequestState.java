@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,24 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dto.request;
+package fr.cnes.regards.modules.ingest.domain.request;
 
-/**
- * Session selection mode
- *
- * @author Marc SORDI
- *
- */
-public enum SessionDeletionSelectionMode {
-
+public enum InternalRequestState {
     /**
-     * Only delete SIPs identified by their ids in the specified session.<br/>
-     * <b>Nothing</b> is deleted if no identifier specified
+     * When the request is not scheduled yet
      */
-    INCLUDE,
+    TO_SCHEDULE,
     /**
-     * Delete all SIPs of the session but the ones identified by their ids.<br/>
-     * <b>All</b> is deleted if no identifier specified
+     * When the request is ready to be processed
      */
-    EXCLUDE;
+    CREATED,
+    /**
+     * When the request cannot be processed for now
+     */
+    BLOCKED,
+    /**
+     * When the request is running
+     */
+    RUNNING,
+    /**
+     * When the request stopped with an error
+     */
+    ERROR,
 }

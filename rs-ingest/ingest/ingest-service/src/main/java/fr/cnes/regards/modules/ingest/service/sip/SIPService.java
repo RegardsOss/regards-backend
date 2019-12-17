@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,16 +38,11 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.StorageDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
-import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -69,20 +63,11 @@ public class SIPService implements ISIPService {
     @Autowired
     private ISIPRepository sipRepository;
 
-    @Autowired
-    private IStorageDeletionRequestRepository storageDeletionRequestRepo;
-
-    @Autowired
-    private IAIPService aipService;
-
-    @Autowired
-    private SessionNotifier sessionNotifier;
-
     @Override
     public Page<SIPEntity> search(SearchSIPsParameters params, Pageable page) {
         return sipRepository.loadAll(SIPEntitySpecifications
-                .search(params.getProviderIds(), null, params.getSessionOwner(), params.getSession(), params.getFrom(),
-                        params.getStates(), params.getProcessing(), true, params.getTags(), params.getStorages(),
+                .search(params.getProviderIds(), null, params.getSessionOwner(), params.getSession(), params.getIpType(),
+                        params.getFrom(), params.getStates(), true, params.getTags(),
                         params.getCategories(), page), page);
     }
 
@@ -97,34 +82,13 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public void scheduleDeletion(SIPEntity sipEntity, SessionDeletionMode deletionMode, Boolean deleteFiles) {
-        // Update AIPs state as deleted and retrieve events to delete associated files and AIPs
-        if (deleteFiles) {
-            String deleteRequestId = aipService.scheduleAIPEntityDeletion(sipEntity.getSipId());
-
-            sessionNotifier.notifySIPDeleting(sipEntity);
-            sipEntity.setState(SIPState.DELETED);
-            save(sipEntity);
-
-            // Save the request id sent to storage
-            StorageDeletionRequest sdr = StorageDeletionRequest.build(deleteRequestId, sipEntity, deletionMode);
-            storageDeletionRequestRepo.save(sdr);
-        } else {
-            aipService.processDeletion(sipEntity.getSipId(), deletionMode == SessionDeletionMode.IRREVOCABLY);
-            processDeletion(sipEntity.getSipId(), deletionMode == SessionDeletionMode.IRREVOCABLY);
-        }
-    }
-
-    @Override
     public void processDeletion(String sipId, boolean deleteIrrevocably) {
         Optional<SIPEntity> optionalSIPEntity = sipRepository.findOneBySipId(sipId);
         if (optionalSIPEntity.isPresent()) {
             SIPEntity sipEntity = optionalSIPEntity.get();
-            sessionNotifier.notifySIPDeleted(sipEntity);
             if (!deleteIrrevocably) {
                 // Mark the SIP correctly deleted
                 sipEntity.setState(SIPState.DELETED);
-                sipEntity.setErrors(null);
                 save(sipEntity);
             } else {
                 sipRepository.delete(sipEntity);
@@ -135,13 +99,6 @@ public class SIPService implements ISIPService {
     @Override
     public boolean validatedVersionExists(String providerId) {
         return sipRepository.countByProviderIdAndStateIn(providerId) > 0;
-    }
-
-    @Override
-    public void saveErrors(SIPEntity sip, Set<String> errors) {
-        sip.getErrors().addAll(errors);
-        sip.setState(SIPState.ERROR);
-        save(sip);
     }
 
     @Override

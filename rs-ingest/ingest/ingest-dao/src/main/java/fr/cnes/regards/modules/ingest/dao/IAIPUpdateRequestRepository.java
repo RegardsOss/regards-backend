@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
  * {@link AIPUpdateRequest} repository
@@ -33,28 +33,25 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface IAIPUpdateRequestRepository extends JpaRepository<AIPUpdateRequest, Long> {
 
-    Page<AbstractRequest> findAll(Specification<AbstractRequest> searchAllByFilters, Pageable pageable);
-
-    boolean existsBySessionOwnerAndSession(String sessionOwner, String session);
-
     default Page<AIPUpdateRequest> findWaitingRequest(Pageable pageRequest) {
-        return findAllByState(InternalRequestStep.CREATED, pageRequest);
+        return findAllByState(InternalRequestState.CREATED, pageRequest);
     }
 
     default List<AIPUpdateRequest> findRunningRequestAndAipIdIn(List<Long> aipIds) {
-        return findAllByAipIdInAndState(aipIds, InternalRequestStep.RUNNING);
+        return findAllAipDistinctByAipIdInAndState(aipIds, InternalRequestState.RUNNING.name());
     }
 
-    Page<AIPUpdateRequest> findAllByState(InternalRequestStep step, Pageable page);
+    Page<AIPUpdateRequest> findAllByState(InternalRequestState step, Pageable page);
 
     List<AIPUpdateRequest> findAllByAipIdIn(List<Long> aipIds);
 
-    Page<AIPUpdateRequest> findAllByStateAndAipIdIn(InternalRequestStep step, List<Long> aipIds, Pageable page);
-
-    List<AIPUpdateRequest> findAllByAipIdInAndState(List<Long> aipIds, InternalRequestStep state);
-    //   TODO List<AIPUpdateRequest> findDistinctByAipIdAndAipIdInAndState(List<Long> aipIds, InternalRequestStep state);
-
-
-    // @Query(value = "UPDATE AIPUpdateRequest SET state = :state WHERE id IN (:ids)")
-    // long updateStates(@Param("ids") List<Long> ids, @Param("state") String state);
+    /**
+     * Retrieve only one request for each AIP matching provided criteria
+     * @param aipIds
+     * @param state
+     * @return a list of AIPUpdateRequest with corresponding AIP loaded
+     */
+    @Query(value = "SELECT DISTINCT ON (t_request.aip_id) * FROM t_request  inner join t_aip on t_request.aip_id=t_aip.id " +
+            "WHERE t_request.aip_id IN (:ids) AND t_request.state = :state", nativeQuery = true)
+    List<AIPUpdateRequest> findAllAipDistinctByAipIdInAndState(@Param("ids") List<Long> aipIds, @Param("state") String state);
 }

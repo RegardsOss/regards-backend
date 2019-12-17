@@ -24,9 +24,11 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,6 +53,9 @@ public class AIPUpdateRequestService {
     @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
 
+    @Autowired
+    private IRequestService requestService;
+
     /**
      * Creates new {@link AIPUpdateRequest}s for the given {@link AIPEntity}s and each given {@link AbstractAIPUpdateTask}
      *
@@ -64,31 +69,26 @@ public class AIPUpdateRequestService {
         // Create the list of AIP id (and not aipId!)
         List<Long> runningAIPIds = runningRequests.stream().map(wr -> wr.getAip().getId()).collect(Collectors.toList());
 
+        List<AbstractRequest> requests = new ArrayList<>();
         for (AIPEntity aip : aips) {
             // Create the request as pending if there is already a running request
             boolean isPending = runningAIPIds.contains(aip.getId());
-            List<AIPUpdateRequest> requests = AIPUpdateRequest.build(aip, updateTasks, isPending);
-            aipUpdateRequestRepository.saveAll(requests);
+            List<AIPUpdateRequest> generatedRequests = AIPUpdateRequest.build(aip, updateTasks, isPending);
+            for (AIPUpdateRequest request : generatedRequests) {
+                requests.add(request);
+            }
         }
+        requestService.scheduleRequests(requests);
     }
 
     /**
      * Creates new {@link AIPUpdateRequest}s for the given {@link AIPEntity} and each given {@link AbstractAIPUpdateTask}
      *
-     * @param aips {@link AIPEntity} to update
+     * @param aip {@link AIPEntity} to update
      * @param updateTasks  {@link AbstractAIPUpdateTask}s update tasks
      */
     public void create(AIPEntity aip, Collection<AbstractAIPUpdateTask> updateTasks) {
-        // Test if there is some AIPs referenced by some running requests
-        List<AIPUpdateRequest> runningRequests = aipUpdateRequestRepository
-                .findRunningRequestAndAipIdIn(Lists.newArrayList(aip.getId()));
-        // Create the list of AIP id (and not aipId!)
-        List<Long> runningAIPIds = runningRequests.stream().map(wr -> wr.getAip().getId()).collect(Collectors.toList());
-
-        // Create the request as pending if there is already a running request
-        boolean isPending = runningAIPIds.contains(aip.getId());
-        List<AIPUpdateRequest> requests = AIPUpdateRequest.build(aip, updateTasks, isPending);
-        aipUpdateRequestRepository.saveAll(requests);
+        create(Lists.newArrayList(aip), updateTasks);
     }
 
     /**
@@ -110,7 +110,7 @@ public class AIPUpdateRequestService {
      * @return matching {@link AIPUpdateRequest}s
      */
     @Transactional(readOnly = true)
-    public Page<AIPUpdateRequest> search(InternalRequestStep requestState, Pageable page) {
+    public Page<AIPUpdateRequest> search(InternalRequestState requestState, Pageable page) {
         return aipUpdateRequestRepository.findAllByState(requestState, page);
     }
 
@@ -118,13 +118,12 @@ public class AIPUpdateRequestService {
      * Allow to update state of given {@link AIPUpdateRequest}s
      *
      * @param requests {@link AIPUpdateRequest}s to update
-     * @param state new {@link InternalRequestStep} to set for each request
+     * @param state new {@link InternalRequestState} to set for each request
      */
-    public void updateState(Collection<AIPUpdateRequest> requests, InternalRequestStep state) {
+    public void updateState(Collection<AIPUpdateRequest> requests, InternalRequestState state) {
         if ((requests != null) && !requests.isEmpty()) {
             abstractRequestRepository.updateStates(Lists
                     .newArrayList(requests.stream().map(AIPUpdateRequest::getId).collect(Collectors.toList())), state);
         }
     }
-
 }

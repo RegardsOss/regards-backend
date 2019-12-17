@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,7 +54,7 @@ public class SearchSIPsParameters {
 
     private String processing;
 
-    private Set<String> storages = Sets.newHashSet();
+    private EntityType ipType;
 
     private Set<String> providerIds = Sets.newHashSet();
 
@@ -117,23 +118,6 @@ public class SearchSIPsParameters {
         return this;
     }
 
-    public SearchSIPsParameters withStorage(String storage) {
-        this.storages.add(storage);
-        return this;
-    }
-
-    public SearchSIPsParameters withStorages(String... storages) {
-        this.storages.addAll(Arrays.asList(storages));
-        return this;
-    }
-
-    public SearchSIPsParameters withStorages(Collection<String> storages) {
-        if ((storages != null) && !storages.isEmpty()) {
-            this.storages.addAll(storages);
-        }
-        return this;
-    }
-
     public SearchSIPsParameters withCategory(String category) {
         this.categories.add(category);
         return this;
@@ -168,6 +152,11 @@ public class SearchSIPsParameters {
         return this;
     }
 
+    public SearchSIPsParameters withIpType(EntityType ipType) {
+        this.ipType = ipType;
+        return this;
+    }
+
     public OffsetDateTime getFrom() {
         return from;
     }
@@ -190,22 +179,6 @@ public class SearchSIPsParameters {
 
     public void setSession(String session) {
         this.session = session;
-    }
-
-    public String getProcessing() {
-        return processing;
-    }
-
-    public void setProcessing(String processing) {
-        this.processing = processing;
-    }
-
-    public Set<String> getStorages() {
-        return storages;
-    }
-
-    public void setStorages(Set<String> storages) {
-        this.storages = storages;
     }
 
     public Set<String> getCategories() {
@@ -238,5 +211,21 @@ public class SearchSIPsParameters {
 
     public void setProviderIds(Set<String> providerIds) {
         this.providerIds = providerIds;
+    }
+
+    public EntityType getIpType() {
+        return ipType;
+    }
+
+    public void setIpType(EntityType ipType) {
+        this.ipType = ipType;
+    }
+
+    public String getProcessing() {
+        return processing;
+    }
+
+    public void setProcessing(String processing) {
+        this.processing = processing;
     }
 }

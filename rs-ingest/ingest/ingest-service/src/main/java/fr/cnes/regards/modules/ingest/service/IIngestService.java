@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.ingest.service;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
-import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import java.io.InputStream;
@@ -72,9 +71,4 @@ public interface IIngestService {
      */
     RequestInfoDto handleSIPCollection(InputStream input) throws ModuleException;
 
-    /**
-     * Register deletion request from flow item
-     * @param request to register as deletion request
-     */
-    OAISDeletionRequestDto registerOAISDeletionRequest(OAISDeletionRequestDto request) throws ModuleException;
 }

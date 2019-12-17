@@ -18,30 +18,39 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
+import javax.validation.constraints.NotNull;
+
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
-import java.util.Set;
 
 /**
- * @author Léo Mieulet
+ * Payload for {@link OAISDeletionRequest}
+ *
+ * @author Sébastien Binda
  */
-public class OAISDeletionPayload {
+public class OAISDeletionPayload extends AbstractSearchAIPsParameters<OAISDeletionPayload> {
 
+    @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_MODE)
     private SessionDeletionMode deletionMode;
 
-    private SessionDeletionSelectionMode selectionMode;
-
-    private Boolean deletePhysicalFiles = true;
+    private boolean deleteFiles;
 
     /**
-     * URN of the SIP(s) to preserve or remove in the specified session (according to {@link #selectionMode})
+     * True when the request wait a storage event
      */
-    private Set<String> sipIds;
+    private boolean waitStorageAnswer = false;
 
     /**
-     * Provider id(s) of the SIP to preserve or remove in the specified session (according to {@link #selectionMode})
+     * True when the storage answer have been received
      */
-    private Set<String> providerIds;
+    private boolean requestFilesDeleted = false;
+
+    /**
+     * All internal request steps including local and remote ones
+     */
+    @NotNull(message = "Deletion request step is required")
+    private DeletionRequestStep step;
 
     public SessionDeletionMode getDeletionMode() {
         return deletionMode;
@@ -51,35 +60,39 @@ public class OAISDeletionPayload {
         this.deletionMode = deletionMode;
     }
 
-    public SessionDeletionSelectionMode getSelectionMode() {
-        return selectionMode;
+    public static OAISDeletionPayload build(SessionDeletionMode deletionMode, boolean deleteFiles) {
+        OAISDeletionPayload odp = new OAISDeletionPayload();
+        odp.setDeletionMode(deletionMode);
+        odp.step = DeletionRequestStep.INITIAL;
+        odp.deleteFiles = deleteFiles;
+        return odp;
     }
 
-    public void setSelectionMode(SessionDeletionSelectionMode selectionMode) {
-        this.selectionMode = selectionMode;
+    public DeletionRequestStep getStep() {
+        return step;
     }
 
-    public Boolean getDeletePhysicalFiles() {
-        return deletePhysicalFiles;
+    public void setStep(DeletionRequestStep step) {
+        this.step = step;
     }
 
-    public void setDeletePhysicalFiles(Boolean deletePhysicalFiles) {
-        this.deletePhysicalFiles = deletePhysicalFiles;
+    public boolean isDeleteFiles() {
+        return deleteFiles;
     }
 
-    public Set<String> getSipIds() {
-        return sipIds;
+    public void setWaitStorageAnswer() {
+        waitStorageAnswer = true;
     }
 
-    public void setSipIds(Set<String> sipIds) {
-        this.sipIds = sipIds;
+    public boolean isRequestFilesDeleted() {
+        return requestFilesDeleted;
     }
 
-    public Set<String> getProviderIds() {
-        return providerIds;
+    public void setRequestFilesDeleted() {
+        this.requestFilesDeleted = true;
     }
 
-    public void setProviderIds(Set<String> providerIds) {
-        this.providerIds = providerIds;
+    public void setDeleteFiles(boolean deleteFiles) {
+        this.deleteFiles = deleteFiles;
     }
 }

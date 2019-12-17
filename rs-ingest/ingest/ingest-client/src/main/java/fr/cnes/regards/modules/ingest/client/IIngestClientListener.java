@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
+import java.util.Collection;
+
 /**
  * Callback listener for ingestion request : {@link IIngestClient#ingest(fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto, fr.cnes.regards.modules.ingest.dto.sip.SIP)}
  *
@@ -27,25 +29,25 @@ public interface IIngestClientListener {
 
     /**
      * Callback on request denied
-     * @param info {@link RequestInfo} to track request
+     * @param infos {@link RequestInfo}s to track request
      */
-    void onDenied(RequestInfo info);
+    void onDenied(Collection<RequestInfo> infos);
 
     /**
      * Callback on request granted
-     * @param info {@link RequestInfo} to track request
+     * @param infos {@link RequestInfo}s to track request
      */
-    void onGranted(RequestInfo info);
+    void onGranted(Collection<RequestInfo> infos);
 
     /**
      * Callback on request error
-     * @param info {@link RequestInfo} to track request
+     * @param infos {@link RequestInfo}s to track request
      */
-    void onError(RequestInfo info);
+    void onError(Collection<RequestInfo> infos);
 
     /**
      * Callback on request success
-     * @param info {@link RequestInfo} to track request
+     * @param infos {@link RequestInfo}s to track request
      */
-    void onSuccess(RequestInfo info);
+    void onSuccess(Collection<RequestInfo> infos);
 }

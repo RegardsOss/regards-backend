@@ -19,8 +19,12 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
+import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
@@ -30,12 +34,9 @@ import java.nio.file.Paths;
 import java.util.List;
 import org.junit.After;
 import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import org.springframework.http.MediaType;
 
 /**
@@ -44,6 +45,8 @@ import org.springframework.http.MediaType;
  * @author Marc SORDI
  */
 public abstract class IngestMultitenantServiceTest extends AbstractMultitenantServiceTest {
+
+    protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     protected static final long TWO_SECONDS = 2000;
 
@@ -117,6 +120,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
                 StorageMetadata.build(storage));
         ingestServiceTest.sendIngestRequestEvent(sip, mtd);
     }
+
 
 
 }

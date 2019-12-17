@@ -28,20 +28,17 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IStorageDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
-import fr.cnes.regards.modules.storagelight.client.FileRequestGroupEventHandler;
-import fr.cnes.regards.modules.storagelight.domain.event.FileRequestsGroupEvent;
+import fr.cnes.regards.modules.storage.client.FileRequestGroupEventHandler;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,17 +65,6 @@ public class IngestServiceTest {
 
     @Autowired
     private IJobInfoRepository jobInfoRepo;
-
-    @Autowired
-    private IStorageDeletionRequestRepository storageDeletionRequestRepository;
-
-    @Autowired
-    private IOAISDeletionRequestRepository deletionRequestRepository;
-
-    @Autowired
-    private IAIPUpdateRequestRepository aipUpdateRequestRepository;
-
-
 
     @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
@@ -135,7 +121,7 @@ public class IngestServiceTest {
                 vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
                 amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
             } catch (AmqpIOException e) {
-                //todo
+                LOGGER.warn("Failed to clean AMQP queues");
             } finally {
                 vhostAdmin.unbind();
             }
@@ -166,19 +152,45 @@ public class IngestServiceTest {
             } else {
                 sipCount = sipRepository.count();
             }
-            LOGGER.debug("{} SIP(s) created in database", sipCount);
-            if (sipCount == expectedSips) {
+            LOGGER.info("{} SIP(s) created in database", sipCount);
+            if (timerStop(expectedSips, end, sipCount)) {
                 break;
             }
-            long now = System.currentTimeMillis();
-            if (end > now) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Assert.fail("Thread interrupted");
-                }
-            } else {
-                Assert.fail("Timeout");
+        } while (true);
+    }
+
+    private boolean timerStop(long expectedSips, long end, long sipCount) {
+        if (sipCount == expectedSips) {
+            return true;
+        }
+        long now = System.currentTimeMillis();
+        if (end > now) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Assert.fail("Thread interrupted");
+            }
+        } else {
+            Assert.fail("Timeout");
+        }
+        return false;
+    }
+
+    /**
+     * Helper method to wait for DB ingestion
+     * @param expectedTasks expected count of task in db
+     * @param timeout in ms
+     * @throws InterruptedException
+     */
+    public void waitForRequestReach(long expectedTasks, long timeout) {
+        long end = System.currentTimeMillis() + timeout;
+        // Wait
+        long taskCount;
+        do {
+            taskCount = abstractRequestRepository.count();
+            LOGGER.debug("{} UpdateRequest(s) created in database", taskCount);
+            if (timerStop(expectedTasks, end, taskCount)) {
+                break;
             }
         } while (true);
     }

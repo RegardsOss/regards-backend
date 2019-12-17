@@ -18,10 +18,20 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
+import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
+import fr.cnes.regards.modules.ingest.service.IIngestService;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import java.io.IOException;
-
-import javax.validation.Valid;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,21 +51,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
-import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
-import fr.cnes.regards.modules.ingest.service.IIngestService;
-import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
  * REST API for managing SIP
@@ -78,8 +73,6 @@ public class SIPController implements IResourceController<SIPEntity> {
     public static final String RETRY_PATH = "/retry";
 
     public static final String IMPORT_PATH = "/import";
-
-    public static final String DELETE_PATH = "/delete";
 
     public static final String REQUEST_PARAM_PROVIDER_ID = "providerId";
 
@@ -180,42 +173,11 @@ public class SIPController implements IResourceController<SIPEntity> {
         return new ResponseEntity<>(toResource(sip), HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Delete by session")
-    @RequestMapping(value = DELETE_PATH, method = RequestMethod.POST)
-    public ResponseEntity<OAISDeletionRequestDto> deleteBySession(
-            @Valid @RequestBody OAISDeletionRequestDto deletionRequest) throws ModuleException {
-        OAISDeletionRequestDto response = ingestService.registerOAISDeletionRequest(deletionRequest);
-        return ResponseEntity.ok(response);
-    }
-
-    @ResourceAccess(description = "Retry SIP ingestion by its sipId.")
-    @RequestMapping(value = SIPID_PATH + RETRY_PATH, method = RequestMethod.POST)
-    public ResponseEntity<Void> retrySipEntityIngest(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
-            throws ModuleException {
-        // TODO
-        // ingestService.retryIngest(UniformResourceName.fromString(sipId));
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
     @Override
     public Resource<SIPEntity> toResource(SIPEntity sipEntity, Object... pExtras) {
         final Resource<SIPEntity> resource = resourceService.toResource(sipEntity);
         resourceService.addLink(resource, this.getClass(), "getSipEntity", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
-        // FIXME
-        //        try {
-        //            if (sipService.isDeletable(sipEntity.getSipIdUrn())) {
-        //                resourceService.addLink(resource, this.getClass(), "deleteSipEntity", LinkRels.DELETE,
-        //                                        MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
-        //            }
-        //            if (ingestService.isRetryable(sipEntity.getSipIdUrn())) {
-        //                resourceService.addLink(resource, this.getClass(), "retrySipEntityIngest", "retry",
-        //                                        MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
-        //            }
-        //        } catch (EntityNotFoundException e) {
-        //            LOGGER.error(e.getMessage(), e);
-        //        }
-
         return resource;
     }
 }

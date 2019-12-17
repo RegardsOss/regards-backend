@@ -36,11 +36,7 @@ public enum SIPState implements ISipState {
     /**
      * SIP is deleted but we still keep it in database
      */
-    DELETED,
-    /**
-     * SIP has encountered an issue
-     */
-    ERROR;
+    DELETED;
 
     @Override
     public String getName() {

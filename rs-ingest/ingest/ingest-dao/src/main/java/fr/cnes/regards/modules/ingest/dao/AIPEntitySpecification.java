@@ -18,19 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import java.util.List;
 import java.util.Set;
 
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
 
 /**
  * Specification class to filter DAO searches on {@link AIPEntity} entities
@@ -42,7 +46,7 @@ public final class AIPEntitySpecification {
         throw new IllegalStateException("Utility class");
     }
 
-    public static Specification<AIPEntity> searchAll(SearchAIPsParameters filters, Pageable page) {
+    public static <T> Specification<T> searchAll(AbstractSearchAIPsParameters filters, Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (filters.getState() != null) {
@@ -54,11 +58,29 @@ public final class AIPEntitySpecification {
             if (filters.getLastUpdate().getTo() != null) {
                 predicates.add(cb.lessThanOrEqualTo(root.get("lastUpdate"), filters.getLastUpdate().getTo()));
             }
+            if ((filters.getStorages() != null) && !filters.getStorages().isEmpty()) {
+                Path<Object> attributeRequeted = root.get("storages");
+                predicates.add(SpecificationUtils
+                        .buildPredicateIsJsonbArrayContainingOneOfElement(attributeRequeted,
+                                                                          Lists.newArrayList(filters.getStorages()),
+                                                                          cb));
+            }
+
+            List<String> aipIds = filters.getAipIds();
+            if ((aipIds != null) && !aipIds.isEmpty()) {
+                Set<Predicate> sipIdsPredicates = Sets.newHashSet();
+                for (String aipId : aipIds) {
+                    if (filters.getSelectionMode() == SearchSelectionMode.INCLUDE) {
+                        sipIdsPredicates.add(cb.equal(root.get("aipId"), aipId));
+                    } else {
+                        sipIdsPredicates.add(cb.notEqual(root.get("aipId"), aipId));
+                    }
+                }
+                predicates.add(cb.or(sipIdsPredicates.toArray(new Predicate[sipIdsPredicates.size()])));
+            }
             predicates.addAll(OAISEntitySpecification
-                    .buildCommonPredicate(root, cb, filters.getTags(), filters.getSessionOwner(),
-                                          filters.getSession(), filters.getProviderIds(), filters.getStorages(),
-                                          filters.getCategories()));
-            query.orderBy(cb.desc(root.get("creationDate")));
+                    .buildCommonPredicate(root, cb, filters.getTags(), filters.getSessionOwner(), filters.getSession(),
+                            filters.getIpType(), filters.getProviderIds(), filters.getCategories()));
 
             // Add order
             Sort.Direction defaultDirection = Sort.Direction.ASC;

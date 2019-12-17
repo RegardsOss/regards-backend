@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,23 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.request;
+package fr.cnes.regards.modules.ingest.domain.mapper;
 
-public enum InternalRequestStep {
-    /**
-     * When the request is ready to be processed
-     */
-    CREATED,
-    /**
-     * When the request cannot be processed for now
-     */
-    BLOCKED,
-    /**
-     * When the request is running
-     */
-    RUNNING,
-    /**
-     * When the request stopped with an error
-     */
-    ERROR,
+import org.mapstruct.Mapper;
+
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorPayload;
+import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
+
+/**
+ * @author Marc SORDI
+ * @author Léo Mieulet
+ * @author Sébastien Binda
+ */
+@Mapper(componentModel = "spring")
+public interface IOAISDeletionPayloadMapper {
+
+    OAISDeletionPayloadDto entityToDto(OAISDeletionCreatorPayload request);
+
+    OAISDeletionCreatorPayload dtoToEntity(OAISDeletionPayloadDto dto);
 }

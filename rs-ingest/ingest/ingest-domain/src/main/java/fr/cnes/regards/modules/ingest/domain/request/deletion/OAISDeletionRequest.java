@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,23 +18,33 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionSelectionMode;
-import java.util.Set;
+import java.time.OffsetDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
+
 /**
- * Macro request that keeps info about a "massive" suppression of OAIS entities
- * @author Marc SORDI
+ * Request to handle deletion of an OAIS product (sip/aips)
+ *
+ * @author Léo Mieulet
+ * @author Sébastien Binda
+ *
  */
 @Entity(name = RequestTypeConstant.OAIS_DELETION_VALUE)
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
@@ -47,56 +57,59 @@ public class OAISDeletionRequest extends AbstractRequest {
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private OAISDeletionPayload config;
 
-    public OAISDeletionRequest() {
-        this.config = new OAISDeletionPayload();
+    /**
+     * AIP to delete
+     */
+    @ManyToOne
+    @JoinColumn(name = "aip_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_update_request_aip"))
+    private AIPEntity aip;
+
+    public static OAISDeletionRequest build(AIPEntity aipToDelete, SessionDeletionMode deletionMode,
+            boolean deleteFiles) {
+        OAISDeletionRequest odr = new OAISDeletionRequest();
+        odr.aip = aipToDelete;
+        odr.config = OAISDeletionPayload.build(deletionMode, deleteFiles);
+        odr.setCreationDate(OffsetDateTime.now());
+        odr.setSessionOwner(aipToDelete.getSessionOwner());
+        odr.setSession(aipToDelete.getSession());
+        odr.setProviderId(aipToDelete.getProviderId());
+        odr.setDtype(RequestTypeConstant.OAIS_DELETION_VALUE);
+        odr.setState(InternalRequestState.TO_SCHEDULE);
+        return odr;
     }
 
-    public OAISDeletionPayload getConfig() {
-        return config;
+    public DeletionRequestStep getStep() {
+        return config.getStep();
     }
 
-    public void setConfig(OAISDeletionPayload config) {
-        this.config = config;
+    public void setStep(DeletionRequestStep step) {
+        config.setStep(step);
     }
 
+    public AIPEntity getAip() {
+        return aip;
+    }
+
+    public boolean isDeleteFiles() {
+        return config.isDeleteFiles();
+    }
+    public void setDeleteFiles(boolean deleteFiles) {
+        config.setDeleteFiles(deleteFiles);
+    }
 
     public SessionDeletionMode getDeletionMode() {
         return config.getDeletionMode();
     }
 
-    public void setDeletionMode(SessionDeletionMode deletionMode) {
-        config.setDeletionMode(deletionMode);
+    public void setWaitStorageAnswer() {
+        config.setWaitStorageAnswer();
     }
 
-    public SessionDeletionSelectionMode getSelectionMode() {
-        return config.getSelectionMode();
+    public boolean isRequestFilesDeleted() {
+        return config.isRequestFilesDeleted();
     }
 
-    public void setSelectionMode(SessionDeletionSelectionMode selectionMode) {
-        config.setSelectionMode(selectionMode);
-    }
-
-    public Boolean getDeletePhysicalFiles() {
-        return config.getDeletePhysicalFiles();
-    }
-
-    public void setDeletePhysicalFiles(Boolean deletePhysicalFiles) {
-        config.setDeletePhysicalFiles(deletePhysicalFiles);
-    }
-
-    public Set<String> getSipIds() {
-        return config.getSipIds();
-    }
-
-    public void setSipIds(Set<String> sipIds) {
-        config.setSipIds(sipIds);
-    }
-
-    public Set<String> getProviderIds() {
-        return config.getProviderIds();
-    }
-
-    public void setProviderIds(Set<String> providerIds) {
-        config.setProviderIds(providerIds);
+    public void setRequestFilesDeleted() {
+        config.setRequestFilesDeleted();
     }
 }

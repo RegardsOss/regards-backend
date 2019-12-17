@@ -18,18 +18,31 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
-import javax.validation.constraints.NotNull;
-
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 
 /**
+ * Payload for {@link OAISDeletionCreatorRequest}
+ *
  * @author Léo Mieulet
+ * @author Sébastien Binda
  */
-public class StorageDeletionPayload {
+public class OAISDeletionCreatorPayload extends AbstractSearchAIPsParameters<OAISDeletionCreatorPayload> {
 
-    @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_MODE)
+    /**
+     * This boolean is sent to storage
+     */
+    private Boolean deletePhysicalFiles = true;
+
     private SessionDeletionMode deletionMode;
+
+    public Boolean getDeletePhysicalFiles() {
+        return deletePhysicalFiles;
+    }
+
+    public void setDeletePhysicalFiles(Boolean deletePhysicalFiles) {
+        this.deletePhysicalFiles = deletePhysicalFiles;
+    }
 
     public SessionDeletionMode getDeletionMode() {
         return deletionMode;
@@ -37,11 +50,5 @@ public class StorageDeletionPayload {
 
     public void setDeletionMode(SessionDeletionMode deletionMode) {
         this.deletionMode = deletionMode;
-    }
-
-    public static StorageDeletionPayload build(SessionDeletionMode deletionMode) {
-        StorageDeletionPayload sdp = new StorageDeletionPayload();
-        sdp.setDeletionMode(deletionMode);
-        return sdp;
     }
 }

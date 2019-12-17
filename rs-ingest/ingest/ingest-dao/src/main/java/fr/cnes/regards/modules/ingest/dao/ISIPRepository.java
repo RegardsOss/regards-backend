@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -35,9 +34,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 /**
  * {@link SIPEntity} repository
@@ -49,13 +45,6 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
 
     @Override
     Optional<SIPEntity> findById(Long id);
-
-    /**
-     * Retrieve all {@link SIPEntity} for the given ids
-     * @param ids
-     * @return {@link SIPEntity}s
-     */
-    Set<SIPEntity> findByIdIn(Collection<Long> ids);
 
     /**
      * Find last ingest SIP with specified SIP ID according to ingest date
@@ -81,81 +70,9 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     }
 
     /**
-     * Find all {@link SIPEntity}s by given {@link SIPState}
-     * @param state {@link SIPState}
-     * @return {@link SIPEntity}s
-     */
-    Collection<SIPEntity> findAllByState(SIPState state);
-
-    /**
      * Find one {@link SIPEntity} by its unique ipId
      */
     Optional<SIPEntity> findOneBySipId(String sipId);
-
-    /**
-     * Retrieve all {@link SIPEntity} for the given ipIds
-     * @param sipIds
-     * @return {@link SIPEntity}s
-     */
-    Collection<SIPEntity> findBySipIdIn(Collection<String> sipIds);
-
-    /**
-     * Retrieve all {@link SIPEntity} associated to the given session source/name.
-     * @param sessionOwner {@link String}
-     * @param session {@link String}
-     * @return {@link SIPEntity}s
-     */
-    Collection<SIPEntity> findByIngestMetadataSessionOwnerAndIngestMetadataSession(String sessionOwner, String session);
-
-    /**
-     * Find all {@link SIPEntity}s by given {@link SIPState}.
-     * Unlike findAllByState, the possibly huge parameter rawSip is not loaded.
-     * @param state {@link SIPState}
-     * @return {@link SIPEntity}s
-     */
-    List<SIPIdNProcessing> findIdAndIngestMetadataByState(SIPState state);
-
-    /**
-     * Update state of a {@link SIPEntity}
-     * @param state new {@link SIPState}
-     * @param id id of the {@link SIPEntity} to update
-     */
-    @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("UPDATE SIPEntity s set s.state = :state where s.id = :id")
-    void updateSIPEntityState(@Param("state") SIPState state, @Param("id") Long id);
-
-    /**
-     * Update state for a set of {@link SIPEntity}
-     */
-    @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("UPDATE SIPEntity s set s.state = :state where s.id in (:ids)")
-    void updateSIPEntitiesState(@Param("state") SIPState state, @Param("ids") Collection<Long> ids);
-
-    /**
-     * Switch state for a given session
-     */
-    //TODO add session
-    @Modifying
-    @Query("UPDATE SIPEntity s set s.state = :newState where s.state = :state AND s.ingestMetadata.sessionOwner = :session")
-    void updateSIPEntityStateByStateAndSession(@Param("newState") SIPState state, @Param("state") SIPState filterState,
-            @Param("session") String session);
-
-    // FIXME
-    //    /**
-    //     * Count number of {@link SIPEntity} associated to a given session
-    //     * @param Cl
-    //     * @return number of {@link SIPEntity}
-    //     */
-    //    //TODO
-    //    long countByIngestMetadataSessionSource(String sessionOwner);
-    //
-    //    /**
-    //     * Count number of {@link SIPEntity} associated to a given session and in a specific given {@link SIPState}
-    //     * @param sessionId
-    //     * @return number of {@link SIPEntity}
-    //     */
-    //    //TODO add session name
-    //    long countByIngestMetadataSessionSourceAndStateIn(String sessionId, Collection<SIPState> states);
 
     /**
      * Check if SIP already ingested
@@ -177,23 +94,11 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     }
 
     /**
-     * Find all SIP version of a provider id
-     * @param providerId prodiver id
-     * @return all SIP versions of a provider id
-     */
-    default Collection<SIPEntity> getAllVersions(String providerId) {
-        return findAllByProviderIdOrderByVersionAsc(providerId);
-    }
-
-    /**
      * Check if SIP is already ingested based on its checksum
      */
     default boolean isAlreadyIngested(String checksum) {
         return countByChecksum(checksum) != 0;
     }
-
-    Page<SIPEntity> findPageByState(SIPState state, Pageable pageable);
-
     default Page<SIPEntity> loadAll(Specification<SIPEntity> search, Pageable pageable) {
         // as a Specification is used to constrain the page, we cannot simply ask for ids with a query
         // to mimic that, we are querying without any entity graph to extract ids

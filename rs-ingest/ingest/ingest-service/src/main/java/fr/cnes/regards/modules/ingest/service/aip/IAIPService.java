@@ -18,27 +18,25 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 
 /**
  * AIP Service interface. Service to handle business around {@link AIPEntity}s
@@ -55,17 +53,17 @@ public interface IAIPService {
     List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips);
 
     /**
-     * Mark all {@link AIPEntity} linked to this {@link SIPEntity#getSipId()} as deleted and send events to remove
-     * all files associated to these deleted AIPs
-     * @return the request group id sent to storage
+     * Send a group of event to remove all referenced files, including manifests, that any {@link AIPEntity}
+     * linked to the provided {@link SIPEntity#getSipId()}
+     * Update the provided request in the same transaction
      */
-    String scheduleAIPEntityDeletion(String sipId);
+    void scheduleLinkedFilesDeletion(OAISDeletionRequest request);
 
     /**
-     * Create an AIPUpdatesCreatorRequest and
-     * schedule a job to select all AIPs matching provided criteria and save the associated task to run with
+     * Save an AIPUpdatesCreatorRequest and try to schedule it in a job
+     * @param params the AIPUpdateParametersDto payload
      */
-    void scheduleAIPEntityUpdate(AIPUpdateParametersDto params);
+    void registerUpdatesCreator(AIPUpdateParametersDto params);
 
     /**
      * Remove all {@link AIPEntity} linked to an {@link SIPEntity#getSipId()}
@@ -89,12 +87,14 @@ public interface IAIPService {
      * @throws NoSuchAlgorithmException
      * @throws IOException
      */
-    public String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException;
+    String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException;
 
     /**
      * Retrieve all {@link AIPEntity}s matching parameters.
      */
-    Page<AIPEntity> search(SearchAIPsParameters filters, Pageable pageable);
+    Page<AIPEntity> findByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable);
+
+    Page<AIPEntityLight> findLightByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable);
 
     /**
      * Compute the checksum of the AIP and save it
@@ -107,23 +107,21 @@ public interface IAIPService {
      * @param filters
      * @return list of tags
      */
-    List<String> searchTags(SearchFacetsAIPsParameters filters);
+    List<String> findTags(SearchFacetsAIPsParameters filters);
 
     /**
      * Retrieve all storages used by a set of AIPS matching provided filters
      * @param filters
      * @return list of storage business id
      */
-    List<String> searchStorages(SearchFacetsAIPsParameters filters);
+    List<String> findStorages(SearchFacetsAIPsParameters filters);
 
     /**
      * Retrieve all storages used by a set of AIPS matching provided filters
      * @param filters
      * @return list of storage business id
      */
-    List<String> searchCategories(SearchFacetsAIPsParameters filters);
-
-    void setAipToStored(UniformResourceName aipId, AIPState state);
+    List<String> findCategories(SearchFacetsAIPsParameters filters);
 
     /**
      * Search for a {@link AIPEntity} by its ipId
@@ -135,9 +133,7 @@ public interface IAIPService {
      * @param sipId
      * @return
      */
-    Set<AIPEntity> getAips(String sipId);
-
-    void saveError(AIPEntity aipEntity, String errorMessage);
+    Set<AIPEntity> findByAipIds(String sipId);
 
     List<AIPEntity> saveAll(Collection<AIPEntity> updates);
 
@@ -146,5 +142,6 @@ public interface IAIPService {
      * @param aipIds
      * @return
      */
-    Collection<AIPEntity> getAips(Collection<String> aipIds);
+    Collection<AIPEntity> findByAipIds(Collection<String> aipIds);
+
 }

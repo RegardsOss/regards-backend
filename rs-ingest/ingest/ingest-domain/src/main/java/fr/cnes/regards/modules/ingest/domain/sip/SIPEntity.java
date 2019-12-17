@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.ingest.domain.sip;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
@@ -55,7 +55,6 @@ import org.hibernate.annotations.TypeDefs;
 @Entity
 @Table(name = "t_sip",
         indexes = { @Index(name = "idx_sip_id", columnList = "provider_id,sipId,checksum"),
-                @Index(name = "idx_sip_ingest_chain", columnList = "ingest_chain"),
                 @Index(name = "idx_sip_state", columnList = "state"),
                 @Index(name = "idx_sip_providerId", columnList = "provider_id"),
                 @Index(name = "idx_sip_creation_date", columnList = "creation_date"),
@@ -151,6 +150,7 @@ public class SIPEntity extends AbstractOAISEntity {
 
     public void setSip(SIP sip) {
         this.sip = sip;
+        this.setIpType(sip.getIpType());
     }
 
     public Long getId() {
@@ -206,7 +206,11 @@ public class SIPEntity extends AbstractOAISEntity {
         sipEntity.setCreationDate(OffsetDateTime.now());
         sipEntity.setState(state);
         sipEntity.setSip(sip);
-        sipEntity.setIngestMetadata(metadata);
+        // Extract from IngestMetadata
+        sipEntity.setSession(metadata.getSession());
+        sipEntity.setSessionOwner(metadata.getSessionOwner());
+        sipEntity.setCategories(metadata.getCategories());
+
         sipEntity.setVersion(version);
         // Extracted from SIP for search purpose
         sipEntity.setTags(new HashSet<>(sip.getTags()));

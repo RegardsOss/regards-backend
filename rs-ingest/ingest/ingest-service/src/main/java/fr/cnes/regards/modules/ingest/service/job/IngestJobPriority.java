@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.service.job;
 /**
  * Ingest jobs priority management
  * @author Marc Sordi
+ * @author Sébastien Binda
  *
  */
 public enum IngestJobPriority {
@@ -58,6 +59,29 @@ public enum IngestJobPriority {
     },
 
     AIP_SAVE_METADATA_RUNNER_PRIORITY {
+
+        @Override
+        public int getPriority() {
+            return 0;
+        }
+    },
+    OAIS_DELETION_JOB_PRIORITY {
+
+        @Override
+        public int getPriority() {
+            return 0;
+        }
+    },
+
+    REQUEST_DELETION_JOB_PRIORITY {
+
+        @Override
+        public int getPriority() {
+            return 0;
+        }
+    },
+
+    REQUEST_RETRY_JOB_PRIORITY {
 
         @Override
         public int getPriority() {

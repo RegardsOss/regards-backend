@@ -18,19 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.StringJoiner;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-
 import com.google.gson.reflect.TypeToken;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -41,8 +29,10 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.step.GenerationStep;
@@ -53,6 +43,16 @@ import fr.cnes.regards.modules.ingest.service.chain.step.PreprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 /**
  * This job manages processing chain for AIP generation from a SIP
@@ -79,6 +79,9 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     @Autowired
     private INotificationClient notificationClient;
 
+    @Autowired
+    private SessionNotifier sesssionNotifier;
+
     private IngestProcessingChain ingestChain;
 
     private List<IngestRequest> requests;
@@ -86,7 +89,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     /**
      * The request we are currently processing
      */
-    private IngestRequest currentRequest;
+    private IngestRequest request;
 
     /**
      * The SIP entity we are currently working on
@@ -135,7 +138,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         IProcessingStep<SIP, Void> validationStep = new ValidationStep(this, ingestChain);
         beanFactory.autowireBean(validationStep);
         // Step 3 : required AIP generation
-        IProcessingStep<SIP, List<AIP>> generationStep = new GenerationStep(this, ingestChain);
+        IProcessingStep<SIPEntity, List<AIP>> generationStep = new GenerationStep(this, ingestChain);
         beanFactory.autowireBean(generationStep);
         // Step 4 : optional AIP tagging
         IProcessingStep<List<AIP>, Void> taggingStep = new TaggingStep(this, ingestChain);
@@ -145,7 +148,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         beanFactory.autowireBean(postprocessingStep);
 
         // Internal final step
-        IProcessingStep<List<AIP>, Void> finalStep = new InternalFinalStep(this, ingestChain);
+        IProcessingStep<List<AIP>, List<AIPEntity>> finalStep = new InternalFinalStep(this, ingestChain);
         beanFactory.autowireBean(finalStep);
 
         long start = System.currentTimeMillis();
@@ -153,10 +156,13 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         int sipInError = 0;
 
         for (IngestRequest request : requests) {
-            currentRequest = request;
+            this.request = request;
+            // We can't use {@link IngestRequest.getAips()} because this is a lazy list not fetched here
+            List<AIPEntity> aipEntities = new ArrayList<>();
             try {
-
                 long start2 = System.currentTimeMillis();
+                sesssionNotifier.productGenerationStart(request.getMetadata().getSessionOwner(),
+                                                        request.getMetadata().getSession());
 
                 // Internal preparation step (no plugin involved)
                 currentEntity = initStep.execute(request);
@@ -169,7 +175,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                 // Step 2 : required validation
                 validationStep.execute(sip);
                 // Step 3 : required AIP generation
-                List<AIP> aips = generationStep.execute(sip);
+                List<AIP> aips = generationStep.execute(currentEntity);
                 // Step 4 : optional AIP tagging
                 taggingStep.execute(aips);
                 // Step 5 : optional postprocessing
@@ -177,23 +183,24 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
                 // Internal finalization step (no plugin involved)
                 // Do all persistence actions in this step
-                finalStep.execute(aips);
+                aipEntities = finalStep.execute(aips);
 
                 sipIngested++;
-                LOGGER.debug("{}SIP \"{}\" ingested in {} ms", INFO_TAB, currentRequest.getSip().getId(),
+                LOGGER.debug("{}SIP \"{}\" ingested in {} ms", INFO_TAB, request.getSip().getId(),
                              System.currentTimeMillis() - start2);
 
             } catch (ProcessingStepException e) {
-
-                LOGGER.error("SIP \"{}\" ingestion error", currentRequest.getSip().getId());
-
+                LOGGER.error("SIP \"{}\" ingestion error", request.getSip().getId());
                 sipInError++;
                 String msg = String.format("Error while ingesting SIP \"%s\" in request \"%s\"",
-                                           currentRequest.getSip().getId(), currentRequest.getRequestId());
+                                           request.getSip().getId(), request.getRequestId());
                 notifMsg.add(msg);
                 LOGGER.error(msg);
                 LOGGER.error("Ingestion step error", e);
                 // Continue with following SIPs
+            } finally {
+                sesssionNotifier.productGenerationEnd(request.getMetadata().getSessionOwner(),
+                                                      request.getMetadata().getSession(), aipEntities);
             }
         }
 
@@ -218,6 +225,6 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     }
 
     public IngestRequest getCurrentRequest() {
-        return currentRequest;
+        return request;
     }
 }

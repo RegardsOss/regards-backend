@@ -16,19 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.mapper;
-
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
-import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionRequestDto;
-import org.mapstruct.Mapper;
+package fr.cnes.regards.modules.ingest.dto.request;
 
 /**
+ * Session selection mode
+ *
  * @author Marc SORDI
+ *
  */
-@Mapper(componentModel = "spring")
-public interface IOAISDeletionRequestMapper {
+public enum SearchSelectionMode {
 
-    OAISDeletionRequestDto entityToDto(OAISDeletionRequest request);
-
-    OAISDeletionRequest dtoToEntity(OAISDeletionRequestDto dto);
+    /**
+     * Only delete SIPs identified by their ids in the specified session.<br/>
+     * <b>Nothing</b> is deleted if no identifier specified
+     */
+    INCLUDE,
+    /**
+     * Delete all SIPs of the session but the ones identified by their ids.<br/>
+     * <b>All</b> is deleted if no identifier are specified
+     */
+    EXCLUDE;
 }

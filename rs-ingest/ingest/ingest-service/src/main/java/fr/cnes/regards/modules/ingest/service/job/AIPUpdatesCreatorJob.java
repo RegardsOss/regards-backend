@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.util.Map;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -35,12 +25,21 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
+import fr.cnes.regards.modules.ingest.service.request.RequestService;
+import java.util.Map;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 /**
  * This job creates {@link AbstractAIPUpdateTask} task to update. It scans AIP and create for each modification a task
@@ -60,6 +59,9 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
 
     @Autowired
     private AIPUpdateRequestService aipUpdateReqService;
+
+    @Autowired
+    private RequestService requestService;
 
     @Autowired
     private IAIPUpdatesCreatorRepository aipUpdatesCreatorRepository;
@@ -89,14 +91,14 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
         Page<AIPEntity> aipsPage;
         boolean isFirstPage = true;
         // Set the request as running
-        request.setState(InternalRequestStep.RUNNING);
+        request.setState(InternalRequestState.RUNNING);
         aipUpdatesCreatorRepository.save(request);
         do {
             if (!isFirstPage) {
                 pageRequest.next();
             }
             AIPUpdateParametersDto updateTask = request.getConfig();
-            aipsPage = aipRepository.search(updateTask.getCriteria(), pageRequest);
+            aipsPage = aipRepository.findByFilters(updateTask.getCriteria(), pageRequest);
             // Save number of pages to publish job advancement
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();
@@ -109,7 +111,7 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
             pageRequest.next();
         } while (aipsPage.hasNext());
         // Delete the request
-        aipUpdatesCreatorRepository.delete(request);
+        requestService.deleteRequest(request);
     }
 
     @Override

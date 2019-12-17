@@ -18,21 +18,39 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
@@ -49,20 +67,8 @@ import fr.cnes.regards.modules.ingest.service.plugin.PostProcessingTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.PreprocessingTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
+import fr.cnes.regards.modules.storage.client.IStorageClient;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
 
 /**
  * Test class to verify {@link IngestProcessingJob}.
@@ -106,6 +112,9 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
     @SpyBean
     private IIngestRequestService ingestRequestService;
 
+    @SpyBean
+    private IStorageClient storageClient;
+
     @Override
     public void doInit() throws ModuleException {
 
@@ -116,32 +125,39 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         initFullProcessingChain();
 
         Mockito.clearInvocations(ingestRequestService);
+        Mockito.clearInvocations(storageClient);
     }
 
     private void initFullProcessingChain() throws ModuleException {
-        PluginMetaData preProcessingPluginMeta = PluginUtils.createPluginMetaData(PreprocessingTestPlugin.class);
-        PluginConfiguration preProcessingPlugin = new PluginConfiguration(preProcessingPluginMeta,
-                "preProcessingPlugin");
+        PluginConfiguration preProcessingPlugin = new PluginConfiguration("preProcessingPlugin",
+                                                                          PreprocessingTestPlugin.class
+                                                                                  .getAnnotation(Plugin.class).id());
         pluginService.savePluginConfiguration(preProcessingPlugin);
 
-        PluginMetaData validationPluginMeta = PluginUtils.createPluginMetaData(ValidationTestPlugin.class);
-        PluginConfiguration validationPlugin = new PluginConfiguration(validationPluginMeta, "validationPlugin");
+        PluginConfiguration validationPlugin = new PluginConfiguration("validationPlugin",
+                                                                       ValidationTestPlugin.class
+                                                                               .getAnnotation(Plugin.class).id());
         pluginService.savePluginConfiguration(validationPlugin);
 
-        PluginMetaData generationPluginMeta = PluginUtils.createPluginMetaData(AIPGenerationTestPlugin.class);
-        PluginConfiguration generationPlugin = new PluginConfiguration(generationPluginMeta, "generationPlugin");
+        PluginConfiguration generationPlugin = new PluginConfiguration("generationPlugin",
+                                                                       AIPGenerationTestPlugin.class
+                                                                               .getAnnotation(Plugin.class).id());
         pluginService.savePluginConfiguration(generationPlugin);
 
-        PluginMetaData taggingPluginMeta = PluginUtils.createPluginMetaData(AIPTaggingTestPlugin.class);
-        PluginConfiguration taggingPlugin = new PluginConfiguration(taggingPluginMeta, "taggingPlugin");
+        PluginConfiguration taggingPlugin = new PluginConfiguration("taggingPlugin",
+                                                                    AIPTaggingTestPlugin.class
+                                                                            .getAnnotation(Plugin.class).id());
         pluginService.savePluginConfiguration(taggingPlugin);
 
-        PluginMetaData postProcessingMeta = PluginUtils.createPluginMetaData(PostProcessingTestPlugin.class);
-        PluginConfiguration postProcessingPlugin = new PluginConfiguration(postProcessingMeta, "postProcessingPlugin");
+        PluginConfiguration postProcessingPlugin = new PluginConfiguration("postProcessingPlugin",
+                                                                           PostProcessingTestPlugin.class
+                                                                                   .getAnnotation(Plugin.class).id());
         pluginService.savePluginConfiguration(postProcessingPlugin);
 
         IngestProcessingChain fullChain = new IngestProcessingChain(PROCESSING_CHAIN_TEST,
-                "Full test Ingestion processing chain", validationPlugin, generationPlugin);
+                                                                    "Full test Ingestion processing chain",
+                                                                    validationPlugin,
+                                                                    generationPlugin);
         fullChain.setPreProcessingPlugin(preProcessingPlugin);
         fullChain.setGenerationPlugin(generationPlugin);
         fullChain.setTagPlugin(taggingPlugin);
@@ -149,18 +165,22 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         processingChainRepository.save(fullChain);
     }
 
-    @Requirement("REGARDS_DSL_ING_PRO_160")
-    @Purpose("Test default process chain to ingest a new SIP provided by value")
+    @Requirements({ @Requirement("REGARDS_DSL_ING_PRO_160"), @Requirement("REGARDS_DSL_STO_AIP_010") })
+    @Purpose("Test default process chain to ingest a new SIP provided by value and ask for files storage")
     @Test
     public void testDefaultProcessingChain() {
         // Init a SIP in database with state CREATED and managed with default chain
-        SIPCollection sips = SIPCollection
-                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                               CATEGORIES, STORAGE_METADATA));
+        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
+                                                                         SESSION,
+                                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                                         CATEGORIES,
+                                                                         STORAGE_METADATA));
 
+        Path filePath = Paths.get("data1.fits");
         SIP sip = SIP.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST);
-        sip.withDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "sdsdfm1211vd");
-        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+        sip.withDataObject(DataType.RAWDATA, filePath, "sdsdfm1211vd");
+        sip.withSyntax("FITS(FlexibleImageTransport)",
+                       "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
         sip.registerContentInformation();
         sips.add(sip);
@@ -173,8 +193,18 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_DEFAULT_CHAIN_ID_TEST);
         Assert.assertNotNull(resultSip);
         Assert.assertEquals(SIPState.INGESTED, resultSip.getState());
-        Assert.assertEquals(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                            resultSip.getIngestMetadata().getIngestChain());
+        Assert.assertEquals(SESSION_OWNER, resultSip.getSessionOwner());
+        Assert.assertEquals(SESSION, resultSip.getSession());
+
+        // Check that files storage has been requested
+        ArgumentCaptor<Collection<FileStorageRequestDTO>> storageArgs = ArgumentCaptor.forClass(Collection.class);
+        Mockito.verify(storageClient, Mockito.times(1)).store(storageArgs.capture());
+        Assert.assertTrue("File storage url is not vali in storage request",
+                          storageArgs.getValue().stream().anyMatch(req -> req.getOriginUrl()
+                                  .equals(OAISDataObjectLocation.build(filePath).getUrl())));
+        Assert.assertTrue("File storage is not valid in storage request",
+                          storageArgs.getValue().stream()
+                                  .anyMatch(req -> req.getStorage().equals(STORAGE_METADATA.getPluginBusinessId())));
     }
 
     @Requirement("REGARDS_DSL_ING_PRO_160")
@@ -186,12 +216,16 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
     @Test
     public void testProcessingChain() {
 
-        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST,
-                                                                         CATEGORIES, STORAGE_METADATA));
+        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
+                                                                         SESSION,
+                                                                         PROCESSING_CHAIN_TEST,
+                                                                         CATEGORIES,
+                                                                         STORAGE_METADATA));
 
         SIP sip = SIP.build(EntityType.DATA, SIP_ID_TEST);
         sip.withDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
-        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+        sip.withSyntax("FITS(FlexibleImageTransport)",
+                       "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
         sip.registerContentInformation();
         sips.add(sip);
@@ -213,7 +247,8 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_ID_TEST);
         Assert.assertNotNull(resultSip);
         Assert.assertEquals(SIPState.INGESTED, resultSip.getState());
-        Assert.assertEquals(PROCESSING_CHAIN_TEST, resultSip.getIngestMetadata().getIngestChain());
+        Assert.assertEquals(SESSION_OWNER, resultSip.getSessionOwner());
+        Assert.assertEquals(SESSION, resultSip.getSession());
 
         Set<AIPEntity> resultAips = aipRepository.findBySipSipId(resultSip.getSipId());
         Assert.assertNotNull(resultAips);
@@ -221,6 +256,9 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         AIPEntity resultAip = resultAips.stream().findFirst().get();
         Assert.assertNotNull(resultAip);
         Assert.assertEquals(AIPState.GENERATED, resultAip.getState());
+        Assert.assertNotNull(resultSip.getVersion());
+        Assert.assertNotNull(resultAip.getAip().getVersion());
+        Assert.assertEquals(resultSip.getVersion(), resultAip.getAip().getVersion());
     }
 
     private void simulateProcessingError(SIPCollection sips, Class<?> errorClass) {
@@ -235,12 +273,12 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         ArgumentCaptor<IngestRequest> ingestRequestCaptor = ArgumentCaptor.forClass(IngestRequest.class);
         ArgumentCaptor<SIPEntity> sipCaptor = ArgumentCaptor.forClass(SIPEntity.class);
 
-        Mockito.verify(ingestRequestService, Mockito.times(1)).handleIngestJobFailed(ingestRequestCaptor.capture(),
-                                                                                     sipCaptor.capture());
+        Mockito.verify(ingestRequestService, Mockito.times(1))
+                .handleIngestJobFailed(ingestRequestCaptor.capture(), sipCaptor.capture());
         Mockito.clearInvocations(ingestRequestService);
         IngestRequest request = ingestRequestCaptor.getValue();
         Assert.assertNotNull(request);
-        Assert.assertEquals(InternalRequestStep.ERROR, request.getState());
+        Assert.assertEquals(InternalRequestState.ERROR, request.getState());
         Assert.assertTrue(!request.getErrors().isEmpty());
 
         Assert.assertNotNull(sipCaptor.getValue());
@@ -254,10 +292,15 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
     public void testProcessingChainByRef() {
 
         // Init a SIP with reference in database with state CREATED
-        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST,
-                                                                         CATEGORIES, STORAGE_METADATA));
+        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
+                                                                         SESSION,
+                                                                         PROCESSING_CHAIN_TEST,
+                                                                         CATEGORIES,
+                                                                         STORAGE_METADATA));
 
-        SIP sip = SIP.buildReference(EntityType.DATA, SIP_REF_ID_TEST, Paths.get("src/test/resources/file_ref.xml"),
+        SIP sip = SIP.buildReference(EntityType.DATA,
+                                     SIP_REF_ID_TEST,
+                                     Paths.get("src/test/resources/file_ref.xml"),
                                      "1e2d4ab665784e43243b9b07724cd483");
         sips.add(sip);
 
@@ -268,6 +311,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_REF_ID_TEST);
         Assert.assertNotNull(resultSip);
         Assert.assertEquals(SIPState.INGESTED, resultSip.getState());
-        Assert.assertEquals(PROCESSING_CHAIN_TEST, resultSip.getIngestMetadata().getIngestChain());
+        Assert.assertEquals(SESSION_OWNER, resultSip.getSessionOwner());
+        Assert.assertEquals(SESSION, resultSip.getSession());
     }
 }

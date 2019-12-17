@@ -18,11 +18,27 @@
  */
 package fr.cnes.regards.modules.ingest.service.schedule;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
+import fr.cnes.regards.modules.ingest.service.job.AIPUpdateRunnerJob;
+import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
+import fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob;
+import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -33,23 +49,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
-import fr.cnes.regards.modules.ingest.service.job.AIPUpdateRunnerJob;
-import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
-import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
-
 /**
  * This component scans the AIPUpdateRepo and regroups tasks by aip to update
  *
@@ -59,6 +58,8 @@ import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 @Component
 @MultitenantTransactional
 public class AIPUpdateJobScheduler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdateJobScheduler.class);
 
     @Autowired
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
@@ -106,8 +107,7 @@ public class AIPUpdateJobScheduler {
     public void scheduleUpdateJobs() {
         JobInfo jobInfo = getUpdateJob();
         if (jobInfo != null) {
-            jobInfo.updateStatus(JobStatus.QUEUED);
-            jobInfoService.save(jobInfo);
+            LOGGER.debug("Schedule {} job with id {}", OAISDeletionJob.class.getName(), jobInfo.getId());
         }
     }
 
@@ -123,20 +123,20 @@ public class AIPUpdateJobScheduler {
             List<Long> aipIds = contents.stream().map(wr -> wr.getAip().getId()).collect(Collectors.toList());
             List<AIPUpdateRequest> linkedTasks = aipUpdateRequestRepository.findAllByAipIdIn(aipIds);
             requests.addAll(linkedTasks);
-            aipUpdateRequestService.updateState(requests, InternalRequestStep.RUNNING);
+            aipUpdateRequestService.updateState(requests, InternalRequestState.RUNNING);
 
             // Make a list of content ids
             List<Long> requestIds = requests.stream().map(AIPUpdateRequest::getId).collect(Collectors.toList());
 
             // Change request state
-            abstractRequestRepository.updateStates(requestIds, InternalRequestStep.RUNNING);
+            abstractRequestRepository.updateStates(requestIds, InternalRequestState.RUNNING);
 
             // Schedule deletion job
             Set<JobParameter> jobParameters = Sets.newHashSet();
             jobParameters.add(new JobParameter(AIPUpdateRunnerJob.UPDATE_REQUEST_IDS, requestIds));
             jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_RUNNER_PRIORITY.getPriority(), jobParameters,
                     null, AIPUpdateRunnerJob.class.getName());
-            jobInfoService.createAsPending(jobInfo);
+            jobInfoService.createAsQueued(jobInfo);
         }
         return jobInfo;
     }

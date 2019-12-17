@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.ingest.service.sip;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +27,6 @@ import org.springframework.data.domain.Pageable;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 
@@ -55,22 +53,11 @@ public interface ISIPService {
     SIPEntity getEntity(String sipId) throws EntityNotFoundException;
 
     /**
-     * Mark provided {@link SIPEntity} and all linked {@link fr.cnes.regards.modules.ingest.domain.aip.AIPEntity}
-     * as deleted. This methods also send events to remove all files linked to these AIPs
-     * @param sipEntity entity to remove
-     * @param removeIrrevocably mode of removal
-     * @param deleteFiles
-     */
-    void scheduleDeletion(SIPEntity sipEntity, SessionDeletionMode removeIrrevocably, Boolean deleteFiles);
-
-    /**
      * Delete the SIPEntity using its {@link SIPEntity#getSipId()}.
      * @param sipId
      * @param deleteIrrevocably
      */
     void processDeletion(String sipId, boolean deleteIrrevocably);
-
-    void saveErrors(SIPEntity sip, Set<String> errors);
 
     /**
      * Update the last update date of the {@link SIPEntity} and save it in DAO,

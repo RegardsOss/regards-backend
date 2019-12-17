@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,20 +18,27 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 
 /**
- * {@link OAISDeletionRequest} repository
- * @author Marc SORDI
+ * JPA repository to access {@link OAISDeletionRequest}s
+ *
+ * @author Sébastien Binda
+ *
  */
-@Repository
 public interface IOAISDeletionRequestRepository extends JpaRepository<OAISDeletionRequest, Long> {
 
-    Page<AbstractRequest> findAll(Specification<AbstractRequest> searchAllByFilters, Pageable pageable);
+    default Page<OAISDeletionRequest> findWaitingRequest(Pageable pageRequest) {
+        return findAllByState(InternalRequestState.CREATED, pageRequest);
+    }
+
+    Page<OAISDeletionRequest> findAllByState(InternalRequestState step, Pageable page);
+
+    long countByState(InternalRequestState state);
+
 }

@@ -19,11 +19,12 @@
 package fr.cnes.regards.modules.ingest.domain;
 
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import java.time.OffsetDateTime;
 import java.util.Set;
 import javax.persistence.Column;
-import javax.persistence.Embedded;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -38,11 +39,17 @@ import org.hibernate.annotations.Type;
 @MappedSuperclass
 public abstract class AbstractOAISEntity {
 
-    /**
-     * Look at {@link IngestMetadata}
-     */
-    @Embedded
-    private IngestMetadata ingestMetadata;
+    @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER)
+    @Column(length = 128, name = "session_owner", nullable = false)
+    private String sessionOwner;
+
+    @NotBlank(message = IngestValidationMessages.MISSING_SESSION)
+    @Column(length = 128, name = "session_name", nullable = false)
+    private String session;
+
+    @Column(columnDefinition = "jsonb", nullable = false)
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    private Set<String> categories;
 
     /**
      * The provider identifier is provided by the user along the SIP, with no guaranty of uniqueness,
@@ -64,9 +71,9 @@ public abstract class AbstractOAISEntity {
     @Column(name = "last_update", nullable = false)
     private OffsetDateTime lastUpdate;
 
-    @Column(columnDefinition = "jsonb", name = "errors")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
-    private Set<String> errors;
+    @Column(length = 20, name = "ip_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private EntityType ipType;
 
     public OffsetDateTime getCreationDate() {
         return creationDate;
@@ -100,19 +107,35 @@ public abstract class AbstractOAISEntity {
         this.tags = tags;
     }
 
-    public IngestMetadata getIngestMetadata() {
-        return ingestMetadata;
+    public String getSessionOwner() {
+        return sessionOwner;
     }
 
-    public void setIngestMetadata(IngestMetadata ingestMetadata) {
-        this.ingestMetadata = ingestMetadata;
+    public void setSessionOwner(String sessionOwner) {
+        this.sessionOwner = sessionOwner;
     }
 
-    public Set<String> getErrors() {
-        return errors;
+    public String getSession() {
+        return session;
     }
 
-    public void setErrors(Set<String> errors) {
-        this.errors = errors;
+    public void setSession(String session) {
+        this.session = session;
+    }
+
+    public Set<String> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(Set<String> categories) {
+        this.categories = categories;
+    }
+
+    public EntityType getIpType() {
+        return ipType;
+    }
+
+    public void setIpType(EntityType ipType) {
+        this.ipType = ipType;
     }
 }

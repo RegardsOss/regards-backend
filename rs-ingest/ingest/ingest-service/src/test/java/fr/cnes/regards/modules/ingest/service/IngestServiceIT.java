@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -129,7 +129,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
                 .handleIngestJobFailed(argumentCaptor.capture(), ArgumentCaptor.forClass(SIPEntity.class).capture());
         IngestRequest request = argumentCaptor.getValue();
         Assert.assertNotNull(request);
-        Assert.assertEquals(InternalRequestStep.ERROR, request.getState());
+        Assert.assertEquals(InternalRequestState.ERROR, request.getState());
 
         // Check repository
         ingestServiceTest.waitForIngestion(1, TWO_SECONDS);

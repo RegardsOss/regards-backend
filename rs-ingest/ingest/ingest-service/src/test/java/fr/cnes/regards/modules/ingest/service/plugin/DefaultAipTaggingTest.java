@@ -30,8 +30,6 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -59,8 +57,6 @@ public class DefaultAipTaggingTest {
     private static final List<String> TAGS = Arrays.asList("FRANCE", "JAPON", "MALAYSIE");
 
     private static final Map<String, String> LINKS = createLinks();
-
-    private static final List<String> CATEGORIES = Lists.newArrayList("CATEGORY");
 
     private static Map<String, String> createLinks() {
         Map<String, String> links = new HashMap<>();

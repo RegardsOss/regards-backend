@@ -18,6 +18,43 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import com.google.common.collect.Lists;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonWriter;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.dam.dto.FeatureEvent;
+import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
+import fr.cnes.regards.modules.ingest.dao.AIPQueryGenerator;
+import fr.cnes.regards.modules.ingest.dao.IAIPLightRepository;
+import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
+import fr.cnes.regards.modules.ingest.dao.ICustomAIPRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
+import fr.cnes.regards.modules.ingest.service.request.IRequestService;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
+import fr.cnes.regards.modules.storage.client.IStorageClient;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,9 +69,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,51 +79,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonWriter;
-
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
-import fr.cnes.regards.modules.ingest.dao.AIPQueryGenerator;
-import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
-import fr.cnes.regards.modules.ingest.dao.ICustomAIPRepository;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import fr.cnes.regards.modules.ingest.service.job.AIPUpdatesCreatorJob;
-import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
-import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
-import fr.cnes.regards.modules.storagelight.client.IStorageClient;
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
-import fr.cnes.regards.modules.storagelight.domain.dto.request.FileDeletionRequestDTO;
-
 /**
  * AIP service management
  *
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
+ * @author Léo Mieulet
  */
 @Service
 @MultitenantTransactional
@@ -101,10 +98,13 @@ public class AIPService implements IAIPService {
     private static final String JSON_INDENT = "  ";
 
     @Autowired
+    private IOAISDeletionService oaisDeletionRequestService;
+
+    @Autowired
     private IAIPRepository aipRepository;
 
     @Autowired
-    private IAIPUpdatesCreatorRepository aipUpdatesCreatorRepository;
+    private IAIPLightRepository aipLigthRepository;
 
     @Autowired
     private ICustomAIPRepository customAIPRepository;
@@ -116,13 +116,13 @@ public class AIPService implements IAIPService {
     private SessionNotifier sessionNotifier;
 
     @Autowired
-    private IJobInfoService jobInfoService;
-
-    @Autowired
-    private IAuthenticationResolver authResolver;
+    private IPublisher publisher;
 
     @Autowired
     private Gson gson;
+
+    @Autowired
+    private IRequestService requestService;
 
     @Override
     public List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips) {
@@ -148,23 +148,38 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Page<AIPEntity> search(SearchAIPsParameters filters, Pageable pageable) {
-
+    public Page<AIPEntity> findByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable) {
         return aipRepository.findAll(AIPEntitySpecification.searchAll(filters, pageable), pageable);
     }
 
     @Override
-    public List<String> searchTags(SearchFacetsAIPsParameters filters) {
+    public Collection<AIPEntity> findByAipIds(Collection<String> aipIds) {
+        return aipRepository.findByAipIdIn(aipIds);
+    }
+
+
+    @Override
+    public Page<AIPEntityLight> findLightByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable) {
+        LOGGER.debug("Searching AIPS with categories=[{}]...", String.join(",", filters.getCategories()));
+        long start = System.currentTimeMillis();
+        Page<AIPEntityLight> response = aipLigthRepository.findAll(AIPEntitySpecification.searchAll(filters, pageable),
+                                                                   pageable);
+        LOGGER.debug("{} AIPS found in  {}ms", response.getSize(), System.currentTimeMillis() - start);
+        return response;
+    }
+
+    @Override
+    public List<String> findTags(SearchFacetsAIPsParameters filters) {
         return customAIPRepository.getDistinct(AIPQueryGenerator.searchAipTagsUsingSQL(filters));
     }
 
     @Override
-    public List<String> searchStorages(SearchFacetsAIPsParameters filters) {
+    public List<String> findStorages(SearchFacetsAIPsParameters filters) {
         return customAIPRepository.getDistinct(AIPQueryGenerator.searchAipStoragesUsingSQL(filters));
     }
 
     @Override
-    public List<String> searchCategories(SearchFacetsAIPsParameters filters) {
+    public List<String> findCategories(SearchFacetsAIPsParameters filters) {
         return customAIPRepository.getDistinct(AIPQueryGenerator.searchAipCategoriesUsingSQL(filters));
     }
 
@@ -197,7 +212,7 @@ public class AIPService implements IAIPService {
     }
 
     /**
-     * Write AIP in specified {@link OutputStream}
+     * Write AIP in provided {@link OutputStream}
      */
     private void writeAip(AIP aip, OutputStream os) throws IOException {
         Writer osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
@@ -212,84 +227,80 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void setAipToStored(UniformResourceName aipId, AIPState state) {
-        // Retrieve aip and set the new status to stored
-        Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
-        if (oAip.isPresent()) {
-            AIPEntity aip = oAip.get();
-            aip.setState(state);
-            aip.setErrors(null);
-            aipRepository.save(aip);
-        }
-    }
-
-    @Override
-    public String scheduleAIPEntityDeletion(String sipId) {
+    public void scheduleLinkedFilesDeletion(OAISDeletionRequest request) {
+        String sipId = request.getAip().getSip().getSipId();
         List<FileDeletionRequestDTO> filesToDelete = new ArrayList<>();
 
         // Retrieve all AIP relative to this SIP id
-        Set<AIPEntity> aipsRelatedToSip = aipRepository.findBySipSipId(sipId);
+        Set<AIPEntity> aips = aipRepository.findBySipSipId(sipId);
 
-        // Mark these entities as deleted
-        sessionNotifier.notifyAIPDeleting(aipsRelatedToSip);
-
-        for (AIPEntity aipEntity : aipsRelatedToSip) {
-            // Retrieve all files linked to this AIP
+        for (AIPEntity aipEntity : aips) {
+            String aipId = aipEntity.getAipId();
+            // Retrieve all linked files
             for (ContentInformation ci : aipEntity.getAip().getProperties().getContentInformations()) {
                 OAISDataObject dataObject = ci.getDataObject();
-                for (OAISDataObjectLocation location : dataObject.getLocations()) {
-                    if (location.getStorage() != null) {
-                        // Create the storage delete event
-                        filesToDelete.add(FileDeletionRequestDTO.build(dataObject.getChecksum(), location.getStorage(),
-                                                                       aipEntity.getAipId(), false));
-                    }
-                }
+                filesToDelete.addAll(getFileDeletionEvents(aipId, dataObject.getChecksum(),
+                        dataObject.getLocations()));
             }
 
             // Add the AIP itself (on each storage) to the file list to remove
-            for (StorageMetadata storage : aipEntity.getIngestMetadata().getStorages()) {
-                filesToDelete.add(FileDeletionRequestDTO.build(aipEntity.getChecksum(), storage.getPluginBusinessId(),
-                                                               aipEntity.getAipId(), false));
-            }
-
-            // Mark the AIP as deleted
-            aipEntity.setState(AIPState.DELETED);
-            aipRepository.save(aipEntity);
+            filesToDelete.addAll(getFileDeletionEvents(aipId, aipEntity.getChecksum(), aipEntity.getManifestLocations()));
         }
 
         // Publish event to delete AIP files and AIPs itself
         RequestInfo deleteRequestInfo = storageClient.delete(filesToDelete);
-        return deleteRequestInfo.getGroupId();
+
+        String deleteRequestId = deleteRequestInfo.getGroupId();
+        request.setRemoteStepGroupIds(Lists.newArrayList(deleteRequestId));
+        request.setWaitStorageAnswer();
+        // Put the request as un-schedule.
+        // The answering event from storage will put again the request to be executed
+        request.setState(InternalRequestState.TO_SCHEDULE);
+        oaisDeletionRequestService.update(request);
+    }
+
+    private List<FileDeletionRequestDTO> getFileDeletionEvents(String owner, String fileChecksum, Set<OAISDataObjectLocation> locations) {
+        List<FileDeletionRequestDTO> events = new ArrayList<>();
+        for (OAISDataObjectLocation location : locations) {
+            // Ignore if the file is yet stored
+            if (location.getStorage() != null) {
+                // Create the storage delete event
+                events.add(FileDeletionRequestDTO.build(fileChecksum, location.getStorage(),
+                        owner, false));
+            }
+        }
+        return events;
     }
 
     @Override
-    public void scheduleAIPEntityUpdate(AIPUpdateParametersDto params) {
+    public void registerUpdatesCreator(AIPUpdateParametersDto params) {
         AIPUpdatesCreatorRequest request = AIPUpdatesCreatorRequest.build(params);
-        request = aipUpdatesCreatorRepository.save(request);
-        // Schedule deletion job
-        Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(AIPUpdatesCreatorJob.REQUEST_ID, request.getId()));
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_SCAN_JOB_PRIORITY.getPriority(),
-                jobParameters, authResolver.getUser(), AIPUpdatesCreatorJob.class.getName());
-        jobInfoService.createAsQueued(jobInfo);
+        request = (AIPUpdatesCreatorRequest) requestService.scheduleRequest(request);
+        if (request.getState() != InternalRequestState.BLOCKED) {
+            requestService.scheduleJob(request);
+        }
     }
 
     @Override
     public void processDeletion(String sipId, boolean deleteIrrevocably) {
         // Retrieve all AIP relative to this SIP id
         Set<AIPEntity> aipsRelatedToSip = aipRepository.findBySipSipId(sipId);
-        sessionNotifier.notifyAIPDeleted(aipsRelatedToSip);
-        if (!deleteIrrevocably) {
-            for (AIPEntity aipEntity : aipsRelatedToSip) {
-                aipEntity.setErrors(null);
-                aipEntity.setState(AIPState.DELETED);
-                save(aipEntity);
+        if (!aipsRelatedToSip.isEmpty()) {
+            aipsRelatedToSip.forEach(entity -> {
+                sessionNotifier.productDeleted(entity.getSessionOwner(), entity.getSession(), aipsRelatedToSip);
+                entity.setState(AIPState.DELETED);
+            });
+            if (deleteIrrevocably) {
+                requestService.deleteAllByAip(aipsRelatedToSip);
+                // Delete them
+                aipRepository.deleteAll(aipsRelatedToSip);
+            } else {
+                // Mark the AIP as deleted
+                aipRepository.saveAll(aipsRelatedToSip);
             }
-        } else {
-            // Delete them
-            aipRepository.deleteAll(aipsRelatedToSip);
+            // Send notification to data mangement for feature deleted
+            aipsRelatedToSip.forEach(aip -> publisher.publish(FeatureEvent.buildFeatureDeleted(aip.getAipId())));
         }
-
     }
 
     @Override
@@ -298,15 +309,8 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Set<AIPEntity> getAips(String sipId) {
+    public Set<AIPEntity> findByAipIds(String sipId) {
         return aipRepository.findBySipSipId(sipId);
-    }
-
-    @Override
-    public void saveError(AIPEntity aipEntity, String errorMessage) {
-        aipEntity.getErrors().add(errorMessage);
-        aipEntity.setState(AIPState.ERROR);
-        save(aipEntity);
     }
 
     @Override
@@ -329,10 +333,4 @@ public class AIPService implements IAIPService {
             throw new ModuleException(message, e);
         }
     }
-
-    @Override
-    public Collection<AIPEntity> getAips(Collection<String> aipIds) {
-        return aipRepository.findByAipIdIn(aipIds);
-    }
-
 }

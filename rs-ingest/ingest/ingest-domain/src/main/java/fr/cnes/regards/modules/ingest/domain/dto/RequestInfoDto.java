@@ -33,18 +33,24 @@ public class RequestInfoDto {
     /**
      * Mapping between SIP id and request id
      */
-    private Map<String, String> granted = new HashMap<>();
+    private final Map<String, String> granted = new HashMap<>();
 
     /**
      * Mapping between SIP id and denied reason
      */
-    private Map<String, String> denied = new HashMap<>();
+    private final Map<String, String> denied = new HashMap<>();
 
     private List<String> messages;
 
-    public static RequestInfoDto build(String... messages) {
+    private String sessionOwner;
+
+    private String session;
+
+    public static RequestInfoDto build(String sessionOwner, String session, String... messages) {
         RequestInfoDto ri = new RequestInfoDto();
         ri.setMessages(Arrays.asList(messages));
+        ri.sessionOwner = sessionOwner;
+        ri.session = session;
         return ri;
     }
 
@@ -71,4 +77,13 @@ public class RequestInfoDto {
     public Map<String, String> getDenied() {
         return denied;
     }
+
+    public String getSessionOwner() {
+        return sessionOwner;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
 }

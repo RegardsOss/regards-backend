@@ -1,221 +1,248 @@
 package fr.cnes.regards.modules.ingest.service.session;
 
-import java.util.List;
-import java.util.Set;
+import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
 
 @Service
+@MultitenantTransactional
 public class SessionNotifier {
 
-    /**
-     * The name of the property gathering all metadata about this processing step
-     */
-    public static final String SESSION_NOTIF_STEP = "OAIS";
+    public static final String SESSION_NOTIF_STEP = "oais";
 
-    /**
-     * Name of the property that collects number of SIPs generated
-     */
-    public static final String PROPERTY_SIP_INGESTING = "sip_ingesting";
+    public static final String PRODUCT_COUNT = "products";
 
-    /**
-     * Name of the property that collects number of SIPs valid and stored
-     */
-    public static final String PROPERTY_SIP_INGESTED = "sip_total";
+    public static final String PRODUCT_GEN_ERROR = "products_gen_error";
 
-    /**
-     * Name of the property that collects number of SIPs marked as deleted and waiting for storage deletion acquittal
-     */
-    public static final String PROPERTY_SIP_DELETING = "sip_deleting";
+    public static final String PRODUCT_GEN_PENDING = "products_gen_pending";
 
-    /**
-     * Name of the property that collects number of SIPs marked as error
-     */
-    public static final String PROPERTY_SIP_ERROR = "sip_error";
+    public static final String PRODUCT_STORE_PENDING = "products_store_pending";
 
-    /**
-     * Name of the property that collects number of AIPs generated and valid
-     */
-    public static final String PROPERTY_AIP_GENERATED = "aip_generated";
+    public static final String PRODUCT_STORED = "products_stored";
 
-    /**
-     * Name of the property that collects number of AIPs stored
-     */
-    public static final String PROPERTY_AIP_STORED = "aip_stored";
+    public static final String PRODUCT_STORE_ERROR = "products_store_error";
 
-    /**
-     * Name of the property that collects number of AIPs marked as deleted and waiting for storage deletion acquittal
-     */
-    public static final String PROPERTY_AIP_DELETING = "aip_deleting";
+    public static final String PRODUCT_META_STORE_PENDING = "products_meta_store_pending";
 
-    /**
-     * Name of the property that collects number of AIPs marked as error
-     */
-    public static final String PROPERTY_AIP_ERROR = "aip_error";
+    public static final String PRODUCT_META_STORED = "products_meta_stored";
+
+    public static final String PRODUCT_META_STORE_ERROR = "products_meta_store_error";
 
     @Autowired
     private IPublisher publisher;
 
-    public void notifySIPDeleting(SIPEntity currentSIP) {
-        notifyDecrementSession(currentSIP.getIngestMetadata().getSessionOwner(),
-                               currentSIP.getIngestMetadata().getSession(), currentSIP.getState());
-
-        notifyIncrementSession(currentSIP.getIngestMetadata().getSessionOwner(),
-                               currentSIP.getIngestMetadata().getSession(), SIPState.DELETED);
+    /**
+     * Notify session that an error product ingest has been retried
+     * @param sessionOwner
+     * @param session
+     */
+    public void productRetry(String sessionOwner, String session) {
+        // -1 product_generation_error
+        notifyDecrementSession(sessionOwner, session, PRODUCT_GEN_ERROR, SessionNotificationState.OK, 1);
     }
 
-    public void notifySIPDeleted(SIPEntity sipEntity) {
-        notifyDecrementSession(sipEntity.getIngestMetadata().getSessionOwner(),
-                               sipEntity.getIngestMetadata().getSession(), sipEntity.getState());
+    /**
+     * Notify session that a list of products has been granted for generation
+     * @param sessionOwner
+     * @param session
+     * @param nbProducts
+     */
+    public void productsGranted(String sessionOwner, String session, int nbProducts) {
+        notifyIncrementSession(sessionOwner, session, PRODUCT_COUNT, SessionNotificationState.OK, nbProducts);
     }
 
-    public void notifySIPStored(SIPEntity currentSIP) {
-        notifyDecrementSession(currentSIP.getIngestMetadata().getSessionOwner(),
-                               currentSIP.getIngestMetadata().getSession(), SIPState.INGESTED);
-
-        notifyIncrementSession(currentSIP.getIngestMetadata().getSessionOwner(),
-                               currentSIP.getIngestMetadata().getSession(), currentSIP.getState());
+    /**
+     * Notify session that a product generation is started
+     * @param sessionOwner
+     * @param session
+     */
+    public void productGenerationStart(String sessionOwner, String session) {
+        // +1 product_generation
+        notifyIncrementSession(sessionOwner, session, PRODUCT_GEN_PENDING, SessionNotificationState.OK, 1);
     }
 
-    public void notifySIPStorageFailed(SIPEntity sip) {
-        notifyDecrementSession(sip.getIngestMetadata().getSessionOwner(), sip.getIngestMetadata().getSession(),
-                               sip.getState());
-
-        notifyIncrementSession(sip.getIngestMetadata().getSessionOwner(), sip.getIngestMetadata().getSession(),
-                               SIPState.ERROR, SessionNotificationState.ERROR);
-    }
-
-    public void notifySIPCreated(SIPEntity sipEntity) {
-        notifyIncrementSession(sipEntity.getIngestMetadata().getSessionOwner(),
-                               sipEntity.getIngestMetadata().getSession(), sipEntity.getState());
-    }
-
-    public void notifySIPCreationFailed(SIPEntity sip) {
-        notifyIncrementSession(sip.getIngestMetadata().getSessionOwner(), sip.getIngestMetadata().getSession(),
-                               SIPState.ERROR, SessionNotificationState.ERROR);
-    }
-
-    public void notifySIPDeletionFailed(SIPEntity currentSIP) {
-        notifyDecrementSession(currentSIP.getIngestMetadata().getSessionOwner(),
-                               currentSIP.getIngestMetadata().getSession(), SIPState.DELETED);
-
-        notifyIncrementSession(currentSIP.getIngestMetadata().getSessionOwner(),
-                               currentSIP.getIngestMetadata().getSession(), SIPState.ERROR,
-                               SessionNotificationState.ERROR);
-    }
-
-    public void notifyAIPCreated(List<AIPEntity> aipEntities) {
-        if (!aipEntities.isEmpty()) {
-            // Retrieve any AIP to retrieve session info
-            AIPEntity anAIP = aipEntities.iterator().next();
-            notifyIncrementSession(anAIP.getIngestMetadata().getSessionOwner(), anAIP.getIngestMetadata().getSession(),
-                                   anAIP.getState(), aipEntities.size());
+    /**
+     * Notify a session that a product generation is ended. Handle success and error states.
+     * @param sessionOwner
+     * @param session
+     * @param generatedAips {@link AIPEntity}s generated
+     */
+    public void productGenerationEnd(String sessionOwner, String session, Collection<AIPEntity> generatedAips) {
+        // -1 product_generation
+        notifyDecrementSession(sessionOwner, session, PRODUCT_GEN_PENDING, SessionNotificationState.OK, 1);
+        if (generatedAips.isEmpty()) {
+            // +1 product_generation_error
+            notifyIncrementSession(sessionOwner, session, PRODUCT_GEN_ERROR, SessionNotificationState.ERROR, 1);
+        } else {
+            notifyIncrementSession(sessionOwner, session, PRODUCT_STORE_PENDING, SessionNotificationState.OK,
+                                   generatedAips.size());
+            if (generatedAips.size() > 1) {
+                // Increment number of total products (case of one SIP for many AIPs)
+                // In this way, there is the same count of products stored and total.
+                // 1 request => 1 product, but can produce several AIPs, so we add more product to match the number of AIPs
+                notifyIncrementSession(sessionOwner, session, PRODUCT_COUNT, SessionNotificationState.OK,
+                                       generatedAips.size() - 1);
+            }
         }
     }
 
-    public void notifyAIPStorageFailed(AIPEntity aipEntity) {
-        if (aipEntity.getState() != AIPState.ERROR) {
-            notifyDecrementSession(aipEntity.getIngestMetadata().getSessionOwner(),
-                                   aipEntity.getIngestMetadata().getSession(), aipEntity.getState(), 1);
-            notifyIncrementSession(aipEntity.getIngestMetadata().getSessionOwner(),
-                                   aipEntity.getIngestMetadata().getSession(), AIPState.ERROR,
-                                   SessionNotificationState.ERROR, 1);
+    /**
+     * Notify session that a product has been successfully stored
+     * @param sessionOwner
+     * @param session
+     * @param aips {@link AIPEntity}s stored
+     */
+    public void productStoreSuccess(String sessionOwner, String session, Collection<AIPEntity> aips) {
+        if (!aips.isEmpty()) {
+            // -nbProductsStored product_storing
+            notifyDecrementSession(sessionOwner, session, PRODUCT_STORE_PENDING, SessionNotificationState.OK,
+                                   aips.size());
+            // +nbProductsStored product_stored
+            notifyIncrementSession(sessionOwner, session, PRODUCT_STORED, SessionNotificationState.OK, aips.size());
         }
     }
 
-    public void notifyAIPsStored(List<AIPEntity> aipEntities) {
-        if (!aipEntities.isEmpty()) {
-            // Retrieve any AIP to retrieve session info
-            AIPEntity anAIP = aipEntities.iterator().next();
-            notifyDecrementSession(anAIP.getIngestMetadata().getSessionOwner(), anAIP.getIngestMetadata().getSession(),
-                                   AIPState.GENERATED, aipEntities.size());
-            notifyIncrementSession(anAIP.getIngestMetadata().getSessionOwner(), anAIP.getIngestMetadata().getSession(),
-                                   anAIP.getState(), aipEntities.size());
+    /**
+     * Notify session that there was an error during product storage
+     * @param sessionOwner
+     * @param session
+     * @param aips {@link AIPEntity}s of the error product
+     */
+    public void productStoreError(String sessionOwner, String session, Collection<AIPEntity> aips) {
+        if (!aips.isEmpty()) {
+            // -nbProductsStored product_storing
+            notifyDecrementSession(sessionOwner, session, PRODUCT_STORE_PENDING, SessionNotificationState.OK,
+                                   aips.size());
+            // +nbProductsStored product_stored
+            notifyIncrementSession(sessionOwner, session, PRODUCT_STORE_ERROR, SessionNotificationState.ERROR,
+                                   aips.size());
         }
     }
 
-    public void notifyAIPDeleting(Set<AIPEntity> aipEntities) {
-        if (!aipEntities.isEmpty()) {
-            // Retrieve any AIP to retrieve session info
-            AIPEntity anAIP = aipEntities.iterator().next();
-            notifyDecrementSession(anAIP.getIngestMetadata().getSessionOwner(), anAIP.getIngestMetadata().getSession(),
-                                   anAIP.getState(), aipEntities.size());
-
-            notifyIncrementSession(anAIP.getIngestMetadata().getSessionOwner(), anAIP.getIngestMetadata().getSession(),
-                                   AIPState.DELETED, aipEntities.size());
+    /**
+     * Notify session that a product metadata storage is pending
+     */
+    public void productMetaStorePending(String sessionOwner, String session, Collection<AIPEntity> aips) {
+        if (!aips.isEmpty()) {
+            // +1 product_meta_store_pending
+            notifyIncrementSession(sessionOwner, session, PRODUCT_META_STORE_PENDING, SessionNotificationState.OK,
+                                   aips.size());
         }
     }
 
-    public void notifyAIPDeleted(Set<AIPEntity> aipEntities) {
-        if (!aipEntities.isEmpty()) {
-            // Retrieve any AIP to retrieve session info
-            AIPEntity anAIP = aipEntities.iterator().next();
-            // AIPs are no more deleting, remove them
-            notifyDecrementSession(anAIP.getIngestMetadata().getSessionOwner(), anAIP.getIngestMetadata().getSession(),
-                                   AIPState.DELETED, aipEntities.size());
+    /**
+     * Notify session that a product metadata storage is succressfully done
+     * @param aip {@link AIPEntity}
+     */
+    public void productMetaStoredSuccess(AIPEntity aip) {
+        // -1 product_meta_storing
+        notifyDecrementSession(aip.getSessionOwner(), aip.getSession(), PRODUCT_META_STORE_PENDING,
+                               SessionNotificationState.OK, 1);
+        // +1 product_meta_stored
+        notifyIncrementSession(aip.getSessionOwner(), aip.getSession(), PRODUCT_META_STORED,
+                               SessionNotificationState.OK, 1);
+    }
+
+    /**
+     * Notify session that a product metadata storage is in error
+     * @param aip {@link AIPEntity}
+     */
+    public void productMetaStoredError(AIPEntity aip) {
+        // -1 product_meta_storing
+        notifyDecrementSession(aip.getSessionOwner(), aip.getSession(), PRODUCT_META_STORE_PENDING,
+                               SessionNotificationState.OK, 1);
+        // +1 product_meta_stored
+        notifyIncrementSession(aip.getSessionOwner(), aip.getSession(), PRODUCT_META_STORE_ERROR,
+                               SessionNotificationState.ERROR, 1);
+    }
+
+    /**
+     * Decrement product meta store errors.
+     * @param request
+     */
+    public void aipStoreMetaRequestErrorDeleted(AIPStoreMetaDataRequest request) {
+        if (request.getState() == InternalRequestState.ERROR) {
+            notifyDecrementSession(request.getSessionOwner(), request.getSession(), PRODUCT_META_STORE_ERROR,
+                                   SessionNotificationState.OK, 1);
         }
     }
 
-    public void notifyAIPDeletionFailed(Set<AIPEntity> aipEntities) {
-        if (!aipEntities.isEmpty()) {
-            // Retrieve any AIP to retrieve session info
-            AIPEntity anAIP = aipEntities.iterator().next();
-            // AIPs are no more deleting, remove them
-            notifyDecrementSession(anAIP.getIngestMetadata().getSessionOwner(), anAIP.getIngestMetadata().getSession(),
-                                   AIPState.DELETED, aipEntities.size());
-            // Add errors
-            notifyIncrementSession(anAIP.getIngestMetadata().getSessionOwner(), anAIP.getIngestMetadata().getSession(),
-                                   AIPState.ERROR, SessionNotificationState.ERROR, aipEntities.size());
+    /**
+     * Decrement product store errors or product gen errors
+     * @param request
+     */
+    public void ingestRequestErrorDeleted(IngestRequest request) {
+        if (request.getState() == InternalRequestState.ERROR) {
+            switch (request.getStep()) {
+                case LOCAL_DENIED:
+                case LOCAL_FINAL:
+                case LOCAL_GENERATION:
+                case LOCAL_INIT:
+                case LOCAL_POST_PROCESSING:
+                case LOCAL_PRE_PROCESSING:
+                case LOCAL_SCHEDULED:
+                case LOCAL_TAGGING:
+                case LOCAL_VALIDATION:
+                    notifyDecrementSession(request.getSessionOwner(), request.getSession(), PRODUCT_GEN_ERROR,
+                                           SessionNotificationState.OK, 1);
+                    break;
+                case REMOTE_STORAGE_REQUESTED:
+                case REMOTE_STORAGE_DENIED:
+                case REMOTE_STORAGE_ERROR:
+                    notifyDecrementSession(request.getSessionOwner(), request.getSession(), PRODUCT_STORE_ERROR,
+                                           SessionNotificationState.OK, 1);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
-    private void notifyDecrementSession(String sessionOwner, String session, SIPState sipState) {
-        notifyDecrementSession(sessionOwner, session, getSIPProperty(sipState), SessionNotificationState.OK, 1L);
-    }
-
-    private void notifyDecrementSession(String sessionOwner, String session, AIPState aipState, long value) {
-        notifyDecrementSession(sessionOwner, session, getAIPProperty(aipState), SessionNotificationState.OK, value);
-    }
-
-    private void notifyDecrementSession(String sessionOwner, String session, String property,
-            SessionNotificationState notifState, long value) {
-        // Add one to the new state
-        SessionMonitoringEvent event = SessionMonitoringEvent.build(sessionOwner, session, notifState,
-                                                                    SESSION_NOTIF_STEP, SessionNotificationOperator.DEC,
-                                                                    property, value);
-        publisher.publish(event);
-    }
-
-    private void notifyIncrementSession(String sessionOwner, String session, SIPState sipState) {
-        // Add one to the new state
-        notifyIncrementSession(sessionOwner, session, getSIPProperty(sipState), SessionNotificationState.OK, 1);
-    }
-
-    private void notifyIncrementSession(String sessionOwner, String session, SIPState sipState,
-            SessionNotificationState notifState) {
-        // Add one to the new state
-        notifyIncrementSession(sessionOwner, session, getSIPProperty(sipState), notifState, 1);
-    }
-
-    private void notifyIncrementSession(String sessionOwner, String session, AIPState aipState, long value) {
-        // Add one to the new state
-        notifyIncrementSession(sessionOwner, session, getAIPProperty(aipState), SessionNotificationState.OK, value);
-    }
-
-    private void notifyIncrementSession(String sessionOwner, String session, AIPState aipState,
-            SessionNotificationState notifState, long value) {
-        // Add one to the new state
-        notifyIncrementSession(sessionOwner, session, getAIPProperty(aipState), notifState, value);
+    /**
+     * Notify session that a product is deleted
+     * @param sessionOwner
+     * @param session
+     * @param aips {@link AIPEntity}s of the deleted product
+     */
+    public void productDeleted(String sessionOwner, String session, Collection<AIPEntity> aips) {
+        int nbGenerated = 0;
+        int nbStored = 0;
+        for (AIPEntity aip : aips) {
+            switch (aip.getState()) {
+                case GENERATED:
+                    nbGenerated++;
+                    break;
+                case STORED:
+                    nbStored++;
+                    break;
+                case DELETED:
+                default:
+                    break;
+            }
+        }
+        if (nbGenerated > 0) {
+            // -x product_storing
+            notifyDecrementSession(sessionOwner, session, PRODUCT_STORE_PENDING, SessionNotificationState.OK,
+                                   nbGenerated);
+        }
+        if (nbStored > 0) {
+            // -x product_stored
+            notifyDecrementSession(sessionOwner, session, PRODUCT_STORED, SessionNotificationState.OK, nbStored);
+            // TODO -x product_meta_stored ???
+        }
+        notifyDecrementSession(sessionOwner, session, PRODUCT_COUNT, SessionNotificationState.OK,
+                               nbGenerated + nbStored);
     }
 
     private void notifyIncrementSession(String sessionOwner, String session, String property,
@@ -227,43 +254,12 @@ public class SessionNotifier {
         publisher.publish(event);
     }
 
-    private String getSIPProperty(SIPState state) {
-        switch (state) {
-            case INGESTED:
-                return PROPERTY_SIP_INGESTING;
-            case STORED:
-                return PROPERTY_SIP_INGESTED;
-            case DELETED:
-                return PROPERTY_SIP_DELETING;
-            case ERROR:
-                return PROPERTY_SIP_ERROR;
-        }
-        return "";
-    }
-
-    private String getAIPProperty(AIPState state) {
-        switch (state) {
-            case GENERATED:
-                return PROPERTY_AIP_GENERATED;
-            case STORED:
-                return PROPERTY_AIP_STORED;
-            case DELETED:
-                return PROPERTY_AIP_DELETING;
-            case ERROR:
-                return PROPERTY_AIP_ERROR;
-        }
-        return "";
-    }
-
-    public void notifyAIPMetaDataStoring(AIPEntity aip) {
-        // TODO
-    }
-
-    public void notifyAIPMetaDataStored(AIPEntity aip) {
-        // TODO
-    }
-
-    public void notifyAIPMetaDataStoreError(AIPEntity aip) {
-        // TODO
+    private void notifyDecrementSession(String sessionOwner, String session, String property,
+            SessionNotificationState notifState, long value) {
+        // Add one to the new state
+        SessionMonitoringEvent event = SessionMonitoringEvent.build(sessionOwner, session, notifState,
+                                                                    SESSION_NOTIF_STEP, SessionNotificationOperator.DEC,
+                                                                    property, value);
+        publisher.publish(event);
     }
 }

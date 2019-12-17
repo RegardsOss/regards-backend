@@ -18,14 +18,25 @@
  */
 package fr.cnes.regards.modules.ingest.dto.request;
 
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+
 /**
+ * {@link AbstractRequest} types.
+ *
  * @author Léo Mieulet
+ * @author Sébastien Binda
  */
 public class RequestTypeConstant {
+
     public static final String STORE_METADATA_VALUE = "STORE_METADATA";
+
     public static final String UPDATE_VALUE = "UPDATE";
+
     public static final String AIP_UPDATES_CREATOR_VALUE = "AIP_UPDATES_CREATOR";
+
     public static final String INGEST_VALUE = "INGEST";
-    public static final String STORAGE_DELETION_VALUE = "STORAGE_DELETION";
+
+    public static final String OAIS_DELETION_CREATOR_VALUE = "OAIS_DELETION_CREATOR";
+
     public static final String OAIS_DELETION_VALUE = "OAIS_DELETION";
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,27 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.request;
+package fr.cnes.regards.modules.ingest.domain.aip;
 
-import java.util.Set;
-
-import fr.cnes.regards.modules.storagelight.client.RequestInfo;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /**
- * Delete file request service
+ * Light version of {@link AIPEntity}. Does not contains SIP information.
  *
- * @author Léo Mieulet
- *
+ * @author Sébastien Binda
  */
-public interface IDeleteRequestService {
+@Entity
+@Table(name = "t_aip")
+public class AIPEntityLight extends AbstractAIPEntity {
 
-    /**
-     * Handle file deletion error
-     */
-    void handleRemoteDeleteError(Set<RequestInfo> requestInfos);
-
-    /**
-     * Handle file deletion success
-     */
-    void handleRemoteDeleteSuccess(Set<RequestInfo> requestInfos);
 }

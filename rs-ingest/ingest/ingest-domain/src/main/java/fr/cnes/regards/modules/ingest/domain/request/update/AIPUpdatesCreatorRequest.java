@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.ingest.domain.request.update;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import java.time.OffsetDateTime;
@@ -57,8 +57,9 @@ public class AIPUpdatesCreatorRequest extends AbstractRequest {
     public static AIPUpdatesCreatorRequest build(AIPUpdateParametersDto params) {
         AIPUpdatesCreatorRequest result = new AIPUpdatesCreatorRequest();
         result.setCreationDate(OffsetDateTime.now());
-        result.setState(InternalRequestStep.CREATED);
+        result.setState(InternalRequestState.TO_SCHEDULE);
         result.setConfig(params);
+        result.setDtype(RequestTypeConstant.AIP_UPDATES_CREATOR_VALUE);
         return result;
     }
 }

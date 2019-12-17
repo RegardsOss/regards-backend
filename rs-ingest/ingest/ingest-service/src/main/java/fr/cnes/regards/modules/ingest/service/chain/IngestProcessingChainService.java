@@ -56,9 +56,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IngestProcessingChainSpecifications;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -121,14 +121,13 @@ public class IngestProcessingChainService implements IIngestProcessingChainServi
             defaultChain.setName(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
 
             // Create default validation plugin configuration
-            PluginConfiguration validationDefaultConf = new PluginConfiguration(
-                    PluginUtils.createPluginMetaData(DefaultSipValidation.class), DEFAULT_VALIDATION_PLUGIN_CONF_LABEL);
+            PluginConfiguration validationDefaultConf = new PluginConfiguration(DEFAULT_VALIDATION_PLUGIN_CONF_LABEL,
+                    DefaultSipValidation.class.getAnnotation(Plugin.class).id());
             defaultChain.setValidationPlugin(validationDefaultConf);
 
             // Create default generation plugin configuration
-            PluginConfiguration generationDefaultConf = new PluginConfiguration(
-                    PluginUtils.createPluginMetaData(DefaultSingleAIPGeneration.class),
-                    DEFAULT_GENERATION_PLUGIN_CONF_LABEL);
+            PluginConfiguration generationDefaultConf = new PluginConfiguration(DEFAULT_GENERATION_PLUGIN_CONF_LABEL,
+                    DefaultSingleAIPGeneration.class.getAnnotation(Plugin.class).id());
             defaultChain.setGenerationPlugin(generationDefaultConf);
 
             createNewChain(defaultChain);
