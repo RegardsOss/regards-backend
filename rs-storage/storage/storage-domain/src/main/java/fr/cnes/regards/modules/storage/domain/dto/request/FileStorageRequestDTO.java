@@ -152,7 +152,7 @@ public class FileStorageRequestDTO {
      * @return current {@link FileStorageRequestDTO}
      */
     public FileStorageRequestDTO withType(String type) {
-        this.mimeType = type;
+        this.type = type;
         return this;
     }
 

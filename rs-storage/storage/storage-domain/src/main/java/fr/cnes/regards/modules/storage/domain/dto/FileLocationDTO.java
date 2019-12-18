@@ -58,4 +58,9 @@ public class FileLocationDTO {
         return url;
     }
 
+    @Override
+    public String toString() {
+        return String.format("FileLocation storage=[%s] url=[%s]", this.storage, this.url);
+    }
+
 }
