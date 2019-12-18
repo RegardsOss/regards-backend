@@ -542,6 +542,7 @@ public class FileStorageRequestService {
                             reqMetaInfos.getMimeType());
                     fileMeta.setHeight(reqMetaInfos.getHeight());
                     fileMeta.setWidth(reqMetaInfos.getWidth());
+                    fileMeta.setType(reqMetaInfos.getType());
                     FileReference fileRef = fileRefReqService
                             .reference(owner, fileMeta, new FileLocation(request.getStorage(), result.getStoredUrl()),
                                        request.getGroupIds());
