@@ -25,6 +25,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -277,17 +278,19 @@ public class StorageLocationController implements IResourceController<StorageLoc
                 : StorageType.OFFLINE;
         if (type != StorageType.OFFLINE) {
             if (!location.getConfiguration().getPriority().equals(StorageLocationConfiguration.HIGHEST_PRIORITY)) {
-                resourceService.addLink(resource, this.getClass(), "increaseStorageLocationPriority", "up",
+                resourceService.addLink(resource, this.getClass(), "increaseStorageLocationPriority",
+                                        LinkRelation.of("up"),
                                         MethodParamFactory.build(String.class, location.getName()));
             }
             if (!location.getConfiguration().getPriority().equals(storageLocationConfigurationService
                     .getLowestPriority(location.getConfiguration().getStorageType()))) {
-                resourceService.addLink(resource, this.getClass(), "decreaseStorageLocationPriority", "down",
+                resourceService.addLink(resource, this.getClass(), "decreaseStorageLocationPriority",
+                                        LinkRelation.of("down"),
                                         MethodParamFactory.build(String.class, location.getName()));
             }
-            resourceService.addLink(resource, this.getClass(), "copyFiles", "copy",
+            resourceService.addLink(resource, this.getClass(), "copyFiles", LinkRelation.of("copy"),
                                     MethodParamFactory.build(CopyFilesParametersDTO.class));
-            resourceService.addLink(resource, this.getClass(), "deleteFiles", "deleteFiles",
+            resourceService.addLink(resource, this.getClass(), "deleteFiles", LinkRelation.of("deleteFiles"),
                                     MethodParamFactory.build(String.class, location.getName()),
                                     MethodParamFactory.build(Boolean.class));
         }
