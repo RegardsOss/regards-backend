@@ -26,6 +26,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -226,11 +227,11 @@ public class RoleController implements IResourceController<Role> {
 
                 //we add the link to manage a role resources accesses except for PROJECT_ADMIN and INSTANCE_ADMIN
                 resourceService.addLink(resource, RoleResourceController.class, "getRoleResources",
-                                        "manage-resource-access",
+                                        LinkRelation.of("manage-resource-access"),
                                         MethodParamFactory.build(String.class, role.getName()));
             }
             resourceService.addLink(resource, this.getClass(), "getAllRoles", LinkRels.LIST);
-            resourceService.addLink(resource, this.getClass(), "getBorrowableRoles", "borrowable");
+            resourceService.addLink(resource, this.getClass(), "getBorrowableRoles", LinkRelation.of("borrowable"));
         }
         return resource;
     }

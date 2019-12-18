@@ -29,6 +29,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -363,24 +364,28 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
                                     MethodParamFactory.build(PagedResourcesAssembler.class));
             // Specific links to add in WAITING_ACCESS state
             if (UserStatus.WAITING_ACCESS.equals(element.getStatus())) {
-                resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest", "accept",
+                resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest",
+                                        LinkRelation.of("accept"),
                                         MethodParamFactory.build(Long.class, element.getId()));
-                resourceService.addLink(resource, RegistrationController.class, "denyAccessRequest", "deny",
-                                        MethodParamFactory.build(Long.class, element.getId()));
+                resourceService.addLink(resource, RegistrationController.class, "denyAccessRequest",
+                                        LinkRelation.of("deny"), MethodParamFactory.build(Long.class, element.getId()));
             }
             // Specific links to add in ACCESS_GRANTED state
             if (UserStatus.ACCESS_GRANTED.equals(element.getStatus())) {
-                resourceService.addLink(resource, RegistrationController.class, "inactiveAccess", "inactive",
+                resourceService.addLink(resource, RegistrationController.class, "inactiveAccess",
+                                        LinkRelation.of("inactive"),
                                         MethodParamFactory.build(Long.class, element.getId()));
             }
             // Specific links to add in ACCESS_DENIED state
             if (UserStatus.ACCESS_DENIED.equals(element.getStatus())) {
-                resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest", "accept",
+                resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest",
+                                        LinkRelation.of("accept"),
                                         MethodParamFactory.build(Long.class, element.getId()));
             }
             // Specific links to add in ACCESS_INACTIVE state
             if (UserStatus.ACCESS_INACTIVE.equals(element.getStatus())) {
-                resourceService.addLink(resource, RegistrationController.class, "activeAccess", "active",
+                resourceService.addLink(resource, RegistrationController.class, "activeAccess",
+                                        LinkRelation.of("active"),
                                         MethodParamFactory.build(Long.class, element.getId()));
             }
         }
@@ -392,7 +397,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * project admins.
      * @param projectUser {@link ProjectUser} to transform to HATEOAS resources.
      * @return HATEOAS resources for {@link ProjectUser}
-    
+
      */
     public EntityModel<ProjectUser> toResourceRegisteredUser(ProjectUser projectUser) {
         EntityModel<ProjectUser> resource = resourceService.toResource(projectUser);

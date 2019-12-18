@@ -28,6 +28,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -511,22 +512,22 @@ public class AccountsController implements IResourceController<Account> {
             }
             // Accept link, only if the account is in PENDING state
             if (AccountStatus.PENDING.equals(element.getStatus())) {
-                resourceService.addLink(resource, this.getClass(), "acceptAccount", "accept",
+                resourceService.addLink(resource, this.getClass(), "acceptAccount", LinkRelation.of("accept"),
                                         MethodParamFactory.build(String.class, element.getEmail()));
             }
             // Refuse link, only if the account is in PENDING state
             if (AccountStatus.PENDING.equals(element.getStatus())) {
-                resourceService.addLink(resource, this.getClass(), "refuseAccount", "refuse",
+                resourceService.addLink(resource, this.getClass(), "refuseAccount", LinkRelation.of("refuse"),
                                         MethodParamFactory.build(String.class, element.getEmail()));
             }
             // Inactive link, only if the account is in ACTIVE state
             if (AccountStatus.ACTIVE.equals(element.getStatus())) {
-                resourceService.addLink(resource, this.getClass(), "inactiveAccount", "inactive",
+                resourceService.addLink(resource, this.getClass(), "inactiveAccount", LinkRelation.of("inactive"),
                                         MethodParamFactory.build(String.class, element.getEmail()));
             }
             // Active link, only if the account is in INACTIVE state
             if (AccountStatus.INACTIVE.equals(element.getStatus())) {
-                resourceService.addLink(resource, this.getClass(), "activeAccount", "active",
+                resourceService.addLink(resource, this.getClass(), "activeAccount", LinkRelation.of("active"),
                                         MethodParamFactory.build(String.class, element.getEmail()));
             }
         }

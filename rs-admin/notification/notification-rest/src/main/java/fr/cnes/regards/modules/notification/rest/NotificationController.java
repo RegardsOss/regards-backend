@@ -29,6 +29,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -299,10 +300,10 @@ public class NotificationController implements IResourceController<Notification>
         resourceService.addLink(resource, this.getClass(), "deleteNotification", LinkRels.DELETE,
                                 MethodParamFactory.build(Long.class, element.getId()));
         if (element.getStatus().equals(NotificationStatus.UNREAD)) {
-            resourceService.addLink(resource, this.getClass(), "setNotificationRead", "read",
+            resourceService.addLink(resource, this.getClass(), "setNotificationRead", LinkRelation.of("read"),
                                     MethodParamFactory.build(Long.class, element.getId()));
         } else {
-            resourceService.addLink(resource, this.getClass(), "setNotificationUnRead", "unread",
+            resourceService.addLink(resource, this.getClass(), "setNotificationUnRead", LinkRelation.of("unread"),
                                     MethodParamFactory.build(Long.class, element.getId()));
         }
         return resource;
@@ -316,10 +317,10 @@ public class NotificationController implements IResourceController<Notification>
         resourceService.addLink(resource, this.getClass(), "deleteNotification", LinkRels.DELETE,
                                 MethodParamFactory.build(Long.class, element.getId()));
         if (element.getStatus().equals(NotificationStatus.UNREAD)) {
-            resourceService.addLink(resource, this.getClass(), "setNotificationRead", "read",
+            resourceService.addLink(resource, this.getClass(), "setNotificationRead", LinkRelation.of("read"),
                                     MethodParamFactory.build(Long.class, element.getId()));
         } else {
-            resourceService.addLink(resource, this.getClass(), "setNotificationUnRead", "unread",
+            resourceService.addLink(resource, this.getClass(), "setNotificationUnRead", LinkRelation.of("unread"),
                                     MethodParamFactory.build(Long.class, element.getId()));
         }
         return resource;
