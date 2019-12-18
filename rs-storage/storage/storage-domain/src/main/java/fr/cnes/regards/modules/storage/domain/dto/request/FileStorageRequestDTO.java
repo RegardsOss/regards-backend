@@ -23,8 +23,11 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
+import org.springframework.util.InvalidMimeTypeException;
 
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
@@ -45,6 +48,8 @@ import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
  * @author Sébastien Binda
  */
 public class FileStorageRequestDTO {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageRequestDTO.class);
 
     @NotBlank(message = "File name is mandatory")
     private String fileName;
@@ -102,8 +107,13 @@ public class FileStorageRequestDTO {
      * @return {@link FileReferenceMetaInfo}
      */
     public FileReferenceMetaInfo buildMetaInfo() {
-        return new FileReferenceMetaInfo(checksum, algorithm, fileName, null, MediaType.valueOf(mimeType))
-                .withType(type);
+        MediaType mt = MediaType.APPLICATION_OCTET_STREAM;
+        try {
+            mt = MediaType.valueOf(mimeType);
+        } catch (InvalidMimeTypeException e) {
+            LOGGER.error("Invalid media type for new file reference : %s .Falling back to default media type application/octet-stream");
+        }
+        return new FileReferenceMetaInfo(checksum, algorithm, fileName, null, mt).withType(type);
     }
 
     public String getFileName() {
@@ -152,7 +162,7 @@ public class FileStorageRequestDTO {
      * @return current {@link FileStorageRequestDTO}
      */
     public FileStorageRequestDTO withType(String type) {
-        this.mimeType = type;
+        this.type = type;
         return this;
     }
 
