@@ -138,21 +138,25 @@ public class AIPStorageService implements IAIPStorageService {
                             // this storage accepts everything
                             if (storage.getTargetTypes().isEmpty()
                                     || storage.getTargetTypes().contains(dataObject.getRegardsDataType())) {
-                                filesToStore.add(FileStorageRequestDTO
+                                FileStorageRequestDTO storageRequest = FileStorageRequestDTO
                                         .build(dataObject.getFilename(), dataObject.getChecksum(),
                                                dataObject.getAlgorithm(),
                                                ci.getRepresentationInformation().getSyntax().getMimeType().toString(),
                                                aip.getId().toString(), l.getUrl(), storage.getPluginBusinessId(),
-                                               Optional.ofNullable(storage.getStorePath())));
+                                               Optional.ofNullable(storage.getStorePath()));
+                                storageRequest.withType(dataObject.getRegardsDataType().toString());
+                                filesToStore.add(storageRequest);
                             }
                         }
                     } else {
                         // Create a storage reference
                         validateForReference(dataObject);
-                        filesToRefer.add(FileReferenceRequestDTO
+                        FileReferenceRequestDTO referenceRequest = FileReferenceRequestDTO
                                 .build(dataObject.getFilename(), dataObject.getChecksum(), dataObject.getAlgorithm(),
                                        ci.getRepresentationInformation().getSyntax().getMimeType().toString(),
-                                       dataObject.getFileSize(), aip.getId().toString(), l.getStorage(), l.getUrl()));
+                                       dataObject.getFileSize(), aip.getId().toString(), l.getStorage(), l.getUrl());
+                        referenceRequest.withType(dataObject.getRegardsDataType().toString());
+                        filesToRefer.add(referenceRequest);
                     }
                 }
             }
@@ -245,12 +249,12 @@ public class AIPStorageService implements IAIPStorageService {
 
             // Check if some storeRequests are concerning the AIP itself
             Set<RequestResultInfoDTO> storeRequestInfosForAIPManifest = storeRequestInfos.stream()
-                    .filter(r -> r.getRequestChecksum().equals(aipEntity.getChecksum())).collect(Collectors.toSet());
+                    .filter(AIPStorageService::isManifest).collect(Collectors.toSet());
             for (RequestResultInfoDTO storeRequestInfo : storeRequestInfosForAIPManifest) {
                 Set<OAISDataObjectLocation> manifestLocations = aipEntity.getManifestLocations();
                 // Remove any old reference to this storage
                 Set<OAISDataObjectLocation> newManifestLocations = manifestLocations.stream()
-                        .filter(ml -> ml.getStorage().equals(storeRequestInfo.getRequestStorage()))
+                        .filter(ml -> !ml.getStorage().equals(storeRequestInfo.getRequestStorage()))
                         .collect(Collectors.toSet());
                 // Generate the new ObjectLocation
                 newManifestLocations.add(OAISDataObjectLocation
@@ -263,6 +267,17 @@ public class AIPStorageService implements IAIPStorageService {
                 aipEntity.getStorages().add(storeRequestInfo.getRequestStorage());
             }
         }
+    }
+
+    /**
+     * Check if a storage result info {@link RequestResultInfoDTO} is about a manifest file
+     * @param result {@link RequestResultInfoDTO}
+     * @return boolean
+     */
+    public static boolean isManifest(RequestResultInfoDTO result) {
+        return ((result != null) && (result.getResultFile() != null) && (result.getResultFile().getMetaInfo() != null)
+                && (result.getResultFile().getMetaInfo().getType() != null)
+                && DataType.AIP.toString().equals(result.getResultFile().getMetaInfo().getType()));
     }
 
     @Override
@@ -299,17 +314,15 @@ public class AIPStorageService implements IAIPStorageService {
                                                          eventInfo.getResultFile().getMetaInfo().getChecksum(),
                                                          storageLocation));
                 }
-            } else if (aip.getChecksum().equals(eventInfo.getRequestChecksum())) {
+            } else if (isManifest(eventInfo)) {
                 // The event concern the AIP manifest itself
-
                 // Ensure the previous storage location is removed before adding the new manifest location
                 Set<OAISDataObjectLocation> newManifestLocation = aip.getManifestLocations().stream()
                         .filter(l -> !l.getStorage().equals(storageLocation)).collect(Collectors.toSet());
-
                 edited = true;
                 // Add this new location to the manifest locations
                 newManifestLocation.add(OAISDataObjectLocation.build(eventInfo.getResultFile().getLocation().getUrl(),
-                                                              storageLocation, eventInfo.getRequestStorePath()));
+                                                                     storageLocation, eventInfo.getRequestStorePath()));
                 aip.setManifestLocations(newManifestLocation);
             }
         }
@@ -319,7 +332,6 @@ public class AIPStorageService implements IAIPStorageService {
     @Override
     public boolean removeAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos) {
         boolean edited = false;
-
         // Iterate over events (we already know they concerns the provided aip)
         for (RequestResultInfoDTO eventInfo : storeRequestInfos) {
             String storageLocation = eventInfo.getRequestStorage();
@@ -360,21 +372,20 @@ public class AIPStorageService implements IAIPStorageService {
                             .collect(Collectors.toSet());
                     aip.setStorages(updatedStorages);
                 }
-            } else if (aip.getChecksum().equals(eventInfo.getRequestChecksum())) {
+            } else if (AIPStorageService.isManifest(eventInfo)
+                    && eventInfo.getRequestChecksum().equals(aip.getChecksum())) {
                 // The event concern the AIP manifest itself
-
                 // Check if the event storage location exists in manifest locations
                 boolean manifestLocationExists = aip.getManifestLocations().stream()
                         .anyMatch(l -> l.getStorage().equals(storageLocation));
-
                 if (manifestLocationExists) {
                     edited = true;
-
                     // Remove this location from the manifest locations
                     Set<OAISDataObjectLocation> updatedStorages = aip.getManifestLocations().stream()
                             .filter(s -> !s.getStorage().equals(storageLocation)).collect(Collectors.toSet());
                     aip.setManifestLocations(updatedStorages);
                 }
+
             }
         }
         return edited;
@@ -528,10 +539,12 @@ public class AIPStorageService implements IAIPStorageService {
                     storePath = storeLocation.getStorePath();
                 }
             }
-            files.add(FileStorageRequestDTO.build(aip.getId().toString(), checksum, AIPService.MD5_ALGORITHM,
-                                                  MediaType.APPLICATION_JSON_UTF8_VALUE, aip.getId().toString(),
-                                                  originUrl.toString(), storeLocation.getStorage(),
-                                                  Optional.ofNullable(storePath)));
+            FileStorageRequestDTO storageRequest = FileStorageRequestDTO
+                    .build(aip.getId().toString(), checksum, AIPService.MD5_ALGORITHM,
+                           MediaType.APPLICATION_JSON_UTF8_VALUE, aip.getId().toString(), originUrl.toString(),
+                           storeLocation.getStorage(), Optional.ofNullable(storePath));
+            storageRequest.withType(DataType.AIP.toString());
+            files.add(storageRequest);
         }
 
         return files;

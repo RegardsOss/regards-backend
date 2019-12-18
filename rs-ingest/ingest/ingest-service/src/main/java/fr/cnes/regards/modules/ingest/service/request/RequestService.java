@@ -18,10 +18,28 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -52,21 +70,6 @@ import fr.cnes.regards.modules.ingest.service.job.RequestDeletionJob;
 import fr.cnes.regards.modules.ingest.service.job.RequestRetryJob;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
 
 /**
  * Service to handle all {@link AbstractRequest}s
@@ -144,6 +147,9 @@ public class RequestService implements IRequestService {
                         ingestRequestService.handleRemoteStoreSuccess((IngestRequest) (request), ri);
                     } else if (request instanceof AIPStoreMetaDataRequest) {
                         aipSaveMetaDataService.handleSuccess((AIPStoreMetaDataRequest) request, ri);
+                    } else {
+                        LOGGER.warn("Request of type {} cannot be handle for remote storage success",
+                                    request.getClass().getName());
                     }
                 }
             }
@@ -164,11 +170,10 @@ public class RequestService implements IRequestService {
         return abstractRequestRepository.findAll(AbstractRequestSpecifications.searchAllByRemoteStepGroupId(groupIds));
     }
 
-
     @Override
     public Page<AbstractRequest> findRequests(SearchRequestsParameters filters, Pageable pageable) {
-        return abstractRequestRepository
-                .findAll(AbstractRequestSpecifications.searchAllByFilters(filters, pageable), pageable);
+        return abstractRequestRepository.findAll(AbstractRequestSpecifications.searchAllByFilters(filters, pageable),
+                                                 pageable);
     }
 
     @Override
@@ -234,8 +239,8 @@ public class RequestService implements IRequestService {
     public void scheduleRequestDeletionJob(SearchRequestsParameters filters) {
         Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestDeletionJob.CRITERIA, filters));
         // Schedule request deletion job
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_DELETION_JOB_PRIORITY.getPriority(), jobParameters,
-                authResolver.getUser(), RequestDeletionJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_DELETION_JOB_PRIORITY.getPriority(),
+                jobParameters, authResolver.getUser(), RequestDeletionJob.class.getName());
         jobInfo = jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("Schedule {} job with id {}", RequestDeletionJob.class.getName(), jobInfo.getId());
     }
@@ -285,14 +290,14 @@ public class RequestService implements IRequestService {
                 switchRequestState(request);
             } else {
                 LOGGER.error("Cannot relaunch the request {} because this request is not in ERROR state. It was in {} state",
-                        request.getId(), request.getState());
+                             request.getId(), request.getState());
             }
         }
         scheduleRequests(requests);
 
         // For macro job, create a job
         for (AbstractRequest request : requests) {
-            if (request.getState() == InternalRequestState.CREATED && isJobRequest(request)) {
+            if ((request.getState() == InternalRequestState.CREATED) && isJobRequest(request)) {
                 scheduleJob(request);
             }
         }
@@ -342,7 +347,7 @@ public class RequestService implements IRequestService {
             // Ignore BLOCKED request
             if (request.getState() != InternalRequestState.BLOCKED) {
                 // Do not use history if the request is also a jobRequest or session values are missing
-                if (!isJobRequest(request) && request.getSessionOwner() != null && request.getSession() != null) {
+                if (!isJobRequest(request) && (request.getSessionOwner() != null) && (request.getSession() != null)) {
                     if (!history.contains(request.getSessionOwner(), request.getSession())) {
                         // Check if the request can be processed right now
                         request = scheduleRequest(request);
@@ -387,7 +392,8 @@ public class RequestService implements IRequestService {
     }
 
     private boolean isJobRequest(RequestTypeEnum requestType) {
-        return Lists.newArrayList(RequestTypeEnum.OAIS_DELETION_CREATOR, RequestTypeEnum.AIP_UPDATES_CREATOR).contains(requestType);
+        return Lists.newArrayList(RequestTypeEnum.OAIS_DELETION_CREATOR, RequestTypeEnum.AIP_UPDATES_CREATOR)
+                .contains(requestType);
     }
 
     /**
