@@ -25,10 +25,13 @@ import java.util.Set;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 
 /**
@@ -42,7 +45,8 @@ public class FileReferenceSpecification {
     }
 
     public static Specification<FileReference> search(String fileName, String checksum, Collection<String> types,
-            Collection<String> storages, Collection<String> owners, OffsetDateTime from, OffsetDateTime to) {
+            Collection<String> storages, Collection<String> owners, OffsetDateTime from, OffsetDateTime to,
+            Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             Join<Object, Object> metaInfoJoin = root.join("metaInfo");
@@ -69,6 +73,11 @@ public class FileReferenceSpecification {
             if (to != null) {
                 predicates.add(cb.lessThanOrEqualTo(root.get("storageDate"), to));
             }
+            // Add order
+            Sort.Direction defaultDirection = Sort.Direction.ASC;
+            String defaultAttribute = "id";
+            query.orderBy(SpecificationUtils.buildOrderBy(page, root, cb, defaultAttribute, defaultDirection));
+
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

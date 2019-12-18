@@ -116,6 +116,9 @@ public class FileDeletionRequestService {
     private RequestsGroupService reqGroupService;
 
     @Autowired
+    private RequestStatusService reqStatusService;
+
+    @Autowired
     private ILockService lockService;
 
     /**
@@ -130,7 +133,10 @@ public class FileDeletionRequestService {
                 .findByFileReferenceId(fileReferenceToDelete.getId());
         if (!existingOne.isPresent()) {
             // Create new deletion request
-            fileDeletionRequestRepo.save(new FileDeletionRequest(fileReferenceToDelete, forceDelete, groupId, status));
+            FileDeletionRequest newDelRequest = new FileDeletionRequest(fileReferenceToDelete, forceDelete, groupId,
+                    status);
+            newDelRequest.setStatus(reqStatusService.getNewStatus(newDelRequest, Optional.of(status)));
+            fileDeletionRequestRepo.save(newDelRequest);
         } else {
             // Retry deletion if error
             retry(existingOne.get(), forceDelete);

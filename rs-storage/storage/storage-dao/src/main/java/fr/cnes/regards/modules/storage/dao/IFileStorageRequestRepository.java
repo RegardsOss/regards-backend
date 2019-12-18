@@ -77,4 +77,9 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     boolean existsByStorageAndStatusIn(String storageId, Set<FileRequestStatus> status);
 
+    Page<FileStorageRequest> findByStatus(FileRequestStatus delayed, Pageable page);
+
+    boolean existsByStorageAndMetaInfoChecksumAndStatusIn(String storage, String checksum,
+            Set<FileRequestStatus> ruuninstatus);
+
 }

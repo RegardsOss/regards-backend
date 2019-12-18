@@ -110,6 +110,9 @@ public class FileCopyRequestService {
     @Autowired
     private ILockService lockService;
 
+    @Autowired
+    private RequestStatusService reqStatusService;
+
     /**
      * Initialize new copy requests from Flow items.
      * @param items
@@ -179,7 +182,7 @@ public class FileCopyRequestService {
     private FileCopyRequest handleAlreadyExists(FileCopyRequestDTO requestDto, FileCopyRequest request,
             String newGroupId) {
         if (request.getStatus() == FileRequestStatus.ERROR) {
-            request.setStatus(FileRequestStatus.TO_DO);
+            request.setStatus(reqStatusService.getNewStatus(request, Optional.empty()));
             request.setFileCacheGroupId(newGroupId);
             return update(request);
         }
@@ -403,5 +406,14 @@ public class FileCopyRequestService {
     public void releaseLock() {
         lockService.releaseLock(COPY_PROCESS_LOCK, new CopyFlowItem());
         LOGGER.trace("[COPY PROCESS] Lock released !");
+    }
+
+    /**
+     * Check if a copy request exists for the given file reference
+     * @param fileReferenceToDelete
+     * @return
+     */
+    public boolean existsByChecksumAndStatusIn(String checksum, Collection<FileRequestStatus> status) {
+        return copyRepository.existsByMetaInfoChecksumAndStatusIn(checksum, status);
     }
 }

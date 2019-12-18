@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
@@ -68,6 +69,8 @@ public interface IFileCopyRequestRepository
 
     void deleteByStorage(String storageLocationId);
 
-    boolean existsByStorageAndStatusIn(String storageId, Set<FileRequestStatus> status);
+    boolean existsByStorageAndStatusIn(String storageId, Collection<FileRequestStatus> status);
+
+    boolean existsByMetaInfoChecksumAndStatusIn(String checksum, Collection<FileRequestStatus> status);
 
 }
