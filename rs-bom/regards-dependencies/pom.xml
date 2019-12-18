@@ -1069,21 +1069,26 @@
 				<version>${fr.cnes.regards.framework.notification.version}</version>
 			</dependency>
             <!-- Notifier -->
-			<dependency>
-				<groupId>fr.cnes.regards.modules.notifier</groupId>
-				<artifactId>notifier-rest</artifactId>
-				<version>${modules.notifier.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.notifier</groupId>
-				<artifactId>notifier-domain</artifactId>
-				<version>${modules.notifier.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.notifier</groupId>
-				<artifactId>notifier-dao</artifactId>
-				<version>${modules.notifier.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.notifier</groupId>
+                <artifactId>notifier-rest</artifactId>
+                <version>${fr.cnes.regards.modules.notifier.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.notifier</groupId>
+                <artifactId>notifier-domain</artifactId>
+                <version>${fr.cnes.regards.modules.notifier.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.notifier</groupId>
+                <artifactId>notifier-dao</artifactId>
+                <version>${fr.cnes.regards.modules.notifier.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.notifier</groupId>
+                <artifactId>notifier-dto</artifactId>
+                <version>${fr.cnes.regards.modules.notifier.version}</version>
+            </dependency>
             <!-- Notification Instance -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.notification-instance</groupId>
