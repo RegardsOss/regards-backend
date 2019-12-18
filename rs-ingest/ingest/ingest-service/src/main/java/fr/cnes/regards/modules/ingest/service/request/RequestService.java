@@ -147,6 +147,9 @@ public class RequestService implements IRequestService {
                         ingestRequestService.handleRemoteStoreSuccess((IngestRequest) (request), ri);
                     } else if (request instanceof AIPStoreMetaDataRequest) {
                         aipSaveMetaDataService.handleSuccess((AIPStoreMetaDataRequest) request, ri);
+                    } else {
+                        LOGGER.warn("Request of type {} cannot be handle for remote storage success",
+                                    request.getClass().getName());
                     }
                 }
             }

@@ -93,17 +93,13 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
     public void run() {
         Pageable pageRequest = PageRequest.of(0, aipIterationLimit, Sort.Direction.ASC, "id");
         Page<AIPEntity> aipsPage;
-        boolean isFirstPage = true;
         // Set the request as running
         deletionCreator.setState(InternalRequestState.RUNNING);
         oaisDeletionCreatorRepo.save(deletionCreator);
         do {
-            if (!isFirstPage) {
-                pageRequest.next();
-            }
             OAISDeletionCreatorPayload deletionPayload = deletionCreator.getConfig();
             aipsPage = aipRepository.findByFilters(deletionPayload, pageRequest);
-            LOGGER.info("-------------------------- Nb aips to delete = {}", aipsPage.getTotalElements());
+            LOGGER.info("[OAIS DELETION CREATOR JOB] Scheduling deletion of {} aips", aipsPage.getSize());
             // Save number of pages to publish job advancement
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();
@@ -113,11 +109,10 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
                                                                     deletionPayload.getDeletePhysicalFiles());
                 requestService.scheduleRequest(odr);
             }
-            isFirstPage = false;
             if (totalPages > 0) {
                 advanceCompletion();
             }
-            pageRequest.next();
+            pageRequest = pageRequest.next();
         } while (aipsPage.hasNext());
         // Delete the request
         requestService.deleteRequest(deletionCreator);

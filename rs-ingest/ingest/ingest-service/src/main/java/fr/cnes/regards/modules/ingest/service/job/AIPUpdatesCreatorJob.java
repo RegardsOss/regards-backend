@@ -18,6 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -32,14 +42,6 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
-import java.util.Map;
-import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 /**
  * This job creates {@link AbstractAIPUpdateTask} task to update. It scans AIP and create for each modification a task
@@ -89,14 +91,10 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
     public void run() {
         Pageable pageRequest = PageRequest.of(0, aipIterationLimit, Sort.Direction.ASC, "id");
         Page<AIPEntity> aipsPage;
-        boolean isFirstPage = true;
         // Set the request as running
         request.setState(InternalRequestState.RUNNING);
         aipUpdatesCreatorRepository.save(request);
         do {
-            if (!isFirstPage) {
-                pageRequest.next();
-            }
             AIPUpdateParametersDto updateTask = request.getConfig();
             aipsPage = aipRepository.findByFilters(updateTask.getCriteria(), pageRequest);
             // Save number of pages to publish job advancement
@@ -104,11 +102,10 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
                 totalPages = aipsPage.getTotalPages();
             }
             aipUpdateReqService.create(aipsPage.getContent(), AbstractAIPUpdateTask.build(updateTask));
-            isFirstPage = false;
             if (totalPages > 0) {
                 advanceCompletion();
             }
-            pageRequest.next();
+            pageRequest = pageRequest.next();
         } while (aipsPage.hasNext());
         // Delete the request
         requestService.deleteRequest(request);

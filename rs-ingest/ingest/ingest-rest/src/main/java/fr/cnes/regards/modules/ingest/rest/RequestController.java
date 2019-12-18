@@ -18,18 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import com.google.common.collect.Lists;
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
-import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +36,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.google.common.collect.Lists;
+
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 
 /**
  * This controller manages Requests.
@@ -97,7 +101,6 @@ public class RequestController implements IResourceController<RequestDto> {
         return new ResponseEntity<>(toPagedResources(requests, assembler), HttpStatus.OK);
     }
 
-
     @RequestMapping(value = REQUEST_RETRY_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.PUBLIC)
     public void retryRequests(@Valid @RequestBody SearchRequestsParameters filters) {
@@ -119,8 +122,10 @@ public class RequestController implements IResourceController<RequestDto> {
         if (InternalRequestState.ERROR == element.getState()) {
             resourceService.addLink(resource, this.getClass(), "retryRequests", "RETRY");
         }
-        if (!Lists.newArrayList(InternalRequestState.RUNNING, InternalRequestState.CREATED).contains(element.getState())) {
-            resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE);
+        if (!Lists.newArrayList(InternalRequestState.RUNNING, InternalRequestState.CREATED)
+                .contains(element.getState())) {
+            resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
+                                    MethodParamFactory.build(SearchRequestsParameters.class));
         }
 
         return resource;
