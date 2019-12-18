@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.hateoas;
 import org.springframework.cglib.core.Converter;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.util.Assert;
 
@@ -44,7 +45,7 @@ public interface IResourceService {
     /**
      * Utility method to add a build link to the specified {@link RepresentationModel}
      */
-    void addLink(RepresentationModel<?> resource, Class<?> controller, String methodName, String rel,
+    void addLink(RepresentationModel<?> resource, Class<?> controller, String methodName, LinkRelation rel,
             MethodParam<?>... methodParams);
 
     /**
@@ -54,13 +55,13 @@ public interface IResourceService {
      * @param rel rel name
      * @param methodParams method parameters
      */
-    Link buildLink(Class<?> controller, String methodName, String rel, MethodParam<?>... methodParams);
+    Link buildLink(Class<?> controller, String methodName, LinkRelation rel, MethodParam<?>... methodParams);
 
     /**
      * Utility method to add a build link with parameters to the specified {@link RepresentationModel}
      */
-    <C> void addLinkWithParams(RepresentationModel<?> resource, Class<C> controller, String methodName, String rel,
-            MethodParam<?>... methodParams);
+    <C> void addLinkWithParams(RepresentationModel<?> resource, Class<C> controller, String methodName,
+            LinkRelation rel, MethodParam<?>... methodParams);
 
     /**
      * Custom way of building link handling request params.
@@ -80,5 +81,6 @@ public interface IResourceService {
      * @param rel rel name
      * @param methodParams method parameters
      */
-    <C> Link buildLinkWithParams(Class<C> controller, String methodName, String rel, MethodParam<?>... methodParams);
+    <C> Link buildLinkWithParams(Class<C> controller, String methodName, LinkRelation rel,
+            MethodParam<?>... methodParams);
 }

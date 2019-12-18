@@ -45,6 +45,7 @@ import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -216,8 +217,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @param parameters the list of parameters
      * @param order the order
      */
-    public static PluginConfiguration build(String pluginId, String label, Collection<IPluginParam> parameters,
-            int order) {
+    public static PluginConfiguration build(String pluginId, @Nullable String label,
+            @Nullable Collection<IPluginParam> parameters, int order) {
         if (label == null) {
             label = UUID.randomUUID().toString();
         }
@@ -230,7 +231,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @param label the configuration label (if <code>null</code>, a random label is generated)
      * @param parameters the list of parameters
      */
-    public static PluginConfiguration build(String pluginId, String label, Collection<IPluginParam> parameters) {
+    public static PluginConfiguration build(String pluginId, @Nullable String label,
+            @Nullable Collection<IPluginParam> parameters) {
         return build(pluginId, label, parameters, 0);
     }
 
@@ -240,7 +242,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @param label the configuration label (if <code>null</code>, a random label is generated)
      * @param parameters the list of parameters
      */
-    public static PluginConfiguration build(Class<?> pluginType, String label, Collection<IPluginParam> parameters) {
+    public static PluginConfiguration build(Class<?> pluginType, @Nullable String label,
+            @Nullable Collection<IPluginParam> parameters) {
         Plugin plugin = pluginType.getAnnotation(Plugin.class);
         if (plugin == null) {
             throw new IllegalArgumentException(

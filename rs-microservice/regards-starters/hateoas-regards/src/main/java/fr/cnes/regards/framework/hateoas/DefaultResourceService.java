@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cglib.core.Converter;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.security.access.AccessDecisionManager;
@@ -66,7 +67,7 @@ public class DefaultResourceService implements IResourceService {
 
     @Override
     public void addLink(RepresentationModel<?> resource, final Class<?> controller, final String methodName,
-            final String rel, final MethodParam<?>... methodParams) {
+            LinkRelation rel, final MethodParam<?>... methodParams) {
 
         Assert.notNull(resource, "Resource should not be null");
         Link link = buildLink(controller, methodName, rel, methodParams);
@@ -77,7 +78,7 @@ public class DefaultResourceService implements IResourceService {
     }
 
     @Override
-    public Link buildLink(Class<?> controller, String methodName, String rel, MethodParam<?>... methodParams) {
+    public Link buildLink(Class<?> controller, String methodName, LinkRelation rel, MethodParam<?>... methodParams) {
         Assert.notNull(controller, "Controller should not be null");
         Assert.notNull(methodName, "Method name should not be null");
         Assert.notNull(rel, "Relation should not be null");
@@ -112,8 +113,8 @@ public class DefaultResourceService implements IResourceService {
         return null;
     }
 
-    protected Link buildLink(final Method pMethod, final String pRel, final Object... pParameterValues) {
-        return WebMvcLinkBuilder.linkTo(pMethod, pParameterValues).withRel(pRel);
+    protected Link buildLink(final Method pMethod, LinkRelation rel, final Object... pParameterValues) {
+        return WebMvcLinkBuilder.linkTo(pMethod, pParameterValues).withRel(rel);
     }
 
     /**
@@ -135,7 +136,7 @@ public class DefaultResourceService implements IResourceService {
      */
     @Override
     public <C> void addLinkWithParams(RepresentationModel<?> resource, final Class<C> controller,
-            final String methodName, final String rel, final MethodParam<?>... methodParams) {
+            final String methodName, LinkRelation rel, final MethodParam<?>... methodParams) {
 
         Assert.notNull(resource, "Resource should not be null");
         Link link = buildLinkWithParams(controller, methodName, rel, methodParams);
@@ -146,7 +147,7 @@ public class DefaultResourceService implements IResourceService {
     }
 
     @Override
-    public <C> Link buildLinkWithParams(Class<C> controller, String methodName, String rel,
+    public <C> Link buildLinkWithParams(Class<C> controller, String methodName, LinkRelation rel,
             MethodParam<?>... methodParams) {
         Assert.notNull(controller, "Controller should not be null");
         Assert.notNull(methodName, "Method name should not be null");
