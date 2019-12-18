@@ -22,7 +22,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +37,7 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
-import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
 
 /**
  * Legacy search engine client (same as {@link ISearchEngineClient} with explicit return type and fixed engine mapping)
@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResource
  *
  */
 @RestClient(name = "rs-catalog", contextId = "rs-catalog.legacy-search-engine.client")
-@RequestMapping(value = SearchEngineMappings.TYPE_MAPPING_FOR_LEGACY, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = SearchEngineMappings.TYPE_MAPPING_FOR_LEGACY, produces = MediaType.APPLICATION_JSON_VALUE)
 public interface ILegacySearchEngineClient {
 
     // Search on all entities
@@ -55,7 +55,7 @@ public interface ILegacySearchEngineClient {
      * Search on all index regardless the entity type
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_ALL_MAPPING)
-    ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAll(@RequestHeader HttpHeaders headers,
+    ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAll(@RequestHeader HttpHeaders headers,
             @RequestParam MultiValueMap<String, String> queryParams,
             @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER, required = false) String engineParserType,
             @RequestParam(SearchEngineMappings.PAGE) int page, @RequestParam(SearchEngineMappings.SIZE) int size);
@@ -64,7 +64,7 @@ public interface ILegacySearchEngineClient {
      * Get an entity from its URN regardless its type
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_ENTITY_MAPPING)
-    ResponseEntity<Resource<EntityFeature>> getEntity(
+    ResponseEntity<EntityModel<EntityFeature>> getEntity(
             @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
     // Collection mappings
@@ -73,7 +73,7 @@ public interface ILegacySearchEngineClient {
      * Search on all collections
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING)
-    ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllCollections(
+    ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAllCollections(
             @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER, required = false) String engineParserType,
             @RequestParam(SearchEngineMappings.PAGE) int page, @RequestParam(SearchEngineMappings.SIZE) int size);
@@ -91,7 +91,7 @@ public interface ILegacySearchEngineClient {
      * Get a collection from its URN
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_COLLECTION_MAPPING)
-    ResponseEntity<Resource<EntityFeature>> getCollection(
+    ResponseEntity<EntityModel<EntityFeature>> getCollection(
             @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
     // Dataset mappings
@@ -100,8 +100,8 @@ public interface ILegacySearchEngineClient {
      * Search on all datasets
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASETS_MAPPING)
-    ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllDatasets(
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
+    ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAllDatasets(@RequestHeader HttpHeaders headers,
+            @RequestParam MultiValueMap<String, String> queryParams,
             @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER, required = false) String engineParserType,
             @RequestParam(SearchEngineMappings.PAGE) int page, @RequestParam(SearchEngineMappings.SIZE) int size);
 
@@ -118,7 +118,7 @@ public interface ILegacySearchEngineClient {
      * Get a dataset from its URN
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_DATASET_MAPPING)
-    ResponseEntity<Resource<EntityFeature>> getDataset(
+    ResponseEntity<EntityModel<EntityFeature>> getDataset(
             @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
     // Dataobject mappings
@@ -127,7 +127,7 @@ public interface ILegacySearchEngineClient {
      * Search on all dataobjects
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING)
-    ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllDataobjects(
+    ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAllDataobjects(
             @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER, required = false) String engineParserType,
             @RequestParam(SearchEngineMappings.PAGE) int page, @RequestParam(SearchEngineMappings.SIZE) int size);
@@ -145,7 +145,7 @@ public interface ILegacySearchEngineClient {
      * Get a dataobject from its URN
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_DATAOBJECT_MAPPING)
-    ResponseEntity<Resource<EntityFeature>> getDataobject(
+    ResponseEntity<EntityModel<EntityFeature>> getDataobject(
             @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
     // Search dataobjects on a single dataset mapping
@@ -157,7 +157,7 @@ public interface ILegacySearchEngineClient {
      * conversion at the moment. It does not consider custom converter.
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING)
-    ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchSingleDataset(
+    ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchSingleDataset(
             @PathVariable(SearchEngineMappings.DATASET_URN) String datasetUrn, @RequestHeader HttpHeaders headers,
             @RequestParam MultiValueMap<String, String> queryParams,
             @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER, required = false) String engineParserType,
@@ -179,7 +179,7 @@ public interface ILegacySearchEngineClient {
      * Search dataobjects returning datasets
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING)
-    ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchDataobjectsReturnDatasets(
+    ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataobjectsReturnDatasets(
             @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER, required = false) String engineParserType,
             @RequestParam(SearchEngineMappings.PAGE) int page, @RequestParam(SearchEngineMappings.SIZE) int size);

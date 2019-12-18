@@ -35,7 +35,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
@@ -157,8 +157,8 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
 
         // - Manage attribute cache
-        List<Resource<AttributeModel>> resAtts = new ArrayList<>();
-        atts.forEach(att -> resAtts.add(new Resource<AttributeModel>(att)));
+        List<EntityModel<AttributeModel>> resAtts = new ArrayList<>();
+        atts.forEach(att -> resAtts.add(new EntityModel<AttributeModel>(att)));
         Mockito.when(attributeModelClientMock.getAttributes(null, null)).thenReturn(ResponseEntity.ok(resAtts));
         finder.refresh(getDefaultTenant());
 

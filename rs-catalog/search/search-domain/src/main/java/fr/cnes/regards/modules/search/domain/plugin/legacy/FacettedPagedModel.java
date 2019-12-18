@@ -23,29 +23,29 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.PagedModel;
 
 import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 
 /**
- * Extend the {@link PagedResources} to add a "facets" field.
+ * Extend the {@link PagedModel} to add a "facets" field.
  * @param <T> The type of the resources
  * @author Xavier-Alexandre Brochard
  */
-public class FacettedPagedResources<T> extends PagedResources<T> {
+public class FacettedPagedModel<T> extends PagedModel<T> {
 
     /**
      * The set of facets
      */
     private final Set<IFacet<?>> facets;
 
-    public FacettedPagedResources(Set<IFacet<?>> facets, Collection<T> content, PageMetadata metadata, Link... links) {
+    public FacettedPagedModel(Set<IFacet<?>> facets, Collection<T> content, PageMetadata metadata, Link... links) {
         this(facets, content, metadata, Arrays.asList(links));
     }
 
-    public FacettedPagedResources(Set<IFacet<?>> facets, Collection<T> content, PageMetadata metadata,
+    public FacettedPagedModel(Set<IFacet<?>> facets, Collection<T> content, PageMetadata metadata,
             Iterable<Link> pLinks) {
         super(content, metadata, pLinks);
         this.facets = facets;
@@ -56,26 +56,26 @@ public class FacettedPagedResources<T> extends PagedResources<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Resource<S>, S> FacettedPagedResources<T> wrap(Iterable<S> content, PageMetadata metadata,
+    public static <T extends EntityModel<S>, S> FacettedPagedModel<T> wrap(Iterable<S> content, PageMetadata metadata,
             Set<IFacet<?>> facets) {
         ArrayList<T> resources = new ArrayList<T>();
 
         if (content != null) {
             for (S element : content) {
                 if (element != null) {
-                    resources.add((T) new Resource<S>(element));
+                    resources.add((T) new EntityModel<S>(element));
                 }
             }
         }
 
-        return new FacettedPagedResources<T>(facets, resources, metadata);
+        return new FacettedPagedModel<T>(facets, resources, metadata);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = (prime * result) + ((facets == null) ? 0 : facets.hashCode());
+        result = prime * result + (facets == null ? 0 : facets.hashCode());
         return result;
     }
 
@@ -93,7 +93,7 @@ public class FacettedPagedResources<T> extends PagedResources<T> {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        FacettedPagedResources<?> other = (FacettedPagedResources<?>) obj;
+        FacettedPagedModel<?> other = (FacettedPagedModel<?>) obj;
         if (facets == null) {
             if (other.facets != null) {
                 return false;

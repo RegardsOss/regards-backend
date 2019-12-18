@@ -34,7 +34,7 @@ import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
@@ -54,7 +54,6 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
@@ -207,7 +206,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // Manage project
         Project project = new Project(1L, "Solar system project", "http://plop/icon.png", true, "SolarSystem");
         project.setHost("http://regards/solarsystem");
-        ResponseEntity<Resource<Project>> response = ResponseEntity.ok(new Resource<>(project));
+        ResponseEntity<EntityModel<Project>> response = ResponseEntity.ok(new EntityModel<>(project));
         Mockito.when(projectsClientMock.retrieveProject(Mockito.anyString())).thenReturn(response);
 
         // Bypass method access rights
@@ -278,8 +277,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
 
         // - Manage attribute cache
-        List<Resource<AttributeModel>> resAtts = new ArrayList<>();
-        atts.forEach(att -> resAtts.add(new Resource<AttributeModel>(att)));
+        List<EntityModel<AttributeModel>> resAtts = new ArrayList<>();
+        atts.forEach(att -> resAtts.add(new EntityModel<AttributeModel>(att)));
         Mockito.when(attributeModelClientMock.getAttributes(null, null)).thenReturn(ResponseEntity.ok(resAtts));
         finder.refresh(getDefaultTenant());
 
@@ -352,7 +351,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                      IPluginParam.build(OpenSearchEngine.ENGINE_PARAMETERS,
                                         PluginParameterTransformer.toJson(engineConfiguration)));
 
-        PluginConfiguration opensearchConf = PluginUtils.getPluginConfiguration(parameters, OpenSearchEngine.class);
+        PluginConfiguration opensearchConf = PluginConfiguration.build(OpenSearchEngine.class, null, parameters);
         openSearchPluginConf = pluginService.savePluginConfiguration(opensearchConf);
         SearchEngineConfiguration seConfOS = new SearchEngineConfiguration();
         seConfOS.setConfiguration(openSearchPluginConf);
@@ -471,7 +470,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         planet.addProperty(IProperty.buildString(PLANET_TYPE, type));
         planet.addProperty(IProperty.buildInteger(PLANET_DIAMETER, diameter));
         planet.addProperty(IProperty.buildLong(PLANET_SUN_DISTANCE, sunDistance));
-        if ((params != null) && !params.isEmpty()) {
+        if (params != null && !params.isEmpty()) {
             planet.addProperty(IProperty.buildStringArray(PLANET_PARAMS, params.toArray(new String[params.size()])));
         }
         return planet;

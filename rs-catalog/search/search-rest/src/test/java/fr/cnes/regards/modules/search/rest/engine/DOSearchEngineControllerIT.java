@@ -31,8 +31,8 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
@@ -76,11 +76,11 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
 
         // Mock user groups
         AccessGroup ag = new AccessGroup(ACCESS_GROUP);
-        Collection<Resource<AccessGroup>> ags = new ArrayList<>();
-        ags.add(new Resource<AccessGroup>(ag));
+        Collection<EntityModel<AccessGroup>> ags = new ArrayList<>();
+        ags.add(new EntityModel<AccessGroup>(ag));
 
-        PagedResources.PageMetadata md = new PagedResources.PageMetadata(0, 0, 0);
-        PagedResources<Resource<AccessGroup>> pagedResources = new PagedResources<>(ags, md, new ArrayList<>());
+        PagedModel.PageMetadata md = new PagedModel.PageMetadata(0, 0, 0);
+        PagedModel<EntityModel<AccessGroup>> pagedResources = new PagedModel<>(ags, md, new ArrayList<>());
         Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(ResponseEntity.ok(pagedResources));
     }

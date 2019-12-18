@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.search.client;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
-import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
 
 /**
  * Complex search client. Handle complex searches on catalog with :
@@ -44,8 +44,8 @@ import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResource
  *
  */
 @RestClient(name = "rs-catalog", contextId = "rs-catalog.complex-search.client")
-@RequestMapping(value = IComplexSearchClient.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = IComplexSearchClient.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE)
 public interface IComplexSearchClient {
 
     String TYPE_MAPPING = "/complex/search";
@@ -64,7 +64,7 @@ public interface IComplexSearchClient {
      * {@link DataType})
      */
     @RequestMapping(method = RequestMethod.POST)
-    ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchDataObjects(
+    ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataObjects(
             @RequestBody ComplexSearchRequest complexSearchRequest);
 
 }

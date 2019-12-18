@@ -54,7 +54,7 @@ public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactiona
         UniformResourceName urn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, getDefaultTenant(),
                 UUID.randomUUID(), 1);
         performDefaultGet(LinkPluginsDatasetsController.PATH_LINK,
-                          customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE),
+                          customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_VALUE),
                           "Failed to fetch a specific dataset using its id", urn.toString());
     }
 
@@ -66,7 +66,7 @@ public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactiona
                 UUID.randomUUID(), 1);
         final LinkPluginsDatasets newLink = new LinkPluginsDatasets(urn.toString(), Sets.newHashSet());
         performDefaultPut(LinkPluginsDatasetsController.PATH_LINK, newLink,
-                          customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE),
+                          customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_VALUE),
                           "Failed to fetch a specific dataset using its id", urn.toString());
     }
 

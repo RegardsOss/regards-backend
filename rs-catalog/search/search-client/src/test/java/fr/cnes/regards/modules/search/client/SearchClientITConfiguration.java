@@ -24,8 +24,8 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -72,10 +72,10 @@ public class SearchClientITConfiguration {
         IAccessGroupClient accessGroupClient = Mockito.mock(IAccessGroupClient.class);
 
         // Build accessGroupMock mock
-        final PagedResources.PageMetadata md = new PagedResources.PageMetadata(0, 0, 0);
-        final PagedResources<Resource<AccessGroup>> pagedResources = new PagedResources<>(new ArrayList<>(), md,
+        final PagedModel.PageMetadata md = new PagedModel.PageMetadata(0, 0, 0);
+        final PagedModel<EntityModel<AccessGroup>> pagedResources = new PagedModel<>(new ArrayList<>(), md,
                 new ArrayList<>());
-        final ResponseEntity<PagedResources<Resource<AccessGroup>>> pageResponseEntity = ResponseEntity
+        final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> pageResponseEntity = ResponseEntity
                 .ok(pagedResources);
         Mockito.when(accessGroupClient.retrieveAccessGroupsList(Mockito.anyBoolean(), Mockito.anyInt(),
                                                                 Mockito.anyInt()))

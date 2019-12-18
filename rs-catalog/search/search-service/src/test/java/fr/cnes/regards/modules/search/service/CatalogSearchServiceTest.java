@@ -31,8 +31,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -129,7 +129,7 @@ public class CatalogSearchServiceTest {
                 .thenAnswer(invocation -> invocation.getArguments()[0]);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(SampleDataUtils.TENANT);
         Mockito.when(resourceService.toResource(Mockito.any()))
-                .thenAnswer(invocation -> new Resource<>(invocation.getArguments()[0]));
+                .thenAnswer(invocation -> new EntityModel<>(invocation.getArguments()[0]));
 
         // Instanciate the tested class
         catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter,
@@ -163,8 +163,8 @@ public class CatalogSearchServiceTest {
         Mockito.when(searchService.search(Mockito.any(SimpleSearchKey.class), Mockito.any(Pageable.class),
                                           Mockito.any(ICriterion.class), Mockito.any()))
                 .thenReturn(expectedSearchResult);
-        PagedResources<Resource<DataObject>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATAOBJECT;
-        Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
+        PagedModel<EntityModel<DataObject>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATAOBJECT;
+        Mockito.when(assembler.toModel(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
         catalogSearchService.search(q, searchKey, SampleDataUtils.QUERY_FACETS, pageable);
@@ -201,8 +201,8 @@ public class CatalogSearchServiceTest {
         Mockito.when(searchService.search(Mockito.any(SimpleSearchKey.class), Mockito.any(Pageable.class),
                                           Mockito.any(ICriterion.class), Mockito.any()))
                 .thenReturn(expectedSearchResult);
-        PagedResources<Resource<DataObject>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATAOBJECT;
-        Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
+        PagedModel<EntityModel<DataObject>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATAOBJECT;
+        Mockito.when(assembler.toModel(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
         catalogSearchService.search(q, searchKey, null, pageable);

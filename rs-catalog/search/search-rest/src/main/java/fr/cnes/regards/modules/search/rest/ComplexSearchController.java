@@ -25,8 +25,8 @@ import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -125,7 +125,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Get features from a complex search", role = DefaultRole.PUBLIC)
-    public ResponseEntity<PagedResources<Resource<EntityFeature>>> searchDataObjects(
+    public ResponseEntity<PagedModel<EntityModel<EntityFeature>>> searchDataObjects(
             @RequestBody ComplexSearchRequest complexSearchRequest, PagedResourcesAssembler<EntityFeature> assembler)
             throws ModuleException {
         List<ICriterion> searchCriterions = Lists.newArrayList();
@@ -191,7 +191,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
     }
 
     @Override
-    public Resource<EntityFeature> toResource(EntityFeature entity, Object... extras) {
+    public EntityModel<EntityFeature> toResource(EntityFeature entity, Object... extras) {
         return resourceService.toResource(entity);
     }
 }

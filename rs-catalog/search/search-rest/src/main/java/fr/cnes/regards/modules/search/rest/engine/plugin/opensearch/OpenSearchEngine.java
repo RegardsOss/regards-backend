@@ -33,8 +33,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -231,7 +231,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         IResponseBuilder<?> builder = getBuilder(context);
         builder.addMetadata(UUID.randomUUID().toString(), engineConfiguration,
                             SearchEngineController
-                                    .buildExtraLink(resourceService, context, Link.REL_SELF, EXTRA_DESCRIPTION)
+                                    .buildExtraLink(resourceService, context, IanaLinkRelations.SELF, EXTRA_DESCRIPTION)
                                     .getHref(),
                             context, configuration, page,
                             SearchEngineController.buildPaginationLinks(resourceService, page, context));
@@ -403,12 +403,12 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     }
 
     @Override
-    public ResponseEntity<List<Resource<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
+    public ResponseEntity<List<EntityModel<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
             throws ModuleException {
         List<PropertyBound<?>> bounds = catalogSearchService
                 .retrievePropertiesBounds(context.getPropertyNames(), parse(context), context.getSearchType());
-        return ResponseEntity
-                .ok(bounds.stream().map(bound -> new Resource<PropertyBound<?>>(bound)).collect(Collectors.toList()));
+        return ResponseEntity.ok(bounds.stream().map(bound -> new EntityModel<PropertyBound<?>>(bound))
+                .collect(Collectors.toList()));
     }
 
 }

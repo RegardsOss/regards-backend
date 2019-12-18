@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
  *
  */
 @RestClient(name = "rs-catalog", contextId = "rs-catalog.search-engine.client")
-@RequestMapping(value = SearchEngineMappings.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = SearchEngineMappings.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
 public interface ISearchEngineClient {
 
     // Search on all entities

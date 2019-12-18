@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -63,7 +63,7 @@ public class EngineConfiguration {
         mockDataset.setIpId(UniformResourceName
                 .fromString("URN:AIP:DATASET:tenant:27de606c-a6cd-411f-a5ba-bd1b2f29c965:V1"));
         Mockito.when(client.retrieveDataset(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<Resource<Dataset>>(HateoasUtils.wrap(mockDataset), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<EntityModel<Dataset>>(HateoasUtils.wrap(mockDataset), HttpStatus.OK));
         return client;
     }
 
@@ -82,10 +82,10 @@ public class EngineConfiguration {
         IAccessGroupClient accessGroupClient = Mockito.mock(IAccessGroupClient.class);
 
         // Build accessGroupMock mock
-        PagedResources.PageMetadata md = new PagedResources.PageMetadata(0, 0, 0);
-        PagedResources<Resource<AccessGroup>> pagedResources = new PagedResources<>(new ArrayList<>(), md,
+        PagedModel.PageMetadata md = new PagedModel.PageMetadata(0, 0, 0);
+        PagedModel<EntityModel<AccessGroup>> pagedResources = new PagedModel<>(new ArrayList<>(), md,
                 new ArrayList<>());
-        ResponseEntity<PagedResources<Resource<AccessGroup>>> pageResponseEntity = ResponseEntity.ok(pagedResources);
+        ResponseEntity<PagedModel<EntityModel<AccessGroup>>> pageResponseEntity = ResponseEntity.ok(pagedResources);
         Mockito.when(accessGroupClient.retrieveAccessGroupsList(Mockito.anyBoolean(), Mockito.anyInt(),
                                                                 Mockito.anyInt()))
                 .thenReturn(pageResponseEntity);
