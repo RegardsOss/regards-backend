@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.backendforfrontend.rest;
 
 import java.util.List;
 
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -137,12 +137,12 @@ public class BackendForFrontendTestUtils {
     /**
      * The services applicable to DATASET_0
      */
-    public static final ResponseEntity<List<Resource<PluginServiceDto>>> SERVICES_FOR_DATASET_0;
+    public static final ResponseEntity<List<EntityModel<PluginServiceDto>>> SERVICES_FOR_DATASET_0;
 
     /**
      * The services applicable to DATASET_1
      */
-    public static final ResponseEntity<List<Resource<PluginServiceDto>>> SERVICES_FOR_DATASET_1;
+    public static final ResponseEntity<List<EntityModel<PluginServiceDto>>> SERVICES_FOR_DATASET_1;
 
     private static Gson gson = new Gson();
 
@@ -197,14 +197,14 @@ public class BackendForFrontendTestUtils {
     static {
         List<AbstractEntity<?>> entities = Lists.newArrayList(BackendForFrontendTestUtils.DATAOBJECT,
                                                               BackendForFrontendTestUtils.COLLECTION);
-        PagedResources<Resource<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        PagedModel<EntityModel<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_ALL_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
     static {
         List<AbstractEntity<?>> entities = Lists.newArrayList(BackendForFrontendTestUtils.COLLECTION);
-        PagedResources<Resource<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        PagedModel<EntityModel<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_COLLECTIONS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
@@ -212,21 +212,21 @@ public class BackendForFrontendTestUtils {
     static {
         List<AbstractEntity<?>> entities = Lists.newArrayList(BackendForFrontendTestUtils.DATASET_0,
                                                               BackendForFrontendTestUtils.DATASET_1);
-        PagedResources<Resource<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        PagedModel<EntityModel<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_DATASETS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
     static {
         List<AbstractEntity<?>> entities = Lists.newArrayList(BackendForFrontendTestUtils.DATAOBJECT);
-        PagedResources<Resource<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        PagedModel<EntityModel<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_DATAOBJECTS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
     static {
         List<AbstractEntity<?>> entities = Lists.newArrayList(BackendForFrontendTestUtils.DOCUMENT);
-        PagedResources<Resource<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        PagedModel<EntityModel<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_DOCUMENTS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
@@ -270,13 +270,13 @@ public class BackendForFrontendTestUtils {
     static {
         List<PluginServiceDto> asList = Lists.newArrayList(BackendForFrontendTestUtils.PLUGIN_SERVICE_DTO_A,
                                                            BackendForFrontendTestUtils.PLUGIN_SERVICE_DTO_C);
-        List<Resource<PluginServiceDto>> asResources = HateoasUtils.wrapList(asList);
+        List<EntityModel<PluginServiceDto>> asResources = HateoasUtils.wrapList(asList);
         SERVICES_FOR_DATASET_0 = new ResponseEntity<>(asResources, HttpStatus.OK);
     }
 
     static {
         List<PluginServiceDto> asList = Lists.newArrayList(BackendForFrontendTestUtils.PLUGIN_SERVICE_DTO_B);
-        List<Resource<PluginServiceDto>> asResources = HateoasUtils.wrapList(asList);
+        List<EntityModel<PluginServiceDto>> asResources = HateoasUtils.wrapList(asList);
         SERVICES_FOR_DATASET_1 = new ResponseEntity<>(asResources, HttpStatus.OK);
     }
 

@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.access.services.rest.ui;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -72,14 +72,14 @@ public class UIPluginServiceController implements IResourceController<UIPluginCo
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(role = DefaultRole.PUBLIC,
             description = "Return all generic ui services plus those linked to passed dataset if any given")
-    public ResponseEntity<List<Resource<UIPluginConfiguration>>> retrieveServices(
+    public ResponseEntity<List<EntityModel<UIPluginConfiguration>>> retrieveServices(
             @RequestParam(value = "dataset_id", required = false) final String datasetId) {
         final List<UIPluginConfiguration> services = service.retrieveActivePluginServices(datasetId, null);
         return new ResponseEntity<>(toResources(services), HttpStatus.OK);
     }
 
     @Override
-    public Resource<UIPluginConfiguration> toResource(final UIPluginConfiguration element, final Object... extras) {
+    public EntityModel<UIPluginConfiguration> toResource(final UIPluginConfiguration element, final Object... extras) {
         return resourceService.toResource(element);
     }
 

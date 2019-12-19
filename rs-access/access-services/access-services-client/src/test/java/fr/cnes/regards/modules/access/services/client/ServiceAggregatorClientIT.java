@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
@@ -86,7 +86,7 @@ public class ServiceAggregatorClientIT extends AbstractRegardsWebIT {
      */
     @Test
     public void retrieveServices_shouldReturnServices() {
-        ResponseEntity<List<Resource<PluginServiceDto>>> result = client
+        ResponseEntity<List<EntityModel<PluginServiceDto>>> result = client
                 .retrieveServices(Arrays.asList("coucou"), Arrays.asList(ServiceScope.MANY));
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
     }

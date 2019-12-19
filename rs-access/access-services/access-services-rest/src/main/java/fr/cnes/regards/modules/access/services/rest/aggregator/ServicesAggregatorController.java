@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -89,11 +89,11 @@ public class ServicesAggregatorController {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Returns services applied to all datasets plus those of the given dataset",
             role = DefaultRole.PUBLIC)
-    public ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
+    public ResponseEntity<List<EntityModel<PluginServiceDto>>> retrieveServices(
             @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIpIds,
             @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> applicationModes) {
         // Retrieve catalog services
-        ResponseEntity<List<Resource<PluginConfigurationDto>>> catalogServices = catalogServicesClient
+        ResponseEntity<List<EntityModel<PluginConfigurationDto>>> catalogServices = catalogServicesClient
                 .retrieveServices(datasetIpIds, applicationModes);
         // Retrive ui services
         List<UIPluginConfiguration> uiServices = uiPluginConfigurationService

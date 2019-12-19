@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.configuration.rest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -71,10 +71,10 @@ public class LayoutController implements IResourceController<Layout> {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve IHM layout configuration for the given applicationId",
             role = DefaultRole.PUBLIC)
-    public HttpEntity<Resource<Layout>> retrieveLayout(@PathVariable("applicationId") final String applicationId)
+    public HttpEntity<EntityModel<Layout>> retrieveLayout(@PathVariable("applicationId") final String applicationId)
             throws EntityNotFoundException {
         final Layout layout = layoutService.retrieveLayout(applicationId);
-        final Resource<Layout> resource = toResource(layout);
+        final EntityModel<Layout> resource = toResource(layout);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
@@ -91,16 +91,16 @@ public class LayoutController implements IResourceController<Layout> {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve IHM layout configuration for the given applicationId",
             role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Layout>> updateLayout(@PathVariable("applicationId") final String applicationId,
+    public HttpEntity<EntityModel<Layout>> updateLayout(@PathVariable("applicationId") final String applicationId,
             @Valid @RequestBody final Layout layout) throws EntityException {
         final Layout updated = layoutService.updateLayout(layout);
-        final Resource<Layout> resource = toResource(updated);
+        final EntityModel<Layout> resource = toResource(updated);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @Override
-    public Resource<Layout> toResource(final Layout element, final Object... extras) {
-        final Resource<Layout> resource = resourceService.toResource(element);
+    public EntityModel<Layout> toResource(final Layout element, final Object... extras) {
+        final EntityModel<Layout> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveLayout", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, element.getApplicationId()));
         resourceService.addLink(resource, this.getClass(), "updateLayout", LinkRels.UPDATE,
