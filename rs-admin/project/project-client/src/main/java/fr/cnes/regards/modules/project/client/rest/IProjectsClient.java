@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.project.client.rest;
 
 import javax.validation.Valid;
 
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,8 +42,8 @@ import fr.cnes.regards.modules.project.domain.Project;
 
  */
 @RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.projects-client")
-@RequestMapping(value = "/projects", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/projects", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IProjectsClient {
 
     // Projects Requests
@@ -63,7 +63,7 @@ public interface IProjectsClient {
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
-    ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(@RequestParam("page") int pPage,
+    ResponseEntity<PagedModel<EntityModel<Project>>> retrieveProjectList(@RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
     /**
@@ -71,7 +71,7 @@ public interface IProjectsClient {
      */
     @RequestMapping(value = "/public", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
-    ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(@RequestParam("page") int page,
+    ResponseEntity<PagedModel<EntityModel<Project>>> retrievePublicProjectList(@RequestParam("page") int page,
             @RequestParam("size") int size);
 
     /**
@@ -85,7 +85,7 @@ public interface IProjectsClient {
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
-    ResponseEntity<Resource<Project>> createProject(@Valid @RequestBody Project pNewProject);
+    ResponseEntity<EntityModel<Project>> createProject(@Valid @RequestBody Project pNewProject);
 
     /**
      *
@@ -98,7 +98,7 @@ public interface IProjectsClient {
      */
     @RequestMapping(method = RequestMethod.GET, value = "/{project_name}")
     @ResponseBody
-    ResponseEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") String pProjectName);
+    ResponseEntity<EntityModel<Project>> retrieveProject(@PathVariable("project_name") String pProjectName);
 
     /**
      *
@@ -113,7 +113,7 @@ public interface IProjectsClient {
      */
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}")
     @ResponseBody
-    ResponseEntity<Resource<Project>> updateProject(@PathVariable("project_name") String pProjectName,
+    ResponseEntity<EntityModel<Project>> updateProject(@PathVariable("project_name") String pProjectName,
             @RequestBody Project pProjectToUpdate);
 
     /**

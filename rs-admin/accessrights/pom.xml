@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>accessrights</artifactId>
-	<version>GEODE</version>
 	<packaging>pom</packaging>
 	<name>Accessrights</name>
 	<description>Module for managing access right features</description>

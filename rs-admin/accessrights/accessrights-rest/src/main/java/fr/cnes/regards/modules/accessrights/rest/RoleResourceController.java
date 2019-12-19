@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Preconditions;
+
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -84,8 +86,8 @@ public class RoleResourceController implements IResourceController<ResourcesAcce
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Get all resource accesses of a role", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<ResourcesAccess>>> getRoleResources(@PathVariable("role_name") String roleName)
-            throws ModuleException {
+    public ResponseEntity<List<EntityModel<ResourcesAccess>>> getRoleResources(
+            @PathVariable("role_name") String roleName) throws ModuleException {
         Role role = roleService.retrieveRole(roleName);
         Set<ResourcesAccess> resources = roleService.retrieveRoleResourcesAccesses(role.getId());
         return new ResponseEntity<>(toResources(resources, roleName), HttpStatus.OK);
@@ -93,7 +95,7 @@ public class RoleResourceController implements IResourceController<ResourcesAcce
 
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Add access to one resource for a role", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<ResourcesAccess>> addRoleResource(@PathVariable("role_name") String roleName,
+    public ResponseEntity<EntityModel<ResourcesAccess>> addRoleResource(@PathVariable("role_name") String roleName,
             @RequestBody @Valid ResourcesAccess newResourcesAccess) throws ModuleException {
         Role role = roleService.retrieveRole(roleName);
         roleService.addResourceAccesses(role.getId(), newResourcesAccess);
@@ -109,11 +111,11 @@ public class RoleResourceController implements IResourceController<ResourcesAcce
     }
 
     @Override
-    public Resource<ResourcesAccess> toResource(ResourcesAccess resourcesAccess, Object... extras) {
+    public EntityModel<ResourcesAccess> toResource(ResourcesAccess resourcesAccess, Object... extras) {
         Preconditions.checkNotNull(extras);
         String roleName = (String) extras[0];
 
-        Resource<ResourcesAccess> resource = hateoasService.toResource(resourcesAccess);
+        EntityModel<ResourcesAccess> resource = hateoasService.toResource(resourcesAccess);
         hateoasService.addLink(resource, this.getClass(), "getRoleResources", LinkRels.LIST,
                                MethodParamFactory.build(String.class, roleName));
         hateoasService.addLink(resource, this.getClass(), "addRoleResource", LinkRels.CREATE,
@@ -138,8 +140,7 @@ public class RoleResourceController implements IResourceController<ResourcesAcce
             if (!currentRole.isNative()) {
                 Role publicRole = roleService.retrieveRole(DefaultRole.PUBLIC.name());
                 Set<ResourcesAccess> publicResources = roleService.retrieveRoleResourcesAccesses(publicRole.getId());
-                return !publicResources.contains(
-                        resourcesAccess); // on a custom role we can only remove a resource access if IT IS NOT one of public
+                return !publicResources.contains(resourcesAccess); // on a custom role we can only remove a resource access if IT IS NOT one of public
             }
             return true; // we can remove any resources from any native role but PROJECT_ADMIN
         } catch (EntityNotFoundException e) {

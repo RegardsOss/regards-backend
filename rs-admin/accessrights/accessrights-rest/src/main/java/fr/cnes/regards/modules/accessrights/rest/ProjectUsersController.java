@@ -28,8 +28,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -126,7 +127,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the list of users of the project", role = DefaultRole.ADMIN)
-    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveProjectUserList(
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(
             @RequestParam(name = "status", required = false) String status,
             @RequestParam(name = "partialEmail", required = false) String emailStart,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -145,7 +146,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResponseBody
     @RequestMapping(value = PENDINGACCESSES, method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves the list of access request", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveAccessRequestList(
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<ProjectUser> assembler) {
         final Page<ProjectUser> projectUsers = projectUserService.retrieveAccessRequestList(pageable);
@@ -162,7 +163,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @RequestMapping(value = USER_ID_RELATIVE_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the project user and only display  metadata",
             role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long userId)
+    public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long userId)
             throws EntityNotFoundException {
         final ProjectUser user = projectUserService.retrieveUser(userId);
         return new ResponseEntity<>(toResource(user), HttpStatus.OK);
@@ -178,10 +179,10 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @RequestMapping(value = "/myuser", method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the current authenticated project user and only display  metadata",
             role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Resource<ProjectUser>> retrieveCurrentProjectUser()
+    public ResponseEntity<EntityModel<ProjectUser>> retrieveCurrentProjectUser()
             throws EntityNotFoundException, EntityOperationForbiddenException {
         String curentUserEmail = authResolver.getUser();
-        if ((curentUserEmail == null) || curentUserEmail.isEmpty()) {
+        if (curentUserEmail == null || curentUserEmail.isEmpty()) {
             throw new EntityOperationForbiddenException("Unable to retrieve current authenticated user.");
 
         }
@@ -199,7 +200,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @RequestMapping(value = "/email/{user_email}", method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the project user and only display  metadata",
             role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUserByEmail(
+    public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUserByEmail(
             @PathVariable("user_email") String userEmail) throws EntityNotFoundException {
         ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
         return new ResponseEntity<>(toResource(user), HttpStatus.OK);
@@ -213,9 +214,9 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
         ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
         if (user.getRole().getName().equals(DefaultRole.INSTANCE_ADMIN.toString())
                 || user.getRole().getName().equals(DefaultRole.ADMIN.toString())
-                || (user.getRole().getName().equals(DefaultRole.PROJECT_ADMIN.toString()))
-                || ((user.getRole().getParentRole() != null)
-                        && user.getRole().getParentRole().getName().equals(DefaultRole.ADMIN.toString()))) {
+                || user.getRole().getName().equals(DefaultRole.PROJECT_ADMIN.toString())
+                || user.getRole().getParentRole() != null
+                        && user.getRole().getParentRole().getName().equals(DefaultRole.ADMIN.toString())) {
             return new ResponseEntity<>(true, HttpStatus.OK);
         }
         return new ResponseEntity<>(false, HttpStatus.OK);
@@ -235,7 +236,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResponseBody
     @RequestMapping(value = USER_ID_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "update the project user", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<ProjectUser>> updateProjectUser(@PathVariable("user_id") Long userId,
+    public ResponseEntity<EntityModel<ProjectUser>> updateProjectUser(@PathVariable("user_id") Long userId,
             @RequestBody ProjectUser updatedProjectUser) throws EntityException {
         ProjectUser updatedUser = projectUserService.updateUserInfos(userId, updatedProjectUser);
         return new ResponseEntity<>(toResource(updatedUser), HttpStatus.OK);
@@ -256,8 +257,8 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResponseBody
     @RequestMapping(value = "/myuser", method = RequestMethod.PUT)
     @ResourceAccess(description = "Update the current authenticated project user", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Resource<ProjectUser>> updateCurrentProjectUser(@RequestBody ProjectUser updatedProjectUser)
-            throws EntityException {
+    public ResponseEntity<EntityModel<ProjectUser>> updateCurrentProjectUser(
+            @RequestBody ProjectUser updatedProjectUser) throws EntityException {
         ProjectUser user = projectUserService.retrieveCurrentUser();
         if (!user.getId().equals(updatedProjectUser.getId())) {
             throw new EntityOperationForbiddenException("You are only allowed to update your own user properties.");
@@ -277,7 +278,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Create a projectUser by bypassing registration process (Administrator feature)",
             role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<ProjectUser>> createUser(@Valid @RequestBody AccessRequestDto dto)
+    public ResponseEntity<EntityModel<ProjectUser>> createUser(@Valid @RequestBody AccessRequestDto dto)
             throws EntityException {
         final ProjectUser userCreated = projectUserService.createProjectUser(dto);
         return new ResponseEntity<>(toResource(userCreated), HttpStatus.CREATED);
@@ -315,7 +316,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResourceAccess(
             description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_id",
             role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(
             @PathVariable("role_id") Long roleId,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<ProjectUser> assembler) throws EntityNotFoundException {
@@ -337,7 +338,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
             description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_name",
             role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(value = "/roles", method = RequestMethod.GET)
-    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUsersList(
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(
             @RequestParam("role_name") String role,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<ProjectUser> assembler) throws EntityNotFoundException {
@@ -346,9 +347,9 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     }
 
     @Override
-    public Resource<ProjectUser> toResource(final ProjectUser element, final Object... extras) {
-        Resource<ProjectUser> resource = resourceService.toResource(element);
-        if ((element != null) && (element.getId() != null)) {
+    public EntityModel<ProjectUser> toResource(final ProjectUser element, final Object... extras) {
+        EntityModel<ProjectUser> resource = resourceService.toResource(element);
+        if (element != null && element.getId() != null) {
             resource = resourceService.toResource(element);
             resourceService.addLink(resource, this.getClass(), "retrieveProjectUser", LinkRels.SELF,
                                     MethodParamFactory.build(Long.class, element.getId()));
@@ -363,24 +364,28 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
                                     MethodParamFactory.build(PagedResourcesAssembler.class));
             // Specific links to add in WAITING_ACCESS state
             if (UserStatus.WAITING_ACCESS.equals(element.getStatus())) {
-                resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest", "accept",
+                resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest",
+                                        LinkRelation.of("accept"),
                                         MethodParamFactory.build(Long.class, element.getId()));
-                resourceService.addLink(resource, RegistrationController.class, "denyAccessRequest", "deny",
-                                        MethodParamFactory.build(Long.class, element.getId()));
+                resourceService.addLink(resource, RegistrationController.class, "denyAccessRequest",
+                                        LinkRelation.of("deny"), MethodParamFactory.build(Long.class, element.getId()));
             }
             // Specific links to add in ACCESS_GRANTED state
             if (UserStatus.ACCESS_GRANTED.equals(element.getStatus())) {
-                resourceService.addLink(resource, RegistrationController.class, "inactiveAccess", "inactive",
+                resourceService.addLink(resource, RegistrationController.class, "inactiveAccess",
+                                        LinkRelation.of("inactive"),
                                         MethodParamFactory.build(Long.class, element.getId()));
             }
             // Specific links to add in ACCESS_DENIED state
             if (UserStatus.ACCESS_DENIED.equals(element.getStatus())) {
-                resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest", "accept",
+                resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest",
+                                        LinkRelation.of("accept"),
                                         MethodParamFactory.build(Long.class, element.getId()));
             }
             // Specific links to add in ACCESS_INACTIVE state
             if (UserStatus.ACCESS_INACTIVE.equals(element.getStatus())) {
-                resourceService.addLink(resource, RegistrationController.class, "activeAccess", "active",
+                resourceService.addLink(resource, RegistrationController.class, "activeAccess",
+                                        LinkRelation.of("active"),
                                         MethodParamFactory.build(Long.class, element.getId()));
             }
         }
@@ -394,9 +399,9 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * @return HATEOAS resources for {@link ProjectUser}
 
      */
-    public Resource<ProjectUser> toResourceRegisteredUser(ProjectUser projectUser) {
-        Resource<ProjectUser> resource = resourceService.toResource(projectUser);
-        if ((projectUser != null) && (projectUser.getId() != null)) {
+    public EntityModel<ProjectUser> toResourceRegisteredUser(ProjectUser projectUser) {
+        EntityModel<ProjectUser> resource = resourceService.toResource(projectUser);
+        if (projectUser != null && projectUser.getId() != null) {
             resource = resourceService.toResource(projectUser);
             resourceService.addLink(resource, this.getClass(), "retrieveCurrentProjectUser", LinkRels.SELF);
             resourceService.addLink(resource, this.getClass(), "updateCurrentProjectUser", LinkRels.UPDATE,

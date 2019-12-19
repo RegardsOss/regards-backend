@@ -22,8 +22,8 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -46,29 +46,29 @@ public class DefaultProjectClient implements IProjectsClient {
     private String host;
 
     @Override
-    public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(int pPage, int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<Project>>> retrieveProjectList(int pPage, int pSize) {
         throw new UnsupportedOperationException("Not implemented in default project client");
     }
 
     @Override
-    public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(int page, int size) {
+    public ResponseEntity<PagedModel<EntityModel<Project>>> retrievePublicProjectList(int page, int size) {
         throw new UnsupportedOperationException("Not implemented in default project client");
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> createProject(@Valid Project pNewProject) {
+    public ResponseEntity<EntityModel<Project>> createProject(@Valid Project pNewProject) {
         throw new UnsupportedOperationException("Not implemented in default project client");
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> retrieveProject(String pProjectName) {
+    public ResponseEntity<EntityModel<Project>> retrieveProject(String pProjectName) {
         Project project = new Project("desc", null, true, pProjectName);
         project.setHost(host);
-        return ResponseEntity.ok(new Resource<>(project));
+        return ResponseEntity.ok(new EntityModel<>(project));
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> updateProject(String pProjectName, Project pProjectToUpdate) {
+    public ResponseEntity<EntityModel<Project>> updateProject(String pProjectName, Project pProjectToUpdate) {
         throw new UnsupportedOperationException("Not implemented in default project client");
     }
 

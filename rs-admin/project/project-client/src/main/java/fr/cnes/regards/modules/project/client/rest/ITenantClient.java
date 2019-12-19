@@ -36,8 +36,8 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
  *
  */
 @RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.tenant-client")
-@RequestMapping(value = "/tenants", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/tenants", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface ITenantClient {
 
     @RequestMapping(method = RequestMethod.GET)

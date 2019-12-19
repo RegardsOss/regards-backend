@@ -23,7 +23,7 @@ import java.util.List;
 import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,8 +47,8 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
 
  */
 @RestClient(name = "rs-admin", contextId = "rs-admin.registration-client")
-@RequestMapping(value = "/accesses", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/accesses", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IRegistrationClient {
 
     /**
@@ -58,7 +58,7 @@ public interface IRegistrationClient {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<List<Resource<ProjectUser>>> retrieveAccessRequestList(@RequestParam("page") int pPage,
+    ResponseEntity<List<EntityModel<ProjectUser>>> retrieveAccessRequestList(@RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
     /**
@@ -70,7 +70,7 @@ public interface IRegistrationClient {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
-    ResponseEntity<Resource<AccessRequestDto>> requestAccess(@Valid @RequestBody AccessRequestDto pAccessRequest);
+    ResponseEntity<EntityModel<AccessRequestDto>> requestAccess(@Valid @RequestBody AccessRequestDto pAccessRequest);
 
     /**
      * Request a new access, i.e. a new project user with external authentication system.
@@ -81,7 +81,7 @@ public interface IRegistrationClient {
      */
     @ResponseBody
     @RequestMapping(value = "/external", method = RequestMethod.POST)
-    ResponseEntity<Resource<AccessRequestDto>> requestExternalAccess(
+    ResponseEntity<EntityModel<AccessRequestDto>> requestExternalAccess(
             @Valid @RequestBody AccessRequestDto pAccessRequest);
 
     /**
@@ -124,7 +124,7 @@ public interface IRegistrationClient {
      */
     @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.GET)
-    ResponseEntity<Resource<AccessSettings>> getAccessSettings();
+    ResponseEntity<EntityModel<AccessSettings>> getAccessSettings();
 
     /**
      * Update the {@link AccessSettings}.

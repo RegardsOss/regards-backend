@@ -21,9 +21,9 @@ package fr.cnes.regards.microserices.administration.stubs;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.PagedResources.PageMetadata;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -39,32 +39,33 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
 public class ProjectConnectionClientStub implements IProjectConnectionClient {
 
     @Override
-    public ResponseEntity<PagedResources<Resource<ProjectConnection>>> getAllProjectConnections(String pProjectName) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectConnection>>> getAllProjectConnections(String pProjectName) {
 
-        List<Resource<ProjectConnection>> resources = new ArrayList<>();
+        List<EntityModel<ProjectConnection>> resources = new ArrayList<>();
         ProjectConnection connection = new ProjectConnection(0L, ProjectClientStub.PROJECT, "MICROSERVICE", "", "", "",
-                                                             "");
-        resources.add(new Resource<>(connection));
+                "");
+        resources.add(new EntityModel<>(connection));
 
-        PagedResources<Resource<ProjectConnection>> page = new PagedResources<>(resources, new PageMetadata(1, 1, 1),
-                                                                                new ArrayList<>());
+        PagedModel<EntityModel<ProjectConnection>> page = new PagedModel<>(resources, new PageMetadata(1, 1, 1),
+                new ArrayList<>());
         return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<Resource<ProjectConnection>> getProjectConnection(String pProjectName, Long pConnectionId) {
+    public ResponseEntity<EntityModel<ProjectConnection>> getProjectConnection(String pProjectName,
+            Long pConnectionId) {
         return null;
     }
 
     @Override
-    public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(String pProjectName,
+    public ResponseEntity<EntityModel<ProjectConnection>> createProjectConnection(String pProjectName,
             ProjectConnection pProjectConnection) {
         return null;
     }
 
     @Override
-    public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(String pProjectName, Long pConnectionId,
-            ProjectConnection pProjectConnection) {
+    public ResponseEntity<EntityModel<ProjectConnection>> updateProjectConnection(String pProjectName,
+            Long pConnectionId, ProjectConnection pProjectConnection) {
         return null;
     }
 

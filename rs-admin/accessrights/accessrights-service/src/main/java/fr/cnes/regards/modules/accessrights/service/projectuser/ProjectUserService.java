@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -190,8 +190,7 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public ProjectUser updateUserInfos(Long userId, ProjectUser updatedProjectUser)
-            throws EntityException {
+    public ProjectUser updateUserInfos(Long userId, ProjectUser updatedProjectUser) throws EntityException {
 
         if (!updatedProjectUser.getId().equals(userId)) {
             throw new EntityInconsistentIdentifierException(userId, updatedProjectUser.getId(), ProjectUser.class);
@@ -302,10 +301,11 @@ public class ProjectUserService implements IProjectUserService {
     public ProjectUser createProjectUser(AccessRequestDto accessRequestDto)
             throws EntityAlreadyExistsException, EntityInvalidException {
         try {
-            ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(accessRequestDto.getEmail());
+            ResponseEntity<EntityModel<Account>> accountResponse = accountsClient
+                    .retrieveAccounByEmail(accessRequestDto.getEmail());
             if (accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
-                Account newAccount = new Account(accessRequestDto.getEmail(), accessRequestDto.getFirstName(), accessRequestDto.getLastName(),
-                        accessRequestDto.getPassword());
+                Account newAccount = new Account(accessRequestDto.getEmail(), accessRequestDto.getFirstName(),
+                        accessRequestDto.getLastName(), accessRequestDto.getPassword());
                 newAccount.setStatus(AccountStatus.ACTIVE);
                 AccountNPassword newAccountWithPassword = new AccountNPassword(newAccount, newAccount.getPassword());
                 accountsClient.createAccount(newAccountWithPassword);
@@ -319,7 +319,7 @@ public class ProjectUserService implements IProjectUserService {
             // Get role for projectUser to create
             Role role;
             try {
-                if ((accessRequestDto.getRoleName() != null) && !accessRequestDto.getRoleName().isEmpty()) {
+                if (accessRequestDto.getRoleName() != null && !accessRequestDto.getRoleName().isEmpty()) {
                     role = roleService.retrieveRole(accessRequestDto.getRoleName());
                 } else {
                     role = roleService.getDefaultRole();

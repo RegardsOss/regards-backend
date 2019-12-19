@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.notification.service;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
-import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -39,6 +39,7 @@ import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
+import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
@@ -53,10 +54,8 @@ import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
 @RegardsTransactional
 public class InstanceNotificationService implements IInstanceNotificationService {
 
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(InstanceNotificationService.class);
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(InstanceNotificationService.class);
 
     /**
      * CRUD repository managing notifications. Autowired by Spring.

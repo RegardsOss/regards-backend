@@ -68,56 +68,57 @@ public class AccountService implements IAccountService {
     /**
      * Regex that the password should respect. Provided by property file.
      */
-    private String passwordRegex;
+    private final String passwordRegex;
 
     /**
      * Associated Pattern
      */
-    private Pattern passwordRegexPattern;
+    private final Pattern passwordRegexPattern;
 
     /**
      * Description of the regex to respect in natural language. Provided by property file. Parsed according to "\n" to transform it into a list
      */
-    private String passwordRules;
+    private final String passwordRules;
 
     /**
      * In days. Provided by property file.
      */
-    private Long accountPasswordValidityDuration;
+    private final Long accountPasswordValidityDuration;
 
     /**
      * In days. Provided by property file.
      */
-    private Long accountValidityDuration;
+    private final Long accountValidityDuration;
 
     /**
      * Root admin user login. Provided by property file.
      */
-    private String rootAdminUserLogin;
+    private final String rootAdminUserLogin;
 
     /**
      * Root admin user password. Provided by property file.
      */
-    private String rootAdminUserPassword;
+    private final String rootAdminUserPassword;
 
     /**
      * threshold of failed authentication above which an account should be locked. Provided by property file.
      */
-    private Long thresholdFailedAuthentication;
+    private final Long thresholdFailedAuthentication;
 
     /**
      * CRUD repository handling {@link Account}s. Autowired by Spring.
      */
-    private IAccountRepository accountRepository;
+    private final IAccountRepository accountRepository;
 
     /**
      * Instance tenant name
      */
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private MeterRegistry registry;
 
+    @SuppressWarnings("unused")
     private Counter createdAccountCounter;
 
     /**

@@ -22,7 +22,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,8 +40,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  *
  */
 @RestClient(name = "rs-admin", contextId = "rs-admin.role-resource-client")
-@RequestMapping(value = IRoleResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = IRoleResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IRoleResourceClient {
 
     /**
@@ -50,10 +50,11 @@ public interface IRoleResourceClient {
     String TYPE_MAPPING = "/roles/{role_name}/resources";
 
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<List<Resource<ResourcesAccess>>> getRoleResources(@PathVariable("role_name") final String pRoleName);
+    ResponseEntity<List<EntityModel<ResourcesAccess>>> getRoleResources(
+            @PathVariable("role_name") final String pRoleName);
 
     @RequestMapping(method = RequestMethod.POST)
-    ResponseEntity<Resource<ResourcesAccess>> addRoleResource(@PathVariable("role_name") final String pRoleName,
+    ResponseEntity<EntityModel<ResourcesAccess>> addRoleResource(@PathVariable("role_name") final String pRoleName,
             @RequestBody @Valid final ResourcesAccess pNewResourcesAccess);
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/{resources_access_id}")

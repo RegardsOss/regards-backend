@@ -25,7 +25,8 @@ import java.util.Set;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -106,7 +107,7 @@ public class RoleController implements IResourceController<Role> {
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve the list of roles", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<Role>>> getAllRoles() {
+    public ResponseEntity<List<EntityModel<Role>>> getAllRoles() {
         final Set<Role> roles = roleService.retrieveRoles();
         return new ResponseEntity<>(toResources(roles), HttpStatus.OK);
     }
@@ -119,7 +120,7 @@ public class RoleController implements IResourceController<Role> {
     @RequestMapping(method = RequestMethod.GET, path = BORROWABLE_MAPPING)
     @ResourceAccess(description = "Retrieve the list of borrowable roles for the current user",
             role = DefaultRole.PUBLIC)
-    public ResponseEntity<List<Resource<Role>>> getBorrowableRoles() {
+    public ResponseEntity<List<EntityModel<Role>>> getBorrowableRoles() {
         return new ResponseEntity<>(toResources(roleService.retrieveBorrowableRoles()), HttpStatus.OK);
     }
 
@@ -131,7 +132,8 @@ public class RoleController implements IResourceController<Role> {
     @RequestMapping(method = RequestMethod.GET, path = ROLE_WITH_RESOURCE_MAPPING)
     @ResourceAccess(description = "Retrieve the list of roles associated to the given resource",
             role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<Role>>> getRolesAccesingResource(@PathVariable("resourceId") Long resourceId) {
+    public ResponseEntity<List<EntityModel<Role>>> getRolesAccesingResource(
+            @PathVariable("resourceId") Long resourceId) {
         return new ResponseEntity<>(toResources(roleService.retrieveRolesWithResource(resourceId)), HttpStatus.OK);
     }
 
@@ -143,7 +145,7 @@ public class RoleController implements IResourceController<Role> {
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Create a role", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<Role>> createRole(@RequestBody Role newRole) throws EntityException {
+    public ResponseEntity<EntityModel<Role>> createRole(@RequestBody Role newRole) throws EntityException {
         return new ResponseEntity<>(toResource(roleService.createRole(newRole)), HttpStatus.CREATED);
     }
 
@@ -155,7 +157,7 @@ public class RoleController implements IResourceController<Role> {
      */
     @RequestMapping(method = RequestMethod.GET, value = ROLE_MAPPING)
     @ResourceAccess(description = "Retrieve a role by name", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String roleName)
+    public ResponseEntity<EntityModel<Role>> retrieveRole(@PathVariable("role_name") final String roleName)
             throws EntityNotFoundException {
         return new ResponseEntity<>(toResource(roleService.retrieveRole(roleName)), HttpStatus.OK);
     }
@@ -185,7 +187,7 @@ public class RoleController implements IResourceController<Role> {
      */
     @RequestMapping(method = RequestMethod.PUT, value = ROLE_MAPPING)
     @ResourceAccess(description = "Update the role of role_name with passed body", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<Role>> updateRole(@PathVariable("role_name") String roleName,
+    public ResponseEntity<EntityModel<Role>> updateRole(@PathVariable("role_name") String roleName,
             @Valid @RequestBody Role updatedRole) throws ModuleException {
         return new ResponseEntity<>(toResource(roleService.updateRole(roleName, updatedRole)), HttpStatus.OK);
     }
@@ -204,9 +206,9 @@ public class RoleController implements IResourceController<Role> {
     }
 
     @Override
-    public Resource<Role> toResource(Role role, Object... extras) {
-        Resource<Role> resource = null;
-        if ((role != null) && (role.getId() != null)) {
+    public EntityModel<Role> toResource(Role role, Object... extras) {
+        EntityModel<Role> resource = null;
+        if (role != null && role.getId() != null) {
             resource = resourceService.toResource(role);
             resourceService.addLink(resource, this.getClass(), "retrieveRole", LinkRels.SELF,
                                     MethodParamFactory.build(String.class, role.getName()));
@@ -225,11 +227,11 @@ public class RoleController implements IResourceController<Role> {
 
                 //we add the link to manage a role resources accesses except for PROJECT_ADMIN and INSTANCE_ADMIN
                 resourceService.addLink(resource, RoleResourceController.class, "getRoleResources",
-                                        "manage-resource-access",
+                                        LinkRelation.of("manage-resource-access"),
                                         MethodParamFactory.build(String.class, role.getName()));
             }
             resourceService.addLink(resource, this.getClass(), "getAllRoles", LinkRels.LIST);
-            resourceService.addLink(resource, this.getClass(), "getBorrowableRoles", "borrowable");
+            resourceService.addLink(resource, this.getClass(), "getBorrowableRoles", LinkRelation.of("borrowable"));
         }
         return resource;
     }

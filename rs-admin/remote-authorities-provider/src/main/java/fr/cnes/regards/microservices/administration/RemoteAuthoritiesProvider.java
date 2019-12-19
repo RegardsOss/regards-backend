@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -95,7 +95,7 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
      *            Feign client to query administration service for resources
      * @param runtimeTenantResolver
      *            runtime tenant resolver
-
+    
      */
     public RemoteAuthoritiesProvider(final DiscoveryClient discoveryClient,
             final IMicroserviceResourceClient pResourcesclient, final IRolesClient pRolesClient,
@@ -143,10 +143,10 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
         final List<RoleAuthority> roleAuths = new ArrayList<>();
 
         FeignSecurityManager.asSystem();
-        final ResponseEntity<List<Resource<Role>>> result = roleClient.getAllRoles();
+        final ResponseEntity<List<EntityModel<Role>>> result = roleClient.getAllRoles();
 
         if (result.getStatusCode().equals(HttpStatus.OK)) {
-            final List<Resource<Role>> body = result.getBody();
+            final List<EntityModel<Role>> body = result.getBody();
             if (body != null) {
                 final List<Role> roles = HateoasUtils.unwrapList(body);
                 for (final Role role : roles) {
@@ -162,10 +162,10 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
         runtimeTenantResolver.forceTenant(tenant);
         // lets get the role from distant admin
         FeignSecurityManager.asSystem();
-        ResponseEntity<List<Resource<ResourcesAccess>>> resourcesResponse = roleResourceClient
+        ResponseEntity<List<EntityModel<ResourcesAccess>>> resourcesResponse = roleResourceClient
                 .getRoleResources(roleName);
         if (resourcesResponse.getStatusCode().equals(HttpStatus.OK)) {
-            final List<Resource<ResourcesAccess>> body = resourcesResponse.getBody();
+            final List<EntityModel<ResourcesAccess>> body = resourcesResponse.getBody();
             final List<ResourcesAccess> resources = HateoasUtils.unwrapList(body);
             return resources.stream().filter(resource -> resource.getMicroservice().equals(microserviceName))
                     //                    .peek((resource) -> LOGGER.info("Building resource mapping of {}", resource.toString()))
@@ -183,7 +183,7 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
      * @param pRole
      *            role to convert to RoleAuthority
      * @return {@link RoleAuthority}
-
+    
      */
     private RoleAuthority createRoleAuthority(final Role pRole) {
         final RoleAuthority roleAuth = new RoleAuthority(pRole.getName());

@@ -26,7 +26,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.AccessRightTemplateConf;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
@@ -110,8 +109,8 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
             } else {
                 linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
             }
-            final String linkUrl = String
-                    .format(linkUrlTemplate, event.getRequestLink(), event.getOriginUrl(), token, account.getEmail());
+            final String linkUrl = String.format(linkUrlTemplate, event.getRequestLink(), event.getOriginUrl(), token,
+                                                 account.getEmail());
             message = "Please click on the following link to set a new password for your account: " + linkUrl;
         }
 
