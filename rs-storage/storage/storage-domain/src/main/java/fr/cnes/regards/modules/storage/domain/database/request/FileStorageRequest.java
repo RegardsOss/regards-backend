@@ -40,7 +40,6 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 import org.springframework.util.Assert;
 
@@ -59,9 +58,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 @Table(name = "t_file_storage_request",
         indexes = { @Index(name = "idx_file_storage_request", columnList = "storage, checksum"),
                 @Index(name = "idx_file_storage_request_cs", columnList = "checksum"),
-                @Index(name = "idx_file_storage_request_storage", columnList = "storage") },
-        uniqueConstraints = { @UniqueConstraint(name = "t_file_storage_request_checksum_storage",
-                columnNames = { "checksum", "storage" }) })
+                @Index(name = "idx_file_storage_request_storage", columnList = "storage") })
 public class FileStorageRequest {
 
     /**

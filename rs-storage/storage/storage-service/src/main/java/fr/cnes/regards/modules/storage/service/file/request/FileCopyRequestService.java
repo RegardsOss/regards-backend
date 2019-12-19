@@ -56,6 +56,7 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus
 import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.service.JobsPriority;
@@ -75,8 +76,6 @@ import fr.cnes.regards.modules.storage.service.file.job.FileCopyRequestsCreatorJ
 public class FileCopyRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileCopyRequestService.class);
-
-    private static final int NB_REFERENCE_BY_PAGE = 1000;
 
     private static final String COPY_PROCESS_LOCK = "copy-requests-lock";
 
@@ -201,14 +200,15 @@ public class FileCopyRequestService {
         try {
             LOGGER.debug("[COPY REQUESTS] handling copy requests ...");
             long start = System.currentTimeMillis();
-            Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
+            Pageable page = PageRequest.of(0, AvailabilityFlowItem.MAX_REQUEST_PER_GROUP, Direction.ASC, "id");
             Page<FileCopyRequest> pageResp = null;
+            // Allow file availability for one day to let enough time to next storage process to be perform.
             OffsetDateTime expDate = OffsetDateTime.now().plusDays(1);
             do {
                 String fileCacheGroupId = UUID.randomUUID().toString();
                 Set<String> checksums = Sets.newHashSet();
                 pageResp = copyRepository.findByStatus(status, page);
-                for (FileCopyRequest request : pageResp.getContent()) {
+                for (FileCopyRequest request : pageResp) {
                     checksums.add(request.getMetaInfo().getChecksum());
                     request.setFileCacheGroupId(fileCacheGroupId);
                     request.setStatus(FileRequestStatus.PENDING);
@@ -247,8 +247,6 @@ public class FileCopyRequestService {
                                               request.getMetaInfo().getFileName(), request.getMetaInfo().getChecksum(),
                                               request.getStorage());
         LOGGER.debug("[COPY SUCCESS] {}", successMessage);
-        // Delete the copy request
-        copyRepository.delete(request);
 
         // Check if associated cache file is always present
         Optional<CacheFile> oCf = cacheService.getCacheFile(request.getMetaInfo().getChecksum());
@@ -263,6 +261,9 @@ public class FileCopyRequestService {
         reqGrpService.requestSuccess(request.getGroupId(), FileRequestType.COPY, request.getMetaInfo().getChecksum(),
                                      request.getStorage(), request.getStorageSubDirectory(), newFileRef.getOwners(),
                                      newFileRef);
+
+        // Delete the copy request
+        copyRepository.delete(request);
     }
 
     /**

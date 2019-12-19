@@ -346,6 +346,10 @@ public class RequestsGroupService {
         resultInfos.clear();
     }
 
+    public void deleteRequestInfoForFile(Long fileId) {
+        groupReqInfoRepository.deleteByResultFileId(fileId);
+    }
+
     /**
      * Handle result of a requests terminated.
      * @param groupId

@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -42,7 +41,7 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     Page<FileStorageRequest> findByStorage(String storage, Pageable pageable);
 
-    Optional<FileStorageRequest> findByMetaInfoChecksumAndStorage(String checksum, String storage);
+    Set<FileStorageRequest> findByMetaInfoChecksumAndStorage(String checksum, String storage);
 
     Page<FileStorageRequest> findAllByStorage(String storage, Pageable page);
 

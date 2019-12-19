@@ -95,10 +95,10 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
             oFileRef = referenceRandomFile(owner, null, "file1.test", storage);
         }
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
-        Optional<FileStorageRequest> oFileRefReq = stoReqService.search(oFileRef.get().getLocation().getStorage(),
-                                                                        oFileRef.get().getMetaInfo().getChecksum());
+        Collection<FileStorageRequest> storageReqs = stoReqService.search(oFileRef.get().getLocation().getStorage(),
+                                                                          oFileRef.get().getMetaInfo().getChecksum());
         Assert.assertTrue("File reference request should not exists anymore as file is well referenced",
-                          !oFileRefReq.isPresent());
+                          storageReqs.isEmpty());
         FileReference fileRef = oFileRef.get();
 
         // Delete file reference for one owner

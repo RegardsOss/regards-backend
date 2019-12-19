@@ -36,7 +36,6 @@ import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.dao.IRequestGroupRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.RequestGroup;
 import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
@@ -103,18 +102,18 @@ public class RequestsGroupServiceTest extends AbstractStorageTest {
         String groupId = UUID.randomUUID().toString();
         String destStorage = ONLINE_CONF_LABEL;
         String checksum = UUID.randomUUID().toString();
-        Optional<FileStorageRequest> oReq = storageReqService
-                .create(Sets.newHashSet("owner"),
-                        new FileReferenceMetaInfo(checksum, "UUID", "file.test", 0L, MediaType.APPLICATION_JSON),
-                        "file://somewhere/file.test", destStorage, Optional.empty(), FileRequestStatus.PENDING, groupId,
-                        Optional.empty());
-        // Simulate response infos added for this group
+        storageReqService.createNewFileStorageRequest(Sets.newHashSet("owner"),
+                                                      new FileReferenceMetaInfo(checksum, "UUID", "file.test", 0L,
+                                                              MediaType.APPLICATION_JSON),
+                                                      "file://somewhere/file.test", destStorage, Optional.empty(),
+                                                      groupId, Optional.empty(),
+                                                      Optional.of(FileRequestStatus.PENDING));
+        // Simulate response info added for this group
         reqInfoRepo.save(new RequestResultInfo(groupId, FileRequestType.STORAGE, checksum, destStorage, null,
                 Sets.newHashSet("owner")));
 
-        Assert.assertTrue("Request should be created", oReq.isPresent());
         Assert.assertEquals("Requests should be pending", FileRequestStatus.PENDING,
-                            storageReqService.search(destStorage, checksum).get().getStatus());
+                            storageReqService.search(destStorage, checksum).stream().findFirst().get().getStatus());
         RequestGroup grp = RequestGroup.build(groupId, FileRequestType.STORAGE);
         grp.setCreationDate(OffsetDateTime.now().minusDays(3));
         reqGrpRepository.save(grp);
@@ -124,7 +123,7 @@ public class RequestsGroupServiceTest extends AbstractStorageTest {
         Assert.assertFalse("Request group should be deleted as no it is expired are associated",
                            reqGrpRepository.findById(groupId).isPresent());
         Assert.assertEquals("Requests should be error", FileRequestStatus.ERROR,
-                            storageReqService.search(destStorage, checksum).get().getStatus());
+                            storageReqService.search(destStorage, checksum).stream().findFirst().get().getStatus());
         Assert.assertEquals("There not be requests infos for expired group", 0, reqInfoRepo.count());
     }
 
@@ -133,21 +132,21 @@ public class RequestsGroupServiceTest extends AbstractStorageTest {
         String groupId = UUID.randomUUID().toString();
         String destStorage = ONLINE_CONF_LABEL;
         String checksum = UUID.randomUUID().toString();
-        Optional<FileStorageRequest> oReq = storageReqService
-                .create(Sets.newHashSet("owner"),
-                        new FileReferenceMetaInfo(checksum, "UUID", "file.test", 0L, MediaType.APPLICATION_JSON),
-                        "file://somewhere/file.test", destStorage, Optional.empty(), FileRequestStatus.PENDING, groupId,
-                        Optional.empty());
-        Assert.assertTrue("Request should be created", oReq.isPresent());
+        storageReqService.createNewFileStorageRequest(Sets.newHashSet("owner"),
+                                                      new FileReferenceMetaInfo(checksum, "UUID", "file.test", 0L,
+                                                              MediaType.APPLICATION_JSON),
+                                                      "file://somewhere/file.test", destStorage, Optional.empty(),
+                                                      groupId, Optional.empty(),
+                                                      Optional.of(FileRequestStatus.PENDING));
         Assert.assertEquals("Requests should be pending", FileRequestStatus.PENDING,
-                            storageReqService.search(destStorage, checksum).get().getStatus());
+                            storageReqService.search(destStorage, checksum).stream().findFirst().get().getStatus());
         reqGrpService.granted(groupId, FileRequestType.STORAGE, 1);
         Assert.assertTrue("Error during group request creation", reqGrpRepository.findById(groupId).isPresent());
         reqGrpService.checkRequestsGroupsDone();
         Assert.assertTrue("Request group should still exists as it is not expired",
                           reqGrpRepository.findById(groupId).isPresent());
         Assert.assertEquals("Requests should still be pending as group is not expired", FileRequestStatus.PENDING,
-                            storageReqService.search(destStorage, checksum).get().getStatus());
+                            storageReqService.search(destStorage, checksum).stream().findFirst().get().getStatus());
     }
 
 }

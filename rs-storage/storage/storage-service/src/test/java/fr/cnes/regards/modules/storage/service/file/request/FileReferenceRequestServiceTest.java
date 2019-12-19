@@ -101,10 +101,10 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
                             ofdr.get().getStatus());
         // check that a new reference request is made to store again the file after deletion request is done
         reqStatusService.checkDelayedStorageRequests();
-        Optional<FileStorageRequest> frr = stoReqService.search(fileRefStorage, fileRefChecksum);
-        Assert.assertTrue("A new file reference request should exists", frr.isPresent());
+        Collection<FileStorageRequest> storageReqs = stoReqService.search(fileRefStorage, fileRefChecksum);
+        Assert.assertEquals("A new file reference request should exists", 1, storageReqs.size());
         Assert.assertEquals("A new file reference request should exists with DELAYED status", FileRequestStatus.DELAYED,
-                            frr.get().getStatus());
+                            storageReqs.stream().findFirst().get().getStatus());
 
         // Check that the file reference is still not referenced as owned by the new owner and the request is still existing
         oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
@@ -123,24 +123,24 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
                         runtimeTenantResolver.getTenant()));
         // Has the handler clear the tenant we have to force it here for tests.
         runtimeTenantResolver.forceTenant(tenant);
-        frr = stoReqService.search(fileRefStorage, fileRefChecksum);
-        Assert.assertTrue("File storage request still exists", frr.isPresent());
+        storageReqs = stoReqService.search(fileRefStorage, fileRefChecksum);
+        Assert.assertEquals("File storage request still exists", 1, storageReqs.size());
         Assert.assertEquals("File storage request should still exists with DELAYED status", FileRequestStatus.DELAYED,
-                            frr.get().getStatus());
+                            storageReqs.stream().findFirst().get().getStatus());
         reqStatusService.checkDelayedStorageRequests();
-        frr = stoReqService.search(fileRefStorage, fileRefChecksum);
-        Assert.assertTrue("File storage request still exists", frr.isPresent());
+        storageReqs = stoReqService.search(fileRefStorage, fileRefChecksum);
+        Assert.assertEquals("File storage request still exists", 1, storageReqs.size());
         Assert.assertEquals("File storage request should exists with TO_DO status", FileRequestStatus.TO_DO,
-                            frr.get().getStatus());
+                            storageReqs.stream().findFirst().get().getStatus());
 
         // Now the deletion job is ended, the file reference request is in {@link FileRequestStatus#TO_DO} state.
         Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
                                                               Lists.newArrayList(fileRefStorage), Lists.newArrayList());
         runAndWaitJob(jobs);
 
-        frr = stoReqService.search(fileRefStorage, fileRefChecksum);
+        storageReqs = stoReqService.search(fileRefStorage, fileRefChecksum);
         oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
-        Assert.assertFalse("File storage request should not exists anymore", frr.isPresent());
+        Assert.assertTrue("File storage request should not exists anymore", storageReqs.isEmpty());
         Assert.assertTrue("File reference should still exists", oFileRef.isPresent());
         Assert.assertTrue("File reference should belongs to new owner",
                           oFileRef.get().getOwners().contains(fileRefNewOwner));
@@ -153,10 +153,10 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         String owner = "someone";
         Optional<FileReference> oFileRef = referenceRandomFile(owner, null, "file.test", "anywhere");
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
-        Optional<FileStorageRequest> oFileRefReq = stoReqService.search(oFileRef.get().getLocation().getStorage(),
-                                                                        oFileRef.get().getMetaInfo().getChecksum());
+        Collection<FileStorageRequest> storageReqs = stoReqService.search(oFileRef.get().getLocation().getStorage(),
+                                                                          oFileRef.get().getMetaInfo().getChecksum());
         Assert.assertTrue("File reference request should not exists anymore as file is well referenced",
-                          !oFileRefReq.isPresent());
+                          storageReqs.isEmpty());
     }
 
 }
