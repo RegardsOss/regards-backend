@@ -18,7 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
@@ -34,11 +43,6 @@ import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Manage {@link AIPStoreMetaDataRequest} entities
@@ -69,10 +73,10 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
     @Override
     public void handle(List<AIPStoreMetaDataRequest> requests, List<AIPEntity> aipsToStore,
             List<AIPEntity> aipsToUpdate, List<FileDeletionRequestDTO> filesToDelete) {
-        String requestId = null;
+        List<String> requestIds = new ArrayList<>();
         try {
             // Store AIPs meta data requests
-            requestId = aipStorageService.storeAIPs(requests);
+            requestIds.addAll(aipStorageService.storeAIPs(requests));
         } catch (ModuleException e) {
             e.printStackTrace();
         }
@@ -81,7 +85,7 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
         for (AIPStoreMetaDataRequest request : requests) {
             if (request.getState() != InternalRequestState.ERROR) {
                 // Register request info to identify storage callback events
-                request.setRemoteStepGroupIds(Lists.newArrayList(requestId));
+                request.setRemoteStepGroupIds(requestIds);
             }
         }
 
@@ -114,7 +118,8 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
 
     private void scheduleRequest(AIPEntity aip, Set<StoreLocation> storages, boolean removeCurrentMetaData,
             boolean computeChecksum) {
-        requestService.scheduleRequest(AIPStoreMetaDataRequest.build(aip, storages, removeCurrentMetaData, computeChecksum));
+        requestService
+                .scheduleRequest(AIPStoreMetaDataRequest.build(aip, storages, removeCurrentMetaData, computeChecksum));
     }
 
     @Override

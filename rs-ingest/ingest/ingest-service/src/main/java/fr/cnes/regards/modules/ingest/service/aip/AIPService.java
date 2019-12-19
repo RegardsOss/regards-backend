@@ -18,9 +18,36 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import com.google.common.collect.Lists;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -55,29 +82,6 @@ import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import javax.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
 
 /**
  * AIP service management
@@ -156,7 +160,6 @@ public class AIPService implements IAIPService {
     public Collection<AIPEntity> findByAipIds(Collection<String> aipIds) {
         return aipRepository.findByAipIdIn(aipIds);
     }
-
 
     @Override
     public Page<AIPEntityLight> findLightByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable) {
@@ -239,19 +242,19 @@ public class AIPService implements IAIPService {
             // Retrieve all linked files
             for (ContentInformation ci : aipEntity.getAip().getProperties().getContentInformations()) {
                 OAISDataObject dataObject = ci.getDataObject();
-                filesToDelete.addAll(getFileDeletionEvents(aipId, dataObject.getChecksum(),
-                        dataObject.getLocations()));
+                filesToDelete.addAll(getFileDeletionEvents(aipId, dataObject.getChecksum(), dataObject.getLocations()));
             }
 
             // Add the AIP itself (on each storage) to the file list to remove
-            filesToDelete.addAll(getFileDeletionEvents(aipId, aipEntity.getChecksum(), aipEntity.getManifestLocations()));
+            filesToDelete
+                    .addAll(getFileDeletionEvents(aipId, aipEntity.getChecksum(), aipEntity.getManifestLocations()));
         }
 
         // Publish event to delete AIP files and AIPs itself
-        RequestInfo deleteRequestInfo = storageClient.delete(filesToDelete);
+        Collection<RequestInfo> deleteRequestInfos = storageClient.delete(filesToDelete);
 
-        String deleteRequestId = deleteRequestInfo.getGroupId();
-        request.setRemoteStepGroupIds(Lists.newArrayList(deleteRequestId));
+        request.setRemoteStepGroupIds(deleteRequestInfos.stream().map(RequestInfo::getGroupId)
+                .collect(Collectors.toList()));
         request.setWaitStorageAnswer();
         // Put the request as un-schedule.
         // The answering event from storage will put again the request to be executed
@@ -259,14 +262,14 @@ public class AIPService implements IAIPService {
         oaisDeletionRequestService.update(request);
     }
 
-    private List<FileDeletionRequestDTO> getFileDeletionEvents(String owner, String fileChecksum, Set<OAISDataObjectLocation> locations) {
+    private List<FileDeletionRequestDTO> getFileDeletionEvents(String owner, String fileChecksum,
+            Set<OAISDataObjectLocation> locations) {
         List<FileDeletionRequestDTO> events = new ArrayList<>();
         for (OAISDataObjectLocation location : locations) {
             // Ignore if the file is yet stored
             if (location.getStorage() != null) {
                 // Create the storage delete event
-                events.add(FileDeletionRequestDTO.build(fileChecksum, location.getStorage(),
-                        owner, false));
+                events.add(FileDeletionRequestDTO.build(fileChecksum, location.getStorage(), owner, false));
             }
         }
         return events;

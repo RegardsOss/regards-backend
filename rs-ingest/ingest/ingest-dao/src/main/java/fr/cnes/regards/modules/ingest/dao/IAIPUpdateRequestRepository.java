@@ -18,14 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 
 /**
  * {@link AIPUpdateRequest} repository
@@ -51,7 +54,9 @@ public interface IAIPUpdateRequestRepository extends JpaRepository<AIPUpdateRequ
      * @param state
      * @return a list of AIPUpdateRequest with corresponding AIP loaded
      */
-    @Query(value = "SELECT DISTINCT ON (t_request.aip_id) * FROM t_request  inner join t_aip on t_request.aip_id=t_aip.id " +
-            "WHERE t_request.aip_id IN (:ids) AND t_request.state = :state", nativeQuery = true)
-    List<AIPUpdateRequest> findAllAipDistinctByAipIdInAndState(@Param("ids") List<Long> aipIds, @Param("state") String state);
+    @Query(value = "SELECT DISTINCT ON (t_request.aip_id) * FROM t_request  inner join t_aip on t_request.aip_id=t_aip.id "
+            + "WHERE t_request.aip_id IN (:ids) AND t_request.state = :state AND t_request.dtype = '"
+            + RequestTypeConstant.UPDATE_VALUE + "'", nativeQuery = true)
+    List<AIPUpdateRequest> findAllAipDistinctByAipIdInAndState(@Param("ids") List<Long> aipIds,
+            @Param("state") String state);
 }

@@ -166,13 +166,13 @@ public class AIPStorageService implements IAIPStorageService {
 
         // Send storage request
         if (!filesToStore.isEmpty()) {
-            RequestInfo info = storageClient.store(filesToStore);
-            remoteStepGroupIds.add(info.getGroupId());
+            Collection<RequestInfo> infos = storageClient.store(filesToStore);
+            remoteStepGroupIds.addAll(infos.stream().map(RequestInfo::getGroupId).collect(Collectors.toList()));
         }
         // Send reference request
         if (!filesToRefer.isEmpty()) {
-            RequestInfo info = storageClient.reference(filesToRefer);
-            remoteStepGroupIds.add(info.getGroupId());
+            Collection<RequestInfo> infos = storageClient.reference(filesToRefer);
+            remoteStepGroupIds.addAll(infos.stream().map(RequestInfo::getGroupId).collect(Collectors.toList()));
         }
         return remoteStepGroupIds;
     }
@@ -471,7 +471,7 @@ public class AIPStorageService implements IAIPStorageService {
     }
 
     @Override
-    public String storeAIPs(List<AIPStoreMetaDataRequest> requests) throws ModuleException {
+    public List<String> storeAIPs(List<AIPStoreMetaDataRequest> requests) throws ModuleException {
 
         Optional<ServiceInstance> instance = discoveryClient.getInstances(applicationName).stream().findFirst();
         if (!instance.isPresent()) {
@@ -489,8 +489,8 @@ public class AIPStorageService implements IAIPStorageService {
         }
 
         // Make a request group for all these aips
-        RequestInfo info = storageClient.store(files);
-        return info.getGroupId();
+        Collection<RequestInfo> infos = storageClient.store(files);
+        return infos.stream().map(RequestInfo::getGroupId).collect(Collectors.toList());
     }
 
     /**
