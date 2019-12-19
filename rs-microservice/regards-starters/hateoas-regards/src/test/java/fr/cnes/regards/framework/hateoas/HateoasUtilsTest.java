@@ -25,10 +25,10 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.PagedResources.PageMetadata;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -55,7 +55,7 @@ public class HateoasUtilsTest {
         final Object input = new Object();
         final Link link = new Link(HREF);
 
-        final Resource<Object> expected = new Resource<>(input, link);
+        final EntityModel<Object> expected = new EntityModel<>(input, link);
 
         Assert.assertEquals(expected, HateoasUtils.wrap(input, link));
     }
@@ -71,8 +71,8 @@ public class HateoasUtilsTest {
         final List<Object> input = new ArrayList<>();
         input.add(object);
 
-        final List<Resource<Object>> expected = new ArrayList<>();
-        expected.add(new Resource<>(object));
+        final List<EntityModel<Object>> expected = new ArrayList<>();
+        expected.add(new EntityModel<>(object));
 
         Assert.assertEquals(expected, HateoasUtils.wrapList(input));
     }
@@ -86,7 +86,7 @@ public class HateoasUtilsTest {
     public void unwrap() {
         final Object expected = new Object();
 
-        final Resource<Object> input = new Resource<>(expected);
+        final EntityModel<Object> input = new EntityModel<>(expected);
 
         Assert.assertEquals(expected, HateoasUtils.unwrap(input));
     }
@@ -105,7 +105,7 @@ public class HateoasUtilsTest {
         expected.add(o0);
         expected.add(o1);
 
-        final List<Resource<Object>> actual = expected.stream().map(o -> new Resource<>(o))
+        final List<EntityModel<Object>> actual = expected.stream().map(o -> new EntityModel<>(o))
                 .collect(Collectors.toList());
 
         Assert.assertEquals(expected, HateoasUtils.unwrapList(actual));
@@ -127,8 +127,8 @@ public class HateoasUtilsTest {
             }
 
             final PageMetadata md = new PageMetadata(pPageable.getPageSize(), pPageable.getPageNumber(), 20);
-            final PagedResources<Resource<String>> resources = new PagedResources<>(HateoasUtils.wrapList(entities), md,
-                                                                                    new ArrayList<>());
+            final PagedModel<EntityModel<String>> resources = new PagedModel<>(HateoasUtils.wrapList(entities), md,
+                    new ArrayList<>());
             return ResponseEntity.ok(resources);
         });
 
@@ -141,8 +141,8 @@ public class HateoasUtilsTest {
         allResults = HateoasUtils.retrieveAllPages(5, (final Pageable pPageable) -> {
             final List<String> entities = new ArrayList<>();
             final PageMetadata md = new PageMetadata(pPageable.getPageSize(), pPageable.getPageNumber(), 0);
-            final PagedResources<Resource<String>> resources = new PagedResources<>(HateoasUtils.wrapList(entities), md,
-                                                                                    new ArrayList<>());
+            final PagedModel<EntityModel<String>> resources = new PagedModel<>(HateoasUtils.wrapList(entities), md,
+                    new ArrayList<>());
             return ResponseEntity.ok(resources);
         });
 
@@ -154,8 +154,8 @@ public class HateoasUtilsTest {
             final List<String> entities = new ArrayList<>();
             entities.add("value_" + String.valueOf(pPageable.getOffset()));
             final PageMetadata md = new PageMetadata(pPageable.getPageSize(), pPageable.getPageNumber(), 1);
-            final PagedResources<Resource<String>> resources = new PagedResources<>(HateoasUtils.wrapList(entities), md,
-                                                                                    new ArrayList<>());
+            final PagedModel<EntityModel<String>> resources = new PagedModel<>(HateoasUtils.wrapList(entities), md,
+                    new ArrayList<>());
             return ResponseEntity.ok(resources);
         });
 

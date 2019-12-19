@@ -26,8 +26,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDecisionManager;
 
@@ -92,14 +92,13 @@ public class TemplateControllerTest {
         Mockito.when(templateService.findAll()).thenReturn(templates);
 
         // Define actual
-        final ResponseEntity<List<Resource<Template>>> actual = templateController.findAll();
+        final ResponseEntity<List<EntityModel<Template>>> actual = templateController.findAll();
 
         // Check
         Assert.assertEquals(template.getName(), actual.getBody().get(0).getContent().getName());
         Assert.assertEquals(template.getContent(), actual.getBody().get(0).getContent().getContent());
         Mockito.verify(templateService).findAll();
     }
-
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#findById(java.lang.Long)}.
@@ -115,7 +114,7 @@ public class TemplateControllerTest {
         Mockito.when(templateService.findById(TemplateTestConstants.ID)).thenReturn(template);
 
         // Define actual
-        final ResponseEntity<Resource<Template>> actual = templateController.findById(TemplateTestConstants.ID);
+        final ResponseEntity<EntityModel<Template>> actual = templateController.findById(TemplateTestConstants.ID);
 
         // Check
         Assert.assertEquals(template.getName(), actual.getBody().getContent().getName());
@@ -211,10 +210,10 @@ public class TemplateControllerTest {
         final List<Link> links = new ArrayList<>();
         links.add(new Link("/templates/" + TemplateTestConstants.ID, "self"));
         links.add(new Link("/templates/" + TemplateTestConstants.ID, "update"));
-        final Resource<Template> expected = new Resource<>(template, links);
+        final EntityModel<Template> expected = new EntityModel<>(template, links);
 
         // Define actual
-        final Resource<Template> actual = templateController.toResource(template);
+        final EntityModel<Template> actual = templateController.toResource(template);
 
         // Check
         Assert.assertEquals(expected.getContent().getId(), actual.getContent().getId());

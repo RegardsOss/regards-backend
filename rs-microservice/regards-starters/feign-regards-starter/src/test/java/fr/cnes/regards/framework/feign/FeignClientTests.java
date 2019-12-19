@@ -129,7 +129,6 @@ public class FeignClientTests {
         FeignSecurityManager.asSystem();
         ResponseEntity<Hello> response = helloClient.getHello404();
         Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        Assert.assertNull(response.getBody());
     }
 
     @Test

@@ -118,12 +118,5 @@
             <artifactId>regards-test-reporting</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.el</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- No test using regards-test permitted here due to cyclic reference
-            to regards-test -->
     </dependencies>
 </project>

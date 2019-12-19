@@ -69,20 +69,20 @@ public class SpecificationUtils {
      * @param cb criteria builder
      * @return a Predicate with this constraint
      */
-    public static Predicate buildPredicateIsJsonbArrayContainingOneOfElement(Path<Object> attributeRequested, List<String> textSearched, CriteriaBuilder cb) {
+    public static Predicate buildPredicateIsJsonbArrayContainingOneOfElement(Path<Object> attributeRequested,
+            List<String> textSearched, CriteriaBuilder cb) {
         // Create an empty array
+        @SuppressWarnings("rawtypes")
         Expression<List> allowedValuesConstraint = cb.function(CustomPostgresDialect.EMPTY_STRING_ARRAY, List.class);
         for (String category : textSearched) {
             // Append to that array every text researched
-            allowedValuesConstraint = cb.function("array_append", List.class,
-                    allowedValuesConstraint,
-                    cb.function(CustomPostgresDialect.STRING_LITERAL, String.class, cb.literal(category))
-            );
+            allowedValuesConstraint = cb
+                    .function("array_append", List.class, allowedValuesConstraint,
+                              cb.function(CustomPostgresDialect.STRING_LITERAL, String.class, cb.literal(category)));
         }
         // Check the entity have every text researched
         return cb.isTrue(cb.function(CustomPostgresDialect.JSONB_EXISTS_ANY, Boolean.class, attributeRequested,
-                allowedValuesConstraint
-        ));
+                                     allowedValuesConstraint));
     }
 
     /**

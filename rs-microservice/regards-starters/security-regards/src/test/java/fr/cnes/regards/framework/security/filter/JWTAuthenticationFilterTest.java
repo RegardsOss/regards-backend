@@ -65,7 +65,7 @@ public class JWTAuthenticationFilterTest {
 
     @Before
     public void init() {
-        jwtService.setSecret("123456789");
+        jwtService.setSecret("!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!");
     }
 
     /**

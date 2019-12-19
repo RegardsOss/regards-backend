@@ -22,7 +22,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -78,7 +78,7 @@ public class TemplateController implements IResourceController<Template> {
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves all email templates of the current project")
-    public ResponseEntity<List<Resource<Template>>> findAll() {
+    public ResponseEntity<List<EntityModel<Template>>> findAll() {
         final List<Template> templates = templateService.findAll();
         return new ResponseEntity<>(toResources(templates), HttpStatus.OK);
     }
@@ -91,7 +91,7 @@ public class TemplateController implements IResourceController<Template> {
     @ResponseBody
     @RequestMapping(value = "/{template_id}", method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves the email template of given id")
-    public ResponseEntity<Resource<Template>> findById(@PathVariable("template_id") final Long pId)
+    public ResponseEntity<EntityModel<Template>> findById(@PathVariable("template_id") final Long pId)
             throws EntityNotFoundException {
         final Template template = templateService.findById(pId);
         return new ResponseEntity<>(toResource(template), HttpStatus.OK);
@@ -121,8 +121,8 @@ public class TemplateController implements IResourceController<Template> {
      * @see fr.cnes.regards.framework.hateoas.IResourceController#toResource(java.lang.Object, java.lang.Object[])
      */
     @Override
-    public Resource<Template> toResource(final Template element, final Object... extras) {
-        final Resource<Template> resource = resourceService.toResource(element);
+    public EntityModel<Template> toResource(final Template element, final Object... extras) {
+        final EntityModel<Template> resource = resourceService.toResource(element);
         resourceService.addLink(resource, getClass(), "findById", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
         resourceService.addLink(resource, getClass(), "update", LinkRels.UPDATE,

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.utils.cycle.generics;
+package fr.cnes.regards.framework.utils.cycle.generics.invalid1;
 
 import java.util.List;
 
@@ -24,6 +24,7 @@ import org.junit.Assert;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.utils.cycle.generics.CyclicInfo;
 import fr.cnes.regards.framework.utils.plugins.generics.IPluginWithGenerics;
 
 /**
