@@ -22,10 +22,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>regards-frontend-parent</artifactId>
-	<version>GEODE</version>
 	<packaging>pom</packaging>
 
-	<name>Regards Frontend Parent</name>
 	<description>Aggregates the frontend webapp</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

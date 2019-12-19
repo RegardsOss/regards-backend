@@ -26,7 +26,6 @@
     <version>GEODE</version>
     <packaging>pom</packaging>
 
-    <name>Regards Aggregator Parent</name>
     <description>Aggregates all microservices and the frontend</description>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>

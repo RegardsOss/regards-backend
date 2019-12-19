@@ -27,7 +27,6 @@
 	<version>GEODE</version>
 	<packaging>pom</packaging>
 
-	<name>Regards</name>
 	<description>Main REGARDS project</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
