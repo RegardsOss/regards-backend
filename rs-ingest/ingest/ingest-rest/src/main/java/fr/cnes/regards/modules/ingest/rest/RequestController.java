@@ -120,7 +120,8 @@ public class RequestController implements IResourceController<RequestDto> {
         Resource<RequestDto> resource = resourceService.toResource(element);
 
         if (InternalRequestState.ERROR == element.getState()) {
-            resourceService.addLink(resource, this.getClass(), "retryRequests", "RETRY");
+            resourceService.addLink(resource, this.getClass(), "retryRequests", "RETRY",
+                                    MethodParamFactory.build(SearchRequestsParameters.class));
         }
         if (!Lists.newArrayList(InternalRequestState.RUNNING, InternalRequestState.CREATED)
                 .contains(element.getState())) {
