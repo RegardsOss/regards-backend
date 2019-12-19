@@ -29,9 +29,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.ImmutableMap;
@@ -172,7 +172,7 @@ public class SampleDataUtils {
     /**
      * Sample response from the {@link IAttributeModelClient}
      */
-    public static final ResponseEntity<List<Resource<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity
+    public static final ResponseEntity<List<EntityModel<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapList(SampleDataUtils.LIST));
 
     /**
@@ -198,7 +198,7 @@ public class SampleDataUtils {
     /**
      * Sample response from the {@link IUserClient}
      */
-    public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity
+    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_0, ACCESS_GROUP_1)));
 
     public static final ResponseEntity<Boolean> PROJECT_USERS_CLIENT_RESPONSE = ResponseEntity.ok(Boolean.FALSE);
@@ -299,13 +299,13 @@ public class SampleDataUtils {
     /**
      * A dummy paged resources of dataobjects
      */
-    public static final PagedResources<Resource<DataObject>> PAGED_RESOURCES_DATAOBJECT = new PagedResources<Resource<DataObject>>(
+    public static final PagedModel<EntityModel<DataObject>> PAGED_RESOURCES_DATAOBJECT = new PagedModel<EntityModel<DataObject>>(
             new ArrayList<>(), null, new Link("href"));
 
     /**
      * A dummy paged resources of dataset
      */
-    public static final PagedResources<Resource<Dataset>> PAGED_RESOURCES_DATASET = new PagedResources<Resource<Dataset>>(
+    public static final PagedModel<EntityModel<Dataset>> PAGED_RESOURCES_DATASET = new PagedModel<EntityModel<Dataset>>(
             new ArrayList<>(), null, new Link("href"));
 
     /**

@@ -18,6 +18,15 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
+import java.util.Set;
+import java.util.UUID;
+
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -25,17 +34,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.rest.SearchEngineConfigurationController;
 import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine;
-import java.util.Set;
-import java.util.UUID;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 /**
  * {@link SearchEngineConfiguration} tests
@@ -74,7 +75,7 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
         customizer.expect(MockMvcResultMatchers.status().isCreated());
 
         Set<IPluginParam> parameters = IPluginParam.set();
-        PluginConfiguration pluginConf = PluginUtils.getPluginConfiguration(parameters, LegacySearchEngine.class);
+        PluginConfiguration pluginConf = PluginConfiguration.build(LegacySearchEngine.class, null, parameters);
 
         SearchEngineConfiguration conf = new SearchEngineConfiguration();
         conf.setLabel("Test create new search engine");

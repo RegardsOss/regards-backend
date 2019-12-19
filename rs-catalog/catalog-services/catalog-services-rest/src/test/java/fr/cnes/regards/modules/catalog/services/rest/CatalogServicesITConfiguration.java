@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.catalog.services.rest;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -50,7 +50,7 @@ public class CatalogServicesITConfiguration {
     public IDatasetClient datasetClient() {
         IDatasetClient client = Mockito.mock(IDatasetClient.class);
         Mockito.when(client.retrieveDataset(1L))
-                .thenReturn(new ResponseEntity<Resource<Dataset>>(HateoasUtils.wrap(new Dataset()), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<EntityModel<Dataset>>(HateoasUtils.wrap(new Dataset()), HttpStatus.OK));
         return client;
     }
 

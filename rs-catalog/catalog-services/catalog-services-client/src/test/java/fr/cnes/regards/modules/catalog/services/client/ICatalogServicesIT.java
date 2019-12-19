@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
@@ -88,7 +88,7 @@ public class ICatalogServicesIT extends AbstractRegardsWebIT {
     @Requirement("REGARDS_DSL_ACC_ARC_130")
     @Purpose("Check that we can retrieve IHM Service augmented with their meta information")
     public void retrieveServicesWithMeta() {
-        ResponseEntity<List<Resource<PluginConfigurationDto>>> result = client
+        ResponseEntity<List<EntityModel<PluginConfigurationDto>>> result = client
                 .retrieveServices(Lists.newArrayList("whatever"), Lists.newArrayList(ServiceScope.MANY));
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.NOT_FOUND));
     }

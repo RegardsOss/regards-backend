@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -152,7 +153,8 @@ public class DescriptionBuilder {
         List<OpenSearchParameter> parameters = buildParameters(descParameters, extensions);
 
         // Build urls
-        Link searchLink = SearchEngineController.buildPaginationLink(resourceService, context, "search");
+        Link searchLink = SearchEngineController.buildPaginationLink(resourceService, context,
+                                                                     LinkRelation.of("search"));
         desc.getUrl().add(buildUrl(parameters, searchLink.getHref(), MediaType.APPLICATION_ATOM_XML_VALUE,
                                    context.getQueryParams().isEmpty()));
         desc.getUrl().add(buildUrl(parameters, searchLink.getHref(), GeoJsonMediaType.APPLICATION_GEOJSON_VALUE,

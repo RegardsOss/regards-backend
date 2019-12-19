@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.search.client;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Lists;
@@ -101,7 +101,7 @@ public class SearchClientTestUtils {
      */
     public static final String[] FACETS_AS_ARRAY = FACETS.toArray(new String[FACETS.size()]);
 
-    public static final ResponseEntity<List<Resource<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity
+    public static final ResponseEntity<List<EntityModel<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapList(LIST));
 
     /**
@@ -137,16 +137,16 @@ public class SearchClientTestUtils {
     /**
      * Sample response from the {@link IUserClient}
      */
-    public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity
+    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_0, ACCESS_GROUP_1)));
 
-    public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> PUBLIC_USER_CLIENT_RESPONSE = ResponseEntity
+    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> PUBLIC_USER_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList()));
 
-    public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_EMPTY_RESPONSE = ResponseEntity
+    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_EMPTY_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList()));
 
-    public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_OTHER_RESPONSE = ResponseEntity
+    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_OTHER_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_2)));
 
     /**

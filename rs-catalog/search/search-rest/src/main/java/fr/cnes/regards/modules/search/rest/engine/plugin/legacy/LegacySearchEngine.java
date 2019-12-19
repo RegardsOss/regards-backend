@@ -23,10 +23,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -46,7 +47,7 @@ import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
-import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
@@ -61,7 +62,7 @@ import fr.cnes.regards.modules.search.service.ICatalogSearchService;
         description = "Legacy search engine", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
         version = "1.0.0")
 public class LegacySearchEngine implements
-        ISearchEngine<FacettedPagedResources<Resource<EntityFeature>>, Void, Resource<EntityFeature>, List<String>> {
+        ISearchEngine<FacettedPagedModel<EntityModel<EntityFeature>>, Void, EntityModel<EntityFeature>, List<String>> {
 
     public static final String PLUGIN_ID = SearchEngineMappings.LEGACY_PLUGIN_ID;
 
@@ -133,14 +134,14 @@ public class LegacySearchEngine implements
     }
 
     @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> search(SearchContext context,
+    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> search(SearchContext context,
             ISearchEngine<?, ?, ?, ?> parser) throws ModuleException {
         // Convert parameters to business criterion considering dataset
         return doSearch(parser.parse(context), context);
 
     }
 
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> doSearch(ICriterion criterion,
+    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> doSearch(ICriterion criterion,
             SearchContext context) throws ModuleException {
         // Extract facets: beware, theorically there should be only one facets parameter with values separated by ","
         // but take all cases into account
@@ -158,16 +159,16 @@ public class LegacySearchEngine implements
     /**
      * Format response with HATEOAS
      */
-    private FacettedPagedResources<Resource<EntityFeature>> toResources(SearchContext context,
+    private FacettedPagedModel<EntityModel<EntityFeature>> toResources(SearchContext context,
             FacetPage<EntityFeature> facetPage) {
 
-        FacettedPagedResources<Resource<EntityFeature>> pagedResource = FacettedPagedResources
-                .wrap(facetPage.getContent(), new PagedResources.PageMetadata(facetPage.getSize(),
-                        facetPage.getNumber(), facetPage.getTotalElements(), facetPage.getTotalPages()),
+        FacettedPagedModel<EntityModel<EntityFeature>> pagedResource = FacettedPagedModel
+                .wrap(facetPage.getContent(), new PagedModel.PageMetadata(facetPage.getSize(), facetPage.getNumber(),
+                        facetPage.getTotalElements(), facetPage.getTotalPages()),
                       facetPage.getFacets());
 
         // Add entity links
-        for (Resource<EntityFeature> resource : pagedResource.getContent()) {
+        for (EntityModel<EntityFeature> resource : pagedResource.getContent()) {
             resource.add(SearchEngineController.buildEntityLinks(resourceService, context,
                                                                  resource.getContent().getEntityType(),
                                                                  resource.getContent().getId()));
@@ -185,7 +186,7 @@ public class LegacySearchEngine implements
         return pagedResource;
     }
 
-    private void addPaginationLink(ResourceSupport resource, SearchContext context, String rel) {
+    private void addPaginationLink(RepresentationModel<?> resource, SearchContext context, LinkRelation rel) {
 
         int pageNumber;
         if (LinkRels.SELF.equals(rel)) {
@@ -210,11 +211,11 @@ public class LegacySearchEngine implements
     }
 
     @Override
-    public ResponseEntity<Resource<EntityFeature>> getEntity(SearchContext context) throws ModuleException {
+    public ResponseEntity<EntityModel<EntityFeature>> getEntity(SearchContext context) throws ModuleException {
         // Retrieve entity
         EntityFeature entity = searchService.get(context.getUrn().get());
         // Prepare resource
-        Resource<EntityFeature> resource = resourceService.toResource(entity);
+        EntityModel<EntityFeature> resource = resourceService.toResource(entity);
         resource.add(SearchEngineController.buildEntityLinks(resourceService, context, entity.getEntityType(),
                                                              entity.getId()));
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -248,11 +249,11 @@ public class LegacySearchEngine implements
     }
 
     @Override
-    public ResponseEntity<List<Resource<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
+    public ResponseEntity<List<EntityModel<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
             throws ModuleException {
         List<PropertyBound<?>> bounds = catalogSearchService
                 .retrievePropertiesBounds(context.getPropertyNames(), parse(context), context.getSearchType());
-        return ResponseEntity
-                .ok(bounds.stream().map(bound -> new Resource<PropertyBound<?>>(bound)).collect(Collectors.toList()));
+        return ResponseEntity.ok(bounds.stream().map(bound -> new EntityModel<PropertyBound<?>>(bound))
+                .collect(Collectors.toList()));
     }
 }

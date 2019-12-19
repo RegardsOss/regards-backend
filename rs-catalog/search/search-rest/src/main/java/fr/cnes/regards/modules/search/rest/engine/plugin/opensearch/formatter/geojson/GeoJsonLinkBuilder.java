@@ -37,7 +37,7 @@ public class GeoJsonLinkBuilder {
     public static GeoJsonLink build(Link springLink) {
         GeoJsonLink link = new GeoJsonLink();
         link.setHref(springLink.getHref());
-        link.setRel(springLink.getRel());
+        link.setRel(springLink.getRel().value());
         return link;
     }
 
@@ -50,7 +50,7 @@ public class GeoJsonLinkBuilder {
     public static GeoJsonLink build(Link springLink, String type, String token) {
         GeoJsonLink link = new GeoJsonLink();
         link.setHref(getDataFileHref(springLink.getHref(), token));
-        link.setRel(springLink.getRel());
+        link.setRel(springLink.getRel().value());
         link.setType(type);
         return link;
     }

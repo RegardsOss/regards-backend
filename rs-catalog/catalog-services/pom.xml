@@ -4,7 +4,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>catalog-services</artifactId>
-	<version>GEODE</version>
 	<packaging>pom</packaging>
 
 	<description>Module managing the plugins/services applicable to the entities</description>

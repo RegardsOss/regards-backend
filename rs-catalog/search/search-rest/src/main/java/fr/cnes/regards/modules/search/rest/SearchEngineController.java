@@ -30,7 +30,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -96,7 +98,7 @@ public class SearchEngineController {
     /**
      * HATEOAS link to reach dataobjects from a dataset
      */
-    private static final String LINK_TO_DATAOBJECTS = "dataobjects";
+    private static final LinkRelation LINK_TO_DATAOBJECTS = LinkRelation.of("dataobjects");
 
     /**
      * Pagination property
@@ -433,14 +435,17 @@ public class SearchEngineController {
         // Build previous link
         if (page.hasPrevious()) {
             int pageNumber = context.getPageable().getPageNumber() - 1;
-            links.add(buildPaginationLink(resourceService, context, page.getSize(), pageNumber, Link.REL_PREVIOUS));
+            links.add(buildPaginationLink(resourceService, context, page.getSize(), pageNumber,
+                                          IanaLinkRelations.PREV));
         }
         // Build current page link
-        links.add(buildPaginationLink(resourceService, context, page.getSize(), page.getNumber(), Link.REL_SELF));
+        links.add(buildPaginationLink(resourceService, context, page.getSize(), page.getNumber(),
+                                      IanaLinkRelations.SELF));
         // Build next link
         if (page.hasNext()) {
             int pageNumber = context.getPageable().getPageNumber() - 1;
-            links.add(buildPaginationLink(resourceService, context, page.getSize(), pageNumber, Link.REL_NEXT));
+            links.add(buildPaginationLink(resourceService, context, page.getSize(), pageNumber,
+                                          IanaLinkRelations.NEXT));
         }
         return links;
     }
@@ -451,7 +456,7 @@ public class SearchEngineController {
      * @return {@link Link}, may be null.
      */
     public static Link buildPaginationLink(IResourceService resourceService, SearchContext context, int pageSize,
-            int pageNumber, String rel) {
+            int pageNumber, LinkRelation rel) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.putAll(context.getQueryParams());
         SearchContext newContext = SearchContext.build(context.getSearchType(), context.getEngineType(),
@@ -465,7 +470,7 @@ public class SearchEngineController {
      * Return a contextual link
      * @return {@link Link}, may be null.
      */
-    public static Link buildPaginationLink(IResourceService resourceService, SearchContext context, String rel) {
+    public static Link buildPaginationLink(IResourceService resourceService, SearchContext context, LinkRelation rel) {
         if (context.getDatasetUrn().isPresent()) {
             return resourceService
                     .buildLinkWithParams(SearchEngineController.class, getMethod(context), rel,
@@ -489,7 +494,7 @@ public class SearchEngineController {
      * Return a contextual link
      * @return {@link Link}, may be null.
      */
-    public static Link buildExtraLink(IResourceService resourceService, SearchContext context, String rel,
+    public static Link buildExtraLink(IResourceService resourceService, SearchContext context, LinkRelation rel,
             String extra) {
         if (context.getDatasetUrn().isPresent()) {
             return resourceService
@@ -588,7 +593,7 @@ public class SearchEngineController {
                                                   MethodParamFactory.build(MultiValueMap.class),
                                                   MethodParamFactory.build(Pageable.class)));
                 break;
-                
+
             default:
                 // Nothing to do
                 LOGGER.warn("Unknown entity type \"{}\"", entityType);
