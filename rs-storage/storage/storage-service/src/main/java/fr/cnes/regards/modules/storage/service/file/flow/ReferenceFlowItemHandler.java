@@ -103,8 +103,9 @@ public class ReferenceFlowItemHandler
             }
         }
         if (item.getFiles().size() > ReferenceFlowItem.MAX_REQUEST_PER_GROUP) {
-            String message = String.format("Number of reference requests for group %s exeeds maximum limit of %d",
-                                           item.getGroupId(), ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
+            String message = String.format("Number of reference requests (%d) for group %s exeeds maximum limit of %d",
+                                           item.getFiles().size(), item.getGroupId(),
+                                           ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
             reqGroupService.denied(item.getGroupId(), FileRequestType.REFERENCE, message);
         } else {
             if (!items.containsKey(tenant)) {

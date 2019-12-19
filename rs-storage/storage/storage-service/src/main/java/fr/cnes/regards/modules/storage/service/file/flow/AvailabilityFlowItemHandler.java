@@ -83,8 +83,9 @@ public class AvailabilityFlowItemHandler
         AvailabilityFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
         if (item.getChecksums().size() > AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
-            String message = String.format("Number of availability requests for group %s exeeds maximum limit of %d",
-                                           item.getGroupId(), AvailabilityFlowItem.MAX_REQUEST_PER_GROUP);
+            String message = String
+                    .format("Number of availability requests (%d) for group %s exeeds maximum limit of %d",
+                            item.getChecksums().size(), item.getGroupId(), AvailabilityFlowItem.MAX_REQUEST_PER_GROUP);
             reqGroupService.denied(item.getGroupId(), FileRequestType.AVAILABILITY, message);
         } else {
             if (!items.containsKey(tenant)) {

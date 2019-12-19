@@ -46,7 +46,6 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
-import fr.cnes.regards.modules.storage.service.file.flow.CopyFlowHandler;
 import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
 
 /**
@@ -106,7 +105,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             }
             LOGGER.info("[COPY JOB] Calculate all files to copy from storage location {} to {} ",
                         storageLocationSourceId, storageLocationDestinationId);
-            Pageable pageRequest = PageRequest.of(0, CopyFlowHandler.MAX_REQUEST_PER_GROUP);
+            Pageable pageRequest = PageRequest.of(0, CopyFlowItem.MAX_REQUEST_PER_GROUP);
             Page<FileReference> pageResults;
             long nbFilesToCopy = 0L;
             do {

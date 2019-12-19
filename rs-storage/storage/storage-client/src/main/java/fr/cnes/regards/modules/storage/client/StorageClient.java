@@ -20,11 +20,17 @@ package fr.cnes.regards.modules.storage.client;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.BiFunction;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
@@ -59,10 +65,8 @@ public class StorageClient implements IStorageClient {
     }
 
     @Override
-    public RequestInfo copy(Collection<FileCopyRequestDTO> files) {
-        RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(CopyFlowItem.build(files, requestInfo.getGroupId()));
-        return requestInfo;
+    public Collection<RequestInfo> copy(Collection<FileCopyRequestDTO> files) {
+        return publish(CopyFlowItem::build, files, CopyFlowItem.MAX_REQUEST_PER_GROUP);
     }
 
     @Override
@@ -73,17 +77,8 @@ public class StorageClient implements IStorageClient {
     }
 
     @Override
-    public RequestInfo delete(Collection<FileDeletionRequestDTO> files) {
-        RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(DeletionFlowItem.build(files, requestInfo.getGroupId()));
-        return requestInfo;
-    }
-
-    @Override
-    public RequestInfo makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
-        RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(AvailabilityFlowItem.build(checksums, expirationDate, requestInfo.getGroupId()));
-        return requestInfo;
+    public Collection<RequestInfo> delete(Collection<FileDeletionRequestDTO> files) {
+        return publish(DeletionFlowItem::build, files, DeletionFlowItem.MAX_REQUEST_PER_GROUP);
     }
 
     @Override
@@ -94,10 +89,8 @@ public class StorageClient implements IStorageClient {
     }
 
     @Override
-    public RequestInfo reference(Collection<FileReferenceRequestDTO> files) {
-        RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(ReferenceFlowItem.build(files, requestInfo.getGroupId()));
-        return requestInfo;
+    public Collection<RequestInfo> reference(Collection<FileReferenceRequestDTO> files) {
+        return publish(ReferenceFlowItem::build, files, ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
     }
 
     @Override
@@ -123,9 +116,65 @@ public class StorageClient implements IStorageClient {
     }
 
     @Override
-    public RequestInfo store(Collection<FileStorageRequestDTO> files) {
-        RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(StorageFlowItem.build(files, requestInfo.getGroupId()));
-        return requestInfo;
+    public Collection<RequestInfo> store(Collection<FileStorageRequestDTO> files) {
+        return publish(StorageFlowItem::build, files, StorageFlowItem.MAX_REQUEST_PER_GROUP);
+    }
+
+    @Override
+    public Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
+        Collection<RequestInfo> requestInfos = Lists.newArrayList();
+        // If number of files in the request is less than the maximum allowed by request then publish it
+        if (checksums.size() <= AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
+            RequestInfo requestInfo = RequestInfo.build();
+            publisher.publish(AvailabilityFlowItem.build(checksums, expirationDate, requestInfo.getGroupId()));
+        } else {
+            // Else publish as many requests as needed.
+            List<String> group = Lists.newArrayList();
+            Iterator<String> it = checksums.iterator();
+            while (it.hasNext()) {
+                group.add(it.next());
+                if (group.size() >= AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
+                    RequestInfo requestInfo = RequestInfo.build();
+                    publisher.publish(AvailabilityFlowItem.build(checksums, expirationDate, requestInfo.getGroupId()));
+                    requestInfos.add(requestInfo);
+                    group.clear();
+                }
+            }
+            if (!group.isEmpty()) {
+                RequestInfo requestInfo = RequestInfo.build();
+                publisher.publish(AvailabilityFlowItem.build(checksums, expirationDate, requestInfo.getGroupId()));
+                requestInfos.add(requestInfo);
+            }
+        }
+        return requestInfos;
+    }
+
+    private <T> Collection<RequestInfo> publish(BiFunction<Collection<T>, String, ISubscribable> func,
+            Collection<T> files, int maxFilesPerRequest) {
+        Collection<RequestInfo> requestInfos = Lists.newArrayList();
+        // If number of files in the request is less than the maximum allowed by request then publish it
+        if (files.size() <= maxFilesPerRequest) {
+            RequestInfo requestInfo = RequestInfo.build();
+            publisher.publish(func.apply(files, requestInfo.getGroupId()));
+        } else {
+            // Else publish as many requests as needed.
+            List<T> group = Lists.newArrayList();
+            Iterator<T> it = files.iterator();
+            while (it.hasNext()) {
+                group.add(it.next());
+                if (group.size() >= maxFilesPerRequest) {
+                    RequestInfo requestInfo = RequestInfo.build();
+                    publisher.publish(func.apply(group, requestInfo.getGroupId()));
+                    requestInfos.add(requestInfo);
+                    group.clear();
+                }
+            }
+            if (!group.isEmpty()) {
+                RequestInfo requestInfo = RequestInfo.build();
+                publisher.publish(func.apply(group, requestInfo.getGroupId()));
+                requestInfos.add(requestInfo);
+            }
+        }
+        return requestInfos;
     }
 }

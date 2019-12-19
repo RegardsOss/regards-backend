@@ -101,8 +101,9 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
             }
         }
         if (item.getFiles().size() > DeletionFlowItem.MAX_REQUEST_PER_GROUP) {
-            String message = String.format("Number of deletion requests for group %s exeeds maximum limit of %d",
-                                           item.getGroupId(), DeletionFlowItem.MAX_REQUEST_PER_GROUP);
+            String message = String.format("Number of deletion requests (%d) for group %s exeeds maximum limit of %d",
+                                           item.getFiles().size(), item.getGroupId(),
+                                           DeletionFlowItem.MAX_REQUEST_PER_GROUP);
             reqGroupService.denied(item.getGroupId(), FileRequestType.DELETION, message);
         } else {
             if (!items.containsKey(tenant)) {

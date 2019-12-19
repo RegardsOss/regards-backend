@@ -58,8 +58,6 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
     @Value("${regards.storage.copy.items.bulk.size:100}")
     private int BULK_SIZE;
 
-    public static final int MAX_REQUEST_PER_GROUP = 500;
-
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -100,9 +98,10 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
                              e);
             }
         }
-        if (item.getFiles().size() > MAX_REQUEST_PER_GROUP) {
-            String message = String.format("Number of copy requests for group %s exeeds maximum limit of %d",
-                                           item.getGroupId(), MAX_REQUEST_PER_GROUP);
+        if (item.getFiles().size() > CopyFlowItem.MAX_REQUEST_PER_GROUP) {
+            String message = String.format("Number of copy requests (%d) for group %s exeeds maximum limit of %d",
+                                           item.getFiles().size(), item.getGroupId(),
+                                           CopyFlowItem.MAX_REQUEST_PER_GROUP);
             reqGroupService.denied(item.getGroupId(), FileRequestType.COPY, message);
         } else {
             if (!items.containsKey(tenant)) {
