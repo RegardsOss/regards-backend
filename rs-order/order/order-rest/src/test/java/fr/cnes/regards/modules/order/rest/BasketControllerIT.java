@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.restdocs.payload.FieldDescriptor;
@@ -134,7 +134,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
         Project project = new Project();
         project.setHost("regards.org");
         Mockito.when(projectsClient.retrieveProject(ArgumentMatchers.anyString()))
-                .thenReturn(ResponseEntity.ok(new Resource<>(project)));
+                .thenReturn(ResponseEntity.ok(new EntityModel<>(project)));
         Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
     }

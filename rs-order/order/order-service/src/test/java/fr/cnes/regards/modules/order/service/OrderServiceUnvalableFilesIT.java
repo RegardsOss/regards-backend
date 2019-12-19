@@ -35,7 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
@@ -106,16 +106,16 @@ public class OrderServiceUnvalableFilesIT {
 
     @Autowired
     private IProjectsClient projectsClient;
-    
+
     @Autowired
     private IJobService jobService;
-    
+
     @Autowired
     private IJobInfoRepository jobInfoRepo;
-    
+
     @Autowired
     private ApplicationEventPublisher eventPublisher;
-    
+
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
@@ -134,14 +134,14 @@ public class OrderServiceUnvalableFilesIT {
     @Before
     public void init() {
         clean();
-        
-        eventPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class),null,null));
-        
+
+        eventPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null));
+
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
         Project project = new Project();
         project.setHost("regardsHost");
         Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(new Resource<>(project), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
     }
 
     public void clean() {
@@ -191,22 +191,21 @@ public class OrderServiceUnvalableFilesIT {
         Thread.sleep(5_000);
         List<JobInfo> jobInfos = jobInfoRepo.findAllByStatusStatus(JobStatus.QUEUED);
         Assert.assertEquals(2, jobInfos.size());
-        
+
         List<OrderDataFile> files = dataFileRepos.findAllAvailables(order.getId());
         Assert.assertEquals(0, files.size());
-        
+
         jobInfos.forEach(j -> {
-			try {
-				JobInfo ji = jobInfoRepo.findCompleteById(j.getId());
-				jobService.runJob(ji, "ORDER").get();
-				tenantResolver.forceTenant("ORDER");
-			} catch (InterruptedException | ExecutionException e) {
-				tenantResolver.forceTenant("ORDER");
-				Assert.fail(e.getMessage());
-			}
-		});
-        
-        
+            try {
+                JobInfo ji = jobInfoRepo.findCompleteById(j.getId());
+                jobService.runJob(ji, "ORDER").get();
+                tenantResolver.forceTenant("ORDER");
+            } catch (InterruptedException | ExecutionException e) {
+                tenantResolver.forceTenant("ORDER");
+                Assert.fail(e.getMessage());
+            }
+        });
+
         // Some files are in error
         files = dataFileRepos.findAllAvailables(order.getId());
         int firstAvailables = files.size();

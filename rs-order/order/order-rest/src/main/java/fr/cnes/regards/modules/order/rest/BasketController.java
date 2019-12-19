@@ -26,7 +26,7 @@ import java.time.OffsetDateTime;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -81,7 +81,7 @@ public class BasketController implements IResourceController<Basket> {
      */
     @ResourceAccess(description = "Add a selection to the basket", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, value = SELECTION)
-    public ResponseEntity<Resource<Basket>> addSelection(
+    public ResponseEntity<EntityModel<Basket>> addSelection(
             @Valid @RequestBody BasketSelectionRequest basketSelectionRequest) throws EmptySelectionException {
         String user = authResolver.getUser();
         Basket basket = basketService.findOrCreate(user);
@@ -96,7 +96,7 @@ public class BasketController implements IResourceController<Basket> {
      */
     @ResourceAccess(description = "Remove dataset selection from basket", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.DELETE, value = DATASET_DATASET_SELECTION_ID)
-    public ResponseEntity<Resource<Basket>> removeDatasetSelection(
+    public ResponseEntity<EntityModel<Basket>> removeDatasetSelection(
             @PathVariable("datasetSelectionId") Long dsSelectionId) throws EmptyBasketException {
         Basket basket = basketService.find(authResolver.getUser());
         return ResponseEntity.ok(toResource(basketService.removeDatasetSelection(basket, dsSelectionId)));
@@ -112,7 +112,7 @@ public class BasketController implements IResourceController<Basket> {
     @ResourceAccess(description = "Remove dated item selection under dataset selection from basket",
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.DELETE, value = DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE)
-    public ResponseEntity<Resource<Basket>> removeDatedItemsSelection(
+    public ResponseEntity<EntityModel<Basket>> removeDatedItemsSelection(
             @PathVariable("datasetSelectionId") Long dsSelectionId,
             @PathVariable("itemsSelectionDate") String itemsSelectionDateStr) throws EmptyBasketException {
         try {
@@ -129,17 +129,16 @@ public class BasketController implements IResourceController<Basket> {
     /**
      * Retrieve basket if it does exist
      * @return basket
-     * @throws EmptyBasketException if basket doesn't exist
      */
     @ResourceAccess(description = "Get the basket", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<Resource<Basket>> get() {
+    public ResponseEntity<EntityModel<Basket>> get() {
         try {
             Basket basket = basketService.find(authResolver.getUser());
             return ResponseEntity.ok(toResource(basket));
-        }catch (EmptyBasketException e) {
+        } catch (EmptyBasketException e) {
             // This is a normal case, no log needed
-            return new ResponseEntity<Resource<Basket>>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<EntityModel<Basket>>(HttpStatus.NO_CONTENT);
         }
     }
 
@@ -155,7 +154,7 @@ public class BasketController implements IResourceController<Basket> {
     }
 
     @Override
-    public Resource<Basket> toResource(Basket basket, Object... extras) {
+    public EntityModel<Basket> toResource(Basket basket, Object... extras) {
         return resourceService.toResource(basket);
     }
 }

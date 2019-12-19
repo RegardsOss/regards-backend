@@ -118,7 +118,7 @@ public class OrderDataFileService implements IOrderDataFileService {
     public OrderDataFile save(OrderDataFile dataFile) {
         dataFile = repos.save(dataFile);
         // Look at FilesTask if it is ended (no more file to download)...
-        FilesTask filesTask = filesTasksRepository.findDistinctByFilesIn(dataFile);
+        FilesTask filesTask = filesTasksRepository.findDistinctByFilesContaining(dataFile);
         // In case FilesTask does not yet exist
         if (filesTask != null) {
             if (filesTask.getFiles().stream().allMatch(f -> (f.getState() == FileState.DOWNLOADED)

@@ -33,10 +33,10 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 public interface IFilesTasksRepository extends JpaRepository<FilesTask, Long> {
 
     @EntityGraph("graph.filesTask.complete")
-    FilesTask findDistinctByFilesIn(OrderDataFile file);
+    FilesTask findDistinctByFilesContaining(OrderDataFile file);
 
     @EntityGraph("graph.filesTask.complete")
-    List<FilesTask> findDistinctByFilesIn(Iterable<OrderDataFile> files);
+    List<FilesTask> findDistinctByFilesIn(List<OrderDataFile> files);
 
     Stream<FilesTask> findByOrderId(Long orderId);
 

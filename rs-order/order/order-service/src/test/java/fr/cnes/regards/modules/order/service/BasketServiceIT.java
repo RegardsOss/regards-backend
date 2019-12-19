@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
@@ -87,7 +87,7 @@ public class BasketServiceIT {
         Project project = new Project();
         project.setHost("regardsHost");
         Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(new Resource<>(project), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
     }
 
     private BasketSelectionRequest createBasketSelectionRequest(String datasetUrn, String query) {

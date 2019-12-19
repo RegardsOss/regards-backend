@@ -18,20 +18,21 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +46,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import com.google.common.base.Strings;
 import com.google.common.net.HttpHeaders;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -147,7 +149,7 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Validate current basket and create corresponding order",
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, path = USER_ROOT_PATH)
-    public ResponseEntity<Resource<OrderDto>> createOrder(@RequestBody OrderRequest orderRequest)
+    public ResponseEntity<EntityModel<OrderDto>> createOrder(@RequestBody OrderRequest orderRequest)
             throws IllegalStateException {
         try {
             String user = authResolver.getUser();
@@ -163,7 +165,7 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @ResourceAccess(description = "Retrieve specified order", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = GET_ORDER_PATH)
-    public ResponseEntity<Resource<OrderDto>> retrieveOrder(@PathVariable("orderId") Long orderId) {
+    public ResponseEntity<EntityModel<OrderDto>> retrieveOrder(@PathVariable("orderId") Long orderId) {
         Order order = orderService.loadSimple(orderId);
         if (order != null) {
             return ResponseEntity.ok(toResource(OrderDto.fromOrder(order)));
@@ -203,11 +205,10 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Find all specified user orders or all users orders",
             role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH)
-    public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(
+    public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAll(
             @RequestParam(value = "user", required = false) String user, Pageable pageRequest) {
-        Page<Order> orderPage = (Strings.isNullOrEmpty(user)) ?
-                orderService.findAll(pageRequest) :
-                orderService.findAll(user, pageRequest);
+        Page<Order> orderPage = (Strings.isNullOrEmpty(user)) ? orderService.findAll(pageRequest)
+                : orderService.findAll(user, pageRequest);
         return ResponseEntity.ok(toPagedResources(orderPage.map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
     }
 
@@ -226,11 +227,13 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @ResourceAccess(description = "Find all user current orders", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH)
-    public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(Pageable pageRequest) {
+    public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAll(Pageable pageRequest) {
         String user = authResolver.getUser();
-        return ResponseEntity
-                .ok(toPagedResources(orderService.findAll(user, pageRequest, OrderStatus.DELETED, OrderStatus.REMOVED)
-                                             .map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
+        return ResponseEntity.ok(toPagedResources(
+                                                  orderService.findAll(user, pageRequest, OrderStatus.DELETED,
+                                                                       OrderStatus.REMOVED)
+                                                          .map(OrderDto::fromOrder),
+                                                  orderDtoPagedResourcesAssembler));
     }
 
     @ResourceAccess(description = "Download a Zip file containing all currently available files",
@@ -253,7 +256,7 @@ public class OrderController implements IResourceController<OrderDto> {
 
         // Stream the response
         return new ResponseEntity<>(os -> orderService.downloadOrderCurrentZip(order.getOwner(), availableFiles, os),
-                                    HttpStatus.OK);
+                HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Download a Metalink file containing all files", role = DefaultRole.REGISTERED_USER)
@@ -294,9 +297,8 @@ public class OrderController implements IResourceController<OrderDto> {
      */
     private ResponseEntity<StreamingResponseBody> createMetalinkDownloadResponse(@PathVariable("orderId") Long orderId,
             HttpServletResponse response) {
-        response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
-                           "attachment;filename=order_" + orderId + "_" + OffsetDateTime.now().toString()
-                                   + ".metalink");
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=order_" + orderId + "_"
+                + OffsetDateTime.now().toString() + ".metalink");
         response.setContentType("application/metalink+xml");
 
         // Stream the response
@@ -304,7 +306,7 @@ public class OrderController implements IResourceController<OrderDto> {
     }
 
     @Override
-    public Resource<OrderDto> toResource(OrderDto order, Object... extras) {
+    public EntityModel<OrderDto> toResource(OrderDto order, Object... extras) {
         return resourceService.toResource(order);
     }
 }
