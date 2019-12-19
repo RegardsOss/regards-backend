@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.authentication.service.role;
 
+import java.sql.Date;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
@@ -64,19 +67,28 @@ public class BorrowRoleService implements IBorrowRoleService {
     }
 
     @Override
-    public CoupleJwtRole switchTo(String pTargetRoleName) throws JwtException, EntityOperationForbiddenException {
+    public DefaultOAuth2AccessToken switchTo(String targetRoleName) throws JwtException, EntityOperationForbiddenException {
         Set<String> borrowableRoleNames = getBorrowableRoleNames();
 
+
         JWTAuthentication currentToken = jwtService.getCurrentToken();
-        if (!borrowableRoleNames.contains(pTargetRoleName)) {
+        if (!borrowableRoleNames.contains(targetRoleName)) {
             throw new EntityOperationForbiddenException(
                     String.format("Users of role %s are not allowed to borrow role %s",
-                                  currentToken.getUser().getRole(), pTargetRoleName));
+                                  currentToken.getUser().getRole(), targetRoleName));
         }
-
-        return new CoupleJwtRole(jwtService.generateToken(currentToken.getTenant(), currentToken.getName(),
-                                                          currentToken.getUser().getEmail(), pTargetRoleName),
-                                 pTargetRoleName);
+        String name = currentToken.getName();
+        String tenant = currentToken.getTenant();
+        String email = currentToken.getUser().getEmail();
+        DefaultOAuth2AccessToken newToken = new DefaultOAuth2AccessToken(jwtService.generateToken(tenant,
+                                                                                                  name,
+                                                                                                  email, targetRoleName));
+        newToken.setAdditionalInformation(jwtService.generateClaims(tenant, targetRoleName, name, email));
+        newToken.setExpiration(Date.from(jwtService.getExpirationDate(OffsetDateTime.now()).toInstant()));
+        //FIXME: refreshToken(jti) is not set here to avoid not analysed behaviour,
+        //FIXME: should be fixed by making JWTService the only token source of the application.
+        //FIXME: That means overriding DefaultTokenServices.
+        return newToken;
 
     }
 

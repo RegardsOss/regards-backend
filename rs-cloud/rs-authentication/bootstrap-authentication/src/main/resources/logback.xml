@@ -19,9 +19,11 @@
 -->
 <configuration>
 
-    <include resource="fr/cnes/regards/framework/logbackappender/defaults.xml"/>
-
-    <include resource="fr/cnes/regards/framework/logbackappender/syslog.xml"/>
+        <property name="APP_NAME"
+              value="rs-authentication"/>
+        <include resource="fr/cnes/regards/framework/logbackappender/console_appender.xml" />
+        <include resource="fr/cnes/regards/framework/logbackappender/syslog_appender.xml" />
+        <include resource="fr/cnes/regards/framework/logbackappender/file_appender.xml" />
 
     <!-- Log the user request authentication -->
     <logger name="fr.cnes.regards.framework.authentication" level="INFO">
@@ -39,7 +41,6 @@
 
     <root level="info">
         <appender-ref ref="STDOUT"/>
-        <appender-ref ref="SYSLOG"/>
         <appender-ref ref="SYSLOG-SECU"/>
     </root>
 
