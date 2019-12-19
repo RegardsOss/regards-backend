@@ -190,13 +190,6 @@ public class FileReferenceEventPublisher {
      * Notify listeners for a file available for download.
      * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
      * is sent too.<br/>
-     * @param checksum
-     * @param storage
-     * @param url
-     * @param owners
-     * @param message
-     * @param groupId
-     * @param notifyRequest
      */
     public void available(String checksum, String storage, URL url, Collection<String> owners, String message,
             String groupId) {
@@ -216,11 +209,6 @@ public class FileReferenceEventPublisher {
      * Notify listeners for an restoring a file for download availability.
      * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
      * is sent too.<br/>
-     *
-     * @param checksum
-     * @param message
-     * @param groupId
-     * @param notifyRequest
      */
     public void notAvailable(String checksum, String message, String groupId) {
         LOGGER.trace("Publishing FileReferenceEvent AVAILABILITY_ERROR. {}", message);

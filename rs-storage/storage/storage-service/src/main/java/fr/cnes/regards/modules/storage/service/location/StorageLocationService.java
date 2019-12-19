@@ -125,7 +125,6 @@ public class StorageLocationService {
     /**
      * Retrieve one {@link StorageLocation} by its id
      * @param storageId
-     * @return
      * @throws EntityNotFoundException
      */
     public StorageLocationDTO getById(String storageId) throws EntityNotFoundException {
@@ -209,7 +208,7 @@ public class StorageLocationService {
         // Retrieve last monitoring process
         StorageMonitoring storageMonitoring = storageMonitoringRepo.findById(0L)
                 .orElse(new StorageMonitoring(true, null, null, null));
-        if (reset && (storageMonitoring.getId() != null)) {
+        if (reset && storageMonitoring.getId() != null) {
             storageMonitoringRepo.delete(storageMonitoring);
             storageLocationRepo.deleteAll();
             storageMonitoring = new StorageMonitoring(true, null, null, null);
@@ -227,21 +226,21 @@ public class StorageLocationService {
             StorageLocation storage = oStorage.orElse(new StorageLocation(agg.getStorage()));
             storage.setLastUpdateDate(monitoringDate);
             storage.setTotalSizeOfReferencedFilesInKo(storage.getTotalSizeOfReferencedFilesInKo()
-                    + (agg.getUsedSize() / 1024));
+                    + agg.getUsedSize() / 1024);
             storage.setNumberOfReferencedFiles(storage.getNumberOfReferencedFiles() + agg.getNumberOfFileReference());
 
-            if ((storageMonitoring.getLastFileReferenceIdMonitored() == null)
-                    || (storageMonitoring.getLastFileReferenceIdMonitored() < agg.getLastFileReferenceId())) {
+            if (storageMonitoring.getLastFileReferenceIdMonitored() == null
+                    || storageMonitoring.getLastFileReferenceIdMonitored() < agg.getLastFileReferenceId()) {
                 storageMonitoring.setLastFileReferenceIdMonitored(agg.getLastFileReferenceId());
             }
             storageLocationRepo.save(storage);
 
             // Check for occupation ratio limit reached
             Optional<StorageLocationConfiguration> conf = pLocationConfService.search(agg.getStorage());
-            if (conf.isPresent() && (conf.get().getAllocatedSizeInKo() != null)
-                    && (conf.get().getAllocatedSizeInKo() > 0L)) {
-                Double ratio = (Double.valueOf(storage.getTotalSizeOfReferencedFilesInKo())
-                        / (conf.get().getAllocatedSizeInKo() * 1024L)) * 100;
+            if (conf.isPresent() && conf.get().getAllocatedSizeInKo() != null
+                    && conf.get().getAllocatedSizeInKo() > 0L) {
+                Double ratio = Double.valueOf(storage.getTotalSizeOfReferencedFilesInKo())
+                        / (conf.get().getAllocatedSizeInKo() * 1024L) * 100;
                 if (ratio >= criticalThreshold) {
                     String message = String
                             .format("Storage location %s has reach its disk usage critical threshold. %nActual occupation: %.2f%%, critical threshold: %s%%",
@@ -294,7 +293,7 @@ public class StorageLocationService {
 
     /**
      * Delete the given storage location informations. <br/>
-     * Files reference are not deleted, to do so, use {@link this#deleteFiles(String, Boolean)}
+     * Files reference are not deleted, to do so, use {@link #deleteFiles(String, Boolean)}
      * @param storageLocationId
      * @throws EntityNotFoundException
      */
@@ -363,7 +362,6 @@ public class StorageLocationService {
     /**
      * Creates a new configuration for the given storage location.
      * @param storageLocation
-     * @return
      * @throws ModuleException
      */
     public StorageLocationDTO configureLocation(StorageLocationDTO storageLocation) throws ModuleException {
@@ -379,7 +377,6 @@ public class StorageLocationService {
     /**
      * Update the configuration of the given storage location.
      * @param storageLocation
-     * @return
      * @throws ModuleException
      */
     public StorageLocationDTO updateLocationConfiguration(String storageId, StorageLocationDTO storageLocation)

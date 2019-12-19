@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.client;
 
 import java.util.List;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,14 +49,13 @@ public interface IStorageRestClient {
     /**
      * Download a file by his checksum.
      * @param checksum file to download
-     * @return
      */
     @RequestMapping(method = RequestMethod.GET, path = FILE_PATH + DOWNLOAD_PATH,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     Response downloadFile(@PathVariable("checksum") String checksum);
 
     @RequestMapping(method = RequestMethod.GET, path = STORAGES_PATH, produces = MediaType.ALL_VALUE)
-    ResponseEntity<List<Resource<StorageLocationDTO>>> retrieve();
+    ResponseEntity<List<EntityModel<StorageLocationDTO>>> retrieve();
 
     @RequestMapping(method = RequestMethod.GET, path = FILE_PATH + EXPORT_PATH, produces = MediaType.ALL_VALUE)
     Response export();

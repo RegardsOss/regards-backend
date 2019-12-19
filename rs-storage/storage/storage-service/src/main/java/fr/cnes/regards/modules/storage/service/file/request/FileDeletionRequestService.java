@@ -171,7 +171,7 @@ public class FileDeletionRequestService {
             LOGGER.debug("[DELETION REQUESTS] Scheduling deletion jobs ...");
             long start = System.currentTimeMillis();
             Set<String> allStorages = fileDeletionRequestRepo.findStoragesByStatus(status);
-            Set<String> deletionToSchedule = (storages != null) && !storages.isEmpty()
+            Set<String> deletionToSchedule = storages != null && !storages.isEmpty()
                     ? allStorages.stream().filter(storages::contains).collect(Collectors.toSet())
                     : allStorages;
             for (String storage : deletionToSchedule) {
@@ -248,8 +248,6 @@ public class FileDeletionRequestService {
     /**
      * Schedule a {@link JobInfo} for the given {@link  FileDeletionWorkingSubset}.<br/>
      * NOTE : A new transaction is created for each call at this method. It is mandatory to avoid having too long transactions.
-     * @param workingSubset
-     * @param pluginConfId
      * @return {@link JobInfo} scheduled.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)

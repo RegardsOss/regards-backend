@@ -24,7 +24,8 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -100,7 +101,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Configure a storage location by his name", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<StorageLocationDTO>> configureLocation(
+    public ResponseEntity<EntityModel<StorageLocationDTO>> configureLocation(
             @Valid @RequestBody StorageLocationDTO storageLocation) throws ModuleException {
         return new ResponseEntity<>(toResource(service.configureLocation(storageLocation)), HttpStatus.CREATED);
     }
@@ -113,7 +114,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      */
     @RequestMapping(method = RequestMethod.PUT, path = ID_PATH)
     @ResourceAccess(description = "Update a storage location configuration", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<StorageLocationDTO>> updateLocationConfiguration(
+    public ResponseEntity<EntityModel<StorageLocationDTO>> updateLocationConfiguration(
             @PathVariable(name = "id") String storageId, @Valid @RequestBody StorageLocationDTO storageLocation)
             throws ModuleException {
         return new ResponseEntity<>(toResource(service.updateLocationConfiguration(storageId, storageLocation)),
@@ -127,19 +128,18 @@ public class StorageLocationController implements IResourceController<StorageLoc
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
-    public ResponseEntity<List<Resource<StorageLocationDTO>>> retrieve() throws ModuleException {
+    public ResponseEntity<List<EntityModel<StorageLocationDTO>>> retrieve() throws ModuleException {
         return new ResponseEntity<>(toResources(service.getAllLocations()), HttpStatus.OK);
     }
 
     /**
      * End-point to retrieve a Storage location by his name
      * @param storageId storage location name
-     * @return
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.GET, path = ID_PATH)
     @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
-    public ResponseEntity<Resource<StorageLocationDTO>> retrieve(@PathVariable(name = "id") String storageId)
+    public ResponseEntity<EntityModel<StorageLocationDTO>> retrieve(@PathVariable(name = "id") String storageId)
             throws ModuleException {
         return new ResponseEntity<>(toResource(service.getById(storageId)), HttpStatus.OK);
     }
@@ -176,7 +176,6 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * End-point to delete all files referenced in a storage location
      * @param storageLocationId storage location name
      * @param forceDelete If true, files are unreferenced even if the physical files cannot be deleted.
-     * @return
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.DELETE, path = ID_PATH + FILES)
@@ -193,9 +192,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     /**
      * End-point to copy files for a given path of a storage location to an other one
-     * @param storageLocationId source storage location name
-     * @param pathToCopy path on the source storage location to copy
-     * @param destinationStorageId destination storage location name
+     * @param parameters copy parameters
      * @return Void
      * @throws ModuleException
      */
@@ -275,28 +272,30 @@ public class StorageLocationController implements IResourceController<StorageLoc
     }
 
     @Override
-    public Resource<StorageLocationDTO> toResource(StorageLocationDTO location, Object... extras) {
-        Resource<StorageLocationDTO> resource = new Resource<>(location);
+    public EntityModel<StorageLocationDTO> toResource(StorageLocationDTO location, Object... extras) {
+        EntityModel<StorageLocationDTO> resource = new EntityModel<>(location);
         StorageType type = location.getConfiguration() != null ? location.getConfiguration().getStorageType()
                 : StorageType.OFFLINE;
         if (type != StorageType.OFFLINE) {
             if (!location.getConfiguration().getPriority().equals(StorageLocationConfiguration.HIGHEST_PRIORITY)) {
-                resourceService.addLink(resource, this.getClass(), "increaseStorageLocationPriority", "up",
+                resourceService.addLink(resource, this.getClass(), "increaseStorageLocationPriority",
+                                        LinkRelation.of("up"),
                                         MethodParamFactory.build(String.class, location.getName()));
             }
             if (!location.getConfiguration().getPriority().equals(storageLocationConfigurationService
                     .getLowestPriority(location.getConfiguration().getStorageType()))) {
-                resourceService.addLink(resource, this.getClass(), "decreaseStorageLocationPriority", "down",
+                resourceService.addLink(resource, this.getClass(), "decreaseStorageLocationPriority",
+                                        LinkRelation.of("down"),
                                         MethodParamFactory.build(String.class, location.getName()));
             }
-            resourceService.addLink(resource, this.getClass(), "copyFiles", "copy",
+            resourceService.addLink(resource, this.getClass(), "copyFiles", LinkRelation.of("copy"),
                                     MethodParamFactory.build(CopyFilesParametersDTO.class));
-            resourceService.addLink(resource, this.getClass(), "deleteFiles", "deleteFiles",
+            resourceService.addLink(resource, this.getClass(), "deleteFiles", LinkRelation.of("deleteFiles"),
                                     MethodParamFactory.build(String.class, location.getName()),
                                     MethodParamFactory.build(Boolean.class));
         }
         // If storage location is configured so delete & edit End-point is also available
-        if ((location.getConfiguration() != null) && (location.getConfiguration().getId() != null)) {
+        if (location.getConfiguration() != null && location.getConfiguration().getId() != null) {
             resourceService.addLink(resource, this.getClass(), "updateLocationConfiguration", LinkRels.UPDATE,
                                     MethodParamFactory.build(String.class, location.getName()),
                                     MethodParamFactory.build(StorageLocationDTO.class));

@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService
  * JOB to handle deletion requests on many {@link FileReference}s.<br>
  * This jobs requests database to retrieve {@link FileReference}s with search criterion and for each, send a {@link DeletionFlowItem} event.<br>
  * Events can be handled by the first available storage microservice to create associated {@link FileDeletionRequest}.<br>
- * NOTE : Be careful that the {@link this#run()} stays not transactional.
+ * NOTE : Be careful that the {@link #run()} stays not transactional.
  *
  * @author Sébastien Binda
  *

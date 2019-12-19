@@ -59,10 +59,6 @@ public class StorageLocationConfigurationService {
 
     /**
      * Creates a new configuration for a storage location.
-     * @param toBeCreated
-     * @param allocatedSizeInKo
-     * @return
-     * @throws ModuleException
      */
     public StorageLocationConfiguration create(String name, PluginConfiguration toBeCreated, Long allocatedSizeInKo)
             throws ModuleException {
@@ -87,7 +83,6 @@ public class StorageLocationConfigurationService {
     /**
      * Search for all storage location configuration of the given storage type.
      * @param type {@link StorageType}
-     * @return
      */
     public List<StorageLocationConfiguration> search(StorageType type) {
         return storageLocConfRepo.findAllByStorageTypeOrderByPriorityAsc(type);
@@ -95,8 +90,6 @@ public class StorageLocationConfigurationService {
 
     /**
      * Search for all storage location configuration of the given storage type.
-     * @param type {@link StorageType}
-     * @return
      */
     public List<StorageLocationConfiguration> searchAll() {
         return storageLocConfRepo.findAll();
@@ -129,7 +122,7 @@ public class StorageLocationConfigurationService {
         }
         for (StorageLocationConfiguration c : confs) {
             if (c.getPluginConfiguration().isActive()
-                    && (!storage.isPresent() || (c.getPriority() < storage.get().getPriority()))) {
+                    && (!storage.isPresent() || c.getPriority() < storage.get().getPriority())) {
                 storage = Optional.of(c);
             }
         }
@@ -140,9 +133,6 @@ public class StorageLocationConfigurationService {
      *
      * Return the highest prioritized storage location for the given storage location list.
      * This method can return an empty optional value in case no configuration match the given storage location list.
-     *
-     * @param storageIds
-     * @return
      */
     public Optional<StorageLocationConfiguration> searchActiveHigherPriority(Set<String> storageIds) {
         return this.searchActiveHigherPriority(storageIds, null);
@@ -231,8 +221,8 @@ public class StorageLocationConfigurationService {
 
     /**
      * Update a {@link StorageLocationConfiguration} by id.
-     * @param id existing conf id
-     * @param {@link StorageLocationConfiguration} new conf
+     * @param storageId existing conf id
+     * @param updated {@link StorageLocationConfiguration} new conf
      * @return {@link StorageLocationConfiguration}
      * @throws EntityNotFoundException
      */
@@ -269,7 +259,7 @@ public class StorageLocationConfigurationService {
 
     /**
      * Delete a {@link StorageLocationConfiguration} by id.
-     * @param id
+     * @param pluginConfId plugin conf id
      * @throws ModuleException
      */
     public void delete(Long pluginConfId) throws ModuleException {
