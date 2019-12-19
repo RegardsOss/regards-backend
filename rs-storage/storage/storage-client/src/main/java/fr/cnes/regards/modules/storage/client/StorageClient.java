@@ -156,6 +156,7 @@ public class StorageClient implements IStorageClient {
         if (files.size() <= maxFilesPerRequest) {
             RequestInfo requestInfo = RequestInfo.build();
             publisher.publish(func.apply(files, requestInfo.getGroupId()));
+            requestInfos.add(requestInfo);
         } else {
             // Else publish as many requests as needed.
             List<T> group = Lists.newArrayList();
