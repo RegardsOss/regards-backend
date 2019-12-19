@@ -127,6 +127,7 @@ public class StorageClient implements IStorageClient {
         if (checksums.size() <= AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
             RequestInfo requestInfo = RequestInfo.build();
             publisher.publish(AvailabilityFlowItem.build(checksums, expirationDate, requestInfo.getGroupId()));
+            requestInfos.add(requestInfo);
         } else {
             // Else publish as many requests as needed.
             List<String> group = Lists.newArrayList();

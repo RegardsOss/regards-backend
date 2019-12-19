@@ -293,7 +293,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void referenceDenied() throws InterruptedException {
+    public void referenceWithMultipleGroups() throws InterruptedException {
         Set<FileReferenceRequestDTO> files = Sets.newHashSet();
         for (int i = 0; i < (ReferenceFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
             files.add(FileReferenceRequestDTO.build("file1.test", UUID.randomUUID().toString(), "UUID",
@@ -301,10 +301,11 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                                                     "file://here/file1.test"));
         }
         Collection<RequestInfo> infos = client.reference(files);
-        Assert.assertEquals(1, infos.size());
-        RequestInfo info = infos.stream().findFirst().get();
+        Assert.assertEquals("There should be two requests groups", 2, infos.size());
         Thread.sleep(7_000);
-        Assert.assertTrue("Request should be denied", listener.getDenied().contains(info));
+        for (RequestInfo info : infos) {
+            Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        }
     }
 
     @Test
@@ -365,16 +366,17 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void deleteDenied() throws InterruptedException {
+    public void deleteWithMultipleGroups() throws InterruptedException {
         Set<FileDeletionRequestDTO> files = Sets.newHashSet();
         for (int i = 0; i < (DeletionFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
             files.add(FileDeletionRequestDTO.build(UUID.randomUUID().toString(), ONLINE_CONF, "owner", false));
         }
         Collection<RequestInfo> infos = client.delete(files);
-        Assert.assertEquals(1, infos.size());
-        RequestInfo info = infos.stream().findFirst().get();
+        Assert.assertEquals("There should be two requests groups", 2, infos.size());
         Thread.sleep(7_000);
-        Assert.assertTrue("Request should be denied", listener.getDenied().contains(info));
+        for (RequestInfo info : infos) {
+            Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        }
     }
 
     @Test
@@ -402,10 +404,11 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         }
 
         Collection<RequestInfo> infos = client.makeAvailable(files, OffsetDateTime.now().plusDays(1));
-        Assert.assertEquals(1, infos.size());
-        RequestInfo info = infos.stream().findFirst().get();
+        Assert.assertEquals("There should be two requests groups", 2, infos.size());
         Thread.sleep(7_000);
-        Assert.assertTrue("Request should be denied", listener.getDenied().contains(info));
+        for (RequestInfo info : infos) {
+            Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        }
     }
 
     @Test
