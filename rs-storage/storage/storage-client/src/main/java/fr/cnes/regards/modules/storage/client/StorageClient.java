@@ -136,14 +136,14 @@ public class StorageClient implements IStorageClient {
                 group.add(it.next());
                 if (group.size() >= AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
                     RequestInfo requestInfo = RequestInfo.build();
-                    publisher.publish(AvailabilityFlowItem.build(checksums, expirationDate, requestInfo.getGroupId()));
+                    publisher.publish(AvailabilityFlowItem.build(group, expirationDate, requestInfo.getGroupId()));
                     requestInfos.add(requestInfo);
                     group.clear();
                 }
             }
             if (!group.isEmpty()) {
                 RequestInfo requestInfo = RequestInfo.build();
-                publisher.publish(AvailabilityFlowItem.build(checksums, expirationDate, requestInfo.getGroupId()));
+                publisher.publish(AvailabilityFlowItem.build(group, expirationDate, requestInfo.getGroupId()));
                 requestInfos.add(requestInfo);
             }
         }
