@@ -30,6 +30,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -71,7 +72,8 @@ public class DefaultAipTaggingTest {
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_TAGS, PluginParameterTransformer.toJson(TAGS)));
 
-        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
+        DefaultAIPTagging plugin = PluginUtils
+                .getPlugin(PluginConfiguration.build(DefaultAIPTagging.class, null, parameters), null);
         Assert.assertNotNull(plugin);
         tag(plugin, TAGS, null);
     }
@@ -82,7 +84,8 @@ public class DefaultAipTaggingTest {
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_LINKS, PluginParameterTransformer.toJson(LINKS)));
 
-        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
+        DefaultAIPTagging plugin = PluginUtils
+                .getPlugin(PluginConfiguration.build(DefaultAIPTagging.class, null, parameters), null);
         Assert.assertNotNull(plugin);
         tag(plugin, null, LINKS);
     }
@@ -93,7 +96,8 @@ public class DefaultAipTaggingTest {
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_TAGS, PluginParameterTransformer.toJson(TAGS)),
                      IPluginParam.build(DefaultAIPTagging.FIELD_NAME_LINKS, PluginParameterTransformer.toJson(LINKS)));
-        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
+        DefaultAIPTagging plugin = PluginUtils
+                .getPlugin(PluginConfiguration.build(DefaultAIPTagging.class, null, parameters), null);
         Assert.assertNotNull(plugin);
         tag(plugin, TAGS, LINKS);
     }
@@ -103,7 +107,8 @@ public class DefaultAipTaggingTest {
 
         Set<IPluginParam> parameters = IPluginParam.set();
         PluginUtils.setup(MODULE_PACKAGE);
-        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
+        DefaultAIPTagging plugin = PluginUtils
+                .getPlugin(PluginConfiguration.build(DefaultAIPTagging.class, null, parameters), null);
         Assert.assertNotNull(plugin);
         tag(plugin, null, null);
     }

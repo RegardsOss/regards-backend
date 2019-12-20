@@ -32,7 +32,6 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
@@ -67,14 +66,13 @@ public class IngestProcessingChainServiceIT extends IngestMultitenantServiceTest
         newChain.setDescription("Ingest processing chain");
         newChain.setName("ipst_Chain1");
 
-        PluginConfiguration validation = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                            ValidationTestPlugin.class);
+        PluginConfiguration validation = PluginConfiguration.build(ValidationTestPlugin.class, null, Sets.newHashSet());
         validation.setIsActive(true);
         validation.setLabel("validationPlugin_ipst");
         newChain.setValidationPlugin(validation);
 
-        PluginConfiguration generation = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                            AIPGenerationTestPlugin.class);
+        PluginConfiguration generation = PluginConfiguration.build(AIPGenerationTestPlugin.class, null,
+                                                                   Sets.newHashSet());
         generation.setIsActive(true);
         generation.setLabel("generationPlugin_ipst");
         newChain.setGenerationPlugin(generation);

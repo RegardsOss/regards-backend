@@ -18,6 +18,13 @@
  */
 package fr.cnes.regards.modules.test;
 
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpIOException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -39,12 +46,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.storage.client.FileRequestGroupEventHandler;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.AmqpIOException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 @Component
 public class IngestServiceTest {
@@ -140,7 +141,6 @@ public class IngestServiceTest {
      * Helper method to wait for SIP ingestion
      * @param expectedSips expected count of sips in database
      * @param timeout in ms
-     * @throws InterruptedException
      */
     public void waitForIngestion(long expectedSips, long timeout, SIPState sipState) {
         long end = System.currentTimeMillis() + timeout;
@@ -180,7 +180,6 @@ public class IngestServiceTest {
      * Helper method to wait for DB ingestion
      * @param expectedTasks expected count of task in db
      * @param timeout in ms
-     * @throws InterruptedException
      */
     public void waitForRequestReach(long expectedTasks, long timeout) {
         long end = System.currentTimeMillis() + timeout;

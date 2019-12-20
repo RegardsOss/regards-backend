@@ -25,8 +25,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
@@ -79,7 +79,7 @@ public class AIPRestClientIT extends AbstractRegardsWebIT {
 
     @Test
     public void searchAips() {
-        ResponseEntity<PagedResources<Resource<AIPEntity>>> response = client
+        ResponseEntity<PagedModel<EntityModel<AIPEntity>>> response = client
                 .searchAIPs(SearchAIPsParameters.build().withState(AIPState.STORED), 0, 100);
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
     }

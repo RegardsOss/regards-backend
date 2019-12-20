@@ -32,8 +32,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -150,12 +150,10 @@ public class AIPController implements IResourceController<AIPEntityLight> {
      * @param pageable
      * @param assembler
      * @return page of aip metadata respecting the constraints
-     * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Return a page of AIPs")
-    public ResponseEntity<PagedResources<Resource<AIPEntityLight>>> searchAIPs(
-            @RequestBody SearchAIPsParameters filters,
+    public ResponseEntity<PagedModel<EntityModel<AIPEntityLight>>> searchAIPs(@RequestBody SearchAIPsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AIPEntityLight> assembler) {
         Page<AIPEntityLight> aips = aipService.findLightByFilters(filters, pageable);
@@ -235,8 +233,8 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     }
 
     @Override
-    public Resource<AIPEntityLight> toResource(AIPEntityLight element, Object... extras) {
-        Resource<AIPEntityLight> resource = resourceService.toResource(element);
+    public EntityModel<AIPEntityLight> toResource(AIPEntityLight element, Object... extras) {
+        EntityModel<AIPEntityLight> resource = resourceService.toResource(element);
         return resource;
     }
 

@@ -34,14 +34,13 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.common.collect.Sets;
 import com.jayway.jsonpath.JsonPath;
+
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -71,19 +70,13 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     public void init() {
         manageSecurity(getDefaultTenant(),
                        IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.NAME_PATH,
-                       RequestMethod.POST,
-                       getDefaultUserEmail(),
-                       getDefaultRole());
+                       RequestMethod.POST, getDefaultUserEmail(), getDefaultRole());
         manageSecurity(getDefaultTenant(),
                        IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.NAME_PATH,
-                       RequestMethod.PUT,
-                       getDefaultUserEmail(),
-                       getDefaultRole());
+                       RequestMethod.PUT, getDefaultUserEmail(), getDefaultRole());
         manageSecurity(getDefaultTenant(),
                        IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.NAME_PATH,
-                       RequestMethod.DELETE,
-                       getDefaultUserEmail(),
-                       getDefaultRole());
+                       RequestMethod.DELETE, getDefaultUserEmail(), getDefaultRole());
 
         token = generateToken(getDefaultUserEmail(), getDefaultRole());
     }
@@ -91,19 +84,16 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     @Test
     public void exportProcessingChain() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName(
-                IngestProcessingChainController.REQUEST_PARAM_NAME).attributes(Attributes
-                                                                                       .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                       .value(JSON_STRING_TYPE))
-                                                                                      .description(
-                                                                                              "Ingestion processing name")));
+        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                .description("Ingestion processing name")));
 
-        ResultActions resultActions = performDefaultGet(
-                IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.EXPORT_PATH,
-                requestBuilderCustomizer,
-                "Default processing chain should be exported",
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
-        assertMediaType(resultActions, MediaType.APPLICATION_JSON_UTF8);
+        ResultActions resultActions = performDefaultGet(IngestProcessingChainController.TYPE_MAPPING
+                + IngestProcessingChainController.EXPORT_PATH, requestBuilderCustomizer,
+                                                        "Default processing chain should be exported",
+                                                        IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
+        assertMediaType(resultActions, MediaType.APPLICATION_JSON);
         String chain = payload(resultActions);
         Assert.assertNotNull(chain);
     }
@@ -116,11 +106,9 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         documentFileRequestParameters(requestBuilderCustomizer);
 
-        performDefaultFileUpload(
-                IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.IMPORT_PATH,
-                filePath,
-                requestBuilderCustomizer,
-                "Should be able to import valid test processing chain");
+        performDefaultFileUpload(IngestProcessingChainController.TYPE_MAPPING
+                + IngestProcessingChainController.IMPORT_PATH, filePath, requestBuilderCustomizer,
+                                 "Should be able to import valid test processing chain");
     }
 
     private void documentFileRequestParameters(RequestBuilderCustomizer requestBuilderCustomizer) {
@@ -135,10 +123,8 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     @Test
     public void createIngestProcessingChain() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
-        performDefaultPost(IngestProcessingChainController.TYPE_MAPPING,
-                           this.create(),
-                           requestBuilderCustomizer,
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        performDefaultPost(IngestProcessingChainController.TYPE_MAPPING, this.create(), requestBuilderCustomizer,
                            "Ingest processing creation error");
     }
 
@@ -146,11 +132,10 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     public void updateIngestProcessingChain() {
         // create an IngestProcessingChain
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         IngestProcessingChain ingestProcessingChain = this.create();
         ResultActions resultActions = performDefaultPost(IngestProcessingChainController.TYPE_MAPPING,
-                                                         ingestProcessingChain,
-                                                         requestBuilderCustomizer,
+                                                         ingestProcessingChain, requestBuilderCustomizer,
                                                          "Ingest processing creation error");
 
         // update the existing IngestProcessingChain
@@ -163,20 +148,14 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         ingestProcessingChain.getGenerationPlugin().setId(new Long(genPluginId));
 
         RequestBuilderCustomizer putRequestBuilderCustomizer = customizer().expectStatusOk();
-        putRequestBuilderCustomizer
-                .addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
-        putRequestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName(
-                IngestProcessingChainController.REQUEST_PARAM_NAME).attributes(Attributes
-                                                                                       .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                       .value(JSON_STRING_TYPE))
-                                                                                         .description(
-                                                                                                 INGEST_PROCESSING_DESCRIPTION)));
+        putRequestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        putRequestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                .description(INGEST_PROCESSING_DESCRIPTION)));
 
-        performPut(IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.NAME_PATH,
-                   token,
-                   ingestProcessingChain,
-                   putRequestBuilderCustomizer,
-                   "Ingest processing update error",
+        performPut(IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.NAME_PATH, token,
+                   ingestProcessingChain, putRequestBuilderCustomizer, "Ingest processing update error",
                    ingestProcessingChain.getName());
     }
 
@@ -184,27 +163,20 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     public void deleteIngestProcessingChain() {
         // create an IngestProcessingChain
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         IngestProcessingChain ingestProcessingChain = this.create();
-        performDefaultPost(IngestProcessingChainController.TYPE_MAPPING,
-                           ingestProcessingChain,
-                           requestBuilderCustomizer,
-                           "Ingest processing creation error");
+        performDefaultPost(IngestProcessingChainController.TYPE_MAPPING, ingestProcessingChain,
+                           requestBuilderCustomizer, "Ingest processing creation error");
 
         requestBuilderCustomizer = customizer().expectStatusOk();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
-        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName(
-                IngestProcessingChainController.REQUEST_PARAM_NAME).attributes(Attributes
-                                                                                       .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                       .value(JSON_STRING_TYPE))
-                                                                                      .description(
-                                                                                              INGEST_PROCESSING_DESCRIPTION)));
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                .description(INGEST_PROCESSING_DESCRIPTION)));
 
-        performDelete(IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.NAME_PATH,
-                      token,
-                      requestBuilderCustomizer,
-                      "Ingest processing delete error",
-                      ingestProcessingChain.getName());
+        performDelete(IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.NAME_PATH, token,
+                      requestBuilderCustomizer, "Ingest processing delete error", ingestProcessingChain.getName());
     }
 
     @Test
@@ -213,8 +185,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
 
         performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                          requestBuilderCustomizer,
-                          "Should export configuration");
+                          requestBuilderCustomizer, "Should export configuration");
     }
 
     @Test
@@ -228,9 +199,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         // exists
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath,
-                                 requestBuilderCustomizer,
-                                 "Should be able to import configuration");
+                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
     }
 
     @Test
@@ -239,47 +208,26 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
 
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        performDefaultFileUpload(
-                IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.IMPORT_PATH,
-                filePath,
-                requestBuilderCustomizer,
-                "Should be able to import valid test processing chain");
+        performDefaultFileUpload(IngestProcessingChainController.TYPE_MAPPING
+                + IngestProcessingChainController.IMPORT_PATH, filePath, requestBuilderCustomizer,
+                                 "Should be able to import valid test processing chain");
 
         RequestBuilderCustomizer getCustomizer = customizer().expectStatusOk();
-        getCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName(
-                IngestProcessingChainController.REQUEST_PARAM_NAME).attributes(Attributes
-                                                                                       .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                       .value(JSON_STRING_TYPE))
-                                                                           .description(INGEST_PROCESSING_DESCRIPTION)));
+        getCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                .description(INGEST_PROCESSING_DESCRIPTION)));
 
         performDefaultGet(IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.NAME_PATH,
-                          getCustomizer,
-                          "Should be able to get an ingestion processing chain",
-                          "TestProcessingChain");
+                          getCustomizer, "Should be able to get an ingestion processing chain", "TestProcessingChain");
     }
 
     private IngestProcessingChain create() {
         PluginConfiguration validationConf = new PluginConfiguration("FakeValidationTestPlugin",
-                                                                     FakeValidationTestPlugin.class
-                                                                             .getAnnotation(Plugin.class).id());
+                FakeValidationTestPlugin.class.getAnnotation(Plugin.class).id());
         PluginConfiguration generationConf = new PluginConfiguration("FakeAIPGenerationTestPlugin",
-                                                                     FakeAIPGenerationTestPlugin.class
-                                                                             .getAnnotation(Plugin.class).id());
-        return new IngestProcessingChain("ingestProcessingChain_test",
-                                         "the ingest processing chain description",
-                                         validationConf,
-                                         generationConf);
+                FakeAIPGenerationTestPlugin.class.getAnnotation(Plugin.class).id());
+        return new IngestProcessingChain("ingestProcessingChain_test", "the ingest processing chain description",
+                validationConf, generationConf);
     }
-
-    private PluginMetaData getPluginMetaData(String pluginId, String className, String interfaceName) {
-        final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setPluginClassName(className);
-        pluginMetaData.setInterfaceNames(Sets.newHashSet(interfaceName));
-        pluginMetaData.setPluginId(pluginId);
-        pluginMetaData.setAuthor("AUTHOR");
-        pluginMetaData.setVersion("1.0.0");
-
-        return pluginMetaData;
-    }
-
 }

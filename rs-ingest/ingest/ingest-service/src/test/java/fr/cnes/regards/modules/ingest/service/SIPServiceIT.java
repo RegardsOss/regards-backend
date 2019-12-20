@@ -344,17 +344,17 @@ public class SIPServiceIT extends IngestMultitenantServiceTest {
     //     * Simulate response from
     //     * {@link IAipClient#retrieveAIPs(AIPState, java.time.OffsetDateTime, java.time.OffsetDateTime, int, int)}
     //     */
-    //    private ResponseEntity<PagedResources<Resource<AIPEntity>>> simulateRetrieveAIPResponseFromStorage(String sipId) {
-    //        Set<Resource<AIPEntity>> resources = simulatedStorageAips.stream().filter(a -> a.getSipId().get().equals(sipId))
+    //    private ResponseEntity<PagedModel<EntityModel<AIPEntity>>> simulateRetrieveAIPResponseFromStorage(String sipId) {
+    //        Set<EntityModel<AIPEntity>> resources = simulatedStorageAips.stream().filter(a -> a.getSipId().get().equals(sipId))
     //                .map(a -> {
     //                    AIPEntity entity = new AIPEntity();
     //                    entity.setAip(a);
     //                    entity.setState(a.getState());
     //                    entity.setAipId(a.getId().toString());
     //                    entity.setSipId(a.getSipId().orElse(null));
-    //                    return new Resource<AIPEntity>(entity);
+    //                    return new EntityModel<AIPEntity>(entity);
     //                }).collect(Collectors.toSet());
-    //        PagedResources<Resource<AIPEntity>> pagedRes = new PagedResources<Resource<AIPEntity>>(resources,
+    //        PagedModel<EntityModel<AIPEntity>> pagedRes = new PagedModel<EntityModel<AIPEntity>>(resources,
     //                new PageMetadata(resources.size(), resources.size(), resources.size()));
     //        return new ResponseEntity<>(pagedRes, HttpStatus.OK);
     //    }
