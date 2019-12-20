@@ -83,7 +83,7 @@ public class SessionNotifier {
         notifyDecrementSession(sessionOwner, session, PRODUCT_GEN_PENDING, SessionNotificationState.OK, 1);
         if (generatedAips.isEmpty()) {
             // +1 product_generation_error
-            notifyIncrementSession(sessionOwner, session, PRODUCT_GEN_ERROR, SessionNotificationState.ERROR, 1);
+            productGenerationError(sessionOwner, session);
         } else {
             notifyIncrementSession(sessionOwner, session, PRODUCT_STORE_PENDING, SessionNotificationState.OK,
                                    generatedAips.size());
@@ -95,6 +95,10 @@ public class SessionNotifier {
                                        generatedAips.size() - 1);
             }
         }
+    }
+
+    public void productGenerationError(String sessionOwner, String session) {
+        notifyIncrementSession(sessionOwner, session, PRODUCT_GEN_ERROR, SessionNotificationState.ERROR, 1);
     }
 
     /**

@@ -18,7 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+
 import com.google.gson.reflect.TypeToken;
+
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -44,15 +56,6 @@ import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.StringJoiner;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 /**
  * This job manages processing chain for AIP generation from a SIP
@@ -100,6 +103,13 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
 
+        // Load ingest requests
+        Type type = new TypeToken<Set<Long>>() {
+
+        }.getType();
+        Set<Long> ids = getValue(parameters, IDS_PARAMETER, type);
+        requests = ingestRequestService.loadByIds(ids);
+
         // Retrieve processing chain from parameters
         String processingChainName = getValue(parameters, CHAIN_NAME_PARAMETER);
 
@@ -107,17 +117,14 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         Optional<IngestProcessingChain> chain = processingChainRepository.findOneByName(processingChainName);
         if (!chain.isPresent()) {
             String message = String.format("No related chain has been found for value \"%s\"", processingChainName);
+            for (IngestRequest r : requests) {
+                sesssionNotifier.productGenerationError(r.getMetadata().getSessionOwner(),
+                                                        r.getMetadata().getSession());
+            }
             handleInvalidParameter(CHAIN_NAME_PARAMETER, message);
         } else {
             ingestChain = chain.get();
         }
-
-        // Load ingest requests
-        Type type = new TypeToken<Set<Long>>() {
-
-        }.getType();
-        Set<Long> ids = getValue(parameters, IDS_PARAMETER, type);
-        requests = ingestRequestService.loadByIds(ids);
     }
 
     @Override
