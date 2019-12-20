@@ -51,7 +51,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
@@ -142,8 +141,8 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
                 .set(IPluginParam.build(GeoJsonFeatureCollectionParserPlugin.FIELD_FEATURE_ID, "nom"),
                      IPluginParam.build(GeoJsonFeatureCollectionParserPlugin.FIELD_DIR, dataPath.toString()));
 
-        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters,
-                                                                            GeoJsonFeatureCollectionParserPlugin.class);
+        PluginConfiguration scanPlugin = PluginConfiguration.build(GeoJsonFeatureCollectionParserPlugin.class, null,
+                                                                   parameters);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin RAWDATA" + Math.random());
         fileInfo.setScanPlugin(scanPlugin);
@@ -151,22 +150,24 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                                  DefaultFileValidation.class);
+        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, null,
+                                                                         new HashSet<IPluginParam>());
+        ;
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin" + Math.random());
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                               DefaultProductPlugin.class);
+        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class, null,
+                                                                      new HashSet<IPluginParam>());
+
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin" + Math.random());
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                              GeoJsonSIPGeneration.class);
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(GeoJsonSIPGeneration.class, null,
+                                                                     new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin" + Math.random());
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
