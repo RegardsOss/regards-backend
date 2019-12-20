@@ -175,21 +175,20 @@ public class AIPStorageService implements IAIPStorageService {
 
     /**
      * @param dataObject
-     * @return
      * @throws ModuleException
      */
     private void validateForReference(OAISDataObject dataObject) throws ModuleException {
         Set<String> errors = Sets.newHashSet();
-        if ((dataObject.getAlgorithm() == null) || dataObject.getAlgorithm().isEmpty()) {
+        if (dataObject.getAlgorithm() == null || dataObject.getAlgorithm().isEmpty()) {
             errors.add("Invalid checksum algorithm");
         }
-        if ((dataObject.getChecksum() == null) || dataObject.getChecksum().isEmpty()) {
+        if (dataObject.getChecksum() == null || dataObject.getChecksum().isEmpty()) {
             errors.add("Invalid checksum");
         }
         if (dataObject.getFileSize() == null) {
             errors.add("Invalid filesize");
         }
-        if ((dataObject.getFilename() == null) || dataObject.getFilename().isEmpty()) {
+        if (dataObject.getFilename() == null || dataObject.getFilename().isEmpty()) {
             errors.add("Invalid filename");
         }
         if (!errors.isEmpty()) {
@@ -309,7 +308,7 @@ public class AIPStorageService implements IAIPStorageService {
                 edited = true;
                 // Add this new location to the manifest locations
                 newManifestLocation.add(OAISDataObjectLocation.build(eventInfo.getResultFile().getLocation().getUrl(),
-                                                              storageLocation, eventInfo.getRequestStorePath()));
+                                                                     storageLocation, eventInfo.getRequestStorePath()));
                 aip.setManifestLocations(newManifestLocation);
             }
         }
@@ -492,7 +491,7 @@ public class AIPStorageService implements IAIPStorageService {
         String host = instance.getUri().toString();
         String path = Paths.get(AIPS_CONTROLLER_ROOT_PATH, AIP_DOWNLOAD_PATH).toString();
         String p = path.toString().replace("{" + AIP_ID_PATH_PARAM + "}", aipId.toString());
-        p = (p.charAt(0) == '/') ? p.replaceFirst("/", "") : p;
+        p = p.charAt(0) == '/' ? p.replaceFirst("/", "") : p;
         String urlStr = String.format("%s/%s?scope=%s", host, p, tenantResolver.getTenant());
         try {
             return new URL(urlStr);
@@ -529,7 +528,7 @@ public class AIPStorageService implements IAIPStorageService {
                 }
             }
             files.add(FileStorageRequestDTO.build(aip.getId().toString(), checksum, AIPService.MD5_ALGORITHM,
-                                                  MediaType.APPLICATION_JSON_UTF8_VALUE, aip.getId().toString(),
+                                                  MediaType.APPLICATION_JSON_VALUE, aip.getId().toString(),
                                                   originUrl.toString(), storeLocation.getStorage(),
                                                   Optional.ofNullable(storePath)));
         }

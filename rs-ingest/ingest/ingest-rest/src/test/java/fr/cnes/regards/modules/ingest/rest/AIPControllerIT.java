@@ -135,7 +135,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         sip.withDataObject(DataType.RAWDATA,
                            Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"), "MD5",
                            "azertyuiopqsdfmlmld");
-        sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
+        sip.withSyntax(MediaType.APPLICATION_JSON);
         sip.registerContentInformation();
 
         // Add creation event

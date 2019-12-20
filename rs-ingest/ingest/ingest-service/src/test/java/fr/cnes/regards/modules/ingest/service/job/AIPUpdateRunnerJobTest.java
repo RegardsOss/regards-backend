@@ -18,8 +18,29 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.RunnableFuture;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -43,31 +64,13 @@ import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.RunnableFuture;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test {@link AIPUpdateRunnerJob}
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=update_oais_job",
-        "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false" })
+        "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
 
@@ -79,7 +82,6 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
     @Autowired
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
 
-    @SuppressWarnings("unused")
     @Autowired
     private IAIPService aipService;
 
@@ -223,7 +225,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
 
         Page<AIPEntity> aips = aipService
                 .findByFilters(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
-                        pageRequest);
+                               pageRequest);
         List<AIPEntity> aipsContent = aips.getContent();
         for (AIPEntity aip : aipsContent) {
             Assert.assertEquals(3, aip.getTags().size());
@@ -245,7 +247,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
 
         Page<AIPEntity> aips = aipService
                 .findByFilters(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
-                        PageRequest.of(0, 200));
+                               PageRequest.of(0, 200));
         AIPEntity toUpdate = aips.getContent().get(0);
         String providerId = toUpdate.getProviderId();
         Assert.assertEquals("Before adding the new location the data object should contains only one location", 1,

@@ -18,7 +18,28 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import javax.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -29,23 +50,6 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
-import javax.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
 
 /**
  * This controller manages Requests.
@@ -89,14 +93,13 @@ public class RequestController implements IResourceController<RequestDto> {
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Return a page of Requests")
-    public ResponseEntity<PagedResources<Resource<RequestDto>>> searchRequest(
+    public ResponseEntity<PagedModel<EntityModel<RequestDto>>> searchRequest(
             @RequestBody SearchRequestsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<RequestDto> assembler) throws ModuleException {
         Page<RequestDto> requests = requestService.findRequestDtos(filters, pageable);
         return new ResponseEntity<>(toPagedResources(requests, assembler), HttpStatus.OK);
     }
-
 
     @RequestMapping(value = REQUEST_RETRY_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.PUBLIC)
@@ -113,13 +116,14 @@ public class RequestController implements IResourceController<RequestDto> {
     }
 
     @Override
-    public Resource<RequestDto> toResource(RequestDto element, Object... extras) {
-        Resource<RequestDto> resource = resourceService.toResource(element);
+    public EntityModel<RequestDto> toResource(RequestDto element, Object... extras) {
+        EntityModel<RequestDto> resource = resourceService.toResource(element);
 
         if (InternalRequestState.ERROR == element.getState()) {
-            resourceService.addLink(resource, this.getClass(), "retryRequests", "RETRY");
+            resourceService.addLink(resource, this.getClass(), "retryRequests", LinkRelation.of("RETRY"));
         }
-        if (!Lists.newArrayList(InternalRequestState.RUNNING, InternalRequestState.CREATED).contains(element.getState())) {
+        if (!Lists.newArrayList(InternalRequestState.RUNNING, InternalRequestState.CREATED)
+                .contains(element.getState())) {
             resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE);
         }
 
