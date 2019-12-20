@@ -71,8 +71,8 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
     private IRequestService requestService;
 
     @Override
-    public void handle(List<AIPStoreMetaDataRequest> requests, List<AIPEntity> aipsToStore,
-            List<AIPEntity> aipsToUpdate, List<FileDeletionRequestDTO> filesToDelete) {
+    public void handle(List<AIPStoreMetaDataRequest> requests, List<AIPEntity> aipsToUpdate,
+            List<FileDeletionRequestDTO> filesToDelete) {
         List<String> requestIds = new ArrayList<>();
         try {
             // Store AIPs meta data requests
@@ -129,9 +129,10 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
                                                              requestInfo.getSuccessRequests());
         // Save the AIP
         aipService.save(request.getAip());
+        sessionNotifier.productMetaStoredSuccess(request.getAip());
+
         // Delete the request
         aipStoreMetaDataRepository.delete(request);
-        sessionNotifier.productMetaStoredSuccess(request.getAip());
     }
 
     @Override

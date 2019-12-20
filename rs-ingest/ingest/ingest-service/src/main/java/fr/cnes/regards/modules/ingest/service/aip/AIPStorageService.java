@@ -281,7 +281,8 @@ public class AIPStorageService implements IAIPStorageService {
     }
 
     @Override
-    public boolean addAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos) {
+    public AIPUpdateResult addAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos) {
+        boolean aipEdited = false;
         boolean edited = false;
         // Iterate over events (we already know they concerns the provided aip)
         for (RequestResultInfoDTO eventInfo : storeRequestInfos) {
@@ -303,6 +304,7 @@ public class AIPStorageService implements IAIPStorageService {
                         .anyMatch(l -> l.getStorage().equals(storageLocation));
 
                 if (!dataObjectLocationExists) {
+                    aipEdited = true;
                     edited = true;
                     // Add this new location to the ContentInfo locations list
                     ci.getDataObject().getLocations()
@@ -326,11 +328,12 @@ public class AIPStorageService implements IAIPStorageService {
                 aip.setManifestLocations(newManifestLocation);
             }
         }
-        return edited;
+        return AIPUpdateResult.build(edited, aipEdited);
     }
 
     @Override
-    public boolean removeAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos) {
+    public AIPUpdateResult removeAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos) {
+        boolean aipEdited = false;
         boolean edited = false;
         // Iterate over events (we already know they concerns the provided aip)
         for (RequestResultInfoDTO eventInfo : storeRequestInfos) {
@@ -348,6 +351,7 @@ public class AIPStorageService implements IAIPStorageService {
                         .anyMatch(l -> l.getStorage().equals(storageLocation));
 
                 if (dataObjectLocationExists) {
+                    aipEdited = true;
                     edited = true;
                     // Remove the location from ContentInfo locations
                     Set<OAISDataObjectLocation> updatedDataObject = ci.getDataObject().getLocations().stream()
@@ -367,7 +371,6 @@ public class AIPStorageService implements IAIPStorageService {
                 // Remove the location from the storage list
                 if (!shouldKeepStorage) {
                     edited = true;
-
                     Set<String> updatedStorages = aip.getStorages().stream().filter(s -> !s.equals(storageLocation))
                             .collect(Collectors.toSet());
                     aip.setStorages(updatedStorages);
@@ -388,7 +391,7 @@ public class AIPStorageService implements IAIPStorageService {
 
             }
         }
-        return edited;
+        return AIPUpdateResult.build(edited, aipEdited);
     }
 
     @Override
@@ -489,6 +492,7 @@ public class AIPStorageService implements IAIPStorageService {
         }
 
         // Make a request group for all these aips
+        LOGGER.info("[AIP STORE META REQUEST] Sending {} storage request to storage client.", files.size());
         Collection<RequestInfo> infos = storageClient.store(files);
         return infos.stream().map(RequestInfo::getGroupId).collect(Collectors.toList());
     }
@@ -549,4 +553,5 @@ public class AIPStorageService implements IAIPStorageService {
 
         return files;
     }
+
 }

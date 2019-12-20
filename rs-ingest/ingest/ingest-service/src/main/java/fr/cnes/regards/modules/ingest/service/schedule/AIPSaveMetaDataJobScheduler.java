@@ -18,7 +18,24 @@
  */
 package fr.cnes.regards.modules.ingest.service.schedule;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -32,20 +49,6 @@ import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRe
 import fr.cnes.regards.modules.ingest.service.job.AIPSaveMetaDataJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 /**
  * This component scans the AIPSaveMetaDataRepo and schedule jobs
@@ -117,15 +120,15 @@ public class AIPSaveMetaDataJobScheduler {
             // Make a list of request ids
             List<Long> requestIds = content.stream().map(AIPStoreMetaDataRequest::getId).collect(Collectors.toList());
 
-            // Change request state
-            abstractRequestRepository.updateStates(requestIds, InternalRequestState.RUNNING);
-
             // Schedule deletion job
             Set<JobParameter> jobParameters = Sets.newHashSet();
             jobParameters.add(new JobParameter(AIPSaveMetaDataJob.UPDATE_METADATA_REQUEST_IDS, requestIds));
             jobInfo = new JobInfo(false, IngestJobPriority.AIP_SAVE_METADATA_RUNNER_PRIORITY.getPriority(),
                     jobParameters, null, AIPSaveMetaDataJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
+
+            // Change request state
+            abstractRequestRepository.updateStates(requestIds, InternalRequestState.RUNNING);
         }
         return jobInfo;
     }

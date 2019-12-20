@@ -41,6 +41,11 @@ public class AIPEntityUpdateWrapper {
      */
     private boolean pristine;
 
+    /**
+     * True when the aip inside the AIPEntity have not been updated
+     */
+    private boolean aipPristine;
+
     private Collection<FileDeletionRequestDTO> deletionRequests;
 
     public AIPEntity getAip() {
@@ -71,15 +76,24 @@ public class AIPEntityUpdateWrapper {
         this.deletionRequests.addAll(requests);
     }
 
-    public void markAsUpdated() {
+    public void markAsUpdated(boolean aipUpdated) {
         this.pristine = false;
+        this.aipPristine = !aipUpdated;
     }
 
     public static AIPEntityUpdateWrapper build(AIPEntity aip) {
         AIPEntityUpdateWrapper wrapper = new AIPEntityUpdateWrapper();
         wrapper.aip = aip;
         wrapper.pristine = true;
+        wrapper.aipPristine = true;
         wrapper.deletionRequests = new ArrayList<>();
         return wrapper;
+    }
+
+    /**
+     * @return
+     */
+    public boolean isAipPristine() {
+        return aipPristine;
     }
 }

@@ -42,7 +42,7 @@ public interface IAIPStoreMetaDataRequestService {
      * @param aipsToUpdate
      * @param filesToDelete
      */
-    void handle(List<AIPStoreMetaDataRequest> requests, List<AIPEntity> aipsToStore, List<AIPEntity> aipsToUpdate,
+    void handle(List<AIPStoreMetaDataRequest> requests, List<AIPEntity> aipsToUpdate,
             List<FileDeletionRequestDTO> filesToDelete);
 
     /**

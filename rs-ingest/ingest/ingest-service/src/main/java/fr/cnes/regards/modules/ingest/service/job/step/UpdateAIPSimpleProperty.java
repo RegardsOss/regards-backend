@@ -18,21 +18,24 @@
  */
 package fr.cnes.regards.modules.ingest.service.job.step;
 
+import java.util.List;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateCategoryTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTagTask;
-import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
-import java.util.List;
+import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 
 /**
  * @author Léo Mieulet
  */
 public class UpdateAIPSimpleProperty implements IUpdateStep {
+
     @Override
-    public AIPEntityUpdateWrapper run(AIPEntityUpdateWrapper aipWrapper, AbstractAIPUpdateTask updateTask) throws ModuleException {
+    public AIPEntityUpdateWrapper run(AIPEntityUpdateWrapper aipWrapper, AbstractAIPUpdateTask updateTask)
+            throws ModuleException {
         AIPUpdateTaskType taskType = updateTask.getType();
         switch (taskType) {
             case ADD_CATEGORY:
@@ -62,7 +65,7 @@ public class UpdateAIPSimpleProperty implements IUpdateStep {
         }
         // Update the wrapper pristine flag if the list changed
         if (tagSize != aip.getTags().size()) {
-            aipWrapper.markAsUpdated();
+            aipWrapper.markAsUpdated(true);
         }
         return aipWrapper;
     }
@@ -78,7 +81,7 @@ public class UpdateAIPSimpleProperty implements IUpdateStep {
         }
         // Update the wrapper pristine flag if the list changed
         if (categorySize != aip.getCategories().size()) {
-            aipWrapper.markAsUpdated();
+            aipWrapper.markAsUpdated(true);
         }
         return aipWrapper;
     }
