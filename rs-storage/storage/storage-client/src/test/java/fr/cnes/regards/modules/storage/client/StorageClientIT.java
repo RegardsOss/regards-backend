@@ -51,6 +51,8 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
+import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
+import fr.cnes.regards.modules.storage.dao.IRequestGroupRepository;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
@@ -98,6 +100,12 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
     @Autowired
     private IFileCacheRequestRepository cacheReqRepo;
 
+    @Autowired
+    private IRequestGroupRepository reqGroupRepo;
+
+    @Autowired
+    private IGroupRequestInfoRepository reqInfoRepo;
+
     private Path fileToStore;
 
     private static final String ONLINE_CONF = "ONLINE_CONF";
@@ -120,6 +128,8 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         storageReqRepo.deleteAll();
         copyReqRepo.deleteAll();
         cacheReqRepo.deleteAll();
+        reqInfoRepo.deleteAll();
+        reqGroupRepo.deleteAll();
 
         fileToStore = Paths.get("target/file-to-store.test");
         if (!Files.exists(fileToStore)) {
@@ -139,6 +149,8 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         Assert.assertTrue(storageLocationConfService.search(ONLINE_CONF).isPresent());
         Assert.assertTrue(storageLocationConfService.search(NEARLINE_CONF).isPresent());
         Assert.assertTrue(storageLocationConfService.search(NEARLINE_CONF_2).isPresent());
+
+        listener.reset();
     }
 
     @Test
@@ -152,7 +164,8 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                            null));
         }
         Collection<RequestInfo> infos = client.store(files);
-        Thread.sleep(7_000);
+        // Wait for storage ends
+        waitRequestEnds(2);
         Assert.assertEquals("Two requests should be created", 2, infos.size());
     }
 
@@ -181,23 +194,11 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
 
-        int loopCounter = 0;
-        while (!listener.getGranted().contains(info) && (loopCounter <= 15)) {
-            Thread.sleep(2_000);
-            loopCounter++;
-        }
+        waitRequestEnds(1);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
-        loopCounter = 0;
-        while (!listener.getSuccess().containsKey(info) && (loopCounter <= 15)) {
-            Thread.sleep(2_000);
-            loopCounter++;
-        }
+
         Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
-        loopCounter = 0;
-        while ((listener.getSuccess().get(info).size() < 4) && (loopCounter <= 15)) {
-            Thread.sleep(2_000);
-            loopCounter++;
-        }
+
         Assert.assertEquals("Group request should contains 4 success request", 4,
                             listener.getSuccess().get(info).size());
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
@@ -211,6 +212,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         storedFileChecksums.add(cs4);
         restorableFileChecksums.add(cs4);
 
+        listener.reset();
     }
 
     @Test
@@ -220,7 +222,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                 .build("file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
                        new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), "somewhere", null));
 
-        Thread.sleep(7_000);
+        waitRequestEnds(1);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
         Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
@@ -233,7 +235,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                 .build("error.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
                        new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
 
-        Thread.sleep(7_000);
+        waitRequestEnds(1);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
         Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
@@ -253,7 +255,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         Collection<RequestInfo> infos = client.store(files);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
-        Thread.sleep(7_000);
+        waitRequestEnds(1);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
         Assert.assertEquals("Request should contains 1 success", 1, listener.getSuccess().get(info).size());
@@ -274,7 +276,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         Collection<RequestInfo> infos = client.store(files);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
-        Thread.sleep(7_000);
+        waitRequestEnds(1);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
         Assert.assertTrue("Request should contains successful storage", listener.getSuccess().containsKey(info));
         Assert.assertEquals("Request should contains 1 successful storage", 1, listener.getSuccess().get(info).size());
@@ -285,7 +287,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
 
         client.storeRetry(info);
 
-        Thread.sleep(7_000);
+        waitRequestEnds(1);
         Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
         Assert.assertEquals("Request should contains 1 error storage", 1, listener.getErrors().get(info).size());
@@ -302,9 +304,17 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         }
         Collection<RequestInfo> infos = client.reference(files);
         Assert.assertEquals("There should be two requests groups", 2, infos.size());
-        Thread.sleep(7_000);
+        waitRequestEnds(2);
         for (RequestInfo info : infos) {
             Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        }
+    }
+
+    private void waitRequestEnds(int nbrequests) throws InterruptedException {
+        int loop = 0;
+        while ((listener.getNbRequestEnds() < nbrequests) && (loop < 50)) {
+            loop++;
+            Thread.sleep(2000);
         }
     }
 
@@ -327,7 +337,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         Collection<RequestInfo> infos = client.reference(files);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
-        Thread.sleep(7_000);
+        waitRequestEnds(1);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
@@ -347,7 +357,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         RequestInfo info = client.store(FileStorageRequestDTO
                 .build("ok.file.test", checksum, "UUID", "application/octet-stream", owner,
                        new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
-        Thread.sleep(7_000);
+        waitRequestEnds(1);
 
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
@@ -358,7 +368,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         // Delete it
         RequestInfo deleteInfo = client.delete(FileDeletionRequestDTO.build(checksum, ONLINE_CONF, owner, false));
 
-        Thread.sleep(7_000);
+        waitRequestEnds(1);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(deleteInfo));
         Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(deleteInfo));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(deleteInfo));
@@ -373,7 +383,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         }
         Collection<RequestInfo> infos = client.delete(files);
         Assert.assertEquals("There should be two requests groups", 2, infos.size());
-        Thread.sleep(7_000);
+        waitRequestEnds(2);
         for (RequestInfo info : infos) {
             Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         }
@@ -383,13 +393,14 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
     public void availability() throws MalformedURLException, InterruptedException {
 
         this.storeFile();
+        listener.reset();
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Collection<RequestInfo> infos = client.makeAvailable(restorableFileChecksums, OffsetDateTime.now().plusDays(1));
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
 
-        Thread.sleep(7_000);
+        waitRequestEnds(1);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
@@ -397,7 +408,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void availabilityDenied() throws InterruptedException {
+    public void availabilityWithMultipleRequests() throws InterruptedException {
         Set<String> files = Sets.newHashSet();
         for (int i = 0; i < (AvailabilityFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
             files.add(UUID.randomUUID().toString());
@@ -405,7 +416,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
 
         Collection<RequestInfo> infos = client.makeAvailable(files, OffsetDateTime.now().plusDays(1));
         Assert.assertEquals("There should be two requests groups", 2, infos.size());
-        Thread.sleep(7_000);
+        waitRequestEnds(2);
         for (RequestInfo info : infos) {
             Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         }
@@ -425,7 +436,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
 
-        Thread.sleep(7_000);
+        waitRequestEnds(1);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
@@ -459,7 +470,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
 
-        Thread.sleep(7_000);
+        waitRequestEnds(1);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue("Request should contains successful requests ", listener.getSuccess().containsKey(info));
         Assert.assertEquals("Request should contains successful requests ", nbSuccessExpected,
@@ -490,17 +501,11 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         Collection<RequestInfo> infos = client.copy(requests);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
-        int loopCounter = 0;
-        while (!listener.getGranted().contains(info) && (loopCounter <= 15)) {
-            Thread.sleep(2_000);
-            loopCounter++;
-        }
+        // 1 Copy group requests should be over
+        // 1 Availability requests should be over (created by the copy process)
+        // 1 Storage group by file. Each group is created after availability event for each file.
+        waitRequestEnds(1 + 1 + restorableFileChecksums.size());
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
-        loopCounter = 0;
-        while (!listener.getSuccess().containsKey(info) && (loopCounter <= 15)) {
-            Thread.sleep(2_000);
-            loopCounter++;
-        }
         Assert.assertTrue(String.format("Request should be successful for request id %s", info.getGroupId()),
                           listener.getSuccess().containsKey(info));
         Assert.assertFalse("Request should not be error", listener.getErrors().containsKey(info));
@@ -518,7 +523,10 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
         LOGGER.info("[TEST COPY] Running copy group request {} with {} requests", info.getGroupId(), requests.size());
-        Thread.sleep(15_000);
+        // 1 Copy request
+        // 1 Availability request
+        // X Storage request
+        waitRequestEnds(1 + 1 + storedFileChecksums.size());
 
         Assert.assertTrue("Request group should be granted", listener.getGranted().contains(info));
         Assert.assertTrue(String.format("Request group %s should contains 3 successful request", info.getGroupId()),

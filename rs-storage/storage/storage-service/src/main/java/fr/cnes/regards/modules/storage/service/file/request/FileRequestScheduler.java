@@ -150,7 +150,7 @@ public class FileRequestScheduler {
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("Error runing scheduling task {}. Cause : {}", taskName, e.getMessage());
+            LOGGER.error(String.format("Error runing scheduling task %s. Cause : %s", taskName, e.getMessage()), e);
         } finally {
             semaphore.release();
         }
