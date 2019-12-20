@@ -158,8 +158,8 @@ public class RequestsGroupService {
      * @param silent True to avoid sending bus message about group granted. Used internally in storage microservice.
      */
     public void granted(String groupId, FileRequestType type, int nbRequestInGroup, boolean silent) {
-        LOGGER.info("[{} GROUP GRANTED {}] - Group request granted with {} requests.", type.toString().toUpperCase(),
-                    groupId, nbRequestInGroup);
+        LOGGER.debug("[{} GROUP GRANTED {}] - Group request granted with {} requests.", type.toString().toUpperCase(),
+                     groupId, nbRequestInGroup);
         // Create new group request
         if (!reqGroupRepository.existsById(groupId)) {
             reqGroupRepository.save(RequestGroup.build(groupId, type));
