@@ -195,6 +195,7 @@ public class FileCacheRequestService {
         Set<FileReference> offlines = Sets.newHashSet();
         Set<FileReference> nearlines = Sets.newHashSet();
         Set<FileReference> refs = fileRefService.search(checksums);
+        Set<String> unkownFiles = Sets.newHashSet();
         Set<String> remainingChecksums = Sets.newHashSet(checksums);
 
         // Dispatch by storage
@@ -235,16 +236,40 @@ public class FileCacheRequestService {
             storage = pStorageService.searchActiveHigherPriority(remainingStorages);
         }
         if (!remainingChecksums.isEmpty()) {
+            for (String cs : remainingChecksums) {
+                Optional<FileReference> oFileRef = refs.stream().filter(r -> r.getMetaInfo().getChecksum().equals(cs))
+                        .findFirst();
+                if (oFileRef.isPresent()) {
+                    offlines.add(oFileRef.get());
+                } else {
+                    unkownFiles.add(cs);
+                }
+            }
             // add unknown to offline files
             offlines.addAll(refs.stream().filter(ref -> remainingChecksums.contains(ref.getMetaInfo().getChecksum()))
                     .collect(Collectors.toSet()));
         }
+        notifyUnknowns(unkownFiles, groupId);
         notifyAvailables(onlines, groupId);
         // notifyNotAvailables(offlines, groupId);
         // Handle off lines as near lines files to create new FileCacheRequests.
         nearlines.addAll(offlines);
         int nbRequests = makeAvailable(nearlines, expirationDate, groupId);
         return nbRequests;
+    }
+
+    /**
+     * @param unkownFiles
+     */
+    private void notifyUnknowns(Set<String> unkownFiles, String requestGroupId) {
+        for (String checksum : unkownFiles) {
+            String message = String.format("file with checksum %s does not exists.", checksum);
+            LOGGER.error("[AVAILABILITY ERROR {}] - {}", checksum, message);
+            publisher.notAvailable(checksum, message, requestGroupId);
+            reqGrpService.requestError(requestGroupId, FileRequestType.AVAILABILITY, checksum, null, null, null,
+                                       message);
+        }
+
     }
 
     /**
