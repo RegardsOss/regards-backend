@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
@@ -88,6 +90,12 @@ public class RequestStatusService {
         if (deletionReqRepo
                 .existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(storage, checksum,
                                                                             FileRequestStatus.RUNNING_STATUS)) {
+            status = FileRequestStatus.DELAYED;
+        }
+        // Delay storage request if an other storage request is already running for the same file to store
+        else if (storageReqRepo
+                .existsByStorageAndMetaInfoChecksumAndStatusIn(storage, checksum,
+                                                               Sets.newHashSet(FileRequestStatus.RUNNING_STATUS))) {
             status = FileRequestStatus.DELAYED;
         }
         return status;

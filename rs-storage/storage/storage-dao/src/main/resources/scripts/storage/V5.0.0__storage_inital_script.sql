@@ -24,6 +24,7 @@ create index idx_file_copy_request on t_file_copy_request (storage, checksum);
 create index idx_file_copy_request_grp on t_file_copy_request (group_id);
 create index idx_file_copy_request_cache_grp on t_file_copy_request (cache_group_id);
 create index idx_file_copy_request_storage_grp on t_file_copy_request (storage_group_id);
+create index idx_file_reference_checksum on t_file_reference (checksum);
 alter table t_file_copy_request add constraint t_file_copy_request_checksum_storage unique (checksum, storage);
 create index idx_file_deletion_request on t_file_deletion_request (storage);
 create index idx_file_deletion_grp on t_file_deletion_request (group_id);
@@ -32,7 +33,6 @@ alter table t_file_reference add constraint uk_t_file_reference_checksum_storage
 create index idx_file_storage_request on t_file_storage_request (storage, checksum);
 create index idx_file_storage_request_cs on t_file_storage_request (checksum);
 create index idx_file_storage_request_storage on t_file_storage_request (storage);
-alter table t_file_storage_request add constraint t_file_storage_request_checksum_storage unique (checksum, storage);
 create index idx_t_request_group on t_request_group (id);
 create index idx_group_id on t_request_result_info (group_id);
 create index idx_storage_location on t_storage_location (name);

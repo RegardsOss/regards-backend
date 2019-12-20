@@ -126,8 +126,8 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo store(Collection<FileStorageRequestDTO> files) {
-        return store(files.iterator().next());
+    public Collection<RequestInfo> store(Collection<FileStorageRequestDTO> files) {
+        return Sets.newHashSet(store(files.iterator().next()));
     }
 
     @Override
@@ -155,7 +155,7 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo reference(Collection<FileReferenceRequestDTO> files) {
+    public Collection<RequestInfo> reference(Collection<FileReferenceRequestDTO> files) {
         // Not implemented yet
         throw new UnsupportedOperationException("Not implemented yet !");
     }
@@ -201,8 +201,8 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo delete(Collection<FileDeletionRequestDTO> files) {
-        return delete(files.iterator().next());
+    public Collection<RequestInfo> delete(Collection<FileDeletionRequestDTO> files) {
+        return Sets.newHashSet(delete(files.iterator().next()));
     }
 
     @Override
@@ -212,13 +212,13 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo copy(Collection<FileCopyRequestDTO> files) {
+    public Collection<RequestInfo> copy(Collection<FileCopyRequestDTO> files) {
         // Not implemented yet
         throw new UnsupportedOperationException("Not implemented yet !");
     }
 
     @Override
-    public RequestInfo makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
+    public Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
         throw new UnsupportedOperationException();
     }
 }

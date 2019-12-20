@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -141,7 +142,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void storeDenied() throws MalformedURLException, InterruptedException {
+    public void storeWithMultipleRequests() throws MalformedURLException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Set<FileStorageRequestDTO> files = Sets.newHashSet();
         for (int i = 0; i < (StorageFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
@@ -150,9 +151,9 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                            new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF,
                            null));
         }
-        RequestInfo info = client.store(files);
+        Collection<RequestInfo> infos = client.store(files);
         Thread.sleep(7_000);
-        Assert.assertTrue("Request should be denied", listener.getDenied().contains(info));
+        Assert.assertEquals("Two requests should be created", 2, infos.size());
     }
 
     @Test
@@ -176,7 +177,9 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                                               new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
                                               NEARLINE_CONF, null));
 
-        RequestInfo info = client.store(files);
+        Collection<RequestInfo> infos = client.store(files);
+        Assert.assertEquals(1, infos.size());
+        RequestInfo info = infos.stream().findFirst().get();
 
         int loopCounter = 0;
         while (!listener.getGranted().contains(info) && (loopCounter <= 15)) {
@@ -247,7 +250,9 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                 .build("ok.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
                        new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        RequestInfo info = client.store(files);
+        Collection<RequestInfo> infos = client.store(files);
+        Assert.assertEquals(1, infos.size());
+        RequestInfo info = infos.stream().findFirst().get();
         Thread.sleep(7_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
@@ -266,7 +271,9 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                 .build("ok.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
                        new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        RequestInfo info = client.store(files);
+        Collection<RequestInfo> infos = client.store(files);
+        Assert.assertEquals(1, infos.size());
+        RequestInfo info = infos.stream().findFirst().get();
         Thread.sleep(7_000);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
         Assert.assertTrue("Request should contains successful storage", listener.getSuccess().containsKey(info));
@@ -286,16 +293,19 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void referenceDenied() throws InterruptedException {
+    public void referenceWithMultipleGroups() throws InterruptedException {
         Set<FileReferenceRequestDTO> files = Sets.newHashSet();
         for (int i = 0; i < (ReferenceFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
             files.add(FileReferenceRequestDTO.build("file1.test", UUID.randomUUID().toString(), "UUID",
                                                     "application/octet-stream", 10L, "owner", "somewhere",
                                                     "file://here/file1.test"));
         }
-        RequestInfo info = client.reference(files);
+        Collection<RequestInfo> infos = client.reference(files);
+        Assert.assertEquals("There should be two requests groups", 2, infos.size());
         Thread.sleep(7_000);
-        Assert.assertTrue("Request should be denied", listener.getDenied().contains(info));
+        for (RequestInfo info : infos) {
+            Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        }
     }
 
     @Test
@@ -314,7 +324,9 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         files.add(FileReferenceRequestDTO.build("file3.test", cs3, "UUID", "application/octet-stream", 10L, owner,
                                                 storage, baseURl + "file3.test"));
 
-        RequestInfo info = client.reference(files);
+        Collection<RequestInfo> infos = client.reference(files);
+        Assert.assertEquals(1, infos.size());
+        RequestInfo info = infos.stream().findFirst().get();
         Thread.sleep(7_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue("Request should be successful", listener.getSuccess().containsKey(info));
@@ -354,14 +366,17 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void deleteDenied() throws InterruptedException {
+    public void deleteWithMultipleGroups() throws InterruptedException {
         Set<FileDeletionRequestDTO> files = Sets.newHashSet();
         for (int i = 0; i < (DeletionFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
             files.add(FileDeletionRequestDTO.build(UUID.randomUUID().toString(), ONLINE_CONF, "owner", false));
         }
-        RequestInfo info = client.delete(files);
+        Collection<RequestInfo> infos = client.delete(files);
+        Assert.assertEquals("There should be two requests groups", 2, infos.size());
         Thread.sleep(7_000);
-        Assert.assertTrue("Request should be denied", listener.getDenied().contains(info));
+        for (RequestInfo info : infos) {
+            Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        }
     }
 
     @Test
@@ -370,7 +385,9 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         this.storeFile();
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        RequestInfo info = client.makeAvailable(restorableFileChecksums, OffsetDateTime.now().plusDays(1));
+        Collection<RequestInfo> infos = client.makeAvailable(restorableFileChecksums, OffsetDateTime.now().plusDays(1));
+        Assert.assertEquals(1, infos.size());
+        RequestInfo info = infos.stream().findFirst().get();
 
         Thread.sleep(7_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
@@ -385,9 +402,13 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         for (int i = 0; i < (AvailabilityFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
             files.add(UUID.randomUUID().toString());
         }
-        RequestInfo info = client.makeAvailable(files, OffsetDateTime.now().plusDays(1));
+
+        Collection<RequestInfo> infos = client.makeAvailable(files, OffsetDateTime.now().plusDays(1));
+        Assert.assertEquals("There should be two requests groups", 2, infos.size());
         Thread.sleep(7_000);
-        Assert.assertTrue("Request should be denied", listener.getDenied().contains(info));
+        for (RequestInfo info : infos) {
+            Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
+        }
     }
 
     @Test
@@ -400,7 +421,9 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Set<String> checksums = Sets.newHashSet();
         checksums.addAll(referenceFileChecksums);
-        RequestInfo info = client.makeAvailable(checksums, OffsetDateTime.now().plusDays(1));
+        Collection<RequestInfo> infos = client.makeAvailable(checksums, OffsetDateTime.now().plusDays(1));
+        Assert.assertEquals(1, infos.size());
+        RequestInfo info = infos.stream().findFirst().get();
 
         Thread.sleep(7_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
@@ -432,7 +455,9 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         checksums.addAll(storedFileChecksums);
         int nbSuccessExpected = restorableFileChecksums.size();
         int nbErrorExpected = unrestorableFileChecksums.size() + referenceFileChecksums.size();
-        RequestInfo info = client.makeAvailable(checksums, OffsetDateTime.now().plusDays(1));
+        Collection<RequestInfo> infos = client.makeAvailable(checksums, OffsetDateTime.now().plusDays(1));
+        Assert.assertEquals(1, infos.size());
+        RequestInfo info = infos.stream().findFirst().get();
 
         Thread.sleep(7_000);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
@@ -462,7 +487,9 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Set<FileCopyRequestDTO> requests = restorableFileChecksums.stream()
                 .map(f -> FileCopyRequestDTO.build(f, NEARLINE_CONF_2)).collect(Collectors.toSet());
-        RequestInfo info = client.copy(requests);
+        Collection<RequestInfo> infos = client.copy(requests);
+        Assert.assertEquals(1, infos.size());
+        RequestInfo info = infos.stream().findFirst().get();
         int loopCounter = 0;
         while (!listener.getGranted().contains(info) && (loopCounter <= 15)) {
             Thread.sleep(2_000);
@@ -487,7 +514,9 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Set<FileCopyRequestDTO> requests = storedFileChecksums.stream()
                 .map(f -> FileCopyRequestDTO.build(f, NEARLINE_CONF_2)).collect(Collectors.toSet());
-        RequestInfo info = client.copy(requests);
+        Collection<RequestInfo> infos = client.copy(requests);
+        Assert.assertEquals(1, infos.size());
+        RequestInfo info = infos.stream().findFirst().get();
         LOGGER.info("[TEST COPY] Running copy group request {} with {} requests", info.getGroupId(), requests.size());
         Thread.sleep(15_000);
 
@@ -519,7 +548,8 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                                             "target/online-storage/"),
                          IPluginParam.build(SimpleOnlineTestClient.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleOnlineTestClient.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(ONLINE_CONF, parameters, 0, dataStoMeta.getPluginId());
+            PluginConfiguration dataStorageConf = new PluginConfiguration(ONLINE_CONF, parameters, 0,
+                    dataStoMeta.getPluginId());
             return storageLocationConfService.create(ONLINE_CONF, dataStorageConf, 1_000_000L);
         } catch (IOException | ModuleException e) {
             Assert.fail(e.getMessage());
@@ -539,7 +569,8 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_RESTORATION_ERROR_FILE_PATTERN,
                                             "restoError.*"),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(name, parameters, 0, dataStoMeta.getPluginId());
+            PluginConfiguration dataStorageConf = new PluginConfiguration(name, parameters, 0,
+                    dataStoMeta.getPluginId());
             return storageLocationConfService.create(name, dataStorageConf, 1_000_000L);
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);

@@ -56,8 +56,6 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
 
     public static final String FORCE_DELETE = "force";
 
-    private static final int PAGE_BULK_SIZE = 500;
-
     @Autowired
     private IPublisher publisher;
 
@@ -92,7 +90,7 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
             }
             String storage = parameters.get(STORAGE_LOCATION_ID).getValue();
             Boolean forceDelete = parameters.get(FORCE_DELETE).getValue();
-            Pageable pageRequest = PageRequest.of(0, PAGE_BULK_SIZE);
+            Pageable pageRequest = PageRequest.of(0, DeletionFlowItem.MAX_REQUEST_PER_GROUP);
             Page<FileReference> pageResults;
             LOGGER.info("[DELETION JOB] Calculate all files to delete for storage location {} (forceDelete={})",
                         storage, forceDelete);

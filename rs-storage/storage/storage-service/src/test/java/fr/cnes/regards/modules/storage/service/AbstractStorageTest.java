@@ -313,18 +313,18 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         stoReqService.handleRequest(owner, fileMetaInfo, originUrl, storage, subDir, UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), checksum);
-        Optional<FileStorageRequest> oFileRefReq = stoReqService.search(destination.getStorage(), checksum);
+        Collection<FileStorageRequest> fileRefReqs = stoReqService.search(destination.getStorage(), checksum);
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
-        Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
+        Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
         Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TO_DO,
-                            oFileRefReq.get().getStatus());
+                            fileRefReqs.stream().findFirst().get().getStatus());
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
         Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         runAndWaitJob(jobs);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        oFileRefReq = stoReqService.search(destination.getStorage(), checksum);
+        fileRefReqs = stoReqService.search(destination.getStorage(), checksum);
         oFileRef = fileRefService.search(destination.getStorage(), checksum);
         Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
         try {
@@ -333,7 +333,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         } catch (MalformedURLException e) {
             Assert.fail(e.getMessage());
         }
-        Assert.assertFalse("File reference request should not exists anymore", oFileRefReq.isPresent());
+        Assert.assertTrue("File reference request should not exists anymore", fileRefReqs.isEmpty());
         return oFileRef.get();
     }
 
@@ -366,14 +366,14 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                                     Optional.of("/in/this/directory"), UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-        Optional<FileStorageRequest> oFileRefReq = stoReqService.search(destination.getStorage(),
-                                                                        fileMetaInfo.getChecksum());
+        Collection<FileStorageRequest> fileRefReqs = stoReqService.search(destination.getStorage(),
+                                                                          fileMetaInfo.getChecksum());
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
-        Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
+        Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
         // only the configured storage can be used for storage. Otherwise the request should be set in eroor.
         if (storageDestination.equals(ONLINE_CONF_LABEL) || storageDestination.equals(NEARLINE_CONF_LABEL)) {
             Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TO_DO,
-                                oFileRefReq.get().getStatus());
+                                fileRefReqs.stream().findFirst().get().getStatus());
             // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
             Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet(),
                                                                   Sets.newHashSet());
@@ -381,18 +381,18 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
             // Run Job and wait for end
             runAndWaitJob(jobs);
             // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-            oFileRefReq = stoReqService.search(destination.getStorage(), fileMetaInfo.getChecksum());
+            fileRefReqs = stoReqService.search(destination.getStorage(), fileMetaInfo.getChecksum());
             oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
             Assert.assertFalse("File reference should have been created.", oFileRef.isPresent());
-            Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
+            Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
             Assert.assertEquals("File reference request should be STORE_ERROR status", FileRequestStatus.ERROR,
-                                oFileRefReq.get().getStatus());
+                                fileRefReqs.stream().findFirst().get().getStatus());
         } else {
             Assert.assertEquals("File reference request should be in STORE_ERROR status", FileRequestStatus.ERROR,
-                                oFileRefReq.get().getStatus());
+                                fileRefReqs.stream().findFirst().get().getStatus());
         }
 
-        return oFileRefReq.get();
+        return fileRefReqs.stream().findFirst().get();
     }
 
     protected URL getBaseStorageLocation() {

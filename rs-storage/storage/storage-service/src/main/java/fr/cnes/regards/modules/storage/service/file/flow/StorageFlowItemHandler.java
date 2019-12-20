@@ -103,8 +103,9 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
         }
         StorageFlowItem item = wrapper.getContent();
         if (item.getFiles().size() > StorageFlowItem.MAX_REQUEST_PER_GROUP) {
-            String message = String.format("Number of storage requests for group %s exeeds maximum limit of %d",
-                                           item.getGroupId(), StorageFlowItem.MAX_REQUEST_PER_GROUP);
+            String message = String.format("Number of storage requests (%d) for group %s exeeds maximum limit of %d",
+                                           item.getFiles().size(), item.getGroupId(),
+                                           StorageFlowItem.MAX_REQUEST_PER_GROUP);
             reqGroupService.denied(item.getGroupId(), FileRequestType.STORAGE, message);
         } else {
             if (!items.containsKey(tenant)) {

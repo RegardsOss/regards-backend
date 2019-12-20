@@ -45,7 +45,7 @@ public class StorageFlowItem implements ISubscribable {
     /**
      * Maximum number of Request per flow item
      */
-    public static final int MAX_REQUEST_PER_GROUP = 100;
+    public static final int MAX_REQUEST_PER_GROUP = 500;
 
     /**
      * Information about files to store

@@ -106,8 +106,8 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         // Check file is not referenced yet
         Assert.assertFalse("File should not be referenced yet", fileRefService.search(storage, checksum).isPresent());
         // Check a file reference request is created
-        Assert.assertTrue("File request should be created",
-                          stoReqService.search(ONLINE_CONF_LABEL, checksum).isPresent());
+        Assert.assertEquals("File request should be created", 1,
+                            stoReqService.search(ONLINE_CONF_LABEL, checksum).size());
         // Now check for event published
         Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
 
@@ -117,8 +117,8 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                                                               Lists.newArrayList(owner));
         runAndWaitJob(jobs);
         Assert.assertTrue("File should be referenced", fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
-        Assert.assertFalse("File request should be deleted",
-                           stoReqService.search(ONLINE_CONF_LABEL, checksum).isPresent());
+        Assert.assertTrue("File request should be deleted",
+                          stoReqService.search(ONLINE_CONF_LABEL, checksum).isEmpty());
         // Now check for event published
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -150,12 +150,12 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         Assert.assertFalse("File should not be referenced yet",
                            fileRefService.search(ONLINE_CONF_LABEL, cs2).isPresent());
         // Check a file reference request is created
-        Optional<FileStorageRequest> req1 = stoReqService.search(ONLINE_CONF_LABEL, cs1);
-        Optional<FileStorageRequest> req2 = stoReqService.search(ONLINE_CONF_LABEL, cs2);
-        Assert.assertTrue("File request should be created", req1.isPresent());
-        Assert.assertTrue("File request should be created", req2.isPresent());
-        Assert.assertEquals("", req1.get().getGroupIds().stream().findFirst().get(),
-                            req2.get().getGroupIds().stream().findFirst().get());
+        Collection<FileStorageRequest> storageReqs = stoReqService.search(ONLINE_CONF_LABEL, cs1);
+        Collection<FileStorageRequest> storageReqs2 = stoReqService.search(ONLINE_CONF_LABEL, cs2);
+        Assert.assertEquals("File request should be created", 1, storageReqs.size());
+        Assert.assertEquals("File request should be created", 1, storageReqs2.size());
+        Assert.assertEquals("", storageReqs.stream().findFirst().get().getGroupIds().stream().findFirst().get(),
+                            storageReqs2.stream().findFirst().get().getGroupIds().stream().findFirst().get());
 
         // Now check for event published
         Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
@@ -166,8 +166,8 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         runAndWaitJob(jobs);
         Assert.assertTrue("File should be referenced", fileRefService.search(ONLINE_CONF_LABEL, cs1).isPresent());
         Assert.assertTrue("File should be referenced", fileRefService.search(ONLINE_CONF_LABEL, cs2).isPresent());
-        Assert.assertFalse("File request should be deleted", stoReqService.search(ONLINE_CONF_LABEL, cs1).isPresent());
-        Assert.assertFalse("File request should be deleted", stoReqService.search(ONLINE_CONF_LABEL, cs2).isPresent());
+        Assert.assertTrue("File request should be deleted", stoReqService.search(ONLINE_CONF_LABEL, cs1).isEmpty());
+        Assert.assertTrue("File request should be deleted", stoReqService.search(ONLINE_CONF_LABEL, cs2).isEmpty());
         // Now check for event published
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
@@ -234,28 +234,33 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
 
         Assert.assertFalse("File should not be referenced",
                            fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
-        Assert.assertTrue("File request should be still present",
-                          stoReqService.search(ONLINE_CONF_LABEL, checksum).isPresent());
+        Assert.assertEquals("File request should be still present", 1,
+                            stoReqService.search(ONLINE_CONF_LABEL, checksum).size());
         Assert.assertEquals("File request should be in ERROR state", FileRequestStatus.ERROR,
-                            stoReqService.search(ONLINE_CONF_LABEL, checksum).get().getStatus());
+                            stoReqService.search(ONLINE_CONF_LABEL, checksum).stream().findFirst().get().getStatus());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference event STORED should be published", FileReferenceEventType.STORE_ERROR,
                             getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
 
-        Assert.assertTrue("File request still present", stoReqService.search(ONLINE_CONF_LABEL, checksum).isPresent());
+        Assert.assertEquals("File request still present", 1, stoReqService.search(ONLINE_CONF_LABEL, checksum).size());
         Assert.assertEquals("File request in ERROR state", FileRequestStatus.ERROR,
-                            stoReqService.search(ONLINE_CONF_LABEL, checksum).get().getStatus());
+                            stoReqService.search(ONLINE_CONF_LABEL, checksum).stream().findFirst().get().getStatus());
 
         // Retry same storage request
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
-        // Only one file reference request in db, with status in {@link FileRequestStatus#TO_DO}, to allow retry
-        Assert.assertTrue("File request still present", stoReqService.search(ONLINE_CONF_LABEL, checksum).isPresent());
-        Assert.assertEquals("File request in TO_DO state", FileRequestStatus.TO_DO,
-                            stoReqService.search(ONLINE_CONF_LABEL, checksum).get().getStatus());
+        // There should be two storage request
+        Collection<FileStorageRequest> storeRequests = stoReqService.search(ONLINE_CONF_LABEL, checksum);
+        Assert.assertEquals("File request still present", 2, storeRequests.size());
+        // On in TO_DO state
+        Assert.assertEquals("There should be one request in TO_DO state", 1L,
+                            storeRequests.stream().filter(r -> r.getStatus() == FileRequestStatus.TO_DO).count());
+        // The other one in DELAYED state
+        Assert.assertEquals("There should be one request in ERROR state", 1L,
+                            storeRequests.stream().filter(r -> r.getStatus() == FileRequestStatus.ERROR).count());
     }
 
     @Test

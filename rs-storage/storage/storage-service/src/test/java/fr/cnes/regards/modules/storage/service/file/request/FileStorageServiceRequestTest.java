@@ -165,12 +165,12 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
         // Run Job and wait for end
         runAndWaitJob(jobs);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        Optional<FileStorageRequest> oFileRefReq = stoReqService.search(fileRefReq.getStorage(),
-                                                                        fileRefReq.getMetaInfo().getChecksum());
+        Collection<FileStorageRequest> storageReqs = stoReqService.search(fileRefReq.getStorage(),
+                                                                          fileRefReq.getMetaInfo().getChecksum());
         Optional<FileReference> oFileRef = fileRefService.search(fileRefReq.getStorage(),
                                                                  fileRefReq.getMetaInfo().getChecksum());
         Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
-        Assert.assertFalse("File reference request should not exists anymore", oFileRefReq.isPresent());
+        Assert.assertTrue("File reference request should not exists anymore", storageReqs.isEmpty());
     }
 
     @Test
@@ -239,16 +239,16 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
         runAndWaitJob(jobs);
 
         Optional<FileReference> fileRef = fileRefService.search(ONLINE_CONF_LABEL, checksumNotHandled);
-        Optional<FileStorageRequest> req = stoReqService.search(ONLINE_CONF_LABEL, checksumNotHandled);
+        Collection<FileStorageRequest> storageReqs = stoReqService.search(ONLINE_CONF_LABEL, checksumNotHandled);
         Assert.assertFalse("File reference should not exists has the file to store has not been handled",
                            fileRef.isPresent());
-        Assert.assertTrue("File reference request should still exists has the file to store has not been handled",
-                          req.isPresent());
+        Assert.assertEquals("File reference request should still exists has the file to store has not been handled", 1,
+                            storageReqs.size());
         fileRef = fileRefService.search(ONLINE_CONF_LABEL, checksumHandled);
-        req = stoReqService.search(ONLINE_CONF_LABEL, checksumHandled);
+        storageReqs = stoReqService.search(ONLINE_CONF_LABEL, checksumHandled);
         Assert.assertTrue("File reference should exists has the file to store has been handled", fileRef.isPresent());
-        Assert.assertFalse("File reference request should not exists anymore has the file to store has been handled",
-                           req.isPresent());
+        Assert.assertTrue("File reference request should not exists anymore has the file to store has been handled",
+                          storageReqs.isEmpty());
     }
 
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_010"), @Requirement("REGARDS_DSL_STOP_AIP_070") })
@@ -268,9 +268,10 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
         // Run file reference creation.
         stoReqService.handleRequest("someone", fileMetaInfo, "invalid:/plop/file@.file", ONLINE_CONF_LABEL,
                                     Optional.empty(), UUID.randomUUID().toString());
-        Optional<FileStorageRequest> oFileRefReq = stoReqService.search(ONLINE_CONF_LABEL, fileMetaInfo.getChecksum());
-        Assert.assertEquals("Request sould be in error status as file url is not valid", oFileRefReq.get().getStatus(),
-                            FileRequestStatus.ERROR);
+        Collection<FileStorageRequest> storageReqs = stoReqService.search(ONLINE_CONF_LABEL,
+                                                                          fileMetaInfo.getChecksum());
+        Assert.assertEquals("Request sould be in error status as file url is not valid",
+                            storageReqs.stream().findFirst().get().getStatus(), FileRequestStatus.ERROR);
     }
 
     @Test
@@ -289,13 +290,13 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
                                     Optional.of("elsewhere://in/this/directory/file.test"),
                                     UUID.randomUUID().toString());
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-        Optional<FileStorageRequest> oFileRefReq = stoReqService.search(destination.getStorage(),
-                                                                        fileMetaInfo.getChecksum());
+        Collection<FileStorageRequest> storageReqs = stoReqService.search(destination.getStorage(),
+                                                                          fileMetaInfo.getChecksum());
         Assert.assertFalse("File reference should not have been created. As storage is not possible into an unkown storage location",
                            oFileRef.isPresent());
-        Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
+        Assert.assertEquals("File reference request should exists", 1, storageReqs.size());
         Assert.assertTrue("File reference request should be in STORE_ERROR status",
-                          oFileRefReq.get().getStatus().equals(FileRequestStatus.ERROR));
+                          storageReqs.stream().findFirst().get().getStatus().equals(FileRequestStatus.ERROR));
     }
 
 }

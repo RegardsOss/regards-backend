@@ -43,6 +43,8 @@ import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class CopyFlowItem implements ISubscribable {
 
+    public static final int MAX_REQUEST_PER_GROUP = 500;
+
     /**
      * Files to delete information
      */

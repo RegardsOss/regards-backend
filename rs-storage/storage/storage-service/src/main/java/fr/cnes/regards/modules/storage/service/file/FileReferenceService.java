@@ -34,12 +34,12 @@ import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
-import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
 
 /**
  * Service to handle actions on {@link FileReference}s entities.
@@ -56,7 +56,7 @@ public class FileReferenceService {
     private IFileReferenceRepository fileRefRepo;
 
     @Autowired
-    private IGroupRequestInfoRepository requInfoRepo;
+    private RequestsGroupService requInfoService;
 
     @Autowired
     private FileReferenceEventPublisher fileRefEventPublisher;
@@ -98,7 +98,7 @@ public class FileReferenceService {
         Assert.notNull(fileRef.getId(), "File reference identifier to delete cannot be null");
 
         // Check if there is request information associated
-        requInfoRepo.deleteByResultFileId(fileRef.getId());
+        requInfoService.deleteRequestInfoForFile(fileRef.getId());
         fileRefRepo.delete(fileRef);
         String message = String.format("File reference %s (checksum: %s) as been completly deleted for all owners.",
                                        fileRef.getMetaInfo().getFileName(), fileRef.getMetaInfo().getChecksum());

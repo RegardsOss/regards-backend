@@ -38,15 +38,11 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.domain.IUpdateFileReferenceOnAvailable;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
-import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
-import fr.cnes.regards.modules.storage.service.file.request.RequestStatusService;
 import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
 
 /**
@@ -66,13 +62,7 @@ public class FileReferenceEventHandler
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceEventHandler.class);
 
     @Autowired
-    private FileStorageRequestService fileReferenceRequestService;
-
-    @Autowired
     private FileStorageRequestService fileStorageRequestService;
-
-    @Autowired
-    private FileDeletionRequestService fileDeletionRequestService;
 
     @Autowired
     private FileCopyRequestService fileCopyRequestService;
@@ -82,9 +72,6 @@ public class FileReferenceEventHandler
 
     @Autowired
     private RequestsGroupService reqGrpService;
-
-    @Autowired
-    private RequestStatusService reqStatusService;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -230,20 +217,16 @@ public class FileReferenceEventHandler
     private void createNewStorageRequest(FileCopyRequest copyRequest, FileReferenceEvent fileAvailableEvent) {
         String storageGroupId = UUID.randomUUID().toString();
         // Create a new storage request associated to the copy request
-        Optional<FileStorageRequest> request = fileStorageRequestService
-                .create(fileAvailableEvent.getOwners(), copyRequest.getMetaInfo(),
-                        fileAvailableEvent.getLocation().getUrl(), copyRequest.getStorage(),
-                        Optional.ofNullable(copyRequest.getStorageSubDirectory()), FileRequestStatus.TO_DO,
-                        storageGroupId, Optional.empty());
-        if (request.isPresent()) {
-            copyRequest.setFileStorageGroupId(storageGroupId);
-            fileCopyRequestService.update(copyRequest);
-            LOGGER.trace("[COPY REQUEST {}] Storage request is created for successfully restored file",
-                         copyRequest.getMetaInfo().getChecksum(), copyRequest.getGroupId());
-        } else {
-            fileCopyRequestService.handleError(copyRequest, String
-                    .format("Unable to create storage request associated to successuflly restored file"));
-        }
+        fileStorageRequestService.createNewFileStorageRequest(fileAvailableEvent.getOwners(), copyRequest.getMetaInfo(),
+                                                              fileAvailableEvent.getLocation().getUrl(),
+                                                              copyRequest.getStorage(),
+                                                              Optional.ofNullable(copyRequest.getStorageSubDirectory()),
+                                                              storageGroupId, Optional.empty(), Optional.empty());
+        copyRequest.setFileStorageGroupId(storageGroupId);
+        fileCopyRequestService.update(copyRequest);
+        LOGGER.trace("[COPY REQUEST {}] Storage request is created for successfully restored file",
+                     copyRequest.getMetaInfo().getChecksum(), copyRequest.getGroupId());
+
         reqGrpService.granted(storageGroupId, FileRequestType.STORAGE, 1, true);
     }
 

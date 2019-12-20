@@ -130,8 +130,8 @@ public class FileStorageRequestService {
         Set<FileReference> existingOnes = fileRefService.search(list.stream().map(StorageFlowItem::getFiles)
                 .flatMap(Set::stream).map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet()));
         for (StorageFlowItem item : list) {
-            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size());
             store(item.getFiles(), item.getGroupId(), existingOnes);
+            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size());
         }
 
     }
@@ -199,10 +199,10 @@ public class FileStorageRequestService {
     private Optional<FileReference> handleRequest(FileStorageRequestDTO request, Optional<FileReference> fileRef,
             String groupId) {
         if (fileRef.isPresent()) {
-            return handleAlreadyExists(fileRef.get(), request, groupId);
+            return handleFileToStoreAlreadyExists(fileRef.get(), request, groupId);
         } else {
             Optional<String> cause = Optional.empty();
-            FileRequestStatus status = FileRequestStatus.TO_DO;
+            Optional<FileRequestStatus> status = Optional.empty();
             try {
                 // Check that URL is a valid
                 new URL(request.getOriginUrl());
@@ -210,11 +210,12 @@ public class FileStorageRequestService {
                 String errorMessage = "Invalid URL for file " + request.getFileName() + "storage. Cause : "
                         + e.getMessage();
                 LOGGER.error(errorMessage);
-                status = FileRequestStatus.ERROR;
+                status = Optional.of(FileRequestStatus.ERROR);
                 cause = Optional.of(errorMessage);
             }
-            create(Sets.newHashSet(request.getOwner()), request.buildMetaInfo(), request.getOriginUrl(),
-                   request.getStorage(), request.getOptionalSubDirectory(), status, groupId, cause);
+            createNewFileStorageRequest(Sets.newHashSet(request.getOwner()), request.buildMetaInfo(),
+                                        request.getOriginUrl(), request.getStorage(), request.getOptionalSubDirectory(),
+                                        groupId, cause, status);
             return Optional.empty();
         }
     }
@@ -226,7 +227,7 @@ public class FileStorageRequestService {
      * @return {@link FileStorageRequest}
      */
     @Transactional(readOnly = true)
-    public Optional<FileStorageRequest> search(String destinationStorage, String checksum) {
+    public Collection<FileStorageRequest> search(String destinationStorage, String checksum) {
         return fileStorageRequestRepo.findByMetaInfoChecksumAndStorage(checksum, destinationStorage);
     }
 
@@ -419,72 +420,23 @@ public class FileStorageRequestService {
      * @param status
      * @param groupId Business identifier of the deletion request
      */
-    public Optional<FileStorageRequest> create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
-            String originUrl, String storage, Optional<String> storageSubDirectory, FileRequestStatus status,
-            String groupId, Optional<String> errorCause) {
-        // Check if file storage request already exists
-        Optional<FileStorageRequest> oFileRefRequest = search(storage, fileMetaInfo.getChecksum());
-        if (oFileRefRequest.isPresent()) {
-            handleAlreadyExists(oFileRefRequest.get(), originUrl, fileMetaInfo, owners, groupId, status);
+    public FileStorageRequest createNewFileStorageRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
+            String originUrl, String storage, Optional<String> storageSubDirectory, String groupId,
+            Optional<String> errorCause, Optional<FileRequestStatus> status) {
+        FileStorageRequest fileStorageRequest = new FileStorageRequest(owners, fileMetaInfo, originUrl, storage,
+                storageSubDirectory, groupId);
+        fileStorageRequest.setStatus(reqStatusService.getNewStatus(fileStorageRequest, status));
+        fileStorageRequest.setErrorCause(errorCause.orElse(null));
+        if (!storageHandler.getConfiguredStorages().contains(storage)) {
+            // The storage destination is unknown, we can already set the request in error status
+            handleStorageNotAvailable(fileStorageRequest, Optional.empty());
         } else {
-            FileStorageRequest fileStorageRequest = new FileStorageRequest(owners, fileMetaInfo, originUrl, storage,
-                    storageSubDirectory, groupId);
-            fileStorageRequest.setStatus(reqStatusService.getNewStatus(fileStorageRequest, Optional.of(status)));
-            fileStorageRequest.setErrorCause(errorCause.orElse(null));
-            if (!storageHandler.getConfiguredStorages().contains(storage)) {
-                // The storage destination is unknown, we can already set the request in error status
-                handleStorageNotAvailable(fileStorageRequest, Optional.empty());
-            } else {
-                fileStorageRequestRepo.save(fileStorageRequest);
-                LOGGER.trace("New file storage request created for file <{}> to store to {} with status {}",
-                             fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage(),
-                             fileStorageRequest.getStatus());
-            }
-            return Optional.of(fileStorageRequest);
+            fileStorageRequestRepo.save(fileStorageRequest);
+            LOGGER.trace("New file storage request created for file <{}> to store to {} with status {}",
+                         fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage(),
+                         fileStorageRequest.getStatus());
         }
-        return oFileRefRequest;
-    }
-
-    /**
-     * Method to update a {@link FileStorageRequest} when a new request is sent for the same associated {@link FileReference}.<br>
-     * If the existing file request is in error state, update the state to {@link FileRequestStatus#TO_DO} to allow store request retry.<br>
-     * The existing request is also updated to add new owners of the future stored and referenced {@link FileReference}.
-     *
-     * @param fileStorageRequest
-     * @param newMetaInfo
-     * @param owners
-     * @param newGroupId business requests group identifier
-     */
-    private void handleAlreadyExists(FileStorageRequest fileStorageRequest, String originUrl,
-            FileReferenceMetaInfo newMetaInfo, Collection<String> owners, String newGroupId,
-            FileRequestStatus newStatus) {
-        LOGGER.trace("Storage request already exists for file {}", newMetaInfo.getFileName());
-        fileStorageRequest.getOwners().addAll(owners);
-        fileStorageRequest.getGroupIds().add(newGroupId);
-        if (!newMetaInfo.equals(fileStorageRequest.getMetaInfo())) {
-            LOGGER.warn("New storage request received for the same file {} but meta informations differs. using new  ones.");
-            fileStorageRequest.setMetaInfo(newMetaInfo);
-        }
-        if (!fileStorageRequest.getOriginUrl().equals(originUrl)) {
-            LOGGER.warn("New storage request received for the same file {} but origin url differs. using new  one.");
-            fileStorageRequest.setOriginUrl(originUrl);
-        }
-
-        switch (fileStorageRequest.getStatus()) {
-            case ERROR:
-                // Allows storage retry.
-                fileStorageRequest.setStatus(newStatus);
-                break;
-            case PENDING:
-                // A storage is already in progress for this request.
-            case DELAYED:
-            case TO_DO:
-            default:
-                // Request has not been handled yet, we can update it.
-                fileStorageRequest.setStatus(newStatus);
-                break;
-        }
-        fileStorageRequestRepo.save(fileStorageRequest);
+        return fileStorageRequest;
     }
 
     /**
@@ -599,15 +551,16 @@ public class FileStorageRequestService {
      * @param groupId new business request identifier
      * @return {@link FileReference} updated or null.
      */
-    private Optional<FileReference> handleAlreadyExists(FileReference fileReference, FileStorageRequestDTO request,
-            String groupId) {
+    private Optional<FileReference> handleFileToStoreAlreadyExists(FileReference fileReference,
+            FileStorageRequestDTO request, String groupId) {
         FileReference updatedFileRef = null;
         FileReferenceMetaInfo newMetaInfo = request.buildMetaInfo();
         Optional<FileDeletionRequest> deletionRequest = fileDelReqService.search(fileReference);
         if (deletionRequest.isPresent() && deletionRequest.get().getStatus() == FileRequestStatus.PENDING) {
             // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
-            create(Sets.newHashSet(request.getOwner()), newMetaInfo, request.getOriginUrl(), request.getStorage(),
-                   request.getOptionalSubDirectory(), FileRequestStatus.DELAYED, groupId, Optional.empty());
+            createNewFileStorageRequest(Sets.newHashSet(request.getOwner()), newMetaInfo, request.getOriginUrl(),
+                                        request.getStorage(), request.getOptionalSubDirectory(), groupId,
+                                        Optional.empty(), Optional.empty());
         } else {
             if (deletionRequest.isPresent()) {
                 // Delete not running deletion request to add the new owner
