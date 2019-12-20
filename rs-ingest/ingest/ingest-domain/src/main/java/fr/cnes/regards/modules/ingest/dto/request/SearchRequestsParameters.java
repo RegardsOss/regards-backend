@@ -18,13 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.dto.request;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.dto.aip.OAISDateRange;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
+
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.dto.aip.OAISDateRange;
 
 /**
  * Store AbstractQuery criteria filters to do some research against AbstractQuery repo
@@ -45,6 +47,10 @@ public class SearchRequestsParameters {
     private InternalRequestState state;
 
     private InternalRequestState stateExcluded;
+
+    private Set<String> requestIds = Sets.newHashSet();
+
+    private SearchSelectionMode requestIdSelectionMode = SearchSelectionMode.INCLUDE;
 
     public static SearchRequestsParameters build() {
         return new SearchRequestsParameters();
@@ -89,6 +95,12 @@ public class SearchRequestsParameters {
 
     public SearchRequestsParameters withRequestType(RequestTypeEnum requestType) {
         this.requestType = requestType;
+        return this;
+    }
+
+    public SearchRequestsParameters withRequestIds(Set<String> requestIds, SearchSelectionMode requestIdSelectionMode) {
+        this.requestIds.addAll(requestIds);
+        this.requestIdSelectionMode = requestIdSelectionMode;
         return this;
     }
 
@@ -152,4 +164,21 @@ public class SearchRequestsParameters {
     public void setStateExcluded(InternalRequestState stateExcluded) {
         this.stateExcluded = stateExcluded;
     }
+
+    public Set<String> getRequestIds() {
+        return requestIds;
+    }
+
+    public void setRequestIds(Set<String> requestIds) {
+        this.requestIds = requestIds;
+    }
+
+    public SearchSelectionMode getRequestIdSelectionMode() {
+        return requestIdSelectionMode;
+    }
+
+    public void setRequestIdSelectionMode(SearchSelectionMode requestIdSelectionMode) {
+        this.requestIdSelectionMode = requestIdSelectionMode;
+    }
+
 }
