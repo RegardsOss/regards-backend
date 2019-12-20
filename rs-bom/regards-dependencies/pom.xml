@@ -176,10 +176,9 @@
         <!-- Take a version that retrieve a version of Hibernate that correctly
             manage uk naming while inheriting classes with JOINED strategy -->
 		<spring.boot.version>2.2.1.RELEASE</spring.boot.version>
-		<spring-security-oauth2-autoconfigure>2.2.0.RELEASE</spring-security-oauth2-autoconfigure>
         <!-- Spring OAuth is no more into spring-boot, only client is (From what
             i understood) -->
-		<org.springframework.security.oauth.version>2.3.6.RELEASE</org.springframework.security.oauth.version>
+		<org.springframework.security.oauth.version>2.4.0.RELEASE</org.springframework.security.oauth.version>
 		<org.springframework.security.jwt.version>1.0.9.RELEASE</org.springframework.security.jwt.version>
         <!-- use same version the one provided by spring-boot. This is mandatory,
             i don't know why but hateoas-spring override spring-core version given by
@@ -1306,11 +1305,6 @@
                 <version>${spring.cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.security.oauth.boot</groupId>
-                <artifactId>spring-security-oauth2-autoconfigure</artifactId>
-                <version>${spring-security-oauth2-autoconfigure}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
