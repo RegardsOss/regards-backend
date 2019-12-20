@@ -52,7 +52,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
@@ -146,7 +145,7 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
                 .set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
                                         PluginParameterTransformer.toJson(Arrays.asList(dataPath.toString()))));
 
-        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
+        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, parameters);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin RAWDATA" + Math.random());
         fileInfo.setScanPlugin(scanPlugin);
@@ -166,7 +165,7 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
                                                                  .toJson(Arrays.asList(browsePath.toString()))),
                                       IPluginParam.build(GlobDiskScanning.FIELD_GLOB, "*B.png"));
 
-        scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
+        scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, parameters);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin QUICKLOOK_SD" + Math.random());
         fileInfo.setScanPlugin(scanPlugin);
@@ -186,7 +185,7 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
                                                                  .toJson(Arrays.asList(browsePath.toString()))),
                                       IPluginParam.build(GlobDiskScanning.FIELD_GLOB, "*C.png"));
 
-        scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
+        scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, parameters);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin QUICKLOOK_MD" + Math.random());
         fileInfo.setScanPlugin(scanPlugin);
@@ -194,22 +193,22 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                                  DefaultFileValidation.class);
+        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, null,
+                                                                         new HashSet<IPluginParam>());
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin" + Math.random());
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginUtils
-                .getPluginConfiguration(Sets.newHashSet(), Arcad3IsoprobeDensiteProductPlugin.class);
+        PluginConfiguration productPlugin = PluginConfiguration.build(Arcad3IsoprobeDensiteProductPlugin.class, null,
+                                                                      new HashSet<IPluginParam>());
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin" + Math.random());
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                              DefaultSIPGeneration.class);
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class, null,
+                                                                     new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin" + Math.random());
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
