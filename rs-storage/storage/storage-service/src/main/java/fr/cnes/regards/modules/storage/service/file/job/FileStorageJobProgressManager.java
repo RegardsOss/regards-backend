@@ -64,8 +64,8 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
                     .format("File {} has been successully stored, nevertheless plugin <%> does not provide the new file location",
                             request.getStorage(), request.getMetaInfo().getFileName()));
         } else {
-            LOG.debug("[STORE SUCCESS] - File {} checksum={}.", request.getMetaInfo().getFileName(),
-                      request.getMetaInfo().getChecksum());
+            LOG.info("[STORE SUCCESS] - File {} ({}octets) checksum={}.", request.getMetaInfo().getFileName(), fileSize,
+                     request.getMetaInfo().getChecksum());
             handledRequest.add(FileStorageRequestResultDTO.build(request, storedUrl.toString(), fileSize));
             job.advanceCompletion();
         }

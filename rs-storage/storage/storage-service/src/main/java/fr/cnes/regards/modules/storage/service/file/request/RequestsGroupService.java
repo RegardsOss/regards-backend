@@ -49,6 +49,7 @@ import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
+import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 
 /**
  * Service to handle actions on requests group.<br>
@@ -95,6 +96,9 @@ public class RequestsGroupService {
 
     @Autowired
     private IRequestGroupRepository reqGroupRepository;
+
+    @Autowired
+    private StorageLocationService locationService;
 
     @Value("${regards.storage.requests.days.before.expiration:2}")
     private Integer nbDaysBeforeExpiration;
@@ -160,7 +164,7 @@ public class RequestsGroupService {
         if (!reqGroupRepository.existsById(groupId)) {
             reqGroupRepository.save(RequestGroup.build(groupId, type));
         } else {
-            LOGGER.error("Group request identifier already exists");
+            LOGGER.error("[{} Group request] Identifier {} already exists", type.toString(), groupId);
         }
         if (!silent) {
             publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.GRANTED, Sets.newHashSet()));
@@ -223,6 +227,7 @@ public class RequestsGroupService {
         String message = "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}";
         if (nbGroupsDone > 0) {
             LOGGER.info(message, System.currentTimeMillis() - start, nbGroupsDone, totalChecked);
+            locationService.monitorStorageLocations(false);
         } else {
             LOGGER.debug(message, System.currentTimeMillis() - start, nbGroupsDone, totalChecked);
         }
