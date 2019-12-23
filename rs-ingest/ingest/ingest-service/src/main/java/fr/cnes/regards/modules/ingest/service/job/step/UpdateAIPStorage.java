@@ -46,7 +46,7 @@ public class UpdateAIPStorage implements IUpdateStep {
                 .removeStorages(aipWrapper.getAip(), removeStorageTask.getStorages());
 
         if (!deletionRequests.isEmpty()) {
-            aipWrapper.markAsUpdated();
+            aipWrapper.markAsUpdated(true);
             aipWrapper.addDeletionRequests(deletionRequests);
         }
         return aipWrapper;

@@ -107,9 +107,12 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                     // Request files deletion
                     storageClient.delete(aipWrapper.getDeletionRequests());
                 }
-                // Schedule manifest storage
-                aipStoreMetaDataService.schedule(aipWrapper.getAip(), aipWrapper.getAip().getManifestLocations(), true,
-                                                 true);
+                if (aipWrapper.isAipPristine()) {
+                    // AIP content has changed, so store the new AIP file to every storage location
+                    // Schedule manifest storage
+                    aipStoreMetaDataService.schedule(aipWrapper.getAip(), aipWrapper.getAip().getManifestLocations(),
+                                                     true, true);
+                }
             }
 
             // update progress

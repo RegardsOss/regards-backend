@@ -18,24 +18,28 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 
 /**
  * JPA {@link Specification} to search for {@link AbstractRequest}s
@@ -79,6 +83,22 @@ public final class AbstractRequestSpecifications {
             if (filters.getSession() != null) {
                 predicates.add(cb.equal(root.get("session"), filters.getSession()));
             }
+            if ((filters.getRequestIds() != null) && !filters.getRequestIds().isEmpty()) {
+                Set<Predicate> idsPredicates = Sets.newHashSet();
+                for (String aipId : filters.getRequestIds()) {
+                    switch (filters.getRequestIdSelectionMode()) {
+                        case EXCLUDE:
+                            idsPredicates.add(cb.notEqual(root.get("id"), aipId));
+                            break;
+                        case INCLUDE:
+                        default:
+                            idsPredicates.add(cb.equal(root.get("id"), aipId));
+                            break;
+                    }
+                }
+                predicates.add(cb.or(idsPredicates.toArray(new Predicate[idsPredicates.size()])));
+            }
+
             if ((filters.getProviderIds() != null) && !filters.getProviderIds().isEmpty()) {
                 Set<Predicate> providerIdsPredicates = Sets.newHashSet();
                 for (String providerId : filters.getProviderIds()) {
@@ -139,8 +159,7 @@ public final class AbstractRequestSpecifications {
                     .aggregateRequest(cb,
                                       AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
                                                                                         session),
-                                      AbstractRequestSpecifications.searchOAISDeletion(root, cb, sessionOwner,
-                                                                                          session),
+                                      AbstractRequestSpecifications.searchOAISDeletion(root, cb, sessionOwner, session),
                                       AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
@@ -157,8 +176,7 @@ public final class AbstractRequestSpecifications {
 
             predicates.add(AbstractRequestSpecifications
                     .aggregateRequest(cb, AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
-                                      AbstractRequestSpecifications.searchOAISDeletion(root, cb, sessionOwner,
-                                                                                          session),
+                                      AbstractRequestSpecifications.searchOAISDeletion(root, cb, sessionOwner, session),
                                       AbstractRequestSpecifications.searchAipUpdatesCreator(root, cb),
                                       AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)));
 
@@ -229,7 +247,8 @@ public final class AbstractRequestSpecifications {
     }
 
     public static Predicate searchOAISDeletionCreator(Root<AbstractRequest> root, CriteriaBuilder cb) {
-        return AbstractRequestSpecifications.searchMacroRequest(root, cb, RequestTypeConstant.OAIS_DELETION_CREATOR_VALUE);
+        return AbstractRequestSpecifications.searchMacroRequest(root, cb,
+                                                                RequestTypeConstant.OAIS_DELETION_CREATOR_VALUE);
     }
 
     public static Predicate searchAipUpdatesCreator(Root<AbstractRequest> root, CriteriaBuilder cb) {

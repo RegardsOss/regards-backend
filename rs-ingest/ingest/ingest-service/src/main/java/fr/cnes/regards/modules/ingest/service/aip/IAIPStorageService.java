@@ -68,7 +68,7 @@ public interface IAIPStorageService {
      * @param storeRequestInfos storage events
      * @return true when aip have been impacted by these events
      */
-    boolean addAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos);
+    AIPUpdateResult addAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos);
 
     /**
      * Update provided {@link AIPEntity} aip with a list of removed file storage locations
@@ -76,7 +76,7 @@ public interface IAIPStorageService {
      * @param storeRequestInfos storage events
      * @return true when aip have been impacted by these events
      */
-    boolean removeAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos);
+    AIPUpdateResult removeAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos);
 
     /**
      * Remove a list of storage id from the AIP and retrieve the list of events to send

@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocationTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateResult;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
@@ -44,15 +45,15 @@ public class UpdateAIPLocation implements IUpdateStep {
         AIPUpdateTaskType taskType = updateTask.getType();
         AIPUpdateFileLocationTask updateFileLocation = (AIPUpdateFileLocationTask) updateTask;
         List<RequestResultInfoDTO> fileLocationUpdates = updateFileLocation.getFileLocationUpdates();
-        boolean updated;
+        AIPUpdateResult updated;
         if (taskType == AIPUpdateTaskType.ADD_FILE_LOCATION) {
             updated = aipStorageService.addAIPLocations(aipWrapper.getAip(), fileLocationUpdates);
         } else {
             updated = aipStorageService.removeAIPLocations(aipWrapper.getAip(),
                                                            updateFileLocation.getFileLocationUpdates());
         }
-        if (updated) {
-            aipWrapper.markAsUpdated();
+        if (updated.isAipEntityUpdated()) {
+            aipWrapper.markAsUpdated(updated.isAipUpdated());
         }
         return aipWrapper;
     }

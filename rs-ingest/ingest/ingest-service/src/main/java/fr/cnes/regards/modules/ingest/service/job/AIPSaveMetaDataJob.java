@@ -68,7 +68,6 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        List<AIPEntity> aipsToStore = new ArrayList<>();
         List<AIPEntity> aipsToUpdate = new ArrayList<>();
         List<FileDeletionRequestDTO> filesToDelete = new ArrayList<>();
         for (AIPStoreMetaDataRequest request : requests) {
@@ -82,13 +81,10 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
                 recomputeChecksum(request, aip);
                 aipsToUpdate.add(aip);
             }
-            // If everything is still ok, add the AIP to the list of storable aips
-            if (request.getState() != InternalRequestState.ERROR) {
-                aipsToStore.add(aip);
-            }
+
             advanceCompletion();
         }
-        aipSaveMetaDataService.handle(requests, aipsToStore, aipsToUpdate, filesToDelete);
+        aipSaveMetaDataService.handle(requests, aipsToUpdate, filesToDelete);
     }
 
     private void recomputeChecksum(AIPStoreMetaDataRequest request, AIPEntity aip) {
