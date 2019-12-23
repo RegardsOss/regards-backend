@@ -53,7 +53,7 @@ public interface IAIPStorageService {
      * @return group id
      * @throws ModuleException
      */
-    String storeAIPs(List<AIPStoreMetaDataRequest> requests) throws ModuleException;
+    List<String> storeAIPs(List<AIPStoreMetaDataRequest> requests) throws ModuleException;
 
     /**
      * Update provided {@link AIPEntity} aips content info with files metadata

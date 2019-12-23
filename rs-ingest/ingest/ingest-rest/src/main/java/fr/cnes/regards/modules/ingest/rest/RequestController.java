@@ -43,6 +43,7 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -120,7 +121,8 @@ public class RequestController implements IResourceController<RequestDto> {
         EntityModel<RequestDto> resource = resourceService.toResource(element);
 
         if (InternalRequestState.ERROR == element.getState()) {
-            resourceService.addLink(resource, this.getClass(), "retryRequests", LinkRelation.of("RETRY"));
+            resourceService.addLink(resource, this.getClass(), "retryRequests", LinkRelation.of("RETRY"),
+                                    MethodParamFactory.build(SearchRequestsParameters.class));
         }
         if (!Lists.newArrayList(InternalRequestState.RUNNING, InternalRequestState.CREATED)
                 .contains(element.getState())) {
