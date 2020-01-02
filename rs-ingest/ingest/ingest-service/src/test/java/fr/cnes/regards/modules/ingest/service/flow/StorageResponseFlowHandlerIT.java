@@ -34,14 +34,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
@@ -62,9 +56,8 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storeresponse",
-        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4" })
+        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "eureka.client.enabled=false" })
 @ActiveProfiles({ "testAmqp", "StorageClientMock" })
-@ContextConfiguration(classes = { StorageResponseFlowHandlerIT.IngestTestConfiguration.class })
 public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageResponseFlowHandlerIT.class);
@@ -81,13 +74,6 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private StorageClientMock storageClientMock;
-
-    @Configuration
-    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
-    @EnableAutoConfiguration(exclude = { JacksonAutoConfiguration.class, EurekaClientAutoConfiguration.class })
-    public static class IngestTestConfiguration {
-
-    }
 
     @Override
     protected void doInit() throws Exception {
@@ -164,7 +150,7 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceTest {
         sip.withDataObject(DataType.RAWDATA, dataFile, MD5_ALGORITHM, checksum);
         sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
         sip.registerContentInformation();
-        if (tags != null && !tags.isEmpty()) {
+        if ((tags != null) && !tags.isEmpty()) {
             sip.withContextTags(tags.toArray(new String[0]));
         }
 

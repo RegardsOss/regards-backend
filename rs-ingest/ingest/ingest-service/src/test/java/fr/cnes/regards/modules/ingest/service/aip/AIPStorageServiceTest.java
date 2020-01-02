@@ -60,7 +60,8 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_storage_service" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_storage_service",
+        "eureka.client.enabled=false" })
 public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
 
     @SpyBean
