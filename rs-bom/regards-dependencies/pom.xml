@@ -178,6 +178,7 @@
 		<spring.boot.version>2.2.1.RELEASE</spring.boot.version>
         <!-- Spring OAuth is no more into spring-boot, only client is (From what
             i understood) -->
+        <spring-security-oauth2-autoconfigure>2.2.0.RELEASE</spring-security-oauth2-autoconfigure>
 		<org.springframework.security.oauth.version>2.4.0.RELEASE</org.springframework.security.oauth.version>
 		<org.springframework.security.jwt.version>1.0.9.RELEASE</org.springframework.security.jwt.version>
         <!-- use same version the one provided by spring-boot. This is mandatory,
@@ -1319,10 +1320,15 @@
                 <version>${org.springframework.security.oauth.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework.security</groupId>
-                <artifactId>spring-security-jwt</artifactId>
-                <version>${org.springframework.security.jwt.version}</version>
-            </dependency>
+                <groupId>org.springframework.security.oauth.boot</groupId>
+                <artifactId>spring-security-oauth2-autoconfigure</artifactId>
+                <version>${spring-security-oauth2-autoconfigure}</version>
+           </dependency>
+           <dependency>
+               <groupId>org.springframework.security</groupId>
+               <artifactId>spring-security-jwt</artifactId>
+               <version>${org.springframework.security.jwt.version}</version>
+           </dependency>
             <!--<dependency> -->
             <!--<groupId>com.netflix.feign</groupId> -->
             <!--<artifactId>feign-core</artifactId> -->
