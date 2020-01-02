@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.order.test;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +54,7 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo store(Collection<FileStorageRequestDTO> files) {
+    public Collection<RequestInfo> store(Collection<FileStorageRequestDTO> files) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -83,7 +84,7 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo reference(Collection<FileReferenceRequestDTO> files) {
+    public Collection<RequestInfo> reference(Collection<FileReferenceRequestDTO> files) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -95,7 +96,7 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo delete(Collection<FileDeletionRequestDTO> files) {
+    public Collection<RequestInfo> delete(Collection<FileDeletionRequestDTO> files) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -107,13 +108,14 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo copy(Collection<FileCopyRequestDTO> files) {
+    public Collection<RequestInfo> copy(Collection<FileCopyRequestDTO> files) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public RequestInfo makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
+    public Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
+        Collection<RequestInfo> list = new ArrayList<RequestInfo>();
         RequestInfo ri = RequestInfo.build();
         for (String c : checksums) {
             if (!isAvailable) {
@@ -122,7 +124,8 @@ public class StorageClientMock implements IStorageClient {
                 listener.onFileAvailable(c, Sets.newHashSet(ri));
             }
         }
-        return ri;
+        list.add(ri);
+        return list;
     }
 
 }
