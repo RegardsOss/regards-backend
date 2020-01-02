@@ -36,6 +36,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -113,8 +114,9 @@ public class KerberosServiceProviderPluginTest {
                      IPluginParam.build(KerberosSPParameters.KRB5_FILEPATH_PARAMETER, urlkrb5.getPath()),
                      IPluginParam.build(KerberosSPParameters.KEYTAB_FILEPATH_PARAMETER, keytabFilePath.getPath()));
         try {
+            PluginConfiguration conf = PluginConfiguration.build(KerberosServiceProviderPlugin.class, "", parameters);
             // instantiate plugin
-            plugin = PluginUtils.getPlugin(parameters, KerberosServiceProviderPlugin.class, new HashMap<>());
+            plugin = PluginUtils.getPlugin(conf, new HashMap<>());
             Assert.assertNotNull(plugin);
         } catch (final PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
             Assert.fail();

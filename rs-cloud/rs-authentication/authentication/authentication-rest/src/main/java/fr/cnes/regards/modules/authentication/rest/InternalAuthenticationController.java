@@ -23,7 +23,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -93,7 +93,7 @@ public class InternalAuthenticationController implements IResourceController<Plu
             description = "Retrieve all configured Identity Provider plugins to handle REGARDS internal authentication",
             role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-    public ResponseEntity<List<Resource<PluginConfiguration>>> retrieveIdentityProviderPlugins() {
+    public ResponseEntity<List<EntityModel<PluginConfiguration>>> retrieveIdentityProviderPlugins() {
         final List<PluginConfiguration> plugins = service.retrieveIdentityProviderPlugins();
         return new ResponseEntity<>(toResources(plugins), HttpStatus.OK);
     }
@@ -105,9 +105,9 @@ public class InternalAuthenticationController implements IResourceController<Plu
      */
     @ResourceAccess(description = "Create a new Identity Provider plugin", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.POST, produces = "application/json")
-    public ResponseEntity<Resource<PluginConfiguration>> createIdentityProviderPlugin(
+    public ResponseEntity<EntityModel<PluginConfiguration>> createIdentityProviderPlugin(
             @RequestBody final PluginConfiguration pPluginConfigurationToCreate) {
-        ResponseEntity<Resource<PluginConfiguration>> response;
+        ResponseEntity<EntityModel<PluginConfiguration>> response;
         try {
             final PluginConfiguration plugin = service.createIdentityProviderPlugin(pPluginConfigurationToCreate);
             response = new ResponseEntity<>(toResource(plugin), HttpStatus.OK);
@@ -125,9 +125,9 @@ public class InternalAuthenticationController implements IResourceController<Plu
      */
     @ResourceAccess(description = "Retrieve a configured Identity Provider plugin", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(path = "/{idp_id}", method = RequestMethod.GET, produces = "application/json")
-    public ResponseEntity<Resource<PluginConfiguration>> retrieveIdentityProviderPlugin(
+    public ResponseEntity<EntityModel<PluginConfiguration>> retrieveIdentityProviderPlugin(
             @PathVariable("idp_id") final Long pPluginConfigurationId) {
-        ResponseEntity<Resource<PluginConfiguration>> response;
+        ResponseEntity<EntityModel<PluginConfiguration>> response;
         try {
             final PluginConfiguration plugin = service.retrieveIdentityProviderPlugin(pPluginConfigurationId);
             if (plugin != null) {
@@ -151,10 +151,10 @@ public class InternalAuthenticationController implements IResourceController<Plu
      */
     @ResourceAccess(description = "Update an Identity Provider plugin", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(path = "/{idp_id}", method = RequestMethod.PUT, produces = "application/json")
-    public ResponseEntity<Resource<PluginConfiguration>> updateIdentityProviderPlugin(
+    public ResponseEntity<EntityModel<PluginConfiguration>> updateIdentityProviderPlugin(
             @PathVariable("idp_id") final Long pPluginConfigurationId,
             @RequestBody final PluginConfiguration pPluginConfigurationToUpdate) {
-        ResponseEntity<Resource<PluginConfiguration>> response;
+        ResponseEntity<EntityModel<PluginConfiguration>> response;
         if (pPluginConfigurationId.equals(pPluginConfigurationToUpdate.getId())) {
             try {
                 final PluginConfiguration plugin = service.updateIdentityProviderPlugin(pPluginConfigurationToUpdate);
@@ -203,8 +203,8 @@ public class InternalAuthenticationController implements IResourceController<Plu
     }
 
     @Override
-    public Resource<PluginConfiguration> toResource(final PluginConfiguration pElement, final Object... pExtras) {
-        final Resource<PluginConfiguration> resource = resourceService.toResource(pElement);
+    public EntityModel<PluginConfiguration> toResource(final PluginConfiguration pElement, final Object... pExtras) {
+        final EntityModel<PluginConfiguration> resource = resourceService.toResource(pElement);
         resourceService.addLink(resource, this.getClass(), "retrieveIdentityProviderPlugin", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, pElement.getId()));
         resourceService.addLink(resource, this.getClass(), "updateIdentityProviderPlugin", LinkRels.UPDATE,

@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -119,7 +119,7 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
             final ExternalAuthenticationInformations pAuthInformations) {
         try {
             // First check project existence
-            final ResponseEntity<Resource<Project>> response = projectsClient
+            final ResponseEntity<EntityModel<Project>> response = projectsClient
                     .retrieveProject(pAuthInformations.getProject());
 
             if (!HttpStatus.OK.equals(response.getStatusCode())) {
@@ -135,7 +135,7 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
                 final UserDetails userDetails = plugin.getUserInformations(pAuthInformations);
 
                 // Get informations about the user from the regards internal accounts.
-                final ResponseEntity<Resource<ProjectUser>> userResponse = projectUsersClient
+                final ResponseEntity<EntityModel<ProjectUser>> userResponse = projectUsersClient
                         .retrieveProjectUserByEmail(userDetails.getEmail());
 
                 if (userResponse.getStatusCode().equals(HttpStatus.OK)

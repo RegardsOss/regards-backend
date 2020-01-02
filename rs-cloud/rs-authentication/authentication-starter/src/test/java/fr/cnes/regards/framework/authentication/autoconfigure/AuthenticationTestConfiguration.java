@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -75,8 +75,8 @@ public class AuthenticationTestConfiguration {
         testUser.setRole(testRole);
         testUser.setStatus(UserStatus.ACCESS_GRANTED);
 
-        final ResponseEntity<Resource<ProjectUser>> response = new ResponseEntity<>(
-                new Resource<>(testUser, new ArrayList<>()), HttpStatus.OK);
+        final ResponseEntity<EntityModel<ProjectUser>> response = new ResponseEntity<>(
+                new EntityModel<>(testUser, new ArrayList<>()), HttpStatus.OK);
         Mockito.when(client.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(response);
 
         return client;
@@ -87,8 +87,8 @@ public class AuthenticationTestConfiguration {
     IProjectsClient projectsClient() {
         final IProjectsClient client = Mockito.mock(IProjectsClient.class);
 
-        final ResponseEntity<Resource<Project>> response = new ResponseEntity<>(
-                new Resource<>(new Project("", "", true, PROJECT_TEST_NAME)), HttpStatus.OK);
+        final ResponseEntity<EntityModel<Project>> response = new ResponseEntity<>(
+                new EntityModel<>(new Project("", "", true, PROJECT_TEST_NAME)), HttpStatus.OK);
         Mockito.when(client.retrieveProject(Mockito.anyString())).thenReturn(response);
         return client;
     }
@@ -98,8 +98,8 @@ public class AuthenticationTestConfiguration {
         final IAccountsClient mock = Mockito.mock(IAccountsClient.class);
         final Account account = new Account("email@test.fr", "name", "lastname", "password");
         account.setStatus(AccountStatus.ACTIVE);
-        final Resource<Account> resource = HateoasUtils.wrap(account);
-        final ResponseEntity<Resource<Account>> response = ResponseEntity.ok(resource);
+        final EntityModel<Account> resource = HateoasUtils.wrap(account);
+        final ResponseEntity<EntityModel<Account>> response = ResponseEntity.ok(resource);
 
         Mockito.when(mock.retrieveAccounByEmail(Mockito.any())).thenReturn(response);
 

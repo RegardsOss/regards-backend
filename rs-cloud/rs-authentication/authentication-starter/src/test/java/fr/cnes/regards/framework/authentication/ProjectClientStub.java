@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.context.annotation.Primary;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.PagedResources.PageMetadata;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -42,27 +42,26 @@ public class ProjectClientStub implements IProjectsClient {
     private static long idCount = 0;
 
     @Override
-    public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(final int pPage, final int pSize) {
-        final PagedResources<Resource<Project>> page = new PagedResources<>(HateoasUtils.wrapList(projects),
-                                                                            new PageMetadata(pSize, pPage, 1),
-                                                                            new ArrayList<>());
+    public ResponseEntity<PagedModel<EntityModel<Project>>> retrieveProjectList(final int pPage, final int pSize) {
+        final PagedModel<EntityModel<Project>> page = new PagedModel<>(HateoasUtils.wrapList(projects),
+                new PageMetadata(pSize, pPage, 1), new ArrayList<>());
         return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(int page, int size) {
+    public ResponseEntity<PagedModel<EntityModel<Project>>> retrievePublicProjectList(int page, int size) {
         return null;
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> createProject(final Project pNewProject) {
+    public ResponseEntity<EntityModel<Project>> createProject(final Project pNewProject) {
         pNewProject.setId(idCount++);
         projects.add(pNewProject);
         return new ResponseEntity<>(HateoasUtils.wrap(pNewProject), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> retrieveProject(final String pProjectName) {
+    public ResponseEntity<EntityModel<Project>> retrieveProject(final String pProjectName) {
         Project result = null;
         for (final Project project : projects) {
             if (project.getName().equals(pProjectName)) {
@@ -74,7 +73,8 @@ public class ProjectClientStub implements IProjectsClient {
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> updateProject(final String pProjectName, final Project pProjectToUpdate) {
+    public ResponseEntity<EntityModel<Project>> updateProject(final String pProjectName,
+            final Project pProjectToUpdate) {
         Project result = null;
         for (final Project project : projects) {
             if (project.getName().equals(pProjectName)) {

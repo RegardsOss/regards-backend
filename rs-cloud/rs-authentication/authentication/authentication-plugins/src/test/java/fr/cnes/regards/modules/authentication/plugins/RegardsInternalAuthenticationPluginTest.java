@@ -26,12 +26,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -65,8 +66,10 @@ public class RegardsInternalAuthenticationPluginTest {
          */
         Set<IPluginParam> parameters = Sets.newHashSet();
         try {
+            PluginConfiguration conf = PluginConfiguration.build(RegardsInternalAuthenticationPlugin.class, "",
+                                                                 parameters);
             // instantiate plugin
-            plugin = PluginUtils.getPlugin(parameters, RegardsInternalAuthenticationPlugin.class, new HashMap<>());
+            plugin = PluginUtils.getPlugin(conf, new HashMap<>());
             Assert.assertNotNull(plugin);
         } catch (final PluginUtilsRuntimeException | IllegalArgumentException | SecurityException
                 | NotAvailablePluginConfigurationException e) {
@@ -92,8 +95,8 @@ public class RegardsInternalAuthenticationPluginTest {
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
             final ResponseEntity<Boolean> response = new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
-            final ResponseEntity<Resource<Account>> accountResponse = new ResponseEntity<>(
-                    new Resource<>(new Account(email, "firstName", "lastName", "password")), HttpStatus.OK);
+            final ResponseEntity<EntityModel<Account>> accountResponse = new ResponseEntity<>(
+                    new EntityModel<>(new Account(email, "firstName", "lastName", "password")), HttpStatus.OK);
             Mockito.when(client.retrieveAccounByEmail(email)).thenReturn(accountResponse);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
@@ -124,8 +127,8 @@ public class RegardsInternalAuthenticationPluginTest {
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
             final ResponseEntity<Boolean> response = new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
-            final ResponseEntity<Resource<Account>> accountResponse = new ResponseEntity<>(new Resource<>(extAccount),
-                    HttpStatus.OK);
+            final ResponseEntity<EntityModel<Account>> accountResponse = new ResponseEntity<>(
+                    new EntityModel<>(extAccount), HttpStatus.OK);
             Mockito.when(client.retrieveAccounByEmail(email)).thenReturn(accountResponse);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");

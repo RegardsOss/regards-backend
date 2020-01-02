@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -83,7 +83,7 @@ public class ExternalAuthenticationController implements IResourceController<Plu
     @ResourceAccess(
             description = "Retrieve all configured Service Provider plugins to handle REGARDS internal authentication")
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-    public ResponseEntity<List<Resource<PluginConfiguration>>> retrieveServiceProviderPlugins() {
+    public ResponseEntity<List<EntityModel<PluginConfiguration>>> retrieveServiceProviderPlugins() {
         final List<PluginConfiguration> plugins = service.retrieveServiceProviderPlugins();
         return new ResponseEntity<>(toResources(plugins), HttpStatus.OK);
     }
@@ -95,9 +95,9 @@ public class ExternalAuthenticationController implements IResourceController<Plu
      */
     @ResourceAccess(description = "Create a new Service Provider plugin")
     @RequestMapping(method = RequestMethod.POST, produces = "application/json")
-    public ResponseEntity<Resource<PluginConfiguration>> createServiceProviderPlugin(
+    public ResponseEntity<EntityModel<PluginConfiguration>> createServiceProviderPlugin(
             @RequestBody final PluginConfiguration pPluginConfigurationToCreate) {
-        ResponseEntity<Resource<PluginConfiguration>> response;
+        ResponseEntity<EntityModel<PluginConfiguration>> response;
         try {
             final PluginConfiguration plugin = service.createServiceProviderPlugin(pPluginConfigurationToCreate);
             response = new ResponseEntity<>(toResource(plugin), HttpStatus.OK);
@@ -115,9 +115,9 @@ public class ExternalAuthenticationController implements IResourceController<Plu
      */
     @ResourceAccess(description = "Retrieve a configured Service Provider plugin")
     @RequestMapping(path = "/{sp_id}", method = RequestMethod.GET, produces = "application/json")
-    public ResponseEntity<Resource<PluginConfiguration>> retrieveServiceProviderPlugin(
+    public ResponseEntity<EntityModel<PluginConfiguration>> retrieveServiceProviderPlugin(
             @PathVariable("sp_id") final Long pPluginConfigurationId) {
-        ResponseEntity<Resource<PluginConfiguration>> response;
+        ResponseEntity<EntityModel<PluginConfiguration>> response;
         try {
             final PluginConfiguration plugin = service.retrieveServiceProviderPlugin(pPluginConfigurationId);
             if (plugin != null) {
@@ -141,10 +141,10 @@ public class ExternalAuthenticationController implements IResourceController<Plu
      */
     @ResourceAccess(description = "Update a Service Provider plugin")
     @RequestMapping(path = "/{sp_id}", method = RequestMethod.PUT, produces = "application/json")
-    public ResponseEntity<Resource<PluginConfiguration>> updateServiceProviderPlugin(
+    public ResponseEntity<EntityModel<PluginConfiguration>> updateServiceProviderPlugin(
             @PathVariable("sp_id") final Long pPluginConfigurationId,
             @RequestBody final PluginConfiguration pPluginConfigurationToUpdate) {
-        ResponseEntity<Resource<PluginConfiguration>> response;
+        ResponseEntity<EntityModel<PluginConfiguration>> response;
         if (pPluginConfigurationId.equals(pPluginConfigurationToUpdate.getId())) {
             try {
                 final PluginConfiguration plugin = service.updateServiceProviderPlugin(pPluginConfigurationToUpdate);
@@ -209,8 +209,8 @@ public class ExternalAuthenticationController implements IResourceController<Plu
     }
 
     @Override
-    public Resource<PluginConfiguration> toResource(final PluginConfiguration pElement, final Object... pExtras) {
-        final Resource<PluginConfiguration> resource = resourceService.toResource(pElement);
+    public EntityModel<PluginConfiguration> toResource(final PluginConfiguration pElement, final Object... pExtras) {
+        final EntityModel<PluginConfiguration> resource = resourceService.toResource(pElement);
         resourceService.addLink(resource, this.getClass(), "retrieveServiceProviderPlugin", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, pElement.getId()));
         resourceService.addLink(resource, this.getClass(), "updateServiceProviderPlugin", LinkRels.UPDATE,
