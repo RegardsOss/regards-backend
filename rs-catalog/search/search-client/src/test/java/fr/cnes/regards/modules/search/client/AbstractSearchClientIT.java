@@ -32,6 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -98,12 +100,17 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
     @Autowired
     protected ISearchEngineConfigurationService searchEngineService;
 
+    @Autowired
+    private Gson gson;
+
     protected T client;
 
     @Before
     public void setUp() throws ModuleException {
-        client = FeignClientBuilder.build(new TokenClientProvider<>(getClazz(),
-                "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
+        client = FeignClientBuilder.build(
+                                          new TokenClientProvider<>(getClazz(),
+                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
+                                          gson);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         engineRepo.deleteAll();
