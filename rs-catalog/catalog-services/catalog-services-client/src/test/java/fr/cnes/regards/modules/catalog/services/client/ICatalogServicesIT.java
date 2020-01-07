@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.catalog.services.client;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,20 +30,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 
 /**
@@ -65,6 +70,9 @@ public class ICatalogServicesIT extends AbstractRegardsWebIT {
     @Value("${server.address}")
     private String serverAddress;
 
+    @Autowired
+    private IPluginConfigurationRepository repos;
+
     /**
      * Client to test
      */
@@ -76,21 +84,35 @@ public class ICatalogServicesIT extends AbstractRegardsWebIT {
     @Autowired
     private FeignSecurityManager feignSecurityManager;
 
+    @Autowired
+    private Gson gson;
+
     @Before
     public void init() {
         jwtService.injectMockToken(getDefaultTenant(), getDefaultRole());
-        client = FeignClientBuilder.build(new TokenClientProvider<>(ICatalogServicesClient.class,
-                "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
+        client = FeignClientBuilder.build(
+                                          new TokenClientProvider<>(ICatalogServicesClient.class,
+                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
+                                          gson);
         FeignSecurityManager.asSystem();
+        repos.deleteAll();
     }
 
     @Test
     @Requirement("REGARDS_DSL_ACC_ARC_130")
     @Purpose("Check that we can retrieve IHM Service augmented with their meta information")
     public void retrieveServicesWithMeta() {
-        ResponseEntity<List<EntityModel<PluginConfigurationDto>>> result = client
-                .retrieveServices(Lists.newArrayList("whatever"), Lists.newArrayList(ServiceScope.MANY));
-        Assert.assertTrue(result.getStatusCode().equals(HttpStatus.NOT_FOUND));
+        ResponseEntity<List<EntityModel<PluginConfigurationDto>>> result = client.retrieveServices(null, null);
+        Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
+    }
+
+    protected Map<String, List<String>> getHeadersToApply() {
+        Map<String, List<String>> headers = Maps.newHashMap();
+        headers.put(HttpConstants.CONTENT_TYPE, Lists.newArrayList("application/json"));
+        headers.put(HttpConstants.ACCEPT,
+                    Lists.newArrayList(MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE));
+
+        return headers;
     }
 
     @Override
