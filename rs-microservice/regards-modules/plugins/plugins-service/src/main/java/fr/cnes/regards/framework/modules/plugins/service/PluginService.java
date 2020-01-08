@@ -552,6 +552,18 @@ public class PluginService implements IPluginService {
         return (T) getCachedPlugin(businessId);
     }
 
+    @Override
+    public <T> Optional<T> getOptionalPlugin(String businessId, IPluginParam... dynamicPluginParameters)
+            throws NotAvailablePluginConfigurationException {
+        Optional<T> plugin;
+        try {
+            plugin = Optional.of(getPlugin(businessId, dynamicPluginParameters));
+        } catch (ModuleException e) {
+            plugin = Optional.empty();
+        }
+        return plugin;
+    }
+
     /**
      * Instanciate a plugin and cache it <b>if it doesn't have dynamic parameters</b>
      * @param businessId plugin configuration business identifier
@@ -796,4 +808,5 @@ public class PluginService implements IPluginService {
 
         return exportedConf;
     }
+
 }

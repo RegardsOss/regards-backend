@@ -109,6 +109,18 @@ public interface IPluginService {
             throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
+     * Get a plugin instance in a Optional for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
+     * return type.
+     * @param <T> a plugin instance
+     * @param businessId business identifier of the {@link PluginConfiguration}.
+     * @param dynamicPluginParameters list of dynamic {@link AbstractPluginParam}
+     * @return a plugin instance in a optional if exists or empty otherwise
+     * @throws NotAvailablePluginConfigurationException
+     */
+    <T> Optional<T> getOptionalPlugin(String businessId, IPluginParam... dynamicPluginParameters)
+            throws NotAvailablePluginConfigurationException;
+
+    /**
      * Get the first plugin instance of a plugin type. The pReturnInterfaceType attribute indicates the PluginInterface
      * return type.
      * @param <T> a plugin instance
