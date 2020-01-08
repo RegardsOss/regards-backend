@@ -34,10 +34,10 @@ public final class OAISEntitySpecification {
                                                                                                cb));
         }
         if (sessionOwner != null) {
-            predicates.add(cb.equal(root.get("sessionOwner"), sessionOwner));
+            predicates.add(cb.like(root.get("sessionOwner"), sessionOwner));
         }
         if (session != null) {
-            predicates.add(cb.equal(root.get("session"), session));
+            predicates.add(cb.like(root.get("session"), session));
         }
         if (ipType != null) {
             predicates.add(cb.equal(root.get("ipType"), ipType));
