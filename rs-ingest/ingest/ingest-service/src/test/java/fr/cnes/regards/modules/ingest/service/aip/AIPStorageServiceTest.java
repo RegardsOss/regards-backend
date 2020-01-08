@@ -18,23 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.oais.ContentInformation;
@@ -57,6 +42,17 @@ import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Léo Mieulet
@@ -179,16 +175,15 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    @Ignore("FIXME: see with author if it is the test or the code that is wrong! expecting updates in test while code explicitly says otherwise")
     public void testAddAIPLocationNotUpdating() {
         init();
         // Test with unrelated FAKE_CHECKSUM_4
         Collection<RequestResultInfoDTO> storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_4, LOCATION_2);
         AIPUpdateResult isUpdated = storageService.addAIPLocations(aipEntity1, storeRequestsInfos);
-        Assert.assertTrue("Should detect some change", isUpdated.isAipEntityUpdated());
-        Assert.assertTrue("Should detect some change", isUpdated.isAipUpdated());
+        Assert.assertFalse("Should not detect any change", isUpdated.isAipEntityUpdated());
+        Assert.assertFalse("Should not detect any change", isUpdated.isAipUpdated());
 
-        // Test with something that is already saved in the entity
+        // Test with something that is already saved in the AIP on that location
         storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_1, LOCATION_3);
         isUpdated = storageService.addAIPLocations(aipEntity1, storeRequestsInfos);
         Assert.assertFalse("Should not detect some change", isUpdated.isAipEntityUpdated());
