@@ -377,7 +377,6 @@ public class IngestRequestService implements IIngestRequestService {
 
         // Keep track of the error
         saveRequest(request);
-        sessionNotifier.ingestRequestError(request);
         // Publish
         //FIXME: why is there a sipId in place of providerId??????
         //FIXME: more important, why don't we use IngestPayload that seems to have all informations needed...
