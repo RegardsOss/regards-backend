@@ -69,7 +69,7 @@ public interface IIngestRequestService {
     /**
      * Handle request error during job processing
      */
-    void handleIngestJobFailed(IngestRequest request, SIPEntity entity);
+    void handleIngestJobFailed(IngestRequest request, SIPEntity entity, String errorMessage);
 
     /**
      * Handle request success at the end of the job processing and launch remote storage request

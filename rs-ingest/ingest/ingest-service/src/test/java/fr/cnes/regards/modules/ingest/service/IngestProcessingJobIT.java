@@ -274,7 +274,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         ArgumentCaptor<SIPEntity> sipCaptor = ArgumentCaptor.forClass(SIPEntity.class);
 
         Mockito.verify(ingestRequestService, Mockito.times(1))
-                .handleIngestJobFailed(ingestRequestCaptor.capture(), sipCaptor.capture());
+                .handleIngestJobFailed(ingestRequestCaptor.capture(), sipCaptor.capture(), ArgumentCaptor.forClass(String.class).capture());
         Mockito.clearInvocations(ingestRequestService);
         IngestRequest request = ingestRequestCaptor.getValue();
         Assert.assertNotNull(request);

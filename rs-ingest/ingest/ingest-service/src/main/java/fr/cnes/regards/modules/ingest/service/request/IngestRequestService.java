@@ -149,7 +149,7 @@ public class IngestRequestService implements IIngestRequestService {
                 Set<Long> ids;
                 ids = IJob.getValue(jobInfo.getParametersAsMap(), IngestProcessingJob.IDS_PARAMETER, type);
                 List<IngestRequest> requests = loadByIds(ids);
-                requests.forEach(r -> handleIngestJobFailed(r, null));
+                requests.forEach(r -> handleIngestJobFailed(r, null, null));
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 String message = String.format("Ingest request job with id \"%s\" fails with status \"%s\"",
                                                jobEvent.getJobId(), jobEvent.getJobEventType());
@@ -185,12 +185,12 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void handleIngestJobFailed(IngestRequest request, SIPEntity entity) {
+    public void handleIngestJobFailed(IngestRequest request, SIPEntity entity, String errorMessage) {
         // Lock job
         jobInfoService.lock(request.getJobInfo());
 
         // Keep track of the error
-        saveAndPublishErrorRequest(request, null);
+        saveAndPublishErrorRequest(request, errorMessage);
     }
 
     @Override
@@ -377,8 +377,10 @@ public class IngestRequestService implements IIngestRequestService {
 
         // Keep track of the error
         saveRequest(request);
-
+        sessionNotifier.ingestRequestError(request);
         // Publish
+        //FIXME: why is there a sipId in place of providerId??????
+        //FIXME: more important, why don't we use IngestPayload that seems to have all informations needed...
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
                                                    RequestState.ERROR, request.getErrors()));

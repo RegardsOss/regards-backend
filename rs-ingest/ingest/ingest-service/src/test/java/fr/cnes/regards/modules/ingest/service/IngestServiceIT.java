@@ -126,7 +126,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         // Detect error
         ArgumentCaptor<IngestRequest> argumentCaptor = ArgumentCaptor.forClass(IngestRequest.class);
         Mockito.verify(ingestRequestService, Mockito.times(1))
-                .handleIngestJobFailed(argumentCaptor.capture(), ArgumentCaptor.forClass(SIPEntity.class).capture());
+                .handleIngestJobFailed(argumentCaptor.capture(), ArgumentCaptor.forClass(SIPEntity.class).capture(), ArgumentCaptor.forClass(String.class).capture());
         IngestRequest request = argumentCaptor.getValue();
         Assert.assertNotNull(request);
         Assert.assertEquals(InternalRequestState.ERROR, request.getState());
