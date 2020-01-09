@@ -123,7 +123,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                             // For each file reference located in the given path, send a copy request to the destination storage location.
                             requests.add(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
                                                                   storageLocationDestinationId,
-                                                                  desinationFilePath.get().toString()));
+                                                                  desinationFilePath.get().toString(), null));
                         }
                     } catch (MalformedURLException | ModuleException e) {
                         LOGGER.error("Unable to handle file reference {} for copy from {} to {}. Cause {}",

@@ -114,7 +114,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         String requestGroup = UUID.randomUUID().toString();
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test", Optional.empty());
         Set<FileCopyRequestDTO> requests = Sets
-                .newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL));
+                .newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL, null));
         fileCopyRequestService.copy(Sets.newHashSet(CopyFlowItem.build(requests, requestGroup)));
         // A new copy request should be created
         Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
@@ -217,7 +217,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         String copyDestinationPath = "dir/test/copy";
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test", Optional.empty());
         Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO
-                .build(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL, copyDestinationPath));
+                .build(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL, copyDestinationPath, null));
         fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
         // A new copy request should be created
         Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
@@ -300,7 +300,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         String storage = "somewhere";
         FileReference fileRef = referenceRandomFile("owner", "type", "file1.test", storage).get();
         Set<FileCopyRequestDTO> requests = Sets
-                .newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), storage));
+                .newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), storage, null));
         fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
         Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), storage);
         Assert.assertTrue("There should be a copy request created", oReq.isPresent());
@@ -341,7 +341,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
     public void copyFile_error_unknownFile() {
         String storage = "somewhere";
         String unknownChecksum = UUID.randomUUID().toString();
-        Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(unknownChecksum, storage));
+        Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(unknownChecksum, storage, null));
         fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
         Optional<FileCopyRequest> oReq = fileCopyRequestService.search(unknownChecksum, storage);
         Assert.assertFalse("There should not be a copy request created", oReq.isPresent());
