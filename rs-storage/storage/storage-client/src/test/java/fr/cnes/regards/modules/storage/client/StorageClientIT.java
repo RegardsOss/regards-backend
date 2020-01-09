@@ -497,7 +497,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         listener.reset();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Set<FileCopyRequestDTO> requests = restorableFileChecksums.stream()
-                .map(f -> FileCopyRequestDTO.build(f, NEARLINE_CONF_2, null)).collect(Collectors.toSet());
+                .map(f -> FileCopyRequestDTO.build(f, NEARLINE_CONF_2)).collect(Collectors.toSet());
         Collection<RequestInfo> infos = client.copy(requests);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
@@ -518,7 +518,7 @@ public class StorageClientIT extends AbstractMultitenantServiceTest {
         listener.reset();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Set<FileCopyRequestDTO> requests = storedFileChecksums.stream()
-                .map(f -> FileCopyRequestDTO.build(f, NEARLINE_CONF_2, null)).collect(Collectors.toSet());
+                .map(f -> FileCopyRequestDTO.build(f, NEARLINE_CONF_2)).collect(Collectors.toSet());
         Collection<RequestInfo> infos = client.copy(requests);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();

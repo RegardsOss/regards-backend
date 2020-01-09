@@ -50,11 +50,6 @@ public class FileCopyRequestDTO {
      */
     private String subDirectory;
 
-    /**
-     * Owner of the file to copy
-     */
-    private String owner;
-
     public String getChecksum() {
         return checksum;
     }
@@ -67,11 +62,7 @@ public class FileCopyRequestDTO {
         return subDirectory;
     }
 
-    public String getOwner() {
-        return owner;
-    }
-
-    public static FileCopyRequestDTO build(String checksum, String storage, String owner) {
+    public static FileCopyRequestDTO build(String checksum, String storage) {
         FileCopyRequestDTO request = new FileCopyRequestDTO();
 
         Assert.notNull(checksum, "Checksum is mandatory.");
@@ -79,12 +70,10 @@ public class FileCopyRequestDTO {
 
         request.checksum = checksum;
         request.storage = storage;
-        request.owner = owner;
-
         return request;
     }
 
-    public static FileCopyRequestDTO build(String checksum, String storage, String subDirectory, String owner) {
+    public static FileCopyRequestDTO build(String checksum, String storage, String subDirectory) {
         FileCopyRequestDTO request = new FileCopyRequestDTO();
 
         Assert.notNull(checksum, "Checksum is mandatory.");
@@ -93,8 +82,6 @@ public class FileCopyRequestDTO {
         request.checksum = checksum;
         request.storage = storage;
         request.subDirectory = subDirectory;
-        request.owner = owner;
-
         return request;
     }
 
