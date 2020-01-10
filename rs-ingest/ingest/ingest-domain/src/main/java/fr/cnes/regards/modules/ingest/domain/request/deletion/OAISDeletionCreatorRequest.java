@@ -60,6 +60,12 @@ public class OAISDeletionCreatorRequest extends AbstractRequest {
         request.setCreationDate(OffsetDateTime.now());
         request.setDtype(RequestTypeConstant.OAIS_DELETION_CREATOR_VALUE);
         request.setState(InternalRequestState.TO_SCHEDULE);
+        //FIXME: what the hell is this??? config and request have similar attributes, which one is supposed to be the right one?????
+        //FIXME: by the way this is the third object created for a REST request, if think less object and transformation would only help avoiding missing attributes!
+        //FIXME: check if following is really done how it should be
+        //FIXME: how to handle a simple request on multiple products belonging to multiple sessions?
+        request.setSession(deletionPayload.getSession());
+        request.setSessionOwner(deletionPayload.getSessionOwner());
         return request;
     }
 
@@ -106,6 +112,7 @@ public class OAISDeletionCreatorRequest extends AbstractRequest {
 
     @Override
     public void setSessionOwner(String sessionOwner) {
+        super.setSessionOwner(sessionOwner);
         config.setSessionOwner(sessionOwner);
     }
 
@@ -116,6 +123,7 @@ public class OAISDeletionCreatorRequest extends AbstractRequest {
 
     @Override
     public void setSession(String session) {
+        super.setSession(session);
         config.setSession(session);
     }
 
