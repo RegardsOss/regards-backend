@@ -69,7 +69,7 @@ public class SessionNotificationHandler implements IHandler<SessionMonitoringEve
 
     /**
      * Only add the message in the list of messages handled by bulk in the scheduled method
-     * @param wrapper containing {@link ReferenceFlowItem} to handle
+     * @param wrapper containing {@link SessionMonitoringEvent} to handle
      */
     @Override
     public void handle(TenantWrapper<SessionMonitoringEvent> wrapper) {
@@ -104,29 +104,24 @@ public class SessionNotificationHandler implements IHandler<SessionMonitoringEve
             try {
                 runtimeTenantResolver.forceTenant(entry.getKey());
                 ConcurrentLinkedQueue<SessionMonitoringEvent> tenantItems = entry.getValue();
-                List<SessionMonitoringEvent> list = new ArrayList<>();
+                List<SessionMonitoringEvent> toDos = new ArrayList<>();
                 do {
-                    // Build a 100 (at most) documents bulk request
-                    for (int i = 0; i < BULK_SIZE; i++) {
-                        SessionMonitoringEvent doc = tenantItems.poll();
-                        if (doc == null) {
-                            if (list.isEmpty()) {
-                                // nothing to do
-                                return;
-                            }
-                            // Less than BULK_SIZE documents, bulk save what we have already
-                            break;
-                        } else { // enqueue document
-                            list.add(doc);
-                        }
+                    // Build a BULK_SIZE (at most) documents bulk request
+                    int i =0;
+                    SessionMonitoringEvent doc = tenantItems.poll();
+                    while(i<BULK_SIZE && doc != null) {
+                        toDos.add(doc);
+                        doc = tenantItems.poll();
+                        i++;
                     }
-                    if (!list.isEmpty()) {
-                        LOG.info("[SESSION NOTIFICATIONS HANDLER] Bulk saving {} notifications...", list.size());
+                    // do something only if there is some to do
+                    if (!toDos.isEmpty()) {
+                        LOG.info("[SESSION NOTIFICATIONS HANDLER] Bulk saving {} notifications...", toDos.size());
                         long start = System.currentTimeMillis();
-                        sessionService.updateSessionProperties(list);
-                        LOG.info("[SESSION NOTIFICATIONS HANDLER] {} Notifications handled in {} ms", list.size(),
+                        sessionService.updateSessionProperties(toDos);
+                        LOG.info("[SESSION NOTIFICATIONS HANDLER] {} Notifications handled in {} ms", toDos.size(),
                                  System.currentTimeMillis() - start);
-                        list.clear();
+                        toDos.clear();
                     }
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
             } finally {
