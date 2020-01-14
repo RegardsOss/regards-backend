@@ -150,8 +150,13 @@ public class StorageClientMock implements IStorageClient {
 
     @Override
     public RequestInfo reference(FileReferenceRequestDTO file) {
-        // Not implemented yet
-        throw new UnsupportedOperationException("Not implemented yet !");
+        RequestInfo requestInfo = RequestInfo.build();
+
+        RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(), FileRequestType.STORAGE,
+                file.getChecksum(), file.getStorage(), null, Sets.newHashSet(file.getOwner()));
+
+        //TODO call storage
+        return requestInfo;
     }
 
     @Override
