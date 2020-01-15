@@ -90,7 +90,7 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     public static final String PLUGINS_CONFIGS = PLUGINS + "/configs";
 
-    public static final String REQUEST_PARAM_BUSINESS_ID = "configId";
+    public static final String REQUEST_PARAM_BUSINESS_ID = "configBusinessId";
 
     /**
      * REST mapping resource : /plugins/{pluginId}/config/{configId}
@@ -273,7 +273,7 @@ public class PluginController implements IResourceController<PluginConfiguration
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get a the plugin configuration of a specific plugin", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<PluginConfiguration>> getPluginConfiguration(
-            @PathVariable("pluginId") String pluginId, @PathVariable("configId") String configId)
+            @PathVariable("pluginId") String pluginId, @PathVariable("configBusinessId") String configId)
             throws ModuleException {
         PluginConfiguration pluginConfig = pluginService.getPluginConfiguration(configId);
         return ResponseEntity.ok(toResource(pluginConfig));
@@ -281,21 +281,21 @@ public class PluginController implements IResourceController<PluginConfiguration
 
     /**
      * Get the {@link PluginConfiguration} of a specified plugin.
-     * @param configId a plugin configuration identifier
+     * @param configBusinessId a plugin configuration identifier
      * @return the {@link PluginConfiguration} of the plugin
      * @throws ModuleException the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      */
     @RequestMapping(value = PLUGINS_CONFIGID, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get a the plugin configuration", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<PluginConfiguration>> getPluginConfigurationDirectAccess(
-            @PathVariable("configId") String configId) throws ModuleException {
-        return new ResponseEntity<>(new Resource<>(pluginService.getPluginConfiguration(configId)), HttpStatus.OK);
+            @PathVariable("configBusinessId") String configBusinessId) throws ModuleException {
+        return new ResponseEntity<>(new Resource<>(pluginService.getPluginConfiguration(configBusinessId)), HttpStatus.OK);
     }
 
     /**
      * Update a {@link PluginConfiguration} of a specified plugin.
      * @param pluginId a plugin identifier
-     * @param configId a plugin configuration identifier
+     * @param configBusinessId a plugin configuration identifier
      * @param pluginConf a {@link PluginConfiguration}
      * @return the {@link PluginConfiguration} of the plugin.
      * @throws ModuleException the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
@@ -304,23 +304,23 @@ public class PluginController implements IResourceController<PluginConfiguration
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Update a plugin configuration")
     public ResponseEntity<Resource<PluginConfiguration>> updatePluginConfiguration(
-            @PathVariable("pluginId") String pluginId, @PathVariable("configId") String configId,
+            @PathVariable("pluginId") String pluginId, @PathVariable("configBusinessId") String configBusinessId,
             @Valid @RequestBody PluginConfiguration pluginConf) throws ModuleException {
 
         if (!pluginId.equals(pluginConf.getPluginId())) {
             LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <" + pluginId
-                    + ">- config id= <" + configId + ">");
+                    + ">- config id= <" + configBusinessId + ">");
             throw new EntityNotFoundException(pluginId, PluginConfiguration.class);
         }
 
-        if (!configId.equals(pluginConf.getBusinessId())) {
-            throw new EntityNotFoundException(configId.toString(), PluginConfiguration.class);
+        if (!configBusinessId.equals(pluginConf.getBusinessId())) {
+            throw new EntityNotFoundException(configBusinessId.toString(), PluginConfiguration.class);
         }
 
         try {
             return ResponseEntity.ok(toResource(pluginService.updatePluginConfiguration(pluginConf)));
         } catch (final ModuleException e) {
-            LOGGER.error("Cannot update the plugin configuration : <" + configId + ">", e);
+            LOGGER.error("Cannot update the plugin configuration : <" + configBusinessId + ">", e);
             throw e;
         }
     }
@@ -328,7 +328,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     /**
      * Delete a {@link PluginConfiguration}.
      * @param pluginId a plugin identifier
-     * @param configId a plugin configuration identifier
+     * @param configBusinessId a plugin configuration identifier
      * @return void response entity
      * @throws ModuleException the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      */
@@ -336,8 +336,8 @@ public class PluginController implements IResourceController<PluginConfiguration
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Delete a plugin configuration")
     public ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") String pluginId,
-            @PathVariable("configId") String configId) throws ModuleException {
-        pluginService.deletePluginConfiguration(configId);
+            @PathVariable("configBusinessId") String configBusinessId) throws ModuleException {
+        pluginService.deletePluginConfiguration(configBusinessId);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
