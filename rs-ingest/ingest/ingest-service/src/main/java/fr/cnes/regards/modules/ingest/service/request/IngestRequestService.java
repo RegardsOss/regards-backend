@@ -291,7 +291,7 @@ public class IngestRequestService implements IIngestRequestService {
         }
         sessionNotifier.productStoreSuccess(request.getSessionOwner(), request.getSession(), aips);
 
-        // Schedule manifest archivage
+        // Schedule manifest storage
         aipSaveMetaDataService.schedule(aips, request.getMetadata().getStorages(), false, true);
         sessionNotifier.productMetaStorePending(request.getSessionOwner(), request.getSession(), aips);
 

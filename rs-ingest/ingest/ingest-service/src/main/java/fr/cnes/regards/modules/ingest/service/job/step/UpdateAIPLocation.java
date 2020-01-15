@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.ingest.service.job.step;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -36,12 +38,15 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  */
 public class UpdateAIPLocation implements IUpdateStep {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateAIPLocation.class);
+
     @Autowired
     private IAIPStorageService aipStorageService;
 
     @Override
     public AIPEntityUpdateWrapper run(AIPEntityUpdateWrapper aipWrapper, AbstractAIPUpdateTask updateTask)
             throws ModuleException {
+
         AIPUpdateTaskType taskType = updateTask.getType();
         AIPUpdateFileLocationTask updateFileLocation = (AIPUpdateFileLocationTask) updateTask;
         List<RequestResultInfoDTO> fileLocationUpdates = updateFileLocation.getFileLocationUpdates();
@@ -52,6 +57,8 @@ public class UpdateAIPLocation implements IUpdateStep {
             updated = aipStorageService.removeAIPLocations(aipWrapper.getAip(),
                                                            updateFileLocation.getFileLocationUpdates());
         }
+        LOGGER.info("[AIP {}] Running update task {}. updated={} manifestUpdate={}", aipWrapper.getAip().getAipId(),
+                    taskType.toString(), updated.isAipEntityUpdated(), updated.isAipUpdated());
         if (updated.isAipEntityUpdated()) {
             aipWrapper.markAsUpdated(updated.isAipUpdated());
         }

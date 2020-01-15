@@ -205,15 +205,19 @@ public class AIPStorageService implements IAIPStorageService {
     @Override
     public void updateAIPsContentInfosAndLocations(List<AIPEntity> aips,
             Collection<RequestResultInfoDTO> storeRequestInfos) {
+
         // Iterate over AIPs
         for (AIPEntity aipEntity : aips) {
+            // Filter ResultInfos for the current aip to handle
+            Set<RequestResultInfoDTO> aipRequests = storeRequestInfos.stream()
+                    .filter(r -> r.getRequestOwners().contains(aipEntity.getAipId())).collect(Collectors.toSet());
             // Iterate over AIP data objects
             List<ContentInformation> contentInfos = aipEntity.getAip().getProperties().getContentInformations();
             for (ContentInformation ci : contentInfos) {
                 OAISDataObject dataObject = ci.getDataObject();
 
                 // Filter the request result list to only keep whose referring to the current data object
-                Set<RequestResultInfoDTO> storeRequestInfosForCurrentAIP = storeRequestInfos.stream()
+                Set<RequestResultInfoDTO> storeRequestInfosForCurrentAIP = aipRequests.stream()
                         .filter(r -> r.getRequestChecksum().equals(dataObject.getChecksum()))
                         .collect(Collectors.toSet());
 
@@ -248,23 +252,25 @@ public class AIPStorageService implements IAIPStorageService {
             }
 
             // Check if some storeRequests are concerning the AIP itself
-            Set<RequestResultInfoDTO> storeRequestInfosForAIPManifest = storeRequestInfos.stream()
+            Set<RequestResultInfoDTO> storeRequestInfosForAIPManifest = aipRequests.stream()
                     .filter(AIPStorageService::isManifest).collect(Collectors.toSet());
             for (RequestResultInfoDTO storeRequestInfo : storeRequestInfosForAIPManifest) {
-                Set<OAISDataObjectLocation> manifestLocations = aipEntity.getManifestLocations();
-                // Remove any old reference to this storage
-                Set<OAISDataObjectLocation> newManifestLocations = manifestLocations.stream()
-                        .filter(ml -> !ml.getStorage().equals(storeRequestInfo.getRequestStorage()))
-                        .collect(Collectors.toSet());
-                // Generate the new ObjectLocation
-                newManifestLocations.add(OAISDataObjectLocation
-                        .build(storeRequestInfo.getResultFile().getLocation().getUrl(),
-                               storeRequestInfo.getRequestStorage(), storeRequestInfo.getRequestStorePath()));
-                // Save it
-                aipEntity.setManifestLocations(newManifestLocations);
+                if (storeRequestInfo.getRequestOwners().contains(aipEntity.getAipId())) {
+                    Set<OAISDataObjectLocation> manifestLocations = aipEntity.getManifestLocations();
+                    // Remove any old reference to this storage
+                    Set<OAISDataObjectLocation> newManifestLocations = manifestLocations.stream()
+                            .filter(ml -> !ml.getStorage().equals(storeRequestInfo.getRequestStorage()))
+                            .collect(Collectors.toSet());
+                    // Generate the new ObjectLocation
+                    newManifestLocations.add(OAISDataObjectLocation
+                            .build(storeRequestInfo.getResultFile().getLocation().getUrl(),
+                                   storeRequestInfo.getRequestStorage(), storeRequestInfo.getRequestStorePath()));
+                    // Save it
+                    aipEntity.setManifestLocations(newManifestLocations);
 
-                // Ensure the AIP storage list is updated
-                aipEntity.getStorages().add(storeRequestInfo.getRequestStorage());
+                    // Ensure the AIP storage list is updated
+                    aipEntity.getStorages().add(storeRequestInfo.getRequestStorage());
+                }
             }
         }
     }
@@ -315,17 +321,26 @@ public class AIPStorageService implements IAIPStorageService {
                                                          eventInfo.getResultFile().getMetaInfo().getFileName(),
                                                          eventInfo.getResultFile().getMetaInfo().getChecksum(),
                                                          storageLocation));
+                    LOGGER.info("[AIP {}] New location {} for file {}", aip.getAipId(), storageLocation,
+                                eventInfo.getResultFile().getMetaInfo().getFileName());
+                } else {
+                    LOGGER.info("[AIP {}] Location {} for file {} already exists", aip.getAipId(), storageLocation,
+                                ci.getDataObject().getFilename());
                 }
             } else if (isManifest(eventInfo)) {
                 // The event concern the AIP manifest itself
-                // Ensure the previous storage location is removed before adding the new manifest location
-                Set<OAISDataObjectLocation> newManifestLocation = aip.getManifestLocations().stream()
-                        .filter(l -> !l.getStorage().equals(storageLocation)).collect(Collectors.toSet());
-                edited = true;
-                // Add this new location to the manifest locations
-                newManifestLocation.add(OAISDataObjectLocation.build(eventInfo.getResultFile().getLocation().getUrl(),
-                                                                     storageLocation, eventInfo.getRequestStorePath()));
-                aip.setManifestLocations(newManifestLocation);
+                // Check if manifest location is already referenced
+                if (aip.getManifestLocations().stream().anyMatch(l -> !l.getStorage().equals(storageLocation))) {
+                    // Add this new location to the manifest locations
+                    Set<OAISDataObjectLocation> newManifestLocation = aip.getManifestLocations();
+                    edited = true;
+                    newManifestLocation
+                            .add(OAISDataObjectLocation.build(eventInfo.getResultFile().getLocation().getUrl(),
+                                                              storageLocation, eventInfo.getRequestStorePath()));
+                    aip.setManifestLocations(newManifestLocation);
+                } else {
+                    LOGGER.info("[AIP {}] Manifest location {} already exists", aip.getAipId(), storageLocation);
+                }
             }
         }
         return AIPUpdateResult.build(edited, aipEdited);
