@@ -330,7 +330,7 @@ public class AIPStorageService implements IAIPStorageService {
             } else if (isManifest(eventInfo)) {
                 // The event concern the AIP manifest itself
                 // Check if manifest location is already referenced
-                if (aip.getManifestLocations().stream().anyMatch(l -> !l.getStorage().equals(storageLocation))) {
+                if (!aip.getManifestLocations().stream().anyMatch(l -> l.getStorage().equals(storageLocation))) {
                     // Add this new location to the manifest locations
                     Set<OAISDataObjectLocation> newManifestLocation = aip.getManifestLocations();
                     edited = true;
