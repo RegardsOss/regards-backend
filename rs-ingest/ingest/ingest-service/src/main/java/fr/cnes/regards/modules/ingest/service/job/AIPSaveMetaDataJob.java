@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.job;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -72,14 +73,22 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
         List<FileDeletionRequestDTO> filesToDelete = new ArrayList<>();
         for (AIPStoreMetaDataRequest request : requests) {
             AIPEntity aip = request.getAip();
-            // Check if there is already existing manifest that should be removed
-            if (request.isRemoveCurrentMetaData()) {
-                filesToDelete.addAll(deleteLegacyManifest(aip));
-            }
+            String oldChecksum = aip.getChecksum();
+            String newChecksum = aip.getChecksum();
+
             // Check if should recompute checksum
             if (request.isComputeChecksum()) {
                 recomputeChecksum(request, aip);
                 aipsToUpdate.add(aip);
+                newChecksum = aip.getChecksum();
+                LOGGER.info("AIP Manifest checksum updated old : {}, new {}", oldChecksum, newChecksum);
+            }
+
+            // Check if there is already existing manifest that should be removed
+            if (request.isRemoveCurrentMetaData() && (oldChecksum != null) && !oldChecksum.equals(newChecksum)) {
+                LOGGER.info("AIP Manifest to delete on {} locations : {} - {}", aip.getManifestLocations().size(),
+                            aip.getAipId(), oldChecksum);
+                filesToDelete.addAll(deleteLegacyManifest(oldChecksum, aip.getManifestLocations(), aip.getAipId()));
             }
 
             advanceCompletion();
@@ -96,12 +105,12 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
         }
     }
 
-    private List<FileDeletionRequestDTO> deleteLegacyManifest(AIPEntity aip) {
+    private List<FileDeletionRequestDTO> deleteLegacyManifest(String manifestChecksum,
+            Collection<OAISDataObjectLocation> manifestLocations, String aipId) {
         List<FileDeletionRequestDTO> filesToDelete = new ArrayList<>();
         // Add the AIP itself (on each storage) to the file list to remove
-        for (OAISDataObjectLocation location : aip.getManifestLocations()) {
-            filesToDelete
-                    .add(FileDeletionRequestDTO.build(aip.getChecksum(), location.getStorage(), aip.getAipId(), false));
+        for (OAISDataObjectLocation location : manifestLocations) {
+            filesToDelete.add(FileDeletionRequestDTO.build(manifestChecksum, location.getStorage(), aipId, false));
         }
         return filesToDelete;
     }

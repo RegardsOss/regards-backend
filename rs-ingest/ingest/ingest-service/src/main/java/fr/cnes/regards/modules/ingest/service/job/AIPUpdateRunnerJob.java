@@ -104,6 +104,8 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                 updates.add(aipWrapper.getAip());
                 // Wrapper also collect events
                 if (aipWrapper.hasDeletionRequests()) {
+                    LOGGER.info("[AIP {}] Run {} deletion requests on storage.", aipWrapper.getAip().getAipId(),
+                                aipWrapper.getDeletionRequests().size());
                     // Request files deletion
                     storageClient.delete(aipWrapper.getDeletionRequests());
                 }
