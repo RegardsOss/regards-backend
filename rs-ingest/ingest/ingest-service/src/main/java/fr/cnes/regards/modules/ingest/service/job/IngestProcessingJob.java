@@ -163,6 +163,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         int sipInError = 0;
 
         for (IngestRequest request : requests) {
+            //FIXME add logic to handle interruption
             this.request = request;
             // We can't use {@link IngestRequest.getAips()} because this is a lazy list not fetched here
             List<AIPEntity> aipEntities = new ArrayList<>();

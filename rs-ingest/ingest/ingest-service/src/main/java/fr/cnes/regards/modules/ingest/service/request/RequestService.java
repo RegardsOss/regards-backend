@@ -19,9 +19,11 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -32,8 +34,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
@@ -44,7 +49,9 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications;
 import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
@@ -118,6 +125,9 @@ public class RequestService implements IRequestService {
 
     @Autowired
     private SessionNotifier sessionNotifier;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Override
     public void handleRemoteStoreError(Set<RequestInfo> requestInfos) {
@@ -253,6 +263,50 @@ public class RequestService implements IRequestService {
                 authResolver.getUser(), RequestRetryJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("Schedule {} job with id {}", RequestRetryJob.class.getName(), jobInfo.getId());
+    }
+
+    @Override
+    @Async
+    public void abortRequests(String tenant) {
+        runtimeTenantResolver.forceTenant(tenant);
+        SearchRequestsParameters filters = SearchRequestsParameters.build().withState(InternalRequestState.RUNNING);
+        Pageable pageRequest = PageRequest.of(0, 1000, Sort.Direction.ASC, "id");
+        Page<AbstractRequest> requestsPage;
+        Set<UUID> jobIdsAlreadyStopped = new HashSet<>();
+        do {
+            requestsPage = abortCurrentRequestPage(filters, pageRequest, jobIdsAlreadyStopped);
+
+        } while (requestsPage.hasNext());
+        runtimeTenantResolver.clearTenant();
+    }
+
+    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public Page<AbstractRequest> abortCurrentRequestPage(SearchRequestsParameters filters, Pageable pageRequest,
+            Set<UUID> jobIdsAlreadyStopped) {
+        Page<AbstractRequest> requestsPage;
+        requestsPage = findRequests(filters, pageRequest);
+        for(AbstractRequest request: requestsPage.getContent()) {
+            if(request.getJobInfo() == null ) {
+                request.setState(InternalRequestState.ABORTED);
+            } else {
+                UUID jobId = request.getJobInfo().getId();
+                if (request.getJobInfo().getStatus().getStatus() != JobStatus.RUNNING) {
+                    // set the state here just to be sure we are not forgetting orphan requests that has been taken
+                    // into account by some jobs but state just has not been updated for some reason
+                    if (request.getState() != InternalRequestState.ERROR) {
+                        // ERROR being the only final state of a request, we just do not abort requests in error.
+                        // it has to be done here and not on filters to respect what has been asked by API users
+                        request.setState(InternalRequestState.ABORTED);
+                    }
+                }
+                if (!jobIdsAlreadyStopped.contains(jobId)) {
+                    jobInfoService.stopJob(jobId);
+                    jobIdsAlreadyStopped.add(jobId);
+                }
+            }
+        }
+        return requestsPage;
     }
 
     @Override

@@ -44,7 +44,9 @@ import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 
 /**
- * This job creates {@link AbstractAIPUpdateTask} task to update. It scans AIP and create for each modification a task
+ * This job creates {@link AbstractAIPUpdateTask} task to update. It scans AIP and create for each modification a task. <br>
+ *
+ *     This job cannot be interrupted as it is a creator for other jobs. It basically does nothing.
  *
  * @author Léo Mieulet
  */

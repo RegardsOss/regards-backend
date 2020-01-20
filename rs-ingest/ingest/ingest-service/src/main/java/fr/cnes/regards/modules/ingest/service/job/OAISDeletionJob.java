@@ -24,7 +24,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
@@ -33,6 +35,8 @@ import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +69,9 @@ public class OAISDeletionJob extends AbstractJob<Void> {
     @Autowired
     private ISIPService sipService;
 
+    @Autowired
+    private IOAISDeletionRequestRepository deletionRequestRepository;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
@@ -78,7 +85,10 @@ public class OAISDeletionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        for (OAISDeletionRequest request : requests) {
+        Iterator<OAISDeletionRequest> requestIter = requests.iterator();
+        boolean interrupted = Thread.currentThread().isInterrupted();
+        while (requestIter.hasNext() && !interrupted) {
+            OAISDeletionRequest request = requestIter.next();
             AIPEntity aipToDelete = request.getAip();
             SIPEntity sipToDelete = aipToDelete.getSip();
             if (request.isDeleteFiles() && !request.isRequestFilesDeleted()) {
@@ -92,6 +102,19 @@ public class OAISDeletionJob extends AbstractJob<Void> {
                                            request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
             }
             advanceCompletion();
+            interrupted = Thread.currentThread().isInterrupted();
+        }
+        // abort requests that could not be handled
+        ArrayList<OAISDeletionRequest> aborted = new ArrayList<>();
+        while (requestIter.hasNext()) {
+            OAISDeletionRequest request = requestIter.next();
+            request.setState(InternalRequestState.ABORTED);
+            aborted.add(request);
+        }
+        interrupted = Thread.interrupted();
+        if(interrupted) {
+            deletionRequestRepository.saveAll(aborted);
+            Thread.currentThread().interrupt();
         }
     }
 

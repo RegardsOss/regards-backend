@@ -40,6 +40,8 @@ import org.springframework.data.domain.Sort;
 /**
  * This job handles request retry
  *
+ * <br>This job cannot be interrupted as it is simply handling operation on requests. It basically does nothing.
+ *
  * @author Léo Mieulet
  */
 public class RequestRetryJob extends AbstractJob<Void> {

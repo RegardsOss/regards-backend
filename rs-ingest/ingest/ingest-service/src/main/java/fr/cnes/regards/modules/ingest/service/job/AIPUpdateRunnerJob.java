@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.job;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,7 +31,6 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.gson.reflect.TypeToken;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -74,11 +74,22 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
+    private static int compareUpdateRequests(AIPUpdateRequest r1, AIPUpdateRequest r2) {
+        // sort by type of task
+        int sortValue = r1.getUpdateTask().getType().getOrder(r2.getUpdateTask().getType());
+        // if that's the same task type, order by creation date
+        if (sortValue == 0) {
+            sortValue = r1.getCreationDate().compareTo(r2.getCreationDate());
+        }
+        return sortValue;
+    }
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
         // Retrieve param
         Type type = new TypeToken<List<Long>>() {
+
         }.getType();
         List<Long> updateRequestIds = getValue(parameters, UPDATE_REQUEST_IDS, type);
         // Retrieve list of update requests to handle
@@ -96,41 +107,52 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         for (String aipId : requestByAIP.keySet()) {
             // Get the ordered list of task to execute on this AIP
             List<AIPUpdateRequest> updateRequests = getOrderedTaskList(aipId);
-            // Run each task
-            AIPEntityUpdateWrapper aipWrapper = runUpdates(updateRequests);
-            // Did something change in the AIP?
-            if (!aipWrapper.isPristine()) {
-                // Save the AIP threw the service
-                updates.add(aipWrapper.getAip());
-                // Wrapper also collect events
-                if (aipWrapper.hasDeletionRequests()) {
-                    // Request files deletion
-                    storageClient.delete(aipWrapper.getDeletionRequests());
-                }
-                if (aipWrapper.isAipPristine()) {
-                    // AIP content has changed, so store the new AIP file to every storage location
-                    // Schedule manifest storage
-                    aipStoreMetaDataService.schedule(aipWrapper.getAip(), aipWrapper.getAip().getManifestLocations(),
-                                                     true, true);
+            if (Thread.currentThread().isInterrupted()) {
+                updateRequests.forEach(ur -> ur.setState(InternalRequestState.ABORTED));
+            } else {
+                // Run each task
+                AIPEntityUpdateWrapper aipWrapper = runUpdates(updateRequests);
+                // Did something change in the AIP?
+                if (!aipWrapper.isPristine()) {
+                    // Save the AIP threw the service
+                    updates.add(aipWrapper.getAip());
+                    // Wrapper also collect events
+                    if (aipWrapper.hasDeletionRequests()) {
+                        // Request files deletion
+                        storageClient.delete(aipWrapper.getDeletionRequests());
+                    }
+                    if (aipWrapper.isAipPristine()) {
+                        // AIP content has changed, so store the new AIP file to every storage location
+                        // Schedule manifest storage
+                        aipStoreMetaDataService
+                                .schedule(aipWrapper.getAip(), aipWrapper.getAip().getManifestLocations(), true, true);
+                    }
                 }
             }
-
             // update progress
             advanceCompletion();
         }
-
+        // this use of Thread.interrupted is really wanted. we need to clear the interrupted flag so hibernate
+        // transaction can be realized to update requests states.
+        boolean interrupted = Thread.interrupted();
         // Keep only ERROR requests
         List<AIPUpdateRequest> succeedRequestsToDelete = requestByAIP.values().stream()
-                .filter(request -> request.getState() != InternalRequestState.ERROR).collect(Collectors.toList());
+                .filter(request -> request.getState() != InternalRequestState.ERROR
+                        && request.getState() != InternalRequestState.ABORTED).collect(Collectors.toList());
         aipUpdateRequestRepository.deleteAll(succeedRequestsToDelete);
 
         // Save ERROR requests
         List<AIPUpdateRequest> errorRequests = requestByAIP.values().stream()
-                .filter(request -> request.getState() == InternalRequestState.ERROR).collect(Collectors.toList());
+                .filter(request -> request.getState() == InternalRequestState.ERROR
+                        || request.getState() == InternalRequestState.ABORTED).collect(Collectors.toList());
         aipUpdateRequestRepository.saveAll(errorRequests);
 
         // Save AIPs
         aipService.saveAll(updates);
+        // if thread has been interrupted, do not forget to set the flag back!
+        if (interrupted) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private AIPEntityUpdateWrapper runUpdates(List<AIPUpdateRequest> updateRequests) {
@@ -184,16 +206,6 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         List<AIPUpdateRequest> aipUpdateRequests = requestByAIP.get(aipId);
         aipUpdateRequests.sort(AIPUpdateRunnerJob::compareUpdateRequests);
         return aipUpdateRequests;
-    }
-
-    private static int compareUpdateRequests(AIPUpdateRequest r1, AIPUpdateRequest r2) {
-        // sort by type of task
-        int sortValue = r1.getUpdateTask().getType().getOrder(r2.getUpdateTask().getType());
-        // if that's the same task type, order by creation date
-        if (sortValue == 0) {
-            sortValue = r1.getCreationDate().compareTo(r2.getCreationDate());
-        }
-        return sortValue;
     }
 
     @Override

@@ -34,13 +34,13 @@ import fr.cnes.regards.modules.ingest.dto.aip.OAISDateRange;
  */
 public class SearchRequestsParameters {
 
-    private OAISDateRange creationDate = new OAISDateRange();
-
     private Set<String> providerIds = Sets.newHashSet();
 
     private String sessionOwner;
 
     private String session;
+
+    private OAISDateRange creationDate = new OAISDateRange();
 
     private RequestTypeEnum requestType;
 
