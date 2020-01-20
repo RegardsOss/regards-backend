@@ -74,10 +74,6 @@ public abstract class AbstractRequestFlowHandler<T extends ISubscribable> implem
                     for (int i = 0; i < getBulkSize(); i++) {
                         T item = tenantItems.poll();
                         if (item == null) {
-                            if (items.isEmpty()) {
-                                // Nothing to do
-                                return;
-                            }
                             // Less than BULK_SIZE documents, bulk save what we have already
                             break;
                         } else { // enqueue item

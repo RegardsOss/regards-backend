@@ -119,13 +119,20 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                     // Wrapper also collect events
                     if (aipWrapper.hasDeletionRequests()) {
                         // Request files deletion
+                        LOGGER.info("[AIP {}] Run {} deletion requests on storage.", aipWrapper.getAip().getAipId(),
+                                    aipWrapper.getDeletionRequests().size());
                         storageClient.delete(aipWrapper.getDeletionRequests());
                     }
                     if (aipWrapper.isAipPristine()) {
                         // AIP content has changed, so store the new AIP file to every storage location
                         // Schedule manifest storage
+                        LOGGER.info("[AIP {}] Schedule manifest storage on {} locations.", aipWrapper.getAip().getAipId(),
+                                    aipWrapper.getAip().getManifestLocations().size());
                         aipStoreMetaDataService
                                 .schedule(aipWrapper.getAip(), aipWrapper.getAip().getManifestLocations(), true, true);
+                    } else {
+                        LOGGER.info("[AIP {}] Update tasks executed have not modified the AIP content. Manifest does not need to be updated on storage locations.",
+                                    aipWrapper.getAip().getAipId());
                     }
                 }
             }

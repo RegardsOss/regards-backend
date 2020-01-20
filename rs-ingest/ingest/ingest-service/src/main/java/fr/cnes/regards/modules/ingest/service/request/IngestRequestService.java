@@ -211,11 +211,15 @@ public class IngestRequestService implements IIngestRequestService {
             // Send AIP files storage events, keep these events ids in a list
             List<String> remoteStepGroupIds = aipStorageService.storeAIPFiles(aipEntities, request.getMetadata());
 
-            // Register request info to identify storage callback events
-            request.setRemoteStepGroupIds(remoteStepGroupIds);
-
-            // Keep track of the request
-            saveRequest(request);
+            if (!remoteStepGroupIds.isEmpty()) {
+                // Register request info to identify storage callback events
+                request.setRemoteStepGroupIds(remoteStepGroupIds);
+                // Keep track of the request
+                saveRequest(request);
+            } else {
+                // No files to store for the request AIPs. We can immediately store the manifest.
+                finalizeSuccessfulRequest(request);
+            }
         } catch (ModuleException e) {
             // Keep track of the error
             saveAndPublishErrorRequest(request, String
@@ -252,7 +256,6 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Override
     public void handleRemoteStoreSuccess(IngestRequest request, RequestInfo requestInfo) {
-
         if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
             // Update AIPs with meta returned by storage
             aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), requestInfo.getSuccessRequests());
@@ -260,11 +263,10 @@ public class IngestRequestService implements IIngestRequestService {
             List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, requestInfo);
             if (!remoteStepGroupIds.isEmpty()) {
                 saveRequest(request);
-                // Another request is still pending
-                return;
+            } else {
+                // The current request is over
+                finalizeSuccessfulRequest(request);
             }
-            // The current request is over
-            finalizeSuccessfulRequest(request);
         } else {
             // Keep track of the error
             saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
@@ -291,7 +293,7 @@ public class IngestRequestService implements IIngestRequestService {
         }
         sessionNotifier.productStoreSuccess(request.getSessionOwner(), request.getSession(), aips);
 
-        // Schedule manifest archivage
+        // Schedule manifest storage
         aipSaveMetaDataService.schedule(aips, request.getMetadata().getStorages(), false, true);
         sessionNotifier.productMetaStorePending(request.getSessionOwner(), request.getSession(), aips);
 
