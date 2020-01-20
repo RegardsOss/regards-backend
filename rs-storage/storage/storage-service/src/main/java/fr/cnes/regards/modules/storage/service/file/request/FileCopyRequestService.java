@@ -161,11 +161,25 @@ public class FileCopyRequestService {
                 notificationClient.notify(message, "File copy request refused", NotificationLevel.WARNING,
                                           DefaultRole.PROJECT_ADMIN);
             } else {
-                LOGGER.debug("[COPY REQUEST] Create copy request for group {}", groupId);
-                FileCopyRequest newRequest = copyRepository
-                        .save(new FileCopyRequest(groupId, refs.stream().findFirst().get().getMetaInfo(),
-                                requestDto.getSubDirectory(), requestDto.getStorage()));
-                request = Optional.of(newRequest);
+                // Check if destination file already ecists
+                if (refs.stream().anyMatch(r -> r.getLocation().getStorage().equals(requestDto.getStorage()))) {
+                    FileReference existingfileRef = refs.stream()
+                            .filter(r -> r.getLocation().getStorage().equals(requestDto.getStorage())).findFirst()
+                            .get();
+                    String message = String.format("File to copy %s already exists for destination storage %s",
+                                                   requestDto.getChecksum(), requestDto.getStorage());
+                    LOGGER.info("[COPY REQUEST] {}", message);
+                    publisher.copySuccess(existingfileRef, message, groupId);
+                    reqGrpService.requestSuccess(groupId, FileRequestType.COPY, requestDto.getChecksum(),
+                                                 requestDto.getStorage(), requestDto.getSubDirectory(),
+                                                 existingfileRef.getOwners(), existingfileRef);
+                } else {
+                    LOGGER.debug("[COPY REQUEST] Create copy request for group {}", groupId);
+                    FileCopyRequest newRequest = copyRepository
+                            .save(new FileCopyRequest(groupId, refs.stream().findFirst().get().getMetaInfo(),
+                                    requestDto.getSubDirectory(), requestDto.getStorage()));
+                    request = Optional.of(newRequest);
+                }
             }
         }
         return request;
@@ -421,5 +435,13 @@ public class FileCopyRequestService {
      */
     public boolean existsByChecksumAndStatusIn(String checksum, Collection<FileRequestStatus> status) {
         return copyRepository.existsByMetaInfoChecksumAndStatusIn(checksum, status);
+    }
+
+    /**
+     * @param collect
+     * @return
+     */
+    public boolean isFileCopyRunning(Collection<String> cheksums) {
+        return copyRepository.existsByMetaInfoChecksumInAndStatusIn(cheksums, FileRequestStatus.RUNNING_STATUS);
     }
 }
