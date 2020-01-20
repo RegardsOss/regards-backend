@@ -279,7 +279,7 @@ public class RequestsGroupService {
         boolean expired = false;
         if ((nbDaysBeforeExpiration > 0)
                 && reqGrp.getCreationDate().isBefore(OffsetDateTime.now().minusDays(nbDaysBeforeExpiration))) {
-            LOGGER.warn("Request group {} is expired. It will be deleted and all associated requests will be set in ERROR status");
+            LOGGER.warn("Request group {} is expired. It will be deleted and all associated requests will be set in ERROR status", reqGrp.getId());
             String errorCause = "Associated group request expired.";
             // If a request group is pending from more than 2 days, delete the group and set all requests in pending to error.
             switch (reqGrp.getType()) {
