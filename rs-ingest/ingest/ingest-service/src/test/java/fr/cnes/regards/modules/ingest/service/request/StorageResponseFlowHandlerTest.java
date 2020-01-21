@@ -63,6 +63,7 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
@@ -78,10 +79,13 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
         properties = { "spring.jpa.show-sql=false",
                 "spring.jpa.properties.hibernate.default_schema=ingest_request_tests" },
         locations = { "classpath:application-test.properties" })
-public class IngestRequestServiceTest extends IngestMultitenantServiceTest {
+public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest {
 
     @Autowired
-    private IRequestService service;
+    private StorageResponseFlowHandler storageResponseFlowHandler;
+
+    @Autowired
+    private IRequestService requestService;
 
     @Autowired
     private IIngestRequestRepository ingestReqRepo;
@@ -173,11 +177,12 @@ public class IngestRequestServiceTest extends IngestMultitenantServiceTest {
     public void testStorageResponsesHandler() throws ModuleException {
         Set<RequestInfo> responses = initAips(100, false);
         long start = System.currentTimeMillis();
-        service.handleRemoteStoreSuccess(responses);
+        storageResponseFlowHandler.onStoreSuccess(responses);
         System.out.printf("Duration : %d ms", System.currentTimeMillis() - start);
         // Check results
         Assert.assertEquals(0,
-                            service.findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
+                            requestService
+                                    .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
                                     .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10))
                                     .getTotalElements());
         aipRepo.findAll().forEach(a -> {
@@ -201,11 +206,12 @@ public class IngestRequestServiceTest extends IngestMultitenantServiceTest {
                 subList.add(it.next());
                 remaining--;
             }
-            service.handleRemoteStoreSuccess(subList);
+            storageResponseFlowHandler.onStoreSuccess(subList);
             System.out.printf("Duration : %d ms \n", System.currentTimeMillis() - start);
             // Check results
             Assert.assertEquals(remaining,
-                                service.findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
+                                requestService
+                                        .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
                                         .withRequestType(RequestTypeEnum.STORE_METADATA), PageRequest.of(0, 10))
                                         .getTotalElements());
             aipRepo.findAll().forEach(a -> {

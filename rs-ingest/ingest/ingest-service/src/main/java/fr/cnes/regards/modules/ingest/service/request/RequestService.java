@@ -96,13 +96,6 @@ public class RequestService implements IRequestService {
     private static final String GLOBAL_REQUEST_SESSION = "____GLOBAL_REQUEST_SESSION____";
 
     @Autowired
-    @Lazy
-    private IIngestRequestService ingestRequestService;
-
-    @Autowired
-    private IAIPStoreMetaDataRequestService aipSaveMetaDataService;
-
-    @Autowired
     private IIngestRequestRepository ingestRequestRepository;
 
     @Autowired
@@ -124,46 +117,21 @@ public class RequestService implements IRequestService {
     private IJobInfoService jobInfoService;
 
     @Autowired
-    private SessionNotifier sessionNotifier;
-
-    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
     @Override
-    public void handleRemoteStoreError(Set<RequestInfo> requestInfos) {
-        List<AbstractRequest> requests = findRequestsByGroupIdIn(requestInfos.stream().map(RequestInfo::getGroupId)
-                .collect(Collectors.toList()));
-        for (RequestInfo ri : requestInfos) {
-            for (AbstractRequest request : requests) {
-                if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
-                    if (request instanceof IngestRequest) {
-                        ingestRequestService.handleRemoteStoreError((IngestRequest) request, ri);
-                    } else if (request instanceof AIPStoreMetaDataRequest) {
-                        aipSaveMetaDataService.handleError((AIPStoreMetaDataRequest) request, ri);
-                    }
-                }
-            }
-        }
+    public void handleRemoteStoreError(AbstractRequest request) {
+        LOGGER.warn("Request of type {} cannot be handle for remote storage error",
+                    request.getClass().getName());
     }
 
     @Override
-    public void handleRemoteStoreSuccess(Set<RequestInfo> requestInfos) {
-        List<AbstractRequest> requests = findRequestsByGroupIdIn(requestInfos.stream().map(RequestInfo::getGroupId)
-                .collect(Collectors.toList()));
-        for (RequestInfo ri : requestInfos) {
-            for (AbstractRequest request : requests) {
-                if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
-                    if (request instanceof IngestRequest) {
-                        ingestRequestService.handleRemoteStoreSuccess((IngestRequest) (request), ri);
-                    } else if (request instanceof AIPStoreMetaDataRequest) {
-                        aipSaveMetaDataService.handleSuccess((AIPStoreMetaDataRequest) request, ri);
-                    } else {
-                        LOGGER.warn("Request of type {} cannot be handle for remote storage success",
-                                    request.getClass().getName());
-                    }
-                }
-            }
-        }
+    public void handleRemoteStoreSuccess(AbstractRequest request) {
+        LOGGER.warn("Request of type {} cannot be handle for remote storage success",
+                    request.getClass().getName());
     }
 
     @Override

@@ -19,8 +19,10 @@
 package fr.cnes.regards.modules.ingest.service.flow;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +33,17 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocationTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.service.aip.AIPService;
 import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
+import fr.cnes.regards.modules.ingest.service.request.IAIPStoreMetaDataRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
@@ -51,6 +58,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  * @author Sébastien Binda
  */
 @Component
+@MultitenantTransactional
 public class StorageResponseFlowHandler implements IStorageRequestListener {
 
     @SuppressWarnings("unused")
@@ -70,6 +78,9 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
 
     @Autowired
     private AIPService aipService;
+
+    @Autowired
+    private IAIPStoreMetaDataRequestService aipSaveMetaDataService;
 
     @Override
     public void onCopySuccess(Set<RequestInfo> requests) {
@@ -159,13 +170,41 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
     }
 
     @Override
-    public void onStoreSuccess(Set<RequestInfo> requests) {
-        requestService.handleRemoteStoreSuccess(requests);
+    public void onStoreSuccess(Set<RequestInfo> requestInfos) {
+        List<AbstractRequest> requests = requestService.findRequestsByGroupIdIn(requestInfos.stream().map(RequestInfo::getGroupId)
+                                                                         .collect(Collectors.toList()));
+        for (RequestInfo ri : requestInfos) {
+            for (AbstractRequest request : requests) {
+                if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
+                    if (request instanceof IngestRequest) {
+                        ingestRequestService.handleRemoteStoreSuccess((IngestRequest) (request), ri);
+                    } else if (request instanceof AIPStoreMetaDataRequest) {
+                        aipSaveMetaDataService.handleSuccess((AIPStoreMetaDataRequest) request, ri);
+                    } else {
+                        requestService.handleRemoteStoreSuccess(request);
+                    }
+                }
+            }
+        }
     }
 
     @Override
-    public void onStoreError(Set<RequestInfo> requests) {
-        requestService.handleRemoteStoreError(requests);
+    public void onStoreError(Set<RequestInfo> requestInfos) {
+        List<AbstractRequest> requests = requestService.findRequestsByGroupIdIn(requestInfos.stream().map(RequestInfo::getGroupId)
+                                                                         .collect(Collectors.toList()));
+        for (RequestInfo ri : requestInfos) {
+            for (AbstractRequest request : requests) {
+                if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
+                    if (request instanceof IngestRequest) {
+                        ingestRequestService.handleRemoteStoreError((IngestRequest) request, ri);
+                    } else if (request instanceof AIPStoreMetaDataRequest) {
+                        aipSaveMetaDataService.handleError((AIPStoreMetaDataRequest) request, ri);
+                    } else {
+                        requestService.handleRemoteStoreError(request);
+                    }
+                }
+            }
+        }
     }
 
     @Override

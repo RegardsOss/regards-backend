@@ -39,9 +39,9 @@ import org.springframework.transaction.annotation.Propagation;
  */
 public interface IRequestService {
 
-    void handleRemoteStoreError(Set<RequestInfo> requests);
+    void handleRemoteStoreError(AbstractRequest requests);
 
-    void handleRemoteStoreSuccess(Set<RequestInfo> requests);
+    void handleRemoteStoreSuccess(AbstractRequest requests);
 
     /**
      * Handle request granted from storage service
