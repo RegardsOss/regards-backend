@@ -302,34 +302,12 @@ public class RequestService implements IRequestService {
         }
     }
 
-    @Override
-    public void relaunchRequests(List<AbstractRequest> requests) {
-        // Change requests states
-        for (AbstractRequest request : requests) {
-            // Requests must be in ERROR state
-            if (request.getState() == InternalRequestState.ERROR) {
-                // Rollback the state to TO_SCHEDULE
-                switchRequestState(request);
-            } else {
-                LOGGER.error("Cannot relaunch the request {} because this request is not in ERROR state. It was in {} state",
-                             request.getId(), request.getState());
-            }
-        }
-        scheduleRequests(requests);
-
-        // For macro job, create a job
-        for (AbstractRequest request : requests) {
-            if ((request.getState() == InternalRequestState.CREATED) && isJobRequest(request)) {
-                scheduleJob(request);
-            }
-        }
-    }
-
     /**
      * Notify if necessary the sessionNotifier, then switch the state
      * @param request
      */
-    private void switchRequestState(AbstractRequest request) {
+    @Override
+    public void switchRequestState(AbstractRequest request) {
         // Handle requests tracked by notifications
         if (request instanceof IngestRequest) {
             sessionNotifier.ingestRequestErrorDeleted((IngestRequest) request);
@@ -409,7 +387,8 @@ public class RequestService implements IRequestService {
      * @return true when the concrete {@link AbstractRequest} is run in a job
      *         false when the request is processed by bulk
      */
-    private boolean isJobRequest(AbstractRequest request) {
+    @Override
+    public boolean isJobRequest(AbstractRequest request) {
         return (request instanceof OAISDeletionCreatorRequest) || (request instanceof AIPUpdatesCreatorRequest);
     }
 

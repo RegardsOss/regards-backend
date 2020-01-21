@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.service.request.IRequestRetryService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,6 +51,9 @@ public class RequestRetryJob extends AbstractJob<Void> {
 
     @Autowired
     private RequestService requestService;
+
+    @Autowired
+    private IRequestRetryService retryRequestService;
 
     /**
      * Limit number of requests to retrieve in one page.
@@ -92,7 +96,7 @@ public class RequestRetryJob extends AbstractJob<Void> {
             }
             // Call the service with each list of requests sorted by type
             for (List<AbstractRequest> requestsByType : byRequestType.values()) {
-                requestService.relaunchRequests(requestsByType);
+                retryRequestService.relaunchRequests(requestsByType);
             }
             advanceCompletion();
         } while (requestsPage.hasNext());

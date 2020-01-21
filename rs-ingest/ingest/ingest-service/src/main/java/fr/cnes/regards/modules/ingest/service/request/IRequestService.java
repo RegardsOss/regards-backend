@@ -84,12 +84,6 @@ public interface IRequestService {
     void scheduleRequests(List<AbstractRequest> requests);
 
     /**
-     * Retry provided requests and put these requests in CREATED or PENDING
-     * @param requests a list of requests in ERROR state
-     */
-    void relaunchRequests(List<AbstractRequest> requests);
-
-    /**
      * Save provided request into the repository
      * If the request cannot be run right now, the request status will change to pending
      * @param request the request to save
@@ -142,9 +136,13 @@ public interface IRequestService {
      */
     void scheduleRequestRetryJob(SearchRequestsParameters filters);
 
+    void switchRequestState(AbstractRequest request);
+
     /**
      * Delete the provided {@link AbstractRequest}, ensure related jobs are unlocked
      * @param request the request to delete
      */
     void deleteRequest(AbstractRequest request);
+
+    boolean isJobRequest(AbstractRequest request);
 }
