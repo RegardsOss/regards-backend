@@ -40,6 +40,7 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
     /**
      * Get request by ids
      */
+    @EntityGraph(attributePaths = "aips")
     List<IngestRequest> findByIdIn(Collection<Long> ids);
 
     /**
