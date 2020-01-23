@@ -298,11 +298,13 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
     @Test
     public void copyFile_error_offlineFile() {
         String storage = "somewhere";
+        String storageCopyDest = "somewhereElse";
         FileReference fileRef = referenceRandomFile("owner", "type", "file1.test", storage).get();
         Set<FileCopyRequestDTO> requests = Sets
-                .newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), storage));
+                .newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), storageCopyDest));
         fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
-        Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), storage);
+        Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
+                                                                       storageCopyDest);
         Assert.assertTrue("There should be a copy request created", oReq.isPresent());
 
         // Now run copy schedule
@@ -310,7 +312,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
 
         // There should be one availability request created
         Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
-        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), storage);
+        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), storageCopyDest);
         Assert.assertTrue("There should be a cache request created", oCacheReq.isPresent());
         Assert.assertTrue("No storage request should be created yet", fileStorageRequestRepo.count() == 0);
         Assert.assertTrue("There should be a copy request", oReq.isPresent());
@@ -332,7 +334,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // Copy request should be updated in ERROR
-        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), storage);
+        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), storageCopyDest);
         Assert.assertTrue("There should be a copy request in error state",
                           oReq.get().getStatus() == FileRequestStatus.ERROR);
     }
