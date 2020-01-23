@@ -55,9 +55,9 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
 
     @Before
     public void init() {
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         repository.deleteAll();
         simulateApplicationReadyEvent();
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
         service.initCacheFileSystem(getDefaultTenant());
         runtimeTenantResolver.forceTenant(getDefaultTenant());
     }
@@ -72,14 +72,14 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
                         UUID.randomUUID().toString());
         Optional<CacheFile> oCf = service.getCacheFile(checksum);
         Assert.assertTrue("File should be referenced in cache", oCf.isPresent());
-        Assert.assertEquals("Invalid expiration date", expirationDate, oCf.get().getExpirationDate());
+        Assert.assertTrue("Invalid expiration date", expirationDate.isEqual(oCf.get().getExpirationDate()));
         // Try to reference again the same file in cache
         OffsetDateTime newExpirationDate = OffsetDateTime.now().plusDays(2);
         service.addFile(checksum, 123L, new URL("file", null, "/plop/test.file.test"), newExpirationDate,
                         UUID.randomUUID().toString());
         oCf = service.getCacheFile(checksum);
         Assert.assertTrue("File should be referenced in cache", oCf.isPresent());
-        Assert.assertEquals("Invalid expiration date", newExpirationDate, oCf.get().getExpirationDate());
+        Assert.assertTrue("Invalid expiration date", newExpirationDate.isEqual(oCf.get().getExpirationDate()));
     }
 
     @Test

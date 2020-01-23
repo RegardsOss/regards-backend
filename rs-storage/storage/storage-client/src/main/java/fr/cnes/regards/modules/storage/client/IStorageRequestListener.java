@@ -87,7 +87,7 @@ public interface IStorageRequestListener {
 
     /**
      * Callback when a storage group request is successfully done.
-     * @param requestsInfo
+     * @param requests
      */
     void onStoreSuccess(Set<RequestInfo> requests);
 
