@@ -105,9 +105,6 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             if (onlyErrors) {
                 processingService.retrySIPGeneration(processingChain, Optional.of(session));
             } else {
-                if (processingChain.isGenerationRetryEnabled()) {
-                    processingService.retrySIPGeneration(processingChain, Optional.empty());
-                }
                 // Restart interrupted jobs
                 processingService.restartInterruptedJobs(processingChain);
                 // Nominal process
