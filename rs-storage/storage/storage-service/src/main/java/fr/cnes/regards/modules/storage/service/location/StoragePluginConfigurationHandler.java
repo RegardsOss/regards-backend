@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.LinkedHashMultimap;
@@ -69,7 +71,7 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
     @Autowired
     private ITenantResolver tenantResolver;
 
-    @PostConstruct
+    @EventListener(ApplicationStartedEvent.class)
     public void init() {
         subscriber.subscribeTo(BroadcastPluginConfEvent.class, this);
         tenantResolver.getAllActiveTenants().forEach(this::refresh);
