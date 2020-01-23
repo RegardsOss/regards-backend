@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginDestroy;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
@@ -126,7 +127,7 @@ public final class PluginUtils {
         LOGGER.info("{} Loading plugins...", HR);
         // Initialize reflection tool
         Reflections reflections;
-        if (reflectionPackages == null || reflectionPackages.isEmpty()) {
+        if ((reflectionPackages == null) || reflectionPackages.isEmpty()) {
             String defaultPackage = "fr.cnes.regards";
             LOGGER.info("System will look for plugins in default package: {}", defaultPackage);
             reflections = new Reflections(defaultPackage);
@@ -158,19 +159,16 @@ public final class PluginUtils {
             // Check a plugin does not already exists with the same plugin id
             if (pluginMetadataCache.containsKey(plugin.getPluginId())) {
                 PluginMetaData pMeta = pluginMetadataCache.get(plugin.getPluginId());
-                String message = String.format(
-                        "Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
-                        plugin.getPluginId(),
-                        plugin.getPluginClassName(),
-                        pMeta.getPluginClassName());
+                String message = String
+                        .format("Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
+                                plugin.getPluginId(), plugin.getPluginClassName(), pMeta.getPluginClassName());
                 LOGGER.warn(message);
             }
 
             // Store plugin reference
             pluginMetadataCache.put(plugin.getPluginId(), plugin);
 
-            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.",
-                                      plugin.getPluginClassName(),
+            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.", plugin.getPluginClassName(),
                                       plugin.getPluginId()));
         }
         LOGGER.info("{} Plugins loaded!", HR);
@@ -243,10 +241,8 @@ public final class PluginUtils {
             Map<String, Object> instantiatedPlugins, IPluginParam... dynamicParams)
             throws NotAvailablePluginConfigurationException {
         if (!conf.isActive()) {
-            throw new NotAvailablePluginConfigurationException(String.format(
-                    "Plugin configuration <%d - %s> is not active.",
-                    conf.getId(),
-                    conf.getLabel()));
+            throw new NotAvailablePluginConfigurationException(
+                    String.format("Plugin configuration <%d - %s> is not active.", conf.getId(), conf.getLabel()));
         }
         return getPlugin(conf, pluginMetadata.getPluginClassName(), instantiatedPlugins, dynamicParams);
     }
@@ -277,7 +273,8 @@ public final class PluginUtils {
             // Launch init method if detected
             doInitPlugin(returnPlugin);
 
-        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException | SecurityException | ClassNotFoundException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException
+                | SecurityException | ClassNotFoundException e) {
             throw new PluginUtilsRuntimeException(String.format("Cannot instantiate <%s>", pluginClass), e);
         }
 
@@ -318,7 +315,8 @@ public final class PluginUtils {
                     method.invoke(plugin);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking destroy method on plugin class <%s>.",
-                                               plugin.getClass()), e);
+                                               plugin.getClass()),
+                                 e);
                     throw new PluginUtilsRuntimeException(e);
                 }
             }
@@ -340,12 +338,17 @@ public final class PluginUtils {
                     method.invoke(plugin);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
-                                               plugin.getClass()), e);
+                                               plugin.getClass()),
+                                 e);
                     if (e.getCause() instanceof PluginUtilsRuntimeException) {
                         throw (PluginUtilsRuntimeException) e.getCause();
                     } else {
                         throw new PluginUtilsRuntimeException(e);
                     }
+                } catch (Exception e) {
+                    LOGGER.error(String.format("Error during plugin %s initialization. Plugin may not be fully usable.",
+                                               plugin.getClass().getName()),
+                                 e);
                 }
             }
         }
@@ -369,7 +372,7 @@ public final class PluginUtils {
 
     public static List<String> validateOnCreate(PluginConfiguration conf) {
         List<String> validationErrors = validate(conf);
-        if (conf != null && conf.getBusinessId() != null) {
+        if ((conf != null) && (conf.getBusinessId() != null)) {
             // FIXME : just log
             // validationErrors.add("The plugin configuration business id must be null.");
         }
@@ -378,7 +381,7 @@ public final class PluginUtils {
 
     public static List<String> validateOnUpdate(PluginConfiguration conf) {
         List<String> validationErrors = validate(conf);
-        if (conf != null && conf.getBusinessId() == null) {
+        if ((conf != null) && (conf.getBusinessId() == null)) {
             validationErrors.add("The plugin configuration business id required.");
         }
         return validationErrors;
@@ -410,7 +413,7 @@ public final class PluginUtils {
         }
         // Now lets apply some more complicated validation that required introspection
         PluginMetaData pluginMetadata = getPlugins().get(conf.getPluginId());
-        if(pluginMetadata == null) {
+        if (pluginMetadata == null) {
             validationErrors.add(String.format("Plugin metadata for pluginId %s is unknown", conf.getPluginId()));
             return validationErrors;
         }
@@ -421,17 +424,15 @@ public final class PluginUtils {
         } else {
             // Check that version is the same between plugin one and plugin configuration one
             if (!Objects.equals(pluginMetadata.getVersion(), conf.getVersion())) {
-                validationErrors.add(String.format(
-                        "Plugin configuration version (%s) is different from plugin one (%s).",
-                        conf.getVersion(),
-                        pluginMetadata.getVersion()));
+                validationErrors
+                        .add(String.format("Plugin configuration version (%s) is different from plugin one (%s).",
+                                           conf.getVersion(), pluginMetadata.getVersion()));
             }
         }
         // Check that pluginId is the same between plugin one and plugin configuration one
         if (!Objects.equals(pluginMetadata.getPluginId(), conf.getPluginId())) {
             validationErrors.add(String.format("Plugin configuration pluginId (%s) is different from plugin one (%s).",
-                                               conf.getPluginId(),
-                                               pluginMetadata.getPluginId()));
+                                               conf.getPluginId(), pluginMetadata.getPluginId()));
         }
 
         // First lets check the plugin parameters
@@ -441,8 +442,8 @@ public final class PluginUtils {
         // lets check that all remaining parameters are correctly given
         for (PluginParamDescriptor plgParamMeta : pluginParametersFromMeta) {
             IPluginParam parameterFromConf = conf.getParameter(plgParamMeta.getName());
-            if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && parameterFromConf == null
-                    && plgParamMeta.getDefaultValue() == null) {
+            if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && (parameterFromConf == null)
+                    && (plgParamMeta.getDefaultValue() == null)) {
                 validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
             }
         }
