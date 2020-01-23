@@ -108,7 +108,6 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
-        processingChain.setGenerationRetryEnabled(true);
         processingChain.setPeriodicity("0 * * * * *");
         processingChain.setCategories(Sets.newLinkedHashSet());
 
