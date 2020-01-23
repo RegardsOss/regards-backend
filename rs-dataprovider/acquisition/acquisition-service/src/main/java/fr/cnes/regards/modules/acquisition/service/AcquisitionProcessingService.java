@@ -42,6 +42,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.support.CronSequenceGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.util.MimeTypeUtils;
@@ -405,6 +406,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         if (AcquisitionProcessingChainMode.AUTO.equals(processingChain.getMode())
                 && (processingChain.getPeriodicity() == null)) {
             throw new EntityInvalidException("Missing periodicity for automatic acquisition processing chain");
+        }
+
+        if ((processingChain.getPeriodicity() != null)
+                && !CronSequenceGenerator.isValidExpression(processingChain.getPeriodicity())) {
+            throw new EntityInvalidException("Cron expression is not valid for processing chain automatic trigger");
         }
     }
 
