@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 
 public class StorageClientMock implements IStorageClient {
 
@@ -53,7 +54,7 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo store(Collection<FileStorageRequestDTO> files) {
+    public Collection<RequestInfo> store(Collection<FileStorageRequestDTO> files) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -83,7 +84,7 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo reference(Collection<FileReferenceRequestDTO> files) {
+    public Collection<RequestInfo> reference(Collection<FileReferenceRequestDTO> files) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -95,7 +96,7 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo delete(Collection<FileDeletionRequestDTO> files) {
+    public Collection<RequestInfo> delete(Collection<FileDeletionRequestDTO> files) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -107,22 +108,31 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo copy(Collection<FileCopyRequestDTO> files) {
+    public Collection<RequestInfo> copy(Collection<FileCopyRequestDTO> files) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public RequestInfo makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
-        RequestInfo ri = RequestInfo.build();
+    public Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
+        Collection<RequestInfo> infos = Sets.newHashSet();
+        RequestInfo ri = null;
+        int count = 0;
         for (String c : checksums) {
+            if (count > AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
+                count = 0;
+            }
+            if (count == 0) {
+                ri = RequestInfo.build();
+                infos.add(ri);
+            }
             if (!isAvailable) {
                 listener.onFileNotAvailable(c, Sets.newHashSet(ri), "");
             } else {
                 listener.onFileAvailable(c, Sets.newHashSet(ri));
             }
         }
-        return ri;
+        return infos;
     }
 
 }
