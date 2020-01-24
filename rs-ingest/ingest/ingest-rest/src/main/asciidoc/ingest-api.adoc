@@ -62,8 +62,8 @@ Retrieve one SIP by is ipId.
 === Retry to store a SIP already submitted
 
 A SIP can be retry to be stored via a `POST /sips/{ipId}/retry` request. +
-This action will be rejected if the SIP state is not *AIP_GEN_ERROR*, *INVALID* or *DELETED*. +
-This action consists to change the SIP state to *CREATED*. +
+This action will be rejected if the SIP states is not *AIP_GEN_ERROR*, *INVALID* or *DELETED*. +
+This action consists to change the SIP states to *CREATED*. +
 
 The response is the SIP in GeoJson format.
 

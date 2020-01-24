@@ -76,7 +76,8 @@ public class RequestRetryJob extends AbstractJob<Void> {
     @Override
     public void run() {
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
-        criteria.setState(InternalRequestState.ERROR);
+        criteria.addState(InternalRequestState.ERROR);
+        criteria.addState(InternalRequestState.ABORTED);
         criteria.setStateExcluded(null);
         Page<AbstractRequest> requestsPage;
         do {

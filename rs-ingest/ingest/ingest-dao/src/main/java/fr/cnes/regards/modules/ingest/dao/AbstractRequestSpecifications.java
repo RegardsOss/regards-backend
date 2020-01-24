@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -110,13 +111,18 @@ public final class AbstractRequestSpecifications {
                     }
                 }
                 // Use the OR operator between each provider id
-                predicates.add(cb.or(providerIdsPredicates.toArray(new Predicate[providerIdsPredicates.size()])));
+                predicates.add(cb.or(providerIdsPredicates.toArray(new Predicate[0])));
             }
             if (filters.getRequestType() != null) {
                 predicates.add(cb.equal(root.get("dtype"), filters.getRequestType().name()));
             }
-            if (filters.getState() != null) {
-                predicates.add(cb.equal(root.get("state"), filters.getState()));
+            Set<InternalRequestState> states = filters.getStates();
+            if (states != null && !states.isEmpty()) {
+                Set<Predicate> statePredicates = new HashSet<>();
+                for(InternalRequestState state: filters.getStates()) {
+                    statePredicates.add(cb.equal(root.get("state"), state));
+                }
+                predicates.add(cb.or(statePredicates.toArray(new Predicate[0])));
             }
             if (filters.getStateExcluded() != null) {
                 predicates.add(cb.notEqual(root.get("state"), filters.getStateExcluded()));

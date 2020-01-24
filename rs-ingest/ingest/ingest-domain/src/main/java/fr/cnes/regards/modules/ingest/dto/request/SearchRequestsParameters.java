@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.dto.request;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -44,7 +45,7 @@ public class SearchRequestsParameters {
 
     private RequestTypeEnum requestType;
 
-    private InternalRequestState state;
+    private Set<InternalRequestState> states = new HashSet<>();
 
     private InternalRequestState stateExcluded;
 
@@ -105,7 +106,7 @@ public class SearchRequestsParameters {
     }
 
     public SearchRequestsParameters withState(InternalRequestState state) {
-        this.state = state;
+        addState(state);
         return this;
     }
 
@@ -149,12 +150,16 @@ public class SearchRequestsParameters {
         this.requestType = requestType;
     }
 
-    public InternalRequestState getState() {
-        return state;
+    public Set<InternalRequestState> getStates() {
+        return states;
     }
 
-    public void setState(InternalRequestState state) {
-        this.state = state;
+    public void setStates(Set<InternalRequestState> states) {
+        this.states = states;
+    }
+
+    public void addState(InternalRequestState state) {
+        this.states.add(state);
     }
 
     public InternalRequestState getStateExcluded() {

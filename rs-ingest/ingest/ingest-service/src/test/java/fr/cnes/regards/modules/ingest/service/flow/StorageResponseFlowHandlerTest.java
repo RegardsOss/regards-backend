@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.request;
+package fr.cnes.regards.modules.ingest.service.flow;
 
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -64,6 +64,7 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
+import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
