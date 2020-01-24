@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -36,10 +37,14 @@ import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 /**
  * Job to run deletion of a given {@link AIPEntity}.<br/>
@@ -87,19 +92,26 @@ public class OAISDeletionJob extends AbstractJob<Void> {
     public void run() {
         Iterator<OAISDeletionRequest> requestIter = requests.iterator();
         boolean interrupted = Thread.currentThread().isInterrupted();
+        Set<OAISDeletionRequest> errors = new HashSet<>();
         while (requestIter.hasNext() && !interrupted) {
             OAISDeletionRequest request = requestIter.next();
             AIPEntity aipToDelete = request.getAip();
             SIPEntity sipToDelete = aipToDelete.getSip();
-            if (request.isDeleteFiles() && !request.isRequestFilesDeleted()) {
-                aipService.scheduleLinkedFilesDeletion(request);
-            } else {
-                // Start by deleting the request itself
-                requestService.deleteRequest(request);
-                aipService.processDeletion(sipToDelete.getSipId(),
-                                           request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
-                sipService.processDeletion(sipToDelete.getSipId(),
-                                           request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+            try {
+                if (request.isDeleteFiles() && !request.isRequestFilesDeleted()) {
+                    aipService.scheduleLinkedFilesDeletion(request);
+                } else {
+                    // Start by deleting the request itself
+                    requestService.deleteRequest(request);
+                    aipService.processDeletion(sipToDelete.getSipId(), request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                    sipService.processDeletion(sipToDelete.getSipId(), request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                }
+            } catch (Exception e) {
+                String errorMsg = String.format("Deletion request %s of AIP %s could not be executed", request.getId(), request.getAip().getAipId());
+                LOGGER.error(errorMsg, e);
+                request.setState(InternalRequestState.ERROR);
+                request.addError(errorMsg);
+                errors.add(request);
             }
             advanceCompletion();
             interrupted = Thread.currentThread().isInterrupted();
@@ -112,8 +124,9 @@ public class OAISDeletionJob extends AbstractJob<Void> {
             aborted.add(request);
         }
         interrupted = Thread.interrupted();
+        deletionRequestRepository.saveAll(errors);
+        deletionRequestRepository.saveAll(aborted);
         if(interrupted) {
-            deletionRequestRepository.saveAll(aborted);
             Thread.currentThread().interrupt();
         }
     }

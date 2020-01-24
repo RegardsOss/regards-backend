@@ -34,12 +34,13 @@ public class RequestRetryService implements IRequestRetryService {
         // Change requests states
         for (AbstractRequest request : requests) {
             // Requests must be in ERROR state
-            if (request.getState() == InternalRequestState.ERROR) {
+            if (request.getState() == InternalRequestState.ERROR
+                    || request.getState() == InternalRequestState.ABORTED) {
                 // Rollback the state to TO_SCHEDULE
                 requestService.switchRequestState(request);
             } else {
                 LOGGER.error(
-                        "Cannot relaunch the request {} because this request is not in ERROR state. It was in {} state",
+                        "Cannot relaunch the request {} because this request is neither in ERROR or ABORTED state. It was in {} state",
                         request.getId(),
                         request.getState());
             }

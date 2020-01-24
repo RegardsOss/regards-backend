@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.ingest.service.request.IRequestRetryService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +77,8 @@ public class RequestRetryJob extends AbstractJob<Void> {
     @Override
     public void run() {
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
+        // Override state in filter
+        criteria.setStates(new HashSet<>());
         criteria.addState(InternalRequestState.ERROR);
         criteria.addState(InternalRequestState.ABORTED);
         criteria.setStateExcluded(null);
