@@ -234,6 +234,7 @@ public class RequestService implements IRequestService {
     }
 
     @Override
+    @MultitenantTransactional(propagation = Propagation.NOT_SUPPORTED)
     @Async
     public void abortRequests(String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
