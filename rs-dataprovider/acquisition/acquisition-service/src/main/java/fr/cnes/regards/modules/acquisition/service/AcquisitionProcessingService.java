@@ -861,7 +861,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             }
         }
         LOGGER.debug("{} product(s) scheduled and {} not.", scheduledProducts, notScheduledProducts);
-        return ProductsPage.build(page.hasNext(), scheduledProducts);
+        return ProductsPage.build(page.hasNext(), scheduledProducts, notScheduledProducts);
     }
 
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
