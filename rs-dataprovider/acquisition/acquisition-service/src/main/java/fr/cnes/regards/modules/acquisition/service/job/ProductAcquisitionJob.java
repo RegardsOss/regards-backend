@@ -112,11 +112,11 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
                 processingService.scanAndRegisterFiles(processingChain, session);
                 // Second step : validate in progress files, build and
                 // schedule SIP generation for newly completed or finished products
-                processingService.manageRegisteredFiles(processingChain);
+                productsScheduled += processingService.manageRegisteredFiles(processingChain);
                 // Third step : compute new product state for already completed or finished products and schedule SIP generation.
                 // Doing this in a third step and not within the second one allows us to
                 // schedule update products only once for SIP generation
-                productsScheduled = productService.manageUpdatedProducts(processingChain);
+                productsScheduled += productService.manageUpdatedProducts(processingChain);
             }
         } catch (ModuleException e) {
             logger.error("Business error", e);

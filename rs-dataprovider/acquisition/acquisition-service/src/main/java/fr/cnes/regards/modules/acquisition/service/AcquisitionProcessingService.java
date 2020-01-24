@@ -73,6 +73,7 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
+import fr.cnes.regards.modules.acquisition.domain.ProductsPage;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
@@ -774,19 +775,25 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public void manageRegisteredFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
-        while (!Thread.currentThread().isInterrupted() && self.manageRegisteredFilesByPage(processingChain)) {
+    public long manageRegisteredFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
+        long nbProductsScheduled = 0L;
+        boolean stop = false;
+        while (!Thread.currentThread().isInterrupted() && !stop) {
+            ProductsPage resp = self.manageRegisteredFilesByPage(processingChain);
             // Works as long as there is at least one page left
+            nbProductsScheduled += resp.getScheduled();
+            stop = !resp.hasNext();
         }
         // Just trace interruption
         if (Thread.currentThread().isInterrupted()) {
             LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
         }
+        return nbProductsScheduled;
     }
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public boolean manageRegisteredFilesByPage(AcquisitionProcessingChain processingChain) throws ModuleException {
+    public ProductsPage manageRegisteredFilesByPage(AcquisitionProcessingChain processingChain) throws ModuleException {
 
         // - Retrieve first page of new registered files
         Page<AcquisitionFile> page = acqFileRepository
@@ -839,24 +846,22 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         // Build and schedule products, for a subset of the current file page
         Set<Product> products = productService.linkAcquisitionFilesToProducts(processingChain, validFiles);
+        LOGGER.debug("{} file(s) handles, {} product(s) created or updated in {} milliseconds",
+                     page.getNumberOfElements(), products.size(), System.currentTimeMillis() - startTime);
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("{} file(s) handles, {} product(s) created or updated in {} milliseconds",
-                         page.getNumberOfElements(), products.size(), System.currentTimeMillis() - startTime);
-            // Statistics
-            int scheduledProducts = 0;
-            int notScheduledProducts = 0;
-            for (Product product : products) {
-                if (product.getSipState() == ProductSIPState.SCHEDULED) {
-                    scheduledProducts++;
-                } else {
-                    notScheduledProducts++;
-                }
+        int scheduledProducts = 0;
+        int notScheduledProducts = 0;
+
+        // Statistics
+        for (Product product : products) {
+            if (product.getSipState() == ProductSIPState.SCHEDULED) {
+                scheduledProducts++;
+            } else {
+                notScheduledProducts++;
             }
-            LOGGER.debug("{} product(s) scheduled and {} not.", scheduledProducts, notScheduledProducts);
         }
-
-        return page.hasNext();
+        LOGGER.debug("{} product(s) scheduled and {} not.", scheduledProducts, notScheduledProducts);
+        return ProductsPage.build(page.hasNext(), scheduledProducts);
     }
 
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)

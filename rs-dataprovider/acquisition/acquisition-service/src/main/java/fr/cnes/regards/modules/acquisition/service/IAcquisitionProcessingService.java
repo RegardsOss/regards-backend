@@ -30,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
+import fr.cnes.regards.modules.acquisition.domain.ProductsPage;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
@@ -227,13 +228,14 @@ public interface IAcquisitionProcessingService {
 
     /**
      * Manage new registered file : prepare or fulfill products and schedule SIP generation as soon as possible
+     * @return number of scheduled products
      */
-    void manageRegisteredFiles(AcquisitionProcessingChain processingChain) throws ModuleException;
+    long manageRegisteredFiles(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
      * Same action as {@link #manageRegisteredFiles(AcquisitionProcessingChain)} but in a new transaction and by page
      */
-    boolean manageRegisteredFilesByPage(AcquisitionProcessingChain processingChain) throws ModuleException;
+    ProductsPage manageRegisteredFilesByPage(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
      * Restart jobs in {@link ProductSIPState#SCHEDULED_INTERRUPTED} for processing chain
