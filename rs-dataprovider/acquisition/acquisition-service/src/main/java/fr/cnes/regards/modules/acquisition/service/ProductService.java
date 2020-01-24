@@ -503,6 +503,7 @@ public class ProductService implements IProductService {
             try {
                 Set<Product> products = retrieve(productNames);
                 for (Product product : products) {
+                    sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR);
                     product.setSipState(ProductSIPState.GENERATION_ERROR);
                     product.setError(jobInfo.getStatus().getStackTrace());
                     save(product);
@@ -746,7 +747,8 @@ public class ProductService implements IProductService {
         }
 
         productRepository.saveAll(page.getContent());
-        return ProductsPage.build(page.hasNext(), productsToSchedule.size());
+        return ProductsPage.build(page.hasNext(), productsToSchedule.size(),
+                                  page.getNumberOfElements() - productsToSchedule.size());
     }
 
     @Override

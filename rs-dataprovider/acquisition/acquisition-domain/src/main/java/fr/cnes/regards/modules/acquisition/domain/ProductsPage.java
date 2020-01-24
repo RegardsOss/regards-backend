@@ -37,15 +37,21 @@ public class ProductsPage {
     private long scheduled = 0L;
 
     /**
+     * Number of not scheduled {@link Product}s on this iteration.
+     */
+    private long notScheduled = 0L;
+
+    /**
      *
      * @param next Does still remains {@link Product}s to schedule ?
      * @param scheduled Number of scheduled {@link Product}s on this iteration.
      * @return {@link ProductsPage}
      */
-    public static ProductsPage build(boolean next, long scheduled) {
+    public static ProductsPage build(boolean next, long scheduled, long notScheduled) {
         ProductsPage page = new ProductsPage();
         page.next = next;
         page.scheduled = scheduled;
+        page.notScheduled = notScheduled;
         return page;
     }
 
@@ -63,6 +69,14 @@ public class ProductsPage {
      */
     public long getScheduled() {
         return scheduled;
+    }
+
+    /**
+     * Number of not scheduled {@link Product}s on this iteration.
+     * @return long
+     */
+    public long getNotScheduled() {
+        return notScheduled;
     }
 
 }
