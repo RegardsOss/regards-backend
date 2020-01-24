@@ -37,6 +37,8 @@ import org.springframework.data.domain.Sort;
 /**
  * This job handles request deletion
  *
+ * <br>This job cannot be interrupted as it is simply handling operation on requests. It basically does nothing.
+ *
  * @author Léo Mieulet
  */
 public class RequestDeletionJob extends AbstractJob<Void> {

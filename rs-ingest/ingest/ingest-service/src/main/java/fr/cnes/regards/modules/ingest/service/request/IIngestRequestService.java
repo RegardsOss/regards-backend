@@ -77,6 +77,8 @@ public interface IIngestRequestService {
      */
     List<AIPEntity> handleIngestJobSucceed(IngestRequest request, SIPEntity sipEntity, List<AIP> aips);
 
+    void requestRemoteStorage(IngestRequest request);
+
     /**
      * Handle request denied from storage service
      */

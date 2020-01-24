@@ -203,13 +203,19 @@ public class IngestRequestService implements IIngestRequestService {
         List<AIPEntity> aipEntities = aipService.createAndSave(sipEntity, aips);
         // Attach generated AIPs to the current request
         request.setAips(aipEntities);
+        requestRemoteStorage(request);
 
+        return aipEntities;
+    }
+
+    @Override
+    public void requestRemoteStorage(IngestRequest request) {
         // Launch next remote step
         request.setStep(IngestRequestStep.REMOTE_STORAGE_REQUESTED, confProperties.getRemoteRequestTimeout());
 
         try {
             // Send AIP files storage events, keep these events ids in a list
-            List<String> remoteStepGroupIds = aipStorageService.storeAIPFiles(aipEntities, request.getMetadata());
+            List<String> remoteStepGroupIds = aipStorageService.storeAIPFiles(request.getAips(), request.getMetadata());
 
             if (!remoteStepGroupIds.isEmpty()) {
                 // Register request info to identify storage callback events
@@ -227,7 +233,6 @@ public class IngestRequestService implements IIngestRequestService {
                             e.getMessage()));
             sessionNotifier.productStoreError(request.getSessionOwner(), request.getSession(), request.getAips());
         }
-        return aipEntities;
     }
 
     @Override

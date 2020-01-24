@@ -44,6 +44,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
@@ -70,6 +71,11 @@ public class RequestController implements IResourceController<RequestDto> {
     public static final String REQUEST_RETRY_PATH = "/retry";
 
     /**
+     * Controller path to abort multiple requests using criteria
+     */
+    public static final String REQUEST_ABORT_PATH = "/abort";
+
+    /**
      * Controller path to delete several request entities
      */
     public static final String REQUEST_DELETE_PATH = "/delete";
@@ -82,6 +88,9 @@ public class RequestController implements IResourceController<RequestDto> {
      */
     @Autowired
     private IResourceService resourceService;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Retrieve a page of ingest requests according to the given filters
@@ -108,6 +117,14 @@ public class RequestController implements IResourceController<RequestDto> {
         requestService.scheduleRequestRetryJob(filters);
     }
 
+    @RequestMapping(value = REQUEST_ABORT_PATH, method = RequestMethod.PUT)
+    @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.PUBLIC)
+    public void abortRequests() {
+        LOGGER.debug("Received request to abort requests");
+        // abortRequests being asynchronous method, we have to give it the tenant
+        requestService.abortRequests(runtimeTenantResolver.getTenant());
+    }
+
     @ResourceAccess(description = "Delete requests", role = DefaultRole.ADMIN)
     @RequestMapping(value = REQUEST_DELETE_PATH, method = RequestMethod.POST)
     public void delete(@Valid @RequestBody SearchRequestsParameters filters) {
@@ -119,7 +136,7 @@ public class RequestController implements IResourceController<RequestDto> {
     public Resource<RequestDto> toResource(RequestDto element, Object... extras) {
         Resource<RequestDto> resource = resourceService.toResource(element);
 
-        if (InternalRequestState.ERROR == element.getState()) {
+        if (InternalRequestState.ERROR == element.getState() || element.getState() == InternalRequestState.ABORTED) {
             resourceService.addLink(resource, this.getClass(), "retryRequests", "RETRY",
                                     MethodParamFactory.build(SearchRequestsParameters.class));
         }

@@ -199,8 +199,7 @@ public class SIPEntity extends AbstractOAISEntity {
 
         SIPEntity sipEntity = new SIPEntity();
 
-        UUID uuid = UUID.nameUUIDFromBytes(sip.getId().getBytes());
-        UniformResourceName urn = new UniformResourceName(OAISIdentifier.SIP, sip.getIpType(), tenant, uuid, version);
+        UniformResourceName urn = generationUrn(tenant, sip, version);
         sipEntity.setProviderId(sip.getId());
         sipEntity.setSipId(urn);
         sipEntity.setCreationDate(OffsetDateTime.now());
@@ -216,6 +215,11 @@ public class SIPEntity extends AbstractOAISEntity {
         sipEntity.setTags(new HashSet<>(sip.getTags()));
 
         return sipEntity;
+    }
+
+    public static UniformResourceName generationUrn(String tenant, SIP sip, Integer version) {
+        UUID uuid = UUID.nameUUIDFromBytes(sip.getId().getBytes());
+        return new UniformResourceName(OAISIdentifier.SIP, sip.getIpType(), tenant, uuid, version);
     }
 
 }

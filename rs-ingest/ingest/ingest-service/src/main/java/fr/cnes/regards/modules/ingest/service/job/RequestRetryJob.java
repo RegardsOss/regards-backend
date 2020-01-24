@@ -25,9 +25,11 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.service.request.IRequestRetryService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,8 @@ import org.springframework.data.domain.Sort;
 /**
  * This job handles request retry
  *
+ * <br>This job cannot be interrupted as it is simply handling operation on requests. It basically does nothing.
+ *
  * @author Léo Mieulet
  */
 public class RequestRetryJob extends AbstractJob<Void> {
@@ -48,6 +52,9 @@ public class RequestRetryJob extends AbstractJob<Void> {
 
     @Autowired
     private RequestService requestService;
+
+    @Autowired
+    private IRequestRetryService retryRequestService;
 
     /**
      * Limit number of requests to retrieve in one page.
@@ -70,7 +77,10 @@ public class RequestRetryJob extends AbstractJob<Void> {
     @Override
     public void run() {
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
-        criteria.setState(InternalRequestState.ERROR);
+        // Override state in filter
+        criteria.setStates(new HashSet<>());
+        criteria.addState(InternalRequestState.ERROR);
+        criteria.addState(InternalRequestState.ABORTED);
         criteria.setStateExcluded(null);
         Page<AbstractRequest> requestsPage;
         do {
@@ -90,7 +100,7 @@ public class RequestRetryJob extends AbstractJob<Void> {
             }
             // Call the service with each list of requests sorted by type
             for (List<AbstractRequest> requestsByType : byRequestType.values()) {
-                requestService.relaunchRequests(requestsByType);
+                retryRequestService.relaunchRequests(requestsByType);
             }
             advanceCompletion();
         } while (requestsPage.hasNext());
