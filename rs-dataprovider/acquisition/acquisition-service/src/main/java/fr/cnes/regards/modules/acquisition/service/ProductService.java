@@ -55,6 +55,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.ProductSpecifications;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
@@ -98,6 +99,9 @@ public class ProductService implements IProductService {
 
     @Autowired
     private IProductRepository productRepository;
+
+    @Autowired
+    private IAcquisitionProcessingChainRepository acqChainRepository;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -164,7 +168,7 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Set<Product> retrieve(Collection<String> productNames) throws ModuleException {
+    public Set<Product> retrieve(Collection<String> productNames) {
         return productRepository.findByProductNameIn(productNames);
     }
 
@@ -497,19 +501,40 @@ public class ProductService implements IProductService {
 
     @Override
     public void handleSIPGenerationError(JobInfo jobInfo) {
+        Long chainId = jobInfo.getParametersAsMap().get(SIPGenerationJob.CHAIN_PARAMETER_ID).getValue();
+        Optional<AcquisitionProcessingChain> processingChain = acqChainRepository.findById(chainId);
         JobParameter productNameParam = jobInfo.getParametersAsMap().get(SIPGenerationJob.PRODUCT_NAMES);
         if (productNameParam != null) {
             Set<String> productNames = productNameParam.getValue();
-            try {
-                Set<Product> products = retrieve(productNames);
-                for (Product product : products) {
-                    sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR);
-                    product.setSipState(ProductSIPState.GENERATION_ERROR);
-                    product.setError(jobInfo.getStatus().getStackTrace());
-                    save(product);
-                }
-            } catch (ModuleException e) {
-                LOGGER.error("Error handling SIP generation error", e);
+            Set<Product> products = retrieve(productNames);
+            for (Product product : products) {
+                sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR);
+                product.setSipState(ProductSIPState.GENERATION_ERROR);
+                product.setError(jobInfo.getStatus().getStackTrace());
+                save(product);
+            }
+            if (processingChain.isPresent()) {
+                handleSipGenerationEnd(processingChain.get(), products);
+            }
+        }
+
+    }
+
+    @Override
+    public void handleSipGenerationSuccess(JobInfo jobInfo) {
+        Long chainId = jobInfo.getParametersAsMap().get(SIPGenerationJob.CHAIN_PARAMETER_ID).getValue();
+        Optional<AcquisitionProcessingChain> processingChain = acqChainRepository.findById(chainId);
+        Set<String> productNames = jobInfo.getParametersAsMap().get(SIPGenerationJob.PRODUCT_NAMES).getValue();
+        Set<Product> products = retrieve(productNames);
+        handleSipGenerationEnd(processingChain.get(), products);
+    }
+
+    public void handleSipGenerationEnd(AcquisitionProcessingChain chain, Collection<Product> products) {
+        Set<String> sessions = products.stream().map(Product::getSession).collect(Collectors.toSet());
+        for (String session : sessions) {
+            if (!existsByProcessingChainAndSipStateIn(chain, ProductSIPState.SCHEDULED)) {
+                sessionNotifier.notifyEndingChain(chain.getLabel(), session);
+                break;
             }
         }
     }
