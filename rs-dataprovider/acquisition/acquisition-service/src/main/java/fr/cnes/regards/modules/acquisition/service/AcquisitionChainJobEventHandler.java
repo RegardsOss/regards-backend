@@ -93,7 +93,11 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
             try {
                 switch (jobEvent.getJobEventType()) {
                     case FAILED:
+                    case ABORTED:
                         handleJobFailure(jobEvent);
+                        break;
+                    case SUCCEEDED:
+                        handleJobSuccess(jobEvent);
                         break;
                     default:
                         break;
@@ -106,6 +110,21 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
                                           NotificationLevel.ERROR, DefaultRole.ADMIN);
             } finally {
                 runtimeTenantResolver.clearTenant();
+            }
+        }
+
+        /**
+         * @param jobEvent
+         */
+        private void handleJobSuccess(JobEvent jobEvent) {
+            // Load job info
+            JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
+            if (jobInfo != null) {
+                // First lets check which job failed. Then lets responsible service handle errors.
+                String jobClassName = jobInfo.getClassName();
+                if (SIPGenerationJob.class.getName().equals(jobClassName)) {
+                    productService.handleSipGenerationSuccess(jobInfo);
+                }
             }
         }
 
