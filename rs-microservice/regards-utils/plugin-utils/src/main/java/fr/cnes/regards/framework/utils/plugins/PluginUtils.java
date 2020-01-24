@@ -336,7 +336,9 @@ public final class PluginUtils {
 
                 try {
                     method.invoke(plugin);
-                } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                } catch (InvocationTargetException e) {
+                    throw new PluginUtilsRuntimeException(e.getTargetException());
+                } catch (final IllegalAccessException | IllegalArgumentException e) {
                     LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
                                                plugin.getClass()),
                                  e);
