@@ -122,6 +122,10 @@ public class RequestService implements IRequestService {
     @Autowired
     private SessionNotifier sessionNotifier;
 
+    @Autowired
+    @Lazy
+    private IRequestService self;
+
     @Override
     public void handleRemoteStoreError(AbstractRequest request) {
         LOGGER.warn("Request of type {} cannot be handle for remote storage error",
@@ -243,7 +247,7 @@ public class RequestService implements IRequestService {
         Page<AbstractRequest> requestsPage;
         Set<UUID> jobIdsAlreadyStopped = new HashSet<>();
         do {
-            requestsPage = abortCurrentRequestPage(filters, pageRequest, jobIdsAlreadyStopped);
+            requestsPage = self.abortCurrentRequestPage(filters, pageRequest, jobIdsAlreadyStopped);
 
         } while (requestsPage.hasNext());
         runtimeTenantResolver.clearTenant();
