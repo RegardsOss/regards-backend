@@ -243,7 +243,9 @@ public class ContentInformation {
         syntax.setWidth(width);
         syntax.setHeight(height);
 
-        setRepresentationInformation(new RepresentationInformation());
+        if (getRepresentationInformation() == null) {
+            setRepresentationInformation(new RepresentationInformation());
+        }
         getRepresentationInformation().setSyntax(syntax);
         return this;
     }
@@ -298,6 +300,12 @@ public class ContentInformation {
     public ContentInformation withSoftwareEnvironmentProperty(String key, Object value) {
         Assert.hasLength(key, "Software environment information key is required");
         Assert.notNull(value, "Software environment information value is required");
+        if (getRepresentationInformation() == null) {
+            setRepresentationInformation(new RepresentationInformation());
+        }
+        if (getRepresentationInformation().getEnvironmentDescription() == null) {
+            getRepresentationInformation().setEnvironmentDescription(new EnvironmentDescription());
+        }
         getRepresentationInformation().getEnvironmentDescription().getSoftwareEnvironment().put(key, value);
         return this;
     }
@@ -308,6 +316,12 @@ public class ContentInformation {
     public ContentInformation withHardwareEnvironmentProperty(String key, Object value) {
         Assert.hasLength(key, "Hardware environment information key is required");
         Assert.notNull(value, "Hardware environment information value is required");
+        if (getRepresentationInformation() == null) {
+            setRepresentationInformation(new RepresentationInformation());
+        }
+        if (getRepresentationInformation().getEnvironmentDescription() == null) {
+            getRepresentationInformation().setEnvironmentDescription(new EnvironmentDescription());
+        }
         getRepresentationInformation().getEnvironmentDescription().getHardwareEnvironment().put(key, value);
         return this;
     }
