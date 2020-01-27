@@ -35,6 +35,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -198,13 +200,14 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
             MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
             headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE);
-            return new ResponseEntity<>(descriptionBuilder.build(context, parse(context),
-                                                                 Arrays.asList(mediaExtension, regardsExtension, timeExtension),
-                                                                 paramConfigurations, engineConfiguration, dataset),
-                                        headers, HttpStatus.OK);
-//            return ResponseEntity.ok(descriptionBuilder
-//                    .build(context, parse(context), Arrays.asList(mediaExtension, regardsExtension, timeExtension),
-//                           paramConfigurations, engineConfiguration, dataset));
+            return new ResponseEntity<>(
+                    descriptionBuilder.build(context, parse(context),
+                                             Arrays.asList(mediaExtension, regardsExtension, timeExtension),
+                                             paramConfigurations, engineConfiguration, dataset),
+                    headers, HttpStatus.OK);
+            //            return ResponseEntity.ok(descriptionBuilder
+            //                    .build(context, parse(context), Arrays.asList(mediaExtension, regardsExtension, timeExtension),
+            //                           paramConfigurations, engineConfiguration, dataset));
         } else {
             return ISearchEngine.super.extra(context);
         }
@@ -290,7 +293,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             try {
                 // Ignore special query parameter (q) or empty values
                 if (!queryParam.getKey().equals(configuration.getQueryParameterName())
-                        && (queryParam.getValue().size() != 1
+                        && ((queryParam.getValue().size() != 1)
                                 || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
                     String attributePath;
                     // Check if parameter key is an alias from configuration
@@ -385,7 +388,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         List<String> startPage = context.getQueryParams().get(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME);
 
         int size = context.getPageable().getPageSize();
-        if (count != null && count.size() == 1) {
+        if ((count != null) && (count.size() == 1)) {
             try {
                 size = Integer.valueOf(count.get(0));
             } catch (NumberFormatException e) {
@@ -394,7 +397,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         }
 
         int start = context.getPageable().getPageNumber();
-        if (startPage != null && startPage.size() == 1) {
+        if ((startPage != null) && (startPage.size() == 1)) {
             try {
                 start = Integer.valueOf(startPage.get(0));
                 // Handle page starts at 1 but 0 for spring Pageable
