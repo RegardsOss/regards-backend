@@ -50,6 +50,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
@@ -382,7 +383,7 @@ public class FileStorageRequestService {
             for (Entry<FileStorageRequest, String> request : response.getPreparationErrors().entrySet()) {
                 this.handleStorageNotAvailable(request.getKey(), Optional.ofNullable(request.getValue()));
             }
-        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+        } catch (ModuleException | PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
             LOGGER.error(e.getMessage(), e);
             this.handleStorageNotAvailable(fileStorageRequests);
         }
