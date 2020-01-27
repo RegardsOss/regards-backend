@@ -2,6 +2,8 @@ package fr.cnes.regards.modules.ingest.service.session;
 
 import java.util.Collection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +40,8 @@ public class SessionNotifier {
     public static final String PRODUCT_META_STORED = "products_meta_stored";
 
     public static final String PRODUCT_META_STORE_ERROR = "products_meta_store_error";
+
+    private static final Logger LOG = LoggerFactory.getLogger(SessionNotifier.class);
 
     @Autowired
     private IPublisher publisher;
@@ -182,6 +186,28 @@ public class SessionNotifier {
         }
     }
 
+    public void ingestRequestError(IngestRequest request) {
+        if (request.getState() == InternalRequestState.ERROR) {
+            switch (request.getStep()) {
+                case LOCAL_DENIED:
+                case LOCAL_FINAL:
+                case LOCAL_GENERATION:
+                case LOCAL_INIT:
+                case LOCAL_POST_PROCESSING:
+                case LOCAL_PRE_PROCESSING:
+                case LOCAL_SCHEDULED:
+                case LOCAL_TAGGING:
+                case LOCAL_VALIDATION:
+                    notifyIncrementSession(request.getSessionOwner(), request.getSession(), PRODUCT_GEN_ERROR,
+                                           SessionNotificationState.OK, 1);
+                    break;
+                default:
+                    LOG.warn("Ingest request error occurred with a step not handled by session notifier! Step: {}",request.getStep());
+                    break;
+            }
+        }
+    }
+
     /**
      * Decrement product store errors or product gen errors
      * @param request
@@ -204,6 +230,7 @@ public class SessionNotifier {
                 case REMOTE_STORAGE_REQUESTED:
                 case REMOTE_STORAGE_DENIED:
                 case REMOTE_STORAGE_ERROR:
+                    //FIXME: why is it ingest responsibility to notify about storage errors????????
                     notifyDecrementSession(request.getSessionOwner(), request.getSession(), PRODUCT_STORE_ERROR,
                                            SessionNotificationState.OK, 1);
                     break;

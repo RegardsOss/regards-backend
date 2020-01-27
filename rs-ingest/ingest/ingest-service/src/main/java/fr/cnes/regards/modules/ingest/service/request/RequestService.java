@@ -19,9 +19,11 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -32,8 +34,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
@@ -44,7 +49,9 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications;
 import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
@@ -89,13 +96,6 @@ public class RequestService implements IRequestService {
     private static final String GLOBAL_REQUEST_SESSION = "____GLOBAL_REQUEST_SESSION____";
 
     @Autowired
-    @Lazy
-    private IIngestRequestService ingestRequestService;
-
-    @Autowired
-    private IAIPStoreMetaDataRequestService aipSaveMetaDataService;
-
-    @Autowired
     private IIngestRequestRepository ingestRequestRepository;
 
     @Autowired
@@ -117,43 +117,25 @@ public class RequestService implements IRequestService {
     private IJobInfoService jobInfoService;
 
     @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
     private SessionNotifier sessionNotifier;
 
+    @Autowired
+    @Lazy
+    private IRequestService self;
+
     @Override
-    public void handleRemoteStoreError(Set<RequestInfo> requestInfos) {
-        List<AbstractRequest> requests = findRequestsByGroupIdIn(requestInfos.stream().map(RequestInfo::getGroupId)
-                .collect(Collectors.toList()));
-        for (RequestInfo ri : requestInfos) {
-            for (AbstractRequest request : requests) {
-                if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
-                    if (request instanceof IngestRequest) {
-                        ingestRequestService.handleRemoteStoreError((IngestRequest) request, ri);
-                    } else if (request instanceof AIPStoreMetaDataRequest) {
-                        aipSaveMetaDataService.handleError((AIPStoreMetaDataRequest) request, ri);
-                    }
-                }
-            }
-        }
+    public void handleRemoteStoreError(AbstractRequest request) {
+        LOGGER.warn("Request of type {} cannot be handle for remote storage error",
+                    request.getClass().getName());
     }
 
     @Override
-    public void handleRemoteStoreSuccess(Set<RequestInfo> requestInfos) {
-        List<AbstractRequest> requests = findRequestsByGroupIdIn(requestInfos.stream().map(RequestInfo::getGroupId)
-                .collect(Collectors.toList()));
-        for (RequestInfo ri : requestInfos) {
-            for (AbstractRequest request : requests) {
-                if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
-                    if (request instanceof IngestRequest) {
-                        ingestRequestService.handleRemoteStoreSuccess((IngestRequest) (request), ri);
-                    } else if (request instanceof AIPStoreMetaDataRequest) {
-                        aipSaveMetaDataService.handleSuccess((AIPStoreMetaDataRequest) request, ri);
-                    } else {
-                        LOGGER.warn("Request of type {} cannot be handle for remote storage success",
-                                    request.getClass().getName());
-                    }
-                }
-            }
-        }
+    public void handleRemoteStoreSuccess(AbstractRequest request) {
+        LOGGER.warn("Request of type {} cannot be handle for remote storage success",
+                    request.getClass().getName());
     }
 
     @Override
@@ -256,6 +238,51 @@ public class RequestService implements IRequestService {
     }
 
     @Override
+    @MultitenantTransactional(propagation = Propagation.NOT_SUPPORTED)
+    @Async
+    public void abortRequests(String tenant) {
+        runtimeTenantResolver.forceTenant(tenant);
+        SearchRequestsParameters filters = SearchRequestsParameters.build().withState(InternalRequestState.RUNNING);
+        Pageable pageRequest = PageRequest.of(0, 1000, Sort.Direction.ASC, "id");
+        Page<AbstractRequest> requestsPage;
+        Set<UUID> jobIdsAlreadyStopped = new HashSet<>();
+        do {
+            requestsPage = self.abortCurrentRequestPage(filters, pageRequest, jobIdsAlreadyStopped);
+
+        } while (requestsPage.hasNext());
+        runtimeTenantResolver.clearTenant();
+    }
+
+    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public Page<AbstractRequest> abortCurrentRequestPage(SearchRequestsParameters filters, Pageable pageRequest,
+            Set<UUID> jobIdsAlreadyStopped) {
+        Page<AbstractRequest> requestsPage;
+        requestsPage = findRequests(filters, pageRequest);
+        for(AbstractRequest request: requestsPage.getContent()) {
+            if(request.getJobInfo() == null ) {
+                request.setState(InternalRequestState.ABORTED);
+            } else {
+                UUID jobId = request.getJobInfo().getId();
+                if (request.getJobInfo().getStatus().getStatus() != JobStatus.RUNNING) {
+                    // set the state here just to be sure we are not forgetting orphan requests that has been taken
+                    // into account by some jobs but state just has not been updated for some reason
+                    if (request.getState() != InternalRequestState.ERROR) {
+                        // ERROR being the only final state of a request, we just do not abort requests in error.
+                        // it has to be done here and not on filters to respect what has been asked by API users
+                        request.setState(InternalRequestState.ABORTED);
+                    }
+                }
+                if (!jobIdsAlreadyStopped.contains(jobId)) {
+                    jobInfoService.stopJob(jobId);
+                    jobIdsAlreadyStopped.add(jobId);
+                }
+            }
+        }
+        return requestsPage;
+    }
+
+    @Override
     public void unblockRequests(RequestTypeEnum requestType) {
         // Build search filters
         SearchRequestsParameters searchFilters = SearchRequestsParameters.build().withRequestType(requestType)
@@ -280,34 +307,12 @@ public class RequestService implements IRequestService {
         }
     }
 
-    @Override
-    public void relaunchRequests(List<AbstractRequest> requests) {
-        // Change requests states
-        for (AbstractRequest request : requests) {
-            // Requests must be in ERROR state
-            if (request.getState() == InternalRequestState.ERROR) {
-                // Rollback the state to TO_SCHEDULE
-                switchRequestState(request);
-            } else {
-                LOGGER.error("Cannot relaunch the request {} because this request is not in ERROR state. It was in {} state",
-                             request.getId(), request.getState());
-            }
-        }
-        scheduleRequests(requests);
-
-        // For macro job, create a job
-        for (AbstractRequest request : requests) {
-            if ((request.getState() == InternalRequestState.CREATED) && isJobRequest(request)) {
-                scheduleJob(request);
-            }
-        }
-    }
-
     /**
      * Notify if necessary the sessionNotifier, then switch the state
      * @param request
      */
-    private void switchRequestState(AbstractRequest request) {
+    @Override
+    public void switchRequestState(AbstractRequest request) {
         // Handle requests tracked by notifications
         if (request instanceof IngestRequest) {
             sessionNotifier.ingestRequestErrorDeleted((IngestRequest) request);
@@ -387,7 +392,8 @@ public class RequestService implements IRequestService {
      * @return true when the concrete {@link AbstractRequest} is run in a job
      *         false when the request is processed by bulk
      */
-    private boolean isJobRequest(AbstractRequest request) {
+    @Override
+    public boolean isJobRequest(AbstractRequest request) {
         return (request instanceof OAISDeletionCreatorRequest) || (request instanceof AIPUpdatesCreatorRequest);
     }
 

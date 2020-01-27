@@ -149,7 +149,7 @@ public class IngestRequestService implements IIngestRequestService {
                 Set<Long> ids;
                 ids = IJob.getValue(jobInfo.getParametersAsMap(), IngestProcessingJob.IDS_PARAMETER, type);
                 List<IngestRequest> requests = loadByIds(ids);
-                requests.forEach(r -> handleIngestJobFailed(r, null));
+                requests.forEach(r -> handleIngestJobFailed(r, null, null));
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 String message = String.format("Ingest request job with id \"%s\" fails with status \"%s\"",
                                                jobEvent.getJobId(), jobEvent.getJobEventType());
@@ -185,12 +185,12 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void handleIngestJobFailed(IngestRequest request, SIPEntity entity) {
+    public void handleIngestJobFailed(IngestRequest request, SIPEntity entity, String errorMessage) {
         // Lock job
         jobInfoService.lock(request.getJobInfo());
 
         // Keep track of the error
-        saveAndPublishErrorRequest(request, null);
+        saveAndPublishErrorRequest(request, errorMessage);
     }
 
     @Override
@@ -203,19 +203,29 @@ public class IngestRequestService implements IIngestRequestService {
         List<AIPEntity> aipEntities = aipService.createAndSave(sipEntity, aips);
         // Attach generated AIPs to the current request
         request.setAips(aipEntities);
+        requestRemoteStorage(request);
 
+        return aipEntities;
+    }
+
+    @Override
+    public void requestRemoteStorage(IngestRequest request) {
         // Launch next remote step
         request.setStep(IngestRequestStep.REMOTE_STORAGE_REQUESTED, confProperties.getRemoteRequestTimeout());
 
         try {
             // Send AIP files storage events, keep these events ids in a list
-            List<String> remoteStepGroupIds = aipStorageService.storeAIPFiles(aipEntities, request.getMetadata());
+            List<String> remoteStepGroupIds = aipStorageService.storeAIPFiles(request.getAips(), request.getMetadata());
 
-            // Register request info to identify storage callback events
-            request.setRemoteStepGroupIds(remoteStepGroupIds);
-
-            // Keep track of the request
-            saveRequest(request);
+            if (!remoteStepGroupIds.isEmpty()) {
+                // Register request info to identify storage callback events
+                request.setRemoteStepGroupIds(remoteStepGroupIds);
+                // Keep track of the request
+                saveRequest(request);
+            } else {
+                // No files to store for the request AIPs. We can immediately store the manifest.
+                finalizeSuccessfulRequest(request);
+            }
         } catch (ModuleException e) {
             // Keep track of the error
             saveAndPublishErrorRequest(request, String
@@ -223,7 +233,6 @@ public class IngestRequestService implements IIngestRequestService {
                             e.getMessage()));
             sessionNotifier.productStoreError(request.getSessionOwner(), request.getSession(), request.getAips());
         }
-        return aipEntities;
     }
 
     @Override
@@ -252,7 +261,6 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Override
     public void handleRemoteStoreSuccess(IngestRequest request, RequestInfo requestInfo) {
-
         if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
             // Update AIPs with meta returned by storage
             aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), requestInfo.getSuccessRequests());
@@ -260,11 +268,10 @@ public class IngestRequestService implements IIngestRequestService {
             List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, requestInfo);
             if (!remoteStepGroupIds.isEmpty()) {
                 saveRequest(request);
-                // Another request is still pending
-                return;
+            } else {
+                // The current request is over
+                finalizeSuccessfulRequest(request);
             }
-            // The current request is over
-            finalizeSuccessfulRequest(request);
         } else {
             // Keep track of the error
             saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
@@ -291,7 +298,7 @@ public class IngestRequestService implements IIngestRequestService {
         }
         sessionNotifier.productStoreSuccess(request.getSessionOwner(), request.getSession(), aips);
 
-        // Schedule manifest archivage
+        // Schedule manifest storage
         aipSaveMetaDataService.schedule(aips, request.getMetadata().getStorages(), false, true);
         sessionNotifier.productMetaStorePending(request.getSessionOwner(), request.getSession(), aips);
 
@@ -377,8 +384,9 @@ public class IngestRequestService implements IIngestRequestService {
 
         // Keep track of the error
         saveRequest(request);
-
         // Publish
+        //FIXME: why is there a sipId in place of providerId??????
+        //FIXME: more important, why don't we use IngestPayload that seems to have all informations needed...
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
                                                    RequestState.ERROR, request.getErrors()));

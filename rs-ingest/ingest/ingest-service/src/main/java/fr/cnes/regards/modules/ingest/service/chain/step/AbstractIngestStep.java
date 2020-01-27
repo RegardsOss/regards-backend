@@ -76,6 +76,6 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
         addError(error);
         job.getCurrentRequest().setState(InternalRequestState.ERROR);
         job.getCurrentRequest().setErrors(errors);
-        ingestRequestService.handleIngestJobFailed(job.getCurrentRequest(), job.getCurrentEntity());
+        ingestRequestService.handleIngestJobFailed(job.getCurrentRequest(), job.getCurrentEntity(), error);
     }
 }

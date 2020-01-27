@@ -133,7 +133,7 @@ public interface IAIPService {
      * @param sipId
      * @return
      */
-    Set<AIPEntity> findByAipIds(String sipId);
+    Set<AIPEntity> findBySipId(String sipId);
 
     List<AIPEntity> saveAll(Collection<AIPEntity> updates);
 

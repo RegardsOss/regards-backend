@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
@@ -26,17 +27,21 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.transaction.annotation.Propagation;
 
 /**
  * @author Léo Mieulet
  */
 public interface IRequestService {
 
-    void handleRemoteStoreError(Set<RequestInfo> requests);
+    void handleRemoteStoreError(AbstractRequest requests);
 
-    void handleRemoteStoreSuccess(Set<RequestInfo> requests);
+    void handleRemoteStoreSuccess(AbstractRequest requests);
 
     /**
      * Handle request granted from storage service
@@ -79,18 +84,32 @@ public interface IRequestService {
     void scheduleRequests(List<AbstractRequest> requests);
 
     /**
-     * Retry provided requests and put these requests in CREATED or PENDING
-     * @param requests a list of requests in ERROR state
-     */
-    void relaunchRequests(List<AbstractRequest> requests);
-
-    /**
      * Save provided request into the repository
      * If the request cannot be run right now, the request status will change to pending
      * @param request the request to save
      * @return
      */
     AbstractRequest scheduleRequest(AbstractRequest request);
+
+    /**
+     * Abort every {@link fr.cnes.regards.modules.ingest.domain.request.InternalRequestState#RUNNING}. <br>
+     * This is an asynchronous method. So tenant has to be given in order to be able to do database queries.
+     * @param tenant
+     */
+    @Async
+    void abortRequests(String tenant);
+
+    /**
+     * Allows to abort request page by page and save the process of abortion per page and stop jobs at the end of
+     * each page and not at the end of everything
+     * @param filters
+     * @param pageRequest
+     * @param jobIdsAlreadyStopped this parameters should initially be empty and then reused between each page handling
+     * @return next page to treat
+     */
+    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
+    Page<AbstractRequest> abortCurrentRequestPage(SearchRequestsParameters filters, Pageable pageRequest,
+            Set<UUID> jobIdsAlreadyStopped);
 
     /**
      * Fetch a page of requests and try to unblock them
@@ -117,9 +136,13 @@ public interface IRequestService {
      */
     void scheduleRequestRetryJob(SearchRequestsParameters filters);
 
+    void switchRequestState(AbstractRequest request);
+
     /**
      * Delete the provided {@link AbstractRequest}, ensure related jobs are unlocked
      * @param request the request to delete
      */
     void deleteRequest(AbstractRequest request);
+
+    boolean isJobRequest(AbstractRequest request);
 }

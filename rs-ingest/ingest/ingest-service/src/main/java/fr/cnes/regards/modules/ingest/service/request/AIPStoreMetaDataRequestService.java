@@ -112,8 +112,15 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
     @Override
     public void schedule(AIPEntity aip, Set<OAISDataObjectLocation> storages, boolean removeCurrentMetaData,
             boolean computeChecksum) {
+        // this method being called from a job, it can be interrupted. to enable the action to be done
+        // especially the transaction, we use Thread.interrupted() and not Thread.currentThread().isInterrupted().
+        boolean interrupted = Thread.interrupted();
         Set<StoreLocation> manifestStorages = aipStorageService.getManifestStoreLocationsByLocation(storages);
         scheduleRequest(aip, manifestStorages, removeCurrentMetaData, computeChecksum);
+        // once the work has been done, we reset the interrupt flag if needed.
+        if(interrupted) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private void scheduleRequest(AIPEntity aip, Set<StoreLocation> storages, boolean removeCurrentMetaData,

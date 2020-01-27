@@ -69,13 +69,15 @@ public interface IIngestRequestService {
     /**
      * Handle request error during job processing
      */
-    void handleIngestJobFailed(IngestRequest request, SIPEntity entity);
+    void handleIngestJobFailed(IngestRequest request, SIPEntity entity, String errorMessage);
 
     /**
      * Handle request success at the end of the job processing and launch remote storage request
      * All LOCAL {@link IngestRequestStep} successfully done.
      */
     List<AIPEntity> handleIngestJobSucceed(IngestRequest request, SIPEntity sipEntity, List<AIP> aips);
+
+    void requestRemoteStorage(IngestRequest request);
 
     /**
      * Handle request denied from storage service

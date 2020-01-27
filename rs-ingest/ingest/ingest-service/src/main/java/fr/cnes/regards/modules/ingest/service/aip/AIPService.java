@@ -312,7 +312,7 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Set<AIPEntity> findByAipIds(String sipId) {
+    public Set<AIPEntity> findBySipId(String sipId) {
         return aipRepository.findBySipSipId(sipId);
     }
 

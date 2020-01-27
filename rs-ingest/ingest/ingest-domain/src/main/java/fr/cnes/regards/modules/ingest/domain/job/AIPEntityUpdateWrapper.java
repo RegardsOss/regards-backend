@@ -39,12 +39,12 @@ public class AIPEntityUpdateWrapper {
     /**
      * True when the entity have not been updated
      */
-    private boolean pristine;
+    private boolean pristine = true;
 
     /**
      * True when the aip inside the AIPEntity have not been updated
      */
-    private boolean aipPristine;
+    private boolean aipPristine = false;
 
     private Collection<FileDeletionRequestDTO> deletionRequests;
 
@@ -78,7 +78,7 @@ public class AIPEntityUpdateWrapper {
 
     public void markAsUpdated(boolean aipUpdated) {
         this.pristine = false;
-        this.aipPristine = !aipUpdated;
+        this.aipPristine = this.aipPristine || !aipUpdated;
     }
 
     public static AIPEntityUpdateWrapper build(AIPEntity aip) {

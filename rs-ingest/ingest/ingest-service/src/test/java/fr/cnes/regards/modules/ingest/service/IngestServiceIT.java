@@ -18,13 +18,33 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
@@ -36,22 +56,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Marc Sordi
@@ -66,6 +70,9 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IIngestService ingestService;
+
+    @Autowired
+    private IAIPStoreMetaDataRepository storeMetaRepo;
 
     @SpyBean
     private IIngestRequestService ingestRequestService;
@@ -94,6 +101,30 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
 
         // First ingestion with synchronous service
         ingestService.handleSIPCollection(sips);
+    }
+
+    @Test
+    @Purpose("Ingest a SIP with no contentInformation to store. Only manifest should be stored.")
+    public void ingestWithoutAnyDataFile() throws EntityInvalidException {
+        Assert.assertEquals("There should be no store metadata request in db", 0L, storeMetaRepo.count());
+        // Ingest SIP with no dataObject
+        String providerId = "SIP_001";
+        SIPCollection sips = SIPCollection
+                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                               Sets.newHashSet("CAT"), StorageMetadata.build("disk")));
+        sips.add(SIP.build(EntityType.DATA, providerId));
+        ingestService.handleSIPCollection(sips);
+        ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
+
+        // Check that the SIP is STORED
+        SIPEntity entity = sipRepository.findTopByProviderIdOrderByCreationDateDesc(providerId);
+        Assert.assertNotNull(entity);
+        Assert.assertTrue(providerId.equals(entity.getProviderId()));
+        Assert.assertTrue(entity.getVersion() == 1);
+        Assert.assertTrue(SIPState.STORED.equals(entity.getState()));
+
+        // A store meta request should be created
+        Assert.assertEquals("There should be one store metadata request created", 1L, storeMetaRepo.count());
     }
 
     /**
@@ -126,7 +157,8 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         // Detect error
         ArgumentCaptor<IngestRequest> argumentCaptor = ArgumentCaptor.forClass(IngestRequest.class);
         Mockito.verify(ingestRequestService, Mockito.times(1))
-                .handleIngestJobFailed(argumentCaptor.capture(), ArgumentCaptor.forClass(SIPEntity.class).capture());
+                .handleIngestJobFailed(argumentCaptor.capture(), ArgumentCaptor.forClass(SIPEntity.class).capture(),
+                                       ArgumentCaptor.forClass(String.class).capture());
         IngestRequest request = argumentCaptor.getValue();
         Assert.assertNotNull(request);
         Assert.assertEquals(InternalRequestState.ERROR, request.getState());
