@@ -126,7 +126,7 @@ public final class PluginUtils {
         LOGGER.info("{} Loading plugins...", HR);
         // Initialize reflection tool
         Reflections reflections;
-        if (reflectionPackages == null || reflectionPackages.isEmpty()) {
+        if ((reflectionPackages == null) || reflectionPackages.isEmpty()) {
             String defaultPackage = "fr.cnes.regards";
             LOGGER.info("System will look for plugins in default package: {}", defaultPackage);
             reflections = new Reflections(defaultPackage);
@@ -275,7 +275,11 @@ public final class PluginUtils {
             PluginParameterUtils.postProcess(returnPlugin, conf, instantiatedPlugins, dynamicParams);
             // Autowired Spring bean in Spring IOC context
             if (PluginUtilsBean.getInstance() != null) {
-                PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
+                try {
+                    PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
+                } catch (Throwable e) {
+                    throw new PluginUtilsRuntimeException("Error during plugin instanciation", e);
+                }
             }
 
             // Launch init method if detected
@@ -344,7 +348,9 @@ public final class PluginUtils {
 
                 try {
                     method.invoke(plugin);
-                } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                } catch (InvocationTargetException e) {
+                    throw new PluginUtilsRuntimeException(e.getTargetException());
+                } catch (final IllegalAccessException | IllegalArgumentException e) {
                     LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
                                                plugin.getClass()),
                                  e);
@@ -353,6 +359,10 @@ public final class PluginUtils {
                     } else {
                         throw new PluginUtilsRuntimeException(e);
                     }
+                } catch (Exception e) {
+                    LOGGER.error(String.format("Error during plugin %s initialization. Plugin may not be fully usable.",
+                                               plugin.getClass().getName()),
+                                 e);
                 }
             }
         }
@@ -376,7 +386,7 @@ public final class PluginUtils {
 
     public static List<String> validateOnCreate(PluginConfiguration conf) {
         List<String> validationErrors = validate(conf);
-        if (conf != null && conf.getBusinessId() != null) {
+        if ((conf != null) && (conf.getBusinessId() != null)) {
             // FIXME : just log
             // validationErrors.add("The plugin configuration business id must be null.");
         }
@@ -385,7 +395,7 @@ public final class PluginUtils {
 
     public static List<String> validateOnUpdate(PluginConfiguration conf) {
         List<String> validationErrors = validate(conf);
-        if (conf != null && conf.getBusinessId() == null) {
+        if ((conf != null) && (conf.getBusinessId() == null)) {
             validationErrors.add("The plugin configuration business id required.");
         }
         return validationErrors;
@@ -446,8 +456,8 @@ public final class PluginUtils {
         // lets check that all remaining parameters are correctly given
         for (PluginParamDescriptor plgParamMeta : pluginParametersFromMeta) {
             IPluginParam parameterFromConf = conf.getParameter(plgParamMeta.getName());
-            if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && parameterFromConf == null
-                    && plgParamMeta.getDefaultValue() == null) {
+            if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && (parameterFromConf == null)
+                    && (plgParamMeta.getDefaultValue() == null)) {
                 validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
             }
         }
