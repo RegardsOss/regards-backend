@@ -119,6 +119,9 @@ public class FileDeletionRequestService {
     private RequestStatusService reqStatusService;
 
     @Autowired
+    private FileCopyRequestService fileCopyReqService;
+
+    @Autowired
     private ILockService lockService;
 
     /**
@@ -319,8 +322,15 @@ public class FileDeletionRequestService {
         Set<FileReference> existingOnes = fileRefService.search(list.stream().map(DeletionFlowItem::getFiles)
                 .flatMap(Set::stream).map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet()));
         for (DeletionFlowItem item : list) {
-            reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
-            handle(item.getFiles(), item.getGroupId(), existingOnes);
+            if (fileCopyReqService.isFileCopyRunning(item.getFiles().stream().map(i -> i.getChecksum())
+                    .collect(Collectors.toSet()))) {
+                reqGroupService.denied(item.getGroupId(), FileRequestType.DELETION,
+                                       "Cannot delete files has a copy process is running");
+                LOGGER.info("Refused {} file deletion", item.getFiles().size());
+            } else {
+                reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
+                handle(item.getFiles(), item.getGroupId(), existingOnes);
+            }
         }
     }
 

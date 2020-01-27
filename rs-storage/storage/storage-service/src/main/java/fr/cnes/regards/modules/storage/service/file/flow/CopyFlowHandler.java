@@ -132,10 +132,6 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
                     for (int i = 0; i < BULK_SIZE; i++) {
                         CopyFlowItem doc = tenantItems.poll();
                         if (doc == null) {
-                            if (list.isEmpty()) {
-                                // nothing to do
-                                return;
-                            }
                             // Less than BULK_SIZE documents, bulk save what we have already
                             break;
                         } else { // enqueue document
