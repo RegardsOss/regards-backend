@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.List;
-import java.util.Set;
-
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
+import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -30,7 +29,6 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
@@ -60,27 +58,35 @@ public final class AIPEntitySpecification {
             }
             if ((filters.getStorages() != null) && !filters.getStorages().isEmpty()) {
                 Path<Object> attributeRequeted = root.get("storages");
-                predicates.add(SpecificationUtils
-                        .buildPredicateIsJsonbArrayContainingOneOfElement(attributeRequeted,
-                                                                          Lists.newArrayList(filters.getStorages()),
-                                                                          cb));
+                predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingOneOfElement(attributeRequeted,
+                                                                                                   Lists.newArrayList(
+                                                                                                           filters.getStorages()),
+                                                                                                   cb));
             }
 
             List<String> aipIds = filters.getAipIds();
             if ((aipIds != null) && !aipIds.isEmpty()) {
                 Set<Predicate> sipIdsPredicates = Sets.newHashSet();
-                for (String aipId : aipIds) {
-                    if (filters.getSelectionMode() == SearchSelectionMode.INCLUDE) {
+                if (filters.getSelectionMode() == SearchSelectionMode.INCLUDE) {
+                    for (String aipId : aipIds) {
                         sipIdsPredicates.add(cb.equal(root.get("aipId"), aipId));
-                    } else {
+                    }
+                    predicates.add(cb.or(sipIdsPredicates.toArray(new Predicate[sipIdsPredicates.size()])));
+                } else {
+                    for (String aipId : aipIds) {
                         sipIdsPredicates.add(cb.notEqual(root.get("aipId"), aipId));
                     }
+                    predicates.add(cb.and(sipIdsPredicates.toArray(new Predicate[sipIdsPredicates.size()])));
                 }
-                predicates.add(cb.or(sipIdsPredicates.toArray(new Predicate[sipIdsPredicates.size()])));
             }
-            predicates.addAll(OAISEntitySpecification
-                    .buildCommonPredicate(root, cb, filters.getTags(), filters.getSessionOwner(), filters.getSession(),
-                            filters.getIpType(), filters.getProviderIds(), filters.getCategories()));
+            predicates.addAll(OAISEntitySpecification.buildCommonPredicate(root,
+                                                                           cb,
+                                                                           filters.getTags(),
+                                                                           filters.getSessionOwner(),
+                                                                           filters.getSession(),
+                                                                           filters.getIpType(),
+                                                                           filters.getProviderIds(),
+                                                                           filters.getCategories()));
 
             // Add order
             Sort.Direction defaultDirection = Sort.Direction.ASC;
