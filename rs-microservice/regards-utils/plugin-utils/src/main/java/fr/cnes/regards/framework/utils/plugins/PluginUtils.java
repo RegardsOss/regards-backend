@@ -267,7 +267,11 @@ public final class PluginUtils {
             PluginParameterUtils.postProcess(returnPlugin, conf, instantiatedPlugins, dynamicParams);
             // Autowired Spring bean in Spring IOC context
             if (PluginUtilsBean.getInstance() != null) {
-                PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
+                try {
+                    PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
+                } catch (Throwable e) {
+                    throw new PluginUtilsRuntimeException("Error during plugin instanciation", e);
+                }
             }
 
             // Launch init method if detected
