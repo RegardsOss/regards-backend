@@ -37,6 +37,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Sets;
@@ -195,9 +196,15 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                 dataset = Optional.of(searchService.get(context.getDatasetUrn().get()));
             }
 
-            return ResponseEntity.ok(descriptionBuilder
-                    .build(context, parse(context), Arrays.asList(mediaExtension, regardsExtension, timeExtension),
-                           paramConfigurations, engineConfiguration, dataset));
+            MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE);
+            return new ResponseEntity<>(descriptionBuilder.build(context, parse(context),
+                                                                 Arrays.asList(mediaExtension, regardsExtension, timeExtension),
+                                                                 paramConfigurations, engineConfiguration, dataset),
+                                        headers, HttpStatus.OK);
+//            return ResponseEntity.ok(descriptionBuilder
+//                    .build(context, parse(context), Arrays.asList(mediaExtension, regardsExtension, timeExtension),
+//                           paramConfigurations, engineConfiguration, dataset));
         } else {
             return ISearchEngine.super.extra(context);
         }
