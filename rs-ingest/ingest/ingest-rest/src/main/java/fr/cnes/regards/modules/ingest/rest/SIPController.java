@@ -18,20 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
-import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
-import fr.cnes.regards.modules.ingest.service.IIngestService;
-import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +39,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
+import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
+import fr.cnes.regards.modules.ingest.service.IIngestService;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
  * REST API for managing SIP
@@ -169,7 +172,8 @@ public class SIPController implements IResourceController<SIPEntity> {
     @RequestMapping(value = SIPID_PATH, method = RequestMethod.GET)
     public ResponseEntity<Resource<SIPEntity>> getSipEntity(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
             throws ModuleException {
-        SIPEntity sip = sipService.getEntity(sipId);
+        SIPEntity sip = sipService.getEntity(sipId)
+                .orElseThrow(() -> new EntityNotFoundException(sipId, SIPEntity.class));
         return new ResponseEntity<>(toResource(sip), HttpStatus.OK);
     }
 
