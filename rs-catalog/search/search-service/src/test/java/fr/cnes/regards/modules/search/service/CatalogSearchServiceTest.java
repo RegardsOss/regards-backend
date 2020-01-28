@@ -213,52 +213,50 @@ public class CatalogSearchServiceTest {
 
     /**
      * Test of the method hasAccess
-     * @throws EntityNotFoundException 
-     * @throws EntityOperationForbiddenException 
+     * @throws EntityNotFoundException
+     * @throws EntityOperationForbiddenException
      * @throws OpenSearchUnknownParameter
      */
     @Test
-    public void testHasAccess() throws EntityOperationForbiddenException, EntityNotFoundException  {
-    	DataObject toReturn = Mockito.mock(DataObject.class);
-    	Multimap<DataType, DataFile> multiMap = ArrayListMultimap.create();;
-    	multiMap.put(DataType.RAWDATA, new DataFile());
-    	UniformResourceName urn = Mockito.mock(UniformResourceName.class);
-    	CatalogSearchService mock = Mockito.spy(catalogSearchService);
-    	Mockito.when(toReturn.getFiles()).thenReturn(multiMap);
-    	Mockito.doReturn(toReturn).when(mock).get((Mockito.any(UniformResourceName.class)));
-    	assertTrue(mock.hasAccess(urn));
+    public void testHasAccess() throws EntityOperationForbiddenException, EntityNotFoundException {
+        DataObject toReturn = Mockito.mock(DataObject.class);
+        Multimap<DataType, DataFile> multiMap = ArrayListMultimap.create();
+        ;
+        multiMap.put(DataType.RAWDATA, new DataFile());
+        UniformResourceName urn = Mockito.mock(UniformResourceName.class);
+        CatalogSearchService mock = Mockito.spy(catalogSearchService);
+        Mockito.when(toReturn.getFiles()).thenReturn(multiMap);
+        Mockito.doReturn(toReturn).when(mock).get((Mockito.any(UniformResourceName.class)));
+        assertTrue(mock.hasAccess(urn));
     }
-    
+
     /**
      * Test of the method hasAccess the multimap will contain an other value than RAWDATA so we will
      * expect false result for hasAccess
-     * @throws EntityNotFoundException 
-     * @throws EntityOperationForbiddenException 
+     * @throws EntityNotFoundException
+     * @throws EntityOperationForbiddenException
      * @throws OpenSearchUnknownParameter
      */
     @Test
-    public void testHasAccessForbidden() throws EntityOperationForbiddenException, EntityNotFoundException  {
-    	DataObject toReturn = Mockito.mock(DataObject.class);
-    	Multimap<DataType, DataFile> multiMap = ArrayListMultimap.create();;
-    	multiMap.put(DataType.QUICKLOOK_HD, new DataFile());
-    	UniformResourceName urn = Mockito.mock(UniformResourceName.class);
-    	CatalogSearchService mock = Mockito.spy(catalogSearchService);
-    	Mockito.when(toReturn.getFiles()).thenReturn(multiMap);
-    	Mockito.doReturn(toReturn).when(mock).get((Mockito.any(UniformResourceName.class)));
-    	assertFalse(mock.hasAccess(urn));
+    public void testHasAccessForbidden() throws EntityOperationForbiddenException, EntityNotFoundException {
+        UniformResourceName urn = Mockito.mock(UniformResourceName.class);
+        CatalogSearchService mock = Mockito.spy(catalogSearchService);
+        Mockito.doThrow(EntityOperationForbiddenException.class).when(mock)
+                .get((Mockito.any(UniformResourceName.class)));
+        assertFalse(mock.hasAccess(urn));
     }
-    
+
     /**
      * Test of the method hasAccess with the throwing of a EntityNotFoundException
-     * @throws EntityNotFoundException 
-     * @throws EntityOperationForbiddenException 
+     * @throws EntityNotFoundException
+     * @throws EntityOperationForbiddenException
      * @throws OpenSearchUnknownParameter
      */
     @Test(expected = EntityNotFoundException.class)
-    public void testHasAccessNotFound() throws EntityOperationForbiddenException, EntityNotFoundException  {
-    	UniformResourceName urn = Mockito.mock(UniformResourceName.class);
-    	CatalogSearchService mock = Mockito.spy(catalogSearchService);
-    	Mockito.doThrow(new EntityNotFoundException("")).when(mock).get((Mockito.any(UniformResourceName.class)));
-    	assertFalse(mock.hasAccess(urn));
+    public void testHasAccessNotFound() throws EntityOperationForbiddenException, EntityNotFoundException {
+        UniformResourceName urn = Mockito.mock(UniformResourceName.class);
+        CatalogSearchService mock = Mockito.spy(catalogSearchService);
+        Mockito.doThrow(new EntityNotFoundException("")).when(mock).get((Mockito.any(UniformResourceName.class)));
+        assertFalse(mock.hasAccess(urn));
     }
 }
