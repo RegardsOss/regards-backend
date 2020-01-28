@@ -41,6 +41,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -87,6 +88,9 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
     private IProductRepository productRepository;
 
     @Autowired
+    private IJobInfoRepository jobInfoRepo;
+
+    @Autowired
     private IJobInfoService jobInfoService;
 
     @Autowired
@@ -95,6 +99,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
     @Before
     public void before() {
         pluginRepo.deleteAll();
+        jobInfoRepo.deleteAll();
     }
 
     /**
