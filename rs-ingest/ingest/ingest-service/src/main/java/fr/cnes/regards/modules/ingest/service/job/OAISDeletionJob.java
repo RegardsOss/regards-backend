@@ -18,9 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
+
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -35,16 +45,6 @@ import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 
 /**
  * Job to run deletion of a given {@link AIPEntity}.<br/>
@@ -103,11 +103,16 @@ public class OAISDeletionJob extends AbstractJob<Void> {
                 } else {
                     // Start by deleting the request itself
                     requestService.deleteRequest(request);
-                    aipService.processDeletion(sipToDelete.getSipId(), request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
-                    sipService.processDeletion(sipToDelete.getSipId(), request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                    if (sipService.getEntity(sipToDelete.getSipId()).isPresent()) {
+                        aipService.processDeletion(sipToDelete.getSipId(),
+                                                   request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                        sipService.processDeletion(sipToDelete.getSipId(),
+                                                   request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                    }
                 }
             } catch (Exception e) {
-                String errorMsg = String.format("Deletion request %s of AIP %s could not be executed", request.getId(), request.getAip().getAipId());
+                String errorMsg = String.format("Deletion request %s of AIP %s could not be executed", request.getId(),
+                                                request.getAip().getAipId());
                 LOGGER.error(errorMsg, e);
                 request.setState(InternalRequestState.ERROR);
                 request.addError(errorMsg);
@@ -126,7 +131,7 @@ public class OAISDeletionJob extends AbstractJob<Void> {
         interrupted = Thread.interrupted();
         deletionRequestRepository.saveAll(errors);
         deletionRequestRepository.saveAll(aborted);
-        if(interrupted) {
+        if (interrupted) {
             Thread.currentThread().interrupt();
         }
     }

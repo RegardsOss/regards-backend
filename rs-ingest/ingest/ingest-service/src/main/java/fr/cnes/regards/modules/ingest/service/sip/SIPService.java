@@ -66,19 +66,14 @@ public class SIPService implements ISIPService {
     @Override
     public Page<SIPEntity> search(SearchSIPsParameters params, Pageable page) {
         return sipRepository.loadAll(SIPEntitySpecifications
-                .search(params.getProviderIds(), null, params.getSessionOwner(), params.getSession(), params.getIpType(),
-                        params.getFrom(), params.getStates(), true, params.getTags(),
+                .search(params.getProviderIds(), null, params.getSessionOwner(), params.getSession(),
+                        params.getIpType(), params.getFrom(), params.getStates(), true, params.getTags(),
                         params.getCategories(), page), page);
     }
 
     @Override
-    public SIPEntity getEntity(String sipId) throws EntityNotFoundException {
-        Optional<SIPEntity> sipEntity = sipRepository.findOneBySipId(sipId.toString());
-        if (sipEntity.isPresent()) {
-            return sipEntity.get();
-        } else {
-            throw new EntityNotFoundException(sipEntity.toString(), SIPEntity.class);
-        }
+    public Optional<SIPEntity> getEntity(String sipId) throws EntityNotFoundException {
+        return sipRepository.findOneBySipId(sipId.toString());
     }
 
     @Override
