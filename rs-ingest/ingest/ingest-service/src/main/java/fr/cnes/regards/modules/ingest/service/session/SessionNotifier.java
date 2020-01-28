@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
@@ -45,6 +46,9 @@ public class SessionNotifier {
 
     @Autowired
     private IPublisher publisher;
+
+    @Autowired
+    private IIngestRequestRepository ingestRequestRepository;
 
     /**
      * Notify session that an error product ingest has been retried
@@ -202,7 +206,8 @@ public class SessionNotifier {
                                            SessionNotificationState.OK, 1);
                     break;
                 default:
-                    LOG.warn("Ingest request error occurred with a step not handled by session notifier! Step: {}",request.getStep());
+                    LOG.warn("Ingest request error occurred with a step not handled by session notifier! Step: {}",
+                             request.getStep());
                     break;
             }
         }
@@ -249,9 +254,15 @@ public class SessionNotifier {
     public void productDeleted(String sessionOwner, String session, Collection<AIPEntity> aips) {
         int nbGenerated = 0;
         int nbStored = 0;
+        int nbStorePending = 0;
         for (AIPEntity aip : aips) {
+            // Check if an ingest request exists in error status for the given AIP. If exists, so the product is not
+            // referenced as store pending in the session but as store error.
             switch (aip.getState()) {
                 case GENERATED:
+                    if (!ingestRequestRepository.existsByAipsIdAndState(aip.getId(), InternalRequestState.ERROR)) {
+                        nbStorePending++;
+                    }
                     nbGenerated++;
                     break;
                 case STORED:
@@ -262,10 +273,10 @@ public class SessionNotifier {
                     break;
             }
         }
-        if (nbGenerated > 0) {
+        if ((nbStorePending > 0)) {
             // -x product_storing
             notifyDecrementSession(sessionOwner, session, PRODUCT_STORE_PENDING, SessionNotificationState.OK,
-                                   nbGenerated);
+                                   nbStorePending);
         }
         if (nbStored > 0) {
             // -x product_stored

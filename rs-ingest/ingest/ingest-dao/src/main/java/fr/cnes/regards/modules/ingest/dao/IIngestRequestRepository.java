@@ -28,6 +28,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 
 /**
@@ -75,6 +76,8 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
     Optional<IngestRequest> findOne(Specification<IngestRequest> spec);
 
     List<IngestRequest> findAllByAipsIn(AIPEntity aipEntity);
+
+    boolean existsByAipsIdAndState(Long id, InternalRequestState state);
 
     List<IngestRequest> findAllByAipsIdIn(List<Long> aipIds);
 }

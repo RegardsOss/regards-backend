@@ -103,12 +103,10 @@ public class OAISDeletionJob extends AbstractJob<Void> {
                 } else {
                     // Start by deleting the request itself
                     requestService.deleteRequest(request);
-                    if (sipService.getEntity(sipToDelete.getSipId()).isPresent()) {
-                        aipService.processDeletion(sipToDelete.getSipId(),
-                                                   request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
-                        sipService.processDeletion(sipToDelete.getSipId(),
-                                                   request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
-                    }
+                    aipService.processDeletion(sipToDelete.getSipId(),
+                                               request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                    sipService.processDeletion(sipToDelete.getSipId(),
+                                               request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
                 }
             } catch (Exception e) {
                 String errorMsg = String.format("Deletion request %s of AIP %s could not be executed", request.getId(),
