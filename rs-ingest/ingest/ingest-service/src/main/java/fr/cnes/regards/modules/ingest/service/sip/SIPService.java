@@ -35,7 +35,6 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
@@ -72,7 +71,7 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public Optional<SIPEntity> getEntity(String sipId) throws EntityNotFoundException {
+    public Optional<SIPEntity> getEntity(String sipId) {
         return sipRepository.findOneBySipId(sipId.toString());
     }
 
