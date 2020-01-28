@@ -122,6 +122,7 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
         storeReqService.handleRequest("rest-test", metaInfo, filePath.toAbsolutePath().toUri().toURL().toString(),
                                       TARGET_STORAGE, Optional.of("/sub/dir/1/"), UUID.randomUUID().toString());
         // Wait for storage file referenced
+        tenantResolver.forceTenant(getDefaultTenant());
         boolean found = false;
         int loops = 100;
         do {
