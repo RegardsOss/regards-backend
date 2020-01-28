@@ -18,19 +18,25 @@
  */
 package fr.cnes.regards.modules.sessionmanager.dao;
 
-import fr.cnes.regards.modules.sessionmanager.domain.Session;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import fr.cnes.regards.modules.sessionmanager.domain.Session;
 
 /**
  * Repository to access {@link Session} entities .
  * @author Léo Mieulet
  */
 public interface ISessionRepository extends JpaRepository<Session, Long>, JpaSpecificationExecutor<Session> {
+
     int MAX_SESSION_RESULTS = 10;
 
     /**
@@ -44,13 +50,19 @@ public interface ISessionRepository extends JpaRepository<Session, Long>, JpaSpe
 
     Optional<Session> findOneBySourceAndName(String source, String name);
 
+    Page<Session> findAllBySourceOrderByLastUpdateDateDesc(String source, Pageable page);
+
+    @Modifying
+    @Query(value = "update {h-schema}t_session set is_latest=(:isLatest) where source=(:source)", nativeQuery = true)
+    int updateSourceSessionsIsLatest(@Param("source") String source, @Param("isLatest") boolean isLatest);
+
     /**
      * Used to discover session names using an ilike filter
      * @param name the session name, can be empty
      * @return a subset of all session names matching
      */
     default List<String> findAllSessionName(String name) {
-        if (name != null && !name.isEmpty()) {
+        if ((name != null) && !name.isEmpty()) {
             String nameToken = new StringBuilder(name).append("%").toString();
             return internalFindAllSessionName(nameToken, MAX_SESSION_RESULTS);
         }
@@ -63,22 +75,25 @@ public interface ISessionRepository extends JpaRepository<Session, Long>, JpaSpe
      * @return a subset of all session sources matching
      */
     default List<String> findAllSessionSource(String source) {
-        if (source != null && !source.isEmpty()) {
+        if ((source != null) && !source.isEmpty()) {
             String nameToken = new StringBuilder(source).append("%").toString();
             return internalFindAllSessionSource(nameToken, MAX_SESSION_RESULTS);
         }
         return internalFindAllSessionSource(MAX_SESSION_RESULTS);
     }
 
-    @Query(value = "select DISTINCT name from {h-schema}t_session where lower(name) like lower(:name) ORDER BY name ASC LIMIT :results", nativeQuery = true)
+    @Query(value = "select DISTINCT name from {h-schema}t_session where lower(name) like lower(:name) ORDER BY name ASC LIMIT :results",
+            nativeQuery = true)
     List<String> internalFindAllSessionName(@Param("name") String name, @Param("results") int nbResults);
 
     @Query(value = "select DISTINCT name from {h-schema}t_session ORDER BY name ASC LIMIT :results", nativeQuery = true)
     List<String> internalFindAllSessionName(@Param("results") int nbResults);
 
-    @Query(value = "select DISTINCT source from {h-schema}t_session where lower(source) like lower(:source) ORDER BY source ASC LIMIT :results", nativeQuery = true)
+    @Query(value = "select DISTINCT source from {h-schema}t_session where lower(source) like lower(:source) ORDER BY source ASC LIMIT :results",
+            nativeQuery = true)
     List<String> internalFindAllSessionSource(@Param("source") String source, @Param("results") int nbResults);
 
-    @Query(value = "select DISTINCT source from {h-schema}t_session ORDER BY source ASC LIMIT :results", nativeQuery = true)
+    @Query(value = "select DISTINCT source from {h-schema}t_session ORDER BY source ASC LIMIT :results",
+            nativeQuery = true)
     List<String> internalFindAllSessionSource(@Param("results") int nbResults);
 }

@@ -79,14 +79,9 @@ public interface ISessionService {
 
     /**
      * Update session properties
-     * @param sessionMonitoringEvent The notification with everything to update the session
-     */
-    Session updateSessionProperty(SessionMonitoringEvent sessionMonitoringEvent);
-
-    /**
-     * Update session properties
      * @param sessionMonitoringEvents The notifications with everything to update the sessions
+     * @return updated {@link Session}
      */
-    void updateSessionProperties(List<SessionMonitoringEvent> list);
+    List<Session> updateSessionProperties(List<SessionMonitoringEvent> list);
 
 }

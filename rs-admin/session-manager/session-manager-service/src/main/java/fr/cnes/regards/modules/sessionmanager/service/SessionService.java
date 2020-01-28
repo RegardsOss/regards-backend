@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -108,6 +109,7 @@ public class SessionService implements ISessionService {
     public void deleteSession(Long id, boolean force) throws ModuleException {
         Session s = getSession(id);
         this.sendDeleteNotification(s);
+        String source = s.getSource();
         if (force) {
             LOG.info("Delete definitely session {} {}", s.getSource(), s.getName());
             sessionRepository.delete(s);
@@ -118,11 +120,27 @@ public class SessionService implements ISessionService {
                 updateSession(s);
             }
         }
+        updateSourceLastSession(source);
+    }
+
+    /**
+     * Update all session for the given source to set the isLatest flag on the last updated session
+     * @param source
+     */
+    private void updateSourceLastSession(String source) {
+        sessionRepository.updateSourceSessionsIsLatest(source, false);
+        Page<Session> pageResponse = sessionRepository.findAllBySourceOrderByLastUpdateDateDesc(source,
+                                                                                                PageRequest.of(0, 1));
+        if (pageResponse.hasContent()) {
+            Session latestSession = pageResponse.getContent().get(0);
+            latestSession.setLatest(true);
+            sessionRepository.save(latestSession);
+        }
     }
 
     @Override
-    public void updateSessionProperties(List<SessionMonitoringEvent> events) {
-        sessionRepository.saveAll(mergeEvents(events));
+    public List<Session> updateSessionProperties(List<SessionMonitoringEvent> events) {
+        return sessionRepository.saveAll(mergeEvents(events));
     }
 
     private Collection<Session> mergeEvents(Collection<SessionMonitoringEvent> events) {
@@ -164,21 +182,6 @@ public class SessionService implements ISessionService {
         sessionToUpdate.setLastUpdateDate(OffsetDateTime.now());
         sessionsToUpdate.put(sessionKey,
                              updateSessionProperty(sessionToUpdate, step, property, operator, value, state));
-    }
-
-    //FIXME: method only used by tests!!!!!!!!!!!!!!!!!!!!!!!!
-    @Override
-    public Session updateSessionProperty(SessionMonitoringEvent sessionMonitoringEvent) {
-        // Retrieve the session to update or create it
-        Optional<Session> sessionOpt = sessionRepository.findOneBySourceAndName(sessionMonitoringEvent.getSource(),
-                                                                                sessionMonitoringEvent.getName());
-        Session sessionToUpdate = sessionOpt
-                .orElseGet(() -> createSession(sessionMonitoringEvent.getName(), sessionMonitoringEvent.getSource()));
-        return this.updateSession(updateSessionProperty(sessionToUpdate, sessionMonitoringEvent.getStep(),
-                                                        sessionMonitoringEvent.getProperty(),
-                                                        sessionMonitoringEvent.getOperator(),
-                                                        sessionMonitoringEvent.getValue(),
-                                                        sessionMonitoringEvent.getState()));
     }
 
     private Session updateSessionProperty(Session sessionToUpdate, String step, String property,
