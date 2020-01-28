@@ -1,9 +1,6 @@
 package fr.cnes.regards.modules.search.rest.download;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -74,15 +71,8 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
             return Response.builder().status(HttpStatus.NOT_FOUND.value()).reason("not found").request(request)
                     .headers(map).build();
         }
-        try {
-            File file = new File("src/test/resources/result.json");
-            InputStream stream = new FileInputStream(file);
-            return Response.builder().status(HttpStatus.OK.value()).body(stream, 150).request(request).headers(map)
-                    .build();
-        } catch (IOException e) {
-            return Response.builder().status(HttpStatus.NOT_FOUND.value()).reason("not found").request(request)
-                    .headers(map).build();
-        }
+        return Response.builder().status(HttpStatus.OK.value()).body("result file content", Charset.defaultCharset())
+                .request(request).headers(map).build();
     }
 
     /* (non-Javadoc)
