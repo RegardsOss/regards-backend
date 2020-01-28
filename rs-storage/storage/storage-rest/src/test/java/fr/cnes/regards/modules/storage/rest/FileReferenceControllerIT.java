@@ -105,6 +105,8 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
         if (Files.exists(Paths.get("target/storage"))) {
             FileUtils.deleteDirectory(Paths.get(STORAGE_PATH).toFile());
         }
+        storagePlgConfHandler.refresh();
+        tenantResolver.forceTenant(getDefaultTenant());
     }
 
     @Before
@@ -122,11 +124,10 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
         storeReqService.handleRequest("rest-test", metaInfo, filePath.toAbsolutePath().toUri().toURL().toString(),
                                       TARGET_STORAGE, Optional.of("/sub/dir/1/"), UUID.randomUUID().toString());
         // Wait for storage file referenced
-        tenantResolver.forceTenant(getDefaultTenant());
         boolean found = false;
         int loops = 100;
         do {
-            found = fileRefService.search(TARGET_STORAGE, metaInfo.getChecksum()).isPresent();
+            found = fileRefService.search(TARGET_STORAGE, checksum).isPresent();
             Thread.sleep(1_000);
             loops--;
         } while (!found && (loops > 0));
@@ -167,6 +168,8 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
             PluginConfiguration dataStorageConf = new PluginConfiguration(TARGET_STORAGE, parameters, 0,
                     dataStoMeta.getPluginId());
             prioritizedDataStorageService.create(TARGET_STORAGE, dataStorageConf, 1_000_000L);
+            storagePlgConfHandler.refresh();
+            tenantResolver.forceTenant(getDefaultTenant());
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }
