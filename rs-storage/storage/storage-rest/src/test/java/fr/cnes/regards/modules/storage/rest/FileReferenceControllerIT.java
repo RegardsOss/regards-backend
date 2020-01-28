@@ -117,7 +117,17 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
                 filePath.getFileName().toString(), null, MediaType.APPLICATION_OCTET_STREAM);
         storeReqService.handleRequest("rest-test", metaInfo, filePath.toAbsolutePath().toUri().toURL().toString(),
                                       TARGET_STORAGE, Optional.of("/sub/dir/1/"), UUID.randomUUID().toString());
-        Thread.sleep(5_000);
+        // Wait for storage file referenced
+        boolean found = false;
+        int loops = 100;
+        do {
+            found = !fileRepo.findByMetaInfoChecksum(metaInfo.getChecksum()).isEmpty();
+            Thread.sleep(1_000);
+            loops--;
+        } while (!found && (loops > 0));
+        if (!found) {
+            Assert.fail("Timeout for file reference");
+        }
         storedFileChecksum = checksum;
     }
 
@@ -149,7 +159,8 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
                                             STORAGE_PATH),
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(TARGET_STORAGE, parameters, 0, dataStoMeta.getPluginId());
+            PluginConfiguration dataStorageConf = new PluginConfiguration(TARGET_STORAGE, parameters, 0,
+                    dataStoMeta.getPluginId());
             prioritizedDataStorageService.create(TARGET_STORAGE, dataStorageConf, 1_000_000L);
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
