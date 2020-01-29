@@ -18,7 +18,20 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.junit.After;
+import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -30,14 +43,6 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.test.IngestServiceTest;
-import java.nio.file.Paths;
-import java.util.List;
-import org.junit.After;
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 
 /**
  * Overlay of the default class to manage context cleaning in non transactional testing
@@ -98,11 +103,11 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     protected SIP create(String providerId, List<String> tags) {
         SIP sip = SIP.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA,
-                Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"), "MD5",
-                "azertyuiopqsdfmlmld");
+                           Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"), "MD5",
+                           "azertyuiopqsdfmlmld");
         sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
         sip.registerContentInformation();
-        if (tags != null && !tags.isEmpty()) {
+        if ((tags != null) && !tags.isEmpty()) {
             sip.withContextTags(tags.toArray(new String[0]));
         }
 
@@ -112,15 +117,19 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         return sip;
     }
 
-    protected void publishSIPEvent(SIP sip, String storage, String session, String sessionOwner, List<String> categories) {
-        // Create event
-        IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner, session,
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                Sets.newHashSet(categories),
-                StorageMetadata.build(storage));
-        ingestServiceTest.sendIngestRequestEvent(sip, mtd);
+    protected void publishSIPEvent(SIP sip, String storage, String session, String sessionOwner,
+            List<String> categories) {
+        this.publishSIPEvent(sip, Lists.newArrayList(storage), session, sessionOwner, categories);
     }
 
-
+    protected void publishSIPEvent(SIP sip, List<String> storages, String session, String sessionOwner,
+            List<String> categories) {
+        // Create event
+        List<StorageMetadata> storagesMeta = storages.stream().map(StorageMetadata::build).collect(Collectors.toList());
+        IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner, session,
+                                                        IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                        Sets.newHashSet(categories), storagesMeta);
+        ingestServiceTest.sendIngestRequestEvent(sip, mtd);
+    }
 
 }
