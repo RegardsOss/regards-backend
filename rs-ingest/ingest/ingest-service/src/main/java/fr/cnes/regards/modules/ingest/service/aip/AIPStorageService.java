@@ -470,7 +470,7 @@ public class AIPStorageService implements IAIPStorageService {
             }
         });
         // Check if some manifest location have been removed
-        if (manifestLocations.size() < newManifestLocations.size()) {
+        if (newManifestLocations.size() < manifestLocations.size()) {
             for (OAISDataObjectLocation location : manifestLocations) {
                 for (String removeStorage : removedStorages) {
                     if (location.getStorage().equals(removeStorage)) {
