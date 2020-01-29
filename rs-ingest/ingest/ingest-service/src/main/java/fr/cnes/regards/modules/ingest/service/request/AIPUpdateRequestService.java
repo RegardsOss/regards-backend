@@ -18,8 +18,20 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
@@ -28,15 +40,6 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service to handle {@link AIPUpdateRequest} entities.
@@ -65,20 +68,23 @@ public class AIPUpdateRequestService {
     public void create(Collection<AIPEntity> aips, Collection<AbstractAIPUpdateTask> updateTasks) {
         // Test if there is some AIPs referenced by some running requests
         List<Long> aipIds = aips.stream().map(wr -> wr.getId()).collect(Collectors.toList());
-        List<AIPUpdateRequest> runningRequests = aipUpdateRequestRepository.findRunningRequestAndAipIdIn(aipIds);
-        // Create the list of AIP id (and not aipId!)
-        List<Long> runningAIPIds = runningRequests.stream().map(wr -> wr.getAip().getId()).collect(Collectors.toList());
+        if (!aipIds.isEmpty()) {
+            List<AIPUpdateRequest> runningRequests = aipUpdateRequestRepository.findRunningRequestAndAipIdIn(aipIds);
+            // Create the list of AIP id (and not aipId!)
+            List<Long> runningAIPIds = runningRequests.stream().map(wr -> wr.getAip().getId())
+                    .collect(Collectors.toList());
 
-        List<AbstractRequest> requests = new ArrayList<>();
-        for (AIPEntity aip : aips) {
-            // Create the request as pending if there is already a running request
-            boolean isPending = runningAIPIds.contains(aip.getId());
-            List<AIPUpdateRequest> generatedRequests = AIPUpdateRequest.build(aip, updateTasks, isPending);
-            for (AIPUpdateRequest request : generatedRequests) {
-                requests.add(request);
+            List<AbstractRequest> requests = new ArrayList<>();
+            for (AIPEntity aip : aips) {
+                // Create the request as pending if there is already a running request
+                boolean isPending = runningAIPIds.contains(aip.getId());
+                List<AIPUpdateRequest> generatedRequests = AIPUpdateRequest.build(aip, updateTasks, isPending);
+                for (AIPUpdateRequest request : generatedRequests) {
+                    requests.add(request);
+                }
             }
+            requestService.scheduleRequests(requests);
         }
-        requestService.scheduleRequests(requests);
     }
 
     /**

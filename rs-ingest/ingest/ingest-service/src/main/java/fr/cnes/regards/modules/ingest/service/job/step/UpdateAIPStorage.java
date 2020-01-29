@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO
  */
 public class UpdateAIPStorage implements IUpdateStep {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateAIPLocation.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateAIPStorage.class);
 
     @Autowired
     private IAIPStorageService aipStorageService;
