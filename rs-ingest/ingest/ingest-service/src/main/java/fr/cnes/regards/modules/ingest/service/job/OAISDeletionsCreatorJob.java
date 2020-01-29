@@ -101,7 +101,7 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
         do {
             OAISDeletionCreatorPayload deletionPayload = deletionCreator.getConfig();
             aipsPage = aipRepository.findByFilters(deletionPayload, pageRequest);
-            LOGGER.info("[OAIS DELETION CREATOR JOB] Scheduling deletion of {} aips", aipsPage.getSize());
+            LOGGER.info("[OAIS DELETION CREATOR JOB] Scheduling deletion of {} aips", aipsPage.getNumberOfElements());
             // Save number of pages to publish job advancement
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();
