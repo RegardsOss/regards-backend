@@ -70,6 +70,11 @@ public class PluginParamDescriptor {
     private PluginParamType type;
 
     /**
+     * If type is {@link PluginParamType#PLUGIN} this paramreter reprensets the type of plugin
+     */
+    private String pluginType;
+
+    /**
      * A default value for the paramater
      */
     private String defaultValue;
@@ -108,7 +113,7 @@ public class PluginParamDescriptor {
      * @return {@link PluginParamDescriptor}
      */
     public static PluginParamDescriptor create(String name, String label, String description, PluginParamType paramType,
-            Boolean optional, Boolean onlyDynamic, Boolean sensitive) {
+            Boolean optional, Boolean onlyDynamic, Boolean sensitive, String pluginType) {
         PluginParamDescriptor ppt = new PluginParamDescriptor();
 
         // Validate and set
@@ -129,6 +134,10 @@ public class PluginParamDescriptor {
         ppt.setUnconfigurable(onlyDynamic);
 
         ppt.setSensitive(sensitive);
+
+        if (paramType == PluginParamType.PLUGIN) {
+            ppt.setPluginType(pluginType);
+        }
 
         return ppt;
     }
@@ -234,6 +243,14 @@ public class PluginParamDescriptor {
 
     public void setSensitive(Boolean sensitive) {
         this.sensitive = sensitive;
+    }
+
+    public String getPluginType() {
+        return pluginType;
+    }
+
+    public void setPluginType(String pluginType) {
+        this.pluginType = pluginType;
     }
 
     //    /**
