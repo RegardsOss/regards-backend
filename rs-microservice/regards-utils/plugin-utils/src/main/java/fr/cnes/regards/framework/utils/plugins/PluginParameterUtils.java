@@ -83,7 +83,7 @@ public final class PluginParameterUtils {
         List<PluginParamDescriptor> parameters = new ArrayList<>();
 
         for (final Field field : ReflectionUtils.getAllDeclaredFields(pluginClass)) {
-            if (field.isAnnotationPresent(PluginParameter.class) || isChildParameters && isToBeConsidered(field)) {
+            if (field.isAnnotationPresent(PluginParameter.class) || (isChildParameters && isToBeConsidered(field))) {
                 // Initialize list of managed types for in depth scanning from root fields
                 List<String> managedTypes = new ArrayList<>();
                 if (isChildParameters) {
@@ -118,6 +118,11 @@ public final class PluginParameterUtils {
 
         // Retrieve type of field
         PluginParamType paramType = getFieldParameterType(field);
+        String pluginType = null;
+
+        if (paramType == PluginParamType.PLUGIN) {
+            pluginType = field.getType().getName();
+        }
 
         // Retrieve annotation if any
         PluginParameter pluginParameter = field.getAnnotation(PluginParameter.class);
@@ -126,7 +131,7 @@ public final class PluginParameterUtils {
         if (pluginParameter == null) {
             // Guess values
             result = PluginParamDescriptor.create(field.getName(), field.getName(), null, paramType, false, false,
-                                                  false);
+                                                  false, pluginType);
         } else {
             // Report values from annotation
             String name = getFieldName(field, pluginParameter);
@@ -144,16 +149,17 @@ public final class PluginParameterUtils {
 
             result = PluginParamDescriptor.create(name, pluginParameter.label(), pluginParameter.description(),
                                                   paramType, pluginParameter.optional(),
-                                                  pluginParameter.unconfigurable(), pluginParameter.sensitive());
+                                                  pluginParameter.unconfigurable(), pluginParameter.sensitive(),
+                                                  pluginType);
 
             // Manage markdown description
             String markdown = AnnotationUtils.loadMarkdown(pluginClass, pluginParameter.markdown());
-            if (markdown != null && !markdown.isEmpty()) {
+            if ((markdown != null) && !markdown.isEmpty()) {
                 result.setMarkdown(markdown);
             }
 
             // Manage default value
-            if (pluginParameter.defaultValue() != null && !pluginParameter.defaultValue().isEmpty()) {
+            if ((pluginParameter.defaultValue() != null) && !pluginParameter.defaultValue().isEmpty()) {
                 result.setDefaultValue(pluginParameter.defaultValue());
             }
         }
@@ -320,7 +326,7 @@ public final class PluginParameterUtils {
         boolean isSupportedType = false;
         Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
 
-        if (pluginInterfaces != null && !pluginInterfaces.isEmpty()) {
+        if ((pluginInterfaces != null) && !pluginInterfaces.isEmpty()) {
             isSupportedType = pluginInterfaces.stream().anyMatch(s -> s.equalsIgnoreCase(clazz.getName()));
         }
 
@@ -418,7 +424,7 @@ public final class PluginParameterUtils {
         IPluginParam staticParam = pluginConf.getParameter(parameterName);
         // Manage dynamic parameters
         // IF static parameter is not found, so the parameter can only be dynamic.
-        if (dynamicPluginParameters != null && dynamicPluginParameters.length > 0) {
+        if ((dynamicPluginParameters != null) && (dynamicPluginParameters.length > 0)) {
             // Search dynamic parameter for current parameter name
             Optional<IPluginParam> dynamicParameterOpt = Arrays.stream(dynamicPluginParameters)
                     .filter(s -> s.getName().equals(parameterName)).findFirst();
