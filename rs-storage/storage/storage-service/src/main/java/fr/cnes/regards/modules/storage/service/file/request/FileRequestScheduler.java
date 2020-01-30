@@ -140,13 +140,19 @@ public class FileRequestScheduler {
             semaphore.acquire();
             for (String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
-                if (obtainLock()) {
-                    try {
-                        func.call();
-                    } finally {
-                        releaseLock();
-                        runtimeTenantResolver.clearTenant();
+                try {
+                    if (obtainLock()) {
+                        try {
+                            func.call();
+                        } finally {
+                            releaseLock();
+                            runtimeTenantResolver.clearTenant();
+                        }
                     }
+                } catch (Exception e) {
+                    LOGGER.error(String.format("Error runing scheduling task %s for tenant %s. Cause : %s", taskName,
+                                               tenant, e.getMessage()),
+                                 e);
                 }
             }
         } catch (Exception e) {

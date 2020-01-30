@@ -26,6 +26,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
@@ -48,6 +49,8 @@ public class StorageLocationScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageLocationScheduler.class);
 
+    private static final String FILE_LOCATION_SCHEDULER_LOCK = "file_location_schedule_lock";
+
     @Autowired
     private ITenantResolver tenantResolver;
 
@@ -57,15 +60,39 @@ public class StorageLocationScheduler {
     @Autowired
     private StorageLocationService storageLocationService;
 
-    @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:60000}",
+    @Autowired
+    private ILockService lockService;
+
+    @Scheduled(fixedDelayString = "${regards.storage.check.data.storage.disk.usage.rate:60000}",
             initialDelay = 60 * 1000)
     public void monitorDataStorages() {
+
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            long startTime = System.currentTimeMillis();
-            storageLocationService.monitorStorageLocations(false);
-            LOGGER.trace("Data storages monitoring done in {}ms", System.currentTimeMillis() - startTime);
-            runtimeTenantResolver.clearTenant();
+            obtainLock();
+            try {
+                long startTime = System.currentTimeMillis();
+                storageLocationService.monitorStorageLocations(false);
+                LOGGER.trace("Data storages monitoring done in {}ms", System.currentTimeMillis() - startTime);
+            } finally {
+                runtimeTenantResolver.clearTenant();
+                releaseLock();
+            }
         }
+    }
+
+    /**
+     * Get lock to ensure schedulers are not started at the same time by many instance of this microservice
+     * @return
+     */
+    private boolean obtainLock() {
+        return lockService.obtainLockOrSkip(FILE_LOCATION_SCHEDULER_LOCK, this, 60L);
+    }
+
+    /**
+     * Release lock
+     */
+    private void releaseLock() {
+        lockService.releaseLock(FILE_LOCATION_SCHEDULER_LOCK, this);
     }
 }

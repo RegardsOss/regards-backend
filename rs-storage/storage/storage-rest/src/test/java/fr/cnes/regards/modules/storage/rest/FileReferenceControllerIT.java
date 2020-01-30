@@ -53,6 +53,7 @@ import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storage.rest.plugin.SimpleOnlineDataStorage;
+import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
@@ -70,6 +71,9 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private FileStorageRequestService storeReqService;
+
+    @Autowired
+    private FileReferenceService fileRefService;
 
     @Autowired
     private StorageLocationConfigurationService prioritizedDataStorageService;
@@ -101,6 +105,8 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
         if (Files.exists(Paths.get("target/storage"))) {
             FileUtils.deleteDirectory(Paths.get(STORAGE_PATH).toFile());
         }
+        storagePlgConfHandler.refresh();
+        tenantResolver.forceTenant(getDefaultTenant());
     }
 
     @Before
@@ -121,7 +127,7 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
         boolean found = false;
         int loops = 100;
         do {
-            found = !fileRepo.findByMetaInfoChecksum(metaInfo.getChecksum()).isEmpty();
+            found = fileRefService.search(TARGET_STORAGE, checksum).isPresent();
             Thread.sleep(1_000);
             loops--;
         } while (!found && (loops > 0));
@@ -162,6 +168,8 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
             PluginConfiguration dataStorageConf = new PluginConfiguration(TARGET_STORAGE, parameters, 0,
                     dataStoMeta.getPluginId());
             prioritizedDataStorageService.create(TARGET_STORAGE, dataStorageConf, 1_000_000L);
+            storagePlgConfHandler.refresh();
+            tenantResolver.forceTenant(getDefaultTenant());
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }
