@@ -121,7 +121,7 @@ public final class PluginParameterUtils {
         String pluginType = null;
 
         if (paramType == PluginParamType.PLUGIN) {
-            pluginType = field.getClass().toString();
+            pluginType = field.getDeclaringClass().getName();
         }
 
         // Retrieve annotation if any
