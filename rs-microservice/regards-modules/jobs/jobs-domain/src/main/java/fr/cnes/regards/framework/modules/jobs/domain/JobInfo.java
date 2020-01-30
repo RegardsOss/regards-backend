@@ -120,6 +120,12 @@ public class JobInfo {
     private boolean locked = false;
 
     /**
+     * Date of the last completion compute
+     */
+    @Column(name = "last_completion_update")
+    private OffsetDateTime lastCompletionUpdate;
+
+    /**
      * Field characteristics of this job. Saved on cascade
      */
     @Embedded
@@ -309,6 +315,14 @@ public class JobInfo {
         this.locked = locked;
     }
 
+    public OffsetDateTime getLastCompletionUpdate() {
+        return lastCompletionUpdate;
+    }
+
+    public void setLastCompletionUpdate(OffsetDateTime lastCompletionUpdate) {
+        this.lastCompletionUpdate = lastCompletionUpdate;
+    }
+
     /**
      * A JobInfo has no business key but is immediately created or retrieved from Database before be used so we can
      * freely use its id
@@ -318,7 +332,7 @@ public class JobInfo {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 

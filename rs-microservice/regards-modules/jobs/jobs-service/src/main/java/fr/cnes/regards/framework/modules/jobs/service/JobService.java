@@ -6,6 +6,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -230,7 +231,7 @@ public class JobService implements IJobService {
             // expired job, aborted job, instantiation errors and job resetting
             runtimeTenantResolver.forceTenant(jobInfo.getTenant());
             // Case expiration date reached
-            if (jobInfo.getExpirationDate() != null && jobInfo.getExpirationDate().isBefore(OffsetDateTime.now())) {
+            if ((jobInfo.getExpirationDate() != null) && jobInfo.getExpirationDate().isBefore(OffsetDateTime.now())) {
                 jobInfo.updateStatus(JobStatus.FAILED);
                 jobInfo.getStatus().setStackTrace("Expiration date reached");
                 jobInfoService.save(jobInfo);
@@ -344,6 +345,18 @@ public class JobService implements IJobService {
                 JobService.this.abort(wrapper.getContent().getJobId());
             }
         }
+    }
+
+    @Override
+    public void cleanDeadJobs() {
+        List<JobInfo> jobs = this.jobInfoService.retrieveJobs(JobStatus.RUNNING);
+        for (JobInfo job : jobs) {
+            if (jobsMap.get(job) == null) {
+                job.updateStatus(JobStatus.FAILED);
+            }
+        }
+        this.jobInfoService.saveAll(jobs);
+
     }
 
 }

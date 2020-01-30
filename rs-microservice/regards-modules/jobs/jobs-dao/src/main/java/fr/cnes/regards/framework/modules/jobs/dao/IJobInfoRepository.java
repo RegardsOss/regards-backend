@@ -59,9 +59,9 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     JobInfo findCompleteById(UUID id);
 
     @Modifying
-    @Query("update JobInfo j set j.status.percentCompleted = ?1, j.status.estimatedCompletion = ?2 where j.id = ?3 "
+    @Query("update JobInfo j set j.status.percentCompleted = ?1, j.status.estimatedCompletion = ?2, j.lastUpdate = ?4 where j.id = ?3 "
             + "and j.status.status = 'RUNNING'")
-    void updateCompletion(int percentCompleted, OffsetDateTime estimatedCompletion, UUID id);
+    void updateCompletion(int percentCompleted, OffsetDateTime estimatedCompletion, UUID id, OffsetDateTime updateDate);
 
     /**
      * Count the number of jobs with provided statuses
