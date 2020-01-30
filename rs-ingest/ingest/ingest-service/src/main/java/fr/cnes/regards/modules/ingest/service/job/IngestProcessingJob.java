@@ -25,13 +25,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import com.google.gson.reflect.TypeToken;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -43,13 +42,11 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AbstractAIPEntity;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.chain.step.GenerationStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.InternalFinalStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.InternalInitialStep;
@@ -59,7 +56,6 @@ import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
-import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 
 /**
  * This job manages processing chain for AIP generation from a SIP
@@ -122,8 +118,8 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         if (!chain.isPresent()) {
             String message = String.format("No related chain has been found for value \"%s\"", processingChainName);
             for (IngestRequest r : requests) {
-                sesssionNotifier
-                        .productGenerationError(r.getMetadata().getSessionOwner(), r.getMetadata().getSession());
+                sesssionNotifier.productGenerationError(r.getMetadata().getSessionOwner(),
+                                                        r.getMetadata().getSession());
             }
             handleInvalidParameter(CHAIN_NAME_PARAMETER, message);
         } else {
@@ -210,46 +206,38 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                         // According to storage dev, it is better to simply request a new storage,
                         // if request already exists anyway it will be retried
                         ingestRequestService.requestRemoteStorage(request);
+                        // AIPs has been generated during previous execution of process
+                        aipEntities = request.getAips();
                         break;
                     default:
                         LOGGER.debug("{}SIP \"{}\" ingestion has been retried and nothing had to be done in local",
-                                     INFO_TAB,
-                                     request.getSip().getId());
+                                     INFO_TAB, request.getSip().getId());
                         break;
                 }
                 sipIngested++;
-                LOGGER.debug("{}SIP \"{}\" ingested in {} ms",
-                             INFO_TAB,
-                             request.getSip().getId(),
+                LOGGER.debug("{}SIP \"{}\" ingested in {} ms", INFO_TAB, request.getSip().getId(),
                              System.currentTimeMillis() - start2);
 
             } catch (ProcessingStepException e) {
                 LOGGER.error("SIP \"{}\" ingestion error", request.getSip().getId());
                 sipInError++;
                 String msg = String.format("Error while ingesting SIP \"%s\" in request \"%s\"",
-                                           request.getSip().getId(),
-                                           request.getRequestId());
+                                           request.getSip().getId(), request.getRequestId());
                 notifMsg.add(msg);
                 LOGGER.error(msg);
                 LOGGER.error("Ingestion step error", e);
                 // Continue with following SIPs
             } finally {
                 sesssionNotifier.productGenerationEnd(request.getMetadata().getSessionOwner(),
-                                                      request.getMetadata().getSession(),
-                                                      aipEntities);
+                                                      request.getMetadata().getSession(), aipEntities);
             }
         }
 
         // notify if errors occured
         if (sipInError > 0) {
-            notificationClient.notify(notifMsg.toString(),
-                                      "Error occurred during SIPs Ingestion.",
-                                      NotificationLevel.INFO,
-                                      DefaultRole.ADMIN);
-            LOGGER.info("{}{} SIP(s) INGESTED and {} in ERROR in {} ms",
-                        INFO_TAB,
-                        sipIngested,
-                        sipInError,
+            notificationClient.notify(notifMsg.toString(), "Error occurred during SIPs Ingestion.",
+                                      NotificationLevel.INFO, DefaultRole.ADMIN);
+            LOGGER.info("{}{} SIP(s) INGESTED and {} in ERROR in {} ms", INFO_TAB, sipIngested, sipInError,
                         System.currentTimeMillis() - start);
         } else {
             LOGGER.info("{}{} SIP(s) INGESTED in {} ms", INFO_TAB, sipIngested, System.currentTimeMillis() - start);

@@ -235,7 +235,6 @@ public class SessionNotifier {
                 case REMOTE_STORAGE_REQUESTED:
                 case REMOTE_STORAGE_DENIED:
                 case REMOTE_STORAGE_ERROR:
-                    //FIXME: why is it ingest responsibility to notify about storage errors????????
                     notifyDecrementSession(request.getSessionOwner(), request.getSession(), PRODUCT_STORE_ERROR,
                                            SessionNotificationState.OK, 1);
                     break;
