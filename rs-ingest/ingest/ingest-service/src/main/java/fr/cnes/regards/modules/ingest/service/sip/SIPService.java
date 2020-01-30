@@ -92,7 +92,7 @@ public class SIPService implements ISIPService {
 
     @Override
     public boolean validatedVersionExists(String providerId) {
-        return sipRepository.countByProviderIdAndStateIn(providerId) > 0;
+        return sipRepository.countByProviderId(providerId) > 0;
     }
 
     @Override
