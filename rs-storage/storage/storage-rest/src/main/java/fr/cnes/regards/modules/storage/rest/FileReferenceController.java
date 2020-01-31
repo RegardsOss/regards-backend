@@ -36,6 +36,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -108,7 +109,8 @@ public class FileReferenceController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentLength(downloadFile.getRealFileSize());
             headers.setContentType(asMediaType(downloadFile.getMimeType()));
-            headers.setContentDispositionFormData("attachement;filename=", downloadFile.getFileName());
+            headers.setContentDisposition(ContentDisposition.builder("attachment").filename(downloadFile.getFileName())
+                    .size(downloadFile.getRealFileSize()).build());
             StreamingResponseBody stream = out -> {
                 try (OutputStream outs = response.getOutputStream()) {
                     byte[] bytes = new byte[1024];
@@ -155,7 +157,8 @@ public class FileReferenceController {
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentLength(downloadFile.getRealFileSize());
                 headers.setContentType(asMediaType(downloadFile.getMimeType()));
-                headers.setContentDispositionFormData("attachement;filename=", downloadFile.getFileName());
+                headers.setContentDisposition(ContentDisposition.builder("attachment")
+                        .filename(downloadFile.getFileName()).size(downloadFile.getRealFileSize()).build());
                 StreamingResponseBody stream = out -> {
                     try (OutputStream outs = response.getOutputStream()) {
                         byte[] bytes = new byte[1024];
