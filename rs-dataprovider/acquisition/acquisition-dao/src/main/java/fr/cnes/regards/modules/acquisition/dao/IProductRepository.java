@@ -119,7 +119,7 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
             List<ProductSIPState> sipState, Pageable pageable);
 
     Page<Product> findByProcessingChainAndSessionAndSipStateInOrderByIdAsc(AcquisitionProcessingChain processingChain,
-            String session, List<ProductSIPState> sipState, PageRequest pageable);
+            String session, List<ProductSIPState> sipState, Pageable pageable);
 
     /**
      * Find {@link Product} by state

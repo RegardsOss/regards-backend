@@ -19,7 +19,6 @@
 
 package fr.cnes.regards.modules.acquisition.service.job;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -91,11 +90,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         }
 
         Set<String> productNames = getValue(parameters, PRODUCT_NAMES);
-        try {
-            products = productService.retrieve(productNames);
-        } catch (ModuleException e) {
-            handleInvalidParameter(PRODUCT_NAMES, e);
-        }
+        products = productService.retrieve(productNames);
     }
 
     @Override
@@ -115,7 +110,6 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             throw new JobRuntimeException(e.getMessage());
         }
 
-        Set<String> sessions = new HashSet<>();
         Set<Product> success = Sets.newHashSet();
         Set<Product> errors = Sets.newHashSet();
 
@@ -125,7 +119,6 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 break;
             }
             logger.trace("Generating SIP for product {}", product.getProductName());
-            sessions.add(product.getSession());
             try {
                 // Launch generation plugin
                 SIP sip = generateSipPlugin.generate(product);
@@ -149,16 +142,8 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         success.clear();
         errors.clear();
 
-        for (String session : sessions) {
-            if (!productService.existsByProcessingChainAndSipStateIn(processingChain, ProductSIPState.SCHEDULED)) {
-                sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
-                break;
-            }
-        }
-
         logger.info("[{}] : {} SIP(s) generated in {} milliseconds {}", processingChain.getLabel(), generatedCount,
                     System.currentTimeMillis() - startTime, debugInterruption);
-        sessions.clear();
         products.clear();
     }
 }

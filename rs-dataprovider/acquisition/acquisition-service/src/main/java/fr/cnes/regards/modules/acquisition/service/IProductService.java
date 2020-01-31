@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.ProductsPage;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
+import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
@@ -74,9 +75,8 @@ public interface IProductService {
 
     /**
      * Retrieve a collection of product by names
-     * @param productNames list of all product names
      */
-    Set<Product> retrieve(Collection<String> productNames) throws ModuleException;
+    Set<Product> retrieve(Collection<String> productNames);
 
     /**
      * Delete one specified {@link Product}
@@ -165,6 +165,12 @@ public interface IProductService {
      * Handle product {@link fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob} failure
      */
     void handleSIPGenerationError(JobInfo jobInfo);
+
+    /**
+     * Handle {@link SIPGenerationJob} success.
+     * @param jobInfo
+     */
+    void handleSipGenerationSuccess(JobInfo jobInfo);
 
     /**
      * Handle successful SIP submission

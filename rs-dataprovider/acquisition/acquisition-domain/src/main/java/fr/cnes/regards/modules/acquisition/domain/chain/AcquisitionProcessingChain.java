@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -53,19 +51,21 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.framework.module.manager.ConfigIgnore;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
-import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 
 /**
  *
@@ -152,7 +152,7 @@ public class AcquisitionProcessingChain {
     @Valid
     @NotNull(message = "Categories are required")
     @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String" ) })
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> categories;
 
     /**
@@ -199,13 +199,6 @@ public class AcquisitionProcessingChain {
     @OneToOne
     @JoinColumn(name = "acq_job_info_id", foreignKey = @ForeignKey(name = "fk_acq_job_info_id"))
     private JobInfo lastProductAcquisitionJobInfo;
-
-    /**
-     * When starting processing chain, system tries to re-launch SIP generation for product in {@link ProductSIPState#GENERATION_ERROR}
-     */
-    @NotNull(message = "Generation retry status is required")
-    @Column(name = "generation_retry_enabled")
-    private boolean generationRetryEnabled = false;
 
     public String getLabel() {
         return label;
@@ -340,19 +333,5 @@ public class AcquisitionProcessingChain {
 
     public void setLastProductAcquisitionJobInfo(JobInfo lastProductAcquisitionJobInfo) {
         this.lastProductAcquisitionJobInfo = lastProductAcquisitionJobInfo;
-    }
-
-    /**
-     * @return the generationRetryEnabled
-     */
-    public boolean isGenerationRetryEnabled() {
-        return generationRetryEnabled;
-    }
-
-    /**
-     * @param generationRetryEnabled the generationRetryEnabled to set
-     */
-    public void setGenerationRetryEnabled(boolean generationRetryEnabled) {
-        this.generationRetryEnabled = generationRetryEnabled;
     }
 }
