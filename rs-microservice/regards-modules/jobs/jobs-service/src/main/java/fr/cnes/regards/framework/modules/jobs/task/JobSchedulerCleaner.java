@@ -40,9 +40,9 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 @Component
 @Profile("!noscheduler")
 @EnableScheduling
-public class JobCleanerScheduler {
+public class JobSchedulerCleaner {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobCleanerScheduler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCleaner.class);
 
     private static final String LOCK_JOB_CLEAN = "Job_Clean";
 
@@ -59,7 +59,7 @@ public class JobCleanerScheduler {
     private IJobService jobService;
 
     @Scheduled(initialDelayString = "${regards.job.cleaner.scheduling.initial.delay:10000}",
-            fixedDelayString = "${regards.job.cleaner.scheduling.initial.delay:1000}")
+            fixedDelayString = "${regards.job.cleaner.scheduling.delay:1000}")
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

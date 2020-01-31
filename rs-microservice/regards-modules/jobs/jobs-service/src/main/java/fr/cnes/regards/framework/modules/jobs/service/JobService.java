@@ -3,6 +3,7 @@ package fr.cnes.regards.framework.modules.jobs.service;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -92,6 +93,13 @@ public class JobService implements IJobService {
 
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
+
+    // number of time slots after that we consider a job is dead
+    @Value("${regards.jobs.slot.number:2}")
+    private int timeSlotNumber;
+
+    @Value("${regards.job.cleaner.scheduling.delay:1000}")
+    private int deadJobSchedulerPeriod;
 
     @Autowired
     private ISubscriber subscriber;
@@ -351,12 +359,12 @@ public class JobService implements IJobService {
     public void cleanDeadJobs() {
         List<JobInfo> jobs = this.jobInfoService.retrieveJobs(JobStatus.RUNNING);
         for (JobInfo job : jobs) {
-            if (jobsMap.get(job) == null) {
+            if (job.getLastCompletionUpdate().plus(deadJobSchedulerPeriod * timeSlotNumber, ChronoUnit.MILLIS)
+                    .isAfter(OffsetDateTime.now())) {
                 job.updateStatus(JobStatus.FAILED);
             }
         }
         this.jobInfoService.saveAll(jobs);
-
     }
 
 }
