@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -358,12 +359,15 @@ public class JobService implements IJobService {
     @Override
     public void cleanDeadJobs() {
         List<JobInfo> jobs = this.jobInfoService.retrieveJobs(JobStatus.RUNNING);
+        List<JobEvent> failEvents = new ArrayList<>();
         for (JobInfo job : jobs) {
             if (job.getLastCompletionUpdate().plus(deadJobSchedulerPeriod * timeSlotNumber, ChronoUnit.MILLIS)
                     .isAfter(OffsetDateTime.now())) {
                 job.updateStatus(JobStatus.FAILED);
+                failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED));
             }
         }
+        publisher.publish(failEvents);
         this.jobInfoService.saveAll(jobs);
     }
 

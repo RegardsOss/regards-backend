@@ -30,7 +30,7 @@ public interface IJobService {
     RunnableFuture<Void> runJob(JobInfo jobInfo, String tenant);
 
     /**
-     * Seek jobs in database with status RUNNING but no really running and change their status to FAILED
+     * Update dead jobs status in database with change their status from RUNNIG to FAILED
      */
     void cleanDeadJobs();
 
