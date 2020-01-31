@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
+import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
 
 /**
  *
@@ -78,6 +79,8 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
 
     /**
      * Job handler
+     * NOTE : If job is aborted, all products are set to SCHEDULED_INTERUPTED to be able to be restart later.
+     * See {@link StopChainThread}.
      *
      * @author Marc Sordi
      */
@@ -95,6 +98,11 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
                     case FAILED:
                         handleJobFailure(jobEvent);
                         break;
+                    case SUCCEEDED:
+                        handleJobSuccess(jobEvent);
+                        break;
+                    case ABORTED:
+                        //  If job is aborted, all products are set to SCHEDULED_INTERUPTED to be able to be restart later.
                     default:
                         break;
                 }
@@ -106,6 +114,21 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
                                           NotificationLevel.ERROR, DefaultRole.ADMIN);
             } finally {
                 runtimeTenantResolver.clearTenant();
+            }
+        }
+
+        /**
+         * @param jobEvent
+         */
+        private void handleJobSuccess(JobEvent jobEvent) {
+            // Load job info
+            JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
+            if (jobInfo != null) {
+                // First lets check which job failed. Then lets responsible service handle errors.
+                String jobClassName = jobInfo.getClassName();
+                if (SIPGenerationJob.class.getName().equals(jobClassName)) {
+                    productService.handleSipGenerationSuccess(jobInfo);
+                }
             }
         }
 
