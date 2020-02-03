@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import com.google.common.base.Strings;
 import com.google.common.net.HttpHeaders;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -200,18 +202,16 @@ public class OrderController implements IResourceController<OrderDto> {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Find all specified user orders or all users orders",
-            role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Find all specified user orders or all users orders", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH)
     public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(
             @RequestParam(value = "user", required = false) String user, Pageable pageRequest) {
-        Page<Order> orderPage = (Strings.isNullOrEmpty(user)) ?
-                orderService.findAll(pageRequest) :
-                orderService.findAll(user, pageRequest);
+        Page<Order> orderPage = (Strings.isNullOrEmpty(user)) ? orderService.findAll(pageRequest)
+                : orderService.findAll(user, pageRequest);
         return ResponseEntity.ok(toPagedResources(orderPage.map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
     }
 
-    @ResourceAccess(description = "Generate a CSV file with all orders", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Generate a CSV file with all orders", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH + CSV, produces = "text/csv")
     public void generateCsv(@RequestParam(name = "status", required = false) OrderStatus status,
             @RequestParam(name = "from", required = false) String fromParam,
@@ -228,9 +228,11 @@ public class OrderController implements IResourceController<OrderDto> {
     @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH)
     public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(Pageable pageRequest) {
         String user = authResolver.getUser();
-        return ResponseEntity
-                .ok(toPagedResources(orderService.findAll(user, pageRequest, OrderStatus.DELETED, OrderStatus.REMOVED)
-                                             .map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
+        return ResponseEntity.ok(toPagedResources(
+                                                  orderService.findAll(user, pageRequest, OrderStatus.DELETED,
+                                                                       OrderStatus.REMOVED)
+                                                          .map(OrderDto::fromOrder),
+                                                  orderDtoPagedResourcesAssembler));
     }
 
     @ResourceAccess(description = "Download a Zip file containing all currently available files",
@@ -253,7 +255,7 @@ public class OrderController implements IResourceController<OrderDto> {
 
         // Stream the response
         return new ResponseEntity<>(os -> orderService.downloadOrderCurrentZip(order.getOwner(), availableFiles, os),
-                                    HttpStatus.OK);
+                HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Download a Metalink file containing all files", role = DefaultRole.REGISTERED_USER)
@@ -294,9 +296,8 @@ public class OrderController implements IResourceController<OrderDto> {
      */
     private ResponseEntity<StreamingResponseBody> createMetalinkDownloadResponse(@PathVariable("orderId") Long orderId,
             HttpServletResponse response) {
-        response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
-                           "attachment;filename=order_" + orderId + "_" + OffsetDateTime.now().toString()
-                                   + ".metalink");
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=order_" + orderId + "_"
+                + OffsetDateTime.now().toString() + ".metalink");
         response.setContentType("application/metalink+xml");
 
         // Stream the response
