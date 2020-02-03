@@ -174,7 +174,7 @@ public class AcquisitionProcessingChainController implements IResourceController
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = CHAIN_PATH)
-    @ResourceAccess(description = "Delete a chain", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Delete a chain", role = DefaultRole.ADMIN)
     public ResponseEntity<Void> delete(@PathVariable Long chainId) throws ModuleException {
         processingService.deleteChain(chainId);
         return ResponseEntity.noContent().build();
@@ -195,7 +195,7 @@ public class AcquisitionProcessingChainController implements IResourceController
     }
 
     @RequestMapping(method = RequestMethod.GET, value = RELAUNCH_ERRORS_PATH)
-    @ResourceAccess(description = "Get a product", role = DefaultRole.EXPLOIT)
+    @ResourceAccess(description = "Relaunch errors on acquisition chain", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> relaunchErrors(@PathVariable String chainName, @PathVariable String session)
             throws ModuleException {
         processingService.relaunchErrors(chainName, session);
@@ -203,7 +203,7 @@ public class AcquisitionProcessingChainController implements IResourceController
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = CHAIN_SESSION_PRODUCTS_PATH)
-    @ResourceAccess(description = "Start a manual chain", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Delete products for a given acquisition chain", role = DefaultRole.ADMIN)
     public ResponseEntity<Void> deleteProducts(@PathVariable String chainName,
             @RequestParam(name = "session", required = false) String session) throws ModuleException {
         if (session != null) {
