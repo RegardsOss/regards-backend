@@ -99,7 +99,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @throws ModuleException if location does not exists
      */
     @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "Configure a storage location by his name", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Configure a storage location by his name", role = DefaultRole.ADMIN)
     public ResponseEntity<Resource<StorageLocationDTO>> configureLocation(
             @Valid @RequestBody StorageLocationDTO storageLocation) throws ModuleException {
         return new ResponseEntity<>(toResource(service.configureLocation(storageLocation)), HttpStatus.CREATED);
@@ -112,7 +112,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @throws ModuleException  if location does not exists
      */
     @RequestMapping(method = RequestMethod.PUT, path = ID_PATH)
-    @ResourceAccess(description = "Update a storage location configuration", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Update a storage location configuration", role = DefaultRole.ADMIN)
     public ResponseEntity<Resource<StorageLocationDTO>> updateLocationConfiguration(
             @PathVariable(name = "id") String storageId, @Valid @RequestBody StorageLocationDTO storageLocation)
             throws ModuleException {
@@ -126,7 +126,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<Resource<StorageLocationDTO>>> retrieve() throws ModuleException {
         return new ResponseEntity<>(toResources(service.getAllLocations()), HttpStatus.OK);
     }
@@ -138,7 +138,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.GET, path = ID_PATH)
-    @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Resource<StorageLocationDTO>> retrieve(@PathVariable(name = "id") String storageId)
             throws ModuleException {
         return new ResponseEntity<>(toResource(service.getById(storageId)), HttpStatus.OK);
@@ -151,7 +151,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.DELETE, path = ID_PATH)
-    @ResourceAccess(description = "Delete storage location", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Delete storage location", role = DefaultRole.ADMIN)
     public ResponseEntity<Void> delete(@PathVariable(name = "id") String storageLocationId) throws ModuleException {
         service.delete(storageLocationId);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -164,7 +164,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.DELETE, path = ID_PATH + REQUESTS_PATH)
-    @ResourceAccess(description = "Delete storage location", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Delete storage requests", role = DefaultRole.ADMIN)
     public ResponseEntity<Void> deleteRequests(@PathVariable(name = "id") String storageLocationId,
             @PathVariable(name = "type") FileRequestType type,
             @RequestParam(name = "status", required = false) FileRequestStatus status) throws ModuleException {
@@ -201,7 +201,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      */
     @RequestMapping(method = RequestMethod.POST, path = FILES + COPY)
     @ResourceAccess(description = "Copy files for a given path of a storage location to an other one",
-            role = DefaultRole.PROJECT_ADMIN)
+            role = DefaultRole.ADMIN)
     public ResponseEntity<Void> copyFiles(@Valid @RequestBody CopyFilesParametersDTO parameters)
             throws ModuleException {
         Assert.notNull(parameters, "Copy parameters can not be null");
@@ -225,7 +225,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @RequestMapping(method = RequestMethod.GET, path = ID_PATH + FILES + RETRY)
     @ResourceAccess(
             description = "Retry all files requests in error state for the given storage location and the given request type",
-            role = DefaultRole.PROJECT_ADMIN)
+            role = DefaultRole.ADMIN)
     public ResponseEntity<Void> retryErrors(@PathVariable(name = "id") String storageLocationId,
             @PathVariable(name = "type") FileRequestType type) throws ModuleException {
         service.retryErrors(storageLocationId, type);
@@ -240,7 +240,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.PUT, path = UP_PATH)
-    @ResourceAccess(description = "Increase a storage location priority", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Increase a storage location priority", role = DefaultRole.ADMIN)
     public ResponseEntity<Void> increaseStorageLocationPriority(@PathVariable(name = "id") String storageLocationId)
             throws EntityNotFoundException {
         service.increasePriority(storageLocationId);
@@ -255,7 +255,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.PUT, path = DOWN_PATH)
-    @ResourceAccess(description = "Decrease a storage location priority", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Decrease a storage location priority", role = DefaultRole.ADMIN)
     public ResponseEntity<Void> decreaseStorageLocationPriority(@PathVariable(name = "id") String storageLocationId)
             throws EntityNotFoundException {
         service.decreasePriority(storageLocationId);
@@ -263,7 +263,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
     }
 
     @RequestMapping(method = RequestMethod.GET, path = RUN_MONITORING)
-    @ResourceAccess(description = "Manually run storage location monitoring.", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Manually run storage location monitoring.", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> runMonitoring(@RequestParam(name = RESET_PARAM, required = false) Boolean reset)
             throws EntityNotFoundException {
         if (reset != null) {
