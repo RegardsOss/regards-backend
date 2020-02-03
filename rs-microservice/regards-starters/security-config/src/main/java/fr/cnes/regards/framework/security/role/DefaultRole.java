@@ -27,13 +27,16 @@ public enum DefaultRole {
     /**
      * Cross tenant role / useful for cross tenant endpoints
      */
-    // FIXME do not accept a new role with this name
     INSTANCE_ADMIN,
 
     /**
      * Tenant main administrator
      */
     PROJECT_ADMIN,
+    /**
+     * Tenant exploit
+     */
+    EXPLOIT,
 
     /**
      * Tenant administrator
