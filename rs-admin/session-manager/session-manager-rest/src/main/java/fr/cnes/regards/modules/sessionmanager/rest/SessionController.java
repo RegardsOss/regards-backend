@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.sessionmanager.domain.Session;
 import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
 import fr.cnes.regards.modules.sessionmanager.domain.dto.UpdateSession;
@@ -87,8 +88,8 @@ public class SessionController implements IResourceController<Session> {
     private ISessionService sessionService;
 
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve all sessions")
-    public ResponseEntity<PagedModel<EntityModel<Session>>> getSessions(
+    @ResourceAccess(description = "Retrieve all sessions", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<PagedResources<Resource<Session>>> getSessions(
             @RequestParam(value = "source", required = false) String source,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "from",
@@ -106,28 +107,28 @@ public class SessionController implements IResourceController<Session> {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = NAME_MAPPING)
-    @ResourceAccess(description = "Retrieve a subset of session names")
+    @ResourceAccess(description = "Retrieve a subset of session names", role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<String>> getSessionNames(@RequestParam(value = "name", required = false) String name) {
         return new ResponseEntity<>(sessionService.retrieveSessionNames(name), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = SOURCE_MAPPING)
-    @ResourceAccess(description = "Retrieve a subset of session sources")
+    @ResourceAccess(description = "Retrieve a subset of session sources", role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<String>> getSessionSources(
             @RequestParam(value = "source", required = false) String source) {
         return new ResponseEntity<>(sessionService.retrieveSessionSources(source), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.PATCH, value = SESSION_MAPPING)
-    @ResourceAccess(description = "Update specific field of the session")
-    public ResponseEntity<EntityModel<Session>> updateSession(@PathVariable("session_id") Long id,
+    @ResourceAccess(description = "Update specific field of the session", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<Resource<Session>> updateSession(@PathVariable("session_id") Long id,
             @Valid @RequestBody UpdateSession session) throws ModuleException {
         Session updateSession = sessionService.updateSessionState(id, session.getState());
         return new ResponseEntity<>(toResource(updateSession), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = SESSION_MAPPING)
-    @ResourceAccess(description = "Delete the session using its id")
+    @ResourceAccess(description = "Delete the session using its id", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> deleteSession(@PathVariable("session_id") Long id,
             @RequestParam(value = "force", required = false, defaultValue = "false") boolean force)
             throws ModuleException {

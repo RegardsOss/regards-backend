@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,8 +57,7 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testUpdateState() throws ModuleException {
-        Session session = generateErrorSession();
-
+        Session session = generateErrorSession("session1");
         Session sessionUpdated = sessionService.updateSessionState(session.getId(), SessionState.ACKNOWLEDGED);
         Assert.assertEquals("Should state be updated to Acknowledged", sessionUpdated.getState(),
                             SessionState.ACKNOWLEDGED);
@@ -65,30 +65,45 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
 
     @Test(expected = ModuleException.class)
     public void testInvalidUpdateState() throws ModuleException {
-        Session session = generateErrorSession();
-
+        Session session = generateErrorSession("session1");
         // Set the session state from ERROR to OK
         sessionService.updateSessionState(session.getId(), SessionState.OK);
     }
 
     @Test
-    public void testDelete() throws ModuleException {
-        Session session = generateErrorSession();
+    public void testDelete() throws ModuleException, InterruptedException {
+        Session session = generateErrorSession("session1");
+        Assert.assertTrue(session.isLatest());
+        Thread.sleep(1_000);
+        Session session2 = generateErrorSession("session2");
+        Assert.assertTrue(session2.isLatest());
+        Assert.assertFalse(sessionRepository.findById(session.getId()).get().isLatest());
 
         sessionService.deleteSession(session.getId(), false);
         Optional<Session> sessionOpt = sessionRepository.findById(session.getId());
         Assert.assertTrue("Session should still exists", sessionOpt.isPresent());
         Assert.assertEquals("When deleted with force=false, the session state is DELETED", SessionState.DELETED,
                             sessionOpt.get().getState());
+        // After deletion the session should be set as latest updated session
+        Assert.assertTrue(sessionRepository.findById(session.getId()).get().isLatest());
+        Assert.assertFalse(sessionRepository.findById(session2.getId()).get().isLatest());
     }
 
     @Test
-    public void testForceDelete() throws ModuleException {
-        Session session = generateErrorSession();
+    public void testForceDelete() throws ModuleException, InterruptedException {
+        Session session = generateErrorSession("session1");
+        Assert.assertTrue(session.isLatest());
+        Thread.sleep(1_000);
+        Session session2 = generateErrorSession("session2");
+        Assert.assertTrue(session2.isLatest());
+        Assert.assertFalse(sessionRepository.findById(session.getId()).get().isLatest());
+
         sessionService.deleteSession(session.getId(), true);
         Optional<Session> sessionOpt = sessionRepository.findById(session.getId());
         Assert.assertFalse("When deleted with force=true, the session should not exist anymore",
                            sessionOpt.isPresent());
+        Assert.assertTrue("is latest flag should be set for remaining session",
+                          sessionRepository.findById(session2.getId()).get().isLatest());
     }
 
     @Test
@@ -105,24 +120,29 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
         Assert.assertEquals(0, latests.getTotalElements());
         Assert.assertEquals(0, olds.getTotalElements());
         // Init session
-        sessionService.updateSessionProperty(SessionMonitoringEvent
-                .build(source, name, SessionNotificationState.OK, step, SessionNotificationOperator.INC, property, 1));
+        sessionService.updateSessionProperties(Lists.newArrayList(SessionMonitoringEvent
+                .build(source, name, SessionNotificationState.OK, step, SessionNotificationOperator.INC, property, 1)));
         // Check isLatests property
         latests = sessionService.retrieveSessions(source, null, null, null, null, true, PageRequest.of(0, 10));
         olds = sessionService.retrieveSessions(source, null, null, null, null, false, PageRequest.of(0, 10));
         Assert.assertEquals(1, latests.getTotalElements());
         Assert.assertEquals(1, olds.getTotalElements());
         // update same session
-        sessionService.updateSessionProperty(SessionMonitoringEvent
-                .build(source, name, SessionNotificationState.OK, step, SessionNotificationOperator.INC, property, 1));
+        sessionService
+                .updateSessionProperties(Lists
+                        .newArrayList(SessionMonitoringEvent.build(source, name, SessionNotificationState.OK, step,
+                                                                   SessionNotificationOperator.INC, property, 1)))
+                .get(0);
         latests = sessionService.retrieveSessions(source, null, null, null, null, true, PageRequest.of(0, 10));
         olds = sessionService.retrieveSessions(source, null, null, null, null, false, PageRequest.of(0, 10));
         Assert.assertEquals(1, latests.getTotalElements());
         Assert.assertEquals(1, olds.getTotalElements());
         // Create new one
         sessionService
-                .updateSessionProperty(SessionMonitoringEvent.build(source, "name2", SessionNotificationState.OK, step,
-                                                                    SessionNotificationOperator.INC, property, 1));
+                .updateSessionProperties(Lists
+                        .newArrayList(SessionMonitoringEvent.build(source, "name2", SessionNotificationState.OK, step,
+                                                                   SessionNotificationOperator.INC, property, 1)))
+                .get(0);
         latests = sessionService.retrieveSessions(source, null, null, null, null, true, PageRequest.of(0, 10));
         olds = sessionService.retrieveSessions(source, null, null, null, null, false, PageRequest.of(0, 10));
         Assert.assertEquals(1, latests.getTotalElements());
@@ -159,14 +179,9 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
         events.add(SessionMonitoringEvent.build("source2", "name1", SessionNotificationState.OK, "STEP1",
                                                 SessionNotificationOperator.REPLACE, "PROPERTY1", 9));
         // for the trap to work properly, lets decrease so we get back to previous value:(2-1)=> 9-(2-1)=8 times
-        for(int i=0;i<8;i++) {
-            events.add(SessionMonitoringEvent.build("source2",
-                                                    "name1",
-                                                    SessionNotificationState.OK,
-                                                    "STEP1",
-                                                    SessionNotificationOperator.DEC,
-                                                    "PROPERTY1",
-                                                    1));
+        for (int i = 0; i < 8; i++) {
+            events.add(SessionMonitoringEvent.build("source2", "name1", SessionNotificationState.OK, "STEP1",
+                                                    SessionNotificationOperator.DEC, "PROPERTY1", 1));
         }
         events.add(SessionMonitoringEvent.build("source2", "name1", SessionNotificationState.OK, "STEP1",
                                                 SessionNotificationOperator.INC, "PROPERTY1", 1));
@@ -185,7 +200,6 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
         Assert.assertEquals(2L, session.get().getStepPropertyValue("STEP1", "PROPERTY1"));
 
     }
-
 
     @Test
     public void testUpdateSessionsPropertiesWithGlobalEvent() {
@@ -214,16 +228,11 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
                                                 SessionNotificationOperator.DEC, "PROPERTY1", 1));
         // lets add a trap and put a REPLACE global in the middle of everything ONLY FOR STEP1, PROPERTY1 of all sessions
         events.add(SessionMonitoringEvent.buildGlobal(SessionNotificationState.OK, "STEP1",
-                                                SessionNotificationOperator.REPLACE, "PROPERTY1", 9));
+                                                      SessionNotificationOperator.REPLACE, "PROPERTY1", 9));
         // for the trap to work properly, lets decrease, only for source2/name1@step1.property1 so we get back to previous value:(2-1)=> 9-(2-1)=8 times
-        for(int i=0;i<8;i++) {
-            events.add(SessionMonitoringEvent.build("source2",
-                                                    "name1",
-                                                    SessionNotificationState.OK,
-                                                    "STEP1",
-                                                    SessionNotificationOperator.DEC,
-                                                    "PROPERTY1",
-                                                    1));
+        for (int i = 0; i < 8; i++) {
+            events.add(SessionMonitoringEvent.build("source2", "name1", SessionNotificationState.OK, "STEP1",
+                                                    SessionNotificationOperator.DEC, "PROPERTY1", 1));
         }
         events.add(SessionMonitoringEvent.build("source2", "name1", SessionNotificationState.OK, "STEP1",
                                                 SessionNotificationOperator.INC, "PROPERTY1", 1));
@@ -245,7 +254,7 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void testUpdateSessionProperty() {
+    public void testupdateSessionProperties() {
         String source = "Source 2";
         String name = OffsetDateTime.now().toString();
         String step = "STEP";
@@ -257,13 +266,14 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
         SessionMonitoringEvent sessionMonitoringEvent = SessionMonitoringEvent
                 .build(source, name, SessionNotificationState.OK, step, SessionNotificationOperator.INC, property,
                        value);
-        Session updateSession = sessionService.updateSessionProperty(sessionMonitoringEvent);
+        Session updateSession = sessionService.updateSessionProperties(Lists.newArrayList(sessionMonitoringEvent))
+                .get(0);
         Assert.assertEquals("The session state is OK", SessionState.OK, updateSession.getState());
         Assert.assertEquals("The value is correctly saved in the session", value,
                             updateSession.getStepPropertyValue(step, property));
         Assert.assertEquals("Check there is 1 session saved on DB", 1, sessionRepository.count());
 
-        updateSession = sessionService.updateSessionProperty(sessionMonitoringEvent);
+        updateSession = sessionService.updateSessionProperties(Lists.newArrayList(sessionMonitoringEvent)).get(0);
         Assert.assertEquals("The session state is OK", SessionState.OK, updateSession.getState());
         Assert.assertEquals("The value is correctly saved in the session", 2 * value,
                             updateSession.getStepPropertyValue(step, property));
@@ -271,14 +281,14 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
         long decValue = 5;
         sessionMonitoringEvent = SessionMonitoringEvent.build(source, name, SessionNotificationState.OK, step,
                                                               SessionNotificationOperator.DEC, property, decValue);
-        updateSession = sessionService.updateSessionProperty(sessionMonitoringEvent);
+        updateSession = sessionService.updateSessionProperties(Lists.newArrayList(sessionMonitoringEvent)).get(0);
         Assert.assertEquals("The session state is OK", SessionState.OK, updateSession.getState());
         Assert.assertEquals("The value is correctly saved in the session", 15L,
                             updateSession.getStepPropertyValue(step, property));
 
         sessionMonitoringEvent = SessionMonitoringEvent.build(source, name, SessionNotificationState.ERROR, step,
                                                               SessionNotificationOperator.DEC, property, decValue * 5);
-        updateSession = sessionService.updateSessionProperty(sessionMonitoringEvent);
+        updateSession = sessionService.updateSessionProperties(Lists.newArrayList(sessionMonitoringEvent)).get(0);
 
         Assert.assertEquals("The session state is now in ERROR", SessionState.ERROR, updateSession.getState());
         Assert.assertEquals("The value is correctly saved in the session", -10L,
@@ -286,7 +296,7 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
 
         sessionMonitoringEvent = SessionMonitoringEvent.build(source, name, SessionNotificationState.OK, step,
                                                               SessionNotificationOperator.REPLACE, property, 15L);
-        updateSession = sessionService.updateSessionProperty(sessionMonitoringEvent);
+        updateSession = sessionService.updateSessionProperties(Lists.newArrayList(sessionMonitoringEvent)).get(0);
 
         Assert.assertEquals("The session state is still in ERROR", SessionState.ERROR, updateSession.getState());
         Assert.assertEquals("The value have been replaced", 15L, updateSession.getStepPropertyValue(step, property));
@@ -294,7 +304,7 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
         String einstein = "E = mc2";
         sessionMonitoringEvent = SessionMonitoringEvent.build(source, name, SessionNotificationState.OK, step,
                                                               SessionNotificationOperator.REPLACE, property, einstein);
-        updateSession = sessionService.updateSessionProperty(sessionMonitoringEvent);
+        updateSession = sessionService.updateSessionProperties(Lists.newArrayList(sessionMonitoringEvent)).get(0);
 
         Assert.assertEquals("The session state is still in ERROR", SessionState.ERROR, updateSession.getState());
         Assert.assertEquals("The value have been replaced", einstein,
@@ -303,23 +313,17 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
         // Now the value is text type, let's try to add a number to this text
         sessionMonitoringEvent = SessionMonitoringEvent.build(source, name, SessionNotificationState.OK, step,
                                                               SessionNotificationOperator.INC, property, value);
-        updateSession = sessionService.updateSessionProperty(sessionMonitoringEvent);
+        updateSession = sessionService.updateSessionProperties(Lists.newArrayList(sessionMonitoringEvent)).get(0);
 
         Assert.assertEquals("The session state is still in ERROR", SessionState.ERROR, updateSession.getState());
         Assert.assertEquals("The value is replaced by the value", value,
                             updateSession.getStepPropertyValue(step, property));
     }
 
-    private Session generateErrorSession() {
-        Session session = new Session("Source 1", OffsetDateTime.now().toString());
-        session.setState(SessionState.ERROR);
-        session = sessionRepository.save(session);
-        return session;
-    }
-
-    private Session generateSession() {
-        Session session = new Session("Source 2", OffsetDateTime.now().toString());
-        session = sessionRepository.save(session);
-        return session;
+    private Session generateErrorSession(String session) {
+        List<SessionMonitoringEvent> events = new ArrayList<>();
+        events.add(SessionMonitoringEvent.build("Source 1", session, SessionNotificationState.ERROR, "STEP",
+                                                SessionNotificationOperator.INC, "PROPERTY", "1"));
+        return sessionService.updateSessionProperties(events).get(0);
     }
 }

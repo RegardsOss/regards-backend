@@ -159,7 +159,8 @@ public class NotificationController implements IResourceController<Notification>
      * @return The sent notification as {@link Notification} wrapped in a {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "Define the endpoint for sending an notification to recipients")
+    @ResourceAccess(description = "Define the endpoint for sending an notification to recipients",
+            role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Notification> createNotification(@Valid @RequestBody NotificationDTO dto) {
         Notification notification = notificationService.createNotification(dto);
         return new ResponseEntity<>(notification, HttpStatus.CREATED);
