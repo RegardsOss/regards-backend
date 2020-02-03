@@ -153,7 +153,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "Return a page of AIPs")
+    @ResourceAccess(description = "Return a page of AIPs", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedResources<Resource<AIPEntityLight>>> searchAIPs(
             @RequestBody SearchAIPsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -168,7 +168,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
      * @return tags
      */
     @RequestMapping(value = TAG_SEARCH_PATH, method = RequestMethod.POST)
-    @ResourceAccess(description = "Search tags used by aips")
+    @ResourceAccess(description = "Search tags used by aips", role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<String>> retrieveAIPTags(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
         List<String> aipTags = aipService.findTags(filters);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
@@ -180,7 +180,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
      * @return storage location
      */
     @RequestMapping(value = STORAGE_SEARCH_PATH, method = RequestMethod.POST)
-    @ResourceAccess(description = "Search tags used by aips")
+    @ResourceAccess(description = "Search tags used by aips", role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<String>> retrieveAIPStorage(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
         List<String> aipTags = aipService.findStorages(filters);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
@@ -192,7 +192,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
      * @return categories
      */
     @RequestMapping(value = CATEGORIES_SEARCH_PATH, method = RequestMethod.POST)
-    @ResourceAccess(description = "Search categories used by aips")
+    @ResourceAccess(description = "Search categories used by aips", role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<String>> retrieveAIPCategories(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
         List<String> aipTags = aipService.findCategories(filters);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
@@ -221,7 +221,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     }
 
     @RequestMapping(value = AIP_UPDATE_PATH, method = RequestMethod.POST)
-    @ResourceAccess(description = "Update an AIP set with provided params", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Update an AIP set with provided params", role = DefaultRole.ADMIN)
     public void updateAips(@Valid @RequestBody AIPUpdateParametersDto params) {
         LOGGER.debug("Received request to update AIPs");
         aipService.registerUpdatesCreator(params);
