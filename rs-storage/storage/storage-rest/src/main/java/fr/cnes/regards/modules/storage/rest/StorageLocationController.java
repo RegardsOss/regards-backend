@@ -127,8 +127,8 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
-    public ResponseEntity<List<EntityModel<StorageLocationDTO>>> retrieve() throws ModuleException {
+    @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<List<Resource<StorageLocationDTO>>> retrieve() throws ModuleException {
         return new ResponseEntity<>(toResources(service.getAllLocations()), HttpStatus.OK);
     }
 
@@ -138,8 +138,8 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.GET, path = ID_PATH)
-    @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
-    public ResponseEntity<EntityModel<StorageLocationDTO>> retrieve(@PathVariable(name = "id") String storageId)
+    @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Resource<StorageLocationDTO>> retrieve(@PathVariable(name = "id") String storageId)
             throws ModuleException {
         return new ResponseEntity<>(toResource(service.getById(storageId)), HttpStatus.OK);
     }
