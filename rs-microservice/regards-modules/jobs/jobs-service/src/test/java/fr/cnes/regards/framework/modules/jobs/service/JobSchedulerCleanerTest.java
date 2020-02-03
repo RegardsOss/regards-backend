@@ -38,8 +38,8 @@ public class JobSchedulerCleanerTest {
     @Value("${regards.jobs.slot.number:2}")
     private int timeSlotNumber;
 
-    @Value("${regards.job.cleaner.scheduling.delay:1000}")
-    private int deadJobSchedulerPeriod;
+    @Value("${regards.jobs.completion.update.rate.ms:1000}")
+    private int updateCompletionPeriod;
 
     @Before
     public void setUp() {
@@ -49,8 +49,8 @@ public class JobSchedulerCleanerTest {
     @Test
     public void testCleaner() throws InterruptedException {
         JobInfo fake = new JobInfo(false, 0, null, "", "Fake");
-        fake.setLastCompletionUpdate(OffsetDateTime.now().minus(deadJobSchedulerPeriod, ChronoUnit.MILLIS));
-        Thread.sleep(deadJobSchedulerPeriod * timeSlotNumber);
+        fake.setLastCompletionUpdate(OffsetDateTime.now().minus(updateCompletionPeriod, ChronoUnit.MILLIS));
+        Thread.sleep(updateCompletionPeriod * timeSlotNumber);
         assertEquals(1, this.jobInfoService.retrieveJobs(JobStatus.FAILED));
     }
 

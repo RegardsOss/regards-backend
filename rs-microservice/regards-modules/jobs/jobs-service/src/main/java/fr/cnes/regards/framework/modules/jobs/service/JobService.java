@@ -99,8 +99,8 @@ public class JobService implements IJobService {
     @Value("${regards.jobs.slot.number:2}")
     private int timeSlotNumber;
 
-    @Value("${regards.job.cleaner.scheduling.delay:1000}")
-    private int deadJobSchedulerPeriod;
+    @Value("${regards.jobs.completion.update.rate.ms:1000}")
+    private int updateCompletionPeriod;
 
     @Autowired
     private ISubscriber subscriber;
@@ -361,7 +361,7 @@ public class JobService implements IJobService {
         List<JobInfo> jobs = this.jobInfoService.retrieveJobs(JobStatus.RUNNING);
         List<JobEvent> failEvents = new ArrayList<>();
         for (JobInfo job : jobs) {
-            if (job.getLastCompletionUpdate().plus(deadJobSchedulerPeriod * timeSlotNumber, ChronoUnit.MILLIS)
+            if (job.getLastCompletionUpdate().plus(updateCompletionPeriod * timeSlotNumber, ChronoUnit.MILLIS)
                     .isAfter(OffsetDateTime.now())) {
                 job.updateStatus(JobStatus.FAILED);
                 failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED));
