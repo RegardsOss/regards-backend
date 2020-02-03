@@ -88,9 +88,11 @@ public class RoleService implements IRoleService {
      */
     private static final String NATIVE_ROLE_NOT_REMOVABLE = "Modifications on native roles are forbidden";
 
-    public static final String ROLE_GAINED_ACCESS = LogConstants.SECURITY_MARKER + "Role {} has been granted access to these resources: {}";
+    public static final String ROLE_GAINED_ACCESS = LogConstants.SECURITY_MARKER
+            + "Role {} has been granted access to these resources: {}";
 
-    public static final String ROLE_LOST_ACCESS = LogConstants.SECURITY_MARKER + "Role {} does not have access to the these resources anymore: {}";
+    public static final String ROLE_LOST_ACCESS = LogConstants.SECURITY_MARKER
+            + "Role {} does not have access to the these resources anymore: {}";
 
     /**
      * CRUD repository managing {@link Role}s. Autowired by Spring.
@@ -162,8 +164,10 @@ public class RoleService implements IRoleService {
         Role publicRole = createOrLoadDefaultRole(roleFactory.createPublic(), null);
         // Manage registered user
         Role registeredUserRole = createOrLoadDefaultRole(roleFactory.createRegisteredUser(), publicRole);
+        // Manage exploit
+        Role exploitUserRole = createOrLoadDefaultRole(roleFactory.createExploit(), registeredUserRole);
         // Manage admin
-        createOrLoadDefaultRole(roleFactory.createAdmin(), registeredUserRole);
+        createOrLoadDefaultRole(roleFactory.createAdmin(), exploitUserRole);
         // Manage project admin
         createOrLoadDefaultRole(roleFactory.createProjectAdmin(), null);
         // Manage instance admin
@@ -281,9 +285,9 @@ public class RoleService implements IRoleService {
         }
         Role beforeUpdate = roleRepository.findByName(roleName)
                 .orElseThrow(() -> new EntityNotFoundException(roleName, Role.class));
-        if (beforeUpdate.isNative() && (
-                ((beforeUpdate.getParentRole() == null) && (updatedRole.getParentRole() != null)) || (!Objects
-                        .equal(beforeUpdate.getParentRole(), updatedRole.getParentRole())))) {
+        if (beforeUpdate.isNative()
+                && (((beforeUpdate.getParentRole() == null) && (updatedRole.getParentRole() != null))
+                        || (!Objects.equal(beforeUpdate.getParentRole(), updatedRole.getParentRole())))) {
             throw new EntityOperationForbiddenException(roleName, Role.class, "Native role parent cannot be changed");
         }
         Role updated = updatedRole;
@@ -338,8 +342,7 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public Role updateRoleResourcesAccess(Long roleId, Set<ResourcesAccess> resourcesAccesses)
-            throws EntityException {
+    public Role updateRoleResourcesAccess(Long roleId, Set<ResourcesAccess> resourcesAccesses) throws EntityException {
         Optional<Role> roleOpt = roleRepository.findById(roleId);
         if (!roleOpt.isPresent()) {
             throw new EntityNotFoundException(roleId.toString(), Role.class);
@@ -386,8 +389,8 @@ public class RoleService implements IRoleService {
         }
 
         // System role always granted
-        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole) || RoleAuthority
-                .isProjectAdminRole(securityRole)) {
+        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole)
+                || RoleAuthority.isProjectAdminRole(securityRole)) {
             LOGGER.debug("Priviledged call granted");
             return;
         }
@@ -430,8 +433,8 @@ public class RoleService implements IRoleService {
         }
 
         // System role always granted
-        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole) || RoleAuthority
-                .isProjectAdminRole(securityRole)) {
+        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole)
+                || RoleAuthority.isProjectAdminRole(securityRole)) {
             LOGGER.debug("Priviledged call granted");
             return;
         }
@@ -671,8 +674,7 @@ public class RoleService implements IRoleService {
      * Remove resource accesses from a role
      */
     @Override
-    public void removeResourcesAccesses(String roleName, ResourcesAccess... resourcesAccesses)
-            throws EntityException {
+    public void removeResourcesAccesses(String roleName, ResourcesAccess... resourcesAccesses) throws EntityException {
 
         Optional<Role> roleOpt = roleRepository.findByName(roleName);
 
@@ -691,7 +693,7 @@ public class RoleService implements IRoleService {
         // If PROJECT_ADMIN, nothing to do / removal forbidden
         if (role.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
             throw new EntityOperationForbiddenException(role.getName(), Role.class,
-                                                        "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
+                    "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
         }
 
         // Apply changes and publish changes inside removeAndPropagate or RemoveAndManageParent so we are sure that
@@ -833,8 +835,8 @@ public class RoleService implements IRoleService {
         ProjectUser user = optionnalUser.get();
         // get Original Role of the user
         Role originalRole = user.getRole();
-        List<String> roleNamesAllowedToBorrow = Lists
-                .newArrayList(DefaultRole.ADMIN.toString(), DefaultRole.PROJECT_ADMIN.toString());
+        List<String> roleNamesAllowedToBorrow = Lists.newArrayList(DefaultRole.ADMIN.toString(),
+                                                                   DefaultRole.PROJECT_ADMIN.toString());
         // It is impossible to borrow a role if your original role is not ADMIN or PROJECT_ADMIN or one of their sons
         // To simplify client interraction we returned the actual role of the user even if this role is not borowable.
         // The regards frontend use this role to calculate user ihm rights based on his role.

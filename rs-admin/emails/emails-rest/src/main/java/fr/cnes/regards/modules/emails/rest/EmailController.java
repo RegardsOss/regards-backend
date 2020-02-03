@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.emails.domain.Email;
 import fr.cnes.regards.modules.emails.service.EmailService;
 import fr.cnes.regards.modules.emails.service.IEmailService;
@@ -72,7 +73,7 @@ public class EmailController {
      * @return A {@link List} of emails as {@link Email} wrapped in an {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve all emails")
+    @ResourceAccess(description = "Retrieve all emails", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<Email>> retrieveEmails() {
         if (!runtimeTenantResolver.isInstance()) {
             List<Email> emails = emailService.retrieveEmails();
@@ -88,7 +89,7 @@ public class EmailController {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "Send an email to recipients")
+    @ResourceAccess(description = "Send an email to recipients", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> sendEmail(@Valid @RequestBody SimpleMailMessage pMessage) {
         IEmailService service = emailService;
         if (runtimeTenantResolver.isInstance()) {
@@ -105,7 +106,7 @@ public class EmailController {
      * @throws ModuleException if email cannot be found
      */
     @RequestMapping(value = "/{mail_id}", method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve an email")
+    @ResourceAccess(description = "Retrieve an email", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Email> retrieveEmail(@PathVariable("mail_id") Long id) throws ModuleException {
         if (!runtimeTenantResolver.isInstance()) {
             return new ResponseEntity<>(emailService.retrieveEmail(id), HttpStatus.OK);
@@ -120,7 +121,7 @@ public class EmailController {
      * @throws ModuleException if email cannot be found
      */
     @RequestMapping(value = "/{mail_id}", method = RequestMethod.PUT)
-    @ResourceAccess(description = "Send again an email")
+    @ResourceAccess(description = "Send again an email", role = DefaultRole.PROJECT_ADMIN)
     public void resendEmail(@PathVariable("mail_id") Long id) throws ModuleException {
         if (!runtimeTenantResolver.isInstance()) {
             emailService.resendEmail(id);
@@ -131,7 +132,7 @@ public class EmailController {
      * Define the endpoint for deleting an email
      */
     @RequestMapping(value = "/{mail_id}", method = RequestMethod.DELETE)
-    @ResourceAccess(description = "Delete an email")
+    @ResourceAccess(description = "Delete an email", role = DefaultRole.PROJECT_ADMIN)
     public void deleteEmail(@PathVariable("mail_id") Long id) {
         if (!runtimeTenantResolver.isInstance()) {
             emailService.deleteEmail(id);

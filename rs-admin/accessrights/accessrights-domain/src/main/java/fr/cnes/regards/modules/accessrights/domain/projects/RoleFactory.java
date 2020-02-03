@@ -114,6 +114,20 @@ public class RoleFactory {
     }
 
     /**
+     * @return the EXPLOIT role
+     */
+    public Role createExploit() {
+        final Role toCreate = create();
+        final RoleFactory factoryForParentRole = new RoleFactory();
+        toCreate.setName(DefaultRole.EXPLOIT.toString());
+        toCreate.setNative(true);
+        if (autoCreateParents) {
+            toCreate.setParentRole(factoryForParentRole.createRegisteredUser());
+        }
+        return toCreate;
+    }
+
+    /**
      * @return the ADMIN role
      */
     public Role createAdmin() {
@@ -122,7 +136,7 @@ public class RoleFactory {
         toCreate.setName(DefaultRole.ADMIN.toString());
         toCreate.setNative(true);
         if (autoCreateParents) {
-            toCreate.setParentRole(factoryForParentRole.createRegisteredUser());
+            toCreate.setParentRole(factoryForParentRole.createExploit());
         }
         return toCreate;
     }

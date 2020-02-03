@@ -135,7 +135,7 @@ public class RegistrationController {
      */
     @ResponseBody
     @RequestMapping(value = EXTERNAL_ACCESS_PATH, method = RequestMethod.POST)
-    @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> requestExternalAccess(@Valid @RequestBody final AccessRequestDto accessRequestDto)
             throws EntityException {
         registrationService.requestAccess(accessRequestDto, true);
@@ -165,7 +165,7 @@ public class RegistrationController {
      *                         {@link EntityNotFoundException} if project user is in illegal status for denial<br>
      */
     @RequestMapping(value = ACCEPT_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Accepts the access request", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Accepts the access request", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") final Long accessId)
             throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(accessId);
@@ -183,7 +183,7 @@ public class RegistrationController {
      */
     @ResponseBody
     @RequestMapping(value = DENY_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Denies the access request", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Denies the access request", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") final Long accessId)
             throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(accessId);
@@ -201,7 +201,7 @@ public class RegistrationController {
      */
     @ResponseBody
     @RequestMapping(value = ACTIVE_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Activates an inactive user", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Activates an inactive user", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> activeAccess(@PathVariable("access_id") final Long accessId) throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(accessId);
         projectUserWorkflowManager.activeAccess(projectUser);
@@ -218,7 +218,7 @@ public class RegistrationController {
      */
     @ResponseBody
     @RequestMapping(value = INACTIVE_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Deactivates an active user", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Desactivates an active user", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> inactiveAccess(@PathVariable("access_id") final Long accessId) throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(accessId);
         projectUserWorkflowManager.inactiveAccess(projectUser);
@@ -233,7 +233,7 @@ public class RegistrationController {
      */
     @ResponseBody
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE)
-    @ResourceAccess(description = "Rejects the access request", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Rejects the access request", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") final Long accessId)
             throws EntityException {
         final ProjectUser projectUser = projectUserService.retrieveUser(accessId);

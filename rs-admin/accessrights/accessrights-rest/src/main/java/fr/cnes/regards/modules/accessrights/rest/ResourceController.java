@@ -102,7 +102,7 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
      * @param resourceId resource id
      * @return {@link ResourcesAccess}
      * @throws ModuleException Exception if resource with given id does not exists
-
+    
      */
     @RequestMapping(method = RequestMethod.GET, value = RESOURCE_MAPPING)
     @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system", role = DefaultRole.PUBLIC)
@@ -117,10 +117,10 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
      * @param resourceAccessToUpdate Resource access to update
      * @return updated ResourcesAccess
      * @throws ModuleException Exception if resource with given id does not exists
-
+    
      */
     @RequestMapping(method = RequestMethod.PUT, value = RESOURCE_MAPPING)
-    @ResourceAccess(description = "Update access to a given resource", role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "Update access to a given resource", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<ResourcesAccess>> updateResourceAccess(@PathVariable("resource_id") Long resourceId,
             @Valid @RequestBody ResourcesAccess resourceAccessToUpdate) throws ModuleException {
         if ((resourceAccessToUpdate.getId() == null) || !resourceAccessToUpdate.getId().equals(resourceId)) {
