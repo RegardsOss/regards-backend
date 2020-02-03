@@ -204,9 +204,6 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                                                                  Arrays.asList(mediaExtension, regardsExtension, timeExtension),
                                                                  paramConfigurations, engineConfiguration, dataset),
                                         headers, HttpStatus.OK);
-//            return ResponseEntity.ok(descriptionBuilder
-//                    .build(context, parse(context), Arrays.asList(mediaExtension, regardsExtension, timeExtension),
-//                           paramConfigurations, engineConfiguration, dataset));
         } else {
             return ISearchEngine.super.extra(context);
         }
