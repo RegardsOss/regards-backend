@@ -128,7 +128,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<StorageLocationDTO>>> retrieve() throws ModuleException {
+    public ResponseEntity<List<EntityModel<StorageLocationDTO>>> retrieve() throws ModuleException {
         return new ResponseEntity<>(toResources(service.getAllLocations()), HttpStatus.OK);
     }
 
@@ -139,7 +139,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      */
     @RequestMapping(method = RequestMethod.GET, path = ID_PATH)
     @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<StorageLocationDTO>> retrieve(@PathVariable(name = "id") String storageId)
+    public ResponseEntity<EntityModel<StorageLocationDTO>> retrieve(@PathVariable(name = "id") String storageId)
             throws ModuleException {
         return new ResponseEntity<>(toResource(service.getById(storageId)), HttpStatus.OK);
     }
@@ -295,7 +295,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
                                     MethodParamFactory.build(Boolean.class));
         }
         // If storage location is configured so delete & edit End-point is also available
-        if (location.getConfiguration() != null && location.getConfiguration().getId() != null) {
+        if ((location.getConfiguration() != null) && (location.getConfiguration().getId() != null)) {
             resourceService.addLink(resource, this.getClass(), "updateLocationConfiguration", LinkRels.UPDATE,
                                     MethodParamFactory.build(String.class, location.getName()),
                                     MethodParamFactory.build(StorageLocationDTO.class));
