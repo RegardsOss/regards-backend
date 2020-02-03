@@ -98,7 +98,7 @@ public class ProductController implements IResourceController<Product> {
      * @return {@link Product}s
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Search for products", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Search for products", role = DefaultRole.ADMIN)
     public ResponseEntity<PagedResources<Resource<Product>>> search(
             @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<ProductState> state,
             @RequestParam(name = REQUEST_PARAM_SIP_STATE, required = false) List<ISipState> sipState,
@@ -119,7 +119,7 @@ public class ProductController implements IResourceController<Product> {
      * Retreive a {@link Product} by id
      */
     @RequestMapping(method = RequestMethod.GET, value = PRODUCT_PATH)
-    @ResourceAccess(description = "Get a product", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Get a product", role = DefaultRole.ADMIN)
     public ResponseEntity<Resource<Product>> get(@PathVariable Long productId) throws ModuleException {
         return ResponseEntity.ok(toResource(productService.loadProduct(productId)));
     }
