@@ -426,13 +426,15 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         // Build sort parameters from parameter configuration
         List<Order> orders = Lists.newArrayList();
         context.getPageable().getSort().get().forEach(order -> {
-            if (order.isAscending()) {
-                try {
+            try {
+                if (order.isAscending()) {
                     orders.add(Order.asc(getParameterAttribute(order.getProperty()).getLeft().getFullJsonPath()));
-                } catch (OpenSearchUnknownParameter e) {
-                    // Nothing to do
-                    LOGGER.info("Sort parameter invalid {}", order.getProperty());
+                } else {
+                    orders.add(Order.desc(getParameterAttribute(order.getProperty()).getLeft().getFullJsonPath()));
                 }
+            } catch (OpenSearchUnknownParameter e) {
+                // Nothing to do
+                LOGGER.info("Sort parameter invalid {}", order.getProperty());
             }
         });
 
