@@ -49,6 +49,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.attribute.AbstractAttribute;
@@ -154,7 +155,14 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @PluginParameter(name = PARAMETERS_CONFIGURATION, label = "Parameters configuration", optional = true,
             markdown = "OpensearchParameter.md")
-    private final List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
+    private List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
+
+    @PluginInit
+    public void init() {
+        if (paramConfigurations == null) {
+            paramConfigurations = Lists.newArrayList();
+        }
+    }
 
     @Override
     public boolean supports(SearchType searchType) {
@@ -200,10 +208,11 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
             MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
             headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE);
-            return new ResponseEntity<>(descriptionBuilder.build(context, parse(context),
-                                                                 Arrays.asList(mediaExtension, regardsExtension, timeExtension),
-                                                                 paramConfigurations, engineConfiguration, dataset),
-                                        headers, HttpStatus.OK);
+            return new ResponseEntity<>(
+                    descriptionBuilder.build(context, parse(context),
+                                             Arrays.asList(mediaExtension, regardsExtension, timeExtension),
+                                             paramConfigurations, engineConfiguration, dataset),
+                    headers, HttpStatus.OK);
         } else {
             return ISearchEngine.super.extra(context);
         }
@@ -294,11 +303,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                                 || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
                     String attributePath;
                     // Check if parameter key is an alias from configuration
-                    Optional<ParameterConfiguration> aliasConf = Optional.empty();
-                    if ((paramConfigurations != null) && paramConfigurations.isEmpty()) {
-                        aliasConf = paramConfigurations.stream().filter(p -> queryParam.getKey().equals(p.getAllias()))
-                                .findFirst();
-                    }
+                    Optional<ParameterConfiguration> aliasConf = paramConfigurations.stream()
+                            .filter(p -> queryParam.getKey().equals(p.getAllias())).findFirst();
                     ParameterConfiguration conf;
                     if (aliasConf.isPresent()) {
                         // If it is an alias retrieve regards parameter path from the configuration
