@@ -59,7 +59,7 @@ public class MaintenanceController {
     public static final String MAINTENANCE_DESACTIVATE_URL = "/{tenant}/" + DISABLE;
 
     /**
-     * @return the maintenace map allowing to known which tenants are in maintenance mode
+     * @return the maintenance map allowing to known which tenants are in maintenance mode
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the map (tenant, maintenance) for this instance",
