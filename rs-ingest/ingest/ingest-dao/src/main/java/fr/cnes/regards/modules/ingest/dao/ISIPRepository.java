@@ -18,14 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPIdNProcessing;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +32,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
 /**
  * {@link SIPEntity} repository
@@ -64,6 +65,8 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * Count SIPEntity with given providerId that have one the given states
      */
     long countByProviderIdAndStateIn(String providerId, Collection<SIPState> states);
+
+    long countByProviderId(String providerId);
 
     default long countByProviderIdAndStateIn(String providerId, SIPState... states) {
         return countByProviderIdAndStateIn(providerId, Arrays.asList(states));
@@ -99,6 +102,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     default boolean isAlreadyIngested(String checksum) {
         return countByChecksum(checksum) != 0;
     }
+
     default Page<SIPEntity> loadAll(Specification<SIPEntity> search, Pageable pageable) {
         // as a Specification is used to constrain the page, we cannot simply ask for ids with a query
         // to mimic that, we are querying without any entity graph to extract ids

@@ -45,8 +45,10 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
@@ -109,7 +111,7 @@ public class SIPController implements IResourceController<SIPEntity> {
      * @return {@link RequestInfoDto}
      * @throws ModuleException if error occurs!
      */
-    @ResourceAccess(description = "SIP collections submission (bulk request)")
+    @ResourceAccess(description = "SIP collections submission (bulk request)", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
     public ResponseEntity<RequestInfoDto> ingest(@RequestBody SIPCollection sips) throws ModuleException {
         RequestInfoDto requestInfo = ingestService.handleSIPCollection(sips);
@@ -125,7 +127,7 @@ public class SIPController implements IResourceController<SIPEntity> {
      * @throws ModuleException
      *             if error occurs!
      */
-    @ResourceAccess(description = "SIP collection submission using multipart request")
+    @ResourceAccess(description = "SIP collection submission using multipart request", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
     public ResponseEntity<RequestInfoDto> ingestFile(@RequestParam(name = REQUEST_PARAM_FILE) MultipartFile file)
             throws ModuleException {
@@ -157,7 +159,7 @@ public class SIPController implements IResourceController<SIPEntity> {
         return status;
     }
 
-    @ResourceAccess(description = "Search for SIPEntities with optional criterion.")
+    @ResourceAccess(description = "Search for SIPEntities with optional criterion.", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<PagedModel<EntityModel<SIPEntity>>> search(@RequestBody SearchSIPsParameters params,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -167,11 +169,12 @@ public class SIPController implements IResourceController<SIPEntity> {
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Retrieve one SIP by its sipId.")
+    @ResourceAccess(description = "Retrieve one SIP by its sipId.", role = DefaultRole.EXPLOIT)
     @RequestMapping(value = SIPID_PATH, method = RequestMethod.GET)
     public ResponseEntity<EntityModel<SIPEntity>> getSipEntity(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
             throws ModuleException {
-        SIPEntity sip = sipService.getEntity(sipId);
+        SIPEntity sip = sipService.getEntity(sipId)
+                .orElseThrow(() -> new EntityNotFoundException(sipId, SIPEntity.class));
         return new ResponseEntity<>(toResource(sip), HttpStatus.OK);
     }
 

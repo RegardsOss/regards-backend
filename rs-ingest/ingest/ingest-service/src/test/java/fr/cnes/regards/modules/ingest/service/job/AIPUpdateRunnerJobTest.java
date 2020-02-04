@@ -141,7 +141,8 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
 
         long nbSIP = 6;
         publishSIPEvent(create("1", TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("3", TAG_1), STORAGE_3, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create("3", TAG_1), Lists.newArrayList(STORAGE_2, STORAGE_3), SESSION_0, SESSION_OWNER_0,
+                        CATEGORIES_0);
 
         // useless entities for this test
         publishSIPEvent(create("6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);

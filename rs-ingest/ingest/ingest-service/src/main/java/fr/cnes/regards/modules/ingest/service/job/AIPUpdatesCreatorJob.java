@@ -96,8 +96,9 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
         // Set the request as running
         request.setState(InternalRequestState.RUNNING);
         aipUpdatesCreatorRepository.save(request);
-        do {
-            AIPUpdateParametersDto updateTask = request.getConfig();
+        AIPUpdateParametersDto updateTask = request.getConfig();
+        aipsPage = aipRepository.findByFilters(updateTask.getCriteria(), pageRequest);
+        while(aipsPage.hasContent()) {
             aipsPage = aipRepository.findByFilters(updateTask.getCriteria(), pageRequest);
             // Save number of pages to publish job advancement
             if (totalPages < aipsPage.getTotalPages()) {
@@ -108,7 +109,7 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
                 advanceCompletion();
             }
             pageRequest = pageRequest.next();
-        } while (aipsPage.hasNext());
+        }
         // Delete the request
         requestService.deleteRequest(request);
     }

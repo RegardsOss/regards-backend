@@ -35,7 +35,6 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
@@ -66,19 +65,14 @@ public class SIPService implements ISIPService {
     @Override
     public Page<SIPEntity> search(SearchSIPsParameters params, Pageable page) {
         return sipRepository.loadAll(SIPEntitySpecifications
-                .search(params.getProviderIds(), null, params.getSessionOwner(), params.getSession(), params.getIpType(),
-                        params.getFrom(), params.getStates(), true, params.getTags(),
+                .search(params.getProviderIds(), null, params.getSessionOwner(), params.getSession(),
+                        params.getIpType(), params.getFrom(), params.getStates(), true, params.getTags(),
                         params.getCategories(), page), page);
     }
 
     @Override
-    public SIPEntity getEntity(String sipId) throws EntityNotFoundException {
-        Optional<SIPEntity> sipEntity = sipRepository.findOneBySipId(sipId.toString());
-        if (sipEntity.isPresent()) {
-            return sipEntity.get();
-        } else {
-            throw new EntityNotFoundException(sipEntity.toString(), SIPEntity.class);
-        }
+    public Optional<SIPEntity> getEntity(String sipId) {
+        return sipRepository.findOneBySipId(sipId.toString());
     }
 
     @Override
@@ -98,7 +92,7 @@ public class SIPService implements ISIPService {
 
     @Override
     public boolean validatedVersionExists(String providerId) {
-        return sipRepository.countByProviderIdAndStateIn(providerId) > 0;
+        return sipRepository.countByProviderId(providerId) > 0;
     }
 
     @Override

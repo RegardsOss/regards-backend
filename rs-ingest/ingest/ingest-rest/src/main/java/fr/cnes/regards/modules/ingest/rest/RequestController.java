@@ -102,7 +102,7 @@ public class RequestController implements IResourceController<RequestDto> {
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "Return a page of Requests")
+    @ResourceAccess(description = "Return a page of Requests", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<RequestDto>>> searchRequest(
             @RequestBody SearchRequestsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -112,14 +112,14 @@ public class RequestController implements IResourceController<RequestDto> {
     }
 
     @RequestMapping(value = REQUEST_RETRY_PATH, method = RequestMethod.POST)
-    @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.EXPLOIT)
     public void retryRequests(@Valid @RequestBody SearchRequestsParameters filters) {
         LOGGER.debug("Received request to retry requests");
         requestService.scheduleRequestRetryJob(filters);
     }
 
     @RequestMapping(value = REQUEST_ABORT_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.ADMIN)
     public void abortRequests() {
         LOGGER.debug("Received request to abort requests");
         // abortRequests being asynchronous method, we have to give it the tenant

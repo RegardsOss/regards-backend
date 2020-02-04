@@ -55,6 +55,7 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
 
@@ -86,7 +87,8 @@ public class IngestProcessingChainController implements IResourceController<Inge
     @Autowired
     private IResourceService resourceService;
 
-    @ResourceAccess(description = "Search for IngestProcessingChain with optional criterion.")
+    @ResourceAccess(description = "Search for IngestProcessingChain with optional criterion.",
+            role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedModel<EntityModel<IngestProcessingChain>>> search(
             @RequestParam(name = "name", required = false) String name,
@@ -97,7 +99,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Retrieve an IngestProcessingChain by name.")
+    @ResourceAccess(description = "Retrieve an IngestProcessingChain by name.", role = DefaultRole.EXPLOIT)
     @RequestMapping(value = NAME_PATH, method = RequestMethod.GET)
     public ResponseEntity<EntityModel<IngestProcessingChain>> get(@PathVariable("name") String name)
             throws ModuleException {
@@ -112,7 +114,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Create a new ingestion processing chain")
+    @ResourceAccess(description = "Create a new ingestion processing chain", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<EntityModel<IngestProcessingChain>> create(
             @Valid @RequestBody IngestProcessingChain processingChain) throws ModuleException {
@@ -121,7 +123,8 @@ public class IngestProcessingChainController implements IResourceController<Inge
 
     }
 
-    @ResourceAccess(description = "Create a new ingestion processing chain importing JSON file")
+    @ResourceAccess(description = "Create a new ingestion processing chain importing JSON file",
+            role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
     public ResponseEntity<EntityModel<IngestProcessingChain>> createByFile(@RequestParam("file") MultipartFile file)
             throws ModuleException {
@@ -135,7 +138,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
         }
     }
 
-    @ResourceAccess(description = "Export an ingestion processing chain in JSON format")
+    @ResourceAccess(description = "Export an ingestion processing chain in JSON format", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.GET, value = EXPORT_PATH)
     public void export(HttpServletRequest pRequest, HttpServletResponse pResponse, @PathVariable("name") String name)
             throws ModuleException {
@@ -159,7 +162,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
         }
     }
 
-    @ResourceAccess(description = "Update an existing IngestProcessingChain.")
+    @ResourceAccess(description = "Update an existing IngestProcessingChain.", role = DefaultRole.ADMIN)
     @RequestMapping(value = NAME_PATH, method = RequestMethod.PUT)
     public ResponseEntity<EntityModel<IngestProcessingChain>> update(@PathVariable("name") String name,
             @Valid @RequestBody IngestProcessingChain processingChain) throws ModuleException {

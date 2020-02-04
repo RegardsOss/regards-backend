@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
@@ -45,6 +47,9 @@ public class SessionNotifier {
 
     @Autowired
     private IPublisher publisher;
+
+    @Autowired
+    private IIngestRequestRepository ingestRequestRepository;
 
     /**
      * Notify session that an error product ingest has been retried
@@ -202,10 +207,23 @@ public class SessionNotifier {
                                            SessionNotificationState.OK, 1);
                     break;
                 default:
-                    LOG.warn("Ingest request error occurred with a step not handled by session notifier! Step: {}",request.getStep());
+                    LOG.warn("Ingest request error occurred with a step not handled by session notifier! Step: {}",
+                             request.getStep());
                     break;
             }
         }
+    }
+
+    /**
+    * Notify session when a request is deleted
+    * @param request
+    */
+    public void requestDeleted(AbstractRequest request) {
+        // If INGEST request is in error status then we can decrement the number of generation error
+        if ((request.getState() == InternalRequestState.ERROR) && (request instanceof IngestRequest)) {
+            ingestRequestErrorDeleted((IngestRequest) request);
+        }
+
     }
 
     /**
@@ -230,7 +248,6 @@ public class SessionNotifier {
                 case REMOTE_STORAGE_REQUESTED:
                 case REMOTE_STORAGE_DENIED:
                 case REMOTE_STORAGE_ERROR:
-                    //FIXME: why is it ingest responsibility to notify about storage errors????????
                     notifyDecrementSession(request.getSessionOwner(), request.getSession(), PRODUCT_STORE_ERROR,
                                            SessionNotificationState.OK, 1);
                     break;
@@ -249,9 +266,15 @@ public class SessionNotifier {
     public void productDeleted(String sessionOwner, String session, Collection<AIPEntity> aips) {
         int nbGenerated = 0;
         int nbStored = 0;
+        int nbStorePending = 0;
         for (AIPEntity aip : aips) {
+            // Check if an ingest request exists in error status for the given AIP. If exists, so the product is not
+            // referenced as store pending in the session but as store error.
             switch (aip.getState()) {
                 case GENERATED:
+                    if (!ingestRequestRepository.existsByAipsIdAndState(aip.getId(), InternalRequestState.ERROR)) {
+                        nbStorePending++;
+                    }
                     nbGenerated++;
                     break;
                 case STORED:
@@ -262,10 +285,10 @@ public class SessionNotifier {
                     break;
             }
         }
-        if (nbGenerated > 0) {
+        if ((nbStorePending > 0)) {
             // -x product_storing
             notifyDecrementSession(sessionOwner, session, PRODUCT_STORE_PENDING, SessionNotificationState.OK,
-                                   nbGenerated);
+                                   nbStorePending);
         }
         if (nbStored > 0) {
             // -x product_stored

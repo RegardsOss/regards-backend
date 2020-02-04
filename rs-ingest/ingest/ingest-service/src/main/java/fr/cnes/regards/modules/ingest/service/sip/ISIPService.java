@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.sip;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,7 +51,7 @@ public interface ISIPService {
     /**
      * Retrieve one {@link SIPEntity} for the given sipId
      */
-    SIPEntity getEntity(String sipId) throws EntityNotFoundException;
+    Optional<SIPEntity> getEntity(String sipId) throws EntityNotFoundException;
 
     /**
      * Delete the SIPEntity using its {@link SIPEntity#getSipId()}.
