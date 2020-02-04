@@ -64,7 +64,7 @@ public class MaintenanceController {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the map (tenant, maintenance) for this instance",
             role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Map<String, MaintenanceInfo>>> retrieveTenantsInMaintenance() {
+    public HttpEntity<EntityModel<Map<String, MaintenanceInfo>>> retrieveTenantsInMaintenance() {
         final Map<String, MaintenanceInfo> maintenaceMap = MaintenanceManager.getMaintenanceMap();
         return new ResponseEntity<>(new EntityModel<>(maintenaceMap), HttpStatus.OK);
     }
@@ -74,7 +74,7 @@ public class MaintenanceController {
      */
     @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCE_ACTIVATE_URL)
     @ResourceAccess(description = "set this tenant into maintenance mode", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Void>> setMaintenance(@PathVariable("tenant") String pTenant) {
+    public HttpEntity<EntityModel<Void>> setMaintenance(@PathVariable("tenant") String pTenant) {
         MaintenanceManager.setMaintenance(pTenant);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -84,7 +84,7 @@ public class MaintenanceController {
      */
     @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCE_DESACTIVATE_URL)
     @ResourceAccess(description = "unset this tenant from maintenance mode", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Void>> unSetMaintenance(@PathVariable("tenant") String pTenant) {
+    public HttpEntity<EntityModel<Void>> unSetMaintenance(@PathVariable("tenant") String pTenant) {
         MaintenanceManager.unSetMaintenance(pTenant);
         return new ResponseEntity<>(HttpStatus.OK);
     }
