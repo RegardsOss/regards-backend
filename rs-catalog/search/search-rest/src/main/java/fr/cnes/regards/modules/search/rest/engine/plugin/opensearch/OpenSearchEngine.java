@@ -111,6 +111,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     public static final String ENGINE_PARAMETERS = "engineConfiguration";
 
+    private static final int SEARCH_PAGE_SIZE_LIMIT = 500;
+
     /**
      * Query parser
      */
@@ -405,6 +407,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         if ((count != null) && (count.size() == 1)) {
             try {
                 size = Integer.valueOf(count.get(0));
+                if (size > SEARCH_PAGE_SIZE_LIMIT) {
+                    size = SEARCH_PAGE_SIZE_LIMIT;
+                }
             } catch (NumberFormatException e) {
                 LOGGER.error(e.getMessage(), e);
             }
