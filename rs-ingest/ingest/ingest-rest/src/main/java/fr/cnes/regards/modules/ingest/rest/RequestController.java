@@ -111,7 +111,7 @@ public class RequestController implements IResourceController<RequestDto> {
     }
 
     @RequestMapping(value = REQUEST_RETRY_PATH, method = RequestMethod.POST)
-    @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.EXPLOIT)
     public void retryRequests(@Valid @RequestBody SearchRequestsParameters filters) {
         LOGGER.debug("Received request to retry requests");
         requestService.scheduleRequestRetryJob(filters);

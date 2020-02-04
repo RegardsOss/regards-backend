@@ -128,14 +128,12 @@ public class RequestService implements IRequestService {
 
     @Override
     public void handleRemoteStoreError(AbstractRequest request) {
-        LOGGER.warn("Request of type {} cannot be handle for remote storage error",
-                    request.getClass().getName());
+        LOGGER.warn("Request of type {} cannot be handle for remote storage error", request.getClass().getName());
     }
 
     @Override
     public void handleRemoteStoreSuccess(AbstractRequest request) {
-        LOGGER.warn("Request of type {} cannot be handle for remote storage success",
-                    request.getClass().getName());
+        LOGGER.warn("Request of type {} cannot be handle for remote storage success", request.getClass().getName());
     }
 
     @Override
@@ -259,8 +257,8 @@ public class RequestService implements IRequestService {
             Set<UUID> jobIdsAlreadyStopped) {
         Page<AbstractRequest> requestsPage;
         requestsPage = findRequests(filters, pageRequest);
-        for(AbstractRequest request: requestsPage.getContent()) {
-            if(request.getJobInfo() == null ) {
+        for (AbstractRequest request : requestsPage.getContent()) {
+            if (request.getJobInfo() == null) {
                 request.setState(InternalRequestState.ABORTED);
             } else {
                 UUID jobId = request.getJobInfo().getId();
@@ -334,6 +332,7 @@ public class RequestService implements IRequestService {
                 jobInfoService.save(jobInfoToUnlock);
             }
         }
+        sessionNotifier.requestDeleted(request);
         abstractRequestRepository.delete(request);
     }
 

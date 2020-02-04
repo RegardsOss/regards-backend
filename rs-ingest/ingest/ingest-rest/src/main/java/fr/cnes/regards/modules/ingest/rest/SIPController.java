@@ -127,7 +127,7 @@ public class SIPController implements IResourceController<SIPEntity> {
      * @throws ModuleException
      *             if error occurs!
      */
-    @ResourceAccess(description = "SIP collection submission using multipart request")
+    @ResourceAccess(description = "SIP collection submission using multipart request", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
     public ResponseEntity<RequestInfoDto> ingestFile(@RequestParam(name = REQUEST_PARAM_FILE) MultipartFile file)
             throws ModuleException {

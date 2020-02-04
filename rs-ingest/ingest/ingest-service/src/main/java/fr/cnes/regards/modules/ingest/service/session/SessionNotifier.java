@@ -11,6 +11,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
@@ -211,6 +212,18 @@ public class SessionNotifier {
                     break;
             }
         }
+    }
+
+    /**
+    * Notify session when a request is deleted
+    * @param request
+    */
+    public void requestDeleted(AbstractRequest request) {
+        // If INGEST request is in error status then we can decrement the number of generation error
+        if ((request.getState() == InternalRequestState.ERROR) && (request instanceof IngestRequest)) {
+            ingestRequestErrorDeleted((IngestRequest) request);
+        }
+
     }
 
     /**

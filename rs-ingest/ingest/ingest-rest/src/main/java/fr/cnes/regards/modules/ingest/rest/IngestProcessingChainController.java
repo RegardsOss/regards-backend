@@ -86,7 +86,8 @@ public class IngestProcessingChainController implements IResourceController<Inge
     @Autowired
     private IResourceService resourceService;
 
-    @ResourceAccess(description = "Search for IngestProcessingChain with optional criterion.")
+    @ResourceAccess(description = "Search for IngestProcessingChain with optional criterion.",
+            role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<IngestProcessingChain>>> search(
             @RequestParam(name = "name", required = false) String name,
@@ -97,7 +98,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Retrieve an IngestProcessingChain by name.")
+    @ResourceAccess(description = "Retrieve an IngestProcessingChain by name.", role = DefaultRole.EXPLOIT)
     @RequestMapping(value = NAME_PATH, method = RequestMethod.GET)
     public ResponseEntity<Resource<IngestProcessingChain>> get(@PathVariable("name") String name)
             throws ModuleException {
