@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceInfo;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  * API REST allowing to manually handle maintenances
@@ -61,8 +62,9 @@ public class MaintenanceController {
      * @return the maintenace map allowing to known which tenants are in maintenance mode
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve the map (tenant, maintenance) for this instance")
-    public HttpEntity<EntityModel<Map<String, MaintenanceInfo>>> retrieveTenantsInMaintenance() {
+    @ResourceAccess(description = "retrieve the map (tenant, maintenance) for this instance",
+            role = DefaultRole.PROJECT_ADMIN)
+    public HttpEntity<Resource<Map<String, MaintenanceInfo>>> retrieveTenantsInMaintenance() {
         final Map<String, MaintenanceInfo> maintenaceMap = MaintenanceManager.getMaintenanceMap();
         return new ResponseEntity<>(new EntityModel<>(maintenaceMap), HttpStatus.OK);
     }
@@ -71,8 +73,8 @@ public class MaintenanceController {
      * Set the given tenant in maintenance mode
      */
     @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCE_ACTIVATE_URL)
-    @ResourceAccess(description = "set this tenant into maintenance mode")
-    public HttpEntity<EntityModel<Void>> setMaintenance(@PathVariable("tenant") String pTenant) {
+    @ResourceAccess(description = "set this tenant into maintenance mode", role = DefaultRole.PROJECT_ADMIN)
+    public HttpEntity<Resource<Void>> setMaintenance(@PathVariable("tenant") String pTenant) {
         MaintenanceManager.setMaintenance(pTenant);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -81,8 +83,8 @@ public class MaintenanceController {
      * Set the given tenant not in maintenance mode
      */
     @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCE_DESACTIVATE_URL)
-    @ResourceAccess(description = "unset this tenant from maintenance mode")
-    public HttpEntity<EntityModel<Void>> unSetMaintenance(@PathVariable("tenant") String pTenant) {
+    @ResourceAccess(description = "unset this tenant from maintenance mode", role = DefaultRole.PROJECT_ADMIN)
+    public HttpEntity<Resource<Void>> unSetMaintenance(@PathVariable("tenant") String pTenant) {
         MaintenanceManager.unSetMaintenance(pTenant);
         return new ResponseEntity<>(HttpStatus.OK);
     }

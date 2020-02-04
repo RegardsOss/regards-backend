@@ -63,6 +63,7 @@ import fr.cnes.regards.framework.module.manager.ModuleReadinessReport;
 import fr.cnes.regards.framework.module.manager.ModuleRestartReport;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  * Module manager controller
@@ -114,9 +115,9 @@ public class ModuleManagerController {
     private List<IModuleManager<?>> managers;
 
     @RequestMapping(method = RequestMethod.GET, value = CONFIGURATION_ENABLED_MAPPING)
-    @ResourceAccess(description = "Import/export support information")
+    @ResourceAccess(description = "Import/export support information", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> isConfigurationEnabled() {
-        if (managers != null && !managers.isEmpty()) {
+        if ((managers != null) && !managers.isEmpty()) {
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
@@ -124,7 +125,7 @@ public class ModuleManagerController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = CONFIGURATION_MAPPING)
-    @ResourceAccess(description = "Export microservice configuration")
+    @ResourceAccess(description = "Export microservice configuration", role = DefaultRole.PROJECT_ADMIN)
     public void exportConfiguration(HttpServletRequest request, HttpServletResponse response) throws ModuleException {
 
         String exportedFilename = CONFIGURATION_FILE_PREFIX + microserviceName + CONFIGURATION_FILE_EXTENSION;
@@ -135,7 +136,7 @@ public class ModuleManagerController {
         // Prepare data
         MicroserviceConfiguration microConfig = new MicroserviceConfiguration();
         microConfig.setMicroservice(microserviceName);
-        if (managers != null && !managers.isEmpty()) {
+        if ((managers != null) && !managers.isEmpty()) {
             for (IModuleManager<?> manager : managers) {
                 microConfig.addModule(manager.exportConfiguration());
             }
@@ -154,14 +155,14 @@ public class ModuleManagerController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = CONFIGURATION_MAPPING)
-    @ResourceAccess(description = "Import microservice configuration")
+    @ResourceAccess(description = "Import microservice configuration", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Set<ModuleImportReport>> importConfiguration(@RequestParam("file") MultipartFile file)
             throws ModuleException {
 
         try (JsonReader reader = new JsonReader(new InputStreamReader(file.getInputStream(), "UTF-8"))) {
             MicroserviceConfiguration microConfig = getConfigGson().fromJson(reader, MicroserviceConfiguration.class);
             // Propagate configuration to modules
-            if (managers != null && !managers.isEmpty()) {
+            if ((managers != null) && !managers.isEmpty()) {
                 Set<ModuleImportReport> importReports = new HashSet<>();
                 for (ModuleConfiguration module : microConfig.getModules()) {
                     for (IModuleManager<?> manager : managers) {
@@ -182,8 +183,8 @@ public class ModuleManagerController {
                         return new ResponseEntity<>(importReports, HttpStatus.PARTIAL_CONTENT);
                     } else {
                         // now that we know that every module has errors, lets check if any configuration at all could be imported
-                        long numberModulesInTotalError = modulesInError.stream().filter(ModuleImportReport::isOnlyErrors)
-                                .count();
+                        long numberModulesInTotalError = modulesInError.stream()
+                                .filter(ModuleImportReport::isOnlyErrors).count();
                         if (numberModulesInTotalError == modulesInError.size()) {
                             return new ResponseEntity<>(importReports, HttpStatus.CONFLICT);
                         } else {
@@ -226,11 +227,12 @@ public class ModuleManagerController {
      * @return whether the microservice is ready or not with the reasons
      */
     @RequestMapping(method = RequestMethod.GET, value = READY_MAPPING)
-    @ResourceAccess(description = "allows to known if the microservice is ready to work")
+    @ResourceAccess(description = "allows to known if the microservice is ready to work",
+            role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<ModuleReadinessReport<?>> isReady() {
-        ModuleReadinessReport<Object> microserviceReadiness = new ModuleReadinessReport<>(Boolean.TRUE, Lists.newArrayList(),
-                                                                                          null);
-        if (managers != null && !managers.isEmpty()) {
+        ModuleReadinessReport<Object> microserviceReadiness = new ModuleReadinessReport<>(Boolean.TRUE,
+                Lists.newArrayList(), null);
+        if ((managers != null) && !managers.isEmpty()) {
             for (IModuleManager<?> manager : managers) {
                 if (manager.isReadyImplemented()) {
                     ModuleReadinessReport<?> moduleReadiness = manager.isReady();
@@ -246,9 +248,10 @@ public class ModuleManagerController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = READY_ENABLED_MAPPING)
-    @ResourceAccess(description = "Check if microservice modules ready feature is enabled")
+    @ResourceAccess(description = "Check if microservice modules ready feature is enabled",
+            role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> isReadyEnabled() {
-        if (managers != null && !managers.isEmpty()) {
+        if ((managers != null) && !managers.isEmpty()) {
             for (IModuleManager<?> manager : managers) {
                 if (manager.isReadyImplemented()) {
                     // At least one module can be asked for "readyness"
@@ -265,10 +268,10 @@ public class ModuleManagerController {
      * Restart all or part of microservice modules
      */
     @RequestMapping(method = RequestMethod.GET, value = RESTART_MAPPING)
-    @ResourceAccess(description = "Allows to restart all microservice modules")
+    @ResourceAccess(description = "Allows to restart all microservice modules", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Set<ModuleRestartReport>> restart() {
         Set<ModuleRestartReport> reports = new HashSet<>();
-        if (managers != null && !managers.isEmpty()) {
+        if ((managers != null) && !managers.isEmpty()) {
             for (IModuleManager<?> manager : managers) {
                 if (manager.isRestartImplemented()) {
                     reports.add(manager.restart());
@@ -279,9 +282,9 @@ public class ModuleManagerController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = RESTART_ENABLED_MAPPING)
-    @ResourceAccess(description = "Check if microservice modules restart is enabled")
+    @ResourceAccess(description = "Check if microservice modules restart is enabled", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> isRestartEnabled() {
-        if (managers != null && !managers.isEmpty()) {
+        if ((managers != null) && !managers.isEmpty()) {
             for (IModuleManager<?> manager : managers) {
                 if (manager.isRestartImplemented()) {
                     // At least one module can be restarted
