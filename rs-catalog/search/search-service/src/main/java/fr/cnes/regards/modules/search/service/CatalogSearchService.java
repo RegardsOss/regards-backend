@@ -491,7 +491,8 @@ public class CatalogSearchService implements ICatalogSearchService {
             AttributeModel attr;
             try {
                 attr = finder.findByName(property);
-                qas.put(attr, new QueryableAttribute(StaticProperties.FEATURE_NS + attr.getJsonPath(), null, false, 0));
+                qas.put(attr, new QueryableAttribute(StaticProperties.FEATURE_NS + attr.getJsonPath(), null,
+                                                     attr.isTextAttribute(), 0, attr.isBooleanAttribute()));
             } catch (OpenSearchUnknownParameter e) {
                 LOGGER.warn(e.getMessage(), e);
             }

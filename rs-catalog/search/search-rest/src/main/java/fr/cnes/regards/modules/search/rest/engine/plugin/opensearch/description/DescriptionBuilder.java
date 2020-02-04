@@ -171,9 +171,7 @@ public class DescriptionBuilder {
 
     /**
      * Build metadata of the {@link OpenSearchDescription}
-     * @param project {@link Project}
      * @param dataset
-     * @param attributes {@link AttributeModel}s attributes
      * @return
      */
     private OpenSearchDescription buildMetadata(EngineConfiguration engineConf, Optional<EntityFeature> dataset) {
@@ -232,7 +230,6 @@ public class DescriptionBuilder {
     /**
      * Build a {@link QueryType} for the given {@link AttributeModel}s.
      * The generate query is an example to shox syntax of the global searchTerms
-     * @param attributes {@link AttributeModel}s to handle in the query
      * @return {@link QueryType}
      */
     private QueryType buildQuery(List<DescriptionParameter> descParameters) {
@@ -246,7 +243,6 @@ public class DescriptionBuilder {
     /**
      * Build {@link OpenSearchParameter}s to add for the parameter extension in each {@link UrlType} of the
      * {@link OpenSearchDescription}
-     * @param attributes {@link Map} {@link AttributeModel} / {@link QueryableAttribute}
      * @param extensions {@link IOpenSearchExtension}s to apply on parameters
      * @return generated {@link OpenSearchParameter}s
      */
@@ -292,8 +288,6 @@ public class DescriptionBuilder {
 
     /**
      * Build a {@link OpenSearchParameter} for a given {@link AttributeModel}
-     * @param attribute {@link AttributeModel} to build parameter from.
-     * @param queryableAtt {@link QueryableAttribute} attribute query informations.
      * @param extensions {@link IOpenSearchExtension} opensearch extensions to handle.
      * @return
      */
@@ -415,9 +409,9 @@ public class DescriptionBuilder {
 
         // Set aggregation stats conf if present
         if (conf.isPresent()) {
-            return new QueryableAttribute(name, null, att.isTextAttribute(), conf.get().getOptionsCardinality());
+            return new QueryableAttribute(name, null, att.isTextAttribute(), conf.get().getOptionsCardinality(), att.isBooleanAttribute());
         } else {
-            return new QueryableAttribute(name, null, att.isTextAttribute(), 0);
+            return new QueryableAttribute(name, null, att.isTextAttribute(), 0, att.isBooleanAttribute());
         }
     }
 
