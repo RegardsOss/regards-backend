@@ -294,8 +294,11 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                                 || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
                     String attributePath;
                     // Check if parameter key is an alias from configuration
-                    Optional<ParameterConfiguration> aliasConf = paramConfigurations.stream()
-                            .filter(p -> queryParam.getKey().equals(p.getAllias())).findFirst();
+                    Optional<ParameterConfiguration> aliasConf = Optional.empty();
+                    if ((paramConfigurations != null) && paramConfigurations.isEmpty()) {
+                        aliasConf = paramConfigurations.stream().filter(p -> queryParam.getKey().equals(p.getAllias()))
+                                .findFirst();
+                    }
                     ParameterConfiguration conf;
                     if (aliasConf.isPresent()) {
                         // If it is an alias retrieve regards parameter path from the configuration

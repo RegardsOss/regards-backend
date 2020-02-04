@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,8 @@ import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import com.google.common.collect.Sets;
 
 import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -352,14 +355,16 @@ public class DescriptionBuilder {
         List<DescriptionParameter> parameters = Lists.newArrayList();
 
         // For each attribute retrieve the QueryableAttribute informations
-        List<QueryableAttribute> queryableAttributes = Lists.newArrayList();
+        Set<QueryableAttribute> queryableAttributes = Sets.newHashSet();
         for (ModelAttrAssoc maa : getModelAttributes(context)) {
             Optional<ParameterConfiguration> conf = parameterConfs.stream()
                     .filter(pc -> pc.getAttributeModelJsonPath().equals(maa.getAttribute().getJsonPath())).findFirst();
             QueryableAttribute queryableAtt = createEmptyQueryableAttribute(maa.getAttribute(), conf);
-            queryableAttributes.add(queryableAtt);
-            parameters.add(new DescriptionParameter(finder.findName(maa.getAttribute()), maa.getAttribute(),
-                    conf.orElse(null), queryableAtt));
+            if (!queryableAttributes.contains(queryableAtt)) {
+                queryableAttributes.add(queryableAtt);
+                parameters.add(new DescriptionParameter(finder.findName(maa.getAttribute()), maa.getAttribute(),
+                        conf.orElse(null), queryableAtt));
+            }
         }
         try {
             // Run statistic search on each attributes. Results are set back into the QueryableAttributes parameter.
@@ -368,7 +373,6 @@ public class DescriptionBuilder {
             LOGGER.error("Error retrieving properties for each parameters of the OpenSearchDescription (parameter extension",
                          e);
         }
-
         return parameters;
     }
 
