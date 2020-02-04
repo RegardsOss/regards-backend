@@ -27,12 +27,15 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.common.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
@@ -288,6 +291,27 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                               regardsExtension.buildCriterion(attributes));
     }
 
+    private Pair<AttributeModel, ParameterConfiguration> getParameterAttribute(String queryParam)
+            throws OpenSearchUnknownParameter {
+        String attributePath;
+        ParameterConfiguration conf;
+        // Check if parameter key is an alias from configuration
+        Optional<ParameterConfiguration> aliasConf = paramConfigurations.stream()
+                .filter(p -> queryParam.equals(p.getAllias())).findFirst();
+        if (aliasConf.isPresent()) {
+            // If it is an alias retrieve regards parameter path from the configuration
+            conf = aliasConf.get();
+            attributePath = conf.getAttributeModelJsonPath();
+        } else {
+            // If not retrieve regards parameter path
+            attributePath = queryParam;
+            // Search configuration if any
+            conf = paramConfigurations.stream().filter(p -> p.getAttributeModelJsonPath().equals(attributePath))
+                    .findFirst().orElse(null);
+        }
+        return Pair.of(finder.findByName(attributePath), conf);
+    }
+
     /**
      * Build {@link SearchParameter}s by reading given queryParams.
      * @param queryParams Map key=parameter name value=parameter value.
@@ -301,26 +325,10 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                 if (!queryParam.getKey().equals(configuration.getQueryParameterName())
                         && ((queryParam.getValue().size() != 1)
                                 || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
-                    String attributePath;
-                    // Check if parameter key is an alias from configuration
-                    Optional<ParameterConfiguration> aliasConf = paramConfigurations.stream()
-                            .filter(p -> queryParam.getKey().equals(p.getAllias())).findFirst();
-                    ParameterConfiguration conf;
-                    if (aliasConf.isPresent()) {
-                        // If it is an alias retrieve regards parameter path from the configuration
-                        conf = aliasConf.get();
-                        attributePath = conf.getAttributeModelJsonPath();
-                    } else {
-                        // If not retrieve regards parameter path
-                        attributePath = queryParam.getKey();
-                        // Search configuration if any
-                        conf = paramConfigurations.stream()
-                                .filter(p -> p.getAttributeModelJsonPath().equals(attributePath)).findFirst()
-                                .orElse(null);
-                    }
-                    AttributeModel attributeModel = finder.findByName(attributePath);
-                    searchParameters
-                            .add(new SearchParameter(queryParam.getKey(), attributeModel, conf, queryParam.getValue()));
+                    Pair<AttributeModel, ParameterConfiguration> attributeConf = getParameterAttribute(queryParam
+                            .getKey());
+                    searchParameters.add(new SearchParameter(queryParam.getKey(), attributeConf.getLeft(),
+                            attributeConf.getRight(), queryParam.getValue()));
                 }
             } catch (OpenSearchUnknownParameter e) {
                 LOGGER.warn("Parameter not found in REGARDS models attributes.");
@@ -415,7 +423,20 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             }
         }
 
-        return PageRequest.of(start, size);
+        // Build sort parameters from parameter configuration
+        List<Order> orders = Lists.newArrayList();
+        context.getPageable().getSort().get().forEach(order -> {
+            if (order.isAscending()) {
+                try {
+                    orders.add(Order.asc(getParameterAttribute(order.getProperty()).getLeft().getFullJsonPath()));
+                } catch (OpenSearchUnknownParameter e) {
+                    // Nothing to do
+                    LOGGER.info("Sort parameter invalid {}", order.getProperty());
+                }
+            }
+        });
+
+        return PageRequest.of(start, size, Sort.by(orders));
     }
 
     @Override
