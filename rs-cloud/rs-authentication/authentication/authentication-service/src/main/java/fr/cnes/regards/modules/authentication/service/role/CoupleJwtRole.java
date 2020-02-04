@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.authentication.service.role;
 
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
+
 /**
  * POJO holding a role and a jwt generated for this role
  * @author Sylvain Vissiere-Guerinet
@@ -33,6 +35,8 @@ public class CoupleJwtRole {
      * JWT to be used for authentication
      */
     private String access_token; // NOSONAR: has this structure so we don't need a DTO or adapter for serialization
+
+    private DefaultOAuth2AccessToken OAuth2AccessToken;
 
     /**
      * Constructor setting the parameters as attributes
@@ -70,4 +74,11 @@ public class CoupleJwtRole {
         access_token = pAccessToken;
     }
 
+    public void setOAuth2AccessToken(DefaultOAuth2AccessToken OAuth2AccessToken) {
+        this.OAuth2AccessToken = OAuth2AccessToken;
+    }
+
+    public DefaultOAuth2AccessToken getOAuth2AccessToken() {
+        return OAuth2AccessToken;
+    }
 }
