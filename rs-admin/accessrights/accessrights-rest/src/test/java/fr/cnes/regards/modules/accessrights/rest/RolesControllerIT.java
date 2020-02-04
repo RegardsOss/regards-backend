@@ -180,19 +180,19 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the allows to retrieve roles.")
     public void retrieveRoleList() {
-        Assert.assertEquals(roleRepository.count(), 6);
+        Assert.assertEquals(7, roleRepository.count());
 
         // Use PROJECT ADMIN
         String projectAdminJwt = manageSecurity(getDefaultTenant(), RoleResourceController.TYPE_MAPPING,
                                                 RequestMethod.GET, getDefaultUserEmail(),
                                                 DefaultRole.PROJECT_ADMIN.name());
         performGet(RoleController.TYPE_MAPPING, projectAdminJwt,
-                   customizer().expectStatusOk().expectToHaveSize("$.*.content.id", 5)
+                   customizer().expectStatusOk().expectToHaveSize("$.*.content.id", 6)
                            // 6 = 5 roles and the added role TEST_ROLE has two permissions
                            // Updated : Permissions are ignore in roles results requests to avoid lazy load.
                            // expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
                            // 3 = 3 roles has a parent (public, project_admin, instance_admin has no parent)
-                           .expectToHaveSize("$.*.content.parentRole", 3),
+                           .expectToHaveSize("$.*.content.parentRole", 4),
                    "TODO Error message");
     }
 

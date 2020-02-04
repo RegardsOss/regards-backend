@@ -72,12 +72,12 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Removing {@link DefaultRole#ADMIN} access from role inheriting ADMIN changes its parent to
-     * {@link DefaultRole#REGISTERED_USER}
+     * {@link DefaultRole#EXPLOIT}
      * @throws EntityException if error occurs
      */
     @Test
     public void adminToRuParentTest() throws EntityException {
-        changeParentTest(DefaultRole.ADMIN, HttpStatus.NO_CONTENT, DefaultRole.REGISTERED_USER);
+        changeParentTest(DefaultRole.ADMIN, HttpStatus.NO_CONTENT, DefaultRole.EXPLOIT);
     }
 
     /**
@@ -147,7 +147,7 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     * Add resource to {@link DefaultRole#ADMIN} change inherited role parent to {@link DefaultRole#REGISTERED_USER}
+     * Remove resource to {@link DefaultRole#ADMIN} change inherited role parent to {@link DefaultRole#EXPLOIT}
      * @throws EntityException if error occurs
      */
     @Test
@@ -184,7 +184,7 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
                       "Error retrieving resourcesAccess for user.", newRole.getName(), resourceToRemove.getId());
 
         // Check new role associated to REGISTERED USER instead of ADMIN
-        Assert.assertEquals(DefaultRole.REGISTERED_USER.name(), newRole.getParentRole().getName());
+        Assert.assertEquals(DefaultRole.EXPLOIT.name(), newRole.getParentRole().getName());
 
         // Add resource with ADMIN
         String adminJwt = manageSecurity(getDefaultTenant(), RoleResourceController.TYPE_MAPPING, RequestMethod.POST,
