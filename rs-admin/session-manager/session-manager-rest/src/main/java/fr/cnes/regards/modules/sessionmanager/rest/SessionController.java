@@ -89,7 +89,7 @@ public class SessionController implements IResourceController<Session> {
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve all sessions", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<PagedResources<Resource<Session>>> getSessions(
+    public ResponseEntity<PagedModel<EntityModel<Session>>> getSessions(
             @RequestParam(value = "source", required = false) String source,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "from",
@@ -121,7 +121,7 @@ public class SessionController implements IResourceController<Session> {
 
     @RequestMapping(method = RequestMethod.PATCH, value = SESSION_MAPPING)
     @ResourceAccess(description = "Update specific field of the session", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Resource<Session>> updateSession(@PathVariable("session_id") Long id,
+    public ResponseEntity<EntityModel<Session>> updateSession(@PathVariable("session_id") Long id,
             @Valid @RequestBody UpdateSession session) throws ModuleException {
         Session updateSession = sessionService.updateSessionState(id, session.getState());
         return new ResponseEntity<>(toResource(updateSession), HttpStatus.OK);
