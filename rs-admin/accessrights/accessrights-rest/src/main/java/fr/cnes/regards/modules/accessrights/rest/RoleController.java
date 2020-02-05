@@ -105,7 +105,7 @@ public class RoleController implements IResourceController<Role> {
      * @return A {@link List} of roles as {@link Role} wrapped in an {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve the list of roles", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Retrieve the list of roles", role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<Resource<Role>>> getAllRoles() {
         final Set<Role> roles = roleService.retrieveRoles();
         return new ResponseEntity<>(toResources(roles), HttpStatus.OK);
@@ -130,7 +130,7 @@ public class RoleController implements IResourceController<Role> {
      */
     @RequestMapping(method = RequestMethod.GET, path = ROLE_WITH_RESOURCE_MAPPING)
     @ResourceAccess(description = "Retrieve the list of roles associated to the given resource",
-            role = DefaultRole.PROJECT_ADMIN)
+            role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<Resource<Role>>> getRolesAccesingResource(@PathVariable("resourceId") Long resourceId) {
         return new ResponseEntity<>(toResources(roleService.retrieveRolesWithResource(resourceId)), HttpStatus.OK);
     }
@@ -154,7 +154,7 @@ public class RoleController implements IResourceController<Role> {
      * @throws EntityNotFoundException when no role with passed name could be found
      */
     @RequestMapping(method = RequestMethod.GET, value = ROLE_MAPPING)
-    @ResourceAccess(description = "Retrieve a role by name", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Retrieve a role by name", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String roleName)
             throws EntityNotFoundException {
         return new ResponseEntity<>(toResource(roleService.retrieveRole(roleName)), HttpStatus.OK);
@@ -166,7 +166,7 @@ public class RoleController implements IResourceController<Role> {
      * @return the ascendants wrapped into a {@link ResponseEntity}
      * @throws EntityNotFoundException if given role does not exists
      */
-    @ResourceAccess(description = "Retrieve a role descendants")
+    @ResourceAccess(description = "Retrieve a role descendants", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.GET, path = ROLE_DESCENDANTS)
     public ResponseEntity<Set<Role>> retrieveRoleDescendants(@PathVariable("role_name") String roleName)
             throws EntityNotFoundException {
