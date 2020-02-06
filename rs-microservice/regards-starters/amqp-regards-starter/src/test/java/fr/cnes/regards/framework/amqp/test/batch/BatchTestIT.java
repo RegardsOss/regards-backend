@@ -25,13 +25,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
@@ -39,7 +45,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  *
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = BatchConfiguration.class)
+@EnableAutoConfiguration
 @TestPropertySource(properties = { "regards.amqp.management.mode=SINGLE",
         "regards.tenants=" + BatchTestIT.PROJECT + ", " + BatchTestIT.PROJECT1, "regards.tenant=" + BatchTestIT.PROJECT,
         "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false" }, locations = "classpath:amqp.properties")
@@ -65,11 +71,18 @@ public class BatchTestIT {
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
-    @Autowired
     private BatchHandler batchHandler;
+
+    @Autowired
+    private IAmqpAdmin amqpAdmin;
+
+    @Autowired
+    private IRabbitVirtualHostAdmin vhostAdmin;
 
     @Before
     public void before() {
+        // New instance for each test
+        batchHandler = new BatchHandler();
         // Subscribe to message
         subscriber.subscribeTo(BatchMessage.class, batchHandler);
     }
@@ -78,6 +91,9 @@ public class BatchTestIT {
     public void after() {
         // Unsubscribe
         subscriber.unsubscribeFrom(BatchMessage.class);
+
+        // Purge queue
+        cleanAMQPQueues(BatchHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
     }
 
     @Test
@@ -102,8 +118,6 @@ public class BatchTestIT {
         Assert.assertTrue(batchHandler.getCountByTenant(PROJECT) == MESSAGE_NB_PROJECT);
         Assert.assertTrue(batchHandler.getCountByTenant(PROJECT1) == MESSAGE_NB_PROJECT1);
         Assert.assertTrue(batchHandler.getCalls() == 2);
-
-        subscriber.unsubscribeFrom(BatchMessage.class);
     }
 
     @Test
@@ -140,6 +154,25 @@ public class BatchTestIT {
         Thread.sleep(5000);
         Assert.assertTrue(batchHandler.getFailsByTenant(BatchHandler.FAIL_TENANT) > 1);
         Assert.assertTrue(batchHandler.getCountByTenant(BatchHandler.FAIL_TENANT) == 0);
+    }
+
+    /**
+     * Internal method to clean AMQP queues, if actives
+     */
+    private void cleanAMQPQueues(Class<? extends IHandler<?>> handler, Target target) {
+        if (vhostAdmin != null) {
+            // Re-set tenant because above simulation clear it!
+
+            // Purge event queue
+            try {
+                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
+            } catch (AmqpIOException e) {
+                LOGGER.warn("Failed to clean AMQP queues");
+            } finally {
+                vhostAdmin.unbind();
+            }
+        }
     }
 
 }

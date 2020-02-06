@@ -25,7 +25,6 @@ import java.util.Map;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 
@@ -33,7 +32,6 @@ import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
  * @author Marc SORDI
  *
  */
-@Component
 public class BatchHandler implements IBatchHandler<BatchMessage> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BatchHandler.class);
