@@ -101,7 +101,7 @@ public class RequestController implements IResourceController<RequestDto> {
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "Return a page of Requests")
+    @ResourceAccess(description = "Return a page of Requests", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedResources<Resource<RequestDto>>> searchRequest(
             @RequestBody SearchRequestsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -111,14 +111,14 @@ public class RequestController implements IResourceController<RequestDto> {
     }
 
     @RequestMapping(value = REQUEST_RETRY_PATH, method = RequestMethod.POST)
-    @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.EXPLOIT)
     public void retryRequests(@Valid @RequestBody SearchRequestsParameters filters) {
         LOGGER.debug("Received request to retry requests");
         requestService.scheduleRequestRetryJob(filters);
     }
 
     @RequestMapping(value = REQUEST_ABORT_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.ADMIN)
     public void abortRequests() {
         LOGGER.debug("Received request to abort requests");
         // abortRequests being asynchronous method, we have to give it the tenant
@@ -136,7 +136,8 @@ public class RequestController implements IResourceController<RequestDto> {
     public Resource<RequestDto> toResource(RequestDto element, Object... extras) {
         Resource<RequestDto> resource = resourceService.toResource(element);
 
-        if (InternalRequestState.ERROR == element.getState() || element.getState() == InternalRequestState.ABORTED) {
+        if ((InternalRequestState.ERROR == element.getState())
+                || (element.getState() == InternalRequestState.ABORTED)) {
             resourceService.addLink(resource, this.getClass(), "retryRequests", "RETRY",
                                     MethodParamFactory.build(SearchRequestsParameters.class));
         }
