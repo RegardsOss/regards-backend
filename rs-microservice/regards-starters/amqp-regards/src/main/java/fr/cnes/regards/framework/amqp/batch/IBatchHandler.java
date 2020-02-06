@@ -51,11 +51,24 @@ public interface IBatchHandler<T> extends IHandler<T> {
     }
 
     /**
-     * This method is call once for each tenant with messages in the current batch.<br/>
+     * This method is called for each message<br/>
+     * Invalid message is negatively acknowledged (and so routed to DLQ.)<br/>
+     * Valid message is processed using {@link #handleBatch(String, List)} method.<br/>
+     * If an error occurs, these valid messages are re-queued for re-processing.<br/>
+     * A valid message is delivered over and over again and can lead to an infinite loop if
+     * this message can never be processed so validate method has to be as efficient as possible.
+     * @param tenant related message tenant
+     * @param message messages to manage
+     * @return <code>true</code> is message is valid.
+     */
+    boolean validate(String tenant, T message);
+
+    /**
+     * This method is called once for each tenant with messages in the current batch.<br/>
      * Indeed, a batch is composed of the n first messages in the queue without consideration of the tenant.
      * So the batch listener dispatches them by tenant under the hood to make a contextual call per tenant.
      * @param tenant related message tenant
-     * @param messages message to manage
+     * @param messages messages to manage
      */
     void handleBatch(String tenant, List<T> messages);
 

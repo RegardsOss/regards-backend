@@ -30,8 +30,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.BatchMessageListener;
+import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.MessageListener;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
@@ -52,6 +53,7 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * Common subscriber methods
@@ -101,8 +103,17 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     private final RegardsErrorHandler errorHandler;
 
+    private final String microserviceName;
+
+    private final IInstancePublisher instancePublisher;
+
+    private final IPublisher publisher;
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
     public AbstractSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, RegardsErrorHandler errorHandler) {
+            MessageConverter jsonMessageConverters, RegardsErrorHandler errorHandler, String microserviceName,
+            IInstancePublisher instancePublisher, IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver) {
         this.virtualHostAdmin = virtualHostAdmin;
         this.amqpAdmin = amqpAdmin;
         this.jsonMessageConverters = jsonMessageConverters;
@@ -110,6 +121,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         this.handledEvents = new HashMap<>();
         this.handlerInstances = new HashMap<>();
         this.errorHandler = errorHandler;
+        this.microserviceName = microserviceName;
+        this.instancePublisher = instancePublisher;
+        this.publisher = publisher;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
@@ -262,7 +277,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         Map<String, SimpleMessageListenerContainer> vhostsContainers = listeners.get(handler.getClass());
         // Virtual host already registered, just add queues to current container
         if (vhostsContainers.containsKey(virtualHost)) {
-            // Add missing queues
+            // Add missing queueserrorHandler
             SimpleMessageListenerContainer container = vhostsContainers.get(virtualHost);
             String[] existingQueues = container.getQueueNames();
             Set<String> newQueueNames = new HashSet<>();
@@ -292,24 +307,29 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         // Init container
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
-
-        container.setChannelTransacted(true);
         if (!eventType.equals(NotificationEvent.class)) {
             // Do not send notification event on notification event error. (prevent infinite loop)
             container.setErrorHandler(errorHandler);
         }
 
         if (handler instanceof IBatchHandler) {
+            container.setChannelTransacted(false);
+            container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
+
             IBatchHandler<?> batchHandler = (IBatchHandler<?>) handler;
+            // Do not requeue messages
+            // container.setErrorHandler(errorHandler);
+            // container.setDefaultRequeueRejected(false);
             container.setConsumerBatchEnabled(true);
             container.setDeBatchingEnabled(true); // Required if consumer batch enabled is true
             container.setBatchSize(batchHandler.getBatchSize());
             container.setPrefetchCount(batchHandler.getBatchSize());
             container.setReceiveTimeout(batchHandler.getReceiveTimeout());
-            BatchMessageListener batchListener = new RabbitBatchMessageListener(messageConverter, batchHandler,
-                    errorHandler);
+            MessageListener batchListener = new RabbitBatchMessageListener(microserviceName, instancePublisher,
+                    publisher, runtimeTenantResolver, messageConverter, batchHandler);
             container.setMessageListener(batchListener);
         } else {
+            container.setChannelTransacted(true);
             container.setDefaultRequeueRejected(false);
             MessageListenerAdapter messageListener = new MessageListenerAdapter(handler, DEFAULT_HANDLING_METHOD);
             messageListener.setMessageConverter(messageConverter);

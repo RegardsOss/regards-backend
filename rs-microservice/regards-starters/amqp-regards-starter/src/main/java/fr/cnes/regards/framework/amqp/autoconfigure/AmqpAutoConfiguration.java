@@ -184,13 +184,14 @@ public class AmqpAutoConfiguration {
 
     @Bean
     public ISubscriber subscriber(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver, RegardsErrorHandler errorHandler) {
+            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver, RegardsErrorHandler errorHandler,
+            IRuntimeTenantResolver runtimeTenantResolver, IInstancePublisher instancePublisher, IPublisher publisher) {
         if (VirtualHostMode.MULTI.equals(amqpManagmentProperties.getMode())) {
             return new Subscriber(pRabbitVirtualHostAdmin, amqpAdmin, jsonMessageConverters, pTenantResolver,
-                    errorHandler);
+                    errorHandler, microserviceName, instancePublisher, publisher, runtimeTenantResolver);
         } else {
             return new SingleVhostSubscriber(pRabbitVirtualHostAdmin, amqpAdmin, jsonMessageConverters, pTenantResolver,
-                    errorHandler);
+                    errorHandler, microserviceName, instancePublisher, publisher, runtimeTenantResolver);
         }
     }
 
@@ -212,8 +213,10 @@ public class AmqpAutoConfiguration {
 
     @Bean
     public IInstanceSubscriber instanceSubscriber(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver, RegardsErrorHandler errorHandler) {
-        return new InstanceSubscriber(pRabbitVirtualHostAdmin, amqpAdmin, jsonMessageConverters, errorHandler);
+            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver, RegardsErrorHandler errorHandler,
+            IRuntimeTenantResolver runtimeTenantResolver, IInstancePublisher instancePublisher, IPublisher publisher) {
+        return new InstanceSubscriber(pRabbitVirtualHostAdmin, amqpAdmin, jsonMessageConverters, errorHandler,
+                microserviceName, instancePublisher, publisher, runtimeTenantResolver);
     }
 
     @Bean

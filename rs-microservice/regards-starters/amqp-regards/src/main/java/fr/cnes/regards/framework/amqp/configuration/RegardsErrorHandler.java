@@ -54,7 +54,7 @@ public class RegardsErrorHandler implements ErrorHandler {
 
     public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
-    private static final String AMQP_DLQ_FAILURE_MESSAGE = "AMQP message failure";
+    private static final String AMQP_DLQ_FAILURE_MESSAGE = "Message failure";
 
     private final IInstancePublisher instancePublisher;
 

@@ -25,6 +25,7 @@ import java.util.Map;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 
@@ -32,25 +33,50 @@ import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
  * @author Marc SORDI
  *
  */
+@Component
 public class BatchHandler implements IBatchHandler<BatchMessage> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BatchHandler.class);
 
     private final Map<String, Integer> countByTenants = new HashMap<>();
 
+    private final Map<String, Integer> failByTenants = new HashMap<>();
+
     private Integer calls = 0;
+
+    public static final String FAKE_TENANT = "FAKE";
+
+    public static final String FAIL_TENANT = "FAIL";
+
+    @Override
+    public boolean validate(String tenant, BatchMessage message) {
+        if (FAKE_TENANT.equals(tenant)) {
+            return false;
+        }
+        return true;
+    }
 
     @Override
     public void handleBatch(String tenant, List<BatchMessage> messages) {
+
+        if (FAKE_TENANT.equals(tenant)) {
+            throw new IllegalArgumentException("Unknown tenant");
+        }
+
+        if (FAIL_TENANT.equals(tenant)) {
+            incrementFails(tenant);
+            throw new IllegalArgumentException("Fail tenant");
+        }
+
         calls++;
         for (BatchMessage message : messages) {
             Assert.assertTrue("Bad tenant", message.getMessage().startsWith(tenant));
             LOGGER.info(message.getMessage());
-            increment(tenant);
+            incrementCount(tenant);
         }
     }
 
-    private void increment(String tenant) {
+    private void incrementCount(String tenant) {
         if (countByTenants.containsKey(tenant)) {
             countByTenants.put(tenant, countByTenants.get(tenant) + 1);
         } else {
@@ -61,6 +87,21 @@ public class BatchHandler implements IBatchHandler<BatchMessage> {
     public Integer getCountByTenant(String tenant) {
         if (countByTenants.containsKey(tenant)) {
             return countByTenants.get(tenant);
+        }
+        return 0;
+    }
+
+    private void incrementFails(String tenant) {
+        if (failByTenants.containsKey(tenant)) {
+            failByTenants.put(tenant, failByTenants.get(tenant) + 1);
+        } else {
+            failByTenants.put(tenant, 1);
+        }
+    }
+
+    public Integer getFailsByTenant(String tenant) {
+        if (failByTenants.containsKey(tenant)) {
+            return failByTenants.get(tenant);
         }
         return 0;
     }
