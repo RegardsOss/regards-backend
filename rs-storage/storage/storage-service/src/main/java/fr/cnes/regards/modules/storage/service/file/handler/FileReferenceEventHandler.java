@@ -170,7 +170,7 @@ public class FileReferenceEventHandler
                     String storage = fileRef.getLocation().getStorage();
                     FileReference updated;
                     try {
-                        updated = action.update(fileRef);
+                        updated = action.update(fileRef, event.getLocation());
                         if (updated != null) {
                             fileReferenceService.update(checksum, storage, updated);
                             LOGGER.trace("[AVAILABILITY SUCCESS {}] File reference updated by action {}", checksum,

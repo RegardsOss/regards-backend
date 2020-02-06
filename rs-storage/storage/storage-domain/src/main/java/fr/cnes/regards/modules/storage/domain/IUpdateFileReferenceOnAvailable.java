@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.domain;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 
 /**
@@ -30,9 +31,10 @@ public interface IUpdateFileReferenceOnAvailable {
     /**
      * Update the {@link FileReference} restored.
      * @param availableFileReference {@link FileReference} file reference restored
+     * @param onlineFileLocation {@link FileLocation} where the file available
      * @return {@link FileReference} updated file reference
      * @throws ModuleException
      */
-    FileReference update(FileReference availableFileReference) throws ModuleException;
+    FileReference update(FileReference availableFileReference, FileLocation onlineFileLocation) throws ModuleException;
 
 }
