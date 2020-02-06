@@ -93,6 +93,7 @@ public class FileReferenceEvent implements ISubscribable {
         event.owners = owners;
         event.groupIds.addAll(groupIds);
         event.metaInfo = metaInfo;
+        event.originStorage = originStorage;
         return event;
     }
 
