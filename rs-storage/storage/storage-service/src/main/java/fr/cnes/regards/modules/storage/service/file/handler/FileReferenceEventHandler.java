@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.storage.service.file.handler;
 
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -165,18 +164,20 @@ public class FileReferenceEventHandler
         // Execute file reference updates on availability if any defined
         Optional<FileReferenceMetaInfo> fileRefMeta = Optional.empty();
         if (updateActions != null) {
-            Set<FileReference> fileReferences = fileReferenceService.search(event.getChecksum());
-            for (IUpdateFileReferenceOnAvailable action : updateActions) {
-                for (FileReference fileRef : fileReferences) {
+            Optional<FileReference> fileReference = fileReferenceService.search(event.getOriginStorage(),
+                                                                                event.getChecksum());
+            if (fileReference.isPresent()) {
+                FileReference fileRef = fileReference.get();
+                for (IUpdateFileReferenceOnAvailable action : updateActions) {
                     String checksum = fileRef.getMetaInfo().getChecksum();
                     String storage = fileRef.getLocation().getStorage();
                     try {
-                        FileReference updated = action.update(fileRef, event.getLocation());
-                        if (updated != null) {
-                            fileReferenceService.update(checksum, storage, updated);
+                        fileRef = action.update(fileRef, event.getLocation());
+                        if (fileRef != null) {
+                            fileReferenceService.update(checksum, storage, fileRef);
                             LOGGER.trace("[AVAILABILITY SUCCESS {}] File reference updated by action {}", checksum,
                                          action.getClass().getName());
-                            fileRefMeta = Optional.ofNullable(updated.getMetaInfo());
+                            fileRefMeta = Optional.ofNullable(fileRef.getMetaInfo());
                         }
                     } catch (ModuleException e) {
                         LOGGER.error("Error updating File Reference after availability for action  {}. Cause : {}",

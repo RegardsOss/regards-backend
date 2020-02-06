@@ -117,8 +117,8 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         manager.deletionSucceed(fdr);
         fileRefEventHandler
                 .handle(new TenantWrapper<>(
-                        FileReferenceEvent.build(fileRefChecksum, FileReferenceEventType.FULLY_DELETED, null,
-                                                 "Deletion succeed", oFileRef.get().getLocation(),
+                        FileReferenceEvent.build(fileRefChecksum, fileRefStorage, FileReferenceEventType.FULLY_DELETED,
+                                                 null, "Deletion succeed", oFileRef.get().getLocation(),
                                                  oFileRef.get().getMetaInfo(), Sets.newHashSet(deletionReqId)),
                         runtimeTenantResolver.getTenant()));
         // Has the handler clear the tenant we have to force it here for tests.
