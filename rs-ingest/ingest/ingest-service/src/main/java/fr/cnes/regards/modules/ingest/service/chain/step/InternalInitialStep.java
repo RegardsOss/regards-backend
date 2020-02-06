@@ -58,6 +58,9 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
 
         SIP sip = request.getSip();
 
+        //remove null tags because they have no use!
+        sip.getTags().remove(null);
+
         // Compute checksum
         String checksum;
         try {
