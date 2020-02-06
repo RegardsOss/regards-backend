@@ -163,7 +163,7 @@ public class FileReferenceEventHandler
      */
     private void handleFileAvailable(FileReferenceEvent event) {
         // Execute file reference updates on availability if any defined
-        FileReferenceMetaInfo fileRefMeta = event.getMetaInfo();
+        Optional<FileReferenceMetaInfo> fileRefMeta = Optional.empty();
         if (updateActions != null) {
             Set<FileReference> fileReferences = fileReferenceService.search(event.getChecksum());
             for (IUpdateFileReferenceOnAvailable action : updateActions) {
@@ -176,7 +176,7 @@ public class FileReferenceEventHandler
                             fileReferenceService.update(checksum, storage, updated);
                             LOGGER.trace("[AVAILABILITY SUCCESS {}] File reference updated by action {}", checksum,
                                          action.getClass().getName());
-                            fileRefMeta = updated.getMetaInfo();
+                            fileRefMeta = Optional.ofNullable(updated.getMetaInfo());
                         }
                     } catch (ModuleException e) {
                         LOGGER.error("Error updating File Reference after availability for action  {}. Cause : {}",
@@ -193,7 +193,7 @@ public class FileReferenceEventHandler
         if (request.isPresent()) {
             LOGGER.trace("[AVAILABILITY SUCCESS {}] Available file is associated to a copy request {}",
                          event.getChecksum(), request.get().getGroupId());
-            createNewStorageRequest(request.get(), fileRefMeta, event);
+            createNewStorageRequest(request.get(), fileRefMeta.orElse(request.get().getMetaInfo()), event);
         }
     }
 
