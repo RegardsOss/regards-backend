@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.storage.service.file.handler;
 
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -37,6 +36,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.domain.IUpdateFileReferenceOnAvailable;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
@@ -162,19 +162,22 @@ public class FileReferenceEventHandler
      */
     private void handleFileAvailable(FileReferenceEvent event) {
         // Execute file reference updates on availability if any defined
+        Optional<FileReferenceMetaInfo> fileRefMeta = Optional.empty();
         if (updateActions != null) {
-            Set<FileReference> fileReferences = fileReferenceService.search(event.getChecksum());
-            for (IUpdateFileReferenceOnAvailable action : updateActions) {
-                for (FileReference fileRef : fileReferences) {
+            Optional<FileReference> fileReference = fileReferenceService.search(event.getOriginStorage(),
+                                                                                event.getChecksum());
+            if (fileReference.isPresent()) {
+                FileReference fileRef = fileReference.get();
+                for (IUpdateFileReferenceOnAvailable action : updateActions) {
                     String checksum = fileRef.getMetaInfo().getChecksum();
                     String storage = fileRef.getLocation().getStorage();
-                    FileReference updated;
                     try {
-                        updated = action.update(fileRef);
-                        if (updated != null) {
-                            fileReferenceService.update(checksum, storage, updated);
+                        fileRef = action.update(fileRef, event.getLocation());
+                        if (fileRef != null) {
+                            fileReferenceService.update(checksum, storage, fileRef);
                             LOGGER.trace("[AVAILABILITY SUCCESS {}] File reference updated by action {}", checksum,
                                          action.getClass().getName());
+                            fileRefMeta = Optional.ofNullable(fileRef.getMetaInfo());
                         }
                     } catch (ModuleException e) {
                         LOGGER.error("Error updating File Reference after availability for action  {}. Cause : {}",
@@ -191,7 +194,7 @@ public class FileReferenceEventHandler
         if (request.isPresent()) {
             LOGGER.trace("[AVAILABILITY SUCCESS {}] Available file is associated to a copy request {}",
                          event.getChecksum(), request.get().getGroupId());
-            createNewStorageRequest(request.get(), event);
+            createNewStorageRequest(request.get(), fileRefMeta.orElse(request.get().getMetaInfo()), event);
         }
     }
 
@@ -214,10 +217,11 @@ public class FileReferenceEventHandler
      * @param copyRequest
      * @param fileAvailableEvent
      */
-    private void createNewStorageRequest(FileCopyRequest copyRequest, FileReferenceEvent fileAvailableEvent) {
+    private void createNewStorageRequest(FileCopyRequest copyRequest, FileReferenceMetaInfo fileRefMeta,
+            FileReferenceEvent fileAvailableEvent) {
         String storageGroupId = UUID.randomUUID().toString();
         // Create a new storage request associated to the copy request
-        fileStorageRequestService.createNewFileStorageRequest(fileAvailableEvent.getOwners(), copyRequest.getMetaInfo(),
+        fileStorageRequestService.createNewFileStorageRequest(fileAvailableEvent.getOwners(), fileRefMeta,
                                                               fileAvailableEvent.getLocation().getUrl(),
                                                               copyRequest.getStorage(),
                                                               Optional.ofNullable(copyRequest.getStorageSubDirectory()),

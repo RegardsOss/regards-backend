@@ -34,6 +34,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
@@ -114,7 +115,8 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
     }
 
     @Test(expected = EntityNotFoundException.class)
-    public void download_without_cache() throws InterruptedException, ExecutionException, EntityNotFoundException {
+    public void download_without_cache() throws InterruptedException, ExecutionException, EntityNotFoundException,
+            EntityOperationForbiddenException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
         try {
             downloadService.download(fileRef);
@@ -125,8 +127,8 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
     }
 
     @Test
-    public void download_with_cache()
-            throws InterruptedException, ExecutionException, EntityNotFoundException, IOException {
+    public void download_with_cache() throws InterruptedException, ExecutionException, EntityNotFoundException,
+            IOException, EntityOperationForbiddenException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
         this.simulateFileInCache(fileRef.getMetaInfo().getChecksum());
         InputStream stream = downloadService.download(fileRef);

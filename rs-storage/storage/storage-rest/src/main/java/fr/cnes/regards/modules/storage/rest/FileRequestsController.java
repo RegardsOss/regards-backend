@@ -88,7 +88,7 @@ public class FileRequestsController implements IResourceController<FileRequestIn
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = STORAGE_PATH + TYPE_PATH)
-    @ResourceAccess(description = "Delete storage location", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Delete storage location", role = DefaultRole.ADMIN)
     public ResponseEntity<Void> delete(@PathVariable(name = "storage") String storageLocationId,
             @PathVariable(name = "type") FileRequestType type,
             @RequestParam(name = STATUS_PARAM, required = false) FileRequestStatus status, Pageable page)

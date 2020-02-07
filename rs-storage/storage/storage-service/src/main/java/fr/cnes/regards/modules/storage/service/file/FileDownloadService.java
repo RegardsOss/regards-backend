@@ -42,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -199,7 +200,8 @@ public class FileDownloadService {
      * @throws EntityNotFoundException If file is not in cache currently.
      */
     @Transactional(noRollbackFor = EntityNotFoundException.class)
-    public InputStream download(FileReference fileToDownload) throws EntityNotFoundException {
+    public InputStream download(FileReference fileToDownload)
+            throws EntityNotFoundException, EntityOperationForbiddenException {
         Optional<CacheFile> ocf = cachedFileService.getCacheFile(fileToDownload.getMetaInfo().getChecksum());
         if (ocf.isPresent()) {
             // File is in cache and can be download
@@ -214,8 +216,8 @@ public class FileDownloadService {
         // ask for file availability and return a not available yet response
         fileCacheReqService.makeAvailable(Sets.newHashSet(fileToDownload), OffsetDateTime.now().plusHours(1),
                                           UUID.randomUUID().toString());
-        throw new EntityNotFoundException(String.format("File %s is not available yet. Please try later.",
-                                                        fileToDownload.getMetaInfo().getFileName()));
+        throw new EntityOperationForbiddenException(String.format("File %s is not available yet. Please try later.",
+                                                                  fileToDownload.getMetaInfo().getFileName()));
     }
 
     /**

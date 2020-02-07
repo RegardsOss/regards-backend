@@ -72,7 +72,8 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
                            fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
 
         Mockito.verify(fileEventPublisher, Mockito.times(1)).available(Mockito.any(), Mockito.any(), Mockito.any(),
-                                                                       Mockito.any(), Mockito.any(), Mockito.any());
+                                                                       Mockito.any(), Mockito.any(), Mockito.any(),
+                                                                       Mockito.any());
 
     }
 
@@ -240,7 +241,8 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("A cache request should be done for the near line file to download",
                           fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
         Mockito.verify(fileEventPublisher, Mockito.never()).available(Mockito.any(), Mockito.any(), Mockito.any(),
-                                                                      Mockito.any(), Mockito.any(), Mockito.any());
+                                                                      Mockito.any(), Mockito.any(), Mockito.any(),
+                                                                      Mockito.any());
     }
 
     @Test
@@ -253,7 +255,8 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
         Assert.assertFalse("No cache request should be created for the near line file to download as it is available in cache",
                            fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
         Mockito.verify(fileEventPublisher, Mockito.times(1)).available(Mockito.any(), Mockito.any(), Mockito.any(),
-                                                                       Mockito.any(), Mockito.any(), Mockito.any());
+                                                                       Mockito.any(), Mockito.any(), Mockito.any(),
+                                                                       Mockito.any());
     }
 
 }

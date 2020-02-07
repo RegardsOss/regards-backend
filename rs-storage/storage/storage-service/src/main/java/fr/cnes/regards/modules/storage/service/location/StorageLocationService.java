@@ -457,7 +457,7 @@ public class StorageLocationService {
         if (request.getMetaInfo() != null) {
             fileName = request.getMetaInfo().getFileName();
         }
-        return FileRequestInfoDTO.build(fileName, FileRequestType.STORAGE, request.getStatus(),
+        return FileRequestInfoDTO.build(request.getId(), fileName, FileRequestType.STORAGE, request.getStatus(),
                                         request.getErrorCause());
     }
 
@@ -466,7 +466,7 @@ public class StorageLocationService {
         if ((request.getFileReference() != null) && (request.getFileReference().getMetaInfo() != null)) {
             fileName = request.getFileReference().getMetaInfo().getFileName();
         }
-        return FileRequestInfoDTO.build(fileName, FileRequestType.DELETION, request.getStatus(),
+        return FileRequestInfoDTO.build(request.getId(), fileName, FileRequestType.DELETION, request.getStatus(),
                                         request.getErrorCause());
     }
 

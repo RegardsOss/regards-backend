@@ -265,7 +265,7 @@ public class FileCacheRequestService {
         for (String checksum : unkownFiles) {
             String message = String.format("file with checksum %s does not exists.", checksum);
             LOGGER.error("[AVAILABILITY ERROR {}] - {}", checksum, message);
-            publisher.notAvailable(checksum, message, requestGroupId);
+            publisher.notAvailable(checksum, null, message, requestGroupId);
             reqGrpService.requestError(requestGroupId, FileRequestType.AVAILABILITY, checksum, null, null, null,
                                        message);
         }
@@ -340,7 +340,7 @@ public class FileCacheRequestService {
                                  oRequest.get().getExpirationDate(), fileReq.getGroupId());
             delete(oRequest.get());
         }
-        publisher.available(fileReq.getChecksum(), "cache", cacheLocation, owners, successMessage,
+        publisher.available(fileReq.getChecksum(), "cache", fileReq.getStorage(), cacheLocation, owners, successMessage,
                             fileReq.getGroupId());
         // Inform group that a request is done
         reqGrpService.requestSuccess(fileReq.getGroupId(), FileRequestType.AVAILABILITY, fileReq.getChecksum(), null,
@@ -364,7 +364,7 @@ public class FileCacheRequestService {
             request.setErrorCause(cause);
             repository.save(request);
         }
-        publisher.notAvailable(fileReq.getChecksum(), cause, fileReq.getGroupId());
+        publisher.notAvailable(fileReq.getChecksum(), fileReq.getStorage(), cause, fileReq.getGroupId());
         reqGrpService.requestError(fileReq.getGroupId(), FileRequestType.AVAILABILITY, fileReq.getChecksum(),
                                    fileReq.getStorage(), null, fileReq.getFileReference().getOwners(), cause);
     }
@@ -494,7 +494,8 @@ public class FileCacheRequestService {
         repository.save(request);
         LOGGER.error("[AVAILABILITY ERROR] File {} is not available. Cause : {}",
                      request.getFileReference().getMetaInfo().getChecksum(), request.getErrorCause());
-        publisher.notAvailable(request.getChecksum(), request.getErrorCause(), request.getGroupId());
+        publisher.notAvailable(request.getChecksum(), request.getStorage(), request.getErrorCause(),
+                               request.getGroupId());
         reqGrpService.requestError(request.getGroupId(), FileRequestType.AVAILABILITY, request.getChecksum(),
                                    request.getStorage(), null, request.getFileReference().getOwners(), message);
     }
@@ -514,11 +515,12 @@ public class FileCacheRequestService {
             try {
                 // For online files we have to generate access url though storage microservice
                 String url = downloadService.generateDownloadUrl(checksum);
-                publisher.available(checksum, storage, new URL(url), fileRef.getOwners(), message, availabilityGroupId);
+                publisher.available(checksum, storage, storage, new URL(url), fileRef.getOwners(), message,
+                                    availabilityGroupId);
                 reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, null,
                                              fileRef.getOwners(), fileRef);
             } catch (ModuleException | MalformedURLException e) {
-                publisher.notAvailable(checksum, e.getMessage(), availabilityGroupId);
+                publisher.notAvailable(checksum, storage, e.getMessage(), availabilityGroupId);
                 reqGrpService.requestError(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, null,
                                            fileRef.getOwners(), e.getMessage());
             }
@@ -539,7 +541,7 @@ public class FileCacheRequestService {
             URL availableUrl;
             try {
                 availableUrl = new URL("file", null, cacheService.getFilePath(checksum));
-                publisher.available(checksum, "cache", availableUrl, fileRef.getOwners(), message, groupId);
+                publisher.available(checksum, "cache", storage, availableUrl, fileRef.getOwners(), message, groupId);
                 reqGrpService.requestSuccess(groupId, FileRequestType.AVAILABILITY, checksum, storage, null,
                                              fileRef.getOwners(), fileRef);
             } catch (MalformedURLException e) {
