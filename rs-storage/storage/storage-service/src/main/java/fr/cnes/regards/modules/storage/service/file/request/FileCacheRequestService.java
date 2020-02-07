@@ -336,7 +336,9 @@ public class FileCacheRequestService {
         Optional<FileCacheRequest> oRequest = repository.findById(fileReq.getId());
         if (oRequest.isPresent()) {
             // Create the cache file associated
-            cacheService.addFile(oRequest.get().getChecksum(), realFileSize, cacheLocation,
+            cacheService.addFile(oRequest.get().getChecksum(), realFileSize,
+                                 oRequest.get().getFileReference().getMetaInfo().getFileName(),
+                                 oRequest.get().getFileReference().getMetaInfo().getMimeType(), cacheLocation,
                                  oRequest.get().getExpirationDate(), fileReq.getGroupId());
             delete(oRequest.get());
         }

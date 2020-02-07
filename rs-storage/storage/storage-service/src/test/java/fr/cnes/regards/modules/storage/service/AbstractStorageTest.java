@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -451,7 +452,8 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected void simulateFileInCache(String checksum) {
         try {
             String filePath = cacheService.getFilePath(checksum);
-            cacheService.addFile(checksum, 123L, new URL("file", null, filePath), OffsetDateTime.now().plusDays(1),
+            cacheService.addFile(checksum, 123L, "file", MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                                 new URL("file", null, filePath), OffsetDateTime.now().plusDays(1),
                                  UUID.randomUUID().toString());
             // Create file on disk
             if (!Files.exists(Paths.get(filePath).getParent())) {

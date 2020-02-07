@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.domain.IUpdateFileReferenceOnAvailable;
+import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
@@ -169,25 +170,14 @@ public class FileReferenceEventHandler
             if (fileReference.isPresent()) {
                 FileReference fileRef = fileReference.get();
                 for (IUpdateFileReferenceOnAvailable action : updateActions) {
-                    String checksum = fileRef.getMetaInfo().getChecksum();
-                    String storage = fileRef.getLocation().getStorage();
-                    try {
-                        fileRef = action.update(fileRef, event.getLocation());
-                        if (fileRef != null) {
-                            fileReferenceService.update(checksum, storage, fileRef);
-                            LOGGER.trace("[AVAILABILITY SUCCESS {}] File reference updated by action {}", checksum,
-                                         action.getClass().getName());
-                            fileRefMeta = Optional.ofNullable(fileRef.getMetaInfo());
-                        }
-                    } catch (ModuleException e) {
-                        LOGGER.error("Error updating File Reference after availability for action  {}. Cause : {}",
-                                     action.getClass().getName(), e.getMessage());
-                        LOGGER.error(e.getMessage(), e);
+                    Optional<FileReference> updatedFileRef = updateFileReference(fileRef, event.getLocation(), action);
+                    if (updatedFileRef.isPresent()) {
+                        fileRef = updatedFileRef.get();
+                        fileRefMeta = Optional.ofNullable(fileRef.getMetaInfo());
                     }
                 }
             }
         }
-
         // Check if a copy request is associated to the available file. If any, create a new storage request for the available file
         // to the copy request destination location.
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
@@ -196,6 +186,32 @@ public class FileReferenceEventHandler
                          event.getChecksum(), request.get().getGroupId());
             createNewStorageRequest(request.get(), fileRefMeta.orElse(request.get().getMetaInfo()), event);
         }
+    }
+
+    /**
+     * Update the given {@link FileReference} with the custom {@link IUpdateFileReferenceOnAvailable} action.
+     * @param fileToUpdate
+     * @param fileToUpdateLocation
+     * @param updateAction
+     * @return updated {@link FileReference}
+     */
+    private Optional<FileReference> updateFileReference(FileReference fileToUpdate, FileLocation fileToUpdateLocation,
+            IUpdateFileReferenceOnAvailable updateAction) {
+        FileReference updatedFile = null;
+        String checksum = fileToUpdate.getMetaInfo().getChecksum();
+        String storage = fileToUpdate.getLocation().getStorage();
+        try {
+            updatedFile = updateAction.update(fileToUpdate, fileToUpdateLocation);
+            if (fileToUpdate != null) {
+                fileReferenceService.update(checksum, storage, fileToUpdate);
+                LOGGER.trace("File reference {} updated by action {}", checksum, updateAction.getClass().getName());
+            }
+        } catch (ModuleException e) {
+            LOGGER.error("Error updating File Reference after availability for action  {}. Cause : {}",
+                         updateAction.getClass().getName(), e.getMessage());
+            LOGGER.error(e.getMessage(), e);
+        }
+        return Optional.ofNullable(updatedFile);
     }
 
     /**

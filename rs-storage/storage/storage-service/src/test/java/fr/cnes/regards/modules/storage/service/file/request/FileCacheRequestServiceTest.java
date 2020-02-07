@@ -31,8 +31,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
 
@@ -107,22 +109,38 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
     public void makeAvailable_cacheFull() throws Exception {
         // Simulate cache full 80% 8 file * 1ko (cache size limit 10ko)
         String cacheRequestsGroupId = UUID.randomUUID().toString();
-        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1), cacheRequestsGroupId);
-        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1), cacheRequestsGroupId);
-        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1), cacheRequestsGroupId);
-        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1), cacheRequestsGroupId);
-        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1), cacheRequestsGroupId);
-        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1), cacheRequestsGroupId);
-        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1), cacheRequestsGroupId);
-        cacheService.addFile(UUID.randomUUID().toString(), 1024L, new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().minusDays(1), cacheRequestsGroupId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
+                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             new URL("file", null, "/plop/file"), OffsetDateTime.now().plusDays(1),
+                             cacheRequestsGroupId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
+                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             new URL("file", null, "/plop/file"), OffsetDateTime.now().plusDays(1),
+                             cacheRequestsGroupId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
+                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             new URL("file", null, "/plop/file"), OffsetDateTime.now().plusDays(1),
+                             cacheRequestsGroupId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
+                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             new URL("file", null, "/plop/file"), OffsetDateTime.now().plusDays(1),
+                             cacheRequestsGroupId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
+                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             new URL("file", null, "/plop/file"), OffsetDateTime.now().plusDays(1),
+                             cacheRequestsGroupId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
+                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             new URL("file", null, "/plop/file"), OffsetDateTime.now().plusDays(1),
+                             cacheRequestsGroupId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
+                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             new URL("file", null, "/plop/file"), OffsetDateTime.now().plusDays(1),
+                             cacheRequestsGroupId);
+        cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
+                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             new URL("file", null, "/plop/file"), OffsetDateTime.now().minusDays(1),
+                             cacheRequestsGroupId);
 
         // Reference 5 files of 1ko each
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test", Optional.empty());

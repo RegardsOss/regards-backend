@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -42,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -55,6 +55,7 @@ import fr.cnes.regards.modules.storage.domain.database.DownloadToken;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
+import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
@@ -116,28 +117,58 @@ public class FileDownloadService {
      */
     @Transactional(noRollbackFor = { EntityNotFoundException.class })
     public DownloadableFile downloadFile(String checksum) throws ModuleException {
-        // 1. Retrieve all the FileReference matching the given checksum
-        Set<FileReference> fileRefs = fileRefService.search(checksum);
-        if (fileRefs.isEmpty()) {
-            throw new EntityNotFoundException(checksum, FileReferenceDTO.class);
-        }
-        Map<String, FileReference> storages = fileRefs.stream()
-                .collect(Collectors.toMap(f -> f.getLocation().getStorage(), f -> f));
-        // 2. get the storage location with the higher priority
-        Optional<StorageLocationConfiguration> storageLocation = storageLocationConfService
-                .searchActiveHigherPriority(storages.keySet());
-        if (storageLocation.isPresent()) {
-            PluginConfiguration conf = storageLocation.get().getPluginConfiguration();
-            FileReference fileToDownload = storages.get(conf.getLabel());
-            DownloadableFile df = new DownloadableFile(downloadFileReference(fileToDownload),
-                    fileToDownload.getMetaInfo().getFileSize(), fileToDownload.getMetaInfo().getFileName(),
-                    fileToDownload.getMetaInfo().getMimeType());
-            return df;
-
+        // Try to retrieve file from cache
+        Optional<DownloadableFile> oDownload = downloadCacheFile(checksum);
+        if (oDownload.isPresent()) {
+            return oDownload.get();
         } else {
-            throw new ModuleException(String
-                    .format("No storage location configured for the given file reference (checksum %s). The file can not be download from %s.",
-                            checksum, Arrays.toString(storages.keySet().toArray())));
+            // 1. Retrieve all the FileReference matching the given checksum
+            Set<FileReference> fileRefs = fileRefService.search(checksum);
+            if (fileRefs.isEmpty()) {
+                throw new EntityNotFoundException(checksum, FileReferenceDTO.class);
+            }
+            Map<String, FileReference> storages = fileRefs.stream()
+                    .collect(Collectors.toMap(f -> f.getLocation().getStorage(), f -> f));
+            // 2. get the storage location with the higher priority
+            Optional<StorageLocationConfiguration> storageLocation = storageLocationConfService
+                    .searchActiveHigherPriority(storages.keySet());
+            if (storageLocation.isPresent()) {
+                PluginConfiguration conf = storageLocation.get().getPluginConfiguration();
+                FileReference fileToDownload = storages.get(conf.getLabel());
+                DownloadableFile df = new DownloadableFile(downloadFileReference(fileToDownload),
+                        fileToDownload.getMetaInfo().getFileSize(), fileToDownload.getMetaInfo().getFileName(),
+                        fileToDownload.getMetaInfo().getMimeType());
+                return df;
+            } else {
+                throw new ModuleException(String
+                        .format("No storage location configured for the given file reference (checksum %s). The file can not be download from %s.",
+                                checksum, Arrays.toString(storages.keySet().toArray())));
+            }
+        }
+    }
+
+    /**
+     * Download a file from the cache system if exists.
+     * @param checksum of the file to download
+     * @return
+     * @throws EntityNotFoundException
+     */
+    public Optional<DownloadableFile> downloadCacheFile(String checksum) throws EntityNotFoundException {
+        Optional<CacheFile> oCachedFile = cachedFileService.search(checksum);
+        if (oCachedFile.isPresent()) {
+            CacheFile cachedFileToDownload = oCachedFile.get();
+            try {
+                return Optional
+                        .of(new DownloadableFile(new FileInputStream(cachedFileToDownload.getLocation().getPath()),
+                                cachedFileToDownload.getFileSize(), cachedFileToDownload.getFileName(),
+                                cachedFileToDownload.getMimeType()));
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                throw new EntityNotFoundException(String.format("File %s not found in cache system",
+                                                                cachedFileToDownload.getLocation().getPath()));
+            }
+        } else {
+            return Optional.empty();
         }
     }
 
@@ -202,7 +233,7 @@ public class FileDownloadService {
      */
     @Transactional(noRollbackFor = EntityNotFoundException.class)
     public InputStream download(FileReference fileToDownload)
-            throws EntityNotFoundException, EntityOperationForbiddenException {
+            throws EntityNotFoundException, NearlineFileNotAvailableException {
         Optional<CacheFile> ocf = cachedFileService.getCacheFile(fileToDownload.getMetaInfo().getChecksum());
         if (ocf.isPresent()) {
             // File is in cache and can be download
@@ -217,7 +248,7 @@ public class FileDownloadService {
         // ask for file availability and return a not available yet response
         fileCacheReqService.makeAvailable(Sets.newHashSet(fileToDownload), OffsetDateTime.now().plusHours(1),
                                           UUID.randomUUID().toString());
-        throw new EntityOperationForbiddenException(String.format("File %s is not available yet. Please try later.",
+        throw new NearlineFileNotAvailableException(String.format("File %s is not available yet. Please try later.",
                                                                   fileToDownload.getMetaInfo().getFileName()));
     }
 

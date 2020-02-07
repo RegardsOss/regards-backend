@@ -29,8 +29,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -68,15 +70,15 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         String checksum = UUID.randomUUID().toString();
         OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1);
         Assert.assertFalse("File should not referenced in cache", service.getCacheFile(checksum).isPresent());
-        service.addFile(checksum, 123L, new URL("file", null, "/plop/test.file.test"), expirationDate,
-                        UUID.randomUUID().toString());
+        service.addFile(checksum, 123L, "test.file.test", MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                        new URL("file", null, "/plop/test.file.test"), expirationDate, UUID.randomUUID().toString());
         Optional<CacheFile> oCf = service.getCacheFile(checksum);
         Assert.assertTrue("File should be referenced in cache", oCf.isPresent());
         Assert.assertTrue("Invalid expiration date", expirationDate.isEqual(oCf.get().getExpirationDate()));
         // Try to reference again the same file in cache
         OffsetDateTime newExpirationDate = OffsetDateTime.now().plusDays(2);
-        service.addFile(checksum, 123L, new URL("file", null, "/plop/test.file.test"), newExpirationDate,
-                        UUID.randomUUID().toString());
+        service.addFile(checksum, 123L, "test.file.test", MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                        new URL("file", null, "/plop/test.file.test"), newExpirationDate, UUID.randomUUID().toString());
         oCf = service.getCacheFile(checksum);
         Assert.assertTrue("File should be referenced in cache", oCf.isPresent());
         Assert.assertTrue("Invalid expiration date", newExpirationDate.isEqual(oCf.get().getExpirationDate()));
@@ -86,8 +88,10 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
     public void calculateCacheSize() throws MalformedURLException {
         OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1);
         for (int i = 0; i < 1_000; i++) {
-            service.addFile(UUID.randomUUID().toString(), 10L, new URL("file", null, "/plop/test.file.test"),
-                            expirationDate, UUID.randomUUID().toString());
+            service.addFile(UUID.randomUUID().toString(), 10L, "test.file.test",
+                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                            new URL("file", null, "/plop/test.file.test"), expirationDate,
+                            UUID.randomUUID().toString());
         }
         Assert.assertEquals("Total size not valid", 10_000L, service.getCacheSizeUsedBytes().longValue());
     }
@@ -104,8 +108,10 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         // Create some files in cache
         for (int i = 0; i < 1_000; i++) {
             expirationDate = expirationDate.plusDays(1);
-            service.addFile(UUID.randomUUID().toString(), 10L, new URL("file", null, "/plop/test.file.test"),
-                            expirationDate, UUID.randomUUID().toString());
+            service.addFile(UUID.randomUUID().toString(), 10L, "test.file.test",
+                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                            new URL("file", null, "/plop/test.file.test"), expirationDate,
+                            UUID.randomUUID().toString());
         }
         Assert.assertEquals("There should be 1000 files in cache", 1000, repository.findAll().size());
         service.purge();
