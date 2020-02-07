@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.storage.domain.IUpdateFileReferenceOnAvailable;
+import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 
 /**
@@ -37,7 +38,8 @@ public class AvailabilityUpdateCustomTestAction implements IUpdateFileReferenceO
      * @see fr.cnes.regards.modules.storage.domain.IUpdateFileReferenceOnAvailable#update(fr.cnes.regards.modules.storage.domain.database.FileReference)
      */
     @Override
-    public FileReference update(FileReference availableFileReference) throws ModuleException {
+    public FileReference update(FileReference availableFileReference, FileLocation onlineFileLocation)
+            throws ModuleException {
         // Update checksum of the restored file
         availableFileReference.getMetaInfo().setChecksum("updated_" + UUID.randomUUID().toString());
         return availableFileReference;
