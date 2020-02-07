@@ -52,6 +52,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -126,15 +127,19 @@ public class FileReferenceController {
                 }
             };
             return new ResponseEntity<>(stream, headers, HttpStatus.OK);
+        } catch (EntityOperationForbiddenException e) {
+            LOGGER.error(String.format("File %s is not downloadable for now. Try again later.", checksum));
+            LOGGER.debug(e.getMessage(), e);
+            return new ResponseEntity<StreamingResponseBody>(HttpStatus.ACCEPTED);
         } catch (EntityNotFoundException e) {
-            LOGGER.error(String
+            LOGGER.warn(String
                     .format("Unable to download file with checksum=%s. Cause file does not exists on any known storage location",
                             checksum));
             LOGGER.debug(e.getMessage(), e);
             return new ResponseEntity<StreamingResponseBody>(HttpStatus.NOT_FOUND);
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
-            return new ResponseEntity<StreamingResponseBody>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<StreamingResponseBody>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
