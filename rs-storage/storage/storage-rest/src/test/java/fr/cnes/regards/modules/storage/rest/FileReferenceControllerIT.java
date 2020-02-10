@@ -66,7 +66,7 @@ import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurati
 /**
  * @author Sébastien Binda
  */
-@DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD, hierarchyMode = HierarchyMode.EXHAUSTIVE)
+@DirtiesContext(classMode = ClassMode.BEFORE_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_it",
         "regards.storage.cache.path=target/cache" })
 public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
@@ -129,14 +129,16 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
         String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(filePath.toFile()), algorithm);
         FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum, algorithm,
                 filePath.getFileName().toString(), null, MediaType.APPLICATION_OCTET_STREAM);
+        tenantResolver.forceTenant(getDefaultTenant());
         storeReqService.handleRequest("rest-test", metaInfo, filePath.toAbsolutePath().toUri().toURL().toString(),
                                       TARGET_STORAGE, Optional.of("/sub/dir/1/"), UUID.randomUUID().toString());
         // Wait for storage file referenced
         boolean found = false;
         int loops = 100;
         do {
+            tenantResolver.forceTenant(getDefaultTenant());
             found = fileRefService.search(TARGET_STORAGE, checksum).isPresent();
-            Thread.sleep(1_000);
+            Thread.sleep(10_000);
             loops--;
         } while (!found && (loops > 0));
         if (!found) {
