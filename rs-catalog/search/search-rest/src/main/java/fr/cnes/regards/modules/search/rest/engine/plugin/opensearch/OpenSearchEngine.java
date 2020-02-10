@@ -27,14 +27,17 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.common.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -49,6 +52,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
@@ -107,6 +111,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     public static final String ENGINE_PARAMETERS = "engineConfiguration";
 
+    private static final int SEARCH_PAGE_SIZE_LIMIT = 500;
+
     /**
      * Query parser
      */
@@ -154,7 +160,14 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @PluginParameter(name = PARAMETERS_CONFIGURATION, label = "Parameters configuration", optional = true,
             markdown = "OpensearchParameter.md")
-    private final List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
+    private List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
+
+    @PluginInit
+    public void init() {
+        if (paramConfigurations == null) {
+            paramConfigurations = Lists.newArrayList();
+        }
+    }
 
     @Override
     public boolean supports(SearchType searchType) {
@@ -205,9 +218,6 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                                              Arrays.asList(mediaExtension, regardsExtension, timeExtension),
                                              paramConfigurations, engineConfiguration, dataset),
                     headers, HttpStatus.OK);
-            //            return ResponseEntity.ok(descriptionBuilder
-            //                    .build(context, parse(context), Arrays.asList(mediaExtension, regardsExtension, timeExtension),
-            //                           paramConfigurations, engineConfiguration, dataset));
         } else {
             return ISearchEngine.super.extra(context);
         }
@@ -282,6 +292,27 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                               regardsExtension.buildCriterion(attributes));
     }
 
+    private Pair<AttributeModel, ParameterConfiguration> getParameterAttribute(String queryParam)
+            throws OpenSearchUnknownParameter {
+        String attributePath;
+        ParameterConfiguration conf;
+        // Check if parameter key is an alias from configuration
+        Optional<ParameterConfiguration> aliasConf = paramConfigurations.stream()
+                .filter(p -> queryParam.equals(p.getAllias())).findFirst();
+        if (aliasConf.isPresent()) {
+            // If it is an alias retrieve regards parameter path from the configuration
+            conf = aliasConf.get();
+            attributePath = conf.getAttributeModelJsonPath();
+        } else {
+            // If not retrieve regards parameter path
+            attributePath = queryParam;
+            // Search configuration if any
+            conf = paramConfigurations.stream().filter(p -> p.getAttributeModelJsonPath().equals(attributePath))
+                    .findFirst().orElse(null);
+        }
+        return Pair.of(finder.findByName(attributePath), conf);
+    }
+
     /**
      * Build {@link SearchParameter}s by reading given queryParams.
      * @param queryParams Map key=parameter name value=parameter value.
@@ -295,26 +326,10 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                 if (!queryParam.getKey().equals(configuration.getQueryParameterName())
                         && ((queryParam.getValue().size() != 1)
                                 || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
-                    String attributePath;
-                    // Check if parameter key is an alias from configuration
-                    Optional<ParameterConfiguration> aliasConf = paramConfigurations.stream()
-                            .filter(p -> queryParam.getKey().equals(p.getAllias())).findFirst();
-                    ParameterConfiguration conf;
-                    if (aliasConf.isPresent()) {
-                        // If it is an alias retrieve regards parameter path from the configuration
-                        conf = aliasConf.get();
-                        attributePath = conf.getAttributeModelJsonPath();
-                    } else {
-                        // If not retrieve regards parameter path
-                        attributePath = queryParam.getKey();
-                        // Search configuration if any
-                        conf = paramConfigurations.stream()
-                                .filter(p -> p.getAttributeModelJsonPath().equals(attributePath)).findFirst()
-                                .orElse(null);
-                    }
-                    AttributeModel attributeModel = finder.findByName(attributePath);
-                    searchParameters
-                            .add(new SearchParameter(queryParam.getKey(), attributeModel, conf, queryParam.getValue()));
+                    Pair<AttributeModel, ParameterConfiguration> attributeConf = getParameterAttribute(queryParam
+                            .getKey());
+                    searchParameters.add(new SearchParameter(queryParam.getKey(), attributeConf.getLeft(),
+                            attributeConf.getRight(), queryParam.getValue()));
                 }
             } catch (OpenSearchUnknownParameter e) {
                 LOGGER.warn("Parameter not found in REGARDS models attributes.");
@@ -391,6 +406,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         if ((count != null) && (count.size() == 1)) {
             try {
                 size = Integer.valueOf(count.get(0));
+                if (size > SEARCH_PAGE_SIZE_LIMIT) {
+                    size = SEARCH_PAGE_SIZE_LIMIT;
+                }
             } catch (NumberFormatException e) {
                 LOGGER.error(e.getMessage(), e);
             }
@@ -409,7 +427,22 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             }
         }
 
-        return PageRequest.of(start, size);
+        // Build sort parameters from parameter configuration
+        List<Order> orders = Lists.newArrayList();
+        context.getPageable().getSort().get().forEach(order -> {
+            try {
+                if (order.isAscending()) {
+                    orders.add(Order.asc(getParameterAttribute(order.getProperty()).getLeft().getFullJsonPath()));
+                } else {
+                    orders.add(Order.desc(getParameterAttribute(order.getProperty()).getLeft().getFullJsonPath()));
+                }
+            } catch (OpenSearchUnknownParameter e) {
+                // Nothing to do
+                LOGGER.info("Sort parameter invalid {}", order.getProperty());
+            }
+        });
+
+        return PageRequest.of(start, size, Sort.by(orders));
     }
 
     @Override

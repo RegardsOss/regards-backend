@@ -72,8 +72,7 @@ public class GeojsonResponseBuilder implements IResponseBuilder<FeatureWithPrope
         response.setId(searchId);
         response.setTitle(engineConf.getSearchTitle());
         response.setDescription(engineConf.getSearchDescription());
-        response.setPaginationInfos(page.getTotalElements(), page.getNumber() * page.getSize(),
-                                    context.getPageable().getPageSize());
+        response.setPaginationInfos(page.getTotalElements(), page.getNumber() * page.getSize(), page.getSize());
         Query query = new Query();
         context.getQueryParams().forEach((name, values) -> values.forEach(value -> query.addFilter(name, value)));
         query.addFilter("token", token);
