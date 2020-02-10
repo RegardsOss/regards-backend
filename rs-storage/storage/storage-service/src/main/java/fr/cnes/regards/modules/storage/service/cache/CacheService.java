@@ -363,7 +363,7 @@ public class CacheService {
         String filePath = "";
         int idx = 0;
         int subFolders = 0;
-        while ((idx < fileChecksum.length()) && (subFolders < 6)) {
+        while ((idx < (fileChecksum.length() - 1)) && (subFolders < 6)) {
             filePath = Paths.get(filePath, fileChecksum.substring(idx, idx + 2)).toString();
             idx = idx + 2;
         }

@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 @Component
 public class AvailabilityUpdateCustomTestAction implements IUpdateFileReferenceOnAvailable {
 
-    public static final String FILE_TO_UPDATE_CHECKSUM = "fileToUpdateAction.test";
+    public static final String FILE_TO_UPDATE_NAME = "fileToUpdateAction.test";
 
     private static boolean updated = false;
 
@@ -43,7 +43,7 @@ public class AvailabilityUpdateCustomTestAction implements IUpdateFileReferenceO
     public FileReference update(FileReference availableFileReference, FileLocation onlineFileLocation)
             throws ModuleException {
         // Update checksum of the restored file
-        if (availableFileReference.getMetaInfo().getFileName().equals(FILE_TO_UPDATE_CHECKSUM)) {
+        if (availableFileReference.getMetaInfo().getFileName().equals(FILE_TO_UPDATE_NAME)) {
             availableFileReference.getMetaInfo()
                     .setChecksum(getUpdatedChecksum(availableFileReference.getMetaInfo().getChecksum()));
             updated = true;

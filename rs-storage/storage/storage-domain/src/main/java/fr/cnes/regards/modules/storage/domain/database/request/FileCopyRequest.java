@@ -141,4 +141,8 @@ public class FileCopyRequest {
         return creationDate;
     }
 
+    public void setMetaInfo(FileReferenceMetaInfo metaInfo) {
+        this.metaInfo = metaInfo;
+    }
+
 }

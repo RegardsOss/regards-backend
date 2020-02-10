@@ -310,6 +310,17 @@ public class FileCopyRequestService {
     }
 
     /**
+     * Search for a {@link FileCopyRequest} for the given checksum.
+     * @param checksum
+     * @param storage
+     * @return {@link FileCopyRequest} if any
+     */
+    @Transactional(readOnly = true)
+    public Set<FileCopyRequest> search(String checksum) {
+        return copyRepository.findByMetaInfoChecksum(checksum);
+    }
+
+    /**
      * Search for a {@link FileCopyRequest} associated to the given {@link FileReferenceEvent}.
      * @param event
      * @return {@link FileCopyRequest} if any

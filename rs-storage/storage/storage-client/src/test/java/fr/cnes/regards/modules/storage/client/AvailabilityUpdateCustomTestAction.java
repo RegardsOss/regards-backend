@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import java.util.UUID;
-
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.storage.domain.IUpdateFileReferenceOnAvailable;
+import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 
 /**
@@ -33,14 +32,28 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 @Component
 public class AvailabilityUpdateCustomTestAction implements IUpdateFileReferenceOnAvailable {
 
+    public static final String FILE_TO_UPDATE_NAME = "fileToUpdateAction.test";
+
+    public static final String FILE_TO_UPDATE_CHECKSUM = "12345678912345";
+
     /* (non-Javadoc)
      * @see fr.cnes.regards.modules.storage.domain.IUpdateFileReferenceOnAvailable#update(fr.cnes.regards.modules.storage.domain.database.FileReference)
      */
     @Override
-    public FileReference update(FileReference availableFileReference) throws ModuleException {
+    public FileReference update(FileReference availableFileReference, FileLocation onlineFileLocation)
+            throws ModuleException {
         // Update checksum of the restored file
-        availableFileReference.getMetaInfo().setChecksum("updated_" + UUID.randomUUID().toString());
-        return availableFileReference;
+        if (availableFileReference.getMetaInfo().getFileName().equals(FILE_TO_UPDATE_NAME)) {
+            availableFileReference.getMetaInfo()
+                    .setChecksum(getUpdatedChecksum(availableFileReference.getMetaInfo().getChecksum()));
+            return availableFileReference;
+        } else {
+            return null;
+        }
+    }
+
+    public static String getUpdatedChecksum(String checksum) {
+        return "updated_" + checksum;
     }
 
 }
