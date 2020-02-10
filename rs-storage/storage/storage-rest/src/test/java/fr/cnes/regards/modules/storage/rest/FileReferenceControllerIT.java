@@ -37,6 +37,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -63,6 +66,7 @@ import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurati
 /**
  * @author Sébastien Binda
  */
+@DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_it",
         "regards.storage.cache.path=target/cache" })
 public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
