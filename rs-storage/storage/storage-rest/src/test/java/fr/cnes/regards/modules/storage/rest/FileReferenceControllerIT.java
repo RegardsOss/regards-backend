@@ -138,7 +138,7 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
         do {
             tenantResolver.forceTenant(getDefaultTenant());
             found = fileRefService.search(TARGET_STORAGE, checksum).isPresent();
-            Thread.sleep(10_000);
+            Thread.sleep(1_000);
             loops--;
         } while (!found && (loops > 0));
         if (!found) {
