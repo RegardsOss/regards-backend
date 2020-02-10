@@ -88,8 +88,8 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
                 .collect(Collectors.toSet());
         Set<FileStorageRequestResultDTO> errors = handledRequest.stream().filter(r -> r.isError())
                 .collect(Collectors.toSet());
-        LOG.info("[STORE END] Saving job requests final status ({} successes & {} errors).", successes.size(),
-                 errors.size());
+        LOG.debug("[STORE END] Saving job requests final status ({} successes & {} errors).", successes.size(),
+                  errors.size());
         storageRequestService.handleSuccess(successes);
         storageRequestService.handleError(errors);
     }

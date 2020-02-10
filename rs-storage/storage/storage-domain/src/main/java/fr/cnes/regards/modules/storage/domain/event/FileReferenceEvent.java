@@ -97,31 +97,6 @@ public class FileReferenceEvent implements ISubscribable {
         return event;
     }
 
-    /**
-     * Build a file reference event without file location
-     * @param checksum
-     * @param type
-     * @param owners
-     * @param message
-     * @param groupIds
-     * @return {@link FileReferenceEvent}
-     */
-    public static FileReferenceEvent build(String checksum, String originStorage, FileReferenceEventType type,
-            Collection<String> owners, String message, Collection<String> groupIds) {
-        Assert.notNull(checksum, "Checksum is mandatory");
-        Assert.notNull(type, "Type is mandatory");
-        Assert.notNull(groupIds, "groupIds is mandatory");
-
-        FileReferenceEvent event = new FileReferenceEvent();
-        event.checksum = checksum;
-        event.type = type;
-        event.message = message;
-        event.owners = owners;
-        event.groupIds.addAll(groupIds);
-
-        return event;
-    }
-
     public String getChecksum() {
         return checksum;
     }

@@ -34,7 +34,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
@@ -43,6 +42,7 @@ import fr.cnes.regards.modules.storage.domain.database.DownloadToken;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
+import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 
 /**
@@ -85,7 +85,7 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
         try {
             downloadService.downloadFile(fileRef.getMetaInfo().getChecksum());
             Assert.fail("File should not be available for download as it is not online");
-        } catch (EntityNotFoundException e) {
+        } catch (NearlineFileNotAvailableException e) {
             // A cache request should be created
             Optional<FileCacheRequest> oReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
             Assert.assertTrue("FileCacheRequest should be createdd", oReq.isPresent());
@@ -114,9 +114,9 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
         }
     }
 
-    @Test(expected = EntityNotFoundException.class)
+    @Test(expected = NearlineFileNotAvailableException.class)
     public void download_without_cache() throws InterruptedException, ExecutionException, EntityNotFoundException,
-            EntityOperationForbiddenException {
+            NearlineFileNotAvailableException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
         try {
             downloadService.download(fileRef);
@@ -128,7 +128,7 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
 
     @Test
     public void download_with_cache() throws InterruptedException, ExecutionException, EntityNotFoundException,
-            IOException, EntityOperationForbiddenException {
+            IOException, NearlineFileNotAvailableException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
         this.simulateFileInCache(fileRef.getMetaInfo().getChecksum());
         InputStream stream = downloadService.download(fileRef);

@@ -44,6 +44,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
 
@@ -112,11 +113,12 @@ public class CacheService {
      * @param location
      * @param expirationDate
      */
-    public void addFile(String checksum, Long fileSize, URL location, OffsetDateTime expirationDate, String groupId) {
+    public void addFile(String checksum, Long fileSize, String fileName, MimeType mimeType, URL location,
+            OffsetDateTime expirationDate, String groupId) {
         Optional<CacheFile> oCf = search(checksum);
         CacheFile cachedFile;
         if (!oCf.isPresent()) {
-            cachedFile = new CacheFile(checksum, fileSize, location, expirationDate, groupId);
+            cachedFile = new CacheFile(checksum, fileSize, fileName, mimeType, location, expirationDate, groupId);
         } else {
             cachedFile = oCf.get();
             if (expirationDate.isAfter(cachedFile.getExpirationDate())) {
@@ -359,7 +361,7 @@ public class CacheService {
         String filePath = "";
         int idx = 0;
         int subFolders = 0;
-        while (idx < fileChecksum.length() && subFolders < 6) {
+        while ((idx < (fileChecksum.length() - 1)) && (subFolders < 6)) {
             filePath = Paths.get(filePath, fileChecksum.substring(idx, idx + 2)).toString();
             idx = idx + 2;
         }

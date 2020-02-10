@@ -21,8 +21,11 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import org.springframework.util.MimeType;
+
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
 /**
@@ -51,10 +54,20 @@ public class CacheFile {
     private String checksum;
 
     /**
-     * the cache file size, this field is final because it should mirror the information from StorageDataFile
+     * the cache file size
      */
     @Column(name = "file_size")
     private Long fileSize;
+
+    /**
+     * The cache file name
+     */
+    @Column(name = "filename")
+    private String fileName;
+
+    @Column(nullable = false, name = "mime_type")
+    @Convert(converter = MimeTypeConverter.class)
+    private MimeType mimeType;
 
     /**
      * location into the cache
@@ -91,12 +104,15 @@ public class CacheFile {
      * @param df
      * @param expirationDate
      */
-    public CacheFile(String checksum, Long fileSize, URL location, OffsetDateTime expirationDate, String groupId) {
+    public CacheFile(String checksum, Long fileSize, String fileName, MimeType mimeType, URL location,
+            OffsetDateTime expirationDate, String groupId) {
         this.checksum = checksum;
         this.fileSize = fileSize;
         this.location = location;
         this.expirationDate = expirationDate;
         this.groupIds.add(groupId);
+        this.fileName = fileName;
+        this.mimeType = mimeType;
     }
 
     public Long getId() {
@@ -141,6 +157,22 @@ public class CacheFile {
 
     public Set<String> getGroupIds() {
         return groupIds;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public MimeType getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(MimeType mimeType) {
+        this.mimeType = mimeType;
     }
 
     @Override

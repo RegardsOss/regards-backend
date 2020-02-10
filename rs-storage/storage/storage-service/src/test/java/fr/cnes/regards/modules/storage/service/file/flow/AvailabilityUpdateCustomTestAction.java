@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
-import java.util.UUID;
-
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -34,6 +32,10 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 @Component
 public class AvailabilityUpdateCustomTestAction implements IUpdateFileReferenceOnAvailable {
 
+    public static final String FILE_TO_UPDATE_NAME = "fileToUpdateAction.test";
+
+    private static boolean updated = false;
+
     /* (non-Javadoc)
      * @see fr.cnes.regards.modules.storage.domain.IUpdateFileReferenceOnAvailable#update(fr.cnes.regards.modules.storage.domain.database.FileReference)
      */
@@ -41,8 +43,22 @@ public class AvailabilityUpdateCustomTestAction implements IUpdateFileReferenceO
     public FileReference update(FileReference availableFileReference, FileLocation onlineFileLocation)
             throws ModuleException {
         // Update checksum of the restored file
-        availableFileReference.getMetaInfo().setChecksum("updated_" + UUID.randomUUID().toString());
-        return availableFileReference;
+        if (availableFileReference.getMetaInfo().getFileName().equals(FILE_TO_UPDATE_NAME)) {
+            availableFileReference.getMetaInfo()
+                    .setChecksum(getUpdatedChecksum(availableFileReference.getMetaInfo().getChecksum()));
+            updated = true;
+            return availableFileReference;
+        } else {
+            return null;
+        }
+    }
+
+    public static String getUpdatedChecksum(String checksum) {
+        return "updated_" + checksum;
+    }
+
+    public boolean isUpdated() {
+        return updated;
     }
 
 }

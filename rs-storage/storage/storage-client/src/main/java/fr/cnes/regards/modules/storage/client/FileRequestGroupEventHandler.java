@@ -128,8 +128,8 @@ public class FileRequestGroupEventHandler
                         }
                     }
                     if (!list.isEmpty()) {
-                        LOGGER.info("[STORAGE RESPONSES HANDLER] Total events queue size={}", tenantItems.size());
-                        LOGGER.info("[STORAGE RESPONSES HANDLER] Handling {} FileRequestsGroupEvent...", list.size());
+                        LOGGER.debug("[STORAGE RESPONSES HANDLER] Total events queue size={}", tenantItems.size());
+                        LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileRequestsGroupEvent...", list.size());
                         long start = System.currentTimeMillis();
                         handle(list);
                         LOGGER.info("[STORAGE RESPONSES HANDLER] {} FileRequestsGroupEvent handled in {} ms",

@@ -139,7 +139,7 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
                         }
                     }
                     if (!list.isEmpty()) {
-                        LOGGER.info("[COPY FLOW HANDLER] Bulk saving {} CopyFlowItem...", list.size());
+                        LOGGER.debug("[COPY FLOW HANDLER] Bulk saving {} CopyFlowItem...", list.size());
                         long start = System.currentTimeMillis();
                         fileCopyReqService.copy(list);
                         LOGGER.info("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms", list.size(),

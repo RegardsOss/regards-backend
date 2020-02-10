@@ -310,6 +310,17 @@ public class FileCopyRequestService {
     }
 
     /**
+     * Search for a {@link FileCopyRequest} for the given checksum.
+     * @param checksum
+     * @param storage
+     * @return {@link FileCopyRequest} if any
+     */
+    @Transactional(readOnly = true)
+    public Set<FileCopyRequest> search(String checksum) {
+        return copyRepository.findByMetaInfoChecksum(checksum);
+    }
+
+    /**
      * Search for a {@link FileCopyRequest} associated to the given {@link FileReferenceEvent}.
      * @param event
      * @return {@link FileCopyRequest} if any
@@ -317,26 +328,33 @@ public class FileCopyRequestService {
     public Optional<FileCopyRequest> search(FileReferenceEvent event) {
         Optional<FileCopyRequest> req = Optional.empty();
         Iterator<String> it;
-        switch (event.getType()) {
-            case AVAILABLE:
-            case AVAILABILITY_ERROR:
-                it = event.getGroupIds().iterator();
-                while (it.hasNext() && !req.isPresent()) {
-                    req = copyRepository.findByMetaInfoChecksumAndFileCacheGroupId(event.getChecksum(), it.next());
-                }
-                break;
-            case STORED:
-            case STORE_ERROR:
-                it = event.getGroupIds().iterator();
-                while (it.hasNext() && !req.isPresent()) {
-                    req = copyRepository.findByMetaInfoChecksumAndFileStorageGroupId(event.getChecksum(), it.next());
-                }
-                break;
-            case DELETED_FOR_OWNER:
-            case FULLY_DELETED:
-            case DELETION_ERROR:
-            default:
-                break;
+        // At this point there can be only one group Id
+        if (event.getGroupIds().size() == 1) {
+            switch (event.getType()) {
+                case AVAILABLE:
+                case AVAILABILITY_ERROR:
+                    it = event.getGroupIds().iterator();
+                    while (it.hasNext() && !req.isPresent()) {
+                        req = copyRepository.findOneByMetaInfoChecksumAndFileCacheGroupId(event.getChecksum(),
+                                                                                          it.next());
+                    }
+                    break;
+                case STORED:
+                case STORE_ERROR:
+                    it = event.getGroupIds().iterator();
+                    while (it.hasNext() && !req.isPresent()) {
+                        // There is one storage request per copy request
+                        req = copyRepository.findOneByFileStorageGroupId(it.next());
+                    }
+                    break;
+                case DELETED_FOR_OWNER:
+                case FULLY_DELETED:
+                case DELETION_ERROR:
+                default:
+                    break;
+            }
+        } else {
+            LOGGER.error("The fileReference event cannot be associated to multiple groupeIds for copy requests");
         }
         return req;
     }

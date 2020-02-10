@@ -35,8 +35,10 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
 
@@ -175,7 +177,8 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
         // Simulate file storage on a near line location
         FileReference file1 = this.generateRandomStoredNearlineFileReference("file.nearline.1.test", Optional.empty());
         // Simulate file in cache
-        cacheService.addFile(file1.getMetaInfo().getChecksum(), 123L,
+        cacheService.addFile(file1.getMetaInfo().getChecksum(), 123L, "file.nearline.1.test",
+                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
                              new URL("file", null, "target/cache/test/file.nearline.1.test"),
                              OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
         // Simulate availability request on this file
