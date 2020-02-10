@@ -46,15 +46,11 @@ public interface IFileCopyRequestRepository
 
     Set<FileCopyRequest> findByMetaInfoChecksum(String checksum);
 
-    Optional<FileCopyRequest> findByFileCacheGroupId(String groupId);
+    Optional<FileCopyRequest> findOneByMetaInfoChecksumAndFileCacheGroupId(String checksum, String groupId);
 
-    Optional<FileCopyRequest> findByFileStorageGroupId(String groupId);
+    Optional<FileCopyRequest> findOneByFileStorageGroupId(String groupId);
 
     Optional<FileCopyRequest> findOneByMetaInfoChecksumAndStorage(String checksum, String storage);
-
-    Optional<FileCopyRequest> findByMetaInfoChecksumAndFileCacheGroupId(String checksum, String groupId);
-
-    Optional<FileCopyRequest> findByMetaInfoChecksumAndFileStorageGroupId(String checksum, String groupId);
 
     boolean existsByGroupId(String groupId);
 

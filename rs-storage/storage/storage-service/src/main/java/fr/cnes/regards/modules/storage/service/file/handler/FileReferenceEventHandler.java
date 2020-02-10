@@ -128,8 +128,8 @@ public class FileReferenceEventHandler
     private void handleFileStored(FileReferenceEvent event) {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
         if (request.isPresent()) {
-            Optional<FileReference> oFileRef = fileReferenceService.search(request.get().getStorage(),
-                                                                           request.get().getMetaInfo().getChecksum());
+            Optional<FileReference> oFileRef = fileReferenceService.search(event.getLocation().getStorage(),
+                                                                           event.getMetaInfo().getChecksum());
             if (oFileRef.isPresent()) {
                 fileCopyRequestService.handleSuccess(request.get(), oFileRef.get());
                 LOGGER.info("[STORE SUCCESS {}] New stored file is associated to a copy request {}",
@@ -254,12 +254,12 @@ public class FileReferenceEventHandler
         if (request.isPresent()) {
             FileCopyRequest copyReq = request.get();
             FileReferenceMetaInfo fileMeta = fileAvailableMetaInfo.orElse(copyReq.getMetaInfo());
-            // Update copy request checksum if updated
-            if (!availableEvent.getChecksum().equals(fileMeta.getChecksum())) {
-                FileReferenceMetaInfo metaInfo = copyReq.getMetaInfo();
-                metaInfo.setChecksum(fileMeta.getChecksum());
-                copyReq.setMetaInfo(metaInfo);
-            }
+            //            // Update copy request checksum if updated
+            //            if (!availableEvent.getChecksum().equals(fileMeta.getChecksum())) {
+            //                FileReferenceMetaInfo metaInfo = copyReq.getMetaInfo();
+            //                metaInfo.setChecksum(fileMeta.getChecksum());
+            //                copyReq.setMetaInfo(metaInfo);
+            //            }
             LOGGER.trace("[AVAILABILITY SUCCESS {}] Available file is associated to a copy request {}",
                          availableEvent.getChecksum(), request.get().getGroupId());
             String storageGroupId = UUID.randomUUID().toString();
