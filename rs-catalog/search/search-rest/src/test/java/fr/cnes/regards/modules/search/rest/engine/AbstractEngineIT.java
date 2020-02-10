@@ -273,7 +273,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                 });
 
         // - Refresh attribute factory
-        List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null, null);
+        List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
 
         // - Manage attribute cache
@@ -470,7 +470,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         planet.addProperty(IProperty.buildString(PLANET_TYPE, type));
         planet.addProperty(IProperty.buildInteger(PLANET_DIAMETER, diameter));
         planet.addProperty(IProperty.buildLong(PLANET_SUN_DISTANCE, sunDistance));
-        if (params != null && !params.isEmpty()) {
+        if ((params != null) && !params.isEmpty()) {
             planet.addProperty(IProperty.buildStringArray(PLANET_PARAMS, params.toArray(new String[params.size()])));
         }
         return planet;
