@@ -28,7 +28,6 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
@@ -53,7 +52,6 @@ public class TestPublisher extends SingleVhostPublisher implements IPublisher {
     /**
      * Class logger
      */
-    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(TestPublisher.class);
 
     @Autowired
