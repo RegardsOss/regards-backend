@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.security.autoconfigure;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -31,6 +32,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.authentication.autoconfigure.AuthenticationAutoConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
+import fr.cnes.regards.framework.security.autoconfigure.test.SecureTestRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProvider;
 import fr.cnes.regards.framework.security.endpoint.DefaultPluginResourceManager;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
@@ -58,9 +60,17 @@ public class MethodAuthorizationServiceAutoConfiguration {
     private String instanceTenantName;
 
     @ConditionalOnMissingBean
+    @ConditionalOnExpression("#{!environment.getProperty('spring.profiles.active').contains('test')}")
     @Bean
     public IRuntimeTenantResolver secureThreadTenantResolver() {
         return new SecureRuntimeTenantResolver(instanceTenantName);
+    }
+
+    @ConditionalOnMissingBean
+    @ConditionalOnExpression("#{environment.getProperty('spring.profiles.active').contains('test')}")
+    @Bean
+    public IRuntimeTenantResolver secureTestThreadTenantResolver() {
+        return new SecureTestRuntimeTenantResolver(instanceTenantName);
     }
 
     @ConditionalOnMissingBean
