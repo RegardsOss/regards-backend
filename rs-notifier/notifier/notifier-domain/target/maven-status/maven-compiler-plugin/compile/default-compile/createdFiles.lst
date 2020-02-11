@@ -1,0 +1,5 @@
+fr/cnes/regards/modules/notifier/domain/Rule.class
+fr/cnes/regards/modules/notifier/domain/Recipient.class
+fr/cnes/regards/modules/notifier/domain/NotificationAction.class
+fr/cnes/regards/modules/notifier/domain/state/NotificationState.class
+fr/cnes/regards/modules/notifier/domain/RecipientError.class

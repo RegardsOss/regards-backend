@@ -1,0 +1,6 @@
+fr/cnes/regards/modules/notifier/plugin/IRecipientNotifier.class
+fr/cnes/reguards/modules/notifier/dto/in/NotificationActionEvent.class
+fr/cnes/reguards/modules/notifier/dto/RuleDto.class
+fr/cnes/reguards/modules/notifier/dto/out/NotificationEvent.class
+fr/cnes/reguards/modules/notifier/dto/RecipientDto.class
+fr/cnes/regards/modules/notifier/plugin/IRuleMatcher.class
