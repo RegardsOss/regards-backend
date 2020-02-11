@@ -1,6 +1,0 @@
-/home/marc/git/rs-notifier/notifier/notifier-dto/src/main/java/fr/cnes/reguards/modules/notifier/dto/RecipientDto.java
-/home/marc/git/rs-notifier/notifier/notifier-dto/src/main/java/fr/cnes/regards/modules/notifier/plugin/IRecipientNotifier.java
-/home/marc/git/rs-notifier/notifier/notifier-dto/src/main/java/fr/cnes/regards/modules/notifier/plugin/IRuleMatcher.java
-/home/marc/git/rs-notifier/notifier/notifier-dto/src/main/java/fr/cnes/reguards/modules/notifier/dto/in/NotificationActionEvent.java
-/home/marc/git/rs-notifier/notifier/notifier-dto/src/main/java/fr/cnes/reguards/modules/notifier/dto/RuleDto.java
-/home/marc/git/rs-notifier/notifier/notifier-dto/src/main/java/fr/cnes/reguards/modules/notifier/dto/out/NotificationEvent.java
