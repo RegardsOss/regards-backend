@@ -15,7 +15,7 @@
 
 	<groupId>fr.cnes.regards</groupId>
 	<artifactId>regards-dependencies</artifactId>
-	<version>${regards.version}</version>
+	<version>GEODE</version>
 	<packaging>pom</packaging>
 
 	<description>Declares the dependency management for the whole system</description>
