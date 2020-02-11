@@ -62,6 +62,7 @@ import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 
 /**
  * @author oroussel
@@ -86,6 +87,9 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Autowired
     private IOrderRepository orderRepository;
+
+    @Autowired
+    private IStorageRestClient storageClient;
 
     @Value("${http.proxy.host:#{null}}")
     private String proxyHost;
@@ -210,8 +214,7 @@ public class OrderDataFileService implements IOrderDataFileService {
             }
         } else {
             try {
-                // TODO : Replace by new storage access files
-                // response = aipClient.downloadFile(dataFile.getIpId().toString(), dataFile.getChecksum());
+                response = storageClient.downloadFile(dataFile.getChecksum());
             } catch (RuntimeException e) {
                 LOGGER.error("Error while downloading file from Archival Storage", e);
                 StringWriter sw = new StringWriter();
