@@ -444,7 +444,11 @@
 				<artifactId>swagger-regards-starter</artifactId>
 				<version>${swagger.starter.version}</version>
 			</dependency>
-
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>urn-regards</artifactId>
+                <version>${geojson.starter.version}</version>
+            </dependency>
             <!-- Test dependencies -->
 			<dependency>
 				<groupId>fr.cnes.regards.framework.test</groupId>
