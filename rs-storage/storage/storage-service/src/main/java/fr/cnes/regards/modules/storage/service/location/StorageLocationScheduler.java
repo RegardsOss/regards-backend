@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
  *
  */
 @Component
-@Profile({ "!noscheduler", "!nomonitoring" })
+@Profile({ "!noschedule" })
 @EnableScheduling
 public class StorageLocationScheduler {
 
