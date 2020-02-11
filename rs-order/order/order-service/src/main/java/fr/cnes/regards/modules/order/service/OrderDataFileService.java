@@ -50,6 +50,7 @@ import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 
 import feign.Response;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
@@ -214,12 +215,15 @@ public class OrderDataFileService implements IOrderDataFileService {
             }
         } else {
             try {
+                FeignSecurityManager.asSystem();
                 response = storageClient.downloadFile(dataFile.getChecksum());
             } catch (RuntimeException e) {
                 LOGGER.error("Error while downloading file from Archival Storage", e);
                 StringWriter sw = new StringWriter();
                 e.printStackTrace(new PrintWriter(sw));
                 dataFile.setDownloadError("Error while downloading file from Archival Storage\n" + sw.toString());
+            } finally {
+                FeignSecurityManager.reset();
             }
             error = (response == null) || (response.status() != HttpStatus.OK.value());
             if (!error) {
