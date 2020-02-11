@@ -30,10 +30,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
@@ -54,6 +58,7 @@ import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
  * @author sbinda
  *
  */
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_loc_rest_it",
         "regards.storage.cache.path=target/cache" })
 public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT {
@@ -69,9 +74,15 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
+    private IJobInfoRepository jobInfoRepository;
+
+    @Autowired
     private StorageLocationService storageLocService;
 
     private void clear() throws IOException {
+        // Delete existing jobs if any
+        jobInfoRepository.deleteAll();
+
         for (StorageLocationConfiguration loc : storageLocationConfService.searchAll()) {
             try {
                 storageLocationConfService.delete(loc.getId());

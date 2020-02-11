@@ -353,8 +353,6 @@ public class FileCopyRequestService {
                 default:
                     break;
             }
-        } else {
-            LOGGER.error("The fileReference event cannot be associated to multiple groupeIds for copy requests");
         }
         return req;
     }

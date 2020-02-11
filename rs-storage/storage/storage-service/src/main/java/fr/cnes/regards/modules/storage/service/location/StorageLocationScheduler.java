@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
  *
  */
 @Component
-@Profile({ "!noscheduler", "!nomonitoring" })
+@Profile({ "!noschedule" })
 @EnableScheduling
 public class StorageLocationScheduler {
 
@@ -75,8 +75,8 @@ public class StorageLocationScheduler {
                 storageLocationService.monitorStorageLocations(false);
                 LOGGER.trace("Data storages monitoring done in {}ms", System.currentTimeMillis() - startTime);
             } finally {
-                runtimeTenantResolver.clearTenant();
                 releaseLock();
+                runtimeTenantResolver.clearTenant();
             }
         }
     }

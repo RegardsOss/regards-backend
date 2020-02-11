@@ -34,6 +34,9 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
@@ -65,6 +68,7 @@ import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineTestClient;
  * @author Sébastien Binda
  *
  */
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_tests",
         "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true" })
 public class StorageRestClientIT extends AbstractRegardsWebIT {

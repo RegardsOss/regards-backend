@@ -254,12 +254,6 @@ public class FileReferenceEventHandler
         if (request.isPresent()) {
             FileCopyRequest copyReq = request.get();
             FileReferenceMetaInfo fileMeta = fileAvailableMetaInfo.orElse(copyReq.getMetaInfo());
-            //            // Update copy request checksum if updated
-            //            if (!availableEvent.getChecksum().equals(fileMeta.getChecksum())) {
-            //                FileReferenceMetaInfo metaInfo = copyReq.getMetaInfo();
-            //                metaInfo.setChecksum(fileMeta.getChecksum());
-            //                copyReq.setMetaInfo(metaInfo);
-            //            }
             LOGGER.trace("[AVAILABILITY SUCCESS {}] Available file is associated to a copy request {}",
                          availableEvent.getChecksum(), request.get().getGroupId());
             String storageGroupId = UUID.randomUUID().toString();

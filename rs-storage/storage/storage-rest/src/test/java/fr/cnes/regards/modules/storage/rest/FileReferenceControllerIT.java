@@ -33,11 +33,16 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -63,6 +68,8 @@ import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurati
 /**
  * @author Sébastien Binda
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_it",
         "regards.storage.cache.path=target/cache" })
 public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
@@ -125,12 +132,14 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
         String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(filePath.toFile()), algorithm);
         FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum, algorithm,
                 filePath.getFileName().toString(), null, MediaType.APPLICATION_OCTET_STREAM);
+        tenantResolver.forceTenant(getDefaultTenant());
         storeReqService.handleRequest("rest-test", metaInfo, filePath.toAbsolutePath().toUri().toURL().toString(),
                                       TARGET_STORAGE, Optional.of("/sub/dir/1/"), UUID.randomUUID().toString());
         // Wait for storage file referenced
         boolean found = false;
         int loops = 100;
         do {
+            tenantResolver.forceTenant(getDefaultTenant());
             found = fileRefService.search(TARGET_STORAGE, checksum).isPresent();
             Thread.sleep(1_000);
             loops--;
