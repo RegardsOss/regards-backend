@@ -564,4 +564,11 @@ public class FileCacheRequestService {
             repository.deleteByStorage(storageLocationId);
         }
     }
+
+    /**
+     * @param deletedFileRef
+     */
+    public void delete(FileReference deletedFileRef) {
+        repository.deleteByfileReference(deletedFileRef);
+    }
 }

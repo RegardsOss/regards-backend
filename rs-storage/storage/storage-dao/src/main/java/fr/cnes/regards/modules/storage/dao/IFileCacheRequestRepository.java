@@ -28,6 +28,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 
@@ -53,6 +54,8 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
     Set<FileCacheRequest> findByGroupIdAndStatus(String groupId, FileRequestStatus status);
 
     void deleteByStorage(String storageLocationId);
+
+    void deleteByfileReference(FileReference fileReference);
 
     void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus status);
 

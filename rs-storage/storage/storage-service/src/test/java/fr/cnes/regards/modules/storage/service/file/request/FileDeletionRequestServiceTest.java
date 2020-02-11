@@ -23,6 +23,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -114,6 +115,9 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
                             afterDeletion.get().getOwners().size());
         Assert.assertTrue("File reference should always be owned by one owner",
                           afterDeletion.get().getOwners().contains(owners.get(1)));
+
+        // To check that cache request are deleted with fileReference add a cache request for one stored file
+        fileCacheRequestService.create(fileRef, OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
 
         // Delete file reference for the remaining owner
         request = FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
@@ -216,6 +220,9 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
                                 afterDeletion.get().getOwners().size());
             Assert.assertTrue("File reference should always be owned by one owner",
                               afterDeletion.get().getOwners().contains(secondOwner));
+
+            // To check that cache request are deleted with fileReference add a cache request for one stored file
+            fileCacheRequestService.create(fileRef, OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
 
             // Delete file reference for the remaining owner
             request = FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),

@@ -122,6 +122,9 @@ public class FileDeletionRequestService {
     private FileCopyRequestService fileCopyReqService;
 
     @Autowired
+    private FileCacheRequestService fileCacheReqService;
+
+    @Autowired
     private ILockService lockService;
 
     /**
@@ -384,6 +387,8 @@ public class FileDeletionRequestService {
                 // If the file is stored on an accessible storage, create a new deletion request
                 create(fileReference, forceDelete, groupId, FileRequestStatus.TO_DO);
             } else {
+                // Delete associated cache request if any
+                fileCacheReqService.delete(fileReference);
                 // Else, directly delete the file reference
                 fileRefService.delete(fileReference, groupId);
             }
@@ -464,7 +469,9 @@ public class FileDeletionRequestService {
         FileReference deletedFileRef = fileDeletionRequest.getFileReference();
         // 1. Delete the request in database
         delete(fileDeletionRequest);
-        // 2. Delete the file reference in database
+        // 2. Delete cache request if any
+        fileCacheReqService.delete(deletedFileRef);
+        // 3. Delete the file reference in database
         fileRefService.delete(deletedFileRef, fileDeletionRequest.getGroupId());
     }
 
