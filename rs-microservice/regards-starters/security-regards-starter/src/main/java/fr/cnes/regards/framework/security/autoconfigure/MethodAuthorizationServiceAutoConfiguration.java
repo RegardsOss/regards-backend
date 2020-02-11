@@ -60,14 +60,14 @@ public class MethodAuthorizationServiceAutoConfiguration {
     private String instanceTenantName;
 
     @ConditionalOnMissingBean
-    @ConditionalOnExpression("#{!environment.getProperty('spring.profiles.active').contains('test')}")
+    @ConditionalOnExpression("#{environment.getProperty('spring.profiles.active') == null || !environment.getProperty('spring.profiles.active').contains('test')}")
     @Bean
     public IRuntimeTenantResolver secureThreadTenantResolver() {
         return new SecureRuntimeTenantResolver(instanceTenantName);
     }
 
     @ConditionalOnMissingBean
-    @ConditionalOnExpression("#{environment.getProperty('spring.profiles.active').contains('test')}")
+    @ConditionalOnExpression("#{environment.getProperty('spring.profiles.active') != null && environment.getProperty('spring.profiles.active').contains('test')}")
     @Bean
     public IRuntimeTenantResolver secureTestThreadTenantResolver() {
         return new SecureTestRuntimeTenantResolver(instanceTenantName);
