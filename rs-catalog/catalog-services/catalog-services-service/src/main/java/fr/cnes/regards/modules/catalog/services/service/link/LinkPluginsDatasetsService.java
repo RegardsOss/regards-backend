@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.catalog.services.dao.ILinkPluginsDatasetsRepository;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.event.LinkPluginsDatasetsEvent;
@@ -172,7 +172,7 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
         public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
             if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
                 runtimeTenantResolver.forceTenant(pWrapper.getTenant());
-                for (final OaisUniformResourceName ipId : pWrapper.getContent().getAipIds()) {
+                for (final UniformResourceName ipId : pWrapper.getContent().getAipIds()) {
                     final LinkPluginsDatasets link = linkRepo.findOneByDatasetId(ipId.toString());
                     if (link != null) {
                         deleteLink(link);

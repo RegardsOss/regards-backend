@@ -115,8 +115,8 @@ public class AccessRightController {
             FacetPage<DataObject> page = searchService.search(criterion, Searches.onSingleEntity(EntityType.DATA), null,
                                                               PageRequest.of(0, urns.size()));
             urnsWithAccess.addAll(page.getContent().parallelStream()
-                    .filter(dataObject -> dataObject.getFiles().containsKey(DataType.RAWDATA)).map(DataObject::getIpId)
-                    .collect(Collectors.toSet()));
+                    .filter(dataObject -> dataObject.getFiles().containsKey(DataType.RAWDATA))
+                    .map(dataObject -> (OaisUniformResourceName) dataObject.getIpId()).collect(Collectors.toSet()));
         }
         return ResponseEntity.ok(urnsWithAccess);
     }

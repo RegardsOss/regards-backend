@@ -153,7 +153,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
                 });
 
         // - Refresh attribute factory
-        List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null, null);
+        List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
 
         // - Manage attribute cache
@@ -167,7 +167,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
         indexerService.saveEntity(getDefaultTenant(), france);
 
         // Create data
-        prepareDepartments(departmentModel, france.getIpId());
+        prepareDepartments(departmentModel, (OaisUniformResourceName) france.getIpId());
 
         // Refresh index to be sure data is available for requesting
         indexerService.refresh(getDefaultTenant());

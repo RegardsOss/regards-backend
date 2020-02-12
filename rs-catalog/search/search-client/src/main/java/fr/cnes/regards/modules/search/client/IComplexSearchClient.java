@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;

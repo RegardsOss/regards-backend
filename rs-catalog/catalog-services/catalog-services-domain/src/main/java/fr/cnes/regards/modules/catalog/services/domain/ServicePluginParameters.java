@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.catalog.services.domain;
 import java.util.List;
 import java.util.Map;
 
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.urn.EntityType;
 
 /**
  * Catalog service plugin parameters used to execute the plugin.

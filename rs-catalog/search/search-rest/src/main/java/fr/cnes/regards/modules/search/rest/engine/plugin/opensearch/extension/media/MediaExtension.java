@@ -23,6 +23,7 @@ import java.net.URI;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.rometools.modules.mediarss.MediaEntryModuleImpl;
 import com.rometools.modules.mediarss.types.Category;
@@ -97,10 +99,22 @@ public class MediaExtension extends AbstractExtension {
                 feature.addProperty(GEO_JSON_RAWDATA_KEY, GeoJsonLinkBuilder.getDataFileHref(f, token));
                 links.add(getGeoJsonLink(f, token));
             });
+            Set<String> quicklooks = Sets.newHashSet();
             medias.get(DataType.QUICKLOOK_SD).forEach(f -> {
-                feature.addProperty(GEO_JSON_QUICKLOOK_KEY, GeoJsonLinkBuilder.getDataFileHref(f, token));
+                quicklooks.add(GeoJsonLinkBuilder.getDataFileHref(f, token));
                 links.add(getGeoJsonLink(f, token));
             });
+            medias.get(DataType.QUICKLOOK_MD).forEach(f -> {
+                quicklooks.add(GeoJsonLinkBuilder.getDataFileHref(f, token));
+                links.add(getGeoJsonLink(f, token));
+            });
+            medias.get(DataType.QUICKLOOK_HD).forEach(f -> {
+                quicklooks.add(GeoJsonLinkBuilder.getDataFileHref(f, token));
+                links.add(getGeoJsonLink(f, token));
+            });
+            if (!quicklooks.isEmpty()) {
+                feature.addProperty(GEO_JSON_QUICKLOOK_KEY, quicklooks);
+            }
             medias.get(DataType.THUMBNAIL).forEach(f -> {
                 feature.addProperty(GEO_JSON_THUMBNAIL_KEY, GeoJsonLinkBuilder.getDataFileHref(f, token));
                 links.add(getGeoJsonLink(f, token));
@@ -169,6 +183,8 @@ public class MediaExtension extends AbstractExtension {
         medias.forEach((type, file) -> {
             switch (type) {
                 case QUICKLOOK_SD:
+                case QUICKLOOK_MD:
+                case QUICKLOOK_HD:
                 case THUMBNAIL:
                     Link iconLink = new Link();
                     iconLink.setHref(GeoJsonLinkBuilder.getDataFileHref(file, token));

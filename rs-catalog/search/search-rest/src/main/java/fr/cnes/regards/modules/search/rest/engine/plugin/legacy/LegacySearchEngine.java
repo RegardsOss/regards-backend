@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -169,9 +170,9 @@ public class LegacySearchEngine implements
 
         // Add entity links
         for (EntityModel<EntityFeature> resource : pagedResource.getContent()) {
-            resource.add(SearchEngineController.buildEntityLinks(resourceService, context,
-                                                                 resource.getContent().getEntityType(),
-                                                                 resource.getContent().getId()));
+            resource.add(SearchEngineController
+                    .buildEntityLinks(resourceService, context, resource.getContent().getEntityType(),
+                                      (OaisUniformResourceName) resource.getContent().getId()));
         }
 
         // Add pagination links
@@ -217,7 +218,7 @@ public class LegacySearchEngine implements
         // Prepare resource
         EntityModel<EntityFeature> resource = resourceService.toResource(entity);
         resource.add(SearchEngineController.buildEntityLinks(resourceService, context, entity.getEntityType(),
-                                                             entity.getId()));
+                                                             (OaisUniformResourceName) entity.getId()));
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 

@@ -545,7 +545,8 @@ public class SearchEngineController {
     public static List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context,
             EntityFeature entity) {
         if (entity != null) {
-            return buildEntityLinks(resourceService, context, entity.getEntityType(), entity.getId());
+            return buildEntityLinks(resourceService, context, entity.getEntityType(),
+                                    (OaisUniformResourceName) entity.getId());
         } else {
             return Lists.newArrayList();
         }

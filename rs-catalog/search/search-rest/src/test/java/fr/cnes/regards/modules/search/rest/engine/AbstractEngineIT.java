@@ -273,7 +273,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                 });
 
         // - Refresh attribute factory
-        List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null, null);
+        List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
 
         // - Manage attribute cache
@@ -288,7 +288,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
         Dataset solarSystem = createStelarSystem(starSystemModel, SOLAR_SYSTEM);
         indexerService.saveEntity(getDefaultTenant(), solarSystem);
-        indexerService.saveBulkEntities(getDefaultTenant(), createPlanets(planetModel, solarSystem.getIpId()));
+        indexerService.saveBulkEntities(getDefaultTenant(),
+                                        createPlanets(planetModel, (OaisUniformResourceName) solarSystem.getIpId()));
 
         Dataset kepler90System = createStelarSystem(starSystemModel, KEPLER_90);
         indexerService.saveEntity(getDefaultTenant(), kepler90System);
@@ -421,13 +422,27 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
         planet.setDatasetModelNames(Sets.newHashSet(planetModel.getName()));
 
-        DataFile quicklook = new DataFile();
-        quicklook.setMimeType(MimeType.valueOf("application/jpg"));
-        quicklook.setUri(URI.create("http://regards/le_quicklook.jpg"));
-        quicklook.setReference(false);
-        quicklook.setImageWidth(100d);
-        quicklook.setImageHeight(100d);
-        planet.getFiles().put(DataType.QUICKLOOK_SD, quicklook);
+        DataFile quicklooksd = new DataFile();
+        quicklooksd.setMimeType(MimeType.valueOf("application/jpg"));
+        quicklooksd.setUri(URI.create("http://regards/le_quicklook_sd.jpg"));
+        quicklooksd.setReference(false);
+        quicklooksd.setImageWidth(100d);
+        quicklooksd.setImageHeight(100d);
+        planet.getFiles().put(DataType.QUICKLOOK_SD, quicklooksd);
+        DataFile quicklookmd = new DataFile();
+        quicklookmd.setMimeType(MimeType.valueOf("application/jpg"));
+        quicklookmd.setUri(URI.create("http://regards/le_quicklook_md.jpg"));
+        quicklookmd.setReference(false);
+        quicklookmd.setImageWidth(100d);
+        quicklookmd.setImageHeight(100d);
+        planet.getFiles().put(DataType.QUICKLOOK_MD, quicklookmd);
+        DataFile quicklookhd = new DataFile();
+        quicklookhd.setMimeType(MimeType.valueOf("application/jpg"));
+        quicklookhd.setUri(URI.create("http://regards/le_quicklook_hd.jpg"));
+        quicklookhd.setReference(false);
+        quicklookhd.setImageWidth(100d);
+        quicklookhd.setImageHeight(100d);
+        planet.getFiles().put(DataType.QUICKLOOK_HD, quicklookhd);
 
         DataFile thumbnail = new DataFile();
         thumbnail.setMimeType(MimeType.valueOf("application/png"));

@@ -166,6 +166,9 @@ public class CatalogSearchService implements ICatalogSearchService {
         try {
             SearchKey<?, ?> searchKey = inSearchKey;
 
+            // Retrieve current user access groups. Null means superuser with all rights
+            final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
+
             // Apply security filter
             criterion = accessRightFilter.addAccessRights(criterion);
 
@@ -191,7 +194,6 @@ public class CatalogSearchService implements ICatalogSearchService {
             } else {
                 // It may be necessary to filter returned objects (before pagination !!!) by user access groups to avoid
                 // getting datasets on which user has no right
-                final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
                 if ((TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)
                         && (accessGroups != null)) { // accessGroups null means superuser
                     Predicate<Dataset> datasetGroupAccessFilter = ds -> !Sets.intersection(ds.getGroups(), accessGroups)
@@ -216,17 +218,16 @@ public class CatalogSearchService implements ICatalogSearchService {
                     && searchKey.getSearchTypeMap().values().contains(DataObject.class))
                     || ((searchKey.getResultClass() != null)
                             && (TypeToken.of(searchKey.getResultClass()).getRawType() == DataObject.class))) {
-                Set<String> userGroups = accessRightFilter.getUserAccessGroups();
                 for (R entity : facetPage.getContent()) {
                     if (entity instanceof DataObject) {
-                        filterDataFiles(userGroups, (DataObject) entity);
+                        filterDataFiles(accessGroups, ((DataObject) entity));
                     }
                 }
             }
             return facetPage;
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty page", e);
-            return new FacetPage<>(new ArrayList<>(), null);
+            return new FacetPage<>(new ArrayList<>(), null, pageable, 0);
         }
     }
 
@@ -492,7 +493,8 @@ public class CatalogSearchService implements ICatalogSearchService {
             AttributeModel attr;
             try {
                 attr = finder.findByName(property);
-                qas.put(attr, new QueryableAttribute(StaticProperties.FEATURE_NS + attr.getJsonPath(), null, false, 0));
+                qas.put(attr, new QueryableAttribute(StaticProperties.FEATURE_NS + attr.getJsonPath(), null,
+                        attr.isTextAttribute(), 0, attr.isBooleanAttribute()));
             } catch (OpenSearchUnknownParameter e) {
                 LOGGER.warn(e.getMessage(), e);
             }
