@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 
 public class StorageClientMock implements IStorageClient {
 
@@ -115,17 +116,24 @@ public class StorageClientMock implements IStorageClient {
 
     @Override
     public Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
-        Collection<RequestInfo> list = new ArrayList<RequestInfo>();
-        RequestInfo ri = RequestInfo.build();
+        Collection<RequestInfo> infos = Sets.newHashSet();
+        RequestInfo ri = null;
+        int count = 0;
         for (String c : checksums) {
+            if (count > AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
+                count = 0;
+            }
+            if (count == 0) {
+                ri = RequestInfo.build();
+                infos.add(ri);
+            }
             if (!isAvailable) {
                 listener.onFileNotAvailable(c, Sets.newHashSet(ri), "");
             } else {
                 listener.onFileAvailable(c, Sets.newHashSet(ri));
             }
         }
-        list.add(ri);
-        return list;
+        return infos;
     }
 
 }
