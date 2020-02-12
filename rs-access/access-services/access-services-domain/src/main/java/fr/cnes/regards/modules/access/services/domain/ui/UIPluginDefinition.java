@@ -37,7 +37,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.validation.NotEmptyFieldsIfService;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 
