@@ -81,6 +81,11 @@ public class OaisUniformResourceName extends UniformResourceName {
         // for testing purpose
     }
 
+    public static OaisUniformResourceName build(UniformResourceName urn) {
+        return new OaisUniformResourceName(OAISIdentifier.valueOf(urn.getIdentifier()), urn.getEntityType(),
+                urn.getTenant(), urn.getEntityId(), urn.getVersion(), urn.getOrder(), urn.getRevision());
+    }
+
     /**
      * take this kind of String
      * URN:OAISIdentifier:entityType:tenant:UUID(entityId):version[,order][:REVrevision]
