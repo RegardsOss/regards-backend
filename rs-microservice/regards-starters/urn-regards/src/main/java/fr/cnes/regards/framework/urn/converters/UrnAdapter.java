@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.oais.urn.converters;
+package fr.cnes.regards.framework.urn.converters;
 
 import java.io.IOException;
 
@@ -25,11 +25,11 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
- * This adapter is used by Gson via @JsonAdapter(UrnAdapter.class) on UniformResourceName class
- * @author Sylvain Vissiere-Guerinet
+ * This adapter is used by Gson via @JsonAdapter(AbstractUrnAdapter.class) on AbstractUniformResourceName<?> class
+ * @author Kevin Marchois
  */
 @GsonTypeAdapter(adapted = UniformResourceName.class)
 public class UrnAdapter extends TypeAdapter<UniformResourceName> {

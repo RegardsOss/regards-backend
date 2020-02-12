@@ -16,28 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.oais.urn.validator;
+package fr.cnes.regards.framework.urn.validator;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
- * @author Sylvain Vissiere-Guerinet
+ * @author Kevin Marchois
  */
-public class RegardsOaisUrnValidator implements ConstraintValidator<RegardsOaisUrn, UniformResourceName> {
+public class RegardsUrnValidator implements ConstraintValidator<RegardsUrn, UniformResourceName> {
 
     @Override
-    public void initialize(RegardsOaisUrn pConstraintAnnotation) {
+    public void initialize(RegardsUrn pConstraintAnnotation) {
         // nothing to initialize for now
     }
 
     @Override
     public boolean isValid(UniformResourceName pValue, ConstraintValidatorContext pContext) {
-        return pValue == null || !(pValue.getIdentifier().equals(OAISIdentifier.SIP)
-                && (pValue.getOrder() != null || pValue.getRevision() != null));
+        return (pValue == null) || (pValue.getIdentifier() != null);
     }
 
 }

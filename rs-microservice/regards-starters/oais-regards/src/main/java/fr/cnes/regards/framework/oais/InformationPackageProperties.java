@@ -16,7 +16,7 @@ import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
-import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.urn.DataType;
 
 /**
  * Information package<br/>
@@ -183,9 +183,9 @@ public class InformationPackageProperties {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (contentInformations == null ? 0 : contentInformations.hashCode());
-        result = prime * result + (descriptiveInformation == null ? 0 : descriptiveInformation.hashCode());
-        result = prime * result + (pdi == null ? 0 : pdi.hashCode());
+        result = (prime * result) + (contentInformations == null ? 0 : contentInformations.hashCode());
+        result = (prime * result) + (descriptiveInformation == null ? 0 : descriptiveInformation.hashCode());
+        result = (prime * result) + (pdi == null ? 0 : pdi.hashCode());
         return result;
     }
 

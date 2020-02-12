@@ -1,5 +1,5 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 fr.cnes.regards.framework.oais.autoconfiguration.OaisAutoConfiguration,\
 fr.cnes.regards.framework.oais.adapter.InformationPackageMapTypeAdapter,\
-fr.cnes.regards.framework.oais.urn.converters.StringToUrn,\
-fr.cnes.regards.framework.oais.urn.converters.UrnToString
+fr.cnes.regards.framework.urn.converters.StringToUrn,\
+fr.cnes.regards.framework.urn.converters.UrnToString

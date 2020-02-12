@@ -29,7 +29,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
-import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.urn.DataType;
 
 /**
  * OAIS content information<br/>
@@ -96,8 +96,8 @@ public class ContentInformation {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (dataObject == null ? 0 : dataObject.hashCode());
-        result = prime * result + (representationInformation == null ? 0 : representationInformation.hashCode());
+        result = (prime * result) + (dataObject == null ? 0 : dataObject.hashCode());
+        result = (prime * result) + (representationInformation == null ? 0 : representationInformation.hashCode());
         return result;
     }
 

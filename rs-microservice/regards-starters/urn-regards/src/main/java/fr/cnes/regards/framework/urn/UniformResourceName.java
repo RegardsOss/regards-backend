@@ -16,24 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.oais.urn;
+package fr.cnes.regards.framework.urn;
 
 import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import javax.persistence.Convert;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.lang.Nullable;
 
+import fr.cnes.regards.framework.urn.converters.UrnConverter;
+import fr.cnes.regards.framework.urn.validator.RegardsUrn;
+
 /**
  * allow us to create URN
  *
  * @author Kevin Marchois
  */
-public class AbstractUniformResourceName<T> {
+@Convert(converter = UrnConverter.class)
+@RegardsUrn
+public class UniformResourceName {
+
+    public static final int MAX_SIZE = 255;
 
     /**
      * URN pattern
@@ -76,7 +84,7 @@ public class AbstractUniformResourceName<T> {
      * the identifier
      */
     @NotNull
-    private T identifier;
+    private String identifier;
 
     /**
      * Entity type
@@ -104,7 +112,7 @@ public class AbstractUniformResourceName<T> {
     private int version;
 
     /**
-     * numeric value ordering the differents AIP from a same SIP
+     * numeric value ordering the differents element from a same identifier
      */
     private Long order;
 
@@ -116,7 +124,7 @@ public class AbstractUniformResourceName<T> {
     /**
      * Constructor setting the given parameters as attributes
      */
-    public AbstractUniformResourceName(T identifier, EntityType entityType, String tenant, UUID entityId, int version,
+    public UniformResourceName(String identifier, EntityType entityType, String tenant, UUID entityId, int version,
             @Nullable Long order, @Nullable String revision) {
         this.identifier = identifier;
         this.entityType = entityType;
@@ -127,11 +135,10 @@ public class AbstractUniformResourceName<T> {
         this.revision = revision;
     }
 
-    public AbstractUniformResourceName() {
-        // for testing purpose
+    public UniformResourceName() {
     }
 
-    public void build(T identifier, EntityType entityType, String tenant, UUID entityId, int version,
+    public void build(String identifier, EntityType entityType, String tenant, UUID entityId, int version,
             @Nullable Long order, @Nullable String revision) {
         this.identifier = identifier;
         this.entityType = entityType;
@@ -159,13 +166,13 @@ public class AbstractUniformResourceName<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public <U extends AbstractUniformResourceName<?>> U withOrder(Long order) {
+    public <U extends UniformResourceName> U withOrder(Long order) {
         this.setOrder(order);
         return (U) this;
     }
 
     @SuppressWarnings("unchecked")
-    public <U extends AbstractUniformResourceName<?>> U withRevision(String revision) {
+    public <U extends UniformResourceName> U withRevision(String revision) {
         this.setRevision(revision);
         return (U) this;
     }
@@ -193,14 +200,14 @@ public class AbstractUniformResourceName<T> {
     /**
      * @return the identifier
      */
-    public T getIdentifier() {
+    public String getIdentifier() {
         return identifier;
     }
 
     /**
      * Set the identifier
      */
-    public void setIdentifier(T identifier) {
+    public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
 
@@ -288,22 +295,76 @@ public class AbstractUniformResourceName<T> {
         this.revision = revision;
     }
 
+    /**
+     * take this kind of String
+     * URN:OAISIdentifier:entityType:tenant:UUID(entityId):version[,order][:REVrevision]
+     * and return a new instance of {@link UniformResourceName}
+     *
+     * @param urn String respecting the following regex
+     *            URN:.+:.+:.+:.+:\\d{1,3}(,\\d+)?(:REV.+)?
+     * @return a new instance of {@link UniformResourceName}
+     * @throws IllegalArgumentException if the given string does not respect the urn
+     *                                  pattern
+     */
+    public static UniformResourceName fromString(String urn) {
+        Pattern pattern = Pattern.compile(URN_PATTERN);
+        if (!pattern.matcher(urn).matches()) {
+            throw new IllegalArgumentException();
+        }
+        String[] stringFragment = urn.split(DELIMITER);
+        String identifier = stringFragment[1];
+        EntityType entityType = EntityType.valueOf(stringFragment[2]);
+        String tenant = stringFragment[3];
+        UUID entityId = UUID.fromString(stringFragment[4]);
+        String[] versionWithOrder = stringFragment[5].split(",");
+        if (versionWithOrder.length == 2) {
+            // Order is precised
+            if (stringFragment.length == 7) {
+                // Revision is precised
+                String revisionString = stringFragment[6];
+                // so we have all fields
+                return new UniformResourceName(identifier, entityType, tenant, entityId,
+                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                        Long.parseLong(versionWithOrder[1]), revisionString.substring(REVISION_PREFIX.length()));
+            } else {
+                // Revision is missing so we have all except Revision
+                return new UniformResourceName(identifier, entityType, tenant, entityId,
+                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                        Long.parseLong(versionWithOrder[1]), null);
+            }
+        } else {
+            // we don't have an order specified
+            if (stringFragment.length == 7) {
+                // Revision is precised
+                String revisionString = stringFragment[6];
+                // so we have all fields exception Order
+                return new UniformResourceName(identifier, entityType, tenant, entityId,
+                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())), null,
+                        revisionString.substring(REVISION_PREFIX.length()));
+            } else {
+                // Revision is missing so we have all except Revision and Order
+                return new UniformResourceName(identifier, entityType, tenant, entityId,
+                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())), null, null);
+            }
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (!getClass().isAssignableFrom(o.getClass()) && !o.getClass().isAssignableFrom(getClass()))) {
             return false;
         }
 
         @SuppressWarnings("rawtypes")
-        AbstractUniformResourceName that = (AbstractUniformResourceName) o;
+        UniformResourceName that = (UniformResourceName) o;
 
         if (version != that.version) {
             return false;
         }
-        if (identifier != that.identifier) {
+        if (!identifier.equals(that.identifier)) {
             return false;
         }
         if (entityType != that.entityType) {
@@ -324,12 +385,12 @@ public class AbstractUniformResourceName<T> {
     @Override
     public int hashCode() {
         int result = identifier.hashCode();
-        result = 31 * result + entityType.hashCode();
-        result = 31 * result + tenant.hashCode();
-        result = 31 * result + entityId.hashCode();
-        result = 31 * result + version;
-        result = 31 * result + (order != null ? order.hashCode() : 0);
-        result = 31 * result + (revision != null ? revision.hashCode() : 0);
+        result = (31 * result) + entityType.hashCode();
+        result = (31 * result) + tenant.hashCode();
+        result = (31 * result) + entityId.hashCode();
+        result = (31 * result) + version;
+        result = (31 * result) + (order != null ? order.hashCode() : 0);
+        result = (31 * result) + (revision != null ? revision.hashCode() : 0);
         return result;
     }
 }

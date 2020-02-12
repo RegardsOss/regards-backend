@@ -26,8 +26,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.validator.ValidOAISDataObject;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
 
 /**
@@ -159,11 +159,11 @@ public class OAISDataObject {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (algorithm == null ? 0 : algorithm.hashCode());
-        result = prime * result + (checksum == null ? 0 : checksum.hashCode());
-        result = prime * result + (fileSize == null ? 0 : fileSize.hashCode());
-        result = prime * result + (filename == null ? 0 : filename.hashCode());
-        result = prime * result + (regardsDataType == null ? 0 : regardsDataType.hashCode());
+        result = (prime * result) + (algorithm == null ? 0 : algorithm.hashCode());
+        result = (prime * result) + (checksum == null ? 0 : checksum.hashCode());
+        result = (prime * result) + (fileSize == null ? 0 : fileSize.hashCode());
+        result = (prime * result) + (filename == null ? 0 : filename.hashCode());
+        result = (prime * result) + (regardsDataType == null ? 0 : regardsDataType.hashCode());
         return result;
     }
 

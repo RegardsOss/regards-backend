@@ -16,24 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.oais.urn.converters;
-
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
-
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+package fr.cnes.regards.framework.urn;
 
 /**
- * Implement the type conversion logic for a String to a {@link UrnConverter}.<br>
- * This is automatically used by Spring if need be.
- * @author Xavier-Alexandre Brochard
+ * Entity types
+ * @author lmieulet
+ * @author Marc Sordi
  */
-@Component
-public class StringToUrn implements Converter<String, UniformResourceName> {
+public enum DataType {
+
+    /**
+     * Available data types
+     */
+    RAWDATA,
+    QUICKLOOK_SD,
+    QUICKLOOK_MD,
+    QUICKLOOK_HD,
+    DOCUMENT,
+    THUMBNAIL,
+    OTHER,
+    AIP,
+    DESCRIPTION;
 
     @Override
-    public UniformResourceName convert(String pSource) {
-        return UniformResourceName.fromString(pSource);
+    public String toString() {
+        return this.name();
     }
-
 }

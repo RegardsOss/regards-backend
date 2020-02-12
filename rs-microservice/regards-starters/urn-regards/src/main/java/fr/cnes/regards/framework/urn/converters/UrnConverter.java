@@ -16,16 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.oais.urn.converters;
+package fr.cnes.regards.framework.urn.converters;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * Converter used by Hibernate (see AbstractEntity)
- * @author Sylvain Vissiere-Guerinet
+ * @author Kevin Marchois
  */
 @Converter(autoApply = true)
 public class UrnConverter implements AttributeConverter<UniformResourceName, String> {

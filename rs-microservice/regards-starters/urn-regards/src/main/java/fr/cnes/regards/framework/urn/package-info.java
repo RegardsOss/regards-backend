@@ -16,30 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.oais.urn;
-
 /**
- * Entity types
- * @author lmieulet
- * @author Marc Sordi
+ * @author Sylvain Vissiere-Guerinet
  */
-public enum DataType {
-
-    /**
-     * Available data types
-     */
-    RAWDATA,
-    QUICKLOOK_SD,
-    QUICKLOOK_MD,
-    QUICKLOOK_HD,
-    DOCUMENT,
-    THUMBNAIL,
-    OTHER,
-    AIP,
-    DESCRIPTION;
-
-    @Override
-    public String toString() {
-        return this.name();
-    }
-}
+package fr.cnes.regards.framework.urn;

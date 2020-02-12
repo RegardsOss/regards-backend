@@ -26,7 +26,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>oais-regards</artifactId>
+    <artifactId>urn-regards</artifactId>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>
@@ -70,10 +70,6 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>geojson-regards</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>urn-regards</artifactId>
         </dependency>
         <!-- TEST dependencies -->
         <dependency>

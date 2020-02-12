@@ -96,6 +96,7 @@
         <module>notification-regards</module>
         <module>notification-regards-starter</module>
         <module>metric-regards-starter</module>
+        <module>urn-regards</module>
     </modules>
 
     <dependencies>
