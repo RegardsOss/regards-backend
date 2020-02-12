@@ -164,9 +164,12 @@ public class IngestService implements IIngestService {
         RequestInfoDto info = RequestInfoDto.build(ingestMetadata.getSessionOwner(), ingestMetadata.getSession(),
                                                    "SIP Collection ingestion scheduled");
 
+        int count = 1;
         for (SIP sip : sips.getFeatures()) {
+            String sipId = sip.getId() != null ? sip.getId() : "SIP n°" + count;
             // Validate and transform to request
-            registerIngestRequest(sip, ingestMetadata, info, grantedRequests);
+            registerIngestRequest(sip, ingestMetadata, info, grantedRequests, sipId);
+            count++;
         }
 
         ingestRequestService.scheduleIngestProcessingJobByChain(ingestMetadata.getIngestChain(), grantedRequests);
@@ -204,7 +207,7 @@ public class IngestService implements IIngestService {
      * @param grantedRequests collection of granted requests to populate
      */
     private void registerIngestRequest(SIP sip, IngestMetadata ingestMetadata, RequestInfoDto info,
-            Collection<IngestRequest> grantedRequests) {
+            Collection<IngestRequest> grantedRequests, String sipId) {
         // Validate SIP
         Errors errors = new MapBindingResult(new HashMap<>(), SIP.class.getName());
         validator.validate(sip, errors);
@@ -217,7 +220,8 @@ public class IngestService implements IIngestService {
             errs.forEach(err -> joiner.add(err));
             LOGGER.debug("SIP ingestion request rejected for following reason(s) : {}", joiner.toString());
             // Trace denied request
-            info.addDeniedRequest(sip.getId(), joiner.toString());
+            info.addDeniedRequest(sipId, joiner.toString());
+
             return;
         }
 
