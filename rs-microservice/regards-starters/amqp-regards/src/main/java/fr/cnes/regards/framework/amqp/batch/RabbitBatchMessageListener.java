@@ -295,7 +295,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
      * @author Marc SORDI
      *
      */
-    private class BatchMessage {
+    private static class BatchMessage {
 
         private Message origin;
 
