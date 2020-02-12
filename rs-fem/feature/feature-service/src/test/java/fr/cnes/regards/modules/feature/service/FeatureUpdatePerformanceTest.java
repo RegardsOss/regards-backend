@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.assertj.core.util.Lists;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,14 +30,19 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature_uperf", "regards.amqp.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties" })
+        properties = { "spring.jpa.properties.hibernate.default_schema=feature_uperf", "regards.amqp.enabled=true",
+                "regards.feature.metrics.enabled=true" },
+        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
+                "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "nohandler" })
 public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureUpdatePerformanceTest.class);
 
-    private static final Integer NB_FEATURES = 10000;
+    private static final Integer NB_FEATURES = 5_000;
+
+    // Expected performance : 10_000 features/min
+    private static final long DURATION = NB_FEATURES * 6;
 
     private static final String PROVIDER_ID_FORMAT = "F%05d";
 
@@ -102,8 +108,9 @@ public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServ
 
         waitFeature(NB_FEATURES, requestDate, 3600_000);
 
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests processed in {} ms", NB_FEATURES,
-                    System.currentTimeMillis() - start);
+        long duration = System.currentTimeMillis() - start;
+        Assert.assertTrue(String.format("Performance not reached! (%d/%d)", duration, DURATION), duration < DURATION);
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests processed in {} ms", NB_FEATURES, duration);
 
         assertEquals(NB_FEATURES.longValue(), this.featureRepo.count());
     }

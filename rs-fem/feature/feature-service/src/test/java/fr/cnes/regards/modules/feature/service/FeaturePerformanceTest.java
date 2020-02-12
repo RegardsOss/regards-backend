@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.feature.service;
 
 import static org.junit.Assert.assertEquals;
@@ -6,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.assertj.core.util.Lists;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +52,10 @@ public class FeaturePerformanceTest extends AbstractFeatureMultitenantServiceTes
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturePerformanceTest.class);
 
-    private static final Integer NB_FEATURES = 10_000;
+    private static final Integer NB_FEATURES = 5_000;
+
+    // Expected performance : 10_000 features/min
+    private static final long DURATION = NB_FEATURES * 6;
 
     @Autowired
     private IFeatureCreationService featureService;
@@ -92,8 +114,9 @@ public class FeaturePerformanceTest extends AbstractFeatureMultitenantServiceTes
 
         waitFeature(NB_FEATURES, null, 3600_000);
 
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests processed in {} ms", NB_FEATURES,
-                    System.currentTimeMillis() - start);
+        long duration = System.currentTimeMillis() - start;
+        Assert.assertTrue(String.format("Performance not reached! (%d/%d)", duration, DURATION), duration < DURATION);
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests processed in {} ms", NB_FEATURES, duration);
 
         assertEquals(NB_FEATURES.longValue(), this.featureRepo.count());
     }

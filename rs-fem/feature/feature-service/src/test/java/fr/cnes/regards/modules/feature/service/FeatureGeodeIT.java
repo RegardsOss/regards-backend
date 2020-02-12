@@ -30,6 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -58,15 +61,17 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
                 "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp" })
+// Clean all context (schedulers)
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureGeodeIT.class);
 
-    private static final Integer NB_FEATURES = 10_000;
+    private static final Integer NB_FEATURES = 5_000;
 
     private static final String PROVIDER_ID_FORMAT = "F%05d";
 
-    private static final Integer PUBLISH_BULK_SIZE = 2_000;
+    private static final Integer PUBLISH_BULK_SIZE = 1_000;
 
     private String modelName;
 

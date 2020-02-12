@@ -27,6 +27,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -51,8 +54,11 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 @Ignore
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_perfit", "regards.amqp.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties" })
+        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
+                "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp" })
+//Clean all context (schedulers)
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturePerformanceIT.class);

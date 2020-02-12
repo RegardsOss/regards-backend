@@ -64,9 +64,8 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  * @author kevin
  *
  */
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature", "regards.amqp.enabled=true",
-                "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_listener_creation",
+        "regards.amqp.enabled=true", "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
                 "classpath:metrics.properties" })
 @ActiveProfiles({ "testAmqp" })

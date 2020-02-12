@@ -28,6 +28,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -52,6 +55,8 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
                 "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp" })
+//Clean all context (schedulers)
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public class FeatureReferenceServiceIT extends AbstractFeatureMultitenantServiceTest {
 
     @Autowired
