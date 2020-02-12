@@ -44,8 +44,7 @@ import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.oais.urn.DataType;
-
+import fr.cnes.regards.framework.urn.DataType;
 
 /**
  *
@@ -164,7 +163,7 @@ public class AcquisitionFileInfo {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 
@@ -188,10 +187,10 @@ public class AcquisitionFileInfo {
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (scanPlugin != null ? scanPlugin.hashCode() : 0);
-        result = 31 * result + (mimeType != null ? mimeType.hashCode() : 0);
-        result = 31 * result + (dataType != null ? dataType.hashCode() : 0);
-        result = 31 * result + (comment != null ? comment.hashCode() : 0);
+        result = (31 * result) + (scanPlugin != null ? scanPlugin.hashCode() : 0);
+        result = (31 * result) + (mimeType != null ? mimeType.hashCode() : 0);
+        result = (31 * result) + (dataType != null ? dataType.hashCode() : 0);
+        result = (31 * result) + (comment != null ? comment.hashCode() : 0);
         return result;
     }
 }

@@ -72,7 +72,7 @@ public class MonitoringController implements IResourceController<AcquisitionProc
      * @return page of {@link AcquisitionProcessingChainMonitor}s
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Search for acquisition processing chain summaries", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Search for acquisition processing chain summaries", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<AcquisitionProcessingChainMonitor>>> search(
             @RequestParam(name = "mode", required = false) AcquisitionProcessingChainMode mode,
             @RequestParam(name = "running", required = false) Boolean running,
