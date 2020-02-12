@@ -53,6 +53,7 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.NotificationRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -182,9 +183,11 @@ public class FeatureNotificationService implements IFeatureNotificationService {
         List<NotificationActionEvent> notifications = new ArrayList<NotificationActionEvent>();
         for (FeatureEntity entity : features) {
             if (entity.getLastUpdate().equals(entity.getCreationDate())) {
-                notifications.add(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()), "CREATION"));
+                notifications.add(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
+                                                                FeatureManagementAction.CREATION.toString()));
             } else {
-                notifications.add(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()), "UPDATE"));
+                notifications.add(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
+                                                                FeatureManagementAction.UPDATE.toString()));
             }
         }
         publisher.publish(notifications);
