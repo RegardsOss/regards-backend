@@ -160,7 +160,7 @@ public class IngestServiceTest {
     }
 
     private boolean timerStop(long expectedSips, long end, long sipCount) {
-        if (sipCount == expectedSips) {
+        if (sipCount >= expectedSips) {
             return true;
         }
         long now = System.currentTimeMillis();
