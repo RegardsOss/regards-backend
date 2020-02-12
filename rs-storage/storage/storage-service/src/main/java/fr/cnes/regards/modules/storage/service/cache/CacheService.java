@@ -366,6 +366,7 @@ public class CacheService {
         while ((idx < (fileChecksum.length() - 1)) && (subFolders < 6)) {
             filePath = Paths.get(filePath, fileChecksum.substring(idx, idx + 2)).toString();
             idx = idx + 2;
+            subFolders++;
         }
         return Paths.get(getTenantCachePath().toString(), filePath).toAbsolutePath().toString();
     }
