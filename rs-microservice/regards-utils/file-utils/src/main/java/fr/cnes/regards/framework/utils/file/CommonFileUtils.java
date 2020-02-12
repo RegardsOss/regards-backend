@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -65,7 +66,9 @@ public final class CommonFileUtils {
         int cpt = 1;
         // Get all existing file names
         Set<String> fileNames = Sets.newHashSet();
-        Files.walk(pDirectory, 1).forEach(f -> fileNames.add(f.getFileName().toString()));
+        try (Stream<Path> walk = Files.walk(pDirectory, 1)) {
+            walk.forEach(f -> fileNames.add(f.getFileName().toString()));
+        }
         while (fileNames.contains(availableFileName)) {
             int index = availableFileName.indexOf('.');
             if (index > 0) {
