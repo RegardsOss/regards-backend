@@ -39,10 +39,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
@@ -65,14 +65,14 @@ import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
  */
 public class SearchClientMock implements IComplexSearchClient {
 
-    public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-            "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS1_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DS2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-            "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS2_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DS3_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-            "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS3_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
 
     private static Dataset ds1;
 
@@ -263,8 +263,8 @@ public class SearchClientMock implements IComplexSearchClient {
                 List<EntityModel<EntityFeature>> list = new ArrayList<>();
                 File testDir = new File("src/test/resources/files");
                 for (File dir : testDir.listFiles()) {
-                    EntityFeature feature = new DataObjectFeature("tenant", dir.getName(), dir.getName());
-                    feature.setId(UniformResourceName.fromString(dir.getName()));
+                    EntityFeature feature = new DataObjectFeature(UniformResourceName.fromString(dir.getName()),
+                            dir.getName(), dir.getName());
                     Multimap<DataType, DataFile> fileMultimap = ArrayListMultimap.create();
                     for (File file : dir.listFiles()) {
                         DataFile dataFile = new DataFile();

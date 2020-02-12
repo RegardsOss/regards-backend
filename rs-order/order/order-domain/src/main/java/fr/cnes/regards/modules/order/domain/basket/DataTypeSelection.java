@@ -22,7 +22,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.urn.DataType;
 
 /**
  * Data type selection (quilooks and/or raw data)
@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * @author oroussel
  */
 public enum DataTypeSelection {
+
     ALL(DataType.RAWDATA, DataType.QUICKLOOK_SD, DataType.QUICKLOOK_MD, DataType.QUICKLOOK_HD),
     QUICKLOOKS(DataType.QUICKLOOK_SD, DataType.QUICKLOOK_MD, DataType.QUICKLOOK_HD),
     RAWDATA(DataType.RAWDATA);
