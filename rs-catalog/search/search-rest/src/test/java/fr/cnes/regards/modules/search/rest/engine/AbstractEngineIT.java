@@ -288,8 +288,9 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
         Dataset solarSystem = createStelarSystem(starSystemModel, SOLAR_SYSTEM);
         indexerService.saveEntity(getDefaultTenant(), solarSystem);
-        indexerService.saveBulkEntities(getDefaultTenant(),
-                                        createPlanets(planetModel, (OaisUniformResourceName) solarSystem.getIpId()));
+        indexerService
+                .saveBulkEntities(getDefaultTenant(),
+                                  createPlanets(planetModel, OaisUniformResourceName.build(solarSystem.getIpId())));
 
         Dataset kepler90System = createStelarSystem(starSystemModel, KEPLER_90);
         indexerService.saveEntity(getDefaultTenant(), kepler90System);

@@ -172,7 +172,7 @@ public class LegacySearchEngine implements
         for (EntityModel<EntityFeature> resource : pagedResource.getContent()) {
             resource.add(SearchEngineController
                     .buildEntityLinks(resourceService, context, resource.getContent().getEntityType(),
-                                      (OaisUniformResourceName) resource.getContent().getId()));
+                                      OaisUniformResourceName.build(resource.getContent().getId())));
         }
 
         // Add pagination links
@@ -218,7 +218,7 @@ public class LegacySearchEngine implements
         // Prepare resource
         EntityModel<EntityFeature> resource = resourceService.toResource(entity);
         resource.add(SearchEngineController.buildEntityLinks(resourceService, context, entity.getEntityType(),
-                                                             (OaisUniformResourceName) entity.getId()));
+                                                             OaisUniformResourceName.build(entity.getId())));
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 

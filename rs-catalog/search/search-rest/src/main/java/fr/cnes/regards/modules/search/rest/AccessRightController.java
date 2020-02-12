@@ -116,7 +116,8 @@ public class AccessRightController {
                                                               PageRequest.of(0, urns.size()));
             urnsWithAccess.addAll(page.getContent().parallelStream()
                     .filter(dataObject -> dataObject.getFiles().containsKey(DataType.RAWDATA))
-                    .map(dataObject -> (OaisUniformResourceName) dataObject.getIpId()).collect(Collectors.toSet()));
+                    .map(dataObject -> OaisUniformResourceName.build(dataObject.getIpId()))
+                    .collect(Collectors.toSet()));
         }
         return ResponseEntity.ok(urnsWithAccess);
     }
