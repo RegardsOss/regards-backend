@@ -26,7 +26,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
     @Autowired
     private IStorageClient storageClient;
 
-    private OffsetDateTime expirationDate;
+    private Integer subOrderValidationPeriodDays;
 
     private Semaphore semaphore;
 
@@ -61,7 +61,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
                     "Four parameters are expected : 'files', 'expirationDate', 'user' and 'userRole'.");
         }
         for (JobParameter param : parameters.values()) {
-            if (!FilesJobParameter.isCompatible(param) && !(ExpirationDateJobParameter.isCompatible(param))
+            if (!FilesJobParameter.isCompatible(param) && !(SubOrderAvailabilityPeriodJobParameter.isCompatible(param))
                     && !UserJobParameter.isCompatible(param) && !UserRoleJobParameter.isCompatible(param)) {
                 throw new JobParameterInvalidException(
                         "Please use FilesJobParameter, ExpirationDateJobParameter, UserJobParameter and "
@@ -73,8 +73,8 @@ public class StorageFilesJob extends AbstractJob<Void> {
                 for (OrderDataFile dataFile : files) {
                     dataFilesMultimap.put(dataFile.getChecksum(), dataFile);
                 }
-            } else if (ExpirationDateJobParameter.isCompatible(param)) {
-                expirationDate = param.getValue();
+            } else if (SubOrderAvailabilityPeriodJobParameter.isCompatible(param)) {
+                subOrderValidationPeriodDays = param.getValue();
             }
         }
     }
@@ -85,7 +85,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
         subscriber.subscribe(this);
 
         try {
-            storageClient.makeAvailable(dataFilesMultimap.keySet(), expirationDate);
+            storageClient.makeAvailable(dataFilesMultimap.keySet(), OffsetDateTime.now().plusDays(subOrderValidationPeriodDays));
             dataFilesMultimap.forEach((cs, f) -> {
                 LOGGER.debug("Order job is waiting for {} file {} - {} availability.", dataFilesMultimap.size(),
                              f.getFilename(), cs);

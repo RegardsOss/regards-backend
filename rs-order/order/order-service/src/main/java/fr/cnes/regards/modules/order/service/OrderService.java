@@ -39,7 +39,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -119,8 +118,9 @@ import fr.cnes.regards.modules.order.metalink.schema.FilesType;
 import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
 import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
 import fr.cnes.regards.modules.order.metalink.schema.ResourcesType;
-import fr.cnes.regards.modules.order.service.job.ExpirationDateJobParameter;
+import fr.cnes.regards.modules.order.service.job.SubOrderAvailabilityPeriodJobParameter;
 import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
+import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.order.service.job.UserJobParameter;
 import fr.cnes.regards.modules.order.service.job.UserRoleJobParameter;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -260,10 +260,10 @@ public class OrderService implements IOrderService {
         LOGGER.info("Creating order with owner {}", basket.getOwner());
         Order order = new Order();
         order.setCreationDate(OffsetDateTime.now());
-        order.setExpirationDate(order.getCreationDate().plus(orderValidationPeriodDays, ChronoUnit.DAYS));
         order.setOwner(basket.getOwner());
         order.setFrontendUrl(url);
         order.setStatus(OrderStatus.PENDING);
+        // expiration date is set during asyncCompleteOrderCreation execution
         // To generate orderId
         order = repos.save(order);
         // Asynchronous operation
@@ -351,6 +351,9 @@ public class OrderService implements IOrderService {
                     order.addDatasetOrderTask(dsTask);
                 }
             }
+            // Compute order expiration date using number of sub order created + 2,
+            // that gives time to users to download there last suborders
+            order.setExpirationDate(OffsetDateTime.now().plusDays((order.getDatasetTasks().size()+2)*orderValidationPeriodDays));
             // In case order contains only external files, percent completion can be set to 100%, else completion is
             // computed when files are available (even if some external files exist, this case will not (often) occur
             if ((internalFilesCount == 0) && (externalFilesCount > 0)) {
@@ -365,6 +368,7 @@ public class OrderService implements IOrderService {
         } catch (Exception e) {
             LOGGER.error("Error while completing order creation", e);
             order.setStatus(OrderStatus.FAILED);
+            order.setExpirationDate(OffsetDateTime.now().plusDays(orderValidationPeriodDays));
         }
         // Be careful to not unset FAILED status
         if (order.getStatus() != OrderStatus.FAILED) {
@@ -522,11 +526,11 @@ public class OrderService implements IOrderService {
         // storageJobInfo is pointed by currentFilesTask so it must be locked to avoid being cleaned before FilesTask
         JobInfo storageJobInfo = new JobInfo(true);
         storageJobInfo.setParameters(new FilesJobParameter(bucketFiles.toArray(new OrderDataFile[bucketFiles.size()])),
-                                     new ExpirationDateJobParameter(expirationDate),
+                                     new SubOrderAvailabilityPeriodJobParameter(orderValidationPeriodDays),
                                      new UserJobParameter(order.getOwner()),
                                      new UserRoleJobParameter(role));
         storageJobInfo.setOwner(basket.getOwner());
-        storageJobInfo.setClassName("fr.cnes.regards.modules.order.service.job.StorageFilesJob");
+        storageJobInfo.setClassName(StorageFilesJob.class.getName());
         storageJobInfo.setPriority(priority);
         storageJobInfo.setExpirationDate(order.getExpirationDate());
         // Create JobInfo and associate to FilesTask

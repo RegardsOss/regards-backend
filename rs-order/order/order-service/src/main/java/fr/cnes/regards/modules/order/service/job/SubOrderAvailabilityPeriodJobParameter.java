@@ -18,30 +18,18 @@
  */
 package fr.cnes.regards.modules.order.service.job;
 
-import java.time.OffsetDateTime;
-
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 
 /**
  * Expiration date specific job parameter, it contains the pair "expirationDate" : date
  * @author oroussel
  */
-public class ExpirationDateJobParameter extends JobParameter {
+public class SubOrderAvailabilityPeriodJobParameter extends JobParameter {
 
-    public static final String NAME = "expirationDate";
+    public static final String NAME = "subOrderAvailabilityPeriod";
 
-    public ExpirationDateJobParameter(OffsetDateTime value) {
+    public SubOrderAvailabilityPeriodJobParameter(Integer value) {
         super(NAME, value);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public OffsetDateTime getValue() {
-        return super.getValue();
-    }
-
-    public void setValue(OffsetDateTime value) {
-        super.setValue(value);
     }
 
     /**
@@ -51,5 +39,15 @@ public class ExpirationDateJobParameter extends JobParameter {
      */
     public static boolean isCompatible(JobParameter param) {
         return param.getName().equals(NAME);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Integer getValue() {
+        return super.getValue();
+    }
+
+    public void setValue(Integer value) {
+        super.setValue(value);
     }
 }
