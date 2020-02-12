@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.notifier.service.cache;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ public abstract class AbstractCacheableRule {
      * Rule cache is used to avoid useless database request as models rarely change!<br/>
      * tenant key -> model key / attributes val
      */
-    private final Map<String, LoadingCache<String, Set<Rule>>> ruleCacheMap = new HashMap<>();
+    private final Map<String, LoadingCache<String, Set<Rule>>> ruleCacheMap = new ConcurrentHashMap<>();
 
     /**
      * Get all enabled {@link Rule} for the current tenant if the cache is empty we will load it
@@ -73,8 +73,7 @@ public abstract class AbstractCacheableRule {
             ruleCacheMap.put(tenant, ruleCache);
 
         }
-        Set<Rule> rules = ruleCacheMap.get(tenant).get(tenant);
-        return rules;
+        return ruleCacheMap.get(tenant).get(tenant);
     }
 
     /**

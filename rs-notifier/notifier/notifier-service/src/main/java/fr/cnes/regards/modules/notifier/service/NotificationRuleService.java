@@ -77,7 +77,7 @@ import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
 @MultitenantTransactional
 public class NotificationRuleService extends AbstractCacheableRule implements INotificationRuleService {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(NotificationRuleService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRuleService.class);
 
     @Autowired
     private IPluginService pluginService;
