@@ -42,11 +42,11 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
@@ -188,6 +188,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(SESSION, resultSip.getSession());
 
         // Check that files storage has been requested
+        @SuppressWarnings("unchecked")
         ArgumentCaptor<Collection<FileStorageRequestDTO>> storageArgs = ArgumentCaptor.forClass(Collection.class);
         Mockito.verify(storageClient, Mockito.times(1)).store(storageArgs.capture());
         Assert.assertTrue("File storage url is not vali in storage request", storageArgs.getValue().stream()

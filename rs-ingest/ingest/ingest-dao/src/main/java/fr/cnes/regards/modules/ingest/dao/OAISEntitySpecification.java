@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import java.util.List;
 import java.util.Set;
 
@@ -13,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
+import fr.cnes.regards.framework.urn.EntityType;
 
 /**
  * Specification class to filter on common attributes shared by SIP and AIP

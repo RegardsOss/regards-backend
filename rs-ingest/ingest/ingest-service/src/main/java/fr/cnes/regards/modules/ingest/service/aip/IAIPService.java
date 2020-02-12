@@ -31,10 +31,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
@@ -82,12 +81,11 @@ public interface IAIPService {
     /**
      * Download current AIP file related to AIP entity with specified urn
      */
-    void downloadAIP(UniformResourceName aipId, HttpServletResponse response) throws ModuleException;
+    void downloadAIP(OaisUniformResourceName aipId, HttpServletResponse response) throws ModuleException;
 
     /**
      * Calculate checksum of an AIP as it will be written when AIP file is downloaded
      * @param aip
-     * @return
      * @throws NoSuchAlgorithmException
      * @throws IOException
      */
@@ -130,12 +128,11 @@ public interface IAIPService {
     /**
      * Search for a {@link AIPEntity} by its ipId
      */
-    Optional<AIPEntity> getAip(UniformResourceName aipId);
+    Optional<AIPEntity> getAip(OaisUniformResourceName aipId);
 
     /**
      * Retrieve a set of aip using a sip id
      * @param sipId
-     * @return
      */
     Set<AIPEntity> findBySipId(String sipId);
 
@@ -144,7 +141,6 @@ public interface IAIPService {
     /**
      * Retrieve {@link AIPEntity}s from given aip ids
      * @param aipIds
-     * @return
      */
     Collection<AIPEntity> findByAipIds(Collection<String> aipIds);
 

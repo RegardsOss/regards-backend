@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
@@ -206,7 +206,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
         LOGGER.debug("Downloading AIP file for entity \"{}\"", aipId.toString());
 
         try {
-            aipService.downloadAIP(UniformResourceName.fromString(aipId), response);
+            aipService.downloadAIP(OaisUniformResourceName.fromString(aipId), response);
         } catch (ModuleException e) {
 
             // Workaround to handle conversion of ServletErrorResponse in JSON format and

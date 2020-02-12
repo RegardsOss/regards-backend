@@ -32,7 +32,8 @@ import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
@@ -67,9 +68,9 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
         IAipGeneration generation = this.getStepPlugin(conf.getBusinessId());
 
         // Retrieve SIP URN from internal identifier
-        UniformResourceName sipId = job.getCurrentEntity().getSipIdUrn();
+        OaisUniformResourceName sipId = job.getCurrentEntity().getSipIdUrn();
         // Compute AIP URN from SIP one
-        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, sipId.getEntityType(),
+        OaisUniformResourceName aipId = new OaisUniformResourceName(OAISIdentifier.AIP, sipId.getEntityType(),
                 sipId.getTenant(), sipId.getEntityId(), sipId.getVersion());
         // Launch AIP generation
         List<AIP> aips = generation.generate(sipEntity.getSip(), aipId, sipId, sipEntity.getSip().getId());

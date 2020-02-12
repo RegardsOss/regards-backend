@@ -18,13 +18,29 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
@@ -62,19 +78,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Léo Mieulet
@@ -224,8 +227,8 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(6, requests.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH INGEST IN ERROR <=====================");
-        requests = requestService.findRequestDtos(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.INGEST)
-                .withState(InternalRequestState.ERROR), pr);
+        requests = requestService.findRequestDtos(SearchRequestsParameters.build()
+                .withRequestType(RequestTypeEnum.INGEST).withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH INGEST IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 
@@ -254,8 +257,8 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(1, requests.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH UPDATE IN ERROR <=====================");
-        requests = requestService.findRequestDtos(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.UPDATE)
-                .withState(InternalRequestState.ERROR), pr);
+        requests = requestService.findRequestDtos(SearchRequestsParameters.build()
+                .withRequestType(RequestTypeEnum.UPDATE).withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH UPDATE IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
     }
@@ -265,7 +268,7 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         SIPEntity sip4 = new SIPEntity();
 
         sip4.setSip(SIP.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
-        sip4.setSipId(UniformResourceName
+        sip4.setSipId(OaisUniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip4.setProviderId("SIP_003");
         sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
@@ -280,14 +283,14 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         sip4 = sipRepository.save(sip4);
 
         AIP aip = AIP.build(sip4.getSip(),
-                            UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                            OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
                             Optional.empty(), "SIP_001");
         AIPEntity aipEntity = AIPEntity.build(sip4, AIPState.GENERATED, aip);
 
         aipEntity = aipRepository.save(aipEntity);
 
         AIP aip2 = AIP.build(sip4.getSip(),
-                             UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                             OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
                              Optional.empty(), "SIP_002");
         AIPEntity aipEntity2 = AIPEntity.build(sip4, AIPState.GENERATED, aip2);
 

@@ -18,15 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.domain.sip;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -42,9 +37,17 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * System POJO for storing SIP.
@@ -67,12 +70,12 @@ import org.hibernate.annotations.TypeDefs;
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class SIPEntity extends AbstractOAISEntity {
 
-
     /**
      * Length used as the checksum column definition.
      * Why 128? it allows to use sha-512. That should limit issues with checksum length for a few years
      */
     public static final int CHECKSUM_MAX_LENGTH = 128;
+
     public static final int MAX_URN_SIZE = 128;
 
     @Id
@@ -120,11 +123,11 @@ public class SIPEntity extends AbstractOAISEntity {
         this.sipId = sipId;
     }
 
-    public UniformResourceName getSipIdUrn() {
-        return UniformResourceName.fromString(sipId);
+    public OaisUniformResourceName getSipIdUrn() {
+        return OaisUniformResourceName.fromString(sipId);
     }
 
-    public void setSipId(UniformResourceName sipId) {
+    public void setSipId(OaisUniformResourceName sipId) {
         this.sipId = sipId.toString();
     }
 
@@ -169,7 +172,7 @@ public class SIPEntity extends AbstractOAISEntity {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (sipId == null ? 0 : sipId.hashCode());
+        result = (prime * result) + (sipId == null ? 0 : sipId.hashCode());
         return result;
     }
 
@@ -199,7 +202,7 @@ public class SIPEntity extends AbstractOAISEntity {
 
         SIPEntity sipEntity = new SIPEntity();
 
-        UniformResourceName urn = generationUrn(tenant, sip, version);
+        OaisUniformResourceName urn = generationUrn(tenant, sip, version);
         sipEntity.setProviderId(sip.getId());
         sipEntity.setSipId(urn);
         sipEntity.setCreationDate(OffsetDateTime.now());
@@ -217,9 +220,9 @@ public class SIPEntity extends AbstractOAISEntity {
         return sipEntity;
     }
 
-    public static UniformResourceName generationUrn(String tenant, SIP sip, Integer version) {
+    public static OaisUniformResourceName generationUrn(String tenant, SIP sip, Integer version) {
         UUID uuid = UUID.nameUUIDFromBytes(sip.getId().getBytes());
-        return new UniformResourceName(OAISIdentifier.SIP, sip.getIpType(), tenant, uuid, version);
+        return new OaisUniformResourceName(OAISIdentifier.SIP, sip.getIpType(), tenant, uuid, version);
     }
 
 }

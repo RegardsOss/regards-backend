@@ -18,11 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.time.OffsetDateTime;
+import java.util.Optional;
+
+import org.junit.Before;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
@@ -37,11 +45,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import org.junit.Before;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 
 /**
  * @author sbinda
@@ -80,8 +83,8 @@ public abstract class AbstractIngestRequestTest extends AbstractMultitenantServi
         sipEntity.setChecksum(checksum);
         sipEntity.setLastUpdate(OffsetDateTime.now());
         sipEntity = sipRepo.save(sipEntity);
-        UniformResourceName sipId = sipEntity.getSipIdUrn();
-        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, sipId.getEntityType(),
+        OaisUniformResourceName sipId = sipEntity.getSipIdUrn();
+        OaisUniformResourceName aipId = new OaisUniformResourceName(OAISIdentifier.AIP, sipId.getEntityType(),
                 sipId.getTenant(), sipId.getEntityId(), sipId.getVersion());
         AIP aip = AIP.build(EntityType.DATA, aipId, Optional.of(sipId), providerId);
         aipEntity = AIPEntity.build(sipEntity, AIPState.STORED, aip);

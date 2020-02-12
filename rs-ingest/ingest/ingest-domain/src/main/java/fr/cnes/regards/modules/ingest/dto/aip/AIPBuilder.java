@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.ingest.dto.aip;
 import java.util.Optional;
 
 import fr.cnes.regards.framework.oais.builder.IPBuilder;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.EntityType;
 
 /**
  * AIP Builder. Used to create AIP.
@@ -40,7 +40,7 @@ public class AIPBuilder extends IPBuilder<AIP> {
      * @param providerId required provider id
      * @param entityType entity type
      */
-    public AIPBuilder(UniformResourceName aipId, Optional<UniformResourceName> sipId, String providerId,
+    public AIPBuilder(OaisUniformResourceName aipId, Optional<OaisUniformResourceName> sipId, String providerId,
             EntityType entityType) {
         super(AIP.class, entityType);
         ip.setId(aipId);

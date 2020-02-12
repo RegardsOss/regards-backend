@@ -25,7 +25,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.exception.AIPGenerationException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
@@ -45,7 +45,7 @@ public class AIPGenerationTestPlugin implements IAipGeneration {
     private ProcessingChainTestErrorSimulator errorSimulator;
 
     @Override
-    public List<AIP> generate(SIP sip, UniformResourceName aipId, UniformResourceName sipId, String providerId)
+    public List<AIP> generate(SIP sip, OaisUniformResourceName aipId, OaisUniformResourceName sipId, String providerId)
             throws AIPGenerationException {
         if (AIPGenerationTestPlugin.class.equals(errorSimulator.getSimulateErrorForStep())) {
             throw new AIPGenerationException("Simulated exception for step AIPGenerationTestPlugin");

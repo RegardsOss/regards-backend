@@ -18,18 +18,32 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
@@ -42,17 +56,6 @@ import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Léo Mieulet
@@ -120,8 +123,8 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
         aipEntity1 = AIPEntity
                 .build(sipEntity, AIPState.GENERATED,
                        AIP.build(sipEntity.getSip(),
-                                 UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
-                                                                     getDefaultTenant(), 1),
+                                 OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
+                                                                         getDefaultTenant(), 1),
                                  Optional.ofNullable(sipEntity.getSipIdUrn()), providerId));
         aipEntity1.setStorages(Sets.newHashSet(LOCATION, LOCATION_2, LOCATION_3));
         aipEntity1.setChecksum("some checksum");

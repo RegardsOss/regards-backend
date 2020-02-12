@@ -39,10 +39,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
@@ -63,7 +63,6 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
@@ -123,8 +122,8 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         sipEntity.setChecksum(UUID.randomUUID().toString());
         sipEntity.setLastUpdate(OffsetDateTime.now());
         sipEntity = sipRepo.save(sipEntity);
-        UniformResourceName sipId = sipEntity.getSipIdUrn();
-        UniformResourceName aipId = UniformResourceName.fromString(sipEntity.getSipIdUrn().toString());
+        OaisUniformResourceName sipId = sipEntity.getSipIdUrn();
+        OaisUniformResourceName aipId = OaisUniformResourceName.fromString(sipEntity.getSipIdUrn().toString());
         aipId.setIdentifier(OAISIdentifier.AIP);
         String fileName = UUID.randomUUID().toString();
         String storedUrl = "storage://in/the/place/" + fileToStoreChecksum;
@@ -185,7 +184,7 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         Assert.assertEquals(0,
                             requestService
                                     .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
-                                    .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10))
+                                            .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10))
                                     .getTotalElements());
         aipRepo.findAll().forEach(a -> {
             Assert.assertEquals(AIPState.STORED, a.getState());
@@ -211,11 +210,10 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
             storageResponseFlowHandler.onStoreSuccess(subList);
             System.out.printf("Duration : %d ms \n", System.currentTimeMillis() - start);
             // Check results
-            Assert.assertEquals(remaining,
-                                requestService
-                                        .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
-                                        .withRequestType(RequestTypeEnum.STORE_METADATA), PageRequest.of(0, 10))
-                                        .getTotalElements());
+            Assert.assertEquals(remaining, requestService
+                    .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
+                            .withRequestType(RequestTypeEnum.STORE_METADATA), PageRequest.of(0, 10))
+                    .getTotalElements());
             aipRepo.findAll().forEach(a -> {
                 Assert.assertEquals(AIPState.STORED, a.getState());
             });

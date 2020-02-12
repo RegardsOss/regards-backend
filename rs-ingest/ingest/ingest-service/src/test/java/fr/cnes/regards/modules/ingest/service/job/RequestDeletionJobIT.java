@@ -31,9 +31,10 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.urn.EntityType;
+
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
@@ -135,7 +136,7 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         SIPEntity sip4 = new SIPEntity();
 
         sip4.setSip(SIP.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
-        sip4.setSipId(UniformResourceName
+        sip4.setSipId(OaisUniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip4.setProviderId("SIP_003");
         sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
@@ -150,7 +151,7 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         sip4 = sipRepository.save(sip4);
 
         AIP aip = AIP.build(sip4.getSip(),
-                            UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                            OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
                             Optional.empty(), "SIP_001");
         aip.setIpType(EntityType.DATA);
         AIPEntity aipEntity = AIPEntity.build(sip4, AIPState.GENERATED, aip);
@@ -158,7 +159,7 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         aipEntity = aipRepository.save(aipEntity);
 
         AIP aip2 = AIP.build(sip4.getSip(),
-                             UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                             OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
                              Optional.empty(), "SIP_002");
         AIPEntity aipEntity2 = AIPEntity.build(sip4, AIPState.GENERATED, aip2);
 
@@ -174,9 +175,8 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         storeMetaDataRequest.setState(InternalRequestState.ERROR);
         storeMetaDataRepository.save(storeMetaDataRequest);
 
-        AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest
-                .build(AIPUpdateParametersDto.build(SearchAIPsParameters.build().withSession(SESSION_0)
-                        .withSessionOwner(SESSION_OWNER_0)));
+        AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto
+                .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0)));
         updateCreatorRequest.setState(InternalRequestState.ERROR);
         aipUpdatesCreatorRepository.save(updateCreatorRequest);
 
@@ -234,7 +234,8 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
     public void testDeleteJob() {
         initData();
         Assert.assertEquals("Something went wrong while creating requests", 6, abstractRequestRepository.count());
-        requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR));
+        requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build()
+                .withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR));
         waitForRequestReach(5, 20_000);
 
         requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build().withSession(SESSION_0)

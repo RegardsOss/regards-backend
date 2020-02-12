@@ -39,6 +39,7 @@ public class OAISDeletionPayload extends AbstractSearchAIPsParameters<OAISDeleti
     /**
      * True when the request wait a storage event
      */
+    @SuppressWarnings("unused")
     private boolean waitStorageAnswer = false;
 
     /**

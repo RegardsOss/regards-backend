@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -39,7 +39,8 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 public class DefaultSingleAIPGeneration implements IAipGeneration {
 
     @Override
-    public List<AIP> generate(SIP sip, UniformResourceName aipId, UniformResourceName sipId, String providerId) {
+    public List<AIP> generate(SIP sip, OaisUniformResourceName aipId, OaisUniformResourceName sipId,
+            String providerId) {
         List<AIP> aips = new ArrayList<>();
         aips.add(AIP.build(sip, aipId, Optional.of(sipId), providerId));
         return aips;

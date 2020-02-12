@@ -46,8 +46,8 @@ import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.RepresentationInformation;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.StoreLocation;
@@ -200,16 +200,16 @@ public class AIPStorageService implements IAIPStorageService {
      */
     private void validateForReference(OAISDataObject dataObject) throws ModuleException {
         Set<String> errors = Sets.newHashSet();
-        if (dataObject.getAlgorithm() == null || dataObject.getAlgorithm().isEmpty()) {
+        if ((dataObject.getAlgorithm() == null) || dataObject.getAlgorithm().isEmpty()) {
             errors.add("Invalid checksum algorithm");
         }
-        if (dataObject.getChecksum() == null || dataObject.getChecksum().isEmpty()) {
+        if ((dataObject.getChecksum() == null) || dataObject.getChecksum().isEmpty()) {
             errors.add("Invalid checksum");
         }
         if (dataObject.getFileSize() == null) {
             errors.add("Invalid filesize");
         }
-        if (dataObject.getFilename() == null || dataObject.getFilename().isEmpty()) {
+        if ((dataObject.getFilename() == null) || dataObject.getFilename().isEmpty()) {
             errors.add("Invalid filename");
         }
         if (!errors.isEmpty()) {
@@ -534,7 +534,7 @@ public class AIPStorageService implements IAIPStorageService {
      * @return a public URL to retrieve the AIP manifest
      * @throws ModuleException if the Eureka server is not reachable
      */
-    public URL generateDownloadUrl(UniformResourceName aipId, ServiceInstance instance) throws ModuleException {
+    public URL generateDownloadUrl(OaisUniformResourceName aipId, ServiceInstance instance) throws ModuleException {
         String host = instance.getUri().toString();
         String path = Paths.get(AIPS_CONTROLLER_ROOT_PATH, AIP_DOWNLOAD_PATH).toString();
         String p = path.toString().replace("{" + AIP_ID_PATH_PARAM + "}", aipId.toString());
@@ -581,7 +581,6 @@ public class AIPStorageService implements IAIPStorageService {
             storageRequest.withType(DataType.AIP.toString());
             files.add(storageRequest);
         }
-
         return files;
     }
 

@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.ingest.service.plugin;
 import java.util.List;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.exception.AIPGenerationException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 public class FakeAIPGenerationTestPlugin implements IAipGeneration {
 
     @Override
-    public List<AIP> generate(SIP sip, UniformResourceName aipId, UniformResourceName sipId, String providerId)
+    public List<AIP> generate(SIP sip, OaisUniformResourceName aipId, OaisUniformResourceName sipId, String providerId)
             throws AIPGenerationException {
         return null;
     }
