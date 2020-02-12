@@ -29,7 +29,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -46,9 +45,6 @@ public class DataObjectFeatureFactory implements IDataObjectFeatureFactory {
     @Autowired
     private IFeatureEntityRepository featureRepo;
 
-    @Autowired
-    private IRuntimeTenantResolver tenantResolver;
-
     @Override
     public Page<DataObjectFeature> findAll(String model, Pageable pageable, OffsetDateTime date) {
         Page<FeatureEntity> entities = this.featureRepo.findByModelAndLastUpdateAfter(model, date, pageable);
@@ -58,7 +54,7 @@ public class DataObjectFeatureFactory implements IDataObjectFeatureFactory {
     }
 
     private DataObjectFeature initDataObjectFeature(FeatureEntity entity) {
-        DataObjectFeature dof = new DataObjectFeature(tenantResolver.getTenant(), entity.getProviderId(), "NO LABEL");
+        DataObjectFeature dof = new DataObjectFeature(entity.getUrn(), entity.getProviderId(), "NO LABEL");
         dof.setProperties(entity.getFeature().getProperties());
         dof.setGeometry(entity.getFeature().getGeometry());
         dof.setSession(entity.getSession());
