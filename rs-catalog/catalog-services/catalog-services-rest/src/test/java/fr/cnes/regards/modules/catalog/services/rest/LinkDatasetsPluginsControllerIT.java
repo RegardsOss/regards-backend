@@ -31,7 +31,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -51,7 +51,7 @@ public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactiona
     @Requirement("REGARDS_DSL_DAM_SET_230")
     @Purpose("The system allows to get the list of plugin's service for a dataset")
     public void retrieveLink() {
-        UniformResourceName urn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, getDefaultTenant(),
+        OaisUniformResourceName urn = new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, getDefaultTenant(),
                 UUID.randomUUID(), 1);
         performDefaultGet(LinkPluginsDatasetsController.PATH_LINK,
                           customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE),
@@ -62,7 +62,7 @@ public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactiona
     @Requirement("REGARDS_DSL_DAM_SET_210")
     @Purpose("The system allows to link a plugin's service to a dataset")
     public void updateLink() {
-        UniformResourceName urn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, getDefaultTenant(),
+        OaisUniformResourceName urn = new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, getDefaultTenant(),
                 UUID.randomUUID(), 1);
         final LinkPluginsDatasets newLink = new LinkPluginsDatasets(urn.toString(), Sets.newHashSet());
         performDefaultPut(LinkPluginsDatasetsController.PATH_LINK, newLink,

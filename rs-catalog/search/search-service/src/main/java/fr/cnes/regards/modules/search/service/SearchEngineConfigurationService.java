@@ -50,7 +50,8 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.event.BroadcastEntityEvent;
@@ -183,7 +184,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
     }
 
     @Override
-    public SearchEngineConfiguration retrieveConf(Optional<UniformResourceName> datasetUrn, String pluginId)
+    public SearchEngineConfiguration retrieveConf(Optional<OaisUniformResourceName> datasetUrn, String pluginId)
             throws ModuleException {
         SearchEngineConfiguration conf = null;
         String ds = null;
@@ -220,7 +221,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                     .findByDatasetUrnIsNullAndConfigurationPluginId(conf.getConfiguration().getPluginId());
         }
 
-        if (foundConf != null && !foundConf.getId().equals(conf.getId())) {
+        if ((foundConf != null) && !foundConf.getId().equals(conf.getId())) {
             throw new EntityInvalidException(
                     String.format("Search engine already defined for engine <%s> and dataset <%s>",
                                   conf.getConfiguration().getPluginId(), conf.getDatasetUrn()));
@@ -257,7 +258,8 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                 try {
                     FeignSecurityManager.asSystem();
                     ResponseEntity<EntityModel<Dataset>> response = datasetClient.retrieveDataset(conf.getDatasetUrn());
-                    if (response != null && response.getBody() != null && response.getBody().getContent() != null) {
+                    if ((response != null) && (response.getBody() != null)
+                            && (response.getBody().getContent() != null)) {
                         conf.setDataset(response.getBody().getContent());
                         // Add new retrieved dataset into cached ones
                         cachedDatasets.add(response.getBody().getContent());
@@ -281,11 +283,11 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
         @Override
         public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
-            if (pWrapper.getContent() != null && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
+            if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
                 runtimeTenantResolver.forceTenant(pWrapper.getTenant());
                 for (final UniformResourceName ipId : pWrapper.getContent().getAipIds()) {
                     List<SearchEngineConfiguration> confs = repository.findByDatasetUrn(ipId.toString());
-                    if (confs != null && !confs.isEmpty()) {
+                    if ((confs != null) && !confs.isEmpty()) {
                         confs.forEach(repository::delete);
                     }
                 }

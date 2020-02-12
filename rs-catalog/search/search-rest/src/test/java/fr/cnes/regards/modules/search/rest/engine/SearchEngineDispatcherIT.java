@@ -35,9 +35,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
@@ -116,21 +116,21 @@ public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
         context.setHeaders(headers);
 
         // Check that the plugin conf associated to DATASET1 is dispatch when context contains dataset1
-        context.setDatasetUrn(UniformResourceName.fromString(DATASET1_URN));
+        context.setDatasetUrn(OaisUniformResourceName.fromString(DATASET1_URN));
         context.setEngineType(SearchEngineTest.ENGINE_ID);
         ResponseEntity<Object> response = dispatcher.dispatchRequest(context);
         Assert.assertEquals("SearchEngine Plugin conf associated to DATASET1 should be dispatch when context contains dataset1",
                             DATASET1_URN, response.getBody());
 
         // Check that the plugin conf associated to DATASET2 is dispatch when context contains dataset2
-        context.setDatasetUrn(UniformResourceName.fromString(DATASET2_URN));
+        context.setDatasetUrn(OaisUniformResourceName.fromString(DATASET2_URN));
         context.setEngineType(SearchEngineTest.ENGINE_ID);
         response = dispatcher.dispatchRequest(context);
         Assert.assertEquals("SearchEngine Plugin conf associated to DATASET2 should be dispatch when context contains dataset2",
                             DATASET2_URN, response.getBody());
 
         // Check that the plugin conf associated to no dataset is dispatch when context contains dataset3
-        context.setDatasetUrn(UniformResourceName.fromString(DATASET3_URN));
+        context.setDatasetUrn(OaisUniformResourceName.fromString(DATASET3_URN));
         context.setEngineType(SearchEngineTest.ENGINE_ID);
         response = dispatcher.dispatchRequest(context);
         Assert.assertEquals("SearchEngine Plugin conf associated to no dataset should be dispatch when context contains dataset3",

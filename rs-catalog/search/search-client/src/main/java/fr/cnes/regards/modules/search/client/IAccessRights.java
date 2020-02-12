@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 
 /**
  * API to request data access rights
@@ -61,8 +61,8 @@ public interface IAccessRights {
     String ENTITY_HAS_ACCESS_MAPPING = URN_MAPPING + ACCESS_RIGHTS_MAPPING;
 
     @RequestMapping(method = RequestMethod.GET, value = ENTITY_HAS_ACCESS_MAPPING)
-    ResponseEntity<Boolean> hasAccess(@Valid @PathVariable("urn") UniformResourceName urn);
+    ResponseEntity<Boolean> hasAccess(@Valid @PathVariable("urn") OaisUniformResourceName urn);
 
     @RequestMapping(method = RequestMethod.POST, value = HAS_ACCESS_MAPPING)
-    ResponseEntity<Set<UniformResourceName>> hasAccess(@RequestBody Collection<UniformResourceName> inUrns);
+    ResponseEntity<Set<OaisUniformResourceName>> hasAccess(@RequestBody Collection<OaisUniformResourceName> inUrns);
 }

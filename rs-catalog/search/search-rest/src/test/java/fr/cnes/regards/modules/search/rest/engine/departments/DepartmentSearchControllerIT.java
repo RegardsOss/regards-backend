@@ -58,9 +58,9 @@ import fr.cnes.regards.framework.module.manager.ModuleConfigurationItemAdapter;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
@@ -207,7 +207,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
         return configGson;
     }
 
-    private void prepareDepartments(Model departmentModel, UniformResourceName dataset) {
+    private void prepareDepartments(Model departmentModel, OaisUniformResourceName dataset) {
 
         List<DataObject> departments = new ArrayList<>();
         Random random = new Random();

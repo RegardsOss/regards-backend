@@ -34,15 +34,15 @@ import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.DataType;
 
 /**
  * Search context for search engine.<br/>
  * Use {@link #build(SearchType, String, HttpHeaders, MultiValueMap, Pageable)} to initialize a new context.<br/>
- * Additional optional properties can be set using {@link #withDatasetUrn(UniformResourceName)},
+ * Additional optional properties can be set using {@link #withDatasetUrn(OaisUniformResourceName)},
  * {@link #withExtra(String)},
- * {@link #withUrn(UniformResourceName)}, {@link #withPropertyName(String)}, {@link #withMaxCount(Integer)},
+ * {@link #withUrn(OaisUniformResourceName)}, {@link #withPropertyName(String)}, {@link #withMaxCount(Integer)},
  * {@link #withDataTypes(List)}.
  *
  * @author Marc Sordi
@@ -71,12 +71,12 @@ public class SearchContext {
     /**
      * Optional path parameter to retrieve a single entity idenfied by this URN
      */
-    private UniformResourceName urn;
+    private OaisUniformResourceName urn;
 
     /**
      * Optional path parameter representing dataset identifier for data object search on this specified dataset
      */
-    private UniformResourceName datasetUrn;
+    private OaisUniformResourceName datasetUrn;
 
     /**
      * Additional optional path parameter for specific route handling.<br/>
@@ -136,19 +136,19 @@ public class SearchContext {
         this.engineType = engineType;
     }
 
-    public Optional<UniformResourceName> getUrn() {
+    public Optional<OaisUniformResourceName> getUrn() {
         return Optional.ofNullable(urn);
     }
 
-    public void setUrn(UniformResourceName urn) {
+    public void setUrn(OaisUniformResourceName urn) {
         this.urn = urn;
     }
 
-    public Optional<UniformResourceName> getDatasetUrn() {
+    public Optional<OaisUniformResourceName> getDatasetUrn() {
         return Optional.ofNullable(datasetUrn);
     }
 
-    public void setDatasetUrn(UniformResourceName datasetUrn) {
+    public void setDatasetUrn(OaisUniformResourceName datasetUrn) {
         this.datasetUrn = datasetUrn;
     }
 
@@ -231,7 +231,7 @@ public class SearchContext {
         context.setHeaders(headers);
         if (queryParams != null) {
             List<String> parser = queryParams.get(SearchEngineMappings.SEARCH_REQUEST_PARSER);
-            if (parser != null && !parser.isEmpty()) {
+            if ((parser != null) && !parser.isEmpty()) {
                 context.setEngineRequestParserType(parser.get(0));
             }
             // Filter spring pagination parameters if any
@@ -249,7 +249,7 @@ public class SearchContext {
     /**
      * Fluent API
      */
-    public SearchContext withUrn(UniformResourceName urn) {
+    public SearchContext withUrn(OaisUniformResourceName urn) {
         this.setUrn(urn);
         return this;
     }
@@ -257,7 +257,7 @@ public class SearchContext {
     /**
      * Fluent API
      */
-    public SearchContext withDatasetUrn(UniformResourceName datasetUrn) {
+    public SearchContext withDatasetUrn(OaisUniformResourceName datasetUrn) {
         this.datasetUrn = datasetUrn;
         return this;
     }
@@ -279,7 +279,7 @@ public class SearchContext {
     }
 
     public SearchContext withPropertyNames(Collection<String> propertyNames) {
-        if (propertyNames != null && !propertyNames.isEmpty()) {
+        if ((propertyNames != null) && !propertyNames.isEmpty()) {
             this.propertyNames.addAll(propertyNames);
         }
         return this;

@@ -39,8 +39,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
@@ -344,17 +344,17 @@ public class SampleDataUtils {
     /**
      * A dummy urn of a collection
      */
-    public static final UniformResourceName URN_COLLECTION = new UniformResourceName();
+    public static final OaisUniformResourceName URN_COLLECTION = new OaisUniformResourceName();
 
     /**
      * A dummy urn for a dataobject
      */
-    public static final UniformResourceName URN_DATAOBJECT = new UniformResourceName();
+    public static final OaisUniformResourceName URN_DATAOBJECT = new OaisUniformResourceName();
 
     /**
      * A dummy urn for a dataset
      */
-    public static final UniformResourceName URN_DATASET = new UniformResourceName();
+    public static final OaisUniformResourceName URN_DATASET = new OaisUniformResourceName();
 
     /**
      * A sample email representing the current user

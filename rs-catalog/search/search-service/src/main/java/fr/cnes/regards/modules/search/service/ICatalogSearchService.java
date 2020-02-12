@@ -28,8 +28,8 @@ import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -90,7 +90,7 @@ public interface ICatalogSearchService {
      */
     @Deprecated // Only use method with ICriterion
     DocFilesSummary computeDatasetsSummary(MultiValueMap<String, String> allParams,
-            SimpleSearchKey<DataObject> searchKey, UniformResourceName dataset, List<DataType> dataTypes)
+            SimpleSearchKey<DataObject> searchKey, OaisUniformResourceName dataset, List<DataType> dataTypes)
             throws SearchException;
 
     /**
@@ -102,12 +102,12 @@ public interface ICatalogSearchService {
      * @return summary
      */
     DocFilesSummary computeDatasetsSummary(ICriterion criterion, SimpleSearchKey<DataObject> searchKey,
-            UniformResourceName dataset, List<DataType> dataTypes) throws SearchException;
+            OaisUniformResourceName dataset, List<DataType> dataTypes) throws SearchException;
 
     /**
      * Same as below but using {@link SearchType}
      */
-    DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType, UniformResourceName dataset,
+    DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType, OaisUniformResourceName dataset,
             List<DataType> dataTypes) throws SearchException;
 
     /**
@@ -116,7 +116,7 @@ public interface ICatalogSearchService {
      * @param <E> concrete type of AbstractEntity
      * @return the entity
      */
-    <E extends AbstractEntity<?>> E get(UniformResourceName urn)
+    <E extends AbstractEntity<?>> E get(OaisUniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException;
 
     /**
@@ -173,12 +173,12 @@ public interface ICatalogSearchService {
      */
     List<PropertyBound<?>> retrievePropertiesBounds(Set<String> propertyNames, ICriterion parse, SearchType type)
             throws SearchException;
-    
+
     /**
      * Know if we have acces to file for the given urn
-     * @param urn {@link UniformResourceName} to access
+     * @param urn {@link OaisUniformResourceName} to access
      * @return if we have access
-     * @throws EntityNotFoundException 
+     * @throws EntityNotFoundException
      */
-    boolean hasAccess(UniformResourceName urn) throws EntityNotFoundException;
+    boolean hasAccess(OaisUniformResourceName urn) throws EntityNotFoundException;
 }

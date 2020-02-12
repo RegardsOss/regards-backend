@@ -28,8 +28,8 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -69,7 +69,7 @@ public class BusinessSearchService implements IBusinessSearchService {
     }
 
     @Override
-    public <F extends EntityFeature> F get(UniformResourceName urn)
+    public <F extends EntityFeature> F get(OaisUniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException {
         AbstractEntity<F> entity = searchService.get(urn);
         return entity.getFeature();
@@ -77,7 +77,7 @@ public class BusinessSearchService implements IBusinessSearchService {
 
     @Override
     public DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType,
-            UniformResourceName dataset, List<DataType> dataTypes) throws SearchException {
+            OaisUniformResourceName dataset, List<DataType> dataTypes) throws SearchException {
         // Just delegate to entity search service
         return searchService.computeDatasetsSummary(criterion, searchType, dataset, dataTypes);
     }

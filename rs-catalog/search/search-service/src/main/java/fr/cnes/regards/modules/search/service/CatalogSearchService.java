@@ -52,9 +52,9 @@ import com.google.common.reflect.TypeToken;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
@@ -178,8 +178,8 @@ public class CatalogSearchService implements ICatalogSearchService {
             // JoinEntitySearchKey<?, Dataset> without any criterion on searchType => just directly search
             // datasets (ie SimpleSearchKey<DataSet>)
             // This is correct because all
-            if (criterion == null && searchKey instanceof JoinEntitySearchKey
-                    && TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class) {
+            if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey)
+                    && (TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
                 searchKey = Searches.onSingleEntity(Searches.fromClass(searchKey.getResultClass()));
             }
 
@@ -192,7 +192,8 @@ public class CatalogSearchService implements ICatalogSearchService {
                 // It may be necessary to filter returned objects (before pagination !!!) by user access groups to avoid
                 // getting datasets on which user has no right
                 final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
-                if (TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class && accessGroups != null) { // accessGroups null means superuser
+                if ((TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)
+                        && (accessGroups != null)) { // accessGroups null means superuser
                     Predicate<Dataset> datasetGroupAccessFilter = ds -> !Sets.intersection(ds.getGroups(), accessGroups)
                             .isEmpty();
                     facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey, convertedPageable,
@@ -211,9 +212,10 @@ public class CatalogSearchService implements ICatalogSearchService {
             }
 
             // Filter data file according to access rights when searching for data objects
-            if (searchKey instanceof SimpleSearchKey && searchKey.getSearchTypeMap().values().contains(DataObject.class)
-                    || searchKey.getResultClass() != null
-                            && TypeToken.of(searchKey.getResultClass()).getRawType() == DataObject.class) {
+            if (((searchKey instanceof SimpleSearchKey)
+                    && searchKey.getSearchTypeMap().values().contains(DataObject.class))
+                    || ((searchKey.getResultClass() != null)
+                            && (TypeToken.of(searchKey.getResultClass()).getRawType() == DataObject.class))) {
                 Set<String> userGroups = accessRightFilter.getUserAccessGroups();
                 for (R entity : facetPage.getContent()) {
                     if (entity instanceof DataObject) {
@@ -253,7 +255,7 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
     @Override
-    public <E extends AbstractEntity<?>> E get(UniformResourceName urn)
+    public <E extends AbstractEntity<?>> E get(OaisUniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException {
         E entity = searchService.get(urn);
         if (entity == null) {
@@ -287,7 +289,7 @@ public class CatalogSearchService implements ICatalogSearchService {
     @Deprecated // Only use method with ICriterion
     @Override
     public DocFilesSummary computeDatasetsSummary(MultiValueMap<String, String> allParams,
-            SimpleSearchKey<DataObject> searchKey, UniformResourceName dataset, List<DataType> dataTypes)
+            SimpleSearchKey<DataObject> searchKey, OaisUniformResourceName dataset, List<DataType> dataTypes)
             throws SearchException {
         try {
             // Build criterion from query
@@ -306,7 +308,7 @@ public class CatalogSearchService implements ICatalogSearchService {
 
     @Override
     public DocFilesSummary computeDatasetsSummary(ICriterion criterion, SimpleSearchKey<DataObject> searchKey,
-            UniformResourceName dataset, List<DataType> dataTypes) throws SearchException {
+            OaisUniformResourceName dataset, List<DataType> dataTypes) throws SearchException {
         try {
             // Apply security filter (ie user groups)
             criterion = accessRightFilter.addDataAccessRights(criterion);
@@ -323,23 +325,23 @@ public class CatalogSearchService implements ICatalogSearchService {
 
     @Override
     public DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType,
-            UniformResourceName dataset, List<DataType> dataTypes) throws SearchException {
+            OaisUniformResourceName dataset, List<DataType> dataTypes) throws SearchException {
         Assert.isTrue(SearchType.DATAOBJECTS.equals(searchType), "Only dataobject target is supported.");
         return computeDatasetsSummary(criterion, getSimpleSearchKey(searchType), dataset, dataTypes);
     }
 
-    private void keepOnlyDatasetsWithGrantedAccess(SimpleSearchKey<DataObject> searchKey, UniformResourceName dataset,
-            DocFilesSummary summary) throws AccessRightFilterException {
+    private void keepOnlyDatasetsWithGrantedAccess(SimpleSearchKey<DataObject> searchKey,
+            OaisUniformResourceName dataset, DocFilesSummary summary) throws AccessRightFilterException {
         // Be careful ! "tags" is used to discriminate docFiles summaries because dataset URN is set into it BUT
         // all tags are used.
         // So we must remove all summaries that are not from dataset
         for (Iterator<String> i = summary.getSubSummariesMap().keySet().iterator(); i.hasNext();) {
             String tag = i.next();
-            if (!UniformResourceName.isValidUrn(tag)) {
+            if (!OaisUniformResourceName.isValidUrn(tag)) {
                 i.remove();
                 continue;
             }
-            UniformResourceName urn = UniformResourceName.fromString(tag);
+            OaisUniformResourceName urn = OaisUniformResourceName.fromString(tag);
             if (urn.getEntityType() != EntityType.DATASET) {
                 i.remove();
                 continue;
@@ -359,8 +361,9 @@ public class CatalogSearchService implements ICatalogSearchService {
                     .collect(Collectors.toSet()));
             Page<Dataset> page = searchService.search(Searches.onSingleEntity(EntityType.DATASET),
                                                       ISearchService.MAX_PAGE_SIZE, dataObjectsGrantedCrit);
-            Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId)
-                    .map(UniformResourceName::toString).collect(Collectors.toSet());
+
+            Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId).map(urn -> urn.toString())
+                    .collect(Collectors.toSet());
             // If summary is restricted to a specified datasetIpId, it must be taken into account
             if (dataset != null) {
                 if (datasetIpids.contains(dataset.toString())) {
@@ -498,7 +501,7 @@ public class CatalogSearchService implements ICatalogSearchService {
         qas.entrySet().forEach(qa -> {
             AttributeModel attribute = qa.getKey();
             Aggregation aggregation = qa.getValue().getAggregation();
-            if (aggregation != null && aggregation.getType().equals(StatsAggregationBuilder.NAME)) {
+            if ((aggregation != null) && aggregation.getType().equals(StatsAggregationBuilder.NAME)) {
                 ParsedStats stats = (ParsedStats) aggregation;
                 Double min = stats.getMin();
                 String minAsString = stats.getMinAsString();
@@ -508,13 +511,13 @@ public class CatalogSearchService implements ICatalogSearchService {
                 String maxAsString = stats.getMaxAsString();
                 Integer maxAsInt = max.intValue();
                 Long maxAsLong = max.longValue();
-                if (Double.NEGATIVE_INFINITY == stats.getMin() || Double.POSITIVE_INFINITY == stats.getMin()) {
+                if ((Double.NEGATIVE_INFINITY == stats.getMin()) || (Double.POSITIVE_INFINITY == stats.getMin())) {
                     min = null;
                     minAsString = null;
                     minAsInt = null;
                     minAsLong = null;
                 }
-                if (Double.POSITIVE_INFINITY == stats.getMax() || Double.NEGATIVE_INFINITY == stats.getMax()) {
+                if ((Double.POSITIVE_INFINITY == stats.getMax()) || (Double.NEGATIVE_INFINITY == stats.getMax())) {
                     max = null;
                     maxAsString = null;
                     maxAsInt = null;
@@ -554,7 +557,7 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
     @Override
-    public boolean hasAccess(UniformResourceName urn) throws EntityNotFoundException {
+    public boolean hasAccess(OaisUniformResourceName urn) throws EntityNotFoundException {
         try {
             get(urn);
             return true;

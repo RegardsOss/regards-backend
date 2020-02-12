@@ -49,10 +49,10 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
@@ -398,7 +398,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         return solarSystem;
     }
 
-    protected List<DataObject> createPlanets(Model planetModel, UniformResourceName dataset) {
+    protected List<DataObject> createPlanets(Model planetModel, OaisUniformResourceName dataset) {
         // Create planets
         List<DataObject> planets = new ArrayList<>();
         planets.add(createMercury(planetModel));
@@ -470,7 +470,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         planet.addProperty(IProperty.buildString(PLANET_TYPE, type));
         planet.addProperty(IProperty.buildInteger(PLANET_DIAMETER, diameter));
         planet.addProperty(IProperty.buildLong(PLANET_SUN_DISTANCE, sunDistance));
-        if (params != null && !params.isEmpty()) {
+        if ((params != null) && !params.isEmpty()) {
             planet.addProperty(IProperty.buildStringArray(PLANET_PARAMS, params.toArray(new String[params.size()])));
         }
         return planet;

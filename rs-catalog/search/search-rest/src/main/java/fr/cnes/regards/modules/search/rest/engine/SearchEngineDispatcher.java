@@ -34,7 +34,7 @@ import org.springframework.validation.Validator;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
@@ -158,7 +158,7 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
     }
 
     @Override
-    public ISearchEngine<?, ?, ?, ?> getSearchEngine(Optional<UniformResourceName> datasetUrn, String engineType)
+    public ISearchEngine<?, ?, ?, ?> getSearchEngine(Optional<OaisUniformResourceName> datasetUrn, String engineType)
             throws ModuleException {
         SearchEngineConfiguration conf = searchEngineService.retrieveConf(datasetUrn, engineType);
         try {

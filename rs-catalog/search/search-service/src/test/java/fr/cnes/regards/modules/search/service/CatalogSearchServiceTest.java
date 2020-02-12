@@ -43,11 +43,11 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
@@ -223,10 +223,10 @@ public class CatalogSearchServiceTest {
         Multimap<DataType, DataFile> multiMap = ArrayListMultimap.create();
         ;
         multiMap.put(DataType.RAWDATA, new DataFile());
-        UniformResourceName urn = Mockito.mock(UniformResourceName.class);
+        OaisUniformResourceName urn = Mockito.mock(OaisUniformResourceName.class);
         CatalogSearchService mock = Mockito.spy(catalogSearchService);
         Mockito.when(toReturn.getFiles()).thenReturn(multiMap);
-        Mockito.doReturn(toReturn).when(mock).get((Mockito.any(UniformResourceName.class)));
+        Mockito.doReturn(toReturn).when(mock).get((Mockito.any(OaisUniformResourceName.class)));
         assertTrue(mock.hasAccess(urn));
     }
 
@@ -239,10 +239,10 @@ public class CatalogSearchServiceTest {
      */
     @Test
     public void testHasAccessForbidden() throws EntityOperationForbiddenException, EntityNotFoundException {
-        UniformResourceName urn = Mockito.mock(UniformResourceName.class);
+        OaisUniformResourceName urn = Mockito.mock(OaisUniformResourceName.class);
         CatalogSearchService mock = Mockito.spy(catalogSearchService);
         Mockito.doThrow(EntityOperationForbiddenException.class).when(mock)
-                .get((Mockito.any(UniformResourceName.class)));
+                .get((Mockito.any(OaisUniformResourceName.class)));
         assertFalse(mock.hasAccess(urn));
     }
 
@@ -254,9 +254,9 @@ public class CatalogSearchServiceTest {
      */
     @Test(expected = EntityNotFoundException.class)
     public void testHasAccessNotFound() throws EntityOperationForbiddenException, EntityNotFoundException {
-        UniformResourceName urn = Mockito.mock(UniformResourceName.class);
+        OaisUniformResourceName urn = Mockito.mock(OaisUniformResourceName.class);
         CatalogSearchService mock = Mockito.spy(catalogSearchService);
-        Mockito.doThrow(new EntityNotFoundException("")).when(mock).get((Mockito.any(UniformResourceName.class)));
+        Mockito.doThrow(new EntityNotFoundException("")).when(mock).get((Mockito.any(OaisUniformResourceName.class)));
         assertFalse(mock.hasAccess(urn));
     }
 }

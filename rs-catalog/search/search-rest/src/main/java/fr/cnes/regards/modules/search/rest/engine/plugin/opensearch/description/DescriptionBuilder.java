@@ -45,7 +45,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -299,7 +299,7 @@ public class DescriptionBuilder {
     private OpenSearchParameter buildParameter(DescriptionParameter descParameter,
             List<IOpenSearchExtension> extensions) {
         OpenSearchParameter parameter = new OpenSearchParameter();
-        if (descParameter.getConfiguration() != null && descParameter.getConfiguration().getAllias() != null) {
+        if ((descParameter.getConfiguration() != null) && (descParameter.getConfiguration().getAllias() != null)) {
             parameter.setName(descParameter.getConfiguration().getAllias());
         } else {
             parameter.setName(descParameter.getName());
@@ -308,7 +308,7 @@ public class DescriptionBuilder {
         parameter.setMaximum("1");
         parameter.setValue(String.format("{%s}", descParameter.getAttributeModel().getName()));
         parameter.setTitle(descParameter.getAttributeModel().getDescription());
-        if (descParameter.getAttributeModel().getRestriction() != null
+        if ((descParameter.getAttributeModel().getRestriction() != null)
                 && RestrictionType.PATTERN.equals(descParameter.getAttributeModel().getRestriction().getType())) {
             PatternRestriction restriction = (PatternRestriction) descParameter.getAttributeModel().getRestriction();
             parameter.setPattern(restriction.getPattern());

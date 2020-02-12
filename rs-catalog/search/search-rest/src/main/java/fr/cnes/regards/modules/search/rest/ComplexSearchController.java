@@ -37,10 +37,10 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -106,7 +106,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
         }
 
         List<DataType> dataTypes = complexSearchRequest.getDataTypes();
-        if (dataTypes == null || dataTypes.isEmpty()) {
+        if ((dataTypes == null) || dataTypes.isEmpty()) {
             dataTypes = Lists.newArrayList();
             for (DataType type : DataType.values()) {
                 dataTypes.add(type);
@@ -143,9 +143,9 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
      * @throws ModuleException
      */
     private ICriterion computeComplexCriterion(SearchRequest searchRequest) throws ModuleException {
-        UniformResourceName datasetUrn = null;
+        OaisUniformResourceName datasetUrn = null;
         if (searchRequest.getDatasetUrn() != null) {
-            datasetUrn = UniformResourceName.fromString(searchRequest.getDatasetUrn());
+            datasetUrn = OaisUniformResourceName.fromString(searchRequest.getDatasetUrn());
         }
         ISearchEngine<?, ?, ?, ?> searchEngine = dispatcher.getSearchEngine(Optional.ofNullable(datasetUrn),
                                                                             searchRequest.getEngineType());
@@ -155,7 +155,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
                                                     SearchEngineMappings.getJsonHeaders(),
                                                     searchRequest.getSearchParameters(), PageRequest.of(0, 1));
         if (searchRequest.getDatasetUrn() != null) {
-            context = context.withDatasetUrn(UniformResourceName.fromString(searchRequest.getDatasetUrn()));
+            context = context.withDatasetUrn(OaisUniformResourceName.fromString(searchRequest.getDatasetUrn()));
         }
         ICriterion reqCrit = searchEngine.parse(context);
 
@@ -166,7 +166,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
         }
 
         // Include ids criterion
-        if (searchRequest.getEntityIdsToInclude() != null && !searchRequest.getEntityIdsToInclude().isEmpty()) {
+        if ((searchRequest.getEntityIdsToInclude() != null) && !searchRequest.getEntityIdsToInclude().isEmpty()) {
             ICriterion idsCrit = null;
             for (String ipId : searchRequest.getEntityIdsToInclude()) {
                 if (idsCrit == null) {
@@ -181,7 +181,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
         }
 
         // Exclude ids criterion
-        if (searchRequest.getEntityIdsToExclude() != null && !searchRequest.getEntityIdsToExclude().isEmpty()) {
+        if ((searchRequest.getEntityIdsToExclude() != null) && !searchRequest.getEntityIdsToExclude().isEmpty()) {
             for (String ipId : searchRequest.getEntityIdsToExclude()) {
                 reqCrit = ICriterion.and(reqCrit, ICriterion.not(ICriterion.eq(StaticProperties.IP_ID, ipId)));
             }

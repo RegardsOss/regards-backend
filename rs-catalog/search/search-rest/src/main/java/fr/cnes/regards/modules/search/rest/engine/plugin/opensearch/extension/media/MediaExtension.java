@@ -43,7 +43,7 @@ import com.rometools.rome.feed.module.Module;
 
 import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.framework.geojson.GeoJsonLink;
-import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
