@@ -124,7 +124,7 @@ public class UniformResourceName {
     /**
      * Constructor setting the given parameters as attributes
      */
-    public UniformResourceName(String identifier, EntityType entityType, String tenant, UUID entityId, int version,
+    protected UniformResourceName(String identifier, EntityType entityType, String tenant, UUID entityId, int version,
             @Nullable Long order, @Nullable String revision) {
         this.identifier = identifier;
         this.entityType = entityType;
@@ -136,17 +136,20 @@ public class UniformResourceName {
     }
 
     public UniformResourceName() {
+        // Deserialization
     }
 
-    public void build(String identifier, EntityType entityType, String tenant, UUID entityId, int version,
-            @Nullable Long order, @Nullable String revision) {
-        this.identifier = identifier;
-        this.entityType = entityType;
-        this.tenant = tenant;
-        this.entityId = entityId;
-        this.version = version;
-        this.order = order;
-        this.revision = revision;
+    public static UniformResourceName build(String identifier, EntityType entityType, String tenant, UUID entityId,
+            int version, @Nullable Long order, @Nullable String revision) {
+        UniformResourceName urn = new UniformResourceName();
+        urn.setIdentifier(identifier);
+        urn.setEntityType(entityType);
+        urn.setTenant(tenant);
+        urn.setEntityId(entityId);
+        urn.setVersion(version);
+        urn.setOrder(order);
+        urn.setRevision(revision);
+        return urn;
     }
 
     /**
@@ -288,7 +291,7 @@ public class UniformResourceName {
         return revision;
     }
 
-    /**
+    /**    public
      * Set the revision
      */
     public void setRevision(String revision) {
@@ -323,14 +326,16 @@ public class UniformResourceName {
                 // Revision is precised
                 String revisionString = stringFragment[6];
                 // so we have all fields
-                return new UniformResourceName(identifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                        Long.parseLong(versionWithOrder[1]), revisionString.substring(REVISION_PREFIX.length()));
+                return UniformResourceName
+                        .build(identifier, entityType, tenant, entityId,
+                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                               Long.parseLong(versionWithOrder[1]), revisionString.substring(REVISION_PREFIX.length()));
             } else {
                 // Revision is missing so we have all except Revision
-                return new UniformResourceName(identifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                        Long.parseLong(versionWithOrder[1]), null);
+                return UniformResourceName
+                        .build(identifier, entityType, tenant, entityId,
+                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                               Long.parseLong(versionWithOrder[1]), null);
             }
         } else {
             // we don't have an order specified
@@ -338,13 +343,15 @@ public class UniformResourceName {
                 // Revision is precised
                 String revisionString = stringFragment[6];
                 // so we have all fields exception Order
-                return new UniformResourceName(identifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())), null,
-                        revisionString.substring(REVISION_PREFIX.length()));
+                return UniformResourceName
+                        .build(identifier, entityType, tenant, entityId,
+                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())), null,
+                               revisionString.substring(REVISION_PREFIX.length()));
             } else {
                 // Revision is missing so we have all except Revision and Order
-                return new UniformResourceName(identifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())), null, null);
+                return UniformResourceName
+                        .build(identifier, entityType, tenant, entityId,
+                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())), null, null);
             }
         }
     }
@@ -358,7 +365,6 @@ public class UniformResourceName {
             return false;
         }
 
-        @SuppressWarnings("rawtypes")
         UniformResourceName that = (UniformResourceName) o;
 
         if (version != that.version) {
