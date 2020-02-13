@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
  */
 @Service
 @MultitenantTransactional
-public class DataObjectFeatureFactory implements IDataObjectFeatureFactory {
+public class DataObjectFeatureService implements IDataObjectFeatureService {
 
     @Autowired
     private IFeatureEntityRepository featureRepo;
@@ -56,7 +56,6 @@ public class DataObjectFeatureFactory implements IDataObjectFeatureFactory {
     private DataObjectFeature initDataObjectFeature(FeatureEntity entity) {
         DataObjectFeature dof = new DataObjectFeature(entity.getUrn(), entity.getProviderId(), "NO LABEL");
         dof.setProperties(entity.getFeature().getProperties());
-        dof.setGeometry(entity.getFeature().getGeometry());
         dof.setSession(entity.getSession());
         dof.setSessionOwner(entity.getSessionOwner());
         dof.setModel(entity.getModel());

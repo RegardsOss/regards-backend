@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
  * @author Kevin Marchois
  *
  */
-public interface IDataObjectFeatureFactory {
+public interface IDataObjectFeatureService {
 
     /**
      * Get a {@link Page} of {@link DataObjectFeature}

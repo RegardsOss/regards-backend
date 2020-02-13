@@ -81,13 +81,13 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
     // Mock for test purpose
     @Autowired
-    private IComputationPluginService cps;
+    protected IComputationPluginService cps;
 
     @Autowired
     protected IModelAttrAssocClient modelAttrAssocClientMock;
 
     @Autowired
-    private MultitenantFlattenedAttributeAdapterFactory factory;
+    protected MultitenantFlattenedAttributeAdapterFactory factory;
 
     @Autowired
     protected IFeatureCreationRequestRepository featureCreationRequestRepo;
