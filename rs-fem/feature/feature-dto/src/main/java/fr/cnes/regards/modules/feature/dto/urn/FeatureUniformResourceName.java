@@ -50,7 +50,11 @@ public class FeatureUniformResourceName extends UniformResourceName {
     public static FeatureUniformResourceName build(FeatureIdentifier identifier, EntityType entityType, String tenant,
             UUID entityId, int version) {
         FeatureUniformResourceName urn = new FeatureUniformResourceName();
-        urn.build(identifier.name(), entityType, tenant, entityId, version, null, null);
+        urn.setIdentifier(identifier.name());
+        urn.setEntityId(entityId);
+        urn.setVersion(version);
+        urn.setTenant(tenant);
+        urn.setEntityType(entityType);
         return urn;
     }
 
