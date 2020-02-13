@@ -241,7 +241,7 @@ public class LegacySearchEngine implements
         ICriterion criterion = parse(context);
         // Compute summary
         DocFilesSummary summary = searchService.computeDatasetsSummary(criterion, context.getSearchType(),
-                                                                       context.getDatasetUrn().orElseGet(null),
+                                                                       context.getDatasetUrn().orElse(null),
                                                                        context.getDateTypes().get());
         // Build response
         return ResponseEntity.ok(summary);
