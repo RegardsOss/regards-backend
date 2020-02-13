@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -48,6 +49,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
@@ -101,6 +103,9 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Autowired
     private IAIPService aipService;
+
+    @Autowired
+    private IAIPRepository aipRepo;
 
     @Autowired
     private IAIPStorageService aipStorageService;
@@ -389,7 +394,7 @@ public class IngestRequestService implements IIngestRequestService {
         }
 
         // Keep track of the error
-        saveRequest(request);
+        saveRequestAndCheck(request);
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
@@ -402,6 +407,14 @@ public class IngestRequestService implements IIngestRequestService {
      * @return saved {@link IngestRequest}
      */
     public IngestRequest saveRequest(IngestRequest request) {
+        return saveRequest(request, false);
+    }
+
+    public IngestRequest saveRequestAndCheck(IngestRequest request) {
+        return saveRequest(request, true);
+    }
+
+    private IngestRequest saveRequest(IngestRequest request, boolean checkAips) {
         // Before saving entity check the state of the associated job if any
         if ((request.getJobInfo() != null) && !request.getJobInfo().isLocked()) {
             // Lock the job info before saving entity in order to avoid deletion of this job by an other process
@@ -409,6 +422,18 @@ public class IngestRequestService implements IIngestRequestService {
             jobInfo.setLocked(true);
             jobInfoService.save(jobInfo);
             request.setJobInfo(jobInfo);
+        }
+        // Check associated aips always exists
+        if (checkAips && (request.getAips() != null)) {
+            List<AIPEntity> toRemove = new ArrayList<AIPEntity>();
+            for (AIPEntity aip : request.getAips()) {
+                if ((aip.getId() == null) || aipRepo.existsById(aip.getId())) {
+                    toRemove.add(aip);
+                }
+            }
+            if (!toRemove.isEmpty()) {
+                toRemove.forEach(a -> request.removeAip(a));
+            }
         }
         return ingestRequestRepository.save(request);
     }
