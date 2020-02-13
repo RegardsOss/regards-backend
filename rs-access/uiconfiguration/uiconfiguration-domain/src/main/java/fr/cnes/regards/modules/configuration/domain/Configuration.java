@@ -21,8 +21,8 @@ import org.hibernate.annotations.Type;
 * @author Kevin Marchois
 */
 @Entity
-@Table(name = "t_ui_configuration",
-uniqueConstraints = { @UniqueConstraint(name = "uk_ui_configuration_application_id", columnNames = {"application_id"})})
+@Table(name = "t_ui_configuration", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_ui_configuration_application_id", columnNames = { "application_id" }) })
 public class Configuration {
 
     /**
@@ -32,7 +32,7 @@ public class Configuration {
     @SequenceGenerator(name = "ihmConfigurationSequence", initialValue = 1, sequenceName = "seq_ui_configuration")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ihmConfigurationSequence")
     private Long id;
-    
+
     /**
      * JSON representation of a configuration
      */
@@ -42,35 +42,44 @@ public class Configuration {
     private String configuration;
 
     @NotNull
-    @Column(name="application_id",nullable = false, length = 16)
+    @Column(name = "application_id", nullable = false, length = 16)
     private String applicationId;
 
-	public Long getId() {
-		return id;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public String getConfiguration() {
-		return configuration;
-	}
+    public String getConfiguration() {
+        return configuration;
+    }
 
-	public void setConfiguration(String configuration) {
-		this.configuration = configuration;
-	}
+    public void setConfiguration(String configuration) {
+        this.configuration = configuration;
+    }
 
-	public String getApplicationId() {
-		return applicationId;
-	}
+    public String getApplicationId() {
+        return applicationId;
+    }
 
-	public void setApplicationId(String applicationId) {
-		this.applicationId = applicationId;
-	}
-	
-	@Override
-    public boolean equals(final Object obj) {
+    public void setApplicationId(String applicationId) {
+        this.applicationId = applicationId;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((applicationId == null) ? 0 : applicationId.hashCode());
+        result = (prime * result) + ((configuration == null) ? 0 : configuration.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
@@ -80,25 +89,22 @@ public class Configuration {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Configuration other = (Configuration) obj;
+        Configuration other = (Configuration) obj;
         if (applicationId == null) {
             if (other.applicationId != null) {
                 return false;
             }
-        } else {
-            if (!applicationId.equals(other.applicationId)) {
-                return false;
-            }
+        } else if (!applicationId.equals(other.applicationId)) {
+            return false;
         }
         if (configuration == null) {
-        	if (other.getConfiguration() != null) {
-        		return false;
-        	}
-        } else {
-        	if (!configuration.equals(other.getConfiguration())) {
-        		return false;
-        	}
+            if (other.configuration != null) {
+                return false;
+            }
+        } else if (!configuration.equals(other.configuration)) {
+            return false;
         }
         return true;
     }
+
 }
