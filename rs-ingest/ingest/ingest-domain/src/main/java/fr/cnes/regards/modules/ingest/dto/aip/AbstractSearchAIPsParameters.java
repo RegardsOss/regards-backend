@@ -18,24 +18,28 @@
  */
 package fr.cnes.regards.modules.ingest.dto.aip;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
 import org.apache.commons.compress.utils.Lists;
+
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
 
 /**
  * Store AIP criteria filters to do some research against AIP repo
  * @author sbinda
  * @author Léo Mieulet
  */
-public abstract class AbstractSearchAIPsParameters <T extends AbstractSearchAIPsParameters> {
+@SuppressWarnings("unchecked")
+public abstract class AbstractSearchAIPsParameters<T extends AbstractSearchAIPsParameters<?>> {
 
     private AIPState state;
 

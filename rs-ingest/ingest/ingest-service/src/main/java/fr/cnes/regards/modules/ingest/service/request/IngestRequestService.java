@@ -187,8 +187,9 @@ public class IngestRequestService implements IIngestRequestService {
     @Override
     public void handleIngestJobFailed(IngestRequest request, SIPEntity entity, String errorMessage) {
         // Lock job
-        jobInfoService.lock(request.getJobInfo());
-
+        if (request.getJobInfo() != null) {
+            jobInfoService.lock(request.getJobInfo());
+        }
         // Keep track of the error
         saveAndPublishErrorRequest(request, errorMessage);
     }
@@ -291,6 +292,11 @@ public class IngestRequestService implements IIngestRequestService {
 
         List<AIPEntity> aips = request.getAips();
 
+        if ((aips == null) || aips.isEmpty()) {
+            LOGGER.error("No aips provided to finalize success requests");
+            return;
+        }
+
         // Change AIP state
         for (AIPEntity aipEntity : aips) {
             aipEntity.setState(AIPState.STORED);
@@ -385,8 +391,6 @@ public class IngestRequestService implements IIngestRequestService {
         // Keep track of the error
         saveRequest(request);
         // Publish
-        //FIXME: why is there a sipId in place of providerId??????
-        //FIXME: more important, why don't we use IngestPayload that seems to have all informations needed...
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
                                                    request.getSip() != null ? request.getSip().getId() : null, null,
                                                    RequestState.ERROR, request.getErrors()));

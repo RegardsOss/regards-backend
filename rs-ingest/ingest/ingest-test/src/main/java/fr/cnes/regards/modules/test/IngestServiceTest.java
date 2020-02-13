@@ -44,6 +44,7 @@ import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
+import fr.cnes.regards.modules.storage.client.FileReferenceEventHandler;
 import fr.cnes.regards.modules.storage.client.FileRequestGroupEventHandler;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 
@@ -101,6 +102,7 @@ public class IngestServiceTest {
         jobInfoRepo.deleteAll();
         pluginConfRepo.deleteAllInBatch();
         cleanAMQPQueues(FileRequestGroupEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(FileReferenceEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
     }
 
     public void clear() {
@@ -146,21 +148,30 @@ public class IngestServiceTest {
     public void waitForIngestion(long expectedSips, long timeout, SIPState sipState) {
         long end = System.currentTimeMillis() + timeout;
         // Wait
-        long sipCount;
+        long sipCount = 0;
         do {
+            long newCount = 0;
+            long totalCount = sipRepository.count();
             if (sipState != null) {
-                sipCount = sipRepository.countByState(sipState);
+                newCount = sipRepository.countByState(sipState);
             } else {
-                sipCount = sipRepository.count();
+                newCount = totalCount;
             }
-            LOGGER.info("{} SIP(s) created in database", sipCount);
-            if (timerStop(expectedSips, end, sipCount)) {
+            if (newCount != sipCount) {
+                LOGGER.info("{} new SIP(s) {} in database", newCount - sipCount,
+                            sipState != null ? sipState.toString() : "ALL_STATUS");
+            }
+            sipCount = newCount;
+            if (timerStop(expectedSips, end, sipCount, String
+                    .format("Timeout after waiting for %s SIPs in %s. Acutal=%s. Total count %s (no specific status)",
+                            expectedSips, sipState != null ? sipState.toString() : "ALL_STATUS", sipCount,
+                            totalCount))) {
                 break;
             }
         } while (true);
     }
 
-    private boolean timerStop(long expectedSips, long end, long sipCount) {
+    private boolean timerStop(long expectedSips, long end, long sipCount, String errorMessage) {
         if (sipCount >= expectedSips) {
             return true;
         }
@@ -172,7 +183,7 @@ public class IngestServiceTest {
                 Assert.fail("Thread interrupted");
             }
         } else {
-            Assert.fail("Timeout");
+            Assert.fail(errorMessage);
         }
         return false;
     }
@@ -190,7 +201,8 @@ public class IngestServiceTest {
         do {
             taskCount = abstractRequestRepository.count();
             LOGGER.debug("{} UpdateRequest(s) created in database", taskCount);
-            if (timerStop(expectedTasks, end, taskCount)) {
+            if (timerStop(expectedTasks, end, taskCount, String
+                    .format("Timeout after waiting for %s request tasks ends. Actual=%s", expectedTasks, taskCount))) {
                 break;
             }
         } while (true);
@@ -205,7 +217,7 @@ public class IngestServiceTest {
         // Wait
         do {
             long count = abstractRequestRepository.count();
-            LOGGER.debug("{} Current request running", count);
+            LOGGER.info("{} Current request running", count);
             if (count == 0) {
                 break;
             }
@@ -217,7 +229,7 @@ public class IngestServiceTest {
                     Assert.fail("Thread interrupted");
                 }
             } else {
-                Assert.fail("Timeout");
+                Assert.fail("Timeout waiting for all requests finished. Remaining " + count);
             }
         } while (true);
     }

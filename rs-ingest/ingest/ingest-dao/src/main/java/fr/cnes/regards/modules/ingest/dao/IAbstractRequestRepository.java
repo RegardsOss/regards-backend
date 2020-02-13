@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import java.util.Collection;
 import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +30,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 
 /**
  * @author Léo Mieulet
@@ -59,6 +62,8 @@ public interface IAbstractRequestRepository extends JpaRepository<AbstractReques
         Page<AbstractRequest> results = findAll(specification, PageRequest.of(0, 1));
         return results.getTotalElements() > 0;
     }
+
+    long countByStateIn(Collection<InternalRequestState> states);
 
     /**
      * Update the state of list of entities using their ids

@@ -63,7 +63,6 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
@@ -163,7 +162,8 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
                            null));
             IngestRequest request = IngestRequest.build(IngestMetadata
                     .build(sessionOwner, session, "ingestChain", Sets.newHashSet(), StorageMetadata.build(storage)),
-                    InternalRequestState.RUNNING, IngestRequestStep.LOCAL_INIT, sip);
+                                                        InternalRequestState.RUNNING, IngestRequestStep.LOCAL_INIT,
+                                                        sip);
             request.setStep(IngestRequestStep.REMOTE_STORAGE_REQUESTED, 1000);
             // Create associated IngestRequest
             request.setRemoteStepGroupIds(Lists.newArrayList(groupId));
@@ -184,7 +184,7 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         Assert.assertEquals(0,
                             requestService
                                     .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
-                                    .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10))
+                                            .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10))
                                     .getTotalElements());
         aipRepo.findAll().forEach(a -> {
             Assert.assertEquals(AIPState.STORED, a.getState());
@@ -210,11 +210,10 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
             storageResponseFlowHandler.onStoreSuccess(subList);
             System.out.printf("Duration : %d ms \n", System.currentTimeMillis() - start);
             // Check results
-            Assert.assertEquals(remaining,
-                                requestService
-                                        .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
-                                        .withRequestType(RequestTypeEnum.STORE_METADATA), PageRequest.of(0, 10))
-                                        .getTotalElements());
+            Assert.assertEquals(remaining, requestService
+                    .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
+                            .withRequestType(RequestTypeEnum.STORE_METADATA), PageRequest.of(0, 10))
+                    .getTotalElements());
             aipRepo.findAll().forEach(a -> {
                 Assert.assertEquals(AIPState.STORED, a.getState());
             });

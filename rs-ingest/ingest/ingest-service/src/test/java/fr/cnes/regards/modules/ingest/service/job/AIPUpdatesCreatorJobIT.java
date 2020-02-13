@@ -18,7 +18,22 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
@@ -37,25 +52,15 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
-import java.time.OffsetDateTime;
-import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=update_scanner_job",
-        "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
-        "spring.jpa.show-sql=true", "regards.ingest.request.schedule.delay=100000000" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=update_scanner_job", "regards.amqp.enabled=true",
+                "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
+                "regards.ingest.request.schedule.delay=100000000" },
+        locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
 
@@ -68,7 +73,6 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
     @Autowired
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
 
-
     @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
 
@@ -80,7 +84,6 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IJobInfoRepository jobInfoRepository;
-
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
 
@@ -161,10 +164,9 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
         } while (true);
     }
 
-
-
     @Test
     public void testScanJob() throws ModuleException {
+        ingestServiceTest.waitAllRequestsFinished(20_000);
         storageClient.setBehavior(true, true);
         initData();
         aipService.registerUpdatesCreator(AIPUpdateParametersDto
@@ -177,6 +179,7 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
 
     @Test
     public void testScanJobWithPending() throws ModuleException {
+        ingestServiceTest.waitAllRequestsFinished(20_000);
         storageClient.setBehavior(true, true);
         initData();
         generateFakeRunningTasks();

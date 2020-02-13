@@ -137,12 +137,6 @@ public class AIPQueryGenerator {
         return query;
     }
 
-    private static NativeSelectQuery getConjunctionPredicate(String propertyName, NativeSelectQuery query,
-            Set<String> tags) {
-        query.andListPredicate("(" + propertyName + " @> jsonb_build_array(", "))", propertyName, tags);
-        return query;
-    }
-
     private static NativeSelectQuery getDisjunctionPredicate(String propertyName, NativeSelectQuery query,
             Set<String> tags) {
         query.andListPredicate("(" + CustomPostgresDialect.JSONB_EXISTS_ANY + "(" + propertyName + ", array[", "]))",

@@ -34,6 +34,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -52,8 +55,10 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
 
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=session_notif", "eureka.client.enabled=false" })
+        properties = { "spring.jpa.properties.hibernate.default_schema=session_notif", "eureka.client.enabled=false" },
+        locations = { "classpath:application-test.properties" })
 public class SessionNotifierTest extends AbstractMultitenantServiceTest {
 
     @Autowired

@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,6 +54,8 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO
 @MultitenantTransactional
 public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPStoreMetaDataRequestService.class);
+
     @Autowired
     private IAIPStoreMetaDataRepository aipStoreMetaDataRepository;
 
@@ -78,7 +82,8 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
             // Store AIPs meta data requests
             requestIds.addAll(aipStorageService.storeAIPs(requests));
         } catch (ModuleException e) {
-            e.printStackTrace();
+            requests.forEach(r -> r.setState(InternalRequestState.ERROR));
+            LOGGER.error(e.getMessage(), e);
         }
 
         // Link to requests the group id of the request sent to storage
@@ -118,7 +123,7 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
         Set<StoreLocation> manifestStorages = aipStorageService.getManifestStoreLocationsByLocation(storages);
         scheduleRequest(aip, manifestStorages, removeCurrentMetaData, computeChecksum);
         // once the work has been done, we reset the interrupt flag if needed.
-        if(interrupted) {
+        if (interrupted) {
             Thread.currentThread().interrupt();
         }
     }

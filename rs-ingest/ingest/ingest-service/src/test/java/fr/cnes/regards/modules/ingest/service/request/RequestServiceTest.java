@@ -18,7 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -49,26 +65,15 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_service_test",
-        "regards.aips.save-metadata.bulk.delay=20000000", "regards.amqp.enabled=true", "eureka.client.enabled=false",
-        "regards.scheduler.pool.size=0", "regards.ingest.maxBulkSize=100", "spring.jpa.show-sql=true" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=request_service_test",
+                "regards.aips.save-metadata.bulk.delay=20000000", "regards.amqp.enabled=true",
+                "eureka.client.enabled=false", "regards.scheduler.pool.size=0", "regards.ingest.maxBulkSize=100" },
+        locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class RequestServiceTest extends AbstractIngestRequestTest {
 
@@ -406,8 +411,8 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
                             oaisDeletionRequest.getState());
 
         requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION);
-        oaisDeletionRequest = (OAISDeletionRequest) abstractRequestRepository
-                .findById(oaisDeletionRequest.getId()).get();
+        oaisDeletionRequest = (OAISDeletionRequest) abstractRequestRepository.findById(oaisDeletionRequest.getId())
+                .get();
         Assert.assertEquals("The request should not be blocked", InternalRequestState.CREATED,
                             oaisDeletionRequest.getState());
     }

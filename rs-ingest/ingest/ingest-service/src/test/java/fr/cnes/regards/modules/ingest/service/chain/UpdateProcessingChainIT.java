@@ -27,6 +27,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -48,8 +51,11 @@ import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
  *
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestu", "jwt.secret=123456789",
-        "regards.workspace=target/workspace", "eureka.client.enabled=false" })
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=ingestu", "jwt.secret=123456789",
+                "regards.workspace=target/workspace", "eureka.client.enabled=false" },
+        locations = { "classpath:application-test.properties" })
 @ContextConfiguration(classes = { UpdateProcessingChainIT.IngestConfiguration.class })
 public class UpdateProcessingChainIT extends AbstractDaoTest {
 

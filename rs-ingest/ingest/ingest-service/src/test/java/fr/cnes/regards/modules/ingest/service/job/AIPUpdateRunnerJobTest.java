@@ -69,8 +69,10 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  * Test {@link AIPUpdateRunnerJob}
  * @author Léo Mieulet
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=update_oais_job",
-        "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=update_oais_job", "regards.amqp.enabled=true",
+                "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false" },
+        locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
 
@@ -214,6 +216,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
             @Requirement("REGARDS_DSL_STO_AIP_210") })
     @Purpose("Check that specific informations can be updated in AIP properties")
     public void testUpdateJob() throws ModuleException {
+        ingestServiceTest.waitAllRequestsFinished(20_000);
         storageClient.setBehavior(true, true);
         initData();
         aipService.registerUpdatesCreator(AIPUpdateParametersDto
@@ -244,7 +247,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
 
     @Test
     public void testUpdateAIPFileLocationJob() throws InterruptedException {
-
+        ingestServiceTest.waitAllRequestsFinished(20_000);
         storageClient.setBehavior(true, true);
         initData();
 

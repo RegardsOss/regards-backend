@@ -31,6 +31,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -72,9 +73,11 @@ import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_deletion_job",
-        "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
-        "spring.jpa.show-sql=true" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=request_deletion_job",
+                "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000",
+                "eureka.client.enabled=false", "spring.jpa.show-sql=true" },
+        locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp" })
 public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
 
@@ -174,9 +177,8 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         storeMetaDataRequest.setState(InternalRequestState.ERROR);
         storeMetaDataRepository.save(storeMetaDataRequest);
 
-        AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest
-                .build(AIPUpdateParametersDto.build(SearchAIPsParameters.build().withSession(SESSION_0)
-                        .withSessionOwner(SESSION_OWNER_0)));
+        AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto
+                .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0)));
         updateCreatorRequest.setState(InternalRequestState.ERROR);
         aipUpdatesCreatorRepository.save(updateCreatorRequest);
 
@@ -234,7 +236,8 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
     public void testDeleteJob() {
         initData();
         Assert.assertEquals("Something went wrong while creating requests", 6, abstractRequestRepository.count());
-        requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR));
+        requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build()
+                .withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR));
         waitForRequestReach(5, 20_000);
 
         requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build().withSession(SESSION_0)

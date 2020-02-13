@@ -188,6 +188,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(SESSION, resultSip.getSession());
 
         // Check that files storage has been requested
+        @SuppressWarnings("unchecked")
         ArgumentCaptor<Collection<FileStorageRequestDTO>> storageArgs = ArgumentCaptor.forClass(Collection.class);
         Mockito.verify(storageClient, Mockito.times(1)).store(storageArgs.capture());
         Assert.assertTrue("File storage url is not vali in storage request", storageArgs.getValue().stream()

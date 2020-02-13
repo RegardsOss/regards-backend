@@ -31,6 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
+import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -53,6 +54,8 @@ import fr.cnes.regards.modules.test.IngestServiceTest;
  * @author Marc SORDI
  */
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
+@TestPropertySource(properties = { "eureka.client.enabled=false" },
+        locations = { "classpath:application-test.properties" })
 public abstract class IngestMultitenantServiceTest extends AbstractMultitenantServiceTest {
 
     protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());

@@ -90,11 +90,6 @@ public class RequestService implements IRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestService.class);
 
-    /**
-     * Key used by macro request to store the blocking state result of that request type
-     */
-    private static final String GLOBAL_REQUEST_SESSION = "____GLOBAL_REQUEST_SESSION____";
-
     @Autowired
     private IIngestRequestRepository ingestRequestRepository;
 
