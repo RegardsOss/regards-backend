@@ -143,10 +143,13 @@ public class SessionNotifier {
                                    nbAcquiredFiles);
         }
         // Decrement from product from previous session
-        notifyDecrementSession(sessionOwner, session, getProperty(productState, sipState), 1);
-        LOGGER.info("Product {} changed from session {}:{} to session {}:{}. Nb Files switching={}. Old session decrement property : {}",
-                    productName, sessionOwner, session, newSessionOwner, newSession, nbAcquiredFiles,
-                    getProperty(productState, sipState).getValue());
+        Optional<SessionProductPropertyEnum> property = getProperty(productState, sipState);
+        if (property.isPresent()) {
+            notifyDecrementSession(sessionOwner, session, property.get(), 1);
+            LOGGER.info("Product {} changed from session {}:{} to session {}:{}. Nb Files switching={}. Old session decrement property : {}",
+                        productName, sessionOwner, session, newSessionOwner, newSession, nbAcquiredFiles,
+                        property.get().getValue());
+        }
     }
 
     public void notifyEndingChain(String sessionOwner, String session) {
@@ -156,9 +159,12 @@ public class SessionNotifier {
     }
 
     private void notifyIncrementSession(String sessionOwner, String session, ProductState state, ISipState sipState) {
-        SessionProductPropertyEnum property = getProperty(state, sipState);
-        LOGGER.trace("Notify increment {}:{} property {}", state.toString(), sipState.toString(), property.getValue());
-        notifyIncrementSession(sessionOwner, session, property);
+        Optional<SessionProductPropertyEnum> property = getProperty(state, sipState);
+        if (property.isPresent()) {
+            LOGGER.trace("Notify increment {}:{} property {}", state.toString(), sipState.toString(),
+                         property.get().getValue());
+            notifyIncrementSession(sessionOwner, session, property.get());
+        }
     }
 
     private void notifyIncrementSession(String sessionOwner, String session, SessionProductPropertyEnum property) {
@@ -175,9 +181,10 @@ public class SessionNotifier {
     }
 
     private void notifyDecrementSession(String sessionOwner, String session, ProductState state, ISipState sipState) {
-        SessionProductPropertyEnum property = getProperty(state, sipState);
-        LOGGER.trace("Notify decrement {}:{} property {}", state.toString(), sipState.toString(), property.getValue());
-        notifyDecrementSession(sessionOwner, session, property);
+        Optional<SessionProductPropertyEnum> property = getProperty(state, sipState);
+        LOGGER.trace("Notify decrement {}:{} property {}", state.toString(), sipState.toString(),
+                     property.get().getValue());
+        notifyDecrementSession(sessionOwner, session, property.get());
     }
 
     private void notifyDecrementSession(String sessionOwner, String session, SessionProductPropertyEnum property) {
@@ -193,14 +200,11 @@ public class SessionNotifier {
         publisher.publish(event);
     }
 
-    private SessionProductPropertyEnum getProperty(ProductState state, ISipState sipState) {
-        SessionProductPropertyEnum property = getProperty(state);
+    private Optional<SessionProductPropertyEnum> getProperty(ProductState state, ISipState sipState) {
+        Optional<SessionProductPropertyEnum> property = getProperty(state);
         // If product is complete so check sip status
-        if (property == SessionProductPropertyEnum.PROPERTY_COMPLETED) {
-            Optional<SessionProductPropertyEnum> sipProp = getProperty(sipState);
-            if (sipProp.isPresent()) {
-                property = sipProp.get();
-            }
+        if (property.isPresent() && (property.get() == SessionProductPropertyEnum.PROPERTY_COMPLETED)) {
+            property = getProperty(sipState);
         }
         return property;
     }
@@ -219,7 +223,7 @@ public class SessionNotifier {
         return property;
     }
 
-    private SessionProductPropertyEnum getProperty(ProductState state) {
+    private Optional<SessionProductPropertyEnum> getProperty(ProductState state) {
         SessionProductPropertyEnum property;
         switch (state) {
             case ACQUIRING:
@@ -237,7 +241,7 @@ public class SessionNotifier {
                 property = null;
                 break;
         }
-        return property;
+        return Optional.ofNullable(property);
     }
 
 }
