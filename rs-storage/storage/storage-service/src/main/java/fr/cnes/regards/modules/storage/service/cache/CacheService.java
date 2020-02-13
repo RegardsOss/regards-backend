@@ -379,4 +379,8 @@ public class CacheService {
         return cacheMaxSizeInOctets - currentCacheTotalSize;
     }
 
+    public Long getCacheSizeLimit() {
+        return maxCacheSizeKo * 1024;
+    }
+
 }

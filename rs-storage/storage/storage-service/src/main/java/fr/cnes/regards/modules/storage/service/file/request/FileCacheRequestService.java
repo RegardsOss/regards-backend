@@ -56,6 +56,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
@@ -135,12 +138,21 @@ public class FileCacheRequestService {
     @Autowired
     private RequestStatusService reqStatusService;
 
+    @Autowired
+    private INotificationClient notificationClient;
+
+    /**
+     * Static variable to avoid sending notification of cache full event after each request.
+     */
+    private static boolean globalCacheLimitReached;
+
     /**
      * Search for a {@link FileCacheRequest} on the file given checksum.
      * @param checksum
      * @return {@link FileCacheRequest}
      */
     @Transactional(readOnly = true)
+
     public Optional<FileCacheRequest> search(String checksum) {
         return repository.findByChecksum(checksum);
     }
@@ -380,15 +392,29 @@ public class FileCacheRequestService {
         List<FileCacheRequest> restorables = Lists.newArrayList();
         // Calculate cache size available by adding cache file sizes sum and already queued requests
         Long availableCacheSize = cacheService.getFreeSpaceInBytes();
+        Long occupation = 100 - ((availableCacheSize / cacheService.getCacheSizeLimit()) * 100);
         Long pendingSize = repository.getPendingFileSize();
         Long availableSize = availableCacheSize - pendingSize;
         Iterator<FileCacheRequest> it = requests.iterator();
+        boolean cacheLimitReached = false;
         Long totalSize = 0L;
         while (it.hasNext()) {
             FileCacheRequest request = it.next();
             if ((totalSize + request.getFileSize()) <= availableSize) {
                 restorables.add(request);
                 totalSize += request.getFileSize();
+            } else {
+                cacheLimitReached = true;
+            }
+        }
+        if (cacheLimitReached) {
+            if (!globalCacheLimitReached) {
+                String message = String
+                        .format("One or many files to restore has been locked cause cache is full (%s%%)", occupation);
+                notificationClient.notify(message, "Cache is full", NotificationLevel.WARNING, DefaultRole.ADMIN);
+                globalCacheLimitReached = true;
+            } else {
+                globalCacheLimitReached = false;
             }
         }
         return restorables;
