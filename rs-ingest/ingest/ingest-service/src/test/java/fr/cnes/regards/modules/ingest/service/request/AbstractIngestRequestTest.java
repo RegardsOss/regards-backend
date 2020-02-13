@@ -76,7 +76,7 @@ public abstract class AbstractIngestRequestTest extends AbstractMultitenantServi
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        abstractRequestRepository.deleteAll(abstractRequestRepository.findAll());
+        abstractRequestRepository.deleteAll();
         aipRepo.deleteAll();
         sipRepo.deleteAll();
     }

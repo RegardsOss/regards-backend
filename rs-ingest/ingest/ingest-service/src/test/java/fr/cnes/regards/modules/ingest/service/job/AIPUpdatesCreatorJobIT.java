@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.job;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -123,12 +124,18 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
     public void initData() {
 
         long nbSIP = 6;
-        publishSIPEvent(create("1", TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("2", TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_1, CATEGORIES_1);
-        publishSIPEvent(create("3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORIES_1);
-        publishSIPEvent(create("5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_0);
-        publishSIPEvent(create("6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_0,
+                        CATEGORIES_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_1,
+                        CATEGORIES_1);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0,
+                        CATEGORIES_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1,
+                        CATEGORIES_1);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1,
+                        CATEGORIES_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0,
+                        CATEGORIES_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
         // Wait STORE_META request over
@@ -166,7 +173,6 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
 
     @Test
     public void testScanJob() throws ModuleException {
-        ingestServiceTest.waitAllRequestsFinished(20_000);
         storageClient.setBehavior(true, true);
         initData();
         aipService.registerUpdatesCreator(AIPUpdateParametersDto
@@ -179,7 +185,6 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
 
     @Test
     public void testScanJobWithPending() throws ModuleException {
-        ingestServiceTest.waitAllRequestsFinished(20_000);
         storageClient.setBehavior(true, true);
         initData();
         generateFakeRunningTasks();

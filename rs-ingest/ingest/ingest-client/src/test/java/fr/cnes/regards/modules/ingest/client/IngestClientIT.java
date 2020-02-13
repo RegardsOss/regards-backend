@@ -31,7 +31,6 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -57,7 +56,6 @@ import fr.cnes.regards.modules.test.IngestServiceTest;
  *
  * @author Marc SORDI
  */
-@EnableScheduling
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=ingestclient", "regards.amqp.enabled=true" })
 @ContextConfiguration(classes = { IngestClientIT.IngestConfiguration.class })

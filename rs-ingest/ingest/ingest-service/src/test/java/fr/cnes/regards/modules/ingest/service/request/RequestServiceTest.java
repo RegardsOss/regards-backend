@@ -184,9 +184,7 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
     }
 
     public void clearRequest() {
-        List<AbstractRequest> entities = abstractRequestRepository.findAll();
-        LOGGER.info("Let's remove {} entities", entities.size());
-        abstractRequestRepository.deleteAll(entities);
+        abstractRequestRepository.deleteAll();
         LOGGER.info("Entities still existing count : {} ", abstractRequestRepository.count());
 
         LOGGER.info("Jobs stil existing : {}", jobInfoRepository.count());

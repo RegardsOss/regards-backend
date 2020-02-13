@@ -76,7 +76,7 @@ import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=request_deletion_job",
                 "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000",
-                "eureka.client.enabled=false", "spring.jpa.show-sql=true" },
+                "eureka.client.enabled=false", "spring.jpa.show-sql=false" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp" })
 public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
