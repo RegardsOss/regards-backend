@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -94,15 +95,25 @@ public class IngestServiceTest {
      * @throws Exception
      */
     public void init() throws Exception {
-        ingestProcessingChainRepository.deleteAllInBatch();
-        ingestRequestRepository.deleteAllInBatch();
-        requestRepository.deleteAllInBatch();
-        aipRepository.deleteAllInBatch();
-        sipRepository.deleteAllInBatch();
-        jobInfoRepo.deleteAll();
-        pluginConfRepo.deleteAllInBatch();
-        cleanAMQPQueues(FileRequestGroupEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(FileReferenceEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        boolean done = false;
+        int loop = 0;
+        do {
+            try {
+                ingestProcessingChainRepository.deleteAllInBatch();
+                ingestRequestRepository.deleteAllInBatch();
+                requestRepository.deleteAllInBatch();
+                aipRepository.deleteAllInBatch();
+                sipRepository.deleteAllInBatch();
+                jobInfoRepo.deleteAll();
+                pluginConfRepo.deleteAllInBatch();
+                cleanAMQPQueues(FileRequestGroupEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+                cleanAMQPQueues(FileReferenceEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+                done = true;
+            } catch (DataAccessException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+            loop++;
+        } while (done && (loop < 5));
     }
 
     public void clear() {
