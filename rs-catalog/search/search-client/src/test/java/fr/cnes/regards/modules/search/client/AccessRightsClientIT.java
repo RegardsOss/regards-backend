@@ -25,7 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * Test {@link IAccessRights} client
@@ -40,7 +40,7 @@ public class AccessRightsClientIT extends AbstractSearchClientIT<IAccessRights> 
     @Test
     public void hasAccess() {
         ResponseEntity<Boolean> result = client
-                .hasAccess(OaisUniformResourceName.fromString("URN:AIP:DATA:CDPP:4ece80cd-7705-3ee5-babd-64c03ff61bcd:V1"));
+                .hasAccess(UniformResourceName.fromString("URN:AIP:DATA:CDPP:4ece80cd-7705-3ee5-babd-64c03ff61bcd:V1"));
         Assert.assertTrue(result.getBody());
     }
 }

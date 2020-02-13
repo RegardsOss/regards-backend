@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 
 /**
@@ -68,7 +68,7 @@ public interface ISearchEngineClient {
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_ENTITY_MAPPING)
     ResponseEntity<?> getEntity(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @Valid @PathVariable(SearchEngineMappings.URN) OaisUniformResourceName urn, @RequestHeader HttpHeaders headers);
+            @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
     // Collection mappings
 
@@ -103,7 +103,7 @@ public interface ISearchEngineClient {
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_COLLECTION_MAPPING)
     ResponseEntity<?> getCollection(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @Valid @PathVariable(SearchEngineMappings.URN) OaisUniformResourceName urn, @RequestHeader HttpHeaders headers);
+            @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
     // Dataset mappings
 
@@ -138,7 +138,7 @@ public interface ISearchEngineClient {
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_DATASET_MAPPING)
     ResponseEntity<?> getDataset(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @Valid @PathVariable(SearchEngineMappings.URN) OaisUniformResourceName urn, @RequestHeader HttpHeaders headers);
+            @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
     // Dataobject mappings
 
@@ -173,7 +173,7 @@ public interface ISearchEngineClient {
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_DATAOBJECT_MAPPING)
     ResponseEntity<?> getDataobject(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @Valid @PathVariable(SearchEngineMappings.URN) OaisUniformResourceName urn, @RequestHeader HttpHeaders headers);
+            @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
     // Search dataobjects on a single dataset mapping
 

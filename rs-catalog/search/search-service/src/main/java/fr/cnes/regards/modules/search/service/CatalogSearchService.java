@@ -52,9 +52,9 @@ import com.google.common.reflect.TypeToken;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
@@ -256,7 +256,7 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
     @Override
-    public <E extends AbstractEntity<?>> E get(OaisUniformResourceName urn)
+    public <E extends AbstractEntity<?>> E get(UniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException {
         E entity = searchService.get(urn);
         if (entity == null) {
@@ -290,7 +290,7 @@ public class CatalogSearchService implements ICatalogSearchService {
     @Deprecated // Only use method with ICriterion
     @Override
     public DocFilesSummary computeDatasetsSummary(MultiValueMap<String, String> allParams,
-            SimpleSearchKey<DataObject> searchKey, OaisUniformResourceName dataset, List<DataType> dataTypes)
+            SimpleSearchKey<DataObject> searchKey, UniformResourceName dataset, List<DataType> dataTypes)
             throws SearchException {
         try {
             // Build criterion from query
@@ -309,7 +309,7 @@ public class CatalogSearchService implements ICatalogSearchService {
 
     @Override
     public DocFilesSummary computeDatasetsSummary(ICriterion criterion, SimpleSearchKey<DataObject> searchKey,
-            OaisUniformResourceName dataset, List<DataType> dataTypes) throws SearchException {
+            UniformResourceName dataset, List<DataType> dataTypes) throws SearchException {
         try {
             // Apply security filter (ie user groups)
             criterion = accessRightFilter.addDataAccessRights(criterion);
@@ -326,23 +326,23 @@ public class CatalogSearchService implements ICatalogSearchService {
 
     @Override
     public DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType,
-            OaisUniformResourceName dataset, List<DataType> dataTypes) throws SearchException {
+            UniformResourceName dataset, List<DataType> dataTypes) throws SearchException {
         Assert.isTrue(SearchType.DATAOBJECTS.equals(searchType), "Only dataobject target is supported.");
         return computeDatasetsSummary(criterion, getSimpleSearchKey(searchType), dataset, dataTypes);
     }
 
-    private void keepOnlyDatasetsWithGrantedAccess(SimpleSearchKey<DataObject> searchKey,
-            OaisUniformResourceName dataset, DocFilesSummary summary) throws AccessRightFilterException {
+    private void keepOnlyDatasetsWithGrantedAccess(SimpleSearchKey<DataObject> searchKey, UniformResourceName dataset,
+            DocFilesSummary summary) throws AccessRightFilterException {
         // Be careful ! "tags" is used to discriminate docFiles summaries because dataset URN is set into it BUT
         // all tags are used.
         // So we must remove all summaries that are not from dataset
         for (Iterator<String> i = summary.getSubSummariesMap().keySet().iterator(); i.hasNext();) {
             String tag = i.next();
-            if (!OaisUniformResourceName.isValidUrn(tag)) {
+            if (!UniformResourceName.isValidUrn(tag)) {
                 i.remove();
                 continue;
             }
-            OaisUniformResourceName urn = OaisUniformResourceName.fromString(tag);
+            UniformResourceName urn = UniformResourceName.fromString(tag);
             if (urn.getEntityType() != EntityType.DATASET) {
                 i.remove();
                 continue;
@@ -559,7 +559,7 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
     @Override
-    public boolean hasAccess(OaisUniformResourceName urn) throws EntityNotFoundException {
+    public boolean hasAccess(UniformResourceName urn) throws EntityNotFoundException {
         try {
             get(urn);
             return true;

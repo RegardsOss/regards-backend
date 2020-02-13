@@ -25,7 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 
 /**
@@ -83,7 +83,7 @@ public interface ISearchEngineConfigurationService {
      * @return {@link SearchEngineConfiguration}
      * @throws ModuleException
      */
-    SearchEngineConfiguration retrieveConf(Optional<OaisUniformResourceName> datasetUrn, String pluginId)
+    SearchEngineConfiguration retrieveConf(Optional<UniformResourceName> datasetUrn, String pluginId)
             throws ModuleException;
 
     /**

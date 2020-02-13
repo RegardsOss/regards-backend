@@ -30,11 +30,11 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 
 /**
@@ -51,8 +51,8 @@ public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactiona
     @Requirement("REGARDS_DSL_DAM_SET_230")
     @Purpose("The system allows to get the list of plugin's service for a dataset")
     public void retrieveLink() {
-        OaisUniformResourceName urn = new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                getDefaultTenant(), UUID.randomUUID(), 1);
+        UniformResourceName urn = UniformResourceName.build(OAISIdentifier.AIP.name(), EntityType.DATASET,
+                                                            getDefaultTenant(), UUID.randomUUID(), 1, null, null);
         performDefaultGet(LinkPluginsDatasetsController.PATH_LINK,
                           customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE),
                           "Failed to fetch a specific dataset using its id", urn.toString());
@@ -62,8 +62,8 @@ public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactiona
     @Requirement("REGARDS_DSL_DAM_SET_210")
     @Purpose("The system allows to link a plugin's service to a dataset")
     public void updateLink() {
-        OaisUniformResourceName urn = new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                getDefaultTenant(), UUID.randomUUID(), 1);
+        UniformResourceName urn = UniformResourceName.build(OAISIdentifier.AIP.name(), EntityType.DATASET,
+                                                            getDefaultTenant(), UUID.randomUUID(), 1, null, null);
         final LinkPluginsDatasets newLink = new LinkPluginsDatasets(urn.toString(), Sets.newHashSet());
         performDefaultPut(LinkPluginsDatasetsController.PATH_LINK, newLink,
                           customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE),

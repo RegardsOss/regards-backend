@@ -24,8 +24,8 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -57,7 +57,7 @@ public interface IBusinessSearchService {
      * Retrieve a feature by its identifier
      * @param urn feature identifier
      */
-    <F extends EntityFeature> F get(OaisUniformResourceName urn)
+    <F extends EntityFeature> F get(UniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException;
 
     /**
@@ -68,7 +68,7 @@ public interface IBusinessSearchService {
      * @param dataTypes file types on which to compute summary
      * @return summary
      */
-    DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType, OaisUniformResourceName dataset,
+    DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType, UniformResourceName dataset,
             List<DataType> dataTypes) throws SearchException;
 
     /**

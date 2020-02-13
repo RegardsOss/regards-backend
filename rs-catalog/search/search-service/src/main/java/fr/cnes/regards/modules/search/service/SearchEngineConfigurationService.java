@@ -50,7 +50,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
@@ -184,7 +183,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
     }
 
     @Override
-    public SearchEngineConfiguration retrieveConf(Optional<OaisUniformResourceName> datasetUrn, String pluginId)
+    public SearchEngineConfiguration retrieveConf(Optional<UniformResourceName> datasetUrn, String pluginId)
             throws ModuleException {
         SearchEngineConfiguration conf = null;
         String ds = null;

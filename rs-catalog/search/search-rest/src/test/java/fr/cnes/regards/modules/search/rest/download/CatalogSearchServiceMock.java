@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.search.rest.download;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.search.service.CatalogSearchService;
@@ -53,8 +53,8 @@ public class CatalogSearchServiceMock extends CatalogSearchService {
     }
 
     @Override
-    public boolean hasAccess(OaisUniformResourceName urn) {
-        OaisUniformResourceName urnExpected = OaisUniformResourceName.fromString(CatalogDownloadControllerIT.AIP_ID_OK);
+    public boolean hasAccess(UniformResourceName urn) {
+        UniformResourceName urnExpected = UniformResourceName.fromString(CatalogDownloadControllerIT.AIP_ID_OK);
         return urnExpected.equals(urn);
     }
 

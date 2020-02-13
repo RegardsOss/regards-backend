@@ -36,6 +36,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * Search context for search engine.<br/>
@@ -71,12 +72,12 @@ public class SearchContext {
     /**
      * Optional path parameter to retrieve a single entity idenfied by this URN
      */
-    private OaisUniformResourceName urn;
+    private UniformResourceName urn;
 
     /**
      * Optional path parameter representing dataset identifier for data object search on this specified dataset
      */
-    private OaisUniformResourceName datasetUrn;
+    private UniformResourceName datasetUrn;
 
     /**
      * Additional optional path parameter for specific route handling.<br/>
@@ -136,15 +137,15 @@ public class SearchContext {
         this.engineType = engineType;
     }
 
-    public Optional<OaisUniformResourceName> getUrn() {
+    public Optional<UniformResourceName> getUrn() {
         return Optional.ofNullable(urn);
     }
 
-    public void setUrn(OaisUniformResourceName urn) {
+    public void setUrn(UniformResourceName urn) {
         this.urn = urn;
     }
 
-    public Optional<OaisUniformResourceName> getDatasetUrn() {
+    public Optional<UniformResourceName> getDatasetUrn() {
         return Optional.ofNullable(datasetUrn);
     }
 
@@ -249,7 +250,7 @@ public class SearchContext {
     /**
      * Fluent API
      */
-    public SearchContext withUrn(OaisUniformResourceName urn) {
+    public SearchContext withUrn(UniformResourceName urn) {
         this.setUrn(urn);
         return this;
     }
@@ -257,7 +258,7 @@ public class SearchContext {
     /**
      * Fluent API
      */
-    public SearchContext withDatasetUrn(OaisUniformResourceName datasetUrn) {
+    public SearchContext withDatasetUrn(UniformResourceName datasetUrn) {
         this.datasetUrn = datasetUrn;
         return this;
     }

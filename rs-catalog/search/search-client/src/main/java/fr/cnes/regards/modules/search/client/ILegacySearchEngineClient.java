@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
@@ -65,7 +65,7 @@ public interface ILegacySearchEngineClient {
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_ENTITY_MAPPING)
     ResponseEntity<EntityModel<EntityFeature>> getEntity(
-            @Valid @PathVariable(SearchEngineMappings.URN) OaisUniformResourceName urn, @RequestHeader HttpHeaders headers);
+            @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
     // Collection mappings
 
@@ -92,7 +92,7 @@ public interface ILegacySearchEngineClient {
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_COLLECTION_MAPPING)
     ResponseEntity<EntityModel<EntityFeature>> getCollection(
-            @Valid @PathVariable(SearchEngineMappings.URN) OaisUniformResourceName urn, @RequestHeader HttpHeaders headers);
+            @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
     // Dataset mappings
 
@@ -119,7 +119,7 @@ public interface ILegacySearchEngineClient {
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_DATASET_MAPPING)
     ResponseEntity<EntityModel<EntityFeature>> getDataset(
-            @Valid @PathVariable(SearchEngineMappings.URN) OaisUniformResourceName urn, @RequestHeader HttpHeaders headers);
+            @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
     // Dataobject mappings
 
@@ -146,7 +146,7 @@ public interface ILegacySearchEngineClient {
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_DATAOBJECT_MAPPING)
     ResponseEntity<EntityModel<EntityFeature>> getDataobject(
-            @Valid @PathVariable(SearchEngineMappings.URN) OaisUniformResourceName urn, @RequestHeader HttpHeaders headers);
+            @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
     // Search dataobjects on a single dataset mapping
 
