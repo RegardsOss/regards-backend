@@ -66,7 +66,7 @@ public class CacheScheduler {
      * Periodically check the cache total size and delete expired files or/and older files if needed.
      * Default : scheduled to be run every hour.
      */
-    @Scheduled(fixedRateString = "${regards.cache.cleanup.rate.ms:3600000}", initialDelay = 3_600_000)
+    @Scheduled(fixedDelayString = "${regards.cache.cleanup.rate.ms:3600000}", initialDelay = 120_000)
     public void cleanCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
