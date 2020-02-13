@@ -152,6 +152,16 @@ public class UniformResourceName {
         return urn;
     }
 
+    public static UniformResourceName build(String identifier, EntityType entityType, String tenant, UUID entityId,
+            int version) {
+        return build(identifier, entityType, tenant, entityId, version, null, null);
+    }
+
+    public static UniformResourceName build(Enum<?> identifier, EntityType entityType, String tenant, UUID entityId,
+            int version) {
+        return build(identifier.toString(), entityType, tenant, entityId, version, null, null);
+    }
+
     /**
      * By default UUID.randomUUID() must not be used. It is generating a true random
      * UUID which makes it undetectable. To avoid this, pseudo random UUID is used
