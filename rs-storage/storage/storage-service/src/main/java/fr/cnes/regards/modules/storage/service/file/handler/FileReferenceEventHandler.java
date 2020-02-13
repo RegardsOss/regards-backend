@@ -211,7 +211,7 @@ public class FileReferenceEventHandler
                 Optional<FileReference> existingOne = fileReferenceService
                         .search(updatedFile.getLocation().getStorage(), updatedFile.getMetaInfo().getChecksum());
                 // Check that updated fileReference does not match an other existing fileReference
-                if (!existingOne.isPresent() || (existingOne.get().getId() == fileToUpdate.getId())) {
+                if (!existingOne.isPresent() || (existingOne.get().getId().equals(fileToUpdate.getId()))) {
                     updatedFile = fileReferenceService.update(checksum, storage, fileToUpdate);
                     LOGGER.debug("File reference {} updated by action {}", checksum, updateAction.getClass().getName());
                 } else {
