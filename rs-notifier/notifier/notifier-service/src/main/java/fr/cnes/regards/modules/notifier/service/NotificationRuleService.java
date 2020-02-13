@@ -184,11 +184,9 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
                 }
                 averageNotificationTreatmentTime += System.currentTimeMillis() - startNotificationTreatmentTime;
             }
-            this.LOGGER.debug(
-                              "------------->>> End of notification process in {} ms, {} notifications sended"
-                                      + " with a average treatment time of {} ms",
-                              System.currentTimeMillis() - startTime, nbSend,
-                              averageNotificationTreatmentTime / (nbSend == 0 ? 1 : nbSend));
+            LOGGER.debug("------------->>> End of notification process in {} ms, {} notifications sended"
+                    + " with a average treatment time of {} ms", System.currentTimeMillis() - startTime, nbSend,
+                         averageNotificationTreatmentTime / (nbSend == 0 ? 1 : nbSend));
             // delete all Notification not in the list in errors
             toHandles.removeAll(notificationsInErrors.keySet());
             this.notificationActionRepo.saveAll(notificationsInErrors.keySet());
