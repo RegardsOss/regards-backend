@@ -83,7 +83,7 @@ public class CacheService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CacheService.class);
 
-    private static int BULK_SIZE = 100;
+    private static int BULK_SIZE = 500;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -280,7 +280,6 @@ public class CacheService {
         do {
             files = cachedFileRepository.findByExpirationDateBefore(OffsetDateTime.now(), page);
             deleteCachedFiles(files.getContent());
-            page = files.nextPageable();
             nbPurged = nbPurged + files.getNumberOfElements();
         } while (files.hasNext());
         return nbPurged;
