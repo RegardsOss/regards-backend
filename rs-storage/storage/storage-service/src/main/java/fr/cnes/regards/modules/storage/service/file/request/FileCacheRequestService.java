@@ -144,7 +144,7 @@ public class FileCacheRequestService {
     /**
      * Static variable to avoid sending notification of cache full event after each request.
      */
-    private static boolean globalCacheLimitReached;
+    private static boolean globalCacheLimitReached = false;
 
     /**
      * Search for a {@link FileCacheRequest} on the file given checksum.
@@ -413,9 +413,9 @@ public class FileCacheRequestService {
                         .format("One or many files to restore has been locked cause cache is full (%s%%)", occupation);
                 notificationClient.notify(message, "Cache is full", NotificationLevel.WARNING, DefaultRole.ADMIN);
                 globalCacheLimitReached = true;
-            } else {
-                globalCacheLimitReached = false;
             }
+        } else {
+            globalCacheLimitReached = false;
         }
         return restorables;
     }
