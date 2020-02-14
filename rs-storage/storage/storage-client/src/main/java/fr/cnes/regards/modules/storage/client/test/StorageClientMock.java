@@ -66,6 +66,8 @@ public class StorageClientMock implements IStorageClient {
 
     private Optional<Boolean> shouldReturnSuccess = Optional.empty();
 
+    private final static String UNSUPORTED = "Not implemented yet !";
+
     /**
      *
      * @param shouldReturnGranted when true return granted, otherwise denied
@@ -133,31 +135,31 @@ public class StorageClientMock implements IStorageClient {
     @Override
     public void storeRetry(RequestInfo requestInfo) {
         // Not implemented yet
-        throw new UnsupportedOperationException("Not implemented yet !");
+        throw new UnsupportedOperationException(UNSUPORTED);
     }
 
     @Override
     public void storeRetry(Collection<String> owners) {
         // Not implemented yet
-        throw new UnsupportedOperationException("Not implemented yet !");
+        throw new UnsupportedOperationException(UNSUPORTED);
     }
 
     @Override
     public void availabilityRetry(RequestInfo requestInfo) {
         // Not implemented yet
-        throw new UnsupportedOperationException("Not implemented yet !");
+        throw new UnsupportedOperationException(UNSUPORTED);
     }
 
     @Override
     public RequestInfo reference(FileReferenceRequestDTO file) {
         // Not implemented yet
-        throw new UnsupportedOperationException("Not implemented yet !");
+        throw new UnsupportedOperationException(UNSUPORTED);
     }
 
     @Override
     public Collection<RequestInfo> reference(Collection<FileReferenceRequestDTO> files) {
         // Not implemented yet
-        throw new UnsupportedOperationException("Not implemented yet !");
+        throw new UnsupportedOperationException(UNSUPORTED);
     }
 
     @Override
@@ -208,17 +210,18 @@ public class StorageClientMock implements IStorageClient {
     @Override
     public RequestInfo copy(FileCopyRequestDTO file) {
         // Not implemented yet
-        throw new UnsupportedOperationException("Not implemented yet !");
+        throw new UnsupportedOperationException(UNSUPORTED);
     }
 
     @Override
     public Collection<RequestInfo> copy(Collection<FileCopyRequestDTO> files) {
         // Not implemented yet
-        throw new UnsupportedOperationException("Not implemented yet !");
+        throw new UnsupportedOperationException(UNSUPORTED);
     }
 
     @Override
     public Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
         throw new UnsupportedOperationException();
     }
+
 }

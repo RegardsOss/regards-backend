@@ -111,7 +111,8 @@ public class FileStorageRequestDTO {
         try {
             mt = MediaType.valueOf(mimeType);
         } catch (InvalidMimeTypeException e) {
-            LOGGER.error("Invalid media type for new file reference : %s .Falling back to default media type application/octet-stream");
+            LOGGER.error("Invalid media type for new file reference : %s .Falling back to default media type application/octet-stream",
+                         e);
         }
         return new FileReferenceMetaInfo(checksum, algorithm, fileName, null, mt).withType(type);
     }

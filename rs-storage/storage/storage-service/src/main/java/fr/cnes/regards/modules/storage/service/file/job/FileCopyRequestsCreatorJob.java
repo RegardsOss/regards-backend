@@ -126,9 +126,11 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                                                                   desinationFilePath.get().toString()));
                         }
                     } catch (MalformedURLException | ModuleException e) {
-                        LOGGER.error("Unable to handle file reference {} for copy from {} to {}. Cause {}",
-                                     fileRef.getLocation().getUrl(), storageLocationSourceId,
-                                     storageLocationDestinationId);
+                        LOGGER.error(String
+                                .format("Unable to handle file reference %s for copy from %s to %s. Cause %s",
+                                        fileRef.getLocation().getUrl(), storageLocationSourceId,
+                                        storageLocationDestinationId),
+                                     e);
                     }
                     this.advanceCompletion();
                 }

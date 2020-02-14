@@ -506,6 +506,7 @@ public class FileStorageRequestService {
                                                        request.getStorageSubDirectory(), request.getOwners(), fileRef);
                     }
                 } catch (ModuleException e) {
+                    LOGGER.error(e.getMessage(), e);
                     handleError(request, e.getMessage());
                 }
             }

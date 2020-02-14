@@ -548,6 +548,7 @@ public class FileCacheRequestService {
                 reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, null,
                                              fileRef.getOwners(), fileRef);
             } catch (ModuleException | MalformedURLException e) {
+                LOGGER.error(e.getMessage(), e);
                 publisher.notAvailable(checksum, storage, e.getMessage(), availabilityGroupId);
                 reqGrpService.requestError(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, null,
                                            fileRef.getOwners(), e.getMessage());
