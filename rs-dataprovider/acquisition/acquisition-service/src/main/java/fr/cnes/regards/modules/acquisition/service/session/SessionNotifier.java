@@ -80,8 +80,10 @@ public class SessionNotifier {
 
     public void notifyChangeProductState(Product product, Optional<ProductState> nextState,
             Optional<ISipState> nexSipState) {
-        if (getProperty(product.getState(), product.getSipState()) != getProperty(nextState
-                .orElse(product.getState()), nexSipState.orElse(product.getSipState()))) {
+        Optional<SessionProductPropertyEnum> current = getProperty(product.getState(), product.getSipState());
+        Optional<SessionProductPropertyEnum> next = getProperty(nextState.orElse(product.getState()),
+                                                                nexSipState.orElse(product.getSipState()));
+        if (!current.equals(next)) {
             notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(), product.getState(),
                                    product.getSipState());
             // Add to submitting
@@ -182,9 +184,11 @@ public class SessionNotifier {
 
     private void notifyDecrementSession(String sessionOwner, String session, ProductState state, ISipState sipState) {
         Optional<SessionProductPropertyEnum> property = getProperty(state, sipState);
-        LOGGER.trace("Notify decrement {}:{} property {}", state.toString(), sipState.toString(),
-                     property.get().getValue());
-        notifyDecrementSession(sessionOwner, session, property.get());
+        if (property.isPresent()) {
+            LOGGER.trace("Notify decrement {}:{} property {}", state.toString(), sipState.toString(),
+                         property.get().getValue());
+            notifyDecrementSession(sessionOwner, session, property.get());
+        }
     }
 
     private void notifyDecrementSession(String sessionOwner, String session, SessionProductPropertyEnum property) {
@@ -204,8 +208,14 @@ public class SessionNotifier {
         Optional<SessionProductPropertyEnum> property = getProperty(state);
         // If product is complete so check sip status
         if (property.isPresent() && (property.get() == SessionProductPropertyEnum.PROPERTY_COMPLETED)) {
-            property = getProperty(sipState);
+            Optional<SessionProductPropertyEnum> sipProp = getProperty(sipState);
+            // If SIP property is defined return it. Else return product property.
+            if (sipProp.isPresent()) {
+                property = sipProp;
+            }
         }
+        LOGGER.info("SEB : Property for state {},{} ---------> {}", state.toString(), sipState.toString(),
+                    property.isPresent() ? property.get() : "NULL");
         return property;
     }
 

@@ -410,21 +410,4 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         Assert.assertNotNull(incGenerated);
         Assert.assertEquals(4, incGenerated.intValue());
     }
-
-    //    @Test
-    //    public void testScan() throws ModuleException {
-    //        runtimeTenantResolver.forceTenant(getDefaultTenant());
-    //
-    //        AcquisitionProcessingChain processingChain = createProcessingChain(Paths
-    //                .get("/home/msordi/git/rs-e2e/data/cdpp/dataobjects/DA_TC_ARC_ISO_DENSITE/results/data2"));
-    //
-    //        long startTime = System.currentTimeMillis();
-    //        processingService.scanAndRegisterFiles(processingChain);
-    //
-    //        LOGGER.info("Scan action took {} milliseconds", System.currentTimeMillis() - startTime);
-    //
-    //        processingService.manageRegisteredFiles(processingChain);
-    //
-    //        LOGGER.info("Manage action took {} milliseconds", System.currentTimeMillis() - startTime);
-    //    }
 }
