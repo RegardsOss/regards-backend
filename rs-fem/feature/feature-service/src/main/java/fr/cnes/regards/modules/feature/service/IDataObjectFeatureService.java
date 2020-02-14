@@ -25,21 +25,22 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 
 /**
- * Factory for {@link DataObjectFeature} to init according {@link FeatureEntity}
+ * Factory for {@link FeatureEntityDto} to init according {@link FeatureEntity}
  * @author Kevin Marchois
  *
  */
 public interface IDataObjectFeatureService {
 
     /**
-     * Get a {@link Page} of {@link DataObjectFeature}
+     * Get a {@link Page} of {@link FeatureEntityDto} dto
      * The {@link Page} will be initialized from a list of {@link FeatureEntity} match with a model and
      * @param model of {@link FeatureEntity} to extract
      * @param pageable
      * @param date get {@link FeatureEntity} with last update date after this param
      * @return {@link Page} of {@link DataObjectFeature}
      */
-    Page<DataObjectFeature> findAll(String model, Pageable pageable, OffsetDateTime date);
+    Page<FeatureEntityDto> findAll(String model, Pageable pageable, OffsetDateTime date);
 }

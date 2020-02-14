@@ -28,10 +28,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
+import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 
 /**
- * @author Sylvain Vissiere-Guerinet
+ * @author Kevin Marchois
  */
 @RestClient(name = "rs-fem", contextId = "rs-fem.model-att-assoc.client")
 @RequestMapping(IDataFeatureObjectClient.BASE_MAPPING)
@@ -43,7 +43,7 @@ public interface IDataFeatureObjectClient {
     String BASE_MAPPING = "/dataObjectFeature";
 
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<Page<DataObjectFeature>> findAll(@RequestParam("model") String model, Pageable page,
+    ResponseEntity<Page<FeatureEntityDto>> findAll(@RequestParam("model") String model, Pageable page,
             @RequestParam("lastUpdateDate") OffsetDateTime lastUpdateDate);
 
 }

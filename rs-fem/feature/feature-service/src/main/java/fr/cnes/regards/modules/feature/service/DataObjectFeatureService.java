@@ -32,6 +32,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 
 /**
  *  Serive to create {@link DataObjectFeature} from {@link FeatureEntity}
@@ -46,20 +47,19 @@ public class DataObjectFeatureService implements IDataObjectFeatureService {
     private IFeatureEntityRepository featureRepo;
 
     @Override
-    public Page<DataObjectFeature> findAll(String model, Pageable pageable, OffsetDateTime date) {
+    public Page<FeatureEntityDto> findAll(String model, Pageable pageable, OffsetDateTime date) {
         Page<FeatureEntity> entities = this.featureRepo.findByModelAndLastUpdateAfter(model, date, pageable);
-        List<DataObjectFeature> elements = entities.stream().map(entity -> initDataObjectFeature(entity))
+        List<FeatureEntityDto> elements = entities.stream().map(entity -> initDataObjectFeature(entity))
                 .collect(Collectors.toList());
-        return new PageImpl<DataObjectFeature>(elements, pageable, entities.getTotalElements());
+        return new PageImpl<FeatureEntityDto>(elements, pageable, entities.getTotalElements());
     }
 
-    private DataObjectFeature initDataObjectFeature(FeatureEntity entity) {
-        DataObjectFeature dof = new DataObjectFeature(entity.getUrn(), entity.getProviderId(), "NO LABEL");
-        dof.setProperties(entity.getFeature().getProperties());
-        dof.setSession(entity.getSession());
-        dof.setSessionOwner(entity.getSessionOwner());
-        dof.setModel(entity.getModel());
-        return dof;
+    private FeatureEntityDto initDataObjectFeature(FeatureEntity entity) {
+        FeatureEntityDto dto = new FeatureEntityDto();
+        dto.setSession(entity.getSession());
+        dto.setSessionOwner(entity.getSessionOwner());
+        dto.setFeature(entity.getFeature());
+        return dto;
     }
 
 }

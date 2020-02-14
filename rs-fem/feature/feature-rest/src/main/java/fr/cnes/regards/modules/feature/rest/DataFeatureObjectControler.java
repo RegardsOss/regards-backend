@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.service.IDataObjectFeatureService;
 
@@ -53,17 +54,17 @@ public class DataFeatureObjectControler {
     private IDataObjectFeatureService dataObjectFeature;
 
     /**
-     * Get a {@link Page} of {@link DataObjectFeature} it will containt data of the last created {@link FeatureEntity}
+     * Get a {@link Page} of {@link FeatureEntityDto} it will contain data of the last created {@link FeatureEntity}
      * @param model model of wanted {@link Feature}
      * @param lastUpdateDate las modification date that we want {@link Feature}
-     * @return {@link RequestInfo} a {@link Page} of {@link DataObjectFeature}
+     * @return {@link RequestInfo} a {@link Page} of {@link FeatureEntityDto}
      */
     @RequestMapping(method = RequestMethod.GET, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
     @ResourceAccess(description = "Public a feature and return the request id")
-    public ResponseEntity<Page<DataObjectFeature>> createFeatures(@RequestParam("model") String model,
+    public ResponseEntity<Page<FeatureEntityDto>> createFeatures(@RequestParam("model") String model,
             @RequestParam("lastUpdateDate") OffsetDateTime lastUpdateDate, Pageable page) {
 
-        return new ResponseEntity<Page<DataObjectFeature>>(dataObjectFeature.findAll(model, page, lastUpdateDate),
+        return new ResponseEntity<Page<FeatureEntityDto>>(dataObjectFeature.findAll(model, page, lastUpdateDate),
                 HttpStatus.OK);
     }
 }

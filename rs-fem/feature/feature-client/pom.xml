@@ -27,8 +27,8 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-            <groupId>fr.cnes.regards.modules.dam</groupId>
-            <artifactId>dam-domain</artifactId>
+            <groupId>fr.cnes.regards.modules.feature</groupId>
+            <artifactId>feature-dto</artifactId>
         </dependency>
 	</dependencies>
 </project>

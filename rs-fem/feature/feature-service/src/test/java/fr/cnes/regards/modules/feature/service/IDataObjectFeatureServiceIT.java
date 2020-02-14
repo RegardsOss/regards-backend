@@ -33,9 +33,9 @@ import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
@@ -83,15 +83,15 @@ public class IDataObjectFeatureServiceIT extends AbstractFeatureMultitenantServi
         this.featureRepo.save(featureUpdated);
 
         Pageable page = PageRequest.of(0, 10);
-        Page<DataObjectFeature> pageDof = dataObjectService.findAll(model, page, OffsetDateTime.now());
+        Page<FeatureEntityDto> pageDof = dataObjectService.findAll(model, page, OffsetDateTime.now());
         // the first feateure created in this test should not be return so we must have only one reseult
         assertEquals(1, pageDof.getNumberOfElements());
-        DataObjectFeature dof = pageDof.getContent().get(0);
+        FeatureEntityDto dof = pageDof.getContent().get(0);
         // compare values inside the DataObjectFeature and those of the FeatureEntity should be the same
-        assertEquals(featureUpdated.getFeature().getProperties(), dof.getProperties());
+        assertEquals(featureUpdated.getFeature().getProperties(), dof.getFeature().getProperties());
         assertEquals(featureUpdated.getSession(), dof.getSession());
         assertEquals(featureUpdated.getSessionOwner(), dof.getSessionOwner());
-        assertEquals(featureUpdated.getFeature().getModel(), dof.getModel());
+        assertEquals(featureUpdated.getFeature().getModel(), dof.getFeature().getModel());
 
     }
 }
