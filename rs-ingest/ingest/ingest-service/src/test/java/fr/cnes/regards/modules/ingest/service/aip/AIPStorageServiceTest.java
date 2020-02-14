@@ -29,6 +29,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
@@ -60,8 +63,9 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_storage_service",
-        "eureka.client.enabled=false" })
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_storage_service" },
+        locations = { "classpath:application-test.properties" })
 public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
 
     @SpyBean

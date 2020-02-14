@@ -69,9 +69,11 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_service_test",
-        "regards.aips.save-metadata.bulk.delay=20000000", "regards.amqp.enabled=true", "eureka.client.enabled=false",
-        "regards.scheduler.pool.size=0", "regards.ingest.maxBulkSize=100", "spring.jpa.show-sql=true" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=request_service_test",
+                "regards.aips.save-metadata.bulk.delay=20000000", "regards.amqp.enabled=true",
+                "eureka.client.enabled=false", "regards.scheduler.pool.size=0", "regards.ingest.maxBulkSize=100" },
+        locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class RequestServiceTest extends AbstractIngestRequestTest {
 
@@ -182,9 +184,7 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
     }
 
     public void clearRequest() {
-        List<AbstractRequest> entities = abstractRequestRepository.findAll();
-        LOGGER.info("Let's remove {} entities", entities.size());
-        abstractRequestRepository.deleteAll(entities);
+        abstractRequestRepository.deleteAll();
         LOGGER.info("Entities still existing count : {} ", abstractRequestRepository.count());
 
         LOGGER.info("Jobs stil existing : {}", jobInfoRepository.count());

@@ -43,7 +43,8 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
  */
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=sipflow", "regards.amqp.enabled=true",
-                "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100", "eureka.client.enabled=false" })
+                "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100", "eureka.client.enabled=false" },
+        locations = { "classpath:application-test.properties" })
 @ActiveProfiles("testAmqp")
 public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 

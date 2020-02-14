@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
 import java.util.List;
 import java.util.Set;
+
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -29,6 +30,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
@@ -44,7 +46,7 @@ public final class AIPEntitySpecification {
         throw new IllegalStateException("Utility class");
     }
 
-    public static <T> Specification<T> searchAll(AbstractSearchAIPsParameters filters, Pageable page) {
+    public static <T> Specification<T> searchAll(AbstractSearchAIPsParameters<?> filters, Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (filters.getState() != null) {
@@ -58,10 +60,10 @@ public final class AIPEntitySpecification {
             }
             if ((filters.getStorages() != null) && !filters.getStorages().isEmpty()) {
                 Path<Object> attributeRequeted = root.get("storages");
-                predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingOneOfElement(attributeRequeted,
-                                                                                                   Lists.newArrayList(
-                                                                                                           filters.getStorages()),
-                                                                                                   cb));
+                predicates.add(SpecificationUtils
+                        .buildPredicateIsJsonbArrayContainingOneOfElement(attributeRequeted,
+                                                                          Lists.newArrayList(filters.getStorages()),
+                                                                          cb));
             }
 
             List<String> aipIds = filters.getAipIds();
@@ -79,14 +81,9 @@ public final class AIPEntitySpecification {
                     predicates.add(cb.and(sipIdsPredicates.toArray(new Predicate[sipIdsPredicates.size()])));
                 }
             }
-            predicates.addAll(OAISEntitySpecification.buildCommonPredicate(root,
-                                                                           cb,
-                                                                           filters.getTags(),
-                                                                           filters.getSessionOwner(),
-                                                                           filters.getSession(),
-                                                                           filters.getIpType(),
-                                                                           filters.getProviderIds(),
-                                                                           filters.getCategories()));
+            predicates.addAll(OAISEntitySpecification
+                    .buildCommonPredicate(root, cb, filters.getTags(), filters.getSessionOwner(), filters.getSession(),
+                                          filters.getIpType(), filters.getProviderIds(), filters.getCategories()));
 
             // Add order
             Sort.Direction defaultDirection = Sort.Direction.ASC;

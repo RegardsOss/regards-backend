@@ -24,6 +24,9 @@ import java.util.Optional;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 
 import com.google.common.collect.Sets;
 
@@ -47,9 +50,12 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 
 /**
- * @author sbinda
+ * Abstract class test to initialize SIP and AIP
+ *
+ * @author Sébastien Binda
  *
  */
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public abstract class AbstractIngestRequestTest extends AbstractMultitenantServiceTest {
 
     protected SIPEntity sipEntity;
@@ -70,7 +76,7 @@ public abstract class AbstractIngestRequestTest extends AbstractMultitenantServi
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        abstractRequestRepository.deleteAll(abstractRequestRepository.findAll());
+        abstractRequestRepository.deleteAll();
         aipRepo.deleteAll();
         sipRepo.deleteAll();
     }

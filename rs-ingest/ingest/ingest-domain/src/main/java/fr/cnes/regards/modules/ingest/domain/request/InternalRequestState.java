@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.domain.request;
 
 public enum InternalRequestState {
+
     /**
      * When the request is not scheduled yet
      */
@@ -38,5 +39,6 @@ public enum InternalRequestState {
     /**
      * When the request stopped with an error
      */
-    ERROR, ABORTED,
+    ERROR,
+    ABORTED;
 }

@@ -18,7 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
@@ -37,25 +53,15 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
-import java.time.OffsetDateTime;
-import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=update_scanner_job",
-        "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
-        "spring.jpa.show-sql=true", "regards.ingest.request.schedule.delay=100000000" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=update_scanner_job", "regards.amqp.enabled=true",
+                "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
+                "regards.ingest.request.schedule.delay=100000000" },
+        locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
 
@@ -68,7 +74,6 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
     @Autowired
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
 
-
     @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
 
@@ -80,7 +85,6 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IJobInfoRepository jobInfoRepository;
-
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
 
@@ -120,12 +124,18 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
     public void initData() {
 
         long nbSIP = 6;
-        publishSIPEvent(create("1", TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("2", TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_1, CATEGORIES_1);
-        publishSIPEvent(create("3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORIES_1);
-        publishSIPEvent(create("5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_0);
-        publishSIPEvent(create("6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_0,
+                        CATEGORIES_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_1,
+                        CATEGORIES_1);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0,
+                        CATEGORIES_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1,
+                        CATEGORIES_1);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1,
+                        CATEGORIES_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0,
+                        CATEGORIES_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
         // Wait STORE_META request over
@@ -160,8 +170,6 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
             }
         } while (true);
     }
-
-
 
     @Test
     public void testScanJob() throws ModuleException {

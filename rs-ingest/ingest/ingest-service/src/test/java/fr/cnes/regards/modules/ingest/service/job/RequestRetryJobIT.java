@@ -76,22 +76,14 @@ import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_retry_job",
-        "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false", })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=request_retry_job", "regards.amqp.enabled=true",
+                "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false", },
+        locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp" })
 public class RequestRetryJobIT extends IngestMultitenantServiceTest {
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
-
-    private static final List<String> CATEGORIES_1 = Lists.newArrayList("CATEGORY1");
-
-    private static final List<String> CATEGORIES_2 = Lists.newArrayList("CATEGORY", "CATEGORY2");
-
-    private static final List<String> TAG_0 = Lists.newArrayList("toto", "tata");
-
-    private static final List<String> TAG_1 = Lists.newArrayList("toto", "tutu");
-
-    private static final List<String> TAG_2 = Lists.newArrayList("antonio", "farra's");
 
     private static final String STORAGE_0 = "fake";
 

@@ -18,17 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.ingest;
 
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
-import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -37,9 +31,18 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.UniqueConstraint;
+
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.springframework.lang.Nullable;
+
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  *
@@ -76,7 +79,6 @@ public class IngestRequest extends AbstractRequest {
         this.config = config;
     }
 
-
     public String getRequestId() {
         return config.getRequestId();
     }
@@ -105,7 +107,6 @@ public class IngestRequest extends AbstractRequest {
         return config.getStep();
     }
 
-
     /**
      * @param step local step
      */
@@ -120,7 +121,8 @@ public class IngestRequest extends AbstractRequest {
      */
     public void setStep(IngestRequestStep step, long remoteStepTimeout) {
         this.config.setStep(step, remoteStepTimeout);
-        this.setRemoteStepDeadline(OffsetDateTime.now().plusMinutes(remoteStepTimeout));;
+        this.setRemoteStepDeadline(OffsetDateTime.now().plusMinutes(remoteStepTimeout));
+        ;
     }
 
     public List<AIPEntity> getAips() {
@@ -135,12 +137,13 @@ public class IngestRequest extends AbstractRequest {
         return UUID.randomUUID().toString();
     }
 
-    public static IngestRequest build(IngestMetadata metadata, InternalRequestState state, IngestRequestStep step, SIP sip) {
+    public static IngestRequest build(IngestMetadata metadata, InternalRequestState state, IngestRequestStep step,
+            SIP sip) {
         return build(generateRequestId(), metadata, state, step, sip, null);
     }
 
-    public static IngestRequest build(IngestMetadata metadata, InternalRequestState state, IngestRequestStep step, SIP sip,
-            @Nullable Set<String> errors) {
+    public static IngestRequest build(IngestMetadata metadata, InternalRequestState state, IngestRequestStep step,
+            SIP sip, @Nullable Set<String> errors) {
         return build(generateRequestId(), metadata, state, step, sip, errors);
     }
 
@@ -165,5 +168,15 @@ public class IngestRequest extends AbstractRequest {
         request.setErrors(errors);
         request.setCreationDate(OffsetDateTime.now());
         return request;
+    }
+
+    /**
+     * Remove given AIP from the list of AIPs of this request
+     * @param {@link AIPEntity} to remove
+     */
+    public void removeAip(AIPEntity a) {
+        if (aips.contains(a)) {
+            aips.remove(a);
+        }
     }
 }

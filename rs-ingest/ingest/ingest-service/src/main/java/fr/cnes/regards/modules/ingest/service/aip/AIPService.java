@@ -255,7 +255,6 @@ public class AIPService implements IAIPService {
 
         request.setRemoteStepGroupIds(deleteRequestInfos.stream().map(RequestInfo::getGroupId)
                 .collect(Collectors.toList()));
-        request.setWaitStorageAnswer();
         // Put the request as un-schedule.
         // The answering event from storage will put again the request to be executed
         request.setState(InternalRequestState.TO_SCHEDULE);

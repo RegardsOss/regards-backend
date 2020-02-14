@@ -38,7 +38,8 @@ import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=ingestchain", "eureka.client.enabled=false" })
+        properties = { "spring.jpa.properties.hibernate.default_schema=ingestchain", "eureka.client.enabled=false" },
+        locations = { "classpath:application-test.properties" })
 public class IngestProcessingChainServiceIT extends IngestMultitenantServiceTest {
 
     @Autowired

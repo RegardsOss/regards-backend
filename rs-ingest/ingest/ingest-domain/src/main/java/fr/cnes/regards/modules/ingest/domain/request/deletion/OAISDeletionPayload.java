@@ -37,12 +37,6 @@ public class OAISDeletionPayload extends AbstractSearchAIPsParameters<OAISDeleti
     private boolean deleteFiles;
 
     /**
-     * True when the request wait a storage event
-     */
-    @SuppressWarnings("unused")
-    private boolean waitStorageAnswer = false;
-
-    /**
      * True when the storage answer have been received
      */
     private boolean requestFilesDeleted = false;
@@ -79,10 +73,6 @@ public class OAISDeletionPayload extends AbstractSearchAIPsParameters<OAISDeleti
 
     public boolean isDeleteFiles() {
         return deleteFiles;
-    }
-
-    public void setWaitStorageAnswer() {
-        waitStorageAnswer = true;
     }
 
     public boolean isRequestFilesDeleted() {

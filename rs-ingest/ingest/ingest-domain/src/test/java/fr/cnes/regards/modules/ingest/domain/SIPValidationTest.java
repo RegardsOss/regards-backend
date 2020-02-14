@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.ingest.domain;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -41,7 +40,6 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
@@ -70,9 +68,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIPReference;
 public class SIPValidationTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPValidationTest.class);
-
-    @SuppressWarnings("unused")
-    private static final List<String> CATEGORIES = Lists.newArrayList("CATEGORY");
 
     private static final String PROVIDER_ID = "providerId";
 
