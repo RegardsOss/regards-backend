@@ -169,20 +169,23 @@ public class CacheService {
         if (Files.exists(getTenantCachePath())) {
             page = PageRequest.of(0, BULK_SIZE, Direction.ASC, "id");
             Page<CacheFile> availableFiles;
+            int count = 0;
             do {
                 availableFiles = cachedFileRepository.findAll(page);
                 Set<String> availableFilePaths = availableFiles.getContent().stream()
                         .map(availableFile -> availableFile.getLocation().getPath().toString())
                         .collect(Collectors.toSet());
                 try (Stream<Path> stream = Files.walk(getTenantCachePath())) {
-                    stream.filter(path -> availableFilePaths.contains(path.toAbsolutePath().toString()))
-                            .forEach(path -> notificationClient.notify(String
-                                    .format("File %s is present in cache directory while it shouldn't be. Please remove this file from the cache directory",
-                                            path.toString()), "Dirty cache", NotificationLevel.WARNING,
-                                                                       DefaultRole.PROJECT_ADMIN));
+                    count += stream.filter(path -> availableFilePaths.contains(path.toAbsolutePath().toString()))
+                            .count();
                 }
                 page = availableFiles.nextPageable();
             } while (availableFiles.hasNext());
+            if (count > 0) {
+                String message = String
+                        .format("{} Files in cache directory does not match system cached files. Thoses files can be deleted.<ul>");
+                notificationClient.notify(message, "Dirty cache", NotificationLevel.WARNING, DefaultRole.PROJECT_ADMIN);
+            }
         }
     }
 
