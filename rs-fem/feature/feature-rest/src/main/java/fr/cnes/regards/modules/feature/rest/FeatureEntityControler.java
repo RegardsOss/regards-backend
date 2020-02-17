@@ -23,6 +23,9 @@ import java.time.OffsetDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +34,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -45,13 +52,19 @@ import fr.cnes.regards.modules.feature.service.IDataObjectFeatureService;
  *
  */
 @RestController
-@RequestMapping(DataFeatureObjectControler.PATH_DATA_FEATURE_OBJECT)
-public class DataFeatureObjectControler {
+@RequestMapping(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT)
+public class FeatureEntityControler implements IResourceController<FeatureEntityDto> {
 
-    public static final String PATH_DATA_FEATURE_OBJECT = "dataObjectFeature";
+    public static final String PATH_DATA_FEATURE_OBJECT = "/admin/features";
 
     @Autowired
     private IDataObjectFeatureService dataObjectFeature;
+
+    /**
+     * {@link IResourceService} instance
+     */
+    @Autowired
+    private IResourceService resourceService;
 
     /**
      * Get a {@link Page} of {@link FeatureEntityDto} it will contain data of the last created {@link FeatureEntity}
@@ -59,12 +72,23 @@ public class DataFeatureObjectControler {
      * @param lastUpdateDate las modification date that we want {@link Feature}
      * @return {@link RequestInfo} a {@link Page} of {@link FeatureEntityDto}
      */
-    @RequestMapping(method = RequestMethod.GET, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
-    @ResourceAccess(description = "Public a feature and return the request id")
-    public ResponseEntity<Page<FeatureEntityDto>> createFeatures(@RequestParam("model") String model,
-            @RequestParam("lastUpdateDate") OffsetDateTime lastUpdateDate, Pageable page) {
+    @RequestMapping(method = RequestMethod.GET, produces = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
+    @ResourceAccess(description = "Get a feature according last update date")
+    public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> getFeatures(@RequestParam("model") String model,
+            @RequestParam("lastUpdateDate") OffsetDateTime lastUpdateDate, Pageable page,
+            PagedResourcesAssembler<FeatureEntityDto> assembler) {
 
-        return new ResponseEntity<Page<FeatureEntityDto>>(dataObjectFeature.findAll(model, page, lastUpdateDate),
+        return new ResponseEntity<>(toPagedResources(dataObjectFeature.findAll(model, page, lastUpdateDate), assembler),
                 HttpStatus.OK);
+    }
+
+    @Override
+    public EntityModel<FeatureEntityDto> toResource(FeatureEntityDto element, Object... extras) {
+        EntityModel<FeatureEntityDto> resource = resourceService.toResource(element);
+        resourceService.addLink(resource, this.getClass(), "getFeatures", LinkRels.SELF,
+                                MethodParamFactory.build(String.class), MethodParamFactory.build(OffsetDateTime.class),
+                                MethodParamFactory.build(Pageable.class),
+                                MethodParamFactory.build(PagedResourcesAssembler.class));
+        return resource;
     }
 }
