@@ -328,7 +328,7 @@ public class RequestsGroupService {
      * @param groupId
      * @param type
      */
-    public void groupDone(RequestGroup reqGrp) {
+    private void groupDone(RequestGroup reqGrp) {
         // 1. Do only one database request, then dispatch results between success and errors
         Set<RequestResultInfo> resultInfos = groupReqInfoRepository.findByGroupId(reqGrp.getId());
         Set<RequestResultInfo> errors = Sets.newHashSet();
@@ -340,12 +340,8 @@ public class RequestsGroupService {
                 successes.add(info);
             }
         }
-        // 2. Publish events
-        if (reqGrp.isExpired()) {
-            LOGGER.error("[{} GROUP EXPIRED {}] - {} success / {} errors.", reqGrp.getType().toString().toUpperCase(),
-                         reqGrp.getId(), successes.size(), errors.size());
-            publisher.publish(FileRequestsGroupEvent.buildError(reqGrp.getId(), reqGrp.getType(), successes, errors));
-        } else if (errors.isEmpty()) {
+        // 1. Publish events
+        if (errors.isEmpty()) {
             LOGGER.debug("[{} GROUP SUCCESS {}] - {} requests success.", reqGrp.getType().toString().toUpperCase(),
                          reqGrp.getId(), successes.size());
             publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(), reqGrp.getType(), FlowItemStatus.SUCCESS,
