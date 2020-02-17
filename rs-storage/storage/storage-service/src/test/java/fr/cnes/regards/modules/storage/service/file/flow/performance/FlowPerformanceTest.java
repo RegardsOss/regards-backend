@@ -243,8 +243,6 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         Page<FileReference> page = fileRefService.search(PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
         Long total = page.getTotalElements();
         for (FileReference fileRef : page.getContent()) {
-            FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
-                                         fileRef.getOwners().iterator().next(), false);
             DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO
                     .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
                            fileRef.getOwners().iterator().next(), false), UUID.randomUUID().toString());
@@ -254,10 +252,10 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         LOGGER.info("Waiting ....");
         int loops = 0;
         do {
-            Thread.sleep(5_000);
+            Thread.sleep(500);
             page = fileRefService.search(PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
-        } while ((loops < 10) && (nbToDelete != (total - page.getTotalElements())));
+        } while ((loops < 100) && (nbToDelete != (total - page.getTotalElements())));
 
         Assert.assertEquals("500 ref should be deleted", nbToDelete, total - page.getTotalElements());
     }
