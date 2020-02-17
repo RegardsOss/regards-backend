@@ -48,6 +48,7 @@ import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
+import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 
 /**
@@ -77,6 +78,9 @@ public class RequestsGroupService {
 
     @Autowired
     private IPublisher publisher;
+
+    @Autowired
+    private FileReferenceEventPublisher eventPublisher;
 
     @Autowired
     private IGroupRequestInfoRepository groupReqInfoRepository;
@@ -275,33 +279,34 @@ public class RequestsGroupService {
     private boolean checkRequestGroupExpired(RequestGroup reqGrp) {
         boolean expired = false;
         if ((reqGrp.getExpirationDate() != null) && reqGrp.getExpirationDate().isBefore(OffsetDateTime.now())) {
-            LOGGER.warn("Request group {} is expired. It will be deleted and all associated requests will be set in ERROR status",
-                        reqGrp.getId());
+            LOGGER.warn("[REQUEST GROUP {} EXPIRED] . Group {} is expired, it will be deleted and all associated requests will be set in ERROR status",
+                        reqGrp.getType(), reqGrp.getId());
             String errorCause = "Associated group request expired.";
             // If a request group is pending from more than 2 days, delete the group and set all requests in pending to error.
             switch (reqGrp.getType()) {
                 case AVAILABILITY:
                     cacheReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
                         cacheReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
-                        groupDone(reqGrp);
+                        eventPublisher.notAvailable(req.getChecksum(), null, errorCause, reqGrp.getId());
                     });
                     break;
                 case COPY:
                     copyReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
                         copyReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
-                        groupDone(reqGrp);
+                        eventPublisher.copyError(req, errorCause);
                     });
                     break;
                 case DELETION:
                     delReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
                         delReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
-                        groupDone(reqGrp);
+                        eventPublisher.deletionError(req.getFileReference(), errorCause, reqGrp.getId());
                     });
                     break;
                 case STORAGE:
                     storageReqRepository.findByGroupIds(reqGrp.getId()).forEach(req -> {
                         storageReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
-                        groupDone(reqGrp);
+                        eventPublisher.storeError(req.getMetaInfo().getChecksum(), req.getOwners(), req.getStorage(),
+                                                  errorCause, reqGrp.getId());
                     });
                     break;
                 case REFERENCE:
