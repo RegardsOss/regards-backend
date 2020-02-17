@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -313,17 +314,48 @@ public class FileCacheRequestService {
             do {
                 filesPage = repository.findAllByStorageAndStatus(storage, status, page);
                 List<FileCacheRequest> requests = filesPage.getContent();
-                if (storageHandler.getConfiguredStorages().contains(storage)) {
-                    requests = calculateRestorables(requests);
-                    jobList = self.scheduleJobsByStorage(storage, requests);
-                } else {
-                    self.handleStorageNotAvailable(requests);
-                }
+                jobList.addAll(scheduleJobsByStorage(storage, requests));
                 page = filesPage.nextPageable();
             } while (filesPage.hasNext());
         }
         LOGGER.debug("[CACHE REQUESTS] {} jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
         return jobList;
+    }
+
+    /**
+     * Schedule cache requests jobs for given storage using new transaction.
+     * @param jobList
+     * @param storage
+     * @param requests
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Collection<JobInfo> scheduleJobsByStorage(String storage, List<FileCacheRequest> requests) {
+        if (storageHandler.getConfiguredStorages().contains(storage)) {
+            requests = calculateRestorables(requests);
+            Collection<JobInfo> jobInfoList = Sets.newHashSet();
+            if ((requests != null) && !requests.isEmpty()) {
+                try {
+                    PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
+                    IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
+                    PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> response = storagePlugin
+                            .prepareForRestoration(requests);
+                    for (FileRestorationWorkingSubset ws : response.getWorkingSubsets()) {
+                        jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId()));
+                    }
+                    // Handle errors
+                    for (Entry<FileCacheRequest, String> error : response.getPreparationErrors().entrySet()) {
+                        this.handleStorageNotAvailable(error.getKey(), Optional.ofNullable(error.getValue()));
+                    }
+                } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    this.handleStorageNotAvailable(requests);
+                }
+            }
+            return jobInfoList;
+        } else {
+            self.handleStorageNotAvailable(requests);
+            return Collections.emptyList();
+        }
     }
 
     public void delete(FileCacheRequest request) {
@@ -422,43 +454,12 @@ public class FileCacheRequestService {
     }
 
     /**
-     * Schedule all {@link FileCacheRequest}s to be handled in {@link JobInfo}s for the given storage location.
-     * @param storage
-     * @param requests
-     * @return {@link JobInfo}s scheduled
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Collection<JobInfo> scheduleJobsByStorage(String storage, List<FileCacheRequest> requests) {
-        Collection<JobInfo> jobInfoList = Sets.newHashSet();
-        if ((requests != null) && !requests.isEmpty()) {
-            try {
-                PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
-                IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
-                PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> response = storagePlugin
-                        .prepareForRestoration(requests);
-                for (FileRestorationWorkingSubset ws : response.getWorkingSubsets()) {
-                    jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId()));
-                }
-                // Handle errors
-                for (Entry<FileCacheRequest, String> error : response.getPreparationErrors().entrySet()) {
-                    this.handleStorageNotAvailable(error.getKey(), Optional.ofNullable(error.getValue()));
-                }
-            } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-                LOGGER.error(e.getMessage(), e);
-                this.handleStorageNotAvailable(requests);
-            }
-        }
-        return jobInfoList;
-    }
-
-    /**
      * Schedule a {@link JobInfo} for the given {@link  FileRestorationWorkingSubset}.<br/>
      * NOTE : A new transaction is created for each call at this method. It is mandatory to avoid having too long transactions.
      * @param workingSubset
      * @param plgBusinessId
      * @return {@link JobInfo} scheduled.
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public JobInfo scheduleJob(FileRestorationWorkingSubset workingSubset, String plgBusinessId) {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileCacheRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, plgBusinessId));

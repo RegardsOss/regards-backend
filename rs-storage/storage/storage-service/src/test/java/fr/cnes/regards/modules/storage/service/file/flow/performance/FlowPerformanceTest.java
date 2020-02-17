@@ -107,6 +107,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
         }
         storagePlgConfHandler.refresh();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         if (fileRefRepo.count() == 0) {
             // Insert many refs
@@ -187,7 +188,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             loops++;
         } while ((loops < 50) && ((page.getTotalElements()) != 5000));
 
-        Assert.assertEquals("There should be 5004 file ref created", 5000, fileRefRepo
+        Assert.assertEquals("There should be 5000 file ref created", 5000, fileRefRepo
                 .findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
     }
 

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -190,11 +191,7 @@ public class FileDeletionRequestService {
                 Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
                 do {
                     deletionRequestPage = fileDeletionRequestRepo.findByStorageAndStatus(storage, status, page);
-                    if (storageHandler.getConfiguredStorages().contains(storage)) {
-                        jobList = self.scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
-                    } else {
-                        self.handleStorageNotAvailable(deletionRequestPage.getContent(), Optional.empty());
-                    }
+                    jobList.addAll(self.scheduleDeletionJobsByStorage(storage, deletionRequestPage));
                     page = deletionRequestPage.nextPageable();
                 } while (deletionRequestPage.hasNext());
             }
@@ -206,6 +203,24 @@ public class FileDeletionRequestService {
         } finally {
             releaseLock();
         }
+    }
+
+    /**
+     * Schedule jobs for deletion requests by using a new transaction
+     * @param jobList
+     * @param storage
+     * @param deletionRequestPage
+     * @return scheduled {@link JobInfo}
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Collection<JobInfo> scheduleDeletionJobsByStorage(String storage,
+            Page<FileDeletionRequest> deletionRequestPage) {
+        if (storageHandler.getConfiguredStorages().contains(storage)) {
+            return scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
+        } else {
+            handleStorageNotAvailable(deletionRequestPage.getContent(), Optional.empty());
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -232,8 +247,7 @@ public class FileDeletionRequestService {
      * @param fileDeletionRequests {@link FileDeletionRequest}s to schedule
      * @return {@link JobInfo}s scheduled
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Collection<JobInfo> scheduleDeletionJobsByStorage(String storage,
+    private Collection<JobInfo> scheduleDeletionJobsByStorage(String storage,
             Collection<FileDeletionRequest> fileDeletionRequests) {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
         try {
@@ -244,15 +258,15 @@ public class FileDeletionRequestService {
             PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequest> response = storagePlugin
                     .prepareForDeletion(fileDeletionRequests);
             for (FileDeletionWorkingSubset ws : response.getWorkingSubsets()) {
-                jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId()));
+                jobInfoList.add(scheduleJob(ws, conf.getBusinessId()));
             }
             // Handle error requests
             for (Entry<FileDeletionRequest, String> error : response.getPreparationErrors().entrySet()) {
-                this.handleStorageNotAvailable(error.getKey(), Optional.ofNullable(error.getValue()));
+                handleStorageNotAvailable(error.getKey(), Optional.ofNullable(error.getValue()));
             }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             LOGGER.error(e.getMessage(), e);
-            this.handleStorageNotAvailable(fileDeletionRequests, Optional.empty());
+            handleStorageNotAvailable(fileDeletionRequests, Optional.empty());
         }
         return jobInfoList;
     }
@@ -264,8 +278,7 @@ public class FileDeletionRequestService {
      * @param pluginConfId
      * @return {@link JobInfo} scheduled.
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public JobInfo scheduleJob(FileDeletionWorkingSubset workingSubset, String pluginConfBusinessId) {
+    private JobInfo scheduleJob(FileDeletionWorkingSubset workingSubset, String pluginConfBusinessId) {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, pluginConfBusinessId));
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
@@ -286,8 +299,7 @@ public class FileDeletionRequestService {
      * </ul>
      * @param fileDeletionRequests
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void handleStorageNotAvailable(Collection<FileDeletionRequest> fileDeletionRequests,
+    private void handleStorageNotAvailable(Collection<FileDeletionRequest> fileDeletionRequests,
             Optional<String> errorCause) {
         fileDeletionRequests.forEach((r) -> this.handleStorageNotAvailable(r, errorCause));
     }

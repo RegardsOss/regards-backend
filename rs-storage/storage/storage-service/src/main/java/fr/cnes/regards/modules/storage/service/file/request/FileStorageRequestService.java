@@ -346,6 +346,7 @@ public class FileStorageRequestService {
             Page<FileStorageRequest> filesPage;
             Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by("id"));
             do {
+                // Always retrieve first page, as request status are updated during job scheduling method.
                 if ((owners != null) && !owners.isEmpty()) {
                     filesPage = fileStorageRequestRepo.findAllByStorageAndStatusAndOwnersIn(storage, status, owners,
                                                                                             page);
@@ -354,12 +355,7 @@ public class FileStorageRequestService {
                 }
                 List<FileStorageRequest> fileStorageRequests = filesPage.getContent();
 
-                if (storageHandler.getConfiguredStorages().contains(storage)) {
-                    jobList.addAll(self.scheduleJobsByStorage(storage, fileStorageRequests));
-                } else {
-                    self.handleStorageNotAvailable(fileStorageRequests, Optional.empty());
-                }
-                // page = filesPage.nextPageable();
+                scheduleJobsByStorage(jobList, storage, fileStorageRequests);
             } while (filesPage.hasContent());
         }
         LOGGER.debug("[STORAGE REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
@@ -368,13 +364,27 @@ public class FileStorageRequestService {
     }
 
     /**
+     * @param jobList
+     * @param storage
+     * @param fileStorageRequests
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void scheduleJobsByStorage(Collection<JobInfo> jobList, String storage,
+            List<FileStorageRequest> fileStorageRequests) {
+        if (storageHandler.getConfiguredStorages().contains(storage)) {
+            jobList.addAll(scheduleJobsByStorage(storage, fileStorageRequests));
+        } else {
+            handleStorageNotAvailable(fileStorageRequests, Optional.empty());
+        }
+    }
+
+    /**
      * Schedule {@link FileStorageRequestJob}s for all given {@link FileStorageRequest}s and a given storage location.
      * @param storage
      * @param fileStorageRequests
      * @return {@link JobInfo}s scheduled
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Collection<JobInfo> scheduleJobsByStorage(String storage,
+    private Collection<JobInfo> scheduleJobsByStorage(String storage,
             Collection<FileStorageRequest> fileStorageRequests) {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
         try {
@@ -384,7 +394,7 @@ public class FileStorageRequestService {
                     .prepareForStorage(fileStorageRequests);
             for (FileStorageWorkingSubset ws : response.getWorkingSubsets()) {
                 if (!ws.getFileReferenceRequests().isEmpty()) {
-                    jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId(), storage));
+                    jobInfoList.add(scheduleJob(ws, conf.getBusinessId(), storage));
                 }
             }
             for (Entry<FileStorageRequest, String> request : response.getPreparationErrors().entrySet()) {
@@ -404,8 +414,7 @@ public class FileStorageRequestService {
      * @param plgBusinessId
      * @return {@link JobInfo} scheduled.
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public JobInfo scheduleJob(FileStorageWorkingSubset workingSubset, String plgBusinessId, String storage) {
+    private JobInfo scheduleJob(FileStorageWorkingSubset workingSubset, String plgBusinessId, String storage) {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, plgBusinessId));
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
@@ -457,8 +466,7 @@ public class FileStorageRequestService {
      * </ul>
      * @param fileStorageRequests
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void handleStorageNotAvailable(Collection<FileStorageRequest> fileStorageRequests,
+    private void handleStorageNotAvailable(Collection<FileStorageRequest> fileStorageRequests,
             Optional<String> errorCause) {
         fileStorageRequests.forEach(r -> handleStorageNotAvailable(r, errorCause));
     }
