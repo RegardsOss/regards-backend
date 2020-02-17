@@ -214,8 +214,6 @@ public class SessionNotifier {
                 property = sipProp;
             }
         }
-        LOGGER.info("SEB : Property for state {},{} ---------> {}", state.toString(), sipState.toString(),
-                    property.isPresent() ? property.get() : "NULL");
         return property;
     }
 
