@@ -357,7 +357,7 @@ public class FileStorageRequestService {
                 if (storageHandler.getConfiguredStorages().contains(storage)) {
                     jobList.addAll(scheduleJobsByStorage(storage, fileStorageRequests));
                 } else {
-                    handleStorageNotAvailable(fileStorageRequests);
+                    handleStorageNotAvailable(fileStorageRequests, Optional.empty());
                 }
                 // page = filesPage.nextPageable();
             } while (filesPage.hasContent());
@@ -391,7 +391,7 @@ public class FileStorageRequestService {
             }
         } catch (ModuleException | PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
             LOGGER.error(e.getMessage(), e);
-            this.handleStorageNotAvailable(fileStorageRequests);
+            this.handleStorageNotAvailable(fileStorageRequests, Optional.of(e.getMessage()));
         }
         return jobInfoList;
     }
@@ -456,8 +456,9 @@ public class FileStorageRequestService {
      * </ul>
      * @param fileStorageRequests
      */
-    private void handleStorageNotAvailable(Collection<FileStorageRequest> fileStorageRequests) {
-        fileStorageRequests.forEach(r -> handleStorageNotAvailable(r, Optional.empty()));
+    private void handleStorageNotAvailable(Collection<FileStorageRequest> fileStorageRequests,
+            Optional<String> errorCause) {
+        fileStorageRequests.forEach(r -> handleStorageNotAvailable(r, errorCause));
     }
 
     /**
