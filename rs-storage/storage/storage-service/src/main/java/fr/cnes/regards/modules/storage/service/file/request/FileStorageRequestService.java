@@ -355,9 +355,9 @@ public class FileStorageRequestService {
                 List<FileStorageRequest> fileStorageRequests = filesPage.getContent();
 
                 if (storageHandler.getConfiguredStorages().contains(storage)) {
-                    jobList.addAll(scheduleJobsByStorage(storage, fileStorageRequests));
+                    jobList.addAll(self.scheduleJobsByStorage(storage, fileStorageRequests));
                 } else {
-                    handleStorageNotAvailable(fileStorageRequests, Optional.empty());
+                    self.handleStorageNotAvailable(fileStorageRequests, Optional.empty());
                 }
                 // page = filesPage.nextPageable();
             } while (filesPage.hasContent());
@@ -373,7 +373,8 @@ public class FileStorageRequestService {
      * @param fileStorageRequests
      * @return {@link JobInfo}s scheduled
      */
-    private Collection<JobInfo> scheduleJobsByStorage(String storage,
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Collection<JobInfo> scheduleJobsByStorage(String storage,
             Collection<FileStorageRequest> fileStorageRequests) {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
         try {
@@ -456,7 +457,8 @@ public class FileStorageRequestService {
      * </ul>
      * @param fileStorageRequests
      */
-    private void handleStorageNotAvailable(Collection<FileStorageRequest> fileStorageRequests,
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handleStorageNotAvailable(Collection<FileStorageRequest> fileStorageRequests,
             Optional<String> errorCause) {
         fileStorageRequests.forEach(r -> handleStorageNotAvailable(r, errorCause));
     }

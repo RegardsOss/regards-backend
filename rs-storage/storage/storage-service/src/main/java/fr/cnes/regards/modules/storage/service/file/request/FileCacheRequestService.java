@@ -315,9 +315,9 @@ public class FileCacheRequestService {
                 List<FileCacheRequest> requests = filesPage.getContent();
                 if (storageHandler.getConfiguredStorages().contains(storage)) {
                     requests = calculateRestorables(requests);
-                    jobList = scheduleJobsByStorage(storage, requests);
+                    jobList = self.scheduleJobsByStorage(storage, requests);
                 } else {
-                    this.handleStorageNotAvailable(requests);
+                    self.handleStorageNotAvailable(requests);
                 }
                 page = filesPage.nextPageable();
             } while (filesPage.hasNext());
@@ -427,7 +427,8 @@ public class FileCacheRequestService {
      * @param requests
      * @return {@link JobInfo}s scheduled
      */
-    private Collection<JobInfo> scheduleJobsByStorage(String storage, List<FileCacheRequest> requests) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Collection<JobInfo> scheduleJobsByStorage(String storage, List<FileCacheRequest> requests) {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
         if ((requests != null) && !requests.isEmpty()) {
             try {
@@ -501,7 +502,8 @@ public class FileCacheRequestService {
      * </ul>
      * @param fileRefRequests
      */
-    private void handleStorageNotAvailable(Collection<FileCacheRequest> fileRefRequests) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handleStorageNotAvailable(Collection<FileCacheRequest> fileRefRequests) {
         fileRefRequests.forEach((r) -> this.handleStorageNotAvailable(r, Optional.empty()));
     }
 

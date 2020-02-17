@@ -191,9 +191,9 @@ public class FileDeletionRequestService {
                 do {
                     deletionRequestPage = fileDeletionRequestRepo.findByStorageAndStatus(storage, status, page);
                     if (storageHandler.getConfiguredStorages().contains(storage)) {
-                        jobList = scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
+                        jobList = self.scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
                     } else {
-                        handleStorageNotAvailable(deletionRequestPage.getContent(), Optional.empty());
+                        self.handleStorageNotAvailable(deletionRequestPage.getContent(), Optional.empty());
                     }
                     page = deletionRequestPage.nextPageable();
                 } while (deletionRequestPage.hasNext());
@@ -232,7 +232,8 @@ public class FileDeletionRequestService {
      * @param fileDeletionRequests {@link FileDeletionRequest}s to schedule
      * @return {@link JobInfo}s scheduled
      */
-    private Collection<JobInfo> scheduleDeletionJobsByStorage(String storage,
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Collection<JobInfo> scheduleDeletionJobsByStorage(String storage,
             Collection<FileDeletionRequest> fileDeletionRequests) {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
         try {
@@ -285,7 +286,8 @@ public class FileDeletionRequestService {
      * </ul>
      * @param fileDeletionRequests
      */
-    private void handleStorageNotAvailable(Collection<FileDeletionRequest> fileDeletionRequests,
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handleStorageNotAvailable(Collection<FileDeletionRequest> fileDeletionRequests,
             Optional<String> errorCause) {
         fileDeletionRequests.forEach((r) -> this.handleStorageNotAvailable(r, errorCause));
     }
