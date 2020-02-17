@@ -355,7 +355,7 @@ public class FileStorageRequestService {
                 }
                 List<FileStorageRequest> fileStorageRequests = filesPage.getContent();
 
-                scheduleJobsByStorage(jobList, storage, fileStorageRequests);
+                self.scheduleJobsByStorage(jobList, storage, fileStorageRequests);
             } while (filesPage.hasContent());
         }
         LOGGER.debug("[STORAGE REQUESTS] {} jobs scheduled in {} ms", jobList.size(),

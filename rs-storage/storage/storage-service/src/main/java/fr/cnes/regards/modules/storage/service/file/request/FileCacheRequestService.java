@@ -314,7 +314,7 @@ public class FileCacheRequestService {
             do {
                 filesPage = repository.findAllByStorageAndStatus(storage, status, page);
                 List<FileCacheRequest> requests = filesPage.getContent();
-                jobList.addAll(scheduleJobsByStorage(storage, requests));
+                jobList.addAll(self.scheduleJobsByStorage(storage, requests));
                 page = filesPage.nextPageable();
             } while (filesPage.hasNext());
         }
@@ -340,7 +340,7 @@ public class FileCacheRequestService {
                     PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> response = storagePlugin
                             .prepareForRestoration(requests);
                     for (FileRestorationWorkingSubset ws : response.getWorkingSubsets()) {
-                        jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId()));
+                        jobInfoList.add(scheduleJob(ws, conf.getBusinessId()));
                     }
                     // Handle errors
                     for (Entry<FileCacheRequest, String> error : response.getPreparationErrors().entrySet()) {
@@ -353,7 +353,7 @@ public class FileCacheRequestService {
             }
             return jobInfoList;
         } else {
-            self.handleStorageNotAvailable(requests);
+            handleStorageNotAvailable(requests);
             return Collections.emptyList();
         }
     }
