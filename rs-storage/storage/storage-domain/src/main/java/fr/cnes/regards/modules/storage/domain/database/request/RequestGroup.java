@@ -96,4 +96,12 @@ public class RequestGroup {
         this.expirationDate = expirationDate;
     }
 
+    public boolean isExpired() {
+        if ((expirationDate != null) && OffsetDateTime.now().isAfter(expirationDate)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }

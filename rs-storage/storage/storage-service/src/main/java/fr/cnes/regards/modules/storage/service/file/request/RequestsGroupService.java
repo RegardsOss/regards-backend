@@ -281,20 +281,28 @@ public class RequestsGroupService {
             // If a request group is pending from more than 2 days, delete the group and set all requests in pending to error.
             switch (reqGrp.getType()) {
                 case AVAILABILITY:
-                    cacheReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> cacheReqRepository
-                            .updateError(FileRequestStatus.ERROR, errorCause, req.getId()));
+                    cacheReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
+                        cacheReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                        groupDone(reqGrp);
+                    });
                     break;
                 case COPY:
-                    copyReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> copyReqRepository
-                            .updateError(FileRequestStatus.ERROR, errorCause, req.getId()));
+                    copyReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
+                        copyReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                        groupDone(reqGrp);
+                    });
                     break;
                 case DELETION:
-                    delReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> delReqRepository
-                            .updateError(FileRequestStatus.ERROR, errorCause, req.getId()));
+                    delReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
+                        delReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                        groupDone(reqGrp);
+                    });
                     break;
                 case STORAGE:
-                    storageReqRepository.findByGroupIds(reqGrp.getId()).forEach(req -> storageReqRepository
-                            .updateError(FileRequestStatus.ERROR, errorCause, req.getId()));
+                    storageReqRepository.findByGroupIds(reqGrp.getId()).forEach(req -> {
+                        storageReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                        groupDone(reqGrp);
+                    });
                     break;
                 case REFERENCE:
                     // There is no asynchronous request for reference. If the request is referenced in db, so all requests have been handled
@@ -328,7 +336,11 @@ public class RequestsGroupService {
             }
         }
         // 2. Publish events
-        if (errors.isEmpty()) {
+        if (reqGrp.isExpired()) {
+            LOGGER.error("[{} GROUP EXPIRED {}] - {} success / {} errors.", reqGrp.getType().toString().toUpperCase(),
+                         reqGrp.getId(), successes.size(), errors.size());
+            publisher.publish(FileRequestsGroupEvent.buildError(reqGrp.getId(), reqGrp.getType(), successes, errors));
+        } else if (errors.isEmpty()) {
             LOGGER.debug("[{} GROUP SUCCESS {}] - {} requests success.", reqGrp.getType().toString().toUpperCase(),
                          reqGrp.getId(), successes.size());
             publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(), reqGrp.getType(), FlowItemStatus.SUCCESS,
