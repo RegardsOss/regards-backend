@@ -116,7 +116,8 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
     public void handleSync(TenantWrapper<DeletionFlowItem> wrapper) {
         DeletionFlowItem item = wrapper.getContent();
         fileDelReqService.handle(Lists.newArrayList(item));
-        reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
+        reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size(),
+                                fileDelReqService.getRequestExpirationDate());
     }
 
     /**

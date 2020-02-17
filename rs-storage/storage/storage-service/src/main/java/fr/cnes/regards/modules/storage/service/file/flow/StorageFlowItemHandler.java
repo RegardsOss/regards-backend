@@ -125,7 +125,8 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
         runtimeTenantResolver.forceTenant(tenant);
         try {
             fileStorageReqService.store(item.getFiles(), item.getGroupId());
-            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size());
+            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size(),
+                                    fileStorageReqService.getRequestExpirationDate());
         } finally {
             runtimeTenantResolver.clearTenant();
         }

@@ -268,7 +268,8 @@ public class FileReferenceEventHandler
             LOGGER.trace("[COPY REQUEST {}] Storage request is created for successfully restored file",
                          copyReq.getMetaInfo().getChecksum(), copyReq.getGroupId());
 
-            reqGrpService.granted(storageGroupId, FileRequestType.STORAGE, 1, true);
+            reqGrpService.granted(storageGroupId, FileRequestType.STORAGE, 1, true,
+                                  fileStorageRequestService.getRequestExpirationDate());
         }
     }
 

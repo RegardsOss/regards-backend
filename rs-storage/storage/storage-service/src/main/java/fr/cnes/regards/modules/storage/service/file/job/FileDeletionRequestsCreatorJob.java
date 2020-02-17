@@ -118,7 +118,8 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
             } while (pageResults.hasNext());
             if (nbREquests > 0) {
                 // Send group granted request
-                reqGrpService.granted(requestGroupId, FileRequestType.DELETION, nbREquests);
+                reqGrpService.granted(requestGroupId, FileRequestType.DELETION, nbREquests,
+                                      fileDelReqService.getRequestExpirationDate());
             }
             LOGGER.info("[DELETION JOB] {} files to delete for storage location {}", pageResults.getTotalElements(),
                         storage);

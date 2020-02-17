@@ -189,7 +189,8 @@ public class FileCacheRequestService {
 
     public void makeAvailable(Collection<AvailabilityFlowItem> items) {
         items.forEach(i -> {
-            reqGrpService.granted(i.getGroupId(), FileRequestType.AVAILABILITY, i.getChecksums().size());
+            reqGrpService.granted(i.getGroupId(), FileRequestType.AVAILABILITY, i.getChecksums().size(),
+                                  i.getExpirationDate());
             makeAvailable(i.getChecksums(), i.getExpirationDate(), i.getGroupId());
         });
     }

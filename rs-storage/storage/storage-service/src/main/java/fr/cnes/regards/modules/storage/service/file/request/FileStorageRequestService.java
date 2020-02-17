@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -123,6 +125,9 @@ public class FileStorageRequestService {
     @Autowired
     private RequestStatusService reqStatusService;
 
+    @Value("${regards.storage.storage.requests.days.before.expiration:5}")
+    private Integer nbDaysBeforeExpiration;
+
     /**
      * Initialize new storage requests from Flow items.
      * @param list
@@ -132,7 +137,8 @@ public class FileStorageRequestService {
                 .flatMap(Set::stream).map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet()));
         for (StorageFlowItem item : list) {
             store(item.getFiles(), item.getGroupId(), existingOnes);
-            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size());
+            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size(),
+                                    getRequestExpirationDate());
         }
 
     }
@@ -603,6 +609,18 @@ public class FileStorageRequestService {
         return fileStorageRequestRepo
                 .existsByStorageAndStatusIn(storageId,
                                             Sets.newHashSet(FileRequestStatus.TO_DO, FileRequestStatus.PENDING));
+    }
+
+    /**
+     * Retrieve expiration date for deletion request
+     * @return
+     */
+    public OffsetDateTime getRequestExpirationDate() {
+        if ((nbDaysBeforeExpiration != null) && (nbDaysBeforeExpiration > 0)) {
+            return OffsetDateTime.now().plusDays(nbDaysBeforeExpiration);
+        } else {
+            return null;
+        }
     }
 
 }

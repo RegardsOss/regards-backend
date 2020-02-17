@@ -29,7 +29,6 @@ import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -100,9 +99,6 @@ public class RequestsGroupService {
     @Autowired
     private StorageLocationService locationService;
 
-    @Value("${regards.storage.requests.days.before.expiration:2}")
-    private Integer nbDaysBeforeExpiration;
-
     /**
      * Handle new request success for the given groupId.<br>
      *
@@ -157,12 +153,13 @@ public class RequestsGroupService {
      * @param nbRequestInGroup
      * @param silent True to avoid sending bus message about group granted. Used internally in storage microservice.
      */
-    public void granted(String groupId, FileRequestType type, int nbRequestInGroup, boolean silent) {
+    public void granted(String groupId, FileRequestType type, int nbRequestInGroup, boolean silent,
+            OffsetDateTime expirationDate) {
         LOGGER.debug("[{} GROUP GRANTED {}] - Group request granted with {} requests.", type.toString().toUpperCase(),
                      groupId, nbRequestInGroup);
         // Create new group request
         if (!reqGroupRepository.existsById(groupId)) {
-            reqGroupRepository.save(RequestGroup.build(groupId, type));
+            reqGroupRepository.save(RequestGroup.build(groupId, type, expirationDate));
         } else {
             LOGGER.error("[{} Group request] Identifier {} already exists", type.toString(), groupId);
         }
@@ -178,8 +175,8 @@ public class RequestsGroupService {
      * @param type
      * @param nbRequestInGroup
      */
-    public void granted(String groupId, FileRequestType type, int nbRequestInGroup) {
-        granted(groupId, type, nbRequestInGroup, false);
+    public void granted(String groupId, FileRequestType type, int nbRequestInGroup, OffsetDateTime expirationDate) {
+        granted(groupId, type, nbRequestInGroup, false, expirationDate);
     }
 
     /**
@@ -188,14 +185,14 @@ public class RequestsGroupService {
      * @param groupId
      * @param type
      */
-    public void granted(Set<String> groupIds, FileRequestType type) {
+    public void granted(Set<String> groupIds, FileRequestType type, OffsetDateTime expirationDate) {
         // Create new group request
         List<RequestGroup> existings = reqGroupRepository.findAllById(groupIds);
         List<String> existingGrpIds = existings.stream().map(RequestGroup::getId).collect(Collectors.toList());
         Set<RequestGroup> toSave = Sets.newHashSet();
         for (String groupId : groupIds) {
             if (!existingGrpIds.contains(groupId)) {
-                toSave.add(RequestGroup.build(groupId, type));
+                toSave.add(RequestGroup.build(groupId, type, expirationDate));
                 publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.GRANTED,
                                                                Sets.newHashSet()));
             } else {
@@ -277,9 +274,9 @@ public class RequestsGroupService {
      */
     private boolean checkRequestGroupExpired(RequestGroup reqGrp) {
         boolean expired = false;
-        if ((nbDaysBeforeExpiration > 0)
-                && reqGrp.getCreationDate().isBefore(OffsetDateTime.now().minusDays(nbDaysBeforeExpiration))) {
-            LOGGER.warn("Request group {} is expired. It will be deleted and all associated requests will be set in ERROR status", reqGrp.getId());
+        if ((reqGrp.getExpirationDate() != null) && reqGrp.getExpirationDate().isBefore(OffsetDateTime.now())) {
+            LOGGER.warn("Request group {} is expired. It will be deleted and all associated requests will be set in ERROR status",
+                        reqGrp.getId());
             String errorCause = "Associated group request expired.";
             // If a request group is pending from more than 2 days, delete the group and set all requests in pending to error.
             switch (reqGrp.getType()) {

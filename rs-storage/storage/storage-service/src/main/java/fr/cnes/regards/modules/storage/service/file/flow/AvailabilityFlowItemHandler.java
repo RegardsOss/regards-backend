@@ -99,7 +99,8 @@ public class AvailabilityFlowItemHandler
         runtimeTenantResolver.forceTenant(wrapper.getTenant());
         try {
             AvailabilityFlowItem item = wrapper.getContent();
-            reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getChecksums().size());
+            reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getChecksums().size(),
+                                    item.getExpirationDate());
             fileCacheReqService.makeAvailable(item.getChecksums(), item.getExpirationDate(), item.getGroupId());
         } finally {
             runtimeTenantResolver.clearTenant();

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
@@ -31,6 +32,7 @@ import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -126,6 +128,9 @@ public class FileDeletionRequestService {
 
     @Autowired
     private ILockService lockService;
+
+    @Value("${regards.storage.deletion.requests.days.before.expiration:5}")
+    private Integer nbDaysBeforeExpiration;
 
     /**
      * Create a new {@link FileDeletionRequest}.
@@ -333,7 +338,8 @@ public class FileDeletionRequestService {
                                        "Cannot delete files has a copy process is running");
                 LOGGER.info("Refused {} file deletion", item.getFiles().size());
             } else {
-                reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
+                reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size(),
+                                        getRequestExpirationDate());
                 handle(item.getFiles(), item.getGroupId(), existingOnes);
             }
         }
@@ -534,6 +540,18 @@ public class FileDeletionRequestService {
     public void releaseLock() {
         lockService.releaseLock(DeletionFlowItem.DELETION_LOCK, new DeletionFlowItem());
         LOGGER.trace("[DELETION PROCESS] Lock released !");
+    }
+
+    /**
+     * Retrieve expiration date for deletion request
+     * @return
+     */
+    public OffsetDateTime getRequestExpirationDate() {
+        if ((nbDaysBeforeExpiration != null) && (nbDaysBeforeExpiration > 0)) {
+            return OffsetDateTime.now().plusDays(nbDaysBeforeExpiration);
+        } else {
+            return null;
+        }
     }
 
 }

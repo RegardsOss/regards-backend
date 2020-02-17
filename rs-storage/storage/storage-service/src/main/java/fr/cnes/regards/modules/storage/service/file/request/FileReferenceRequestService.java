@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
@@ -70,6 +72,9 @@ public class FileReferenceRequestService {
     @Autowired
     private FileReferenceService fileRefService;
 
+    @Value("${regards.storage.reference.requests.days.before.expiration:5}")
+    private Integer nbDaysBeforeExpiration;
+
     /**
      * Initialize new reference requests from Flow items.
      * @param list
@@ -79,7 +84,8 @@ public class FileReferenceRequestService {
                 .flatMap(Set::stream).map(FileReferenceRequestDTO::getChecksum).collect(Collectors.toSet()));
         Set<FileDeletionRequest> existingDeletionRequests = fileDeletionRequestService.search(existingOnes);
         for (ReferenceFlowItem item : list) {
-            reqGrpService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size());
+            reqGrpService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size(),
+                                  getRequestExpirationDate());
             reference(item.getFiles(), item.getGroupId(), existingOnes, existingDeletionRequests);
         }
     }
@@ -224,6 +230,18 @@ public class FileReferenceRequestService {
                             fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
             fileRefEventPublisher.storeSuccess(fileReference, message, groupIds);
             return fileRefService.addOwner(fileReference, request.getOwner());
+        }
+    }
+
+    /**
+     * Retrieve expiration date for deletion request
+     * @return
+     */
+    public OffsetDateTime getRequestExpirationDate() {
+        if ((nbDaysBeforeExpiration != null) && (nbDaysBeforeExpiration > 0)) {
+            return OffsetDateTime.now().plusDays(nbDaysBeforeExpiration);
+        } else {
+            return null;
         }
     }
 }

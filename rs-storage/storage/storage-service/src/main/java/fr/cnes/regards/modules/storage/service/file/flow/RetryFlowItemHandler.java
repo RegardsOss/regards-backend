@@ -75,7 +75,8 @@ public class RetryFlowItemHandler implements ApplicationListener<ApplicationRead
                 case STORAGE:
                     if (request.getGroupId() != null) {
                         storageService.retryRequest(request.getGroupId());
-                        reqGroupService.granted(request.getGroupId(), FileRequestType.STORAGE, 0);
+                        reqGroupService.granted(request.getGroupId(), FileRequestType.STORAGE, 0,
+                                                storageService.getRequestExpirationDate());
                     } else {
                         storageService.retry(request.getOwners());
                     }
@@ -83,7 +84,8 @@ public class RetryFlowItemHandler implements ApplicationListener<ApplicationRead
                 case AVAILABILITY:
                     if (request.getGroupId() != null) {
                         cacheService.retryRequest(request.getGroupId());
-                        reqGroupService.granted(request.getGroupId(), FileRequestType.AVAILABILITY, 0);
+                        reqGroupService.granted(request.getGroupId(), FileRequestType.AVAILABILITY, 0,
+                                                storageService.getRequestExpirationDate());
                     } else {
                         LOGGER.warn("Retry action is not available for availability requests with no request id.");
                         reqGroupService

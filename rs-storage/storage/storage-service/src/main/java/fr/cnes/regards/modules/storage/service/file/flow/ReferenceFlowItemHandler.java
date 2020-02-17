@@ -125,7 +125,8 @@ public class ReferenceFlowItemHandler
         runtimeTenantResolver.forceTenant(tenant);
         try {
             fileRefReqService.reference(item.getFiles(), item.getGroupId());
-            reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size());
+            reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size(),
+                                    fileRefReqService.getRequestExpirationDate());
         } finally {
             runtimeTenantResolver.clearTenant();
         }
