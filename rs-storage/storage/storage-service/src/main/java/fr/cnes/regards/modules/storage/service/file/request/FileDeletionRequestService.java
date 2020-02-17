@@ -199,8 +199,8 @@ public class FileDeletionRequestService {
                 } while (deletionRequestPage.hasNext());
             }
             if (jobList.size() > 0) {
-                LOGGER.info("[DELETION REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
-                            System.currentTimeMillis() - start);
+                LOGGER.debug("[DELETION REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
+                             System.currentTimeMillis() - start);
             }
             return jobList;
         } finally {
@@ -336,7 +336,7 @@ public class FileDeletionRequestService {
                     .collect(Collectors.toSet()))) {
                 reqGroupService.denied(item.getGroupId(), FileRequestType.DELETION,
                                        "Cannot delete files has a copy process is running");
-                LOGGER.info("Refused {} file deletion", item.getFiles().size());
+                LOGGER.warn("Refused {} file deletion", item.getFiles().size());
             } else {
                 reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size(),
                                         getRequestExpirationDate());

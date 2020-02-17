@@ -132,8 +132,8 @@ public class FileReferenceEventHandler
                                                                            event.getMetaInfo().getChecksum());
             if (oFileRef.isPresent()) {
                 fileCopyRequestService.handleSuccess(request.get(), oFileRef.get());
-                LOGGER.info("[STORE SUCCESS {}] New stored file is associated to a copy request {}",
-                            event.getChecksum(), request.get().getGroupId());
+                LOGGER.debug("[STORE SUCCESS {}] New stored file is associated to a copy request {}",
+                             event.getChecksum(), request.get().getGroupId());
             } else {
                 String errorCause = String
                         .format("Error no file reference found for newly stored file %s at %s storage location",

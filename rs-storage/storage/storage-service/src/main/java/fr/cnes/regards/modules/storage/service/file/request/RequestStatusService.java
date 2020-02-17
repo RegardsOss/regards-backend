@@ -164,7 +164,7 @@ public class RequestStatusService {
             }
         }
         if (nbDelayedrequestUpdated > 0) {
-            LOGGER.info("[STORAGE REQUEST] {} delayed requests can be hanle now.", nbDelayedrequestUpdated);
+            LOGGER.debug("[STORAGE REQUEST] {} delayed requests can be hanle now.", nbDelayedrequestUpdated);
         }
     }
 
@@ -183,7 +183,7 @@ public class RequestStatusService {
             }
         }
         if (nbDelayedrequestUpdated > 0) {
-            LOGGER.info("[DELETE REQUEST] {} delayed requests can be hanle now.", nbDelayedrequestUpdated);
+            LOGGER.debug("[DELETE REQUEST] {} delayed requests can be hanle now.", nbDelayedrequestUpdated);
         }
     }
 
@@ -202,7 +202,7 @@ public class RequestStatusService {
             }
         }
         if (nbDelayedrequestUpdated > 0) {
-            LOGGER.info("[COPY REQUEST] {} delayed requests can be hanle now.", nbDelayedrequestUpdated);
+            LOGGER.debug("[COPY REQUEST] {} delayed requests can be hanle now.", nbDelayedrequestUpdated);
         }
     }
 

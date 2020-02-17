@@ -173,7 +173,7 @@ public class FileCopyRequestService {
                             .get();
                     String message = String.format("File to copy %s already exists for destination storage %s",
                                                    requestDto.getChecksum(), requestDto.getStorage());
-                    LOGGER.info("[COPY REQUEST] {}", message);
+                    LOGGER.debug("[COPY REQUEST] {}", message);
                     publisher.copySuccess(existingfileRef, message, groupId);
                     reqGrpService.requestSuccess(groupId, FileRequestType.COPY, requestDto.getChecksum(),
                                                  requestDto.getStorage(), requestDto.getSubDirectory(),

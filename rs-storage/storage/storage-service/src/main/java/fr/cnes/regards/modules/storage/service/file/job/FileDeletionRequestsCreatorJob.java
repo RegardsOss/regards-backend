@@ -92,6 +92,7 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
             Boolean forceDelete = parameters.get(FORCE_DELETE).getValue();
             Pageable pageRequest = PageRequest.of(0, DeletionFlowItem.MAX_REQUEST_PER_GROUP);
             Page<FileReference> pageResults;
+            long start = System.currentTimeMillis();
             LOGGER.info("[DELETION JOB] Calculate all files to delete for storage location {} (forceDelete={})",
                         storage, forceDelete);
             String requestGroupId = String.format("DELETION-%s", UUID.randomUUID().toString());
@@ -121,8 +122,8 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
                 reqGrpService.granted(requestGroupId, FileRequestType.DELETION, nbREquests,
                                       fileDelReqService.getRequestExpirationDate());
             }
-            LOGGER.info("[DELETION JOB] {} files to delete for storage location {}", pageResults.getTotalElements(),
-                        storage);
+            LOGGER.info("[DELETION JOB] {} files to delete for storage location {} calculated in {}ms",
+                        pageResults.getTotalElements(), storage, System.currentTimeMillis() - start);
         } finally {
             if (locked) {
                 fileDelReqService.releaseLock();

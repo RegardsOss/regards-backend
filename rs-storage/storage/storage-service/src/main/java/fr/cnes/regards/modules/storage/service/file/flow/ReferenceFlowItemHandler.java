@@ -154,11 +154,11 @@ public class ReferenceFlowItemHandler
                         }
                     }
                     if (!list.isEmpty()) {
-                        LOGGER.info("[REFERENCE FLOW HANDLER] Bulk saving {} AddFileRefFlowItem...", list.size());
+                        LOGGER.debug("[REFERENCE FLOW HANDLER] Bulk saving {} AddFileRefFlowItem...", list.size());
                         long start = System.currentTimeMillis();
                         fileRefReqService.reference(list);
-                        LOGGER.info("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem handled in {} ms", list.size(),
-                                    System.currentTimeMillis() - start);
+                        LOGGER.debug("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem handled in {} ms", list.size(),
+                                     System.currentTimeMillis() - start);
                         list.clear();
                     }
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
