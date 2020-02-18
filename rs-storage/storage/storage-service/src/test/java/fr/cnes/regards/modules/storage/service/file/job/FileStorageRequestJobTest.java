@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.service.file.job;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.Optional;
 
@@ -36,8 +38,7 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileStorageReques
 public class FileStorageRequestJobTest {
 
     @Test
-    public void testImageSizeCalculation() {
-
+    public void testImageSizeCalculation() throws MalformedURLException, URISyntaxException {
         String owner = "test";
         String checksum = "12345";
         String algorithm = "plop";
@@ -45,8 +46,7 @@ public class FileStorageRequestJobTest {
         Long fileSize = 20L;
         MimeType mimeType = MediaType.IMAGE_PNG;
         FileReferenceMetaInfo metaInfos = new FileReferenceMetaInfo(checksum, algorithm, fileName, fileSize, mimeType);
-        String originUrl = "file://"
-                + Paths.get("src/test/resources/input/cnes_%C3%A8.png").toAbsolutePath().toString();
+        String originUrl = "file://" + Paths.get("src/test/resources/input/cnes.png").toAbsolutePath().toString();
         String storage = "storage";
         String groupId = "10";
         FileStorageRequest request = new FileStorageRequest(owner, metaInfos, originUrl, storage, Optional.empty(),

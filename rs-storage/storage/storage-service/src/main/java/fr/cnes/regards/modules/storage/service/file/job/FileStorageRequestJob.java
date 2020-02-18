@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.job;
 
 import java.awt.Dimension;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -139,7 +140,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
                     && fileRefRequest.getMetaInfo().getMimeType().isCompatibleWith(MediaType.valueOf("image/*"))) {
                 URL localUrl = new URL(fileRefRequest.getOriginUrl());
                 if (localUrl.getProtocol().equals("file")) {
-                    Path filePath = Paths.get(localUrl.getPath());
+                    Path filePath = Paths.get(localUrl.toURI().getPath());
                     if (Files.isReadable(filePath)) {
                         Dimension dimension = CommonFileUtils.getImageDimension(filePath.toFile());
                         fileRefRequest.getMetaInfo().setHeight(((Number) dimension.getHeight()).intValue());
@@ -150,7 +151,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
                     }
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             LOGGER.warn(String.format("Error calculating image file height/width. Cause : %s", e.getMessage()), e);
         }
     }
