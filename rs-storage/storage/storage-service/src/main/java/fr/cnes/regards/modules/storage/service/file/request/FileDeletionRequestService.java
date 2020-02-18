@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -31,6 +33,7 @@ import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -127,6 +130,9 @@ public class FileDeletionRequestService {
     @Autowired
     private ILockService lockService;
 
+    @Value("${regards.storage.deletion.requests.days.before.expiration:5}")
+    private Integer nbDaysBeforeExpiration;
+
     /**
      * Create a new {@link FileDeletionRequest}.
      * @param fileReferenceToDelete {@link FileReference} to delete
@@ -185,22 +191,36 @@ public class FileDeletionRequestService {
                 Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
                 do {
                     deletionRequestPage = fileDeletionRequestRepo.findByStorageAndStatus(storage, status, page);
-                    if (storageHandler.getConfiguredStorages().contains(storage)) {
-                        jobList = scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
-                    } else {
-                        handleStorageNotAvailable(deletionRequestPage.getContent(), Optional.empty());
-                    }
+                    jobList.addAll(self.scheduleDeletionJobsByStorage(storage, deletionRequestPage));
                     page = deletionRequestPage.nextPageable();
                 } while (deletionRequestPage.hasNext());
             }
             if (jobList.size() > 0) {
-                LOGGER.info("[DELETION REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
-                            System.currentTimeMillis() - start);
+                LOGGER.debug("[DELETION REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
+                             System.currentTimeMillis() - start);
             }
             return jobList;
         } finally {
             releaseLock();
         }
+    }
+
+    /**
+     * Schedule jobs for deletion requests by using a new transaction
+     * @param jobList
+     * @param storage
+     * @param deletionRequestPage
+     * @return scheduled {@link JobInfo}
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Collection<JobInfo> scheduleDeletionJobsByStorage(String storage,
+            Page<FileDeletionRequest> deletionRequestPage) {
+        if (storageHandler.getConfiguredStorages().contains(storage)) {
+            return scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
+        } else {
+            handleStorageNotAvailable(deletionRequestPage.getContent(), Optional.empty());
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -238,15 +258,15 @@ public class FileDeletionRequestService {
             PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequest> response = storagePlugin
                     .prepareForDeletion(fileDeletionRequests);
             for (FileDeletionWorkingSubset ws : response.getWorkingSubsets()) {
-                jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId()));
+                jobInfoList.add(scheduleJob(ws, conf.getBusinessId()));
             }
             // Handle error requests
             for (Entry<FileDeletionRequest, String> error : response.getPreparationErrors().entrySet()) {
-                this.handleStorageNotAvailable(error.getKey(), Optional.ofNullable(error.getValue()));
+                handleStorageNotAvailable(error.getKey(), Optional.ofNullable(error.getValue()));
             }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             LOGGER.error(e.getMessage(), e);
-            this.handleStorageNotAvailable(fileDeletionRequests, Optional.empty());
+            handleStorageNotAvailable(fileDeletionRequests, Optional.empty());
         }
         return jobInfoList;
     }
@@ -256,8 +276,7 @@ public class FileDeletionRequestService {
      * NOTE : A new transaction is created for each call at this method. It is mandatory to avoid having too long transactions.
      * @return {@link JobInfo} scheduled.
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public JobInfo scheduleJob(FileDeletionWorkingSubset workingSubset, String pluginConfBusinessId) {
+    private JobInfo scheduleJob(FileDeletionWorkingSubset workingSubset, String pluginConfBusinessId) {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, pluginConfBusinessId));
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
@@ -329,9 +348,10 @@ public class FileDeletionRequestService {
                     .collect(Collectors.toSet()))) {
                 reqGroupService.denied(item.getGroupId(), FileRequestType.DELETION,
                                        "Cannot delete files has a copy process is running");
-                LOGGER.info("Refused {} file deletion", item.getFiles().size());
+                LOGGER.warn("Refused {} file deletion", item.getFiles().size());
             } else {
-                reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
+                reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size(),
+                                        getRequestExpirationDate());
                 handle(item.getFiles(), item.getGroupId(), existingOnes);
             }
         }
@@ -532,6 +552,18 @@ public class FileDeletionRequestService {
     public void releaseLock() {
         lockService.releaseLock(DeletionFlowItem.DELETION_LOCK, new DeletionFlowItem());
         LOGGER.trace("[DELETION PROCESS] Lock released !");
+    }
+
+    /**
+     * Retrieve expiration date for deletion request
+     * @return
+     */
+    public OffsetDateTime getRequestExpirationDate() {
+        if ((nbDaysBeforeExpiration != null) && (nbDaysBeforeExpiration > 0)) {
+            return OffsetDateTime.now().plusDays(nbDaysBeforeExpiration);
+        } else {
+            return null;
+        }
     }
 
 }

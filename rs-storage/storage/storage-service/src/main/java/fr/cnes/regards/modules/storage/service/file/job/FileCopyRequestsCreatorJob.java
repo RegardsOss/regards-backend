@@ -103,7 +103,8 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                 LOGGER.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
                 return;
             }
-            LOGGER.info("[COPY JOB] Calculate all files to copy from storage location {} to {} ",
+            long start = System.currentTimeMillis();
+            LOGGER.info("[COPY JOB] Calculate all files to copy from storage location {} to {} ...",
                         storageLocationSourceId, storageLocationDestinationId);
             Pageable pageRequest = PageRequest.of(0, CopyFlowItem.MAX_REQUEST_PER_GROUP);
             Page<FileReference> pageResults;
@@ -126,17 +127,19 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                                                                   desinationFilePath.get().toString()));
                         }
                     } catch (MalformedURLException | ModuleException e) {
-                        LOGGER.error("Unable to handle file reference {} for copy from {} to {}. Cause {}",
-                                     fileRef.getLocation().getUrl(), storageLocationSourceId,
-                                     storageLocationDestinationId);
+                        LOGGER.error(String
+                                .format("Unable to handle file reference %s for copy from %s to %s. Cause %s",
+                                        fileRef.getLocation().getUrl(), storageLocationSourceId,
+                                        storageLocationDestinationId),
+                                     e);
                     }
                     this.advanceCompletion();
                 }
                 publisher.publish(CopyFlowItem.build(requests, groupId));
                 pageRequest = pageRequest.next();
             } while (pageResults.hasNext());
-            LOGGER.info("[COPY JOB] {} files to copy from storage location {} to {} ", nbFilesToCopy,
-                        storageLocationSourceId, storageLocationDestinationId);
+            LOGGER.info("[COPY JOB] {} files to copy from storage location {} to {} calculated in {}ms", nbFilesToCopy,
+                        storageLocationSourceId, storageLocationDestinationId, System.currentTimeMillis() - start);
         } finally {
             if (locked) {
                 fileCopyReqService.releaseLock();

@@ -125,7 +125,8 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
         runtimeTenantResolver.forceTenant(tenant);
         try {
             fileStorageReqService.store(item.getFiles(), item.getGroupId());
-            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size());
+            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size(),
+                                    fileStorageReqService.getRequestExpirationDate());
         } finally {
             runtimeTenantResolver.clearTenant();
         }
@@ -153,11 +154,11 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
                         }
                     }
                     if (!list.isEmpty()) {
-                        LOGGER.info("[STORAGE FLOW HANDLER] Bulk saving {} StorageFlowItem...", list.size());
+                        LOGGER.debug("[STORAGE FLOW HANDLER] Bulk saving {} StorageFlowItem...", list.size());
                         long start = System.currentTimeMillis();
                         fileStorageReqService.store(list);
-                        LOGGER.info("[STORAGE FLOW HANDLER] {} StorageFlowItem handled in {} ms", list.size(),
-                                    System.currentTimeMillis() - start);
+                        LOGGER.debug("[STORAGE FLOW HANDLER] {} StorageFlowItem handled in {} ms", list.size(),
+                                     System.currentTimeMillis() - start);
                         list.clear();
                     }
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved

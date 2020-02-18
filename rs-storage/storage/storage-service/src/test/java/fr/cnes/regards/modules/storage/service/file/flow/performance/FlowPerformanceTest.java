@@ -107,6 +107,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
         }
         storagePlgConfHandler.refresh();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         if (fileRefRepo.count() == 0) {
             // Insert many refs
@@ -187,7 +188,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             loops++;
         } while ((loops < 50) && ((page.getTotalElements()) != 5000));
 
-        Assert.assertEquals("There should be 5004 file ref created", 5000, fileRefRepo
+        Assert.assertEquals("There should be 5000 file ref created", 5000, fileRefRepo
                 .findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
     }
 
@@ -242,8 +243,6 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         Page<FileReference> page = fileRefService.search(PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
         Long total = page.getTotalElements();
         for (FileReference fileRef : page.getContent()) {
-            FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
-                                         fileRef.getOwners().iterator().next(), false);
             DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO
                     .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
                            fileRef.getOwners().iterator().next(), false), UUID.randomUUID().toString());
@@ -253,10 +252,10 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         LOGGER.info("Waiting ....");
         int loops = 0;
         do {
-            Thread.sleep(5_000);
+            Thread.sleep(500);
             page = fileRefService.search(PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
-        } while ((loops < 10) && (nbToDelete != (total - page.getTotalElements())));
+        } while ((loops < 100) && (nbToDelete != (total - page.getTotalElements())));
 
         Assert.assertEquals("500 ref should be deleted", nbToDelete, total - page.getTotalElements());
     }

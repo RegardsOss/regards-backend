@@ -132,8 +132,8 @@ public class FileReferenceEventHandler
                                                                            event.getMetaInfo().getChecksum());
             if (oFileRef.isPresent()) {
                 fileCopyRequestService.handleSuccess(request.get(), oFileRef.get());
-                LOGGER.info("[STORE SUCCESS {}] New stored file is associated to a copy request {}",
-                            event.getChecksum(), request.get().getGroupId());
+                LOGGER.debug("[STORE SUCCESS {}] New stored file is associated to a copy request {}",
+                             event.getChecksum(), request.get().getGroupId());
             } else {
                 String errorCause = String
                         .format("Error no file reference found for newly stored file %s at %s storage location",
@@ -211,7 +211,7 @@ public class FileReferenceEventHandler
                 Optional<FileReference> existingOne = fileReferenceService
                         .search(updatedFile.getLocation().getStorage(), updatedFile.getMetaInfo().getChecksum());
                 // Check that updated fileReference does not match an other existing fileReference
-                if (!existingOne.isPresent() || (existingOne.get().getId() == fileToUpdate.getId())) {
+                if (!existingOne.isPresent() || (existingOne.get().getId().equals(fileToUpdate.getId()))) {
                     updatedFile = fileReferenceService.update(checksum, storage, fileToUpdate);
                     LOGGER.debug("File reference {} updated by action {}", checksum, updateAction.getClass().getName());
                 } else {
@@ -268,7 +268,8 @@ public class FileReferenceEventHandler
             LOGGER.trace("[COPY REQUEST {}] Storage request is created for successfully restored file",
                          copyReq.getMetaInfo().getChecksum(), copyReq.getGroupId());
 
-            reqGrpService.granted(storageGroupId, FileRequestType.STORAGE, 1, true);
+            reqGrpService.granted(storageGroupId, FileRequestType.STORAGE, 1, true,
+                                  fileStorageRequestService.getRequestExpirationDate());
         }
     }
 

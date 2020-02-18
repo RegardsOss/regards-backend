@@ -280,7 +280,7 @@ public class FileDownloadService {
         boolean accessGranted = downTokenRepo.existsByChecksumAndTokenAndExpirationDateAfter(checksum, token,
                                                                                              OffsetDateTime.now());
         if (!accessGranted) {
-            LOGGER.info("Access denied to file {}. Token {} is no longer valid", checksum, token);
+            LOGGER.error("Access denied to file {}. Token {} is no longer valid", checksum, token);
         }
         return accessGranted;
     }

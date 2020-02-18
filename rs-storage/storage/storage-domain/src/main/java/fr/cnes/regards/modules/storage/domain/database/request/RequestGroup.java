@@ -51,11 +51,16 @@ public class RequestGroup {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime creationDate;
 
-    public static RequestGroup build(String groupId, FileRequestType type) {
+    @Column(name = "expiration_date", nullable = false)
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime expirationDate;
+
+    public static RequestGroup build(String groupId, FileRequestType type, OffsetDateTime expirationDate) {
         RequestGroup grp = new RequestGroup();
         grp.id = groupId;
         grp.type = type;
         grp.creationDate = OffsetDateTime.now();
+        grp.expirationDate = expirationDate;
         return grp;
     }
 
@@ -81,6 +86,22 @@ public class RequestGroup {
 
     public void setCreationDate(OffsetDateTime creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public OffsetDateTime getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(OffsetDateTime expirationDate) {
+        this.expirationDate = expirationDate;
+    }
+
+    public boolean isExpired() {
+        if ((expirationDate != null) && OffsetDateTime.now().isAfter(expirationDate)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

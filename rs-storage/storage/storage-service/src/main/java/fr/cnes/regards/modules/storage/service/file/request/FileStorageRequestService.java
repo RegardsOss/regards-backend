@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -123,6 +125,9 @@ public class FileStorageRequestService {
     @Autowired
     private RequestStatusService reqStatusService;
 
+    @Value("${regards.storage.storage.requests.days.before.expiration:5}")
+    private Integer nbDaysBeforeExpiration;
+
     /**
      * Initialize new storage requests from Flow items.
      * @param list
@@ -132,7 +137,8 @@ public class FileStorageRequestService {
                 .flatMap(Set::stream).map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet()));
         for (StorageFlowItem item : list) {
             store(item.getFiles(), item.getGroupId(), existingOnes);
-            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size());
+            reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size(),
+                                    getRequestExpirationDate());
         }
 
     }
@@ -338,7 +344,8 @@ public class FileStorageRequestService {
             Page<FileStorageRequest> filesPage;
             Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by("id"));
             do {
-                if (owners != null && !owners.isEmpty()) {
+                // Always retrieve first page, as request status are updated during job scheduling method.
+                if ((owners != null) && !owners.isEmpty()) {
                     filesPage = fileStorageRequestRepo.findAllByStorageAndStatusAndOwnersIn(storage, status, owners,
                                                                                             page);
                 } else {
@@ -346,17 +353,27 @@ public class FileStorageRequestService {
                 }
                 List<FileStorageRequest> fileStorageRequests = filesPage.getContent();
 
-                if (storageHandler.getConfiguredStorages().contains(storage)) {
-                    jobList.addAll(scheduleJobsByStorage(storage, fileStorageRequests));
-                } else {
-                    handleStorageNotAvailable(fileStorageRequests);
-                }
-                // page = filesPage.nextPageable();
+                self.scheduleJobsByStorage(jobList, storage, fileStorageRequests);
             } while (filesPage.hasContent());
         }
         LOGGER.debug("[STORAGE REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
                      System.currentTimeMillis() - start);
         return jobList;
+    }
+
+    /**
+     * @param jobList
+     * @param storage
+     * @param fileStorageRequests
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void scheduleJobsByStorage(Collection<JobInfo> jobList, String storage,
+            List<FileStorageRequest> fileStorageRequests) {
+        if (storageHandler.getConfiguredStorages().contains(storage)) {
+            jobList.addAll(scheduleJobsByStorage(storage, fileStorageRequests));
+        } else {
+            handleStorageNotAvailable(fileStorageRequests, Optional.empty());
+        }
     }
 
     /**
@@ -375,7 +392,7 @@ public class FileStorageRequestService {
                     .prepareForStorage(fileStorageRequests);
             for (FileStorageWorkingSubset ws : response.getWorkingSubsets()) {
                 if (!ws.getFileReferenceRequests().isEmpty()) {
-                    jobInfoList.add(self.scheduleJob(ws, conf.getBusinessId(), storage));
+                    jobInfoList.add(scheduleJob(ws, conf.getBusinessId(), storage));
                 }
             }
             for (Entry<FileStorageRequest, String> request : response.getPreparationErrors().entrySet()) {
@@ -383,7 +400,7 @@ public class FileStorageRequestService {
             }
         } catch (ModuleException | PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
             LOGGER.error(e.getMessage(), e);
-            this.handleStorageNotAvailable(fileStorageRequests);
+            this.handleStorageNotAvailable(fileStorageRequests, Optional.of(e.getMessage()));
         }
         return jobInfoList;
     }
@@ -395,8 +412,7 @@ public class FileStorageRequestService {
      * @param plgBusinessId
      * @return {@link JobInfo} scheduled.
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public JobInfo scheduleJob(FileStorageWorkingSubset workingSubset, String plgBusinessId, String storage) {
+    private JobInfo scheduleJob(FileStorageWorkingSubset workingSubset, String plgBusinessId, String storage) {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, plgBusinessId));
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
@@ -448,8 +464,9 @@ public class FileStorageRequestService {
      * </ul>
      * @param fileStorageRequests
      */
-    private void handleStorageNotAvailable(Collection<FileStorageRequest> fileStorageRequests) {
-        fileStorageRequests.forEach(r -> handleStorageNotAvailable(r, Optional.empty()));
+    private void handleStorageNotAvailable(Collection<FileStorageRequest> fileStorageRequests,
+            Optional<String> errorCause) {
+        fileStorageRequests.forEach(r -> handleStorageNotAvailable(r, errorCause));
     }
 
     /**
@@ -504,6 +521,7 @@ public class FileStorageRequestService {
                                                        request.getStorageSubDirectory(), request.getOwners(), fileRef);
                     }
                 } catch (ModuleException e) {
+                    LOGGER.error(e.getMessage(), e);
                     handleError(request, e.getMessage());
                 }
             }
@@ -600,6 +618,18 @@ public class FileStorageRequestService {
         return fileStorageRequestRepo
                 .existsByStorageAndStatusIn(storageId,
                                             Sets.newHashSet(FileRequestStatus.TO_DO, FileRequestStatus.PENDING));
+    }
+
+    /**
+     * Retrieve expiration date for deletion request
+     * @return
+     */
+    public OffsetDateTime getRequestExpirationDate() {
+        if ((nbDaysBeforeExpiration != null) && (nbDaysBeforeExpiration > 0)) {
+            return OffsetDateTime.now().plusDays(nbDaysBeforeExpiration);
+        } else {
+            return null;
+        }
     }
 
 }

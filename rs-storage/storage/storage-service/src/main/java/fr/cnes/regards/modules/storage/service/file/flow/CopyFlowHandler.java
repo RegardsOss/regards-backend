@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +115,8 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
     public void handleSync(TenantWrapper<CopyFlowItem> wrapper) {
         CopyFlowItem item = wrapper.getContent();
         fileCopyReqService.copy(item.getFiles(), item.getGroupId());
-        reqGroupService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size());
+        reqGroupService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size(),
+                                OffsetDateTime.now().plusDays(5));
     }
 
     /**
@@ -142,8 +144,8 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
                         LOGGER.debug("[COPY FLOW HANDLER] Bulk saving {} CopyFlowItem...", list.size());
                         long start = System.currentTimeMillis();
                         fileCopyReqService.copy(list);
-                        LOGGER.info("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms", list.size(),
-                                    System.currentTimeMillis() - start);
+                        LOGGER.debug("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms", list.size(),
+                                     System.currentTimeMillis() - start);
                         list.clear();
                     }
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved

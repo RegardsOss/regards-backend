@@ -29,7 +29,6 @@ import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -49,6 +48,7 @@ import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
+import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 
 /**
@@ -80,6 +80,9 @@ public class RequestsGroupService {
     private IPublisher publisher;
 
     @Autowired
+    private FileReferenceEventPublisher eventPublisher;
+
+    @Autowired
     private IGroupRequestInfoRepository groupReqInfoRepository;
 
     @Autowired
@@ -99,9 +102,6 @@ public class RequestsGroupService {
 
     @Autowired
     private StorageLocationService locationService;
-
-    @Value("${regards.storage.requests.days.before.expiration:2}")
-    private Integer nbDaysBeforeExpiration;
 
     /**
      * Handle new request success for the given groupId.<br>
@@ -148,12 +148,13 @@ public class RequestsGroupService {
      * @param nbRequestInGroup
      * @param silent True to avoid sending bus message about group granted. Used internally in storage microservice.
      */
-    public void granted(String groupId, FileRequestType type, int nbRequestInGroup, boolean silent) {
+    public void granted(String groupId, FileRequestType type, int nbRequestInGroup, boolean silent,
+            OffsetDateTime expirationDate) {
         LOGGER.debug("[{} GROUP GRANTED {}] - Group request granted with {} requests.", type.toString().toUpperCase(),
                      groupId, nbRequestInGroup);
         // Create new group request
         if (!reqGroupRepository.existsById(groupId)) {
-            reqGroupRepository.save(RequestGroup.build(groupId, type));
+            reqGroupRepository.save(RequestGroup.build(groupId, type, expirationDate));
         } else {
             LOGGER.error("[{} Group request] Identifier {} already exists", type.toString(), groupId);
         }
@@ -169,21 +170,21 @@ public class RequestsGroupService {
      * @param type
      * @param nbRequestInGroup
      */
-    public void granted(String groupId, FileRequestType type, int nbRequestInGroup) {
-        granted(groupId, type, nbRequestInGroup, false);
+    public void granted(String groupId, FileRequestType type, int nbRequestInGroup, OffsetDateTime expirationDate) {
+        granted(groupId, type, nbRequestInGroup, false, expirationDate);
     }
 
     /**
      * Save new granted request groups and send bus messages to inform that the given groupIds are granted.
      */
-    public void granted(Set<String> groupIds, FileRequestType type) {
+    public void granted(Set<String> groupIds, FileRequestType type, OffsetDateTime expirationDate) {
         // Create new group request
         List<RequestGroup> existings = reqGroupRepository.findAllById(groupIds);
         List<String> existingGrpIds = existings.stream().map(RequestGroup::getId).collect(Collectors.toList());
         Set<RequestGroup> toSave = Sets.newHashSet();
         for (String groupId : groupIds) {
             if (!existingGrpIds.contains(groupId)) {
-                toSave.add(RequestGroup.build(groupId, type));
+                toSave.add(RequestGroup.build(groupId, type, expirationDate));
                 publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.GRANTED,
                                                                Sets.newHashSet()));
             } else {
@@ -265,27 +266,36 @@ public class RequestsGroupService {
      */
     private boolean checkRequestGroupExpired(RequestGroup reqGrp) {
         boolean expired = false;
-        if (nbDaysBeforeExpiration > 0
-                && reqGrp.getCreationDate().isBefore(OffsetDateTime.now().minusDays(nbDaysBeforeExpiration))) {
-            LOGGER.warn("Request group {} is expired. It will be deleted and all associated requests will be set in ERROR status", reqGrp.getId());
+        if ((reqGrp.getExpirationDate() != null) && reqGrp.getExpirationDate().isBefore(OffsetDateTime.now())) {
+            LOGGER.warn("[REQUEST GROUP {} EXPIRED] . Group {} is expired, it will be deleted and all associated requests will be set in ERROR status",
+                        reqGrp.getType(), reqGrp.getId());
             String errorCause = "Associated group request expired.";
             // If a request group is pending from more than 2 days, delete the group and set all requests in pending to error.
             switch (reqGrp.getType()) {
                 case AVAILABILITY:
-                    cacheReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> cacheReqRepository
-                            .updateError(FileRequestStatus.ERROR, errorCause, req.getId()));
+                    cacheReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
+                        cacheReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                        eventPublisher.notAvailable(req.getChecksum(), null, errorCause, reqGrp.getId());
+                    });
                     break;
                 case COPY:
-                    copyReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> copyReqRepository
-                            .updateError(FileRequestStatus.ERROR, errorCause, req.getId()));
+                    copyReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
+                        copyReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                        eventPublisher.copyError(req, errorCause);
+                    });
                     break;
                 case DELETION:
-                    delReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> delReqRepository
-                            .updateError(FileRequestStatus.ERROR, errorCause, req.getId()));
+                    delReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
+                        delReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                        eventPublisher.deletionError(req.getFileReference(), errorCause, reqGrp.getId());
+                    });
                     break;
                 case STORAGE:
-                    storageReqRepository.findByGroupIds(reqGrp.getId()).forEach(req -> storageReqRepository
-                            .updateError(FileRequestStatus.ERROR, errorCause, req.getId()));
+                    storageReqRepository.findByGroupIds(reqGrp.getId()).forEach(req -> {
+                        storageReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                        eventPublisher.storeError(req.getMetaInfo().getChecksum(), req.getOwners(), req.getStorage(),
+                                                  errorCause, reqGrp.getId());
+                    });
                     break;
                 case REFERENCE:
                     // There is no asynchronous request for reference. If the request is referenced in db, so all requests have been handled
@@ -304,7 +314,7 @@ public class RequestsGroupService {
     /**
      * Handle a group request done. All requests of the given group has terminated (success or error).
      */
-    public void groupDone(RequestGroup reqGrp) {
+    private void groupDone(RequestGroup reqGrp) {
         // 1. Do only one database request, then dispatch results between success and errors
         Set<RequestResultInfo> resultInfos = groupReqInfoRepository.findByGroupId(reqGrp.getId());
         Set<RequestResultInfo> errors = Sets.newHashSet();
@@ -316,7 +326,7 @@ public class RequestsGroupService {
                 successes.add(info);
             }
         }
-        // 2. Publish events
+        // 1. Publish events
         if (errors.isEmpty()) {
             LOGGER.debug("[{} GROUP SUCCESS {}] - {} requests success.", reqGrp.getType().toString().toUpperCase(),
                          reqGrp.getId(), successes.size());

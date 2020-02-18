@@ -116,7 +116,8 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
     public void handleSync(TenantWrapper<DeletionFlowItem> wrapper) {
         DeletionFlowItem item = wrapper.getContent();
         fileDelReqService.handle(Lists.newArrayList(item));
-        reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size());
+        reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size(),
+                                fileDelReqService.getRequestExpirationDate());
     }
 
     /**
@@ -141,11 +142,11 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
                         }
                     }
                     if (!list.isEmpty()) {
-                        LOGGER.info("[DELETION FLOW HANDLER] Bulk saving {} DeleteFileRefFlowItem...", list.size());
+                        LOGGER.debug("[DELETION FLOW HANDLER] Bulk saving {} DeleteFileRefFlowItem...", list.size());
                         long start = System.currentTimeMillis();
                         fileDelReqService.handle(list);
-                        LOGGER.info("[DELETION FLOW HANDLER] {} DeleteFileRefFlowItem handled in {} ms", list.size(),
-                                    System.currentTimeMillis() - start);
+                        LOGGER.debug("[DELETION FLOW HANDLER] {} DeleteFileRefFlowItem handled in {} ms", list.size(),
+                                     System.currentTimeMillis() - start);
                         list.clear();
                     }
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved

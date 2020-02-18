@@ -28,6 +28,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -112,6 +113,9 @@ public class FileCopyRequestService {
     @Autowired
     private RequestStatusService reqStatusService;
 
+    @Value("${regards.storage.copy.requests.days.before.expiration:5}")
+    private Integer nbDaysBeforeExpiration;
+
     /**
      * Initialize new copy requests from Flow items.
      * @param items
@@ -119,7 +123,8 @@ public class FileCopyRequestService {
     public void copy(Collection<CopyFlowItem> items) {
         for (CopyFlowItem item : items) {
             copy(item.getFiles(), item.getGroupId());
-            reqGrpService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size());
+            reqGrpService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size(),
+                                  getRequestExpirationDate());
         }
     }
 
@@ -168,7 +173,7 @@ public class FileCopyRequestService {
                             .get();
                     String message = String.format("File to copy %s already exists for destination storage %s",
                                                    requestDto.getChecksum(), requestDto.getStorage());
-                    LOGGER.info("[COPY REQUEST] {}", message);
+                    LOGGER.debug("[COPY REQUEST] {}", message);
                     publisher.copySuccess(existingfileRef, message, groupId);
                     reqGrpService.requestSuccess(groupId, FileRequestType.COPY, requestDto.getChecksum(),
                                                  requestDto.getStorage(), requestDto.getSubDirectory(),
@@ -229,7 +234,8 @@ public class FileCopyRequestService {
                 }
 
                 if (!checksums.isEmpty()) {
-                    reqGrpService.granted(fileCacheGroupId, FileRequestType.AVAILABILITY, checksums.size(), true);
+                    reqGrpService.granted(fileCacheGroupId, FileRequestType.AVAILABILITY, checksums.size(), true,
+                                          expDate);
                     fileCacheReqService.makeAvailable(checksums, expDate, fileCacheGroupId);
                 }
                 page = page.next();
@@ -453,5 +459,17 @@ public class FileCopyRequestService {
      */
     public boolean isFileCopyRunning(Collection<String> cheksums) {
         return copyRepository.existsByMetaInfoChecksumInAndStatusIn(cheksums, FileRequestStatus.RUNNING_STATUS);
+    }
+
+    /**
+     * Retrieve expiration date for deletion request
+     * @return
+     */
+    public OffsetDateTime getRequestExpirationDate() {
+        if ((nbDaysBeforeExpiration != null) && (nbDaysBeforeExpiration > 0)) {
+            return OffsetDateTime.now().plusDays(nbDaysBeforeExpiration);
+        } else {
+            return null;
+        }
     }
 }
