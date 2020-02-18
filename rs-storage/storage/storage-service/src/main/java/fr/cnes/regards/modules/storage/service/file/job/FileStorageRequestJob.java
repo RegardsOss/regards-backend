@@ -94,7 +94,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
         nbRequestToHandle = workingSubset.getFileReferenceRequests().size();
         LOGGER.debug("[STORAGE JOB] Runing storage job for {} storage requests", nbRequestToHandle);
         // Calculates if needed image dimensions
-        workingSubset.getFileReferenceRequests().forEach(this::calculateImageDimension);
+        workingSubset.getFileReferenceRequests().forEach(FileStorageRequestJob::calculateImageDimension);
 
         // lets instantiate the plugin to use
         IStorageLocation storagePlugin;
@@ -132,7 +132,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
      * This methods do the calculation only if the mimeType of the file is compatible with <image/*> type.
      * @param fileRefRequest to calculate for image dimension
      */
-    private void calculateImageDimension(FileStorageRequest fileRefRequest) {
+    public static void calculateImageDimension(FileStorageRequest fileRefRequest) {
         try {
             if (((fileRefRequest.getMetaInfo().getHeight() == null)
                     || (fileRefRequest.getMetaInfo().getWidth() == null))
@@ -145,7 +145,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
                         fileRefRequest.getMetaInfo().setHeight(((Number) dimension.getHeight()).intValue());
                         fileRefRequest.getMetaInfo().setWidth(((Number) dimension.getWidth()).intValue());
                     } else {
-                        LOGGER.warn("Error calculating image file height/width. Cause : File %s is not accessible.",
+                        LOGGER.warn("Error calculating image file height/width. Cause : File {} is not accessible.",
                                     fileRefRequest.getOriginUrl());
                     }
                 }
