@@ -38,6 +38,7 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -56,6 +57,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.LightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
@@ -67,6 +69,7 @@ import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperti
 import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
  * @author Marc SORDI
@@ -112,6 +115,9 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
     @Autowired
     private FeatureMetrics metrics;
+
+    @Autowired
+    private Gson gson;
 
     @Override
     public RequestInfo<FeatureUniformResourceName> registerRequests(List<FeatureUpdateRequestEvent> events) {
@@ -301,6 +307,9 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
                 // FIXME does not manage storage metadata at the moment
 
+                // notify update feature without files
+                publisher.publish(NotificationActionEvent.build(gson.toJsonTree(request.getFeature()),
+                                                                FeatureManagementAction.UPDATE.name()));
                 // Publish request success
                 publisher.publish(FeatureRequestEvent.build(request.getRequestId(), entity.getProviderId(),
                                                             entity.getUrn(), RequestState.SUCCESS));

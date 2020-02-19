@@ -18,11 +18,14 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -32,12 +35,15 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
  *
@@ -63,6 +69,9 @@ public class FeatureRequestService implements IFeatureRequestService {
     @Autowired
     private INotificationClient notificationClient;
 
+    @Autowired
+    private Gson gson;
+
     @Override
     public void handleStorageSuccess(Set<String> groupIds) {
         Set<FeatureCreationRequest> request = this.fcrRepo.findByGroupIdIn(groupIds);
@@ -83,6 +92,8 @@ public class FeatureRequestService implements IFeatureRequestService {
         publisher.publish(FeatureRequestEvent.build(item.getRequestId(),
                                                     item.getFeature() != null ? item.getFeature().getId() : null, null,
                                                     RequestState.SUCCESS, null));
+        publisher.publish(NotificationActionEvent.build(gson.toJsonTree(item.getFeature()),
+                                                        FeatureManagementAction.CREATION.name()));
         if ((item.getFeatureEntity().getPreviousVersionUrn() != null) && item.getMetadata().isOverride()) {
             publisher.publish(FeatureDeletionRequestEvent.build(item.getFeatureEntity().getPreviousVersionUrn(),
                                                                 PriorityLevel.NORMAL));
@@ -117,8 +128,13 @@ public class FeatureRequestService implements IFeatureRequestService {
         request.stream().forEach(item -> publisher.publish(FeatureRequestEvent
                 .build(item.getRequestId(), null, item.getUrn(), RequestState.SUCCESS, null)));
 
-        // delete all FeatureEntity with the same urn of a FeatureDeletionRequest
-        this.featureRepo.deleteByUrnIn(request.stream().map(fdr -> fdr.getUrn()).collect(Collectors.toSet()));
+        // delete all FeatureEntity with the same urn of a FeatureDeletionRequest plus notify
+        List<FeatureEntity> toDelete = this.featureRepo
+                .findByUrnIn(request.stream().map(fdr -> fdr.getUrn()).collect(Collectors.toList()));
+        toDelete.stream().forEach(feature -> publisher.publish(NotificationActionEvent
+                .build(gson.toJsonTree(feature.getFeature()), FeatureManagementAction.DELETION.name())));
+        this.featureRepo.deleteAll(toDelete);
+
         // delete useless FeatureDeletionRequest
         this.fdrRepo.deleteAll(request);
     }
