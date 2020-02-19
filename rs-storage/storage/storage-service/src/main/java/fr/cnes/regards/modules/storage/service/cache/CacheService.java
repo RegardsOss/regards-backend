@@ -176,14 +176,14 @@ public class CacheService {
                         .map(availableFile -> availableFile.getLocation().getPath().toString())
                         .collect(Collectors.toSet());
                 try (Stream<Path> stream = Files.walk(getTenantCachePath())) {
-                    count += stream.filter(path -> availableFilePaths.contains(path.toAbsolutePath().toString()))
+                    count += stream.filter(path -> !availableFilePaths.contains(path.toAbsolutePath().toString()))
                             .count();
                 }
                 page = availableFiles.nextPageable();
             } while (availableFiles.hasNext());
             if (count > 0) {
                 String message = String
-                        .format("{} Files in cache directory does not match system cached files. Thoses files can be deleted.<ul>");
+                        .format("%s files deleted in cache directory does not match system cached files. Thoses files can be deleted.");
                 notificationClient.notify(message, "Dirty cache", NotificationLevel.WARNING, DefaultRole.PROJECT_ADMIN);
             }
         }
