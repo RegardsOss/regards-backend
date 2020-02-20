@@ -72,6 +72,8 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
 
     public static final String FIELD_FEATURE_ID = "featureId";
 
+    public static final String ALLOW_EMPTY_FEATURES = "allowEmptyFeatures";
+
     @Autowired
     private Gson gson;
 
@@ -82,6 +84,11 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
     @PluginParameter(name = FIELD_FEATURE_ID,
             label = "Json path to access the identifier of each feature in the geojson file", optional = false)
     private String featureId;
+
+    @PluginParameter(name = ALLOW_EMPTY_FEATURES,
+            label = "Generate features with no files (raw, thumbnail & description) associated.", optional = true,
+            defaultValue = "false")
+    private boolean allowEmptyFeature;
 
     @Override
     public List<Path> scan(Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
@@ -182,7 +189,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                 SIP sip = builder.build();
                 sip.setGeometry(feature.getGeometry());
 
-                if (!sip.getProperties().getContentInformations().isEmpty()) {
+                if (!sip.getProperties().getContentInformations().isEmpty() || allowEmptyFeature) {
                     Path file = Paths.get(entry.getParent().toString(), name + ".json");
                     generatedFiles.add(Files.write(file, Arrays.asList(gson.toJson(sip)), Charset.forName("UTF-8")));
                 }
