@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AIPUpdateRequest extends AbstractRequest {
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "update_task_id", foreignKey = @ForeignKey(name = "fk_update_request_update_task_id"))
     @Valid
     private AbstractAIPUpdateTask updateTask;
