@@ -34,10 +34,14 @@ import java.util.stream.Stream;
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.plugins.IFluxScanPlugin;
 
 /**
@@ -65,6 +69,9 @@ public class GlobDiskStreamScanning implements IFluxScanPlugin {
             optional = true)
     private String glob;
 
+    @Autowired
+    private INotificationClient notifClient;
+
     @Override
     public List<Stream<Path>> stream(Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
         List<Stream<Path>> dirStreams = Lists.newArrayList();
@@ -73,7 +80,11 @@ public class GlobDiskStreamScanning implements IFluxScanPlugin {
             if (Files.isDirectory(dirPath)) {
                 dirStreams.add(scanDirectory(dirPath, lastModificationDate));
             } else {
-                LOGGER.error("Invalid directory path : {}", dirPath.toString());
+                String message = String.format("Configured directory %s for scan does not exists or is not accessible.",
+                                               dirPath.toString());
+                LOGGER.error(message);
+                notifClient.notify(message, "Acquisition chain invalid", NotificationLevel.WARNING, DefaultRole.EXPLOIT,
+                                   DefaultRole.ADMIN, DefaultRole.PROJECT_ADMIN);
             }
         }
         return dirStreams;
