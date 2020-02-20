@@ -71,9 +71,21 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
         errors.add(error);
     }
 
+    /**
+     * Prepend the error message list with the one provided
+     */
+    protected void preprendError(String error) {
+        Set<String> updatedErrors = new HashSet<>();
+        updatedErrors.add(error);
+        if (errors != null) {
+            updatedErrors.addAll(errors);
+        }
+        errors = updatedErrors;
+    }
+
     protected void handleRequestError(String error) {
         Assert.hasText(error, "Error message is required");
-        addError(error);
+        preprendError(error);
         job.getCurrentRequest().setState(InternalRequestState.ERROR);
         job.getCurrentRequest().setErrors(errors);
         ingestRequestService.handleIngestJobFailed(job.getCurrentRequest(), job.getCurrentEntity(), error);

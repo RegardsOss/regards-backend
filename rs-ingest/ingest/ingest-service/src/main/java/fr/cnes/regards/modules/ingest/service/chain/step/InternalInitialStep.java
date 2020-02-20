@@ -73,7 +73,8 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
 
         // Is SIP already ingested?
         if (sipService.isAlreadyIngested(checksum)) {
-            String error = String.format("SIP \"%s\" already submitted", sip.getId());
+            String error = String.format("The SIP \"%s\" already exists and there is no difference " +
+                    "between this one and the stored one.", sip.getId());
             addError(error);
             throw new ProcessingStepException(error);
         }
