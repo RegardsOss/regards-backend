@@ -672,7 +672,16 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 return 0;
             }
         });
-        registerFiles(scannedFiles.iterator(), fileInfo, scanningDate, session, sessionOwner);
+        if (!scannedFiles.isEmpty()) {
+            registerFiles(scannedFiles.iterator(), fileInfo, scanningDate, session, sessionOwner);
+        }
+        if (scanningDate.isPresent()) {
+            LOGGER.info("[{} - {}] Scan for files <{}> found {} files with last update date > {} ", sessionOwner,
+                        session, fileInfo.getComment(), scannedFiles.size(), scanningDate.get().toString());
+        } else {
+            LOGGER.info("[{} - {}] Scan for files <{}> found {} files with no date filter.", sessionOwner, session,
+                        fileInfo.getComment(), scannedFiles.size());
+        }
     }
 
     private void streamAndRegisterFiles(AcquisitionFileInfo fileInfo, IFluxScanPlugin scanPlugin,
