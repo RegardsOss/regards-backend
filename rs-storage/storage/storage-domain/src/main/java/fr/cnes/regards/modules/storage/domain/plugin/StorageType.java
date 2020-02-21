@@ -28,5 +28,6 @@ public enum StorageType {
 
     NEARLINE,
     ONLINE,
-    OFFLINE;
+    OFFLINE,
+    CACHE;
 }

@@ -61,6 +61,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
+import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 
 /**
  * Service to manage temporary accessibility of {@link FileReference} stored with a {@link INearlineStorageLocation}
@@ -400,8 +401,10 @@ public class CacheService {
     }
 
     public StorageLocationDTO toStorageLocation() {
+        StorageLocationConfiguration conf = new StorageLocationConfiguration(CACHE_NAME, null, maxCacheSizeKo);
+        conf.setStorageType(StorageType.CACHE);
         return StorageLocationDTO.build(CACHE_NAME, getTotalCachedFiles(), getCacheSizeUsedKB(), 0L, 0L, false, false,
-                                        false, new StorageLocationConfiguration(CACHE_NAME, null, maxCacheSizeKo));
+                                        false, conf);
     }
 
 }

@@ -145,7 +145,8 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
     public void retrieveStorageLocations() {
         ResponseEntity<List<Resource<StorageLocationDTO>>> response = client.retrieve();
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
-        Assert.assertEquals(1, response.getBody().size());
+        // Expected 2 storages. One created in init method and 1 cache system
+        Assert.assertEquals(2, response.getBody().size());
         Assert.assertEquals(ONLINE_CONF, response.getBody().get(0).getContent().getName());
     }
 
