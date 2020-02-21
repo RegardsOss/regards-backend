@@ -58,6 +58,8 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
+import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 
 /**
@@ -82,6 +84,8 @@ import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 public class CacheService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CacheService.class);
+
+    public static final String CACHE_NAME = "internal-cache";
 
     private static int BULK_SIZE = 500;
 
@@ -273,6 +277,10 @@ public class CacheService {
         return cachedFileRepository.getTotalFileSize();
     }
 
+    public Long getCacheSizeUsedKB() {
+        return cachedFileRepository.getTotalFileSize() / 1024;
+    }
+
     /**
      * Delete all out dated {@link CacheFile}s.<br/>
      */
@@ -385,6 +393,15 @@ public class CacheService {
 
     public Long getCacheSizeLimit() {
         return maxCacheSizeKo * 1024;
+    }
+
+    public long getTotalCachedFiles() {
+        return cachedFileRepository.count();
+    }
+
+    public StorageLocationDTO toStorageLocation() {
+        return StorageLocationDTO.build(CACHE_NAME, getTotalCachedFiles(), getCacheSizeUsedKB(), 0L, 0L, false, false,
+                                        false, new StorageLocationConfiguration(CACHE_NAME, null, maxCacheSizeKo));
     }
 
 }

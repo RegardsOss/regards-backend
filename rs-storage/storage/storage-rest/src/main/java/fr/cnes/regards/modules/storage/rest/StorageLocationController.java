@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,6 +40,7 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -49,6 +51,7 @@ import fr.cnes.regards.modules.storage.domain.dto.CopyFilesParametersDTO;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
+import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 
@@ -86,6 +89,9 @@ public class StorageLocationController implements IResourceController<StorageLoc
     private StorageLocationService service;
 
     @Autowired
+    private CacheService cacheService;
+
+    @Autowired
     private StorageLocationConfigurationService storageLocationConfigurationService;
 
     @Autowired
@@ -102,6 +108,10 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @ResourceAccess(description = "Configure a storage location by his name", role = DefaultRole.ADMIN)
     public ResponseEntity<Resource<StorageLocationDTO>> configureLocation(
             @Valid @RequestBody StorageLocationDTO storageLocation) throws ModuleException {
+        if (storageLocation.getName().equals(CacheService.CACHE_NAME)) {
+            throw new EntityInvalidException(
+                    String.format("Storage location %s is a reserved name.", CacheService.CACHE_NAME));
+        }
         return new ResponseEntity<>(toResource(service.configureLocation(storageLocation)), HttpStatus.CREATED);
     }
 
@@ -128,7 +138,9 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<Resource<StorageLocationDTO>>> retrieve() throws ModuleException {
-        return new ResponseEntity<>(toResources(service.getAllLocations()), HttpStatus.OK);
+        Collection<StorageLocationDTO> allLocations = service.getAllLocations();
+        allLocations.add(cacheService.toStorageLocation());
+        return new ResponseEntity<>(toResources(allLocations), HttpStatus.OK);
     }
 
     /**
@@ -277,6 +289,9 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @Override
     public Resource<StorageLocationDTO> toResource(StorageLocationDTO location, Object... extras) {
         Resource<StorageLocationDTO> resource = new Resource<>(location);
+        if ((location == null) || (location.getName() == null) || location.getName().equals(CacheService.CACHE_NAME)) {
+            return resource;
+        }
         StorageType type = location.getConfiguration() != null ? location.getConfiguration().getStorageType()
                 : StorageType.OFFLINE;
         if (type != StorageType.OFFLINE) {
