@@ -63,7 +63,7 @@ public class StorageLocationScheduler {
     @Autowired
     private ILockService lockService;
 
-    @Scheduled(fixedDelayString = "${regards.storage.check.data.storage.disk.usage.rate:60000}",
+    @Scheduled(fixedDelayString = "${regards.storage.check.data.storage.disk.usage.rate:30000}",
             initialDelay = 60 * 1000)
     public void monitorDataStorages() {
 

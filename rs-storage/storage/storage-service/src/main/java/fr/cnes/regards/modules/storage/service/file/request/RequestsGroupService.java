@@ -228,7 +228,6 @@ public class RequestsGroupService {
         String message = "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}";
         if (nbGroupsDone > 0) {
             LOGGER.info(message, System.currentTimeMillis() - start, nbGroupsDone, totalChecked);
-            locationService.monitorStorageLocations(false);
         } else {
             LOGGER.debug(message, System.currentTimeMillis() - start, nbGroupsDone, totalChecked);
         }
