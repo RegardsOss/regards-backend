@@ -236,6 +236,7 @@ public class RequestStatusService {
                                                                               OffsetDateTime.now().toString()),
                                        r.getId());
         }
+        LOGGER.info("[FORCE STOP] Number of stopped storage requests : {}", pendings.getNumberOfElements());
     }
 
     public void stopDeletionRequests() {
@@ -250,6 +251,7 @@ public class RequestStatusService {
                                                                                OffsetDateTime.now().toString()),
                                         r.getId());
         }
+        LOGGER.info("[FORCE STOP] Number of stopped deletion requests : {}", pendings.getNumberOfElements());
     }
 
     public void stopCopyRequests() {
@@ -259,6 +261,7 @@ public class RequestStatusService {
                                                                            OffsetDateTime.now().toString()),
                                     r.getId());
         }
+        LOGGER.info("[FORCE STOP] Number of stopped copy requests : {}", pendings.getNumberOfElements());
     }
 
     public void stopCacheRequests() {
@@ -273,6 +276,7 @@ public class RequestStatusService {
                                                                             OffsetDateTime.now().toString()),
                                      r.getId());
         }
+        LOGGER.info("[FORCE STOP] Number of stopped cache requests : {}", pendings.getNumberOfElements());
     }
 
 }
