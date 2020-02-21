@@ -62,6 +62,8 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileStorageReques
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileRequestInfoDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storage.service.cache.CacheScheduler;
+import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
@@ -111,6 +113,9 @@ public class StorageLocationService {
 
     @Autowired
     private StorageLocationConfigurationService pLocationConfService;
+
+    @Autowired
+    private CacheScheduler cacheScheduler;
 
     @Value("${regards.storage.data.storage.threshold.percent:70}")
     private Integer threshold;
@@ -321,7 +326,11 @@ public class StorageLocationService {
      * @throws ModuleException
      */
     public void deleteFiles(String storageLocationId, Boolean forceDelete) throws ModuleException {
-        deletionService.scheduleJob(storageLocationId, forceDelete);
+        if (storageLocationId.equals(CacheService.CACHE_NAME)) {
+            cacheScheduler.cleanCache();
+        } else {
+            deletionService.scheduleJob(storageLocationId, forceDelete);
+        }
     }
 
     /**
