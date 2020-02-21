@@ -171,7 +171,8 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                                                     new StorageLocationConfiguration("plop", null, null)),
                            requestBuilderCustomizer, "Should be created");
 
-        requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$").expectToHaveSize("$", 2);
+        // Expected 3 results : One created in init mehod. One created in this test method. One default cache system.
+        requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$").expectToHaveSize("$", 3);
         performDefaultGet(StorageLocationController.BASE_PATH, requestBuilderCustomizer, "Expect ok status.");
     }
 
