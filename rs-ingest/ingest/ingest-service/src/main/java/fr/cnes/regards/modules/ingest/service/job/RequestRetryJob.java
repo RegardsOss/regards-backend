@@ -59,7 +59,7 @@ public class RequestRetryJob extends AbstractJob<Void> {
     /**
      * Limit number of requests to retrieve in one page.
      */
-    @Value("${regards.request.retry.iteration-limit:100}")
+    @Value("${regards.request.retry.iteration-limit:1000}")
     private Integer requestIterationLimit;
 
     private int totalPages = 0;
