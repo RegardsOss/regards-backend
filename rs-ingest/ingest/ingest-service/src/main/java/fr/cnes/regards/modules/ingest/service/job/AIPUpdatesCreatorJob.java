@@ -73,7 +73,7 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
     /**
      * Limit number of AIPs to retrieve in one page.
      */
-    @Value("${regards.ingest.aips.scan.iteration-limit:100}")
+    @Value("${regards.ingest.aips.scan.iteration-limit:1000}")
     private Integer aipIterationLimit;
 
     @Override
