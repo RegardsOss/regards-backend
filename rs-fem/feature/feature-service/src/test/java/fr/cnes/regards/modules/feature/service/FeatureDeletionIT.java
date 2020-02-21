@@ -25,13 +25,19 @@ import static org.junit.Assert.fail;
 import java.util.List;
 
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mockito;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
+import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
  * @author Kevin Marchois
@@ -44,6 +50,12 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "nohandler" })
 public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
 
+    @SpyBean
+    private IPublisher publisherSpy;
+
+    @Captor
+    private ArgumentCaptor<List<NotificationActionEvent>> recordsCaptor;
+
     /**
      * Nominal test case of deletion create feature then send delete request
      * we will test that the {@link FeatureDeletionRequest}
@@ -53,7 +65,8 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
      */
     @Test
     public void testDeletionWithoutFiles() throws InterruptedException {
-
+        // mock the publish method to not broke other tests in notifier manager
+        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationActionEvent.class));
         long featureNumberInDatabase;
         int cpt = 0;
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(false, properties.getMaxBulkSize());
@@ -73,6 +86,11 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         }
 
         assertEquals(0, this.featureRepo.count());
+        // the publisher must be called 2 times one for feature creation and one for feature deletion
+        Mockito.verify(publisherSpy, Mockito.times(2)).publish(recordsCaptor.capture());
+        // each call concern properties.getMaxBulkSize().intValue() features
+        assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getAllValues().get(0).size());
+        assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getAllValues().get(1).size());
     }
 
     /**
@@ -84,6 +102,10 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
      */
     @Test
     public void testDeletionWithFiles() throws InterruptedException {
+
+        // mock the publish method to not broke other tests in notifier manager
+        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationActionEvent.class));
+
         long featureNumberInDatabase;
         int cpt = 0;
 
@@ -111,6 +133,9 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         }
 
         assertEquals(properties.getMaxBulkSize().intValue(), this.featureRepo.count());
+        // the publisher must not be called
+        Mockito.verify(publisherSpy, Mockito.times(0)).publish(recordsCaptor.capture());
+
     }
 
     /**

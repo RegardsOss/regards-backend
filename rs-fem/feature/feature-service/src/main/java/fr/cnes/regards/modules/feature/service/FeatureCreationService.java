@@ -41,6 +41,7 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -67,6 +68,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
 import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
+import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.FeatureSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
@@ -84,6 +86,7 @@ import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
  * Feature service management
@@ -134,6 +137,9 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
 
     @Autowired
     private INotificationClient notificationClient;
+
+    @Autowired
+    private Gson gson;
 
     @Override
     public RequestInfo<String> registerRequests(List<FeatureCreationRequestEvent> events) {
@@ -213,7 +219,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
         FeatureCreationRequest request = FeatureCreationRequest
                 .build(item.getRequestId(), item.getRequestDate(), RequestState.GRANTED, null, item.getFeature(),
                        metadata, FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority());
-        // Publish GRANTED request
+        //         Publish GRANTED request
         publisher.publish(FeatureRequestEvent.build(item.getRequestId(),
                                                     item.getFeature() != null ? item.getFeature().getId() : null, null,
                                                     RequestState.GRANTED, null));
@@ -314,6 +320,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                 // Publish successful request
                 publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getProviderId(),
                                                             request.getFeature().getUrn(), RequestState.SUCCESS));
+
                 // if a previous version exists we will publish a FeatureDeletionRequest to delete it
                 if ((request.getFeatureEntity().getPreviousVersionUrn() != null)
                         && request.getMetadata().isOverride()) {
@@ -327,6 +334,15 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                 }
             }
         }
+
+        if (!requestsWithoutFiles.isEmpty()) {
+            // notify feature creation without files
+            publisher.publish(requestsWithoutFiles.stream()
+                    .map(request -> NotificationActionEvent.build(gson.toJsonTree(request.getFeature()),
+                                                                  FeatureManagementAction.CREATION.name()))
+                    .collect(Collectors.toList()));
+        }
+
         // Successful requests are deleted now!
         featureCreationRequestRepo.deleteInBatch(requestsWithoutFiles);
         LOGGER.trace("------------->>> {} creation requests without files deleted in {} ms",

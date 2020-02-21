@@ -26,12 +26,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dao.ILightFeatureCreationRequestRepository;
@@ -46,6 +51,7 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
+import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
 
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_version", "regards.amqp.enabled=true" },
@@ -56,6 +62,12 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
     @Autowired
     protected ILightFeatureCreationRequestRepository featureCreationRequestLightRepo;
+
+    @SpyBean
+    private IPublisher publisherSpy;
+
+    @Captor
+    private ArgumentCaptor<List<NotificationActionEvent>> recordsCaptor;
 
     /**
      * Test creation of properties.getMaxBulkSize() features Check if
@@ -68,15 +80,20 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     @Test
     public void testFeatureCreation() throws InterruptedException {
 
+        // mock the publish method to not broke other tests in notifier manager
+        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationActionEvent.class));
+
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
 
         super.initFeatureCreationRequestEvent(events, properties.getMaxBulkSize());
 
+        // clear file to test notifications without files
+        events.stream().forEach(request -> request.getFeature().getFiles().clear());
         this.featureCreationService.registerRequests(events);
 
         assertEquals(properties.getMaxBulkSize().intValue(), this.featureCreationRequestRepo.count());
 
-        featureCreationService.scheduleRequests();
+        this.featureCreationService.scheduleRequests();
 
         int cpt = 0;
         long featureNumberInDatabase;
@@ -92,6 +109,9 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         if (cpt == 100) {
             fail("Doesn't have all features at the end of time");
         }
+
+        Mockito.verify(publisherSpy).publish(recordsCaptor.capture());
+        assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getValue().size());
     }
 
     /**

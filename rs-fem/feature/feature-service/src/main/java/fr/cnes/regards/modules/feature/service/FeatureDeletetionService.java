@@ -40,6 +40,7 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -55,6 +56,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
+import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
@@ -65,6 +67,7 @@ import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.feature.service.job.FeatureDeletionJob;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
+import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
  * @author Kevin Marchois
@@ -101,6 +104,9 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
 
     @Autowired
     private FeatureConfigurationProperties properties;
+
+    @Autowired
+    private Gson gson;
 
     @Override
     public RequestInfo<FeatureUniformResourceName> registerRequests(List<FeatureDeletionRequestEvent> events) {
@@ -186,13 +192,23 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
         Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo
                 .findByUrnIn(requests.stream().map(request -> request.getUrn()).collect(Collectors.toList())).stream()
                 .collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
-        List<FeatureDeletionRequest> requestsWithFiles = requests.stream()
+        Set<FeatureDeletionRequest> requestsWithFiles = requests.stream()
                 .filter(fdr -> haveFiles(fdr, featureByUrn.get(fdr.getUrn())))
-                .map(fdr -> publishFiles(fdr, featureByUrn.get(fdr.getUrn()))).collect(Collectors.toList());
+                .map(fdr -> publishFiles(fdr, featureByUrn.get(fdr.getUrn()))).collect(Collectors.toSet());
         this.deletionRepo.saveAll(requestsWithFiles);
         // delete all FeatureEntity concerned
-        this.featureRepo.deleteByIdIn(requests.stream().filter(fdr -> !haveFiles(fdr, featureByUrn.get(fdr.getUrn())))
-                .map(fdr -> featureByUrn.get(fdr.getUrn()).getId()).collect(Collectors.toSet()));
+        Set<FeatureEntity> featuresWithoutFles = requests.stream()
+                .filter(fdr -> !haveFiles(fdr, featureByUrn.get(fdr.getUrn())))
+                .map(fdr -> featureByUrn.get(fdr.getUrn())).collect(Collectors.toSet());
+        this.featureRepo.deleteAll(featuresWithoutFles);
+
+        // notify feature deletion for feature  without files
+        if (!featuresWithoutFles.isEmpty()) {
+            publisher.publish(featuresWithoutFles.stream()
+                    .map(feature -> NotificationActionEvent.build(gson.toJsonTree(feature.getFeature()),
+                                                                  FeatureManagementAction.DELETION.name()))
+                    .collect(Collectors.toList()));
+        }
         // delete all FeatureDeletioRequest concerned
         this.deletionRepo.deleteByIdIn(requests.stream().filter(fdr -> !haveFiles(fdr, featureByUrn.get(fdr.getUrn())))
                 .map(fdr -> fdr.getId()).collect(Collectors.toSet()));
