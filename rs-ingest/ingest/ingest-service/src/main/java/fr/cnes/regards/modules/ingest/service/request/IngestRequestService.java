@@ -352,14 +352,14 @@ public class IngestRequestService implements IIngestRequestService {
             if (requestOp.isPresent()) {
                 IngestRequest request = requestOp.get();
                 if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
+                    aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), ri.getSuccessRequests());
                     List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, ri);
                     if (!remoteStepGroupIds.isEmpty()) {
                         saveRequest(request);
-                        // Another request is still pending
-                        return;
+                    } else {
+                        // The current request is over
+                        finalizeSuccessfulRequest(request);
                     }
-                    // The current request is over
-                    finalizeSuccessfulRequest(request);
                 }
             }
         }
