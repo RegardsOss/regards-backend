@@ -58,6 +58,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
+import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineTestClient;
@@ -147,7 +148,9 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         // Expected 2 storages. One created in init method and 1 cache system
         Assert.assertEquals(2, response.getBody().size());
-        Assert.assertEquals(ONLINE_CONF, response.getBody().get(0).getContent().getName());
+        Assert.assertTrue(response.getBody().stream().anyMatch(s -> s.getContent().getName().equals(ONLINE_CONF)));
+        Assert.assertTrue(response.getBody().stream()
+                .anyMatch(s -> s.getContent().getName().equals(CacheService.CACHE_NAME)));
     }
 
     private StorageLocationConfiguration initDataStoragePluginConfiguration() {
