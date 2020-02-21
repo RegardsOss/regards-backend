@@ -147,7 +147,8 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
 
                 // Check for RAWDATA if any
                 Path rawDataFile = Paths.get(entry.getParent().toString(), name + ".dat");
-                Path thumbnailFile = Paths.get(entry.getParent().toString(), name + ".png");
+                Path thumbnailFilePng = Paths.get(entry.getParent().toString(), name + ".png");
+                Path thumbnailFileJpg = Paths.get(entry.getParent().toString(), name + ".jpg");
                 Path descFile = Paths.get(entry.getParent().toString(), name + ".pdf");
 
                 if (Files.exists(rawDataFile)) {
@@ -159,20 +160,37 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                     builder.getContentInformationBuilder().setSyntax(MediaType.APPLICATION_OCTET_STREAM);
                     builder.addContentInformation();
                 }
-                if (Files.exists(thumbnailFile)) {
-                    String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(thumbnailFile.toFile()),
+                if (Files.exists(thumbnailFilePng)) {
+                    String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(thumbnailFilePng.toFile()),
                                                                        "MD5");
-                    builder.getContentInformationBuilder().setDataObject(DataType.THUMBNAIL,
-                                                                         thumbnailFile.toAbsolutePath(),
-                                                                         thumbnailFile.getFileName().toString(), "MD5",
-                                                                         checksum, thumbnailFile.toFile().length());
+                    builder.getContentInformationBuilder()
+                            .setDataObject(DataType.THUMBNAIL, thumbnailFilePng.toAbsolutePath(),
+                                           thumbnailFilePng.getFileName().toString(), "MD5", checksum,
+                                           thumbnailFilePng.toFile().length());
                     builder.getContentInformationBuilder().setSyntax(MediaType.IMAGE_PNG);
                     builder.addContentInformation();
 
-                    builder.getContentInformationBuilder().setDataObject(DataType.QUICKLOOK_SD,
-                                                                         thumbnailFile.toAbsolutePath(),
-                                                                         thumbnailFile.getFileName().toString(), "MD5",
-                                                                         checksum, thumbnailFile.toFile().length());
+                    builder.getContentInformationBuilder()
+                            .setDataObject(DataType.QUICKLOOK_SD, thumbnailFilePng.toAbsolutePath(),
+                                           thumbnailFilePng.getFileName().toString(), "MD5", checksum,
+                                           thumbnailFilePng.toFile().length());
+                    builder.getContentInformationBuilder().setSyntax(MediaType.IMAGE_PNG);
+                    builder.addContentInformation();
+                }
+                if (Files.exists(thumbnailFileJpg)) {
+                    String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(thumbnailFileJpg.toFile()),
+                                                                       "MD5");
+                    builder.getContentInformationBuilder()
+                            .setDataObject(DataType.THUMBNAIL, thumbnailFileJpg.toAbsolutePath(),
+                                           thumbnailFileJpg.getFileName().toString(), "MD5", checksum,
+                                           thumbnailFileJpg.toFile().length());
+                    builder.getContentInformationBuilder().setSyntax(MediaType.IMAGE_PNG);
+                    builder.addContentInformation();
+
+                    builder.getContentInformationBuilder()
+                            .setDataObject(DataType.QUICKLOOK_SD, thumbnailFileJpg.toAbsolutePath(),
+                                           thumbnailFileJpg.getFileName().toString(), "MD5", checksum,
+                                           thumbnailFileJpg.toFile().length());
                     builder.getContentInformationBuilder().setSyntax(MediaType.IMAGE_PNG);
                     builder.addContentInformation();
                 }
