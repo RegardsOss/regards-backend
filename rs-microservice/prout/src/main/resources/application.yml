@@ -1,0 +1,7 @@
+springdoc:
+  api-docs:
+    enabled: true
+    path: /prout
+    
+url: http://localhost:8
+    

@@ -1,0 +1,2 @@
+springdoc.swagger-ui.urls="http://localhost:80", "/putin"
+springdoc.swagger-ui.supportedSubmitMethods="put", "post", "delete", "options", "head", "patch", "trace"
