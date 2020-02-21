@@ -66,6 +66,11 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
     int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
             @Param("id") Long id);
 
+    @Modifying
+    @Query("update FileStorageRequest fsr set fsr.status = :status, fsr.jobId = :jobId where fsr.id = :id")
+    int updateStatusAndJobId(@Param("status") FileRequestStatus status, @Param("jobId") String jobId,
+            @Param("id") Long id);
+
     void deleteByStorage(String storageLocationId);
 
     void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus fileRequestStatus);

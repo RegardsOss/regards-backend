@@ -89,6 +89,9 @@ public class FileDeletionRequest {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private final OffsetDateTime creationDate;
 
+    @Column(name = "job_id")
+    private String jobId;
+
     public FileDeletionRequest() {
         super();
         this.creationDate = OffsetDateTime.now();
@@ -173,6 +176,14 @@ public class FileDeletionRequest {
 
     public OffsetDateTime getCreationDate() {
         return creationDate;
+    }
+
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
     }
 
     @Override

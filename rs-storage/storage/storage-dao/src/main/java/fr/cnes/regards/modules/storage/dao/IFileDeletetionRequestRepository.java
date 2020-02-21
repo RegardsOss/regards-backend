@@ -76,6 +76,11 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
     int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
             @Param("id") Long id);
 
+    @Modifying
+    @Query("update FileDeletionRequest fdr set fdr.status = :status, fdr.jobId = :jobId where fdr.id = :id")
+    int updateStatusAndJobId(@Param("status") FileRequestStatus pending, @Param("jobId") String jobId,
+            @Param("id") Long id);
+
     boolean existsByStorageAndStatusIn(String storage, Collection<FileRequestStatus> status);
 
     boolean existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(String storage, String checksum,

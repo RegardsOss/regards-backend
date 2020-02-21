@@ -108,6 +108,9 @@ public class FileStorageRequest {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private final OffsetDateTime creationDate;
 
+    @Column(name = "job_id")
+    private String jobId;
+
     public FileStorageRequest() {
         super();
         this.creationDate = OffsetDateTime.now();
@@ -222,6 +225,14 @@ public class FileStorageRequest {
 
     public OffsetDateTime getCreationDate() {
         return creationDate;
+    }
+
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
     }
 
     @Override

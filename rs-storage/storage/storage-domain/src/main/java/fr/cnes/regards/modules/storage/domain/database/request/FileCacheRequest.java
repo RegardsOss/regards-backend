@@ -96,6 +96,9 @@ public class FileCacheRequest {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private final OffsetDateTime creationDate;
 
+    @Column(name = "job_id")
+    private String jobId;
+
     public FileCacheRequest(FileReference fileReference, String restorationDirectory, OffsetDateTime expirationDate,
             String groupId) {
         super();
@@ -172,6 +175,14 @@ public class FileCacheRequest {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
     }
 
 }

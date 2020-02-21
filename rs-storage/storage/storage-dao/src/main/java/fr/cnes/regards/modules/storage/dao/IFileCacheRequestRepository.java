@@ -70,6 +70,11 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
     int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
             @Param("id") Long id);
 
+    @Modifying
+    @Query("update FileCacheRequest fcr set fcr.status = :status, fcr.jobId = :jobId where fcr.id = :id")
+    int updateStatusAndJobId(@Param("status") FileRequestStatus pending, @Param("jobId") String jobId,
+            @Param("id") Long id);
+
     @Query("select coalesce(sum(fcr.fileSize),0) from FileCacheRequest fcr where fcr.status = 'PENDING'")
     Long getPendingFileSize();
 

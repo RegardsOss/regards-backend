@@ -282,10 +282,10 @@ public class FileDeletionRequestService {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, pluginConfBusinessId));
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
-        workingSubset.getFileDeletionRequests().forEach(fileRefReq -> fileDeletionRequestRepo
-                .updateStatus(FileRequestStatus.PENDING, fileRefReq.getId()));
         JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_DELETION_JOB.getPriority(),
                 parameters, authResolver.getUser(), FileDeletionRequestJob.class.getName()));
+        workingSubset.getFileDeletionRequests().forEach(fileRefReq -> fileDeletionRequestRepo
+                .updateStatusAndJobId(FileRequestStatus.PENDING, jobInfo.getId().toString(), fileRefReq.getId()));
         em.flush();
         em.clear();
         return jobInfo;

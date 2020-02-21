@@ -464,10 +464,10 @@ public class FileCacheRequestService {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileCacheRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, plgBusinessId));
         parameters.add(new JobParameter(FileCacheRequestJob.WORKING_SUB_SET, workingSubset));
-        workingSubset.getFileRestorationRequests()
-                .forEach(r -> repository.updateStatus(FileRequestStatus.PENDING, r.getId()));
         JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_CACHE_JOB.getPriority(),
                 parameters, authResolver.getUser(), FileCacheRequestJob.class.getName()));
+        workingSubset.getFileRestorationRequests().forEach(r -> repository
+                .updateStatusAndJobId(FileRequestStatus.PENDING, jobInfo.getId().toString(), r.getId()));
         em.flush();
         em.clear();
         return jobInfo;

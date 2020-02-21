@@ -18,17 +18,22 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.storage.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
@@ -74,6 +79,12 @@ public class RequestStatusService {
 
     @Autowired
     private IFileCopyRequestRepository copyReqRepo;
+
+    @Autowired
+    private IFileCacheRequestRepository cacheReqRepo;
+
+    @Autowired
+    private IJobInfoService jobService;
 
     /**
      * Compute {@link FileRequestStatus} for new {@link FileStorageRequest}
@@ -211,6 +222,57 @@ public class RequestStatusService {
      */
     public void checkDelayedCacheRequests() {
         // Nothing to do. No cache requests can be delayed.
+    }
+
+    public void stopStorageRequests() {
+        Page<FileStorageRequest> pendings = storageReqRepo.findByStatus(FileRequestStatus.PENDING,
+                                                                        PageRequest.of(0, 10_000));
+        for (FileStorageRequest r : pendings) {
+            if (r.getJobId() != null) {
+                jobService.stopJob(UUID.fromString(r.getJobId()));
+            }
+            storageReqRepo.updateError(
+                                       FileRequestStatus.ERROR, String.format("Request has been manually canceled. %s",
+                                                                              OffsetDateTime.now().toString()),
+                                       r.getId());
+        }
+    }
+
+    public void stopDeletionRequests() {
+        Page<FileDeletionRequest> pendings = deletionReqRepo.findByStatus(FileRequestStatus.PENDING,
+                                                                          PageRequest.of(0, 10_000));
+        for (FileDeletionRequest r : pendings) {
+            if (r.getJobId() != null) {
+                jobService.stopJob(UUID.fromString(r.getJobId()));
+            }
+            deletionReqRepo.updateError(
+                                        FileRequestStatus.ERROR, String.format("Request has been manually canceled. %s",
+                                                                               OffsetDateTime.now().toString()),
+                                        r.getId());
+        }
+    }
+
+    public void stopCopyRequests() {
+        Page<FileCopyRequest> pendings = copyReqRepo.findByStatus(FileRequestStatus.PENDING, PageRequest.of(0, 10_000));
+        for (FileCopyRequest r : pendings) {
+            copyReqRepo.updateError(FileRequestStatus.ERROR, String.format("Request has been manually canceled. %s",
+                                                                           OffsetDateTime.now().toString()),
+                                    r.getId());
+        }
+    }
+
+    public void stopCacheRequests() {
+        Page<FileCacheRequest> pendings = cacheReqRepo.findByStatus(FileRequestStatus.PENDING,
+                                                                    PageRequest.of(0, 10_000));
+        for (FileCacheRequest r : pendings) {
+            if (r.getJobId() != null) {
+                jobService.stopJob(UUID.fromString(r.getJobId()));
+            }
+            cacheReqRepo.updateError(
+                                     FileRequestStatus.ERROR, String.format("Request has been manually canceled. %s",
+                                                                            OffsetDateTime.now().toString()),
+                                     r.getId());
+        }
     }
 
 }
