@@ -240,6 +240,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
             Assert.assertEquals(1, aip.getCategories().size());
             // Only one category remaining
             Assert.assertEquals(CATEGORIES_2.get(0), aip.getCategories().iterator().next());
+            LOGGER.info("Sometimes this test dies, sometimes not. AIP storages are  : {}", aip.getStorages());
             // No more STORAGE_3
             Assert.assertFalse(aip.getStorages().contains(STORAGE_3));
         }

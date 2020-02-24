@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreato
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -70,4 +71,11 @@ public interface IOAISDeletionService {
      * Handle file deletion success
      */
     void handleRemoteDeleteSuccess(Set<RequestInfo> requestInfos);
+
+    /**
+     * Delete all OAIS entities related to these criteria
+     * @return
+     * @param requests
+     */
+    void runDeletion(Collection<OAISDeletionRequest> requests);
 }
