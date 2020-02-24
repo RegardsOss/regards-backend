@@ -90,7 +90,6 @@ public class FileRequestsGroupEventHandler
     }
 
     private void handleDeletionGroupDone(FileRequestsGroupEvent event) {
-        storageLocationService.monitorStorageLocations(true);
         if (event.getState() == FlowItemStatus.ERROR) {
             notificationClient
                     .notify(String.format("Requests group %s is terminated with erros. %s success and %s errors.",
