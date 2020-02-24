@@ -69,23 +69,21 @@ public abstract class AbstractRequestFlowHandler<T extends ISubscribable> implem
                 runtimeTenantResolver.forceTenant(entry.getKey());
                 ConcurrentLinkedQueue<T> tenantItems = entry.getValue();
                 List<T> items = new ArrayList<>();
-                do {
-                    // Build a 10_000 (at most) documents bulk request
-                    for (int i = 0; i < getBulkSize(); i++) {
-                        T item = tenantItems.poll();
-                        if (item == null) {
-                            // Less than BULK_SIZE documents, bulk save what we have already
-                            break;
-                        } else { // enqueue item
-                            items.add(item);
-                        }
+                // Build a 10_000 (at most) documents bulk request
+                for (int i = 0; i < getBulkSize(); i++) {
+                    T item = tenantItems.poll();
+                    if (item == null) {
+                        // Less than BULK_SIZE documents, bulk save what we have already
+                        break;
+                    } else { // enqueue item
+                        items.add(item);
                     }
-                    LOGGER.debug("Processing bulk of {} items", items.size());
-                    long start = System.currentTimeMillis();
-                    processBulk(items);
-                    LOGGER.debug("{} items registered in {} ms", items.size(), System.currentTimeMillis() - start);
-                    items.clear();
-                } while (tenantItems.size() >= getBulkSize()); // continue while more than BULK_SIZE items are to be saved
+                }
+                LOGGER.debug("Processing bulk of {} items", items.size());
+                long start = System.currentTimeMillis();
+                processBulk(items);
+                LOGGER.debug("{} items registered in {} ms", items.size(), System.currentTimeMillis() - start);
+                items.clear();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
