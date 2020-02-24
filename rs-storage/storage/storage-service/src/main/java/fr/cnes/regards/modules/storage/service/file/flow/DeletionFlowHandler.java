@@ -57,7 +57,7 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeletionFlowHandler.class);
 
-    @Value("${regards.storage.deletion.items.bulk.size:100}")
+    @Value("${regards.storage.deletion.items.bulk.size:1000}")
     private int BULK_SIZE;
 
     @Autowired
@@ -123,33 +123,31 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
     /**
      * Bulk save queued items every second.
      */
-    @Scheduled(fixedDelay = 1_000)
+    @Scheduled(fixedDelay = 1_000, initialDelay = 5_000)
     public void handleQueue() {
         for (Map.Entry<String, ConcurrentLinkedQueue<DeletionFlowItem>> entry : items.entrySet()) {
             try {
                 runtimeTenantResolver.forceTenant(entry.getKey());
                 ConcurrentLinkedQueue<DeletionFlowItem> tenantItems = entry.getValue();
                 List<DeletionFlowItem> list = new ArrayList<>();
-                do {
-                    // Build a 10_000 (at most) documents bulk request
-                    for (int i = 0; i < BULK_SIZE; i++) {
-                        DeletionFlowItem doc = tenantItems.poll();
-                        if (doc == null) {
-                            // Less than BULK_SIZE documents, bulk save what we have already
-                            break;
-                        } else { // enqueue document
-                            list.add(doc);
-                        }
+                // Build a 10_000 (at most) documents bulk request
+                for (int i = 0; i < BULK_SIZE; i++) {
+                    DeletionFlowItem doc = tenantItems.poll();
+                    if (doc == null) {
+                        // Less than BULK_SIZE documents, bulk save what we have already
+                        break;
+                    } else { // enqueue document
+                        list.add(doc);
                     }
-                    if (!list.isEmpty()) {
-                        LOGGER.debug("[DELETION FLOW HANDLER] Bulk saving {} DeleteFileRefFlowItem...", list.size());
-                        long start = System.currentTimeMillis();
-                        fileDelReqService.handle(list);
-                        LOGGER.debug("[DELETION FLOW HANDLER] {} DeleteFileRefFlowItem handled in {} ms", list.size(),
-                                     System.currentTimeMillis() - start);
-                        list.clear();
-                    }
-                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
+                }
+                if (!list.isEmpty()) {
+                    LOGGER.debug("[DELETION FLOW HANDLER] Bulk saving {} DeleteFileRefFlowItem...", list.size());
+                    long start = System.currentTimeMillis();
+                    fileDelReqService.handle(list);
+                    LOGGER.debug("[DELETION FLOW HANDLER] {} DeleteFileRefFlowItem handled in {} ms", list.size(),
+                                 System.currentTimeMillis() - start);
+                    list.clear();
+                }
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

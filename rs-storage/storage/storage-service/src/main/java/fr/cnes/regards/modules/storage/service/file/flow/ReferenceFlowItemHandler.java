@@ -58,7 +58,7 @@ public class ReferenceFlowItemHandler
     /**
      * Bulk size limit to handle messages
      */
-    @Value("${regards.storage.reference.items.bulk.size:100}")
+    @Value("${regards.storage.reference.items.bulk.size:1000}")
     private int BULK_SIZE;
 
     @Autowired
@@ -135,33 +135,31 @@ public class ReferenceFlowItemHandler
     /**
      * Bulk save queued items every second.
      */
-    @Scheduled(fixedDelay = 1_000)
+    @Scheduled(fixedDelay = 1_000, initialDelay = 5_000)
     public void handleQueue() {
         for (Map.Entry<String, ConcurrentLinkedQueue<ReferenceFlowItem>> entry : items.entrySet()) {
             try {
                 runtimeTenantResolver.forceTenant(entry.getKey());
                 ConcurrentLinkedQueue<ReferenceFlowItem> tenantItems = entry.getValue();
                 List<ReferenceFlowItem> list = new ArrayList<>();
-                do {
-                    // Build a 10_000 (at most) documents bulk request
-                    for (int i = 0; i < BULK_SIZE; i++) {
-                        ReferenceFlowItem doc = tenantItems.poll();
-                        if (doc == null) {
-                            // Less than BULK_SIZE documents, bulk save what we have already
-                            break;
-                        } else { // enqueue document
-                            list.add(doc);
-                        }
+                // Build a 10_000 (at most) documents bulk request
+                for (int i = 0; i < BULK_SIZE; i++) {
+                    ReferenceFlowItem doc = tenantItems.poll();
+                    if (doc == null) {
+                        // Less than BULK_SIZE documents, bulk save what we have already
+                        break;
+                    } else { // enqueue document
+                        list.add(doc);
                     }
-                    if (!list.isEmpty()) {
-                        LOGGER.debug("[REFERENCE FLOW HANDLER] Bulk saving {} AddFileRefFlowItem...", list.size());
-                        long start = System.currentTimeMillis();
-                        fileRefReqService.reference(list);
-                        LOGGER.debug("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem handled in {} ms", list.size(),
-                                     System.currentTimeMillis() - start);
-                        list.clear();
-                    }
-                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
+                }
+                if (!list.isEmpty()) {
+                    LOGGER.debug("[REFERENCE FLOW HANDLER] Bulk saving {} AddFileRefFlowItem...", list.size());
+                    long start = System.currentTimeMillis();
+                    fileRefReqService.reference(list);
+                    LOGGER.debug("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem handled in {} ms", list.size(),
+                                 System.currentTimeMillis() - start);
+                    list.clear();
+                }
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

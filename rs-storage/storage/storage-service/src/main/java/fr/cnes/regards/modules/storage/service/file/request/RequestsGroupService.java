@@ -49,7 +49,6 @@ import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
-import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 
 /**
  * Service to handle actions on requests group.<br>
@@ -74,7 +73,7 @@ public class RequestsGroupService {
      * Maximum number of request group to handle in one transaction. This is limited to avoid issue one too much
      * amqp message to send at a time.
      */
-    private static final int MAX_REQUEST_PER_TRANSACTION = 100;
+    private static final int MAX_REQUEST_PER_TRANSACTION = 1000;
 
     @Autowired
     private IPublisher publisher;
@@ -99,9 +98,6 @@ public class RequestsGroupService {
 
     @Autowired
     private IRequestGroupRepository reqGroupRepository;
-
-    @Autowired
-    private StorageLocationService locationService;
 
     /**
      * Handle new request success for the given groupId.<br>

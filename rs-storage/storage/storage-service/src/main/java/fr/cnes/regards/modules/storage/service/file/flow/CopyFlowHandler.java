@@ -56,7 +56,7 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CopyFlowHandler.class);
 
-    @Value("${regards.storage.copy.items.bulk.size:100}")
+    @Value("${regards.storage.copy.items.bulk.size:1000}")
     private int BULK_SIZE;
 
     @Autowired
@@ -122,33 +122,31 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
     /**
      * Bulk save queued items every second.
      */
-    @Scheduled(fixedDelay = 1_000)
+    @Scheduled(fixedDelay = 1_000, initialDelay = 5_000)
     public void handleQueue() {
         for (Map.Entry<String, ConcurrentLinkedQueue<CopyFlowItem>> entry : items.entrySet()) {
             try {
                 runtimeTenantResolver.forceTenant(entry.getKey());
                 ConcurrentLinkedQueue<CopyFlowItem> tenantItems = entry.getValue();
                 List<CopyFlowItem> list = new ArrayList<>();
-                do {
-                    // Build a 10_000 (at most) documents bulk request
-                    for (int i = 0; i < BULK_SIZE; i++) {
-                        CopyFlowItem doc = tenantItems.poll();
-                        if (doc == null) {
-                            // Less than BULK_SIZE documents, bulk save what we have already
-                            break;
-                        } else { // enqueue document
-                            list.add(doc);
-                        }
+                // Build a 10_000 (at most) documents bulk request
+                for (int i = 0; i < BULK_SIZE; i++) {
+                    CopyFlowItem doc = tenantItems.poll();
+                    if (doc == null) {
+                        // Less than BULK_SIZE documents, bulk save what we have already
+                        break;
+                    } else { // enqueue document
+                        list.add(doc);
                     }
-                    if (!list.isEmpty()) {
-                        LOGGER.debug("[COPY FLOW HANDLER] Bulk saving {} CopyFlowItem...", list.size());
-                        long start = System.currentTimeMillis();
-                        fileCopyReqService.copy(list);
-                        LOGGER.debug("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms", list.size(),
-                                     System.currentTimeMillis() - start);
-                        list.clear();
-                    }
-                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
+                }
+                if (!list.isEmpty()) {
+                    LOGGER.debug("[COPY FLOW HANDLER] Bulk saving {} CopyFlowItem...", list.size());
+                    long start = System.currentTimeMillis();
+                    fileCopyReqService.copy(list);
+                    LOGGER.debug("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms", list.size(),
+                                 System.currentTimeMillis() - start);
+                    list.clear();
+                }
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
