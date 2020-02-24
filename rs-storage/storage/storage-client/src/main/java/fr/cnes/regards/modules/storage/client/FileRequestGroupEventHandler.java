@@ -58,7 +58,7 @@ public class FileRequestGroupEventHandler
     /**
      * Bulk size limit to handle messages
      */
-    @Value("${regards.storage.client.responses.items.bulk.size:100}")
+    @Value("${regards.storage.client.responses.items.bulk.size:1000}")
     private int BULK_SIZE;
 
     @Autowired(required = false)
@@ -116,27 +116,25 @@ public class FileRequestGroupEventHandler
                 runtimeTenantResolver.forceTenant(entry.getKey());
                 ConcurrentLinkedQueue<FileRequestsGroupEvent> tenantItems = entry.getValue();
                 List<FileRequestsGroupEvent> list = new ArrayList<>();
-                do {
-                    // Build a 100 (at most) documents bulk request
-                    for (int i = 0; i < BULK_SIZE; i++) {
-                        FileRequestsGroupEvent doc = tenantItems.poll();
-                        if (doc == null) {
-                            // Less than BULK_SIZE documents, bulk save what we have already
-                            break;
-                        } else { // enqueue document
-                            list.add(doc);
-                        }
+                // Build a 100 (at most) documents bulk request
+                for (int i = 0; i < BULK_SIZE; i++) {
+                    FileRequestsGroupEvent doc = tenantItems.poll();
+                    if (doc == null) {
+                        // Less than BULK_SIZE documents, bulk save what we have already
+                        break;
+                    } else { // enqueue document
+                        list.add(doc);
                     }
-                    if (!list.isEmpty()) {
-                        LOGGER.debug("[STORAGE RESPONSES HANDLER] Total events queue size={}", tenantItems.size());
-                        LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileRequestsGroupEvent...", list.size());
-                        long start = System.currentTimeMillis();
-                        handle(list);
-                        LOGGER.info("[STORAGE RESPONSES HANDLER] {} FileRequestsGroupEvent handled in {} ms",
-                                    list.size(), System.currentTimeMillis() - start);
-                        list.clear();
-                    }
-                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
+                }
+                if (!list.isEmpty()) {
+                    LOGGER.debug("[STORAGE RESPONSES HANDLER] Total events queue size={}", tenantItems.size());
+                    LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileRequestsGroupEvent...", list.size());
+                    long start = System.currentTimeMillis();
+                    handle(list);
+                    LOGGER.info("[STORAGE RESPONSES HANDLER] {} FileRequestsGroupEvent handled in {} ms", list.size(),
+                                System.currentTimeMillis() - start);
+                    list.clear();
+                }
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
