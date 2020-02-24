@@ -41,37 +41,37 @@ public class CustomPostgresDialect extends PostgreSQL9Dialect {
     /**
      * Create an new empty array
      */
-    public static String EMPTY_STRING_ARRAY = "new_string_array";
+    public static final String EMPTY_STRING_ARRAY = "new_string_array";
 
     /**
      * Create a literal casted as string
      */
-    public static String STRING_LITERAL = "string_literal";
+    public static final String STRING_LITERAL = "string_literal";
 
     /**
      * Create a literal casted as jsonb
      */
-    public static String JSONB_LITERAL = "jsonb_literal";
+    public static final String JSONB_LITERAL = "jsonb_literal";
 
     /**
      * Create an expression with the @> operator
      */
-    public static String JSONB_CONTAINS = "jsonb_contains";
+    public static final String JSONB_CONTAINS = "jsonb_contains";
 
     /**
      * Alias to the operator ?&; ensure indexes are used if possible
      */
-    public static String JSONB_EXISTS_ALL = "rs_jsonb_exists_all";
+    public static final String JSONB_EXISTS_ALL = "rs_jsonb_exists_all";
 
     /**
      * Alias to the operator ?; ensure indexes are used if possible
      */
-    public static String JSONB_EXISTS = "rs_jsonb_exists";
+    public static final String JSONB_EXISTS = "rs_jsonb_exists";
 
     /**
      * Alias to the operator ?|; ensure indexes are used if possible
      */
-    public static String JSONB_EXISTS_ANY = "rs_jsonb_exists_any";
+    public static final String JSONB_EXISTS_ANY = "rs_jsonb_exists_any";
 
     public CustomPostgresDialect() {
         super();
