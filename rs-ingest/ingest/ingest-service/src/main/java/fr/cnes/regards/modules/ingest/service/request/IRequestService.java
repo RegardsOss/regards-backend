@@ -25,6 +25,7 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -137,6 +138,8 @@ public interface IRequestService {
     void scheduleRequestRetryJob(SearchRequestsParameters filters);
 
     void switchRequestState(AbstractRequest request);
+
+    void deleteRequests(Collection<AbstractRequest> requests);
 
     /**
      * Delete the provided {@link AbstractRequest}, ensure related jobs are unlocked

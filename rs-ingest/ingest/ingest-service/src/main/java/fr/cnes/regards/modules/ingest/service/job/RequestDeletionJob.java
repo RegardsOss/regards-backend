@@ -80,9 +80,7 @@ public class RequestDeletionJob extends AbstractJob<Void> {
             if (totalPages < requestsPage.getTotalPages()) {
                 totalPages = requestsPage.getTotalPages();
             }
-            for (AbstractRequest request : requestsPage) {
-                requestService.deleteRequest(request);
-            }
+            requestService.deleteRequests(requestsPage.getContent());
             advanceCompletion();
         } while (requestsPage.hasNext());
     }
