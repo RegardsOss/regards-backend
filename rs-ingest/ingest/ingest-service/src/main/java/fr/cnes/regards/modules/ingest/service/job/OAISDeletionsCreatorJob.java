@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +37,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionCreatorRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorPayload;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
@@ -106,11 +109,11 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();
             }
-            for (AIPEntity aip : aipsPage) {
-                OAISDeletionRequest odr = OAISDeletionRequest.build(aip, deletionPayload.getDeletionMode(),
-                                                                    deletionPayload.getDeletePhysicalFiles());
-                requestService.scheduleRequest(odr);
-            }
+            List<AbstractRequest> requests = aipsPage.stream()
+                    .map(aip -> OAISDeletionRequest.build(aip, deletionPayload.getDeletionMode(),
+                                                          deletionPayload.getDeletePhysicalFiles()))
+                    .collect(Collectors.toList());
+            requestService.scheduleRequests(requests);
             if (totalPages > 0) {
                 advanceCompletion();
             }
