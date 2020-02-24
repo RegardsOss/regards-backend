@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
@@ -156,7 +157,8 @@ public class CacheService {
         do {
             shouldBeAvailableSet = cachedFileRepository.findAll(page);
             for (CacheFile shouldBeAvailable : shouldBeAvailableSet) {
-                if (Files.notExists(Paths.get(shouldBeAvailable.getLocation().getPath()))) {
+                Path path = Paths.get(shouldBeAvailable.getLocation().getPath());
+                if (Files.notExists(path)) {
                     toDelete.add(shouldBeAvailable.getId());
                 }
             }
@@ -177,12 +179,17 @@ public class CacheService {
             long count = 0;
             do {
                 availableFiles = cachedFileRepository.findAll(page);
-                Set<String> availableFilePaths = availableFiles.getContent().stream()
+                Set<String> referencedCacheFiles = availableFiles.getContent().stream()
                         .map(availableFile -> availableFile.getLocation().getPath().toString())
                         .collect(Collectors.toSet());
                 try (Stream<Path> stream = Files.walk(getTenantCachePath())) {
-                    count = stream.filter(path -> !availableFilePaths.contains(path.toAbsolutePath().toString()))
-                            .peek(p -> LOGGER.warn("Dirty file in cache : {}.", p.toString())).count();
+                 // @formatter:off
+                    count = stream
+                            .filter(path -> Files.isRegularFile(path) && !referencedCacheFiles.contains(path.toAbsolutePath().toString()))
+                            .peek(p -> LOGGER.warn("Dirty file in cache : {}.", p.toString()))
+                            .peek(CacheService::deleteFileInCache)
+                            .count();
+                 // @formatter:on
                 }
                 page = availableFiles.nextPageable();
             } while (availableFiles.hasNext());
@@ -192,6 +199,20 @@ public class CacheService {
                                 count);
                 notificationClient.notify(message, "Dirty cache", NotificationLevel.WARNING, DefaultRole.PROJECT_ADMIN);
             }
+        }
+    }
+
+    /**
+     * Delete a file from cache directory if
+     * @param path
+     */
+    private static void deleteFileInCache(Path path) {
+        try {
+            if (Files.getLastModifiedTime(path).toInstant().isBefore(Instant.now().minusSeconds(60 * 60 * 2))) {
+                Files.delete(path);
+            }
+        } catch (IOException e) {
+            LOGGER.error(String.format("Error deleting file %s during cache db coherence check.", path.toString()), e);
         }
     }
 
