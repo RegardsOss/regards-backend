@@ -47,7 +47,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.configuration.domain.Layout;
+import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.domain.Theme;
 import fr.cnes.regards.modules.configuration.service.IThemeService;
 
@@ -72,7 +72,7 @@ public class ThemeController implements IResourceController<Theme> {
     /**
      * Entry point to retrieve a themes for a given application id {@link Theme}.
      * @param themeId
-     * @return {@link Layout}
+     * @return {@link UILayout}
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = THEME_ID_MAPPING, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

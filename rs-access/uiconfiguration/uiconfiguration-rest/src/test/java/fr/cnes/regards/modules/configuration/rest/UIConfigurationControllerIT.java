@@ -9,8 +9,8 @@ import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.modules.configuration.dao.ConfigurationRepository;
-import fr.cnes.regards.modules.configuration.domain.Configuration;
+import fr.cnes.regards.modules.configuration.dao.IUIConfigurationRepository;
+import fr.cnes.regards.modules.configuration.domain.UIConfiguration;
 import fr.cnes.regards.modules.configuration.domain.ConfigurationDTO;
 
 /**
@@ -23,39 +23,39 @@ import fr.cnes.regards.modules.configuration.domain.ConfigurationDTO;
 */
 @TestPropertySource(locations = { "classpath:test.properties" })
 @MultitenantTransactional
-public class ConfigurationControllerIT extends AbstractRegardsTransactionalIT {
+public class UIConfigurationControllerIT extends AbstractRegardsTransactionalIT {
 
 	private final String DEFAULT_APPLICATION_ID = "user";
 	private final String CONFIGURATION_VALUE = "test";
 
 	@Autowired
-	private ConfigurationRepository configurationRepo;
-	
+	private IUIConfigurationRepository configurationRepo;
+
 	@Before
 	public void setup() {
 		configurationRepo.deleteAll();
 	}
-	
+
 	@Test
     public void getNonExistingConfiguration() {
-        performDefaultGet("/configuration/{applicationId}", 
+        performDefaultGet("/configuration/{applicationId}",
         		customizer().expectStatusNoContent(), "Error message", DEFAULT_APPLICATION_ID);
     }
-	
+
 	@Test
     public void getConfiguration() {
-		Configuration toAdd = new Configuration();
+		UIConfiguration toAdd = new UIConfiguration();
 		toAdd.setId(1L);
 		toAdd.setConfiguration(CONFIGURATION_VALUE);
 		toAdd.setApplicationId(DEFAULT_APPLICATION_ID);
 		this.configurationRepo.save(toAdd);
-        performDefaultGet("/configuration/{applicationId}", 
+        performDefaultGet("/configuration/{applicationId}",
         		customizer().expectStatusOk(), "Error message", DEFAULT_APPLICATION_ID);
     }
-	
+
 	@Test
     public void addConfiguration() {
-		Configuration toAdd = new Configuration();
+		UIConfiguration toAdd = new UIConfiguration();
 		toAdd.setId(1L);
 		toAdd.setConfiguration(CONFIGURATION_VALUE);
 		toAdd.setApplicationId(DEFAULT_APPLICATION_ID);
@@ -68,15 +68,15 @@ public class ConfigurationControllerIT extends AbstractRegardsTransactionalIT {
     public void updateConfiguration() {
 		performDefaultPost("/configuration/{applicationId}", new ConfigurationDTO(CONFIGURATION_VALUE),
         		customizer().expectStatusOk(), "Error message", DEFAULT_APPLICATION_ID);
-		
-		Configuration toUpdate = this.configurationRepo.findByApplicationId(DEFAULT_APPLICATION_ID).get(0);
+
+		UIConfiguration toUpdate = this.configurationRepo.findByApplicationId(DEFAULT_APPLICATION_ID).get(0);
 		toUpdate.setConfiguration(CONFIGURATION_VALUE + CONFIGURATION_VALUE);
 
         performDefaultPut("/configuration/{applicationId}", new ConfigurationDTO(CONFIGURATION_VALUE + CONFIGURATION_VALUE),
         		customizer().expectStatusOk(), "Error message", DEFAULT_APPLICATION_ID);
         assertEquals(toUpdate, configurationRepo.findAll().get(0));
     }
-	
+
 	@Test
     public void updateNonExistingConfiguration() {
 		performDefaultPut("/configuration/{applicationId}", new ConfigurationDTO(CONFIGURATION_VALUE),

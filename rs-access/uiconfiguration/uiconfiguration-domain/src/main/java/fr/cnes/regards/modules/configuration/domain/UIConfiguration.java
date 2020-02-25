@@ -23,7 +23,7 @@ import org.hibernate.annotations.Type;
 @Entity
 @Table(name = "t_ui_configuration", uniqueConstraints = {
         @UniqueConstraint(name = "uk_ui_configuration_application_id", columnNames = { "application_id" }) })
-public class Configuration {
+public class UIConfiguration {
 
     /**
      * Unique id
@@ -89,7 +89,7 @@ public class Configuration {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        Configuration other = (Configuration) obj;
+        UIConfiguration other = (UIConfiguration) obj;
         if (applicationId == null) {
             if (other.applicationId != null) {
                 return false;

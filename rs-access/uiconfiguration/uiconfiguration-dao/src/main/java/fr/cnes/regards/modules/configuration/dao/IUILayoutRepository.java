@@ -22,7 +22,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.configuration.domain.Layout;
+import fr.cnes.regards.modules.configuration.domain.UILayout;
 
 /**
  *
@@ -33,16 +33,16 @@ import fr.cnes.regards.modules.configuration.domain.Layout;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public interface ILayoutRepository extends JpaRepository<Layout, Long> {
+public interface IUILayoutRepository extends JpaRepository<UILayout, Long> {
 
     /**
      *
      * Retrieve layout for the given application id.
      *
      * @param pApplicationId
-     * @return {@link Layout}
+     * @return {@link UILayout}
      * @since 1.0-SNAPSHOT
      */
-    Optional<Layout> findByApplicationId(String pApplicationId);
+    Optional<UILayout> findByApplicationId(String pApplicationId);
 
 }

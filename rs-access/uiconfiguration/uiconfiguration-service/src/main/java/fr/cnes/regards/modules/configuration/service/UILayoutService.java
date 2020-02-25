@@ -33,8 +33,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsExcept
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.configuration.dao.ILayoutRepository;
-import fr.cnes.regards.modules.configuration.domain.Layout;
+import fr.cnes.regards.modules.configuration.dao.IUILayoutRepository;
+import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
 import fr.cnes.regards.modules.configuration.service.exception.InitUIException;
 
@@ -49,15 +49,15 @@ import fr.cnes.regards.modules.configuration.service.exception.InitUIException;
  */
 @Service
 @RegardsTransactional
-public class LayoutService extends AbstractUiConfigurationService implements ILayoutService {
+public class UILayoutService extends AbstractUiConfigurationService implements IUILayoutService {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(LayoutService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UILayoutService.class);
 
     @Autowired
-    private ILayoutRepository repository;
+    private IUILayoutRepository repository;
 
     /**
      * The email validation template as html
@@ -75,11 +75,11 @@ public class LayoutService extends AbstractUiConfigurationService implements ILa
     public void initInstanceUI() {
         try {
             final String layoutConf = readDefaultFileResource(defaultPortalApplicationLayoutResource);
-            final Layout layout = new Layout();
-            layout.setApplicationId(LayoutDefaultApplicationIds.PORTAL.toString());
-            layout.setLayout(layoutConf);
-            if (!repository.findByApplicationId(layout.getApplicationId()).isPresent()) {
-                repository.save(layout);
+            final UILayout UILayout = new UILayout();
+            UILayout.setApplicationId(LayoutDefaultApplicationIds.PORTAL.toString());
+            UILayout.setLayout(layoutConf);
+            if (!repository.findByApplicationId(UILayout.getApplicationId()).isPresent()) {
+                repository.save(UILayout);
             }
         } catch (final IOException e) {
             throw new InitUIException(e);
@@ -90,11 +90,11 @@ public class LayoutService extends AbstractUiConfigurationService implements ILa
     public void initProjectUI(final String tenant) {
         try {
             final String layoutConf = readDefaultFileResource(defaultUserApplicationLayoutResource);
-            final Layout layout = new Layout();
-            layout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
-            layout.setLayout(layoutConf);
-            if (!repository.findByApplicationId(layout.getApplicationId()).isPresent()) {
-                repository.save(layout);
+            final UILayout UILayout = new UILayout();
+            UILayout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
+            UILayout.setLayout(layoutConf);
+            if (!repository.findByApplicationId(UILayout.getApplicationId()).isPresent()) {
+                repository.save(UILayout);
             }
         } catch (final IOException e) {
             throw new InitUIException(e);
@@ -102,42 +102,42 @@ public class LayoutService extends AbstractUiConfigurationService implements ILa
     }
 
     @Override
-    public Layout retrieveLayout(final String applicationId) throws EntityNotFoundException {
+    public UILayout retrieveLayout(final String applicationId) throws EntityNotFoundException {
         return repository.findByApplicationId(applicationId)
-                .orElseThrow(() -> new EntityNotFoundException(applicationId, Layout.class));
+                .orElseThrow(() -> new EntityNotFoundException(applicationId, UILayout.class));
     }
 
     @Override
-    public Layout saveLayout(final Layout pLayout) throws EntityException {
-        if (repository.findByApplicationId(pLayout.getApplicationId()).isPresent()) {
-            throw new EntityAlreadyExistsException(pLayout.getApplicationId());
+    public UILayout saveLayout(final UILayout pUILayout) throws EntityException {
+        if (repository.findByApplicationId(pUILayout.getApplicationId()).isPresent()) {
+            throw new EntityAlreadyExistsException(pUILayout.getApplicationId());
         }
         // Check layout json format
         final Gson gson = new Gson();
         try {
-            gson.fromJson(pLayout.getLayout(), Object.class);
+            gson.fromJson(pUILayout.getLayout(), Object.class);
         } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
             throw new EntityInvalidException("Layout is not a valid json format.", e);
         }
-        return repository.save(pLayout);
+        return repository.save(pUILayout);
     }
 
     @Override
-    public Layout updateLayout(final Layout layout) throws EntityException {
+    public UILayout updateLayout(final UILayout UILayout) throws EntityException {
 
         // Check layout json format
         final Gson gson = new Gson();
         try {
-            gson.fromJson(layout.getLayout(), Object.class);
+            gson.fromJson(UILayout.getLayout(), Object.class);
         } catch (final RuntimeException e) {
             LOG.error(e.getMessage(), e);
             throw new EntityInvalidException("Layout is not a valid json format.", e);
         }
-        if (!repository.findByApplicationId(layout.getApplicationId()).isPresent()) {
-            throw new EntityNotFoundException(layout.getId(), Layout.class);
+        if (!repository.findByApplicationId(UILayout.getApplicationId()).isPresent()) {
+            throw new EntityNotFoundException(UILayout.getId(), UILayout.class);
         }
-        return repository.save(layout);
+        return repository.save(UILayout);
     }
 
 }

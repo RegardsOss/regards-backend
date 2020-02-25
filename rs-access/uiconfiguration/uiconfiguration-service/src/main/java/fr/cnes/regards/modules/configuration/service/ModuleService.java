@@ -63,6 +63,8 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
      */
     private static final Logger LOG = LoggerFactory.getLogger(ModuleService.class);
 
+    private static final String MODULE_HAS_NOT_VALID_JSON_FORMAT = "Module has not valid json format.";
+
     /**
      * The default configuration for project user menu
      */
@@ -118,7 +120,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             gson.fromJson(module.getConf(), Object.class);
         } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Module is not a valid json format.", e);
+            throw new EntityInvalidException(MODULE_HAS_NOT_VALID_JSON_FORMAT, e);
         }
         UIPage page = module.getPage();
         if ((page != null) && page.isHome()) {
@@ -135,7 +137,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             gson.fromJson(module.getConf(), Object.class);
         } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Module is not a valid json format.", e);
+            throw new EntityInvalidException(MODULE_HAS_NOT_VALID_JSON_FORMAT, e);
         }
         if (!repository.existsById(module.getId())) {
             throw new EntityNotFoundException(module.getId(), Module.class);
@@ -168,7 +170,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             moduleConfJson = rootConf.getAsJsonObject("conf");
         } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Module is not a valid json format.", e);
+            throw new EntityInvalidException(MODULE_HAS_NOT_VALID_JSON_FORMAT, e);
         }
         if (!moduleConfJson.has("layers")) {
             throw new EntityInvalidException("Module is not a valid Mizar json context file.");
@@ -195,9 +197,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             layers.add(layer);
         });
         //  Add to the end of the list all layers configured in the module json
-        moduleConfJson.get("layers").getAsJsonArray().forEach(layer -> {
-            layers.add(layer);
-        });
+        moduleConfJson.get("layers").getAsJsonArray().forEach(layers::add);
         // save the layer list inside the module conf
         moduleConfJson.add("layers", layers);
         return moduleConfJson;
@@ -275,7 +275,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             menu.setActive(true);
             menu.setApplicationId(LayoutDefaultApplicationIds.PORTAL.toString());
             menu.setContainer("header");
-            menu.setDescription(String.format("Portal menu"));
+            menu.setDescription("Portal menu");
             menu.setType("menu");
 
             try {

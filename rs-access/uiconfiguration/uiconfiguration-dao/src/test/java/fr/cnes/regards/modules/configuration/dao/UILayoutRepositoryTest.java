@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
-import fr.cnes.regards.modules.configuration.domain.Layout;
+import fr.cnes.regards.modules.configuration.domain.UILayout;
 
 /**
  *
@@ -36,32 +36,32 @@ import fr.cnes.regards.modules.configuration.domain.Layout;
  * @since 1.0-SNAPSHOT
  */
 @TestPropertySource("classpath:test.properties")
-public class LayoutRepositoryTest extends AbstractDaoTransactionalTest {
+public class UILayoutRepositoryTest extends AbstractDaoTransactionalTest {
 
     @Autowired
-    private ILayoutRepository repository;
+    private IUILayoutRepository repository;
 
     @Test
     public void saveLayoutTest() {
         // Create a new layout configuration
-        final Layout layout = new Layout();
-        layout.setApplicationId("TEST");
-        layout.setLayout("{}");
-        final Layout newLayout = repository.save(layout);
-        final Layout layout2 = repository.findById(newLayout.getId()).orElse(null);
-        Assert.assertEquals(newLayout.getLayout(), layout2.getLayout());
+        final UILayout UILayout = new UILayout();
+        UILayout.setApplicationId("TEST");
+        UILayout.setLayout("{}");
+        final UILayout newUILayout = repository.save(UILayout);
+        final UILayout UILayout2 = repository.findById(newUILayout.getId()).orElse(null);
+        Assert.assertEquals(newUILayout.getLayout(), UILayout2.getLayout());
     }
 
     @Test
     public void updateLayoutTest() {
         // Create a new layout configuration
-        final Layout layout = new Layout();
-        layout.setApplicationId("TEST");
-        layout.setLayout("{}");
-        final Layout newLayout = repository.save(layout);
-        newLayout.setLayout("{\"test\":\"test\"}");
-        final Layout layout2 = repository.save(newLayout);
-        Assert.assertEquals("{\"test\":\"test\"}", layout2.getLayout());
+        final UILayout UILayout = new UILayout();
+        UILayout.setApplicationId("TEST");
+        UILayout.setLayout("{}");
+        final UILayout newUILayout = repository.save(UILayout);
+        newUILayout.setLayout("{\"test\":\"test\"}");
+        final UILayout UILayout2 = repository.save(newUILayout);
+        Assert.assertEquals("{\"test\":\"test\"}", UILayout2.getLayout());
     }
 
 }

@@ -32,7 +32,7 @@ import org.springframework.core.io.Resource;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.configuration.domain.Layout;
+import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.service.exception.MissingResourceException;
 
 /**
@@ -89,7 +89,7 @@ public abstract class AbstractUiConfigurationService implements ApplicationListe
     /**
      * Read the default Layout configuration file as a string.
      *
-     * @return {@link Layout} as a string
+     * @return {@link UILayout} as a string
      * @throws IOException
      * @since 1.0-SNAPSHOT
      */

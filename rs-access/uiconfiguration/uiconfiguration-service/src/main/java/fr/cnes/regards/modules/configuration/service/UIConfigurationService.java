@@ -3,34 +3,32 @@ package fr.cnes.regards.modules.configuration.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.annotation.Configurations;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.configuration.dao.ConfigurationRepository;
-import fr.cnes.regards.modules.configuration.domain.Configuration;
+import fr.cnes.regards.modules.configuration.dao.IUIConfigurationRepository;
+import fr.cnes.regards.modules.configuration.domain.UIConfiguration;
 
 @Service
 @RegardsTransactional
-public class ConfigurationService implements IConfigurationService {
+public class UIConfigurationService implements IUIConfigurationService {
 
-	@Autowired 
-	private ConfigurationRepository configurationRepo;
-	
+	@Autowired
+	private IUIConfigurationRepository configurationRepo;
+
 	@Override
 	public String retrieveConfiguration(String applicationId) throws EntityNotFoundException {
-		List<Configuration> configurations = configurationRepo.findByApplicationId(applicationId);
-		if (configurations.isEmpty()) {
+		List<UIConfiguration> UIConfigurations = configurationRepo.findByApplicationId(applicationId);
+		if (UIConfigurations.isEmpty()) {
 			throw new EntityNotFoundException("No configuration founded");
 		}
-		return configurations.get(0).getConfiguration();
+		return UIConfigurations.get(0).getConfiguration();
 	}
 
 	@Override
 	public String addConfiguration(String configuration, String applicationId){
-		Configuration newConf = new Configuration();
+		UIConfiguration newConf = new UIConfiguration();
 		newConf.setApplicationId(applicationId);
 		newConf.setConfiguration(configuration);
 		return this.configurationRepo.save(newConf).getConfiguration();
@@ -38,11 +36,11 @@ public class ConfigurationService implements IConfigurationService {
 
 	@Override
 	public String updateConfiguration(String newConf, String applicationId) throws EntityNotFoundException{
-		List<Configuration> configurations = configurationRepo.findByApplicationId(applicationId);
-		if (configurations.isEmpty()) {
+		List<UIConfiguration> UIConfigurations = configurationRepo.findByApplicationId(applicationId);
+		if (UIConfigurations.isEmpty()) {
 			throw new EntityNotFoundException("No configuration founded");
 		}
-		Configuration conf = configurations.get(0);
+		UIConfiguration conf = UIConfigurations.get(0);
 		conf.setConfiguration(newConf);
 		return this.configurationRepo.save(conf).getConfiguration();
 	}

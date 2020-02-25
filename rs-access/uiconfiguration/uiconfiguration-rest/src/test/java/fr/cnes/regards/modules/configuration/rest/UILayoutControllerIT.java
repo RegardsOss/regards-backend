@@ -27,7 +27,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.modules.configuration.domain.Layout;
+import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
 
 /**
@@ -41,12 +41,12 @@ import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
  */
 @TestPropertySource(locations = { "classpath:test.properties" })
 @MultitenantTransactional
-public class LayoutControllerIT extends AbstractRegardsTransactionalIT {
+public class UILayoutControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(LayoutControllerIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UILayoutControllerIT.class);
 
     @Test
     public void getUserApplicationLayout() {
@@ -56,21 +56,21 @@ public class LayoutControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void updateLayoutWithInvalidJsonFormat() {
-        final Layout layout = new Layout();
-        layout.setId(1L);
-        layout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
-        layout.setLayout("{}}");
-        performDefaultPut("/layouts/{applicationId}", layout, customizer().expect(status().isUnprocessableEntity()),
+        final UILayout UILayout = new UILayout();
+        UILayout.setId(1L);
+        UILayout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
+        UILayout.setLayout("{}}");
+        performDefaultPut("/layouts/{applicationId}", UILayout, customizer().expect(status().isUnprocessableEntity()),
                           "Plop", LayoutDefaultApplicationIds.USER.toString());
     }
 
     @Test
     public void updateLayout() {
-        final Layout layout = new Layout();
-        layout.setId(1L);
-        layout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
-        layout.setLayout("{\"test\":\"ok\"}");
-        performDefaultPut("/layouts/{applicationId}", layout, customizer().expectStatusOk(), "Plop",
+        final UILayout UILayout = new UILayout();
+        UILayout.setId(1L);
+        UILayout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
+        UILayout.setLayout("{\"test\":\"ok\"}");
+        performDefaultPut("/layouts/{applicationId}", UILayout, customizer().expectStatusOk(), "Plop",
                           LayoutDefaultApplicationIds.USER.toString());
     }
 

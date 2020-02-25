@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.configuration.service;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.configuration.domain.Layout;
+import fr.cnes.regards.modules.configuration.domain.UILayout;
 
 /**
  *
@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.configuration.domain.Layout;
  * @since 1.0-SNAPSHOT
  */
 @RegardsTransactional
-public interface ILayoutService {
+public interface IUILayoutService {
 
     /**
      *
@@ -44,28 +44,28 @@ public interface ILayoutService {
      * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
-    Layout retrieveLayout(String applicationId) throws EntityNotFoundException;
+    UILayout retrieveLayout(String applicationId) throws EntityNotFoundException;
 
     /**
      *
      * Save a new layout configuration
      *
-     * @param layout
+     * @param UILayout
      * @return Layout
      * @throws EntityException
      * @since 1.0-SNAPSHOT
      */
-    Layout saveLayout(Layout layout) throws EntityException;
+    UILayout saveLayout(UILayout UILayout) throws EntityException;
 
     /**
      *
      * Save a new layout configuration
      *
-     * @param layout
+     * @param UILayout
      * @return Layout
      * @throws EntityException
      * @since 1.0-SNAPSHOT
      */
-    Layout updateLayout(Layout layout) throws EntityException;
+    UILayout updateLayout(UILayout UILayout) throws EntityException;
 
 }

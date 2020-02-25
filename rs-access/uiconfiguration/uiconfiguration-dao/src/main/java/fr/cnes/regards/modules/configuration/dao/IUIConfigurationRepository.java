@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.configuration.domain.Configuration;
+import fr.cnes.regards.modules.configuration.domain.UIConfiguration;
 
 /**
 *
@@ -14,8 +14,8 @@ import fr.cnes.regards.modules.configuration.domain.Configuration;
 *
 * @author Sébastien Binda
 */
-public interface ConfigurationRepository  extends JpaRepository<Configuration, Long>{
+public interface IUIConfigurationRepository extends JpaRepository<UIConfiguration, Long>{
 
-	List<Configuration> findByApplicationId(String applicationId);
+	List<UIConfiguration> findByApplicationId(String applicationId);
 
 }
