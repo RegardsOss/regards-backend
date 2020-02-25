@@ -55,8 +55,11 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     Page<FileStorageRequest> findAllByStorageAndStatus(String storage, FileRequestStatus status, Pageable page);
 
-    Page<FileStorageRequest> findAllByStorageAndStatusAndOwnersIn(String storage, FileRequestStatus status,
-            Collection<String> owners, Pageable page);
+    Page<FileStorageRequest> findAllByStorageAndStatusAndIdGreaterThan(String storage, FileRequestStatus status,
+            Long id, Pageable page);
+
+    Page<FileStorageRequest> findAllByStorageAndStatusAndOwnersInAndIdGreaterThan(String storage,
+            FileRequestStatus status, Collection<String> owners, Long id, Pageable page);
 
     @Query("select storage from FileStorageRequest where status = :status")
     Set<String> findStoragesByStatus(@Param("status") FileRequestStatus status);

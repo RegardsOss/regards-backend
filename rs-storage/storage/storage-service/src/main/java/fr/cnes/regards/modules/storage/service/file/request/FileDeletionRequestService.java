@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.storage.service.file.request;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -188,12 +189,19 @@ public class FileDeletionRequestService {
                     : allStorages;
             for (String storage : deletionToSchedule) {
                 Page<FileDeletionRequest> deletionRequestPage;
+                Long maxId = 0L;
+                // Always search the first page of requests until there is no requests anymore.
+                // To do so, we order on id to ensure to not handle same requests multiple times.
                 Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
                 do {
-                    deletionRequestPage = fileDeletionRequestRepo.findByStorageAndStatus(storage, status, page);
-                    jobList.addAll(self.scheduleDeletionJobsByStorage(storage, deletionRequestPage));
-                    page = deletionRequestPage.nextPageable();
-                } while (deletionRequestPage.hasNext());
+                    deletionRequestPage = fileDeletionRequestRepo
+                            .findByStorageAndStatusAndIdGreaterThan(storage, status, maxId, page);
+                    if (deletionRequestPage.hasContent()) {
+                        maxId = deletionRequestPage.stream().max(Comparator.comparing(FileDeletionRequest::getId)).get()
+                                .getId();
+                        jobList.addAll(self.scheduleDeletionJobsByStorage(storage, deletionRequestPage));
+                    }
+                } while (deletionRequestPage.hasContent());
             }
             if (jobList.size() > 0) {
                 LOGGER.debug("[DELETION REQUESTS] {} jobs scheduled in {} ms", jobList.size(),

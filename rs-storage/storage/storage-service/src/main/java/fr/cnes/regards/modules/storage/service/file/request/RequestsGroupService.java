@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -155,7 +157,7 @@ public class RequestsGroupService {
      */
     public void granted(String groupId, FileRequestType type, int nbRequestInGroup, boolean silent,
             OffsetDateTime expirationDate) {
-        LOGGER.debug("[{} GROUP GRANTED {}] - Group request granted with {} requests.", type.toString().toUpperCase(),
+        LOGGER.trace("[{} GROUP GRANTED {}] - Group request granted with {} requests.", type.toString().toUpperCase(),
                      groupId, nbRequestInGroup);
         // Create new group request
         if (!reqGroupRepository.existsById(groupId)) {
@@ -208,8 +210,9 @@ public class RequestsGroupService {
     public void checkRequestsGroupsDone() {
         long start = System.currentTimeMillis();
         LOGGER.debug("[REQUEST GROUPS] Start checking request groups ... ");
-        Page<RequestGroup> response = reqGroupRepository.findAll(PageRequest.of(0, 500));
-        LOGGER.debug("[REQUEST GROUPS] {} request groups found", response.getTotalElements());
+        // Always search the first page of requests until there is no requests anymore.
+        // To do so, we order on id to ensure to not handle same requests multiple times.
+        Page<RequestGroup> response = reqGroupRepository.findAll(PageRequest.of(0, 500, Direction.ASC, "id"));
         long totalChecked = response.getTotalElements();
         int nbGroupsDone = 0;
         if (totalChecked > 0) {
@@ -337,7 +340,7 @@ public class RequestsGroupService {
         }
         // 1. Publish events
         if (errors.isEmpty()) {
-            LOGGER.debug("[{} GROUP SUCCESS {}] - {} requests success.", reqGrp.getType().toString().toUpperCase(),
+            LOGGER.trace("[{} GROUP SUCCESS {}] - {} requests success.", reqGrp.getType().toString().toUpperCase(),
                          reqGrp.getId(), successes.size());
             publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(), reqGrp.getType(), FlowItemStatus.SUCCESS,
                                                            successes));

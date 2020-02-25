@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
@@ -219,27 +220,32 @@ public class FileCopyRequestService {
         try {
             LOGGER.debug("[COPY REQUESTS] handling copy requests ...");
             long start = System.currentTimeMillis();
+            Long maxId = 0L;
+            // Always search the first page of requests until there is no requests anymore.
+            // To do so, we order on id to ensure to not handle same requests multiple times.
             Pageable page = PageRequest.of(0, AvailabilityFlowItem.MAX_REQUEST_PER_GROUP, Direction.ASC, "id");
             Page<FileCopyRequest> pageResp = null;
             // Allow file availability for one day to let enough time to next storage process to be perform.
             OffsetDateTime expDate = OffsetDateTime.now().plusDays(1);
             do {
                 String fileCacheGroupId = UUID.randomUUID().toString();
-                Set<String> checksums = Sets.newHashSet();
-                pageResp = copyRepository.findByStatus(status, page);
-                for (FileCopyRequest request : pageResp) {
-                    checksums.add(request.getMetaInfo().getChecksum());
-                    request.setFileCacheGroupId(fileCacheGroupId);
-                    request.setStatus(FileRequestStatus.PENDING);
-                }
+                pageResp = copyRepository.findByStatusAndIdGreaterThan(status, maxId, page);
+                if (pageResp.hasContent()) {
+                    maxId = pageResp.stream().max(Comparator.comparing(FileCopyRequest::getId)).get().getId();
+                    Set<String> checksums = Sets.newHashSet();
+                    for (FileCopyRequest request : pageResp) {
+                        checksums.add(request.getMetaInfo().getChecksum());
+                        request.setFileCacheGroupId(fileCacheGroupId);
+                        request.setStatus(FileRequestStatus.PENDING);
+                    }
 
-                if (!checksums.isEmpty()) {
-                    reqGrpService.granted(fileCacheGroupId, FileRequestType.AVAILABILITY, checksums.size(), true,
-                                          expDate);
-                    fileCacheReqService.makeAvailable(checksums, expDate, fileCacheGroupId);
+                    if (!checksums.isEmpty()) {
+                        reqGrpService.granted(fileCacheGroupId, FileRequestType.AVAILABILITY, checksums.size(), true,
+                                              expDate);
+                        fileCacheReqService.makeAvailable(checksums, expDate, fileCacheGroupId);
+                    }
                 }
-                page = page.next();
-            } while (pageResp.hasNext());
+            } while (pageResp.hasContent());
             LOGGER.debug("[COPY REQUESTS] Copy requests handled in {} ms", System.currentTimeMillis() - start);
         } finally {
             releaseLock();

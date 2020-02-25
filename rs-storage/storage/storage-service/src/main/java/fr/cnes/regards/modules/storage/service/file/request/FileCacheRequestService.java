@@ -23,6 +23,7 @@ import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -310,13 +311,17 @@ public class FileCacheRequestService {
         Set<String> allStorages = repository.findStoragesByStatus(status);
         for (String storage : allStorages) {
             Page<FileCacheRequest> filesPage;
+            Long maxId = 0L;
+            // Always search the first page of requests until there is no requests anymore.
+            // To do so, we order on id to ensure to not handle same requests multiple times.
             Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
             do {
-                filesPage = repository.findAllByStorageAndStatus(storage, status, page);
-                List<FileCacheRequest> requests = filesPage.getContent();
-                jobList.addAll(self.scheduleJobsByStorage(storage, requests));
-                page = filesPage.nextPageable();
-            } while (filesPage.hasNext());
+                filesPage = repository.findAllByStorageAndStatusAndIdGreaterThan(storage, status, maxId, page);
+                if (filesPage.hasContent()) {
+                    maxId = filesPage.stream().max(Comparator.comparing(FileCacheRequest::getId)).get().getId();
+                    jobList.addAll(self.scheduleJobsByStorage(storage, filesPage.getContent()));
+                }
+            } while (filesPage.hasContent());
         }
         LOGGER.debug("[CACHE REQUESTS] {} jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
         return jobList;

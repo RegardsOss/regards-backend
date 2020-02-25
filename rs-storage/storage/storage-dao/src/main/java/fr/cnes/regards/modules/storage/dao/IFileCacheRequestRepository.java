@@ -49,6 +49,9 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
 
     Page<FileCacheRequest> findAllByStorageAndStatus(String storage, FileRequestStatus status, Pageable page);
 
+    Page<FileCacheRequest> findAllByStorageAndStatusAndIdGreaterThan(String storage, FileRequestStatus status,
+            Long maxId, Pageable page);
+
     Set<FileCacheRequest> findByGroupId(String groupId);
 
     Set<FileCacheRequest> findByGroupIdAndStatus(String groupId, FileRequestStatus status);

@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -164,7 +165,7 @@ public class FileStorageRequestService {
     public void store(Collection<FileStorageRequestDTO> requests, String groupId,
             Collection<FileReference> existingOnes) {
         // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
-        LOGGER.debug("[STORAGE REQUESTS] Handling {} requests ...", requests.size());
+        LOGGER.trace("[STORAGE REQUESTS] Handling {} requests ...", requests.size());
 
         for (FileStorageRequestDTO request : requests) {
             // Check if the file already exists for the storage destination
@@ -344,18 +345,23 @@ public class FileStorageRequestService {
         LOGGER.debug("[STORAGE REQUESTS] Scheduling storage jobs ...");
         for (String storage : storagesToSchedule) {
             Page<FileStorageRequest> filesPage;
+            Long maxId = 0L;
+            // Always search the first page of requests until there is no requests anymore.
+            // To do so, we order on id to ensure to not handle same requests multiple times.
             Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by("id"));
             do {
                 // Always retrieve first page, as request status are updated during job scheduling method.
                 if ((owners != null) && !owners.isEmpty()) {
-                    filesPage = fileStorageRequestRepo.findAllByStorageAndStatusAndOwnersIn(storage, status, owners,
-                                                                                            page);
+                    filesPage = fileStorageRequestRepo
+                            .findAllByStorageAndStatusAndOwnersInAndIdGreaterThan(storage, status, owners, maxId, page);
                 } else {
-                    filesPage = fileStorageRequestRepo.findAllByStorageAndStatus(storage, status, page);
+                    filesPage = fileStorageRequestRepo.findAllByStorageAndStatusAndIdGreaterThan(storage, status, maxId,
+                                                                                                 page);
                 }
-                List<FileStorageRequest> fileStorageRequests = filesPage.getContent();
-
-                self.scheduleJobsByStorage(jobList, storage, fileStorageRequests);
+                if (filesPage.hasContent()) {
+                    maxId = filesPage.stream().max(Comparator.comparing(FileStorageRequest::getId)).get().getId();
+                    self.scheduleJobsByStorage(jobList, storage, filesPage.getContent());
+                }
             } while (filesPage.hasContent());
         }
         LOGGER.debug("[STORAGE REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
@@ -387,6 +393,8 @@ public class FileStorageRequestService {
     private Collection<JobInfo> scheduleJobsByStorage(String storage,
             Collection<FileStorageRequest> fileStorageRequests) {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
+        Collection<FileStorageRequest> remainingRequests = Sets.newHashSet();
+        remainingRequests.addAll(fileStorageRequests);
         try {
             PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
             IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
@@ -395,10 +403,16 @@ public class FileStorageRequestService {
             for (FileStorageWorkingSubset ws : response.getWorkingSubsets()) {
                 if (!ws.getFileReferenceRequests().isEmpty()) {
                     jobInfoList.add(scheduleJob(ws, conf.getBusinessId(), storage));
+                    remainingRequests.removeAll(ws.getFileReferenceRequests());
                 }
             }
+            // Handle preparation errors
             for (Entry<FileStorageRequest, String> request : response.getPreparationErrors().entrySet()) {
                 this.handleStorageNotAvailable(request.getKey(), Optional.ofNullable(request.getValue()));
+            }
+            // Handle request not handled by the plugin preparation step.
+            for (FileStorageRequest req : remainingRequests) {
+                this.handleStorageNotAvailable(req, Optional.of("Request has not been handled by plugin."));
             }
         } catch (ModuleException | PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
             LOGGER.error(e.getMessage(), e);
@@ -418,7 +432,7 @@ public class FileStorageRequestService {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, plgBusinessId));
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
-        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_STORAGE_JOB.getPriority(),
+        JobInfo jobInfo = jobInfoService.createAsPending(new JobInfo(false, JobsPriority.FILE_STORAGE_JOB.getPriority(),
                 parameters, authResolver.getUser(), FileStorageRequestJob.class.getName()));
         workingSubset.getFileReferenceRequests().forEach(fr -> fileStorageRequestRepo
                 .updateStatusAndJobId(FileRequestStatus.PENDING, jobInfo.getId().toString(), fr.getId()));

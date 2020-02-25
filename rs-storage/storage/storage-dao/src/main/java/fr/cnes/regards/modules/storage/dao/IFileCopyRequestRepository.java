@@ -44,6 +44,8 @@ public interface IFileCopyRequestRepository
 
     Page<FileCopyRequest> findByStatus(FileRequestStatus status, Pageable page);
 
+    Page<FileCopyRequest> findByStatusAndIdGreaterThan(FileRequestStatus status, Long id, Pageable page);
+
     Set<FileCopyRequest> findByMetaInfoChecksum(String checksum);
 
     Optional<FileCopyRequest> findOneByMetaInfoChecksumAndFileCacheGroupId(String checksum, String groupId);
