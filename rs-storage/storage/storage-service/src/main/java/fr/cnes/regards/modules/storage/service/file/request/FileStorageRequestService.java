@@ -432,7 +432,7 @@ public class FileStorageRequestService {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, plgBusinessId));
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
-        JobInfo jobInfo = jobInfoService.createAsPending(new JobInfo(false, JobsPriority.FILE_STORAGE_JOB.getPriority(),
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_STORAGE_JOB.getPriority(),
                 parameters, authResolver.getUser(), FileStorageRequestJob.class.getName()));
         workingSubset.getFileReferenceRequests().forEach(fr -> fileStorageRequestRepo
                 .updateStatusAndJobId(FileRequestStatus.PENDING, jobInfo.getId().toString(), fr.getId()));
