@@ -148,7 +148,7 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
             try {
                 return getSearchEngine(context.getDatasetUrn(), context.getEngineRequestParserType());
             } catch (ModuleException e) {
-                LOGGER.error(e.getMessage());
+                LOGGER.error(e.getMessage(), e);
                 return searchEngine;
             }
         } else {

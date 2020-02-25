@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.search.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.hateoas.Resource;
@@ -70,6 +72,6 @@ public class CatalogAttributeHelper implements IAttributeHelper {
             runtimeTenantResolver.clearTenant();
             FeignSecurityManager.reset();
         }
-        return null;
+        return Collections.emptyList();
     }
 }

@@ -59,6 +59,8 @@ public class AccessRightFilter implements IAccessRightFilter {
     private static final Function<AccessGroup, ICriterion> GROUP_TO_CRITERION = group -> ICriterion
             .eq(Terms.GROUPS.getName(), group.getName());
 
+    public static final String CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP = "Cannot set access right filter because user %s does not have any access group";
+
     /**
      * Provides access groups for a user with cache facilities. Autowired by Spring.
      */
@@ -129,7 +131,7 @@ public class AccessRightFilter implements IAccessRightFilter {
             // Throw an error if no access group
             if (accessGroups.isEmpty()) {
                 String errorMessage = String
-                        .format("Cannot set access right filter because user %s does not have " + "any access group",
+                        .format("Cannot set access right filter because user %s does not have any access group",
                                 authResolver.getUser());
                 LOGGER.error(errorMessage);
                 throw new AccessRightFilterException(errorMessage);
@@ -169,7 +171,7 @@ public class AccessRightFilter implements IAccessRightFilter {
             // Throw an error if no access group
             if (accessGroups.isEmpty()) {
                 String errorMessage = String
-                        .format("Cannot set access right filter because user %s does not have " + "any access group",
+                        .format("Cannot set access right filter because user %s does not have any access group",
                                 authResolver.getUser());
                 LOGGER.error(errorMessage);
                 throw new AccessRightFilterException(errorMessage);
@@ -208,7 +210,7 @@ public class AccessRightFilter implements IAccessRightFilter {
             // Throw an error if no access group
             if (accessGroups.isEmpty()) {
                 String errorMessage = String
-                        .format("Cannot set access right filter because user %s does not have " + "any access group",
+                        .format(CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
                                 authResolver.getUser());
                 LOGGER.error(errorMessage);
                 throw new AccessRightFilterException(errorMessage);

@@ -29,6 +29,8 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
  */
 public class GeoJsonLinkBuilder {
 
+    private GeoJsonLinkBuilder() {}
+
     /**
      * Convert a {@link Link} to a {@link GeoJsonLink}
      * @param springLink {@link Link}

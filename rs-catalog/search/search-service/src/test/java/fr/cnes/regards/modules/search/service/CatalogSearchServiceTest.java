@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -38,7 +35,7 @@ import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-
+import com.google.common.reflect.TypeToken;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -62,6 +59,8 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownPar
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.search.service.utils.SampleDataUtils;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit test for {@link CatalogSearchService}.
@@ -132,8 +131,11 @@ public class CatalogSearchServiceTest {
                 .thenAnswer(invocation -> new Resource<>(invocation.getArguments()[0]));
 
         // Instanciate the tested class
-        catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter,
-                facetConverter, pageableConverter);
+        catalogSearchService = new CatalogSearchService(searchService,
+                                                        openSearchService,
+                                                        accessRightFilter,
+                                                        facetConverter,
+                                                        pageableConverter);
     }
 
     /**
@@ -159,15 +161,19 @@ public class CatalogSearchServiceTest {
         FacetPage<DataObject> expectedSearchResult = SampleDataUtils.FACET_PAGE_DATAOBJECT;
 
         // Mock dependencies
-        Mockito.when(openSearchService.parse(q)).thenReturn(expectedCriterion);
-        Mockito.when(searchService.search(Mockito.any(SimpleSearchKey.class), Mockito.any(Pageable.class),
-                                          Mockito.any(ICriterion.class), Mockito.any()))
-                .thenReturn(expectedSearchResult);
+        TypeToken<SimpleSearchKey<DataObject>> simpleSearchKeyType = new TypeToken<SimpleSearchKey<DataObject>>() {
+
+        };
+        Mockito.when(searchService
+                             .search(Mockito.any((Class<SimpleSearchKey<DataObject>>) simpleSearchKeyType.getType()),
+                                     Mockito.any(Pageable.class),
+                                     Mockito.any(ICriterion.class),
+                                     Mockito.any())).thenReturn(expectedSearchResult);
         PagedResources<Resource<DataObject>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATAOBJECT;
         Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
-        catalogSearchService.search(q, searchKey, SampleDataUtils.QUERY_FACETS, pageable);
+        catalogSearchService.search(expectedCriterion, searchKey, SampleDataUtils.QUERY_FACETS, pageable);
 
         // Check
         Mockito.verify(searchService).search(searchKey, pageable, expectedCriterion, SampleDataUtils.FACETS);
@@ -197,15 +203,19 @@ public class CatalogSearchServiceTest {
         FacetPage<DataObject> expectedSearchResult = SampleDataUtils.FACET_PAGE_DATAOBJECT;
 
         // Mock dependencies
-        Mockito.when(openSearchService.parse(q)).thenReturn(expectedCriterion);
-        Mockito.when(searchService.search(Mockito.any(SimpleSearchKey.class), Mockito.any(Pageable.class),
-                                          Mockito.any(ICriterion.class), Mockito.any()))
-                .thenReturn(expectedSearchResult);
+        TypeToken<SimpleSearchKey<DataObject>> simpleSearchKeyType = new TypeToken<SimpleSearchKey<DataObject>>() {
+
+        };
+        Mockito.when(searchService
+                             .search(Mockito.any((Class<SimpleSearchKey<DataObject>>) simpleSearchKeyType.getType()),
+                                     Mockito.any(Pageable.class),
+                                     Mockito.any(ICriterion.class),
+                                     Mockito.any())).thenReturn(expectedSearchResult);
         PagedResources<Resource<DataObject>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATAOBJECT;
         Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
-        catalogSearchService.search(q, searchKey, null, pageable);
+        catalogSearchService.search(expectedCriterion, searchKey, null, pageable);
 
         // Check
         Mockito.verify(searchService).search(searchKey, pageable, expectedCriterion, facets);

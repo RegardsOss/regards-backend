@@ -56,7 +56,7 @@ public class SearchParameter {
     public SearchParameter(String name, AttributeModel attributeModel, ParameterConfiguration configuration,
             List<String> searchValues) {
         super();
-        this.setName(name);
+        this.name = name;
         this.attributeModel = attributeModel;
         this.configuration = configuration;
         this.searchValues = searchValues;
