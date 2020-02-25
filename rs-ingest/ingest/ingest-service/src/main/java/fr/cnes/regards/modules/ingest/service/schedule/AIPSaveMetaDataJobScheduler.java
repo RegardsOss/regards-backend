@@ -111,6 +111,8 @@ public class AIPSaveMetaDataJobScheduler {
 
     public JobInfo getUpdateJob() {
         JobInfo jobInfo = null;
+        LOGGER.debug("[OAIS SAVE METADATA SCHEDULER] Scheduling job ...");
+        long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, updateRequestIterationLimit, Sort.Direction.ASC, "id");
         // Fetch the first list of update request to handle
         Page<AIPStoreMetaDataRequest> waitingRequests = aipStoreMetaDataRepository.findWaitingRequest(pageRequest);
@@ -129,6 +131,9 @@ public class AIPSaveMetaDataJobScheduler {
 
             // Change request state
             abstractRequestRepository.updateStates(requestIds, InternalRequestState.RUNNING);
+
+            LOGGER.debug("[OAIS SAVE METADATA SCHEDULER] 1 Job scheduled for {} AIPStoreMetaDataRequest(s) in {} ms",
+                         waitingRequests.getNumberOfElements(), System.currentTimeMillis() - start);
         }
         return jobInfo;
     }

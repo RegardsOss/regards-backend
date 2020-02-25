@@ -113,6 +113,8 @@ public class OAISDeletionJobScheduler {
 
     private JobInfo getJob() {
         JobInfo jobInfo = null;
+        LOGGER.debug("[OAIS DELETION SCHEDULER] Scheduling job ...");
+        long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, deletionRequestIterationLimit, Sort.Direction.ASC, "id");
         // Fetch the first list of update request to handle
         Page<OAISDeletionRequest> waitingRequest = oaisDeletionRequestRepository.findWaitingRequest(pageRequest);
@@ -131,7 +133,10 @@ public class OAISDeletionJobScheduler {
             jobInfo = new JobInfo(false, IngestJobPriority.OAIS_DELETION_JOB_PRIORITY.getPriority(), jobParameters,
                     null, OAISDeletionJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
+            LOGGER.debug("[OAIS DELETION SCHEDULER] 1 Job scheduled for {} OAISDeletionRequest(s) in {} ms",
+                         waitingRequest.getNumberOfElements(), System.currentTimeMillis() - start);
         }
+
         return jobInfo;
     }
 

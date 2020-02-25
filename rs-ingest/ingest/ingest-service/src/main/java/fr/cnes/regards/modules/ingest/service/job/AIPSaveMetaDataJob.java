@@ -30,6 +30,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.reflect.TypeToken;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -76,6 +77,8 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        LOGGER.debug("[AIP SAVE META JOB] Running job for {} AIPStoreMetaDataRequest(s) requests", requests.size());
+        long start = System.currentTimeMillis();
         List<AIPEntity> aipsToUpdate = new ArrayList<>();
         List<FileDeletionRequestDTO> filesToDelete = new ArrayList<>();
         Set<OAISDataObjectLocation> locations = new HashSet<>();
@@ -98,10 +101,8 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
             // Check if there is already existing manifest that should be removed
             if (request.isRemoveCurrentMetaData() && (oldChecksum != null) && !oldChecksum.equals(newChecksum)) {
                 locations.addAll(aip.getManifestLocations());
-                LOGGER.trace("AIP Manifest to delete on {} locations : {} - {}",
-                             aip.getManifestLocations().size(),
-                             aip.getAipId(),
-                             oldChecksum);
+                LOGGER.trace("AIP Manifest to delete on {} locations : {} - {}", aip.getManifestLocations().size(),
+                             aip.getAipId(), oldChecksum);
                 filesToDelete.addAll(deleteLegacyManifest(oldChecksum, aip.getManifestLocations(), aip.getAipId()));
             }
 
@@ -116,12 +117,12 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
             Thread.currentThread().interrupt();
         } else {
             aipSaveMetaDataService.handle(requests, aipsToUpdate, filesToDelete);
-            LOGGER.info(
-                    this.getClass().getSimpleName() + ": {} manifests updated, {} manifests deleted on {} locations.",
-                    aipsToUpdate.size(),
-                    filesToDelete.size(),
-                    locations.size());
+            LOGGER.info(this.getClass().getSimpleName()
+                    + ": {} manifests updated, {} manifests deleted on {} locations.", aipsToUpdate.size(),
+                        filesToDelete.size(), locations.size());
         }
+        LOGGER.debug("[AIP SAVE META JOB] Job handled for {} AIPStoreMetaDataRequest(s) requests in {}ms",
+                     requests.size(), System.currentTimeMillis() - start);
     }
 
     private void recomputeChecksum(AIPStoreMetaDataRequest request, AIPEntity aip) {

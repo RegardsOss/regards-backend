@@ -32,6 +32,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.gson.reflect.TypeToken;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -106,6 +107,8 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        LOGGER.debug("[AIP UPDATE JOB] Running job for {} AIPUpdateRequest(s) requests", requestByAIP.size());
+        long start = System.currentTimeMillis();
         List<AIPEntity> updates = new ArrayList<>();
         long numberOfDeletionRequest = 0L;
         long numberOfStorageScheduled = 0L;
@@ -127,8 +130,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                     if (aipWrapper.hasDeletionRequests()) {
                         // Request files deletion
                         Collection<FileDeletionRequestDTO> deletionRequests = aipWrapper.getDeletionRequests();
-                        LOGGER.trace("[AIP {}] Run {} deletion requests on storage.",
-                                     aipWrapper.getAip().getAipId(),
+                        LOGGER.trace("[AIP {}] Run {} deletion requests on storage.", aipWrapper.getAip().getAipId(),
                                      deletionRequests.size());
                         numberOfDeletionRequest += deletionRequests.size();
                         storageClient.delete(deletionRequests);
@@ -138,15 +140,13 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                         // Schedule manifest storage
                         Set<OAISDataObjectLocation> manifestLocations = aipWrapper.getAip().getManifestLocations();
                         LOGGER.trace("[AIP {}] Schedule manifest storage on {} locations.",
-                                     aipWrapper.getAip().getAipId(),
-                                     manifestLocations.size());
+                                     aipWrapper.getAip().getAipId(), manifestLocations.size());
                         numberOfLocations += manifestLocations.size();
                         numberOfStorageScheduled++;
                         aipStoreMetaDataService.schedule(aipWrapper.getAip(), manifestLocations, true, true);
                     } else {
-                        LOGGER.trace(
-                                "[AIP {}] Update tasks executed have not modified the AIP content. Manifest does not need to be updated on storage locations.",
-                                aipWrapper.getAip().getAipId());
+                        LOGGER.trace("[AIP {}] Update tasks executed have not modified the AIP content. Manifest does not need to be updated on storage locations.",
+                                     aipWrapper.getAip().getAipId());
                         numberOfUnmodifiedManifests++;
                     }
                 }
@@ -158,21 +158,20 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         // transaction can be realized to update requests states.
         boolean interrupted = Thread.interrupted();
         LOGGER.info(this.getClass().getSimpleName()
-                            + ": {} manifests storage scheduled on {} locations. {} file deletion requested. {} unmodified manifests.",
-                    numberOfStorageScheduled,
-                    numberOfLocations,
-                    numberOfDeletionRequest,
-                    numberOfUnmodifiedManifests);
+                + ": {} manifests storage scheduled on {} locations. {} file deletion requested. {} unmodified manifests.",
+                    numberOfStorageScheduled, numberOfLocations, numberOfDeletionRequest, numberOfUnmodifiedManifests);
         // Keep only ERROR requests
         List<AIPUpdateRequest> succeedRequestsToDelete = requestByAIP.values().stream()
-                .filter(request -> (request.getState() != InternalRequestState.ERROR) && (request.getState()
-                        != InternalRequestState.ABORTED)).collect(Collectors.toList());
+                .filter(request -> (request.getState() != InternalRequestState.ERROR)
+                        && (request.getState() != InternalRequestState.ABORTED))
+                .collect(Collectors.toList());
         aipUpdateRequestRepository.deleteAll(succeedRequestsToDelete);
 
         // Save ERROR requests
         List<AIPUpdateRequest> errorRequests = requestByAIP.values().stream()
-                .filter(request -> (request.getState() == InternalRequestState.ERROR) || (request.getState()
-                        == InternalRequestState.ABORTED)).collect(Collectors.toList());
+                .filter(request -> (request.getState() == InternalRequestState.ERROR)
+                        || (request.getState() == InternalRequestState.ABORTED))
+                .collect(Collectors.toList());
         aipUpdateRequestRepository.saveAll(errorRequests);
 
         // Save AIPs
@@ -181,6 +180,9 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         if (interrupted) {
             Thread.currentThread().interrupt();
         }
+
+        LOGGER.debug("[AIP UPDATE JOB] Job handled for {} AIPUpdateRequest(s) requests in {}ms", requestByAIP.size(),
+                     System.currentTimeMillis() - start);
     }
 
     private AIPEntityUpdateWrapper runUpdates(List<AIPUpdateRequest> updateRequests) {

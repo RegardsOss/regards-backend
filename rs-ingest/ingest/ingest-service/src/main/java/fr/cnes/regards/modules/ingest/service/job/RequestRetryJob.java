@@ -18,6 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -27,17 +40,6 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.request.IRequestRetryService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 /**
  * This job handles request retry
@@ -76,12 +78,15 @@ public class RequestRetryJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        LOGGER.debug("[REQUEST RETRY JOB] Running job ...");
+        long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
         // Override state in filter
         criteria.setStates(new HashSet<>());
         criteria.addState(InternalRequestState.ERROR);
         criteria.addState(InternalRequestState.ABORTED);
         criteria.setStateExcluded(null);
+        int nbRelaunchedRequests = 0;
         Page<AbstractRequest> requestsPage;
         do {
             // Page request isn't modified, as entities doesn't keep the ERROR state, on every page fetched
@@ -102,8 +107,11 @@ public class RequestRetryJob extends AbstractJob<Void> {
             for (List<AbstractRequest> requestsByType : byRequestType.values()) {
                 retryRequestService.relaunchRequests(requestsByType);
             }
+            nbRelaunchedRequests += byRequestType.size();
             advanceCompletion();
         } while (requestsPage.hasNext());
+        LOGGER.debug("[REQUEST RETRY JOB] Job handled for {} AbstractRequest(s) in {}ms", nbRelaunchedRequests,
+                     System.currentTimeMillis() - start);
     }
 
     @Override

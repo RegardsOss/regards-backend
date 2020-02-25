@@ -65,7 +65,8 @@ public class AIPUpdateRequestService {
      * @param aips {@link AIPEntity}s to update
      * @param updateTasks  {@link AbstractAIPUpdateTask}s update tasks
      */
-    public void create(Collection<AIPEntity> aips, Collection<AbstractAIPUpdateTask> updateTasks) {
+    public int create(Collection<AIPEntity> aips, Collection<AbstractAIPUpdateTask> updateTasks) {
+        int nbScheduled = 0;
         // Test if there is some AIPs referenced by some running requests
         List<Long> aipIds = aips.stream().map(wr -> wr.getId()).collect(Collectors.toList());
         if (!aipIds.isEmpty()) {
@@ -84,7 +85,9 @@ public class AIPUpdateRequestService {
                 }
             }
             requestService.scheduleRequests(requests);
+            nbScheduled = requests.size();
         }
+        return nbScheduled;
     }
 
     /**

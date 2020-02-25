@@ -91,20 +91,23 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        LOGGER.debug("[AIP UPDATE CREATOR JOB] Running job ...");
+        long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, aipIterationLimit, Sort.Direction.ASC, "id");
         Page<AIPEntity> aipsPage;
+        int nbScheduled = 0;
         // Set the request as running
         request.setState(InternalRequestState.RUNNING);
         aipUpdatesCreatorRepository.save(request);
         AIPUpdateParametersDto updateTask = request.getConfig();
         aipsPage = aipRepository.findByFilters(updateTask.getCriteria(), pageRequest);
-        while(aipsPage.hasContent()) {
+        while (aipsPage.hasContent()) {
             aipsPage = aipRepository.findByFilters(updateTask.getCriteria(), pageRequest);
             // Save number of pages to publish job advancement
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();
             }
-            aipUpdateReqService.create(aipsPage.getContent(), AbstractAIPUpdateTask.build(updateTask));
+            nbScheduled += aipUpdateReqService.create(aipsPage.getContent(), AbstractAIPUpdateTask.build(updateTask));
             if (totalPages > 0) {
                 advanceCompletion();
             }
@@ -112,6 +115,9 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
         }
         // Delete the request
         requestService.deleteRequest(request);
+
+        LOGGER.debug("[AIP UPDATE JOB] {} AIPUpdateRequest(s) scheduled in {}ms", nbScheduled,
+                     System.currentTimeMillis() - start);
     }
 
     @Override

@@ -18,8 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.common.collect.Lists;
 import com.google.gson.reflect.TypeToken;
+
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -27,10 +34,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Job to run deletion of a given {@link AIPEntity}.<br/>
@@ -64,7 +67,11 @@ public class OAISDeletionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        LOGGER.debug("[OAIS DELETION JOB] Running job for {} OAISDeletionRequest(s) requests", requests.size());
+        long start = System.currentTimeMillis();
         oaisDeletionRequestService.runDeletion(requests);
+        LOGGER.debug("[OAIS DELETION JOB] Job handled for {} OAISDeletionRequest(s) requests in {}ms", requests.size(),
+                     System.currentTimeMillis() - start);
     }
 
     @Override

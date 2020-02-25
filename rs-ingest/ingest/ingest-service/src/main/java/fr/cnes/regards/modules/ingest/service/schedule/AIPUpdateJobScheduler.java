@@ -18,7 +18,25 @@
  */
 package fr.cnes.regards.modules.ingest.service.schedule;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -33,21 +51,6 @@ import fr.cnes.regards.modules.ingest.service.job.AIPUpdateRunnerJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob;
 import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 /**
  * This component scans the AIPUpdateRepo and regroups tasks by aip to update
@@ -113,6 +116,8 @@ public class AIPUpdateJobScheduler {
 
     public JobInfo getUpdateJob() {
         JobInfo jobInfo = null;
+        LOGGER.debug("[OAIS UPDATE SCHEDULER] Scheduling job ...");
+        long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, updateRequestIterationLimit, Sort.Direction.ASC, "id");
         // Fetch the first list of update request to handle
         Page<AIPUpdateRequest> waitingRequest = aipUpdateRequestRepository.findWaitingRequest(pageRequest);
@@ -137,6 +142,8 @@ public class AIPUpdateJobScheduler {
             jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_RUNNER_PRIORITY.getPriority(), jobParameters,
                     null, AIPUpdateRunnerJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
+            LOGGER.debug("[OAIS UPDATE SCHEDULER] 1 Job scheduled for {} AIPUpdateRequest(s) in {} ms",
+                         waitingRequest.getNumberOfElements(), System.currentTimeMillis() - start);
         }
         return jobInfo;
     }
