@@ -249,10 +249,10 @@ public class AIPStorageService implements IAIPStorageService {
                     dataObject.setChecksum(metaInfo.getChecksum());
                     // Update representational info
                     if (metaInfo.getHeight() != null) {
-                        ci.getRepresentationInformation().getSyntax().setHeight(new Double(metaInfo.getHeight()));
+                        ci.getRepresentationInformation().getSyntax().setHeight(metaInfo.getHeight().doubleValue());
                     }
                     if (metaInfo.getWidth() != null) {
-                        ci.getRepresentationInformation().getSyntax().setWidth(new Double(metaInfo.getWidth()));
+                        ci.getRepresentationInformation().getSyntax().setWidth(metaInfo.getWidth().doubleValue());
                     }
                     ci.getRepresentationInformation().getSyntax().setMimeType(metaInfo.getMimeType());
                     // Exclude from the location list any null storage

@@ -34,7 +34,6 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -131,8 +130,11 @@ public class IngestRequestService implements IIngestRequestService {
         jobParameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, ids));
         jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, chainName));
         // Lock job info
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
-                jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false,
+                                      IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
+                                      jobParameters,
+                                      authResolver.getUser(),
+                                      IngestProcessingJob.class.getName());
         // Lock job to avoid automatic deletion. The job must be unlock when the link to the request is removed.
         jobInfo.setLocked(true);
         jobInfoService.createAsQueued(jobInfo);
@@ -150,6 +152,7 @@ public class IngestRequestService implements IIngestRequestService {
             // Load ingest requests
             try {
                 Type type = new TypeToken<Set<Long>>() {
+
                 }.getType();
                 Set<Long> ids;
                 ids = IJob.getValue(jobInfo.getParametersAsMap(), IngestProcessingJob.IDS_PARAMETER, type);
@@ -157,7 +160,8 @@ public class IngestRequestService implements IIngestRequestService {
                 requests.forEach(r -> handleIngestJobFailed(r, null, null));
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 String message = String.format("Ingest request job with id \"%s\" fails with status \"%s\"",
-                                               jobEvent.getJobId(), jobEvent.getJobEventType());
+                                               jobEvent.getJobId(),
+                                               jobEvent.getJobEventType());
                 LOGGER.error(message, e);
                 notificationClient.notify(message, "Ingest job failure", NotificationLevel.ERROR, DefaultRole.ADMIN);
             }
@@ -176,8 +180,10 @@ public class IngestRequestService implements IIngestRequestService {
 
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   RequestState.GRANTED, request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null,
+                                                   null,
+                                                   RequestState.GRANTED,
+                                                   request.getErrors()));
     }
 
     @Override
@@ -185,8 +191,10 @@ public class IngestRequestService implements IIngestRequestService {
         // Do not keep track of the request
         // Publish DENIED request
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   RequestState.DENIED, request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null,
+                                                   null,
+                                                   RequestState.DENIED,
+                                                   request.getErrors()));
     }
 
     @Override
@@ -234,9 +242,11 @@ public class IngestRequestService implements IIngestRequestService {
             }
         } catch (ModuleException e) {
             // Keep track of the error
-            saveAndPublishErrorRequest(request, String
+            String message = String
                     .format("Cannot send events to store AIP files because they are malformed. Cause: %s",
-                            e.getMessage()));
+                            e.getMessage());
+            LOGGER.debug(message, e);
+            saveAndPublishErrorRequest(request, message);
             sessionNotifier.productStoreError(request.getSessionOwner(), request.getSession(), request.getAips());
         }
     }
@@ -254,7 +264,7 @@ public class IngestRequestService implements IIngestRequestService {
                         request.setStep(IngestRequestStep.REMOTE_STORAGE_DENIED);
                         request.setState(InternalRequestState.ERROR);
                         // Keep track of the error
-                        saveAndPublishErrorRequest(request, String.format("Remote file storage request denied"));
+                        saveAndPublishErrorRequest(request, "Remote file storage request denied");
                         break;
                     default:
                         // Keep track of the error
@@ -318,8 +328,11 @@ public class IngestRequestService implements IIngestRequestService {
         sipEntity.setState(SIPState.STORED);
         sipService.save(sipEntity);
         // Publish SUCCESSFUL request
-        publisher.publish(IngestRequestEvent.build(request.getRequestId(), request.getSip().getId(),
-                                                   sipEntity.getSipId(), RequestState.SUCCESS, request.getErrors()));
+        publisher.publish(IngestRequestEvent.build(request.getRequestId(),
+                                                   request.getSip().getId(),
+                                                   sipEntity.getSipId(),
+                                                   RequestState.SUCCESS,
+                                                   request.getErrors()));
     }
 
     @Override
@@ -351,7 +364,8 @@ public class IngestRequestService implements IIngestRequestService {
             Optional<IngestRequest> requestOp = ingestRequestRepository.findOneWithAIPs(ri.getGroupId());
             if (requestOp.isPresent()) {
                 IngestRequest request = requestOp.get();
-                if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
+                if (request.getStep()
+                        == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
                     aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), ri.getSuccessRequests());
                     List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, ri);
                     if (!remoteStepGroupIds.isEmpty()) {
@@ -387,7 +401,8 @@ public class IngestRequestService implements IIngestRequestService {
     private void saveAndPublishErrorRequest(IngestRequest request, @Nullable String message) {
         // Mutate request
         request.addError(String.format("Storage request error with id \"%s\" and SIP provider id \"%s\"",
-                                       request.getRequestId(), request.getSip().getId()));
+                                       request.getRequestId(),
+                                       request.getSip().getId()));
         request.setState(InternalRequestState.ERROR);
         if (message != null) {
             request.addError(message);
@@ -397,8 +412,10 @@ public class IngestRequestService implements IIngestRequestService {
         saveRequestAndCheck(request);
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   RequestState.ERROR, request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null,
+                                                   null,
+                                                   RequestState.ERROR,
+                                                   request.getErrors()));
     }
 
     /**

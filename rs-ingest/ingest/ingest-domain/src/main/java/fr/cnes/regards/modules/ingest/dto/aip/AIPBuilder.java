@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
  * AIP Builder. Used to create AIP.
  * @author Marc Sordi
  *
- * Use {@link AIP} fluent API instead
+ * @deprecated {@link AIP} fluent API instead
  */
 @Deprecated
 public class AIPBuilder extends IPBuilder<AIP> {

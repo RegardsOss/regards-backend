@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.ingest.service.request.RequestService;
  */
 public class RequestRetryJob extends AbstractJob<Void> {
 
-    public static final String CRITERIA = "CRITERIA";
+    public static final String CRITERIA_JOB_PARAM_NAME = "CRITERIA";
 
     @Autowired
     private RequestService requestService;
@@ -73,7 +73,7 @@ public class RequestRetryJob extends AbstractJob<Void> {
             throws JobParameterMissingException, JobParameterInvalidException {
 
         // Retrieve request criteria payload
-        criteria = getValue(parameters, CRITERIA);
+        criteria = getValue(parameters, CRITERIA_JOB_PARAM_NAME);
     }
 
     @Override

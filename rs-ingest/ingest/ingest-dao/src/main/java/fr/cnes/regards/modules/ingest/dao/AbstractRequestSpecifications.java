@@ -48,6 +48,10 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
  */
 public final class AbstractRequestSpecifications {
 
+    public static final String DISCRIMINANT_ATTRIBUTE = "dtype";
+
+    public static final String STATE_ATTRIBUTE = "state";
+
     private AbstractRequestSpecifications() {
         throw new IllegalStateException("Utility class");
     }
@@ -113,18 +117,18 @@ public final class AbstractRequestSpecifications {
                 predicates.add(cb.or(providerIdsPredicates.toArray(new Predicate[0])));
             }
             if (filters.getRequestType() != null) {
-                predicates.add(cb.equal(root.get("dtype"), filters.getRequestType().name()));
+                predicates.add(cb.equal(root.get(DISCRIMINANT_ATTRIBUTE), filters.getRequestType().name()));
             }
             Set<InternalRequestState> states = filters.getStates();
             if (states != null && !states.isEmpty()) {
                 Set<Predicate> statePredicates = new HashSet<>();
                 for (InternalRequestState state : filters.getStates()) {
-                    statePredicates.add(cb.equal(root.get("state"), state));
+                    statePredicates.add(cb.equal(root.get(STATE_ATTRIBUTE), state));
                 }
                 predicates.add(cb.or(statePredicates.toArray(new Predicate[0])));
             }
             if (filters.getStateExcluded() != null) {
-                predicates.add(cb.notEqual(root.get("state"), filters.getStateExcluded()));
+                predicates.add(cb.notEqual(root.get(STATE_ATTRIBUTE), filters.getStateExcluded()));
             }
 
             // Add order
@@ -306,12 +310,12 @@ public final class AbstractRequestSpecifications {
         if (session.isPresent()) {
             predicates.add(cb.equal(root.get("session"), session.get()));
         }
-        predicates.add(cb.equal(root.get("dtype"), requestType));
+        predicates.add(cb.equal(root.get(DISCRIMINANT_ATTRIBUTE), requestType));
         return cb.and(predicates.toArray(new Predicate[predicates.size()]));
     }
 
     public static Predicate searchMacroRequest(Root<AbstractRequest> root, CriteriaBuilder cb, String requestType) {
-        return cb.and(cb.equal(root.get("dtype"), requestType));
+        return cb.and(cb.equal(root.get(DISCRIMINANT_ATTRIBUTE), requestType));
     }
 
     public static Predicate getRunningRequestFilter(Root<AbstractRequest> root, CriteriaBuilder cb) {
@@ -319,7 +323,7 @@ public final class AbstractRequestSpecifications {
         ArrayList<InternalRequestState> runningStates = Lists
                 .newArrayList(InternalRequestState.CREATED, InternalRequestState.RUNNING);
         for (InternalRequestState state : runningStates) {
-            statePredicates.add(cb.equal(root.get("state"), state));
+            statePredicates.add(cb.equal(root.get(STATE_ATTRIBUTE), state));
         }
         // Also add the limit
         // Use the OR operator between each state

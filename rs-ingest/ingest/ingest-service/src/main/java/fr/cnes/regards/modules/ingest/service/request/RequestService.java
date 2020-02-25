@@ -213,7 +213,7 @@ public class RequestService implements IRequestService {
 
     @Override
     public void scheduleRequestDeletionJob(SearchRequestsParameters filters) {
-        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestDeletionJob.CRITERIA, filters));
+        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestDeletionJob.CRITERIA_JOB_PARAM_NAME, filters));
         // Schedule request deletion job
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_DELETION_JOB_PRIORITY.getPriority(),
                 jobParameters, authResolver.getUser(), RequestDeletionJob.class.getName());
@@ -223,7 +223,7 @@ public class RequestService implements IRequestService {
 
     @Override
     public void scheduleRequestRetryJob(SearchRequestsParameters filters) {
-        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestRetryJob.CRITERIA, filters));
+        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestRetryJob.CRITERIA_JOB_PARAM_NAME, filters));
         // Schedule request retry job
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_RETRY_JOB_PRIORITY.getPriority(), jobParameters,
                 authResolver.getUser(), RequestRetryJob.class.getName());

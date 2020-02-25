@@ -52,8 +52,6 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO
  */
 public class AIPSaveMetaDataJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPSaveMetaDataJob.class);
-
     public static final String UPDATE_METADATA_REQUEST_IDS = "UPDATE_METADATA_REQUEST_IDS";
 
     private List<AIPStoreMetaDataRequest> requests;

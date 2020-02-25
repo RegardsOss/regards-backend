@@ -122,7 +122,6 @@ public class IngestRequest extends AbstractRequest {
     public void setStep(IngestRequestStep step, long remoteStepTimeout) {
         this.config.setStep(step, remoteStepTimeout);
         this.setRemoteStepDeadline(OffsetDateTime.now().plusMinutes(remoteStepTimeout));
-        ;
     }
 
     public List<AIPEntity> getAips() {

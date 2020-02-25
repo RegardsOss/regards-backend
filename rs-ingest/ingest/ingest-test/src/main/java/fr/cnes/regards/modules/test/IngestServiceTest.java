@@ -92,9 +92,8 @@ public class IngestServiceTest {
 
     /**
      * Clean everything a test can use, to prepare the empty environment for the next test
-     * @throws Exception
      */
-    public void init() throws Exception {
+    public void init() {
         boolean done = false;
         int loop = 0;
         do {
@@ -135,7 +134,7 @@ public class IngestServiceTest {
                 vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
                 amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
             } catch (AmqpIOException e) {
-                LOGGER.warn("Failed to clean AMQP queues");
+                LOGGER.warn("Failed to clean AMQP queues", e);
             } finally {
                 vhostAdmin.unbind();
             }

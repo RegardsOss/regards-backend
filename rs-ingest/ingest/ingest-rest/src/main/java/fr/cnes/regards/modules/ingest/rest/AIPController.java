@@ -97,10 +97,12 @@ public class AIPController implements IResourceController<AIPEntityLight> {
      */
     public static final String TAG_MANAGEMENT_PATH = "/tags";
 
+    public static final String SEARCH_PATH = "/search";
+
     /**
      * Controller path to search used tags by multiple AIPs
      */
-    public static final String TAG_SEARCH_PATH = TAG_MANAGEMENT_PATH + "/search";
+    public static final String TAG_SEARCH_PATH = TAG_MANAGEMENT_PATH + SEARCH_PATH;
 
     /**
      * Controller path to manage storage of multiple AIPs
@@ -110,7 +112,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     /**
      * Controller path to search used storages by multiple AIPs
      */
-    public static final String STORAGE_SEARCH_PATH = STORAGE_MANAGEMENT_PATH + "/search";
+    public static final String STORAGE_SEARCH_PATH = STORAGE_MANAGEMENT_PATH + SEARCH_PATH;
 
     /**
      * Controller path to manage storage of multiple AIPs
@@ -120,7 +122,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     /**
      * Controller path to search used storages by multiple AIPs
      */
-    public static final String CATEGORIES_SEARCH_PATH = CATEGORIES_MANAGEMENT_PATH + "/search";
+    public static final String CATEGORIES_SEARCH_PATH = CATEGORIES_MANAGEMENT_PATH + SEARCH_PATH;
 
     /**
      * Controller path to update multiple AIPs using criteria and modification lists

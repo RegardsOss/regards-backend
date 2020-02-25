@@ -66,8 +66,6 @@ import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
  */
 public class IngestProcessingJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestProcessingJob.class);
-
     public static final String CHAIN_NAME_PARAMETER = "chain";
 
     public static final String IDS_PARAMETER = "ids";

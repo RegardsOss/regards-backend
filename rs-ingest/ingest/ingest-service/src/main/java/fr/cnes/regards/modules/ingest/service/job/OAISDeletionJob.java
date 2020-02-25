@@ -49,8 +49,6 @@ import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
  */
 public class OAISDeletionJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OAISDeletionJob.class);
-
     public static final String OAIS_DELETION_REQUEST_IDS = "OAIS_DELETION_REQUEST_IDS";
 
     private List<OAISDeletionRequest> requests = Lists.newArrayList();

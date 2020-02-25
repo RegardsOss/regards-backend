@@ -54,8 +54,6 @@ import fr.cnes.regards.modules.ingest.service.request.RequestService;
  */
 public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdatesCreatorJob.class);
-
     public static final String REQUEST_ID = "REQUEST_ID";
 
     private AIPUpdatesCreatorRequest request;
