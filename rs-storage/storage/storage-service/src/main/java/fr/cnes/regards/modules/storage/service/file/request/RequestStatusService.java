@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 
 /**
  * Service to handle {@link FileRequestStatus} for new requests of all types.<br/>
@@ -82,6 +83,9 @@ public class RequestStatusService {
 
     @Autowired
     private IFileCacheRequestRepository cacheReqRepo;
+
+    @Autowired
+    private RequestsGroupService reqGrpService;
 
     @Autowired
     private IJobInfoService jobService;
@@ -236,6 +240,7 @@ public class RequestStatusService {
                                                                               OffsetDateTime.now().toString()),
                                        r.getId());
         }
+        reqGrpService.deleteRequestGroups(FileRequestType.STORAGE);
         LOGGER.info("[FORCE STOP] Number of stopped storage requests : {}", pendings.getNumberOfElements());
     }
 
@@ -251,6 +256,7 @@ public class RequestStatusService {
                                                                                OffsetDateTime.now().toString()),
                                         r.getId());
         }
+        reqGrpService.deleteRequestGroups(FileRequestType.DELETION);
         LOGGER.info("[FORCE STOP] Number of stopped deletion requests : {}", pendings.getNumberOfElements());
     }
 
@@ -261,6 +267,7 @@ public class RequestStatusService {
                                                                            OffsetDateTime.now().toString()),
                                     r.getId());
         }
+        reqGrpService.deleteRequestGroups(FileRequestType.COPY);
         LOGGER.info("[FORCE STOP] Number of stopped copy requests : {}", pendings.getNumberOfElements());
     }
 
@@ -276,6 +283,7 @@ public class RequestStatusService {
                                                                             OffsetDateTime.now().toString()),
                                      r.getId());
         }
+        reqGrpService.deleteRequestGroups(FileRequestType.AVAILABILITY);
         LOGGER.info("[FORCE STOP] Number of stopped cache requests : {}", pendings.getNumberOfElements());
     }
 

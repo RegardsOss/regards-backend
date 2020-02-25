@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -321,12 +322,16 @@ public class RequestsGroupService {
         return expired;
     }
 
+    private void groupDone(RequestGroup reqGrp) {
+        groupDone(reqGrp, Optional.empty());
+    }
+
     /**
      * Handle a group request done. All requests of the given group has terminated (success or error).
      * @param groupId
      * @param type
      */
-    private void groupDone(RequestGroup reqGrp) {
+    private void groupDone(RequestGroup reqGrp, Optional<FlowItemStatus> forcedStatus) {
         // 1. Do only one database request, then dispatch results between success and errors
         Set<RequestResultInfo> resultInfos = groupReqInfoRepository.findByGroupId(reqGrp.getId());
         Set<RequestResultInfo> errors = Sets.newHashSet();
@@ -342,8 +347,8 @@ public class RequestsGroupService {
         if (errors.isEmpty()) {
             LOGGER.trace("[{} GROUP SUCCESS {}] - {} requests success.", reqGrp.getType().toString().toUpperCase(),
                          reqGrp.getId(), successes.size());
-            publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(), reqGrp.getType(), FlowItemStatus.SUCCESS,
-                                                           successes));
+            publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(), reqGrp.getType(),
+                                                           forcedStatus.orElse(FlowItemStatus.SUCCESS), successes));
             if (successes.isEmpty()) {
                 LOGGER.error("[{} GROUP SUCCESS {}] No success requests associated to terminated group",
                              reqGrp.getType(), reqGrp.getId());
@@ -382,5 +387,18 @@ public class RequestsGroupService {
         gInfo.setError(error);
         gInfo.setErrorCause(errorCause);
         groupReqInfoRepository.save(gInfo);
+    }
+
+    /**
+     * @param storage
+     */
+    public void deleteRequestGroups(FileRequestType type) {
+        Pageable page = PageRequest.of(0, 500, Direction.ASC, "id");
+        Page<RequestGroup> groups = reqGroupRepository.findByType(type, page);
+        if (!groups.isEmpty()) {
+            for (RequestGroup group : groups) {
+                groupDone(group, Optional.of(FlowItemStatus.ERROR));
+            }
+        }
     }
 }

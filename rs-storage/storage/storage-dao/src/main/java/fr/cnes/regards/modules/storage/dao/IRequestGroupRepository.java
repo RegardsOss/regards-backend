@@ -18,9 +18,12 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.modules.storage.domain.database.request.RequestGroup;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 
 /**
  * JPA Repository to handle access to {@link RequestGroup} entities.
@@ -29,5 +32,7 @@ import fr.cnes.regards.modules.storage.domain.database.request.RequestGroup;
  *
  */
 public interface IRequestGroupRepository extends JpaRepository<RequestGroup, String> {
+
+    Page<RequestGroup> findByType(FileRequestType type, Pageable page);
 
 }
