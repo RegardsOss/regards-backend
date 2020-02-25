@@ -79,10 +79,12 @@ public abstract class AbstractRequestFlowHandler<T extends ISubscribable> implem
                         items.add(item);
                     }
                 }
-                LOGGER.debug("Processing bulk of {} items", items.size());
+                LOGGER.trace("Processing bulk of {} items", items.size());
                 long start = System.currentTimeMillis();
                 processBulk(items);
-                LOGGER.debug("{} items registered in {} ms", items.size(), System.currentTimeMillis() - start);
+                if (!items.isEmpty()) {
+                    LOGGER.debug("{} items registered in {} ms", items.size(), System.currentTimeMillis() - start);
+                }
                 items.clear();
             } finally {
                 runtimeTenantResolver.clearTenant();
