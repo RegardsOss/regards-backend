@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.ingest.service.job;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -51,6 +53,8 @@ import fr.cnes.regards.modules.ingest.service.request.RequestService;
  * @author Léo Mieulet
  */
 public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdatesCreatorJob.class);
 
     public static final String REQUEST_ID = "REQUEST_ID";
 

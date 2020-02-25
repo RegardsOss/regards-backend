@@ -26,6 +26,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
@@ -63,6 +65,8 @@ import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
  * @author Sébastien Binda
  */
 public class IngestProcessingJob extends AbstractJob<Void> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestProcessingJob.class);
 
     public static final String CHAIN_NAME_PARAMETER = "chain";
 

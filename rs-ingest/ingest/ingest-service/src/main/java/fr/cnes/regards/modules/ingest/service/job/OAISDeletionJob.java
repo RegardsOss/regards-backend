@@ -22,6 +22,8 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Lists;
@@ -46,6 +48,8 @@ import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
  * @author Sébastien Binda
  */
 public class OAISDeletionJob extends AbstractJob<Void> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OAISDeletionJob.class);
 
     public static final String OAIS_DELETION_REQUEST_IDS = "OAIS_DELETION_REQUEST_IDS";
 

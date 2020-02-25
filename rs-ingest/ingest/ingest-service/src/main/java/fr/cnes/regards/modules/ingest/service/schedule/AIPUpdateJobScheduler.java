@@ -116,7 +116,7 @@ public class AIPUpdateJobScheduler {
 
     public JobInfo getUpdateJob() {
         JobInfo jobInfo = null;
-        LOGGER.debug("[OAIS UPDATE SCHEDULER] Scheduling job ...");
+        LOGGER.trace("[OAIS UPDATE SCHEDULER] Scheduling job ...");
         long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, updateRequestIterationLimit, Sort.Direction.ASC, "id");
         // Fetch the first list of update request to handle

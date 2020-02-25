@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.reflect.TypeToken;
@@ -49,6 +51,8 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO
  * @author Léo Mieulet
  */
 public class AIPSaveMetaDataJob extends AbstractJob<Void> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPSaveMetaDataJob.class);
 
     public static final String UPDATE_METADATA_REQUEST_IDS = "UPDATE_METADATA_REQUEST_IDS";
 

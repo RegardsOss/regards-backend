@@ -113,7 +113,7 @@ public class OAISDeletionJobScheduler {
 
     private JobInfo getJob() {
         JobInfo jobInfo = null;
-        LOGGER.debug("[OAIS DELETION SCHEDULER] Scheduling job ...");
+        LOGGER.trace("[OAIS DELETION SCHEDULER] Scheduling job ...");
         long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, deletionRequestIterationLimit, Sort.Direction.ASC, "id");
         // Fetch the first list of update request to handle
