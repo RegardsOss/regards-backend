@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,19 +65,18 @@ public class Oauth2DefaultTokenAdapter extends TypeAdapter<DefaultOAuth2AccessTo
         }
         Set<String> scope = token.getScope();
         if (scope != null && !scope.isEmpty()) {
-            StringBuffer scopes = new StringBuffer();
+            StringJoiner scopes = new StringJoiner(" ");
             for (String s : scope) {
                 Assert.hasLength(s, "Scopes cannot be null or empty. Got " + scope + "");
-                scopes.append(s);
-                scopes.append(" ");
+                scopes.add(s);
             }
             out.name(OAuth2AccessToken.SCOPE);
-            out.value(scopes.substring(0, scopes.length() - 1));
+            out.value(scopes.toString().substring(0, scopes.length() - 1));
         }
         Map<String, Object> additionalInformation = token.getAdditionalInformation();
-        for (String key : additionalInformation.keySet()) {
-            out.name(key);
-            out.jsonValue(gson.toJson(additionalInformation.get(key)));
+        for (Map.Entry<String, Object> entry : additionalInformation.entrySet()) {
+            out.name(entry.getKey());
+            out.jsonValue(gson.toJson(entry.getValue()));
         }
         out.endObject();
     }
@@ -89,7 +89,7 @@ public class Oauth2DefaultTokenAdapter extends TypeAdapter<DefaultOAuth2AccessTo
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 

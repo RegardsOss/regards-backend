@@ -221,11 +221,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             for (PluginConfiguration pluginConfiguration : plgConfs) {
                 if (!pluginResponse.getAccessGranted()) {
                     try {
-                        pluginResponse = doPluginAuthentication(pluginService.getPlugin(pluginConfiguration.getId()),
+                        pluginResponse = doPluginAuthentication(pluginService.getPlugin(pluginConfiguration.getBusinessId()),
                                                                 login, password, scope);
-                    } catch (ModuleException e) {
-                        LOG.error(e.getMessage(), e);
-                    } catch (NotAvailablePluginConfigurationException e) {
+                    } catch (ModuleException | NotAvailablePluginConfigurationException e) {
                         LOG.info(e.getMessage(), e);
                     }
                 }
@@ -265,7 +263,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         try {
             IRegistrationClient client = beanFactory.getBean(IRegistrationClient.class);
 
-            LOG.info("Creating new account for user email=" + userEmail);
+            LOG.info("Creating new account for user email= {}", userEmail);
             try {
                 FeignSecurityManager.asSystem();
                 switch (userStatus) {
@@ -281,7 +279,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             } catch (FeignException e) {
                 String message = String.format("Error creation new account for user %s. Cause : %s", userEmail,
                                                e.getMessage());
-                LOG.error(message);
+                LOG.error(message, e);
                 throw new BadCredentialsException(message);
             } finally {
                 FeignSecurityManager.reset();
