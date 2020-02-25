@@ -210,7 +210,7 @@ public class RequestsGroupService {
     */
     public void checkRequestsGroupsDone() {
         long start = System.currentTimeMillis();
-        LOGGER.debug("[REQUEST GROUPS] Start checking request groups ... ");
+        LOGGER.trace("[REQUEST GROUPS] Start checking request groups ... ");
         // Always search the first page of requests until there is no requests anymore.
         // To do so, we order on id to ensure to not handle same requests multiple times.
         Page<RequestGroup> response = reqGroupRepository.findAll(PageRequest.of(0, 500, Direction.ASC, "id"));

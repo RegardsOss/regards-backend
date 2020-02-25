@@ -181,7 +181,7 @@ public class FileDeletionRequestService {
             return jobList;
         }
         try {
-            LOGGER.debug("[DELETION REQUESTS] Scheduling deletion jobs ...");
+            LOGGER.trace("[DELETION REQUESTS] Scheduling deletion jobs ...");
             long start = System.currentTimeMillis();
             Set<String> allStorages = fileDeletionRequestRepo.findStoragesByStatus(status);
             Set<String> deletionToSchedule = (storages != null) && !storages.isEmpty()

@@ -342,7 +342,7 @@ public class FileStorageRequestService {
                 ? allStorages.stream().filter(storages::contains).collect(Collectors.toSet())
                 : allStorages;
         long start = System.currentTimeMillis();
-        LOGGER.debug("[STORAGE REQUESTS] Scheduling storage jobs ...");
+        LOGGER.trace("[STORAGE REQUESTS] Scheduling storage jobs ...");
         for (String storage : storagesToSchedule) {
             Page<FileStorageRequest> filesPage;
             Long maxId = 0L;

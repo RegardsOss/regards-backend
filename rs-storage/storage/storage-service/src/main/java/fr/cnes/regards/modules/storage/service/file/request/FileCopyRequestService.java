@@ -218,7 +218,7 @@ public class FileCopyRequestService {
             return;
         }
         try {
-            LOGGER.debug("[COPY REQUESTS] handling copy requests ...");
+            LOGGER.trace("[COPY REQUESTS] handling copy requests ...");
             long start = System.currentTimeMillis();
             Long maxId = 0L;
             // Always search the first page of requests until there is no requests anymore.

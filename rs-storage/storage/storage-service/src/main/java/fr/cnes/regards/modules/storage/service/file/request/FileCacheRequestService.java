@@ -305,7 +305,7 @@ public class FileCacheRequestService {
      * @return scheduled {@link JobInfo}s
      */
     public Collection<JobInfo> scheduleJobs(FileRequestStatus status) {
-        LOGGER.debug("[CACHE REQUESTS] Scheduling Cache jobs ...");
+        LOGGER.trace("[CACHE REQUESTS] Scheduling Cache jobs ...");
         long start = System.currentTimeMillis();
         Collection<JobInfo> jobList = Lists.newArrayList();
         Set<String> allStorages = repository.findStoragesByStatus(status);
@@ -323,7 +323,10 @@ public class FileCacheRequestService {
                 }
             } while (filesPage.hasContent());
         }
-        LOGGER.debug("[CACHE REQUESTS] {} jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
+        if (!jobList.isEmpty()) {
+            LOGGER.debug("[CACHE REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
+                         System.currentTimeMillis() - start);
+        }
         return jobList;
     }
 
