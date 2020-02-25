@@ -266,7 +266,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return label;
     }
 
-    public void setLabel(String pLabel) {
+    public final void setLabel(String pLabel) {
         label = pLabel;
     }
 
@@ -274,7 +274,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return version;
     }
 
-    public void setVersion(String version) {
+    public final void setVersion(String version) {
         this.version = version;
     }
 
@@ -282,7 +282,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return pluginId;
     }
 
-    public void setPluginId(String pluginId) {
+    public final void setPluginId(String pluginId) {
         this.pluginId = pluginId;
     }
 
@@ -290,7 +290,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return priorityOrder;
     }
 
-    public void setPriorityOrder(Integer order) {
+    public final void setPriorityOrder(Integer order) {
         priorityOrder = order;
     }
 
@@ -298,7 +298,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return parameters;
     }
 
-    public void setParameters(Set<IPluginParam> parameters) {
+    public final void setParameters(Set<IPluginParam> parameters) {
         this.parameters.clear();
         if ((parameters != null) && !parameters.isEmpty()) {
             this.parameters.addAll(parameters);
@@ -309,7 +309,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return active;
     }
 
-    public void setIsActive(Boolean pIsActive) {
+    public final void setIsActive(Boolean pIsActive) {
         active = pIsActive;
     }
 
@@ -326,7 +326,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return id;
     }
 
-    public void setId(Long pId) {
+    public final void setId(Long pId) {
         id = pId;
     }
 
@@ -340,7 +340,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * @param pIconUrl the iconUrl to set
      */
-    public void setIconUrl(URL pIconUrl) {
+    public final void setIconUrl(URL pIconUrl) {
         iconUrl = pIconUrl;
     }
 
@@ -358,7 +358,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return businessId;
     }
 
-    public void setBusinessId(String businessId) {
+    public final void setBusinessId(String businessId) {
         this.businessId = businessId;
     }
 
