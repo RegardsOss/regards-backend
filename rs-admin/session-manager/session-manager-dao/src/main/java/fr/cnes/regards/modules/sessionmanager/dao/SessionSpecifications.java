@@ -32,6 +32,8 @@ import org.springframework.data.jpa.domain.Specification;
  */
 public class SessionSpecifications {
 
+    private SessionSpecifications() {}
+
     /**
      * Filter on given attributes and return result
      * @return {@link Specification}<{@link Session}>

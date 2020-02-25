@@ -39,6 +39,8 @@ import fr.cnes.regards.modules.project.domain.Project;
 @Component
 public class DefaultProjectClient implements IProjectsClient {
 
+    public static final String NOT_IMPLEMENTED_IN_DEFAULT_PROJECT_CLIENT = "Not implemented in default project client";
+
     /**
      * List of configurated tenants
      */
@@ -47,17 +49,17 @@ public class DefaultProjectClient implements IProjectsClient {
 
     @Override
     public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(int pPage, int pSize) {
-        throw new UnsupportedOperationException("Not implemented in default project client");
+        throw new UnsupportedOperationException(NOT_IMPLEMENTED_IN_DEFAULT_PROJECT_CLIENT);
     }
 
     @Override
     public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(int page, int size) {
-        throw new UnsupportedOperationException("Not implemented in default project client");
+        throw new UnsupportedOperationException(NOT_IMPLEMENTED_IN_DEFAULT_PROJECT_CLIENT);
     }
 
     @Override
     public ResponseEntity<Resource<Project>> createProject(@Valid Project pNewProject) {
-        throw new UnsupportedOperationException("Not implemented in default project client");
+        throw new UnsupportedOperationException(NOT_IMPLEMENTED_IN_DEFAULT_PROJECT_CLIENT);
     }
 
     @Override
@@ -69,12 +71,12 @@ public class DefaultProjectClient implements IProjectsClient {
 
     @Override
     public ResponseEntity<Resource<Project>> updateProject(String pProjectName, Project pProjectToUpdate) {
-        throw new UnsupportedOperationException("Not implemented in default project client");
+        throw new UnsupportedOperationException(NOT_IMPLEMENTED_IN_DEFAULT_PROJECT_CLIENT);
     }
 
     @Override
     public ResponseEntity<Void> deleteProject(String pProjectName) {
-        throw new UnsupportedOperationException("Not implemented in default project client");
+        throw new UnsupportedOperationException(NOT_IMPLEMENTED_IN_DEFAULT_PROJECT_CLIENT);
     }
 
 }

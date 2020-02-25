@@ -144,7 +144,8 @@ public class RoleResourceController implements IResourceController<ResourcesAcce
             return true; // we can remove any resources from any native role but PROJECT_ADMIN
         } catch (EntityNotFoundException e) {
             // This exception cannot occur as Role PUBLIC is a native role and not deletable!
-            // Moreover, As we are at the end of execution fo other method using roleName if it doesn't represent anything then it will be fired before here.
+            // Moreover, As we are at the end of execution fo other method using roleName if it doesn't represent
+            // anything then it will be fired before here.
             return false;
         }
     }
