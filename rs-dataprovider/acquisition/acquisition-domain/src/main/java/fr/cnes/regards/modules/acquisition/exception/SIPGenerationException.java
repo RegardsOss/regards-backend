@@ -26,8 +26,11 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  */
 public class SIPGenerationException extends ModuleException {
 
-    public SIPGenerationException(String pMessage) {
-        super(pMessage);
+    public SIPGenerationException(String message) {
+        super(message);
     }
 
+    public SIPGenerationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

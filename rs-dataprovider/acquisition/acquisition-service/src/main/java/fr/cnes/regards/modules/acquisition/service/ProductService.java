@@ -154,7 +154,7 @@ public class ProductService implements IProductService {
             ingestClient.ingest(ingestMetadata, product.getSip());
             return save(product);
         } catch (IngestClientException e) {
-            throw new SIPGenerationException(e.getMessage());
+            throw new SIPGenerationException(e.getMessage(), e);
         }
     }
 

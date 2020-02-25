@@ -33,14 +33,14 @@ public abstract class AbstractStorageInformation {
 
     public static final String SIP_STAF_STORAGE_NODE_KEY = "staf_node";
 
-    public static final String DATASET = "dataset";
+    public static final String DATASET_PUGIN_PARAM_NAME = "dataset";
 
     public static final String SIP_DATASET_KEY = "dataset";
 
     @PluginParameter(name = STAF_STORAGE_NODE, label = "STAF Storage node", optional = true)
     protected String stafStorageNode;
 
-    @PluginParameter(name = DATASET, label = "Dataset name", optional = true)
+    @PluginParameter(name = DATASET_PUGIN_PARAM_NAME, label = "Dataset name", optional = true)
     protected String dataset;
 
     /**
