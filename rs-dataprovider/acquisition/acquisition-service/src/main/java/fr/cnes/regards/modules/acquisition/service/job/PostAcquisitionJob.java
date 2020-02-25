@@ -52,8 +52,6 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
 
     public static final String EVENT_PARAMETER = "event";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PostAcquisitionJob.class);
-
     @Autowired
     private PluginService pluginService;
 

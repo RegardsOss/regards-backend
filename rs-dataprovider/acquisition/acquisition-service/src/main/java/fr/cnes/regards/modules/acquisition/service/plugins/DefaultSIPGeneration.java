@@ -54,7 +54,7 @@ public class DefaultSIPGeneration implements ISipGenerationPlugin {
                 checksum = ChecksumUtils.computeHexChecksum(af.getFilePath(),
                                                             AcquisitionProcessingChain.CHECKSUM_ALGORITHM);
             } catch (NoSuchAlgorithmException | IOException e) {
-                throw new ModuleException(String.format("Error calculating file checksum. Cause %s", e.getMessage()));
+                throw new ModuleException(String.format("Error calculating file checksum. Cause %s", e.getMessage()), e);
             }
             sipBuilder.getContentInformationBuilder()
                     .setDataObject(af.getFileInfo().getDataType(), af.getFilePath().toAbsolutePath(),

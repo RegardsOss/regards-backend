@@ -15,6 +15,8 @@ public class CronComparator {
      */
     public static final int CRON_REPETITION = 60000;
 
+    private CronComparator() {}
+
     /**
      * Compare the provided cron expression and the current date
      * @param cronExpression the cron expression (with seconds)
