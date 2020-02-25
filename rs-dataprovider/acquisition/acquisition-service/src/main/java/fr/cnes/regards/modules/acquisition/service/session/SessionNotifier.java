@@ -101,7 +101,7 @@ public class SessionNotifier {
     public void notifyProductDeleted(String sessionOwner, Product product) {
         notifyDecrementSession(sessionOwner, product.getSession(), product.getState(), product.getSipState());
         notifyDecrementSession(sessionOwner, product.getSession(), SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
-                               product.getAcquisitionFiles().size());
+                               product.getActiveAcquisitionFiles().size());
     }
 
     public void notifyFileAcquired(String session, String sessionOwner, long nbFilesAcquired) {
