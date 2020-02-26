@@ -22,6 +22,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +49,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
@@ -158,17 +160,18 @@ public class CatalogSearchServiceTest {
 
         // Define expected values
         ICriterion expectedCriterion = SampleDataUtils.SIMPLE_STRING_MATCH_CRITERION;
-        FacetPage<DataObject> expectedSearchResult = SampleDataUtils.FACET_PAGE_DATAOBJECT;
+        FacetPage<DataObject> facetPageDataobject = SampleDataUtils.FACET_PAGE_DATAOBJECT;
+        // thanks to mockito not properly handling dynamic typing, we have to do this trick
+        FacetPage<IIndexable> expectedSearchResult = new FacetPage<>(facetPageDataobject.getContent()
+                                                                             .stream().map(data -> (IIndexable) data)
+                                                                             .collect(Collectors.toList()),
+                                                                     facetPageDataobject.getFacets());
 
         // Mock dependencies
-        TypeToken<SimpleSearchKey<DataObject>> simpleSearchKeyType = new TypeToken<SimpleSearchKey<DataObject>>() {
-
-        };
-        Mockito.when(searchService
-                             .search(Mockito.any((Class<SimpleSearchKey<DataObject>>) simpleSearchKeyType.getType()),
-                                     Mockito.any(Pageable.class),
-                                     Mockito.any(ICriterion.class),
-                                     Mockito.any())).thenReturn(expectedSearchResult);
+        Mockito.when(searchService.search(Mockito.any(SimpleSearchKey.class),
+                                          Mockito.any(Pageable.class),
+                                          Mockito.any(ICriterion.class),
+                                          Mockito.any())).thenReturn(expectedSearchResult);
         PagedResources<Resource<DataObject>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATAOBJECT;
         Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
 
@@ -200,14 +203,16 @@ public class CatalogSearchServiceTest {
 
         // Define expected values
         ICriterion expectedCriterion = SampleDataUtils.SIMPLE_STRING_MATCH_CRITERION;
-        FacetPage<DataObject> expectedSearchResult = SampleDataUtils.FACET_PAGE_DATAOBJECT;
+        FacetPage<DataObject> facetPageDataobject = SampleDataUtils.FACET_PAGE_DATAOBJECT;
+        // thanks to mockito not properly handling dynamic typing, we have to do this trick
+        FacetPage<IIndexable> expectedSearchResult = new FacetPage<>(facetPageDataobject.getContent()
+                                                                             .stream().map(data -> (IIndexable) data)
+                                                                             .collect(Collectors.toList()),
+                                                                     facetPageDataobject.getFacets());
 
         // Mock dependencies
-        TypeToken<SimpleSearchKey<DataObject>> simpleSearchKeyType = new TypeToken<SimpleSearchKey<DataObject>>() {
-
-        };
         Mockito.when(searchService
-                             .search(Mockito.any((Class<SimpleSearchKey<DataObject>>) simpleSearchKeyType.getType()),
+                             .search(Mockito.any(SimpleSearchKey.class),
                                      Mockito.any(Pageable.class),
                                      Mockito.any(ICriterion.class),
                                      Mockito.any())).thenReturn(expectedSearchResult);
