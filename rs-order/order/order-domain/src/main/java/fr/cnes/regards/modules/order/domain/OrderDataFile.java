@@ -195,7 +195,7 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     @Override
     @Column(name = "online")
-    public Boolean getOnline() {
+    public Boolean isOnline() {
         return super.isOnline();
     }
 
