@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.Semaphore;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +26,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -49,7 +45,7 @@ public class RequestPendingScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestPendingScheduler.class);
 
-    private static final String FILE_SCHEDULER_LOCK = "request-pending-scheduler-lock";
+    private static final String UNLOCK_REQ_SCHEDULER_LOCK = "request-pending-scheduler-lock";
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -63,66 +59,26 @@ public class RequestPendingScheduler {
     @Autowired
     private ILockService lockService;
 
-    private final Semaphore semaphore = new Semaphore(1, true);
-
-    @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:3000}", initialDelay = 1_000)
-    public void handleUpdatesCreatorRequests() throws ModuleException {
-        schedule("handleUpdatesCreatorRequests", () -> {
-            requestService.unblockRequests(RequestTypeEnum.AIP_UPDATES_CREATOR);
-            return null;
-        });
-    }
-
-    @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:3000}", initialDelay = 1_100)
-    public void handleOAISDeletionRequests() throws ModuleException {
-        schedule("handleOAISDeletionRequests", () -> {
-            requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION);
-            return null;
-        });
-    }
-
-    @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:3000}", initialDelay = 1_200)
-    public void handleOAISDeletionCreator() throws ModuleException {
-        schedule("handleOAISDeletionCreator", () -> {
-            requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION_CREATOR);
-            return null;
-        });
-    }
-
-    @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:3000}", initialDelay = 1_300)
-    public void handleStorageMetaDataRequests() throws ModuleException {
-        schedule("handleStorageMetaDataRequests", () -> {
-            requestService.unblockRequests(RequestTypeEnum.STORE_METADATA);
-            return null;
-        });
-    }
-
-    @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:1000}", initialDelay = 1_400)
-    public void handleUpdateRequests() throws ModuleException {
-        schedule("handleUpdateRequests", () -> {
-            requestService.unblockRequests(RequestTypeEnum.UPDATE);
-            return null;
-        });
-    }
-
-    private void schedule(String taskName, Callable<Void> func) {
+    @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:30000}", initialDelay = 30_000)
+    public void unlockRequests() {
         try {
-            semaphore.acquire();
             for (String tenant : tenantResolver.getAllActiveTenants()) {
-                runtimeTenantResolver.forceTenant(tenant);
-                if (obtainLock()) {
-                    try {
-                        func.call();
-                    } finally {
-                        releaseLock();
-                        runtimeTenantResolver.clearTenant();
+                try {
+                    runtimeTenantResolver.forceTenant(tenant);
+                    if (obtainLock()) {
+                        requestService.unblockRequests(RequestTypeEnum.AIP_UPDATES_CREATOR);
+                        requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION);
+                        requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION_CREATOR);
+                        requestService.unblockRequests(RequestTypeEnum.STORE_METADATA);
+                        requestService.unblockRequests(RequestTypeEnum.UPDATE);
                     }
+                } finally {
+                    releaseLock();
+                    runtimeTenantResolver.clearTenant();
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("Error runing scheduling task {}. Cause : {}", taskName, e.getMessage());
-        } finally {
-            semaphore.release();
+            LOGGER.error(String.format("Error runing requests scheduling tasks. Cause : %s", e.getMessage()), e);
         }
     }
 
@@ -131,13 +87,13 @@ public class RequestPendingScheduler {
      * @return
      */
     private boolean obtainLock() {
-        return lockService.obtainLockOrSkip(FILE_SCHEDULER_LOCK, this, 60L);
+        return lockService.obtainLockOrSkip(UNLOCK_REQ_SCHEDULER_LOCK, this, 60L);
     }
 
     /**
      * Release lock
      */
     private void releaseLock() {
-        lockService.releaseLock(FILE_SCHEDULER_LOCK, this);
+        lockService.releaseLock(UNLOCK_REQ_SCHEDULER_LOCK, this);
     }
 }
