@@ -33,8 +33,12 @@ import fr.cnes.regards.modules.configuration.service.IUIConfigurationService;
  *
  */
 @RestController
-@RequestMapping("/configuration")
+@RequestMapping(UIConfigurationController.CONFIGURATION_PATH)
 public class UIConfigurationController implements IResourceController<ConfigurationDTO> {
+
+    public static final String CONFIGURATION_PATH = "/configuration";
+
+    public static final String APPLICATION_ID_PATH = "/{applicationId}";
 
     @Autowired
     private IUIConfigurationService configurationService;
@@ -48,15 +52,21 @@ public class UIConfigurationController implements IResourceController<Configurat
      *
      * @return {@link UIConfiguration}
      */
-    @RequestMapping(value = "/{applicationId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = APPLICATION_ID_PATH, method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve Configuration for the given applicationId",
             role = DefaultRole.PUBLIC)
     public HttpEntity<Resource<ConfigurationDTO>> retrieveConfiguration(
-            @PathVariable("applicationId") final String applicationId) throws EntityNotFoundException {
-        String conf = configurationService.retrieveConfiguration(applicationId);
-        final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), applicationId);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+            @PathVariable("applicationId") final String applicationId) {
+        try {
+            String conf = configurationService.retrieveConfiguration(applicationId);
+            final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), applicationId);
+            return new ResponseEntity<>(resource, HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            // this is to be compliant with what front expect
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
     }
 
     /**
@@ -65,7 +75,7 @@ public class UIConfigurationController implements IResourceController<Configurat
      *
      * @return {@link UIConfiguration}
      */
-    @RequestMapping(value = "/{applicationId}", method = RequestMethod.POST,
+    @RequestMapping(value = APPLICATION_ID_PATH, method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to add a Configuration", role = DefaultRole.ADMIN)
@@ -82,15 +92,20 @@ public class UIConfigurationController implements IResourceController<Configurat
      *
      * @return {@link UIConfiguration}
      */
-    @RequestMapping(value = "/{applicationId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = APPLICATION_ID_PATH, method = RequestMethod.PUT,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update a Configuration", role = DefaultRole.ADMIN)
     public HttpEntity<Resource<ConfigurationDTO>> updateConfiguration(
-            @PathVariable("applicationId") final String applicationId, @Valid @RequestBody ConfigurationDTO toAdd)
-            throws EntityNotFoundException {
-        String conf = configurationService.updateConfiguration(toAdd.getConfiguration(), applicationId);
-        final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), applicationId);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+            @PathVariable("applicationId") final String applicationId, @Valid @RequestBody ConfigurationDTO toAdd) {
+        try {
+            String conf = configurationService.updateConfiguration(toAdd.getConfiguration(), applicationId);
+            final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), applicationId);
+            return new ResponseEntity<>(resource, HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            // this is to be compliant with what front expect
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
     }
 
     @Override
