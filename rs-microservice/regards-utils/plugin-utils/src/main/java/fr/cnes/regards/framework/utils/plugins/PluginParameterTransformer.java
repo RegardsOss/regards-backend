@@ -62,6 +62,8 @@ public class PluginParameterTransformer {
 
     private static Gson gsonInstance;
 
+    private PluginParameterTransformer() {}
+
     public static void setup(Gson gson) {
         gsonInstance = gson;
         if (gsonInstance == null) {

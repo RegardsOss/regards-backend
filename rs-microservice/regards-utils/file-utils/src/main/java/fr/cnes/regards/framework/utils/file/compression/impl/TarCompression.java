@@ -49,8 +49,6 @@ import fr.cnes.regards.framework.utils.file.compression.FileAlreadyExistExceptio
  */
 public class TarCompression extends AbstractRunnableCompression {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(TarCompression.class);
-
     /**
      * extension a ajouter
      */
@@ -71,6 +69,8 @@ public class TarCompression extends AbstractRunnableCompression {
      * plateforme, le seprarateur unix permettant une plus grande compatibilite.
      */
     private static final String TAR_PATH_SEPARATOR = "/";
+
+    private static Logger LOGGER = LoggerFactory.getLogger(TarCompression.class);
 
     /**
      * Permet de compression une liste de fichiers dans un seul.
@@ -117,7 +117,8 @@ public class TarCompression extends AbstractRunnableCompression {
 
                 for (final File fileNow : pFileList) {
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(String.format("Adding %s file to %s file.", fileNow.getName(),
+                        LOGGER.debug(String.format("Adding %s file to %s file.",
+                                                   fileNow.getName(),
                                                    CompressionTypeEnum.TAR.toString()));
                     }
 
@@ -216,7 +217,7 @@ public class TarCompression extends AbstractRunnableCompression {
      * @throws CompressionException si l'un des paramètres est incorrect ou illisible
      */
     @Override
-    public void uncompress(File pCompressedFile, File pOutputDir, Charset pCharset) throws CompressionException {
+    public void uncompress(File pCompressedFile, File pOutputDir, Charset charset) throws CompressionException {
 
         // pCompressedFile must have .tar extension
         if (!pCompressedFile.getName().toLowerCase().endsWith(".tar")) {
@@ -224,15 +225,12 @@ public class TarCompression extends AbstractRunnableCompression {
         }
 
         // Write in this file
-        TarArchiveInputStream inputStream = null;
-        try (InputStream is = new FileInputStream(pCompressedFile)) {
+        try (InputStream is = new FileInputStream(pCompressedFile);
+                TarArchiveInputStream inputStream = charset != null ?
+                        new TarArchiveInputStream(is, charset.toString()) :
+                        new TarArchiveInputStream(is)) {
             final int bufsize = 8192;
             TarArchiveEntry entry;
-            if (pCharset != null) {
-                inputStream = new TarArchiveInputStream(is, pCharset.toString());
-            } else {
-                inputStream = new TarArchiveInputStream(is);
-            }
             if (!pOutputDir.exists()) {
                 pOutputDir.mkdirs();
             }
@@ -258,16 +256,9 @@ public class TarCompression extends AbstractRunnableCompression {
             }
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("The file %s is uncompressed to %s", pCompressedFile.getName(),
+                LOGGER.debug(String.format("The file %s is uncompressed to %s",
+                                           pCompressedFile.getName(),
                                            pOutputDir.getName()));
-            }
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            } catch (final IOException e) {
-                throw new CompressionException(
-                        String.format("IO error during %s uncompression", CompressionTypeEnum.TAR), e);
             }
         } catch (final IOException ioE) {
             throw new CompressionException(String.format("IO error during %s uncompression", CompressionTypeEnum.TAR),

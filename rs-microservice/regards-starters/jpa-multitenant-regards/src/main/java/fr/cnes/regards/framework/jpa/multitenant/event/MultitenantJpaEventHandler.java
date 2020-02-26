@@ -97,7 +97,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
     /**
      * JPA Configuration
      */
-    private JpaProperties jpaProperties;
+    private final JpaProperties jpaProperties;
 
     public MultitenantJpaEventHandler(String microserviceName, Map<String, DataSource> dataSources,
             MultitenantDaoProperties daoProperties, IDatasourceSchemaHelper datasourceSchemaHelper,

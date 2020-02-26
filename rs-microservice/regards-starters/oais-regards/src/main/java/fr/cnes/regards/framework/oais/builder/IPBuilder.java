@@ -66,7 +66,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
  * To define descriptive information, just call {@link IPBuilder#addDescriptiveInformation(String, Object)}.
  * @author Marc Sordi
  *
- * Use {@link InformationPackageProperties} fluent API instead
+ * @deprecated {@link InformationPackageProperties} fluent API instead
  */
 @Deprecated
 public abstract class IPBuilder<T extends AbstractInformationPackage<?>> implements IOAISBuilder<T> {

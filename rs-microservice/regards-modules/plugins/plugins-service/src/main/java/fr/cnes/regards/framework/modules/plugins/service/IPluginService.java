@@ -69,6 +69,7 @@ public interface IPluginService {
     /**
      * @return whether the plugin configured by the given plugin configuration threw its id can be instantiated or not
      * @throws NotAvailablePluginConfigurationException
+     * @deprecated use {@link #canInstantiate(String)} instead
      */
     @Deprecated
     boolean canInstantiate(Long id) throws ModuleException, NotAvailablePluginConfigurationException;
@@ -90,6 +91,7 @@ public interface IPluginService {
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
      * @throws NotAvailablePluginConfigurationException
+     * @deprecated use {@link #getPlugin(String, IPluginParam...)} instead
      */
     @Deprecated
     <T> T getPlugin(Long id, IPluginParam... dynamicPluginParameters)
@@ -157,6 +159,7 @@ public interface IPluginService {
      * @param id business identifier of the {@link PluginConfiguration}.
      * @return a specific configuration
      * @throws EntityNotFoundException thrown if we cannot find any PluginConfiguration corresponding to pId
+     * @deprecated use {@link #getPluginConfiguration(String)} instead
      */
     @Deprecated
     PluginConfiguration getPluginConfiguration(Long id) throws EntityNotFoundException;

@@ -24,6 +24,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.persistence.Entity;
 import javax.sql.DataSource;
@@ -141,7 +143,7 @@ public class DataSourcesAutoConfiguration {
     @Bean(name = { DATA_SOURCE_BEAN_NAME })
     public Map<String, DataSource> getDataSources(ITenantConnectionResolver tenantConnectionResolver)
             throws JpaMultitenantException, EncryptionException {
-        Map<String, DataSource> datasources = new HashMap<>();
+        ConcurrentMap<String, DataSource> datasources = new ConcurrentHashMap<>();
         // Retrieve microservice tenant connections from multitenant resolver
         List<TenantConnection> connections = tenantConnectionResolver.getTenantConnections(microserviceName);
         // Initialize tenant connections

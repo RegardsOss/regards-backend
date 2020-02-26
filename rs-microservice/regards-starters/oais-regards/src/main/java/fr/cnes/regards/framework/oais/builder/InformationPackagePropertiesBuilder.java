@@ -43,7 +43,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * Information package properties builder
  * @author Marc Sordi
  *
- * Use {@link InformationPackageProperties} fluent API
+ * @deprecated {@link InformationPackageProperties} fluent API
  */
 @Deprecated
 public class InformationPackagePropertiesBuilder implements IOAISBuilder<InformationPackageProperties> {

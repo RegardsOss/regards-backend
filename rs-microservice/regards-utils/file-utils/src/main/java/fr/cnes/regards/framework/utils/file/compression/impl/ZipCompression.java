@@ -71,9 +71,9 @@ public class ZipCompression extends AbstractRunnableCompression {
     private static final String ZIP_PATH_SEPARATOR = "/";
 
     /**
-     * Cette variable est utilisée pour logger les messages
+     * Cette variable est utilisée pour LOGGER les messages
      */
-    private static Logger logger = LoggerFactory.getLogger(ZipCompression.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZipCompression.class);
 
     /**
      * Tampon d'ecriture
@@ -127,8 +127,8 @@ public class ZipCompression extends AbstractRunnableCompression {
 
             // List Files in list pFilesList and add them
             for (File fileNow : listWithoutDouble) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("Adding %s file to %s file.", pathToRootDir(fileNow, pRootDirectory),
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(String.format("Adding %s file to %s file.", pathToRootDir(fileNow, pRootDirectory),
                                                compressedFile.getAbsoluteFile()));
                 }
 
@@ -159,7 +159,7 @@ public class ZipCompression extends AbstractRunnableCompression {
                             pCompressManager.setPercentage(percentage);
                         }
                     } catch (IOException e) {
-                        logger.error(
+                        LOGGER.error(
                                 "Error copying file " + fileNow.getPath() + "to zip file " + compressedFile.getPath());
                         throw e;
                     }
@@ -170,13 +170,13 @@ public class ZipCompression extends AbstractRunnableCompression {
             }
             out.finish();
         } catch (IOException ioE) {
-            logger.error(ioE.getMessage(), ioE);
+            LOGGER.error(ioE.getMessage(), ioE);
             throw new CompressionException(String.format("IO error during %s compression", CompressionTypeEnum.ZIP),
                                            ioE);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("The file %s is done.", compressedFile.getAbsolutePath()));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(String.format("The file %s is done.", compressedFile.getAbsolutePath()));
         }
 
         pCompressManager.setCompressedFile(compressedFile);

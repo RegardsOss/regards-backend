@@ -52,7 +52,7 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
 
     public static final String DEFAULT_CHARSET = "UTF-8";
 
-    private Gson gson;
+    private final Gson gson;
 
     public Gson2JsonMessageConverter(Gson gson) {
         this.gson = gson;
@@ -73,7 +73,7 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
         MessageProperties messageProperties = message.getMessageProperties();
         if (messageProperties != null) {
             try (Reader json = new InputStreamReader(new ByteArrayInputStream(message.getBody()),
-                    Charset.forName("UTF-8"))) {
+                    Charset.forName(DEFAULT_CHARSET))) {
                 Class<?> eventType = Class.forName((String) messageProperties.getHeaders().get(WRAPPED_TYPE_HEADER));
                 Type type = createTypeToken(eventType).getType();
                 content = gson.fromJson(json, type);

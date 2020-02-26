@@ -75,9 +75,9 @@ public class CustomPostgresDialect extends PostgreSQL9Dialect {
 
     public CustomPostgresDialect() {
         super();
-        registerFunction(EMPTY_STRING_ARRAY, new SQLFunctionTemplate(StandardBasicTypes.BOOLEAN, "ARRAY[]::text[]"));
-        registerFunction(STRING_LITERAL, new SQLFunctionTemplate(StandardBasicTypes.STRING, "?1::text"));
-        registerFunction(JSONB_LITERAL, new SQLFunctionTemplate(StandardBasicTypes.STRING, "?1::jsonb"));
-        registerFunction(JSONB_CONTAINS, new SQLFunctionTemplate(StandardBasicTypes.BOOLEAN, "?1 @> ?2"));
+        super.registerFunction(EMPTY_STRING_ARRAY, new SQLFunctionTemplate(StandardBasicTypes.BOOLEAN, "ARRAY[]::text[]"));
+        super.registerFunction(STRING_LITERAL, new SQLFunctionTemplate(StandardBasicTypes.STRING, "?1::text"));
+        super.registerFunction(JSONB_LITERAL, new SQLFunctionTemplate(StandardBasicTypes.STRING, "?1::jsonb"));
+        super.registerFunction(JSONB_CONTAINS, new SQLFunctionTemplate(StandardBasicTypes.BOOLEAN, "?1 @> ?2"));
     }
 }

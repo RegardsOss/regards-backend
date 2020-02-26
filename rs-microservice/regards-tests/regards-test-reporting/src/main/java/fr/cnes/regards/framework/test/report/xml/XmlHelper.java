@@ -51,6 +51,8 @@ public final class XmlHelper {
      */
     private static final Logger LOG = LoggerFactory.getLogger(XmlHelper.class);
 
+    public static final String MISSING_JAXB_ANNOTATED_CLASS = "Missing JAXB annotated class";
+
     private XmlHelper() {
     }
 
@@ -69,7 +71,7 @@ public final class XmlHelper {
         // Validate
         assertNotNull(pDirectory, "Missing directory path");
         assertNotNull(pFilename, "Missing filename");
-        assertNotNull(pClass, "Missing JAXB annotated class");
+        assertNotNull(pClass, MISSING_JAXB_ANNOTATED_CLASS);
         assertNotNull(pJaxbElement, "No element to write");
 
         // Create directory
@@ -91,7 +93,7 @@ public final class XmlHelper {
             jaxbMarshaller.marshal(pJaxbElement, targetFile);
         } catch (JAXBException e) {
             final String message = "Error while marshalling data";
-            LOG.error("Error while marshalling data", e);
+            LOG.error(message, e);
             throw new ReportException(message);
         }
 
@@ -111,7 +113,7 @@ public final class XmlHelper {
         // Validate
         assertNotNull(pDirectory, "Missing directory path");
         assertNotNull(pFilename, "Missing filename");
-        assertNotNull(pClass, "Missing JAXB annotated class");
+        assertNotNull(pClass, MISSING_JAXB_ANNOTATED_CLASS);
 
         //because jaxb unmarshall uses urls, lets url encode the %
         final File sourceFile = Paths
@@ -145,7 +147,7 @@ public final class XmlHelper {
     public static <T> T read(Path pFilePath, Class<T> pClass) throws ReportException, UnsupportedEncodingException {
         // Validate
         assertNotNull(pFilePath, "Missing full file path");
-        assertNotNull(pClass, "Missing JAXB annotated class");
+        assertNotNull(pClass, MISSING_JAXB_ANNOTATED_CLASS);
         return read(pFilePath.getParent(), pFilePath.getFileName().toString(), pClass);
     }
 

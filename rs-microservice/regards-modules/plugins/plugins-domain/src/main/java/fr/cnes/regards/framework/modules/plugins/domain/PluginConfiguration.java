@@ -197,7 +197,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public PluginConfiguration(String label, Collection<IPluginParam> parameters, int order, String pluginId) {
         super();
-        generateBusinessIdIfNotSet();
+        this.businessId = UUID.randomUUID().toString();
         if (parameters != null) {
             this.parameters.addAll(parameters);
         }

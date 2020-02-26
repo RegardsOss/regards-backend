@@ -269,7 +269,7 @@ public final class PluginUtils {
             if (PluginUtilsBean.getInstance() != null) {
                 try {
                     PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     throw new PluginUtilsRuntimeException("Error during plugin instanciation", e);
                 }
             }

@@ -20,6 +20,8 @@ package fr.cnes.regards.framework.amqp.converter;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +50,7 @@ public class JsonMessageConverters implements MessageConverter {
     /**
      * Registered JSON message converters
      */
-    Map<JsonMessageConverter, MessageConverter> converters = new HashMap<>();
+    private ConcurrentMap<JsonMessageConverter, MessageConverter> converters = new ConcurrentHashMap<>();
 
     @Override
     public Message toMessage(Object object, MessageProperties messageProperties) throws MessageConversionException {

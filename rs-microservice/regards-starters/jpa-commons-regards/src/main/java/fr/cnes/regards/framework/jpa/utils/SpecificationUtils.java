@@ -37,6 +37,8 @@ public class SpecificationUtils {
 
     public static final String LIKE_CHAR = "%";
 
+    private SpecificationUtils() {}
+
     /**
      * Return a predicate that check if a JSONB string array (ie ["a", "b"]) contains all textSearched items
      * @param attributeRequested the entity field

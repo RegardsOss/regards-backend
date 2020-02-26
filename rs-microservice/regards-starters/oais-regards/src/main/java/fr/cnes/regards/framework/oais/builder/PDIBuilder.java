@@ -90,7 +90,7 @@ import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
  * <br/>
  * @author Marc Sordi
  *
- * Use {@link InformationPackageProperties} fluent API
+ * @deprecated {@link InformationPackageProperties} fluent API
  */
 @Deprecated
 public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformation> {
