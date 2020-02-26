@@ -139,7 +139,7 @@ public class BasketController implements IResourceController<Basket> {
             return ResponseEntity.ok(toResource(basket));
         }catch (EmptyBasketException e) {
             // This is a normal case, no log needed
-            return new ResponseEntity<Resource<Basket>>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }
 

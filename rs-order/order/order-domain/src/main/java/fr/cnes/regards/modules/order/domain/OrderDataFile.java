@@ -115,16 +115,16 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
     }
 
     public OrderDataFile(DataFile dataFile, UniformResourceName ipId, Long orderId) {
-        setFilename(dataFile.getFilename());
-        setFilesize(dataFile.getFilesize());
-        setUri(dataFile.getUri());
-        setChecksum(dataFile.getChecksum());
-        setDigestAlgorithm(dataFile.getDigestAlgorithm());
-        setMimeType(dataFile.getMimeType());
-        setReference(dataFile.isReference());
-        setDataType(dataFile.getDataType());
+        super.setFilename(dataFile.getFilename());
+        super.setFilesize(dataFile.getFilesize());
+        super.setUri(dataFile.getUri());
+        super.setChecksum(dataFile.getChecksum());
+        super.setDigestAlgorithm(dataFile.getDigestAlgorithm());
+        super.setMimeType(dataFile.getMimeType());
+        super.setReference(dataFile.isReference());
+        super.setDataType(dataFile.getDataType());
         state = FileState.PENDING;
-        setOnline(dataFile.isOnline());
+        super.setOnline(dataFile.isOnline());
         this.ipId = ipId;
         this.orderId = orderId;
     }
@@ -195,7 +195,7 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     @Override
     @Column(name = "online")
-    public Boolean getOnline() {
+    public Boolean isOnline() {
         return super.isOnline();
     }
 
@@ -237,10 +237,5 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     public void setDownloadError(String downloadError) {
         this.downloadError = downloadError;
-    }
-
-    @Override
-    public void setOnline(Boolean online) {
-        super.setOnline(online);
     }
 }

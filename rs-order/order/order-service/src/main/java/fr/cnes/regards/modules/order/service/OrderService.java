@@ -746,7 +746,6 @@ public class OrderService implements IOrderService {
                         dataFile.setDownloadError("Error while downloading external file\n" + sw.toString());
                         downloadErrorFiles.add(dataFile);
                         i.remove();
-                        continue;
                     }
                 } else { // Managed by Storage
                     String aip = dataFile.getIpId().toString();
@@ -777,7 +776,6 @@ public class OrderService implements IOrderService {
                         dataFile.setDownloadError(
                                 "Cannot retrieve data file from storage, feign downloadFile method returns " + (
                                         response == null ? "null" : response.toString()));
-                        continue;
                     } else { // Download ok
                         try (InputStream is = response.body().asInputStream()) {
                             readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, aip, is);
