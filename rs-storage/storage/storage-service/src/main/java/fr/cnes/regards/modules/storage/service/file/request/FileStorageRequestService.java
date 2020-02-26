@@ -134,10 +134,12 @@ public class FileStorageRequestService {
      * @param list
      */
     public void store(List<StorageFlowItem> list) {
-        Set<FileReference> existingOnes = fileRefService.search(list.stream().map(StorageFlowItem::getFiles)
-                .flatMap(Set::stream).map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet()));
+        Set<String> checksums = list.stream().map(StorageFlowItem::getFiles).flatMap(Set::stream)
+                .map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet());
+        Set<FileReference> existingOnes = fileRefService.search(checksums);
+        Set<FileStorageRequest> existingRequests = fileStorageRequestRepo.findByMetaInfoChecksumIn(checksums);
         for (StorageFlowItem item : list) {
-            store(item.getFiles(), item.getGroupId(), existingOnes);
+            store(item.getFiles(), item.getGroupId(), existingOnes, existingRequests);
             reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size(),
                                     getRequestExpirationDate());
         }
@@ -149,9 +151,10 @@ public class FileStorageRequestService {
      * @param groupId
      */
     public void store(Collection<FileStorageRequestDTO> requests, String groupId) {
-        Set<FileReference> existingOnes = fileRefService
-                .search(requests.stream().map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet()));
-        store(requests, groupId, existingOnes);
+        Set<String> checksums = requests.stream().map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet());
+        Set<FileReference> existingOnes = fileRefService.search(checksums);
+        Set<FileStorageRequest> existingRequests = fileStorageRequestRepo.findByMetaInfoChecksumIn(checksums);
+        store(requests, groupId, existingOnes, existingRequests);
     }
 
     /**
@@ -160,9 +163,10 @@ public class FileStorageRequestService {
      * @param requests
      * @param groupId
      * @param existingOnes
+     * @param existingRequests
      */
     public void store(Collection<FileStorageRequestDTO> requests, String groupId,
-            Collection<FileReference> existingOnes) {
+            Collection<FileReference> existingOnes, Set<FileStorageRequest> existingRequests) {
         // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
         LOGGER.trace("[STORAGE REQUESTS] Handling {} requests ...", requests.size());
         for (FileStorageRequestDTO request : requests) {
@@ -172,7 +176,16 @@ public class FileStorageRequestService {
                     .filter(f -> f.getMetaInfo().getChecksum().equals(request.getChecksum())
                             && f.getLocation().getStorage().equals(request.getStorage()))
                     .findFirst();
-            handleRequest(request, oFileRef, groupId);
+            Optional<FileStorageRequest> oReq = existingRequests.stream()
+                    .filter(f -> f.getMetaInfo().getChecksum().equals(request.getChecksum())
+                            && f.getStorage().equals(request.getStorage()))
+                    .findFirst();
+            Optional<FileReference> oUpdatedFileRef = handleRequest(request, oFileRef, oReq, groupId);
+            if (oUpdatedFileRef.isPresent()) {
+                // Update file reference in the list of file references existing
+                existingOnes.removeIf(f -> f.getId().equals(oUpdatedFileRef.get().getId()));
+                existingOnes.add(oUpdatedFileRef.get());
+            }
             LOGGER.trace("[STORAGE REQUESTS] New request ({}) handled in {} ms", request.getFileName(),
                          System.currentTimeMillis() - start);
         }
@@ -191,24 +204,34 @@ public class FileStorageRequestService {
     public Optional<FileReference> handleRequest(String owner, FileReferenceMetaInfo metaInfo, String originUrl,
             String storage, Optional<String> subDirectory, String groupId) {
         Optional<FileReference> oFileRef = fileRefService.search(storage, metaInfo.getChecksum());
+        Optional<FileStorageRequest> oReq = fileStorageRequestRepo.findByMetaInfoChecksum(metaInfo.getChecksum());
         return handleRequest(FileStorageRequestDTO.build(metaInfo.getFileName(), metaInfo.getChecksum(),
                                                          metaInfo.getAlgorithm(), metaInfo.getMimeType().toString(),
                                                          owner, originUrl, storage, subDirectory),
-                             oFileRef, groupId);
+                             oFileRef, oReq, groupId);
     }
 
     /**
      * Store a new file to a given storage destination
      * @param request {@link FileStorageRequestDTO} info about file to store
      * @param fileRef {@link FileReference} of associated file if already exists
+     * @param oRequest {@link FileStorageRequest} associated to given {@link FileStorageRequestDTO} if already exists
      * @param groupId business request identifier
      * @return {@link FileReference} if the file is already referenced.
      * @throws MalformedURLException
      */
     private Optional<FileReference> handleRequest(FileStorageRequestDTO request, Optional<FileReference> fileRef,
-            String groupId) {
+            Optional<FileStorageRequest> oReq, String groupId) {
         if (fileRef.isPresent()) {
             return handleFileToStoreAlreadyExists(fileRef.get(), request, groupId);
+        } else if (oReq.isPresent() && (oReq.get().getStatus() != FileRequestStatus.PENDING)) {
+            FileStorageRequest existingReq = oReq.get();
+            existingReq.getOwners().add(request.getOwner());
+            existingReq.getGroupIds().add(groupId);
+            if (existingReq.getStatus() == FileRequestStatus.ERROR) {
+                existingReq.setStatus(FileRequestStatus.TO_DO);
+            }
+            update(existingReq);
         } else {
             Optional<String> cause = Optional.empty();
             Optional<FileRequestStatus> status = Optional.empty();
@@ -225,8 +248,8 @@ public class FileStorageRequestService {
             createNewFileStorageRequest(Sets.newHashSet(request.getOwner()), request.buildMetaInfo(),
                                         request.getOriginUrl(), request.getStorage(), request.getOptionalSubDirectory(),
                                         groupId, cause, status);
-            return Optional.empty();
         }
+        return Optional.empty();
     }
 
     /**

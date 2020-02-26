@@ -347,13 +347,13 @@ public class RequestsGroupService {
         }
         // 1. Publish events
         if (errors.isEmpty()) {
-            LOGGER.trace("[{} GROUP SUCCESS {}] - {} requests success.", reqGrp.getType().toString().toUpperCase(),
-                         reqGrp.getId(), successes.size());
+            LOGGER.trace("[{} GROUP {} {}] - {} requests success.", reqGrp.getType().toString().toUpperCase(),
+                         forcedStatus.orElse(FlowItemStatus.SUCCESS).toString(), reqGrp.getId(), successes.size());
             publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(), reqGrp.getType(),
                                                            forcedStatus.orElse(FlowItemStatus.SUCCESS), successes));
             if (successes.isEmpty()) {
-                LOGGER.error("[{} GROUP SUCCESS {}] No success requests associated to terminated group",
-                             reqGrp.getType(), reqGrp.getId());
+                LOGGER.error("[{} GROUP {} {}] No success requests associated to terminated group",
+                             forcedStatus.orElse(FlowItemStatus.SUCCESS).toString(), reqGrp.getType(), reqGrp.getId());
             }
         } else {
             LOGGER.error("[{} GROUP ERROR {}] - {} success / {} errors.", reqGrp.getType().toString().toUpperCase(),

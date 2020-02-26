@@ -252,15 +252,12 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
-        // There should be two storage request
+        // There should be one storage request. Same as previous error one but updated to to_do thanks to new request
         Collection<FileStorageRequest> storeRequests = stoReqService.search(ONLINE_CONF_LABEL, checksum);
-        Assert.assertEquals("File request still present", 2, storeRequests.size());
+        Assert.assertEquals("File request still present", 1, storeRequests.size());
         // On in TO_DO state
         Assert.assertEquals("There should be one request in TO_DO state", 1L,
                             storeRequests.stream().filter(r -> r.getStatus() == FileRequestStatus.TO_DO).count());
-        // The other one in DELAYED state
-        Assert.assertEquals("There should be one request in ERROR state", 1L,
-                            storeRequests.stream().filter(r -> r.getStatus() == FileRequestStatus.ERROR).count());
     }
 
     @Test

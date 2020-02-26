@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -88,5 +89,9 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     boolean existsByStorageAndMetaInfoChecksumAndStatusIn(String storage, String checksum,
             Set<FileRequestStatus> ruuninstatus);
+
+    Set<FileStorageRequest> findByMetaInfoChecksumIn(Set<String> checksums);
+
+    Optional<FileStorageRequest> findByMetaInfoChecksum(String checksum);
 
 }
