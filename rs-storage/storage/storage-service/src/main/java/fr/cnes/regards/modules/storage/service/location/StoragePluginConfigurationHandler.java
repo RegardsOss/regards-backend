@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.location;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,6 +31,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -120,9 +120,10 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
      * Return all the configured {@link PluginConfiguration} labels.
      */
     public Set<String> getConfiguredStorages() {
-        if ((this.storages.get(runtimeTenantResolver.getTenant()) == null) || this.storages
-                .get(runtimeTenantResolver.getTenant()).isEmpty()) {
+        if ((this.storages.get(runtimeTenantResolver.getTenant()) == null)
+                || this.storages.get(runtimeTenantResolver.getTenant()).isEmpty()) {
             this.refresh(runtimeTenantResolver.getTenant());
+            LOGGER.info("[STORAGE CONFIGURATION] Plugin configuration list refreshed !");
         }
         return this.storages.get(runtimeTenantResolver.getTenant());
     }
@@ -131,8 +132,8 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
      * Return all the online storage location configured {@link PluginConfiguration} labels.
      */
     public Set<String> getConfiguredOnlineStorages() {
-        if ((this.onlineStorages.get(runtimeTenantResolver.getTenant()) == null) || this.onlineStorages
-                .get(runtimeTenantResolver.getTenant()).isEmpty()) {
+        if ((this.onlineStorages.get(runtimeTenantResolver.getTenant()) == null)
+                || this.onlineStorages.get(runtimeTenantResolver.getTenant()).isEmpty()) {
             this.refresh(runtimeTenantResolver.getTenant());
         }
         return this.onlineStorages.get(runtimeTenantResolver.getTenant());
@@ -152,7 +153,8 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
         runtimeTenantResolver.forceTenant(tenant);
         try {
             List<PluginConfiguration> confs = pluginService.getPluginConfigurationsByType(IStorageLocation.class);
-            List<PluginConfiguration> onlineConfs = confs.stream().filter(c -> c.getInterfaceNames().contains(IOnlineStorageLocation.class.getName()))
+            List<PluginConfiguration> onlineConfs = confs.stream()
+                    .filter(c -> c.getInterfaceNames().contains(IOnlineStorageLocation.class.getName()))
                     .collect(Collectors.toList());
             confs.forEach(c -> this.storages.put(tenant, c.getLabel()));
             onlineConfs.forEach(c -> this.onlineStorages.put(tenant, c.getLabel()));

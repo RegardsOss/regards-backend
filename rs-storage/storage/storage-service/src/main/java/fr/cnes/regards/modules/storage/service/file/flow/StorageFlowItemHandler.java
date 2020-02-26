@@ -89,7 +89,7 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
         String tenant = wrapper.getTenant();
         runtimeTenantResolver.forceTenant(tenant);
         LOGGER.trace("[EVENT] New FileStorageFlowItem received -- {}", wrapper.getContent().toString());
-        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (50 * BULK_SIZE))) {
+        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (10 * BULK_SIZE))) {
             // Do not overload the concurrent queue if the configured listener does not handle queued message faster
             try {
                 LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
@@ -142,24 +142,26 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
                 runtimeTenantResolver.forceTenant(entry.getKey());
                 ConcurrentLinkedQueue<StorageFlowItem> tenantItems = entry.getValue();
                 List<StorageFlowItem> list = new ArrayList<>();
-                // Build a 100 (at most) documents bulk request
-                for (int i = 0; i < BULK_SIZE; i++) {
-                    StorageFlowItem doc = tenantItems.poll();
-                    if (doc == null) {
-                        // Less than BULK_SIZE documents, bulk save what we have already
-                        break;
-                    } else { // enqueue document
-                        list.add(doc);
+                do {
+                    // Build a 100 (at most) documents bulk request
+                    for (int i = 0; i < BULK_SIZE; i++) {
+                        StorageFlowItem doc = tenantItems.poll();
+                        if (doc == null) {
+                            // Less than BULK_SIZE documents, bulk save what we have already
+                            break;
+                        } else { // enqueue document
+                            list.add(doc);
+                        }
                     }
-                }
-                if (!list.isEmpty()) {
-                    LOGGER.debug("[STORAGE FLOW HANDLER] Bulk saving {} StorageFlowItem...", list.size());
-                    long start = System.currentTimeMillis();
-                    fileStorageReqService.store(list);
-                    LOGGER.debug("[STORAGE FLOW HANDLER] {} StorageFlowItem handled in {} ms", list.size(),
-                                 System.currentTimeMillis() - start);
-                    list.clear();
-                }
+                    if (!list.isEmpty()) {
+                        LOGGER.debug("[STORAGE FLOW HANDLER] Bulk saving {} StorageFlowItem...", list.size());
+                        long start = System.currentTimeMillis();
+                        fileStorageReqService.store(list);
+                        LOGGER.debug("[STORAGE FLOW HANDLER] {} StorageFlowItem handled in {} ms", list.size(),
+                                     System.currentTimeMillis() - start);
+                        list.clear();
+                    }
+                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

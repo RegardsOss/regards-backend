@@ -158,8 +158,8 @@ public class RequestsGroupService {
      */
     public void granted(String groupId, FileRequestType type, int nbRequestInGroup, boolean silent,
             OffsetDateTime expirationDate) {
-        LOGGER.trace("[{} GROUP GRANTED {}] - Group request granted with {} requests.", type.toString().toUpperCase(),
-                     groupId, nbRequestInGroup);
+
+        long start = System.currentTimeMillis();
         // Create new group request
         if (!reqGroupRepository.existsById(groupId)) {
             reqGroupRepository.save(RequestGroup.build(groupId, type, expirationDate));
@@ -169,6 +169,8 @@ public class RequestsGroupService {
         if (!silent) {
             publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.GRANTED, Sets.newHashSet()));
         }
+        LOGGER.trace("[{} GROUP GRANTED {}] - Group request granted with {} requests. ({}ms)",
+                     type.toString().toUpperCase(), groupId, nbRequestInGroup, System.currentTimeMillis() - start);
     }
 
     /**

@@ -88,7 +88,7 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
         String tenant = wrapper.getTenant();
         DeletionFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
-        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (50 * BULK_SIZE))) {
+        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (10 * BULK_SIZE))) {
             // Do not overload the concurrent queue if the configured listener does not handle queued message faster
             try {
                 LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
@@ -130,24 +130,26 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
                 runtimeTenantResolver.forceTenant(entry.getKey());
                 ConcurrentLinkedQueue<DeletionFlowItem> tenantItems = entry.getValue();
                 List<DeletionFlowItem> list = new ArrayList<>();
-                // Build a 10_000 (at most) documents bulk request
-                for (int i = 0; i < BULK_SIZE; i++) {
-                    DeletionFlowItem doc = tenantItems.poll();
-                    if (doc == null) {
-                        // Less than BULK_SIZE documents, bulk save what we have already
-                        break;
-                    } else { // enqueue document
-                        list.add(doc);
+                do {
+                    // Build a 10_000 (at most) documents bulk request
+                    for (int i = 0; i < BULK_SIZE; i++) {
+                        DeletionFlowItem doc = tenantItems.poll();
+                        if (doc == null) {
+                            // Less than BULK_SIZE documents, bulk save what we have already
+                            break;
+                        } else { // enqueue document
+                            list.add(doc);
+                        }
                     }
-                }
-                if (!list.isEmpty()) {
-                    LOGGER.debug("[DELETION FLOW HANDLER] Bulk saving {} DeleteFileRefFlowItem...", list.size());
-                    long start = System.currentTimeMillis();
-                    fileDelReqService.handle(list);
-                    LOGGER.debug("[DELETION FLOW HANDLER] {} DeleteFileRefFlowItem handled in {} ms", list.size(),
-                                 System.currentTimeMillis() - start);
-                    list.clear();
-                }
+                    if (!list.isEmpty()) {
+                        LOGGER.debug("[DELETION FLOW HANDLER] Bulk saving {} DeleteFileRefFlowItem...", list.size());
+                        long start = System.currentTimeMillis();
+                        fileDelReqService.handle(list);
+                        LOGGER.debug("[DELETION FLOW HANDLER] {} DeleteFileRefFlowItem handled in {} ms", list.size(),
+                                     System.currentTimeMillis() - start);
+                        list.clear();
+                    }
+                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

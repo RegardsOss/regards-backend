@@ -141,7 +141,6 @@ public class FileStorageRequestService {
             reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size(),
                                     getRequestExpirationDate());
         }
-
     }
 
     /**
@@ -166,14 +165,16 @@ public class FileStorageRequestService {
             Collection<FileReference> existingOnes) {
         // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
         LOGGER.trace("[STORAGE REQUESTS] Handling {} requests ...", requests.size());
-
         for (FileStorageRequestDTO request : requests) {
+            long start = System.currentTimeMillis();
             // Check if the file already exists for the storage destination
             Optional<FileReference> oFileRef = existingOnes.stream()
                     .filter(f -> f.getMetaInfo().getChecksum().equals(request.getChecksum())
-                            && f.getLocation().getStorage().contentEquals(request.getStorage()))
+                            && f.getLocation().getStorage().equals(request.getStorage()))
                     .findFirst();
             handleRequest(request, oFileRef, groupId);
+            LOGGER.trace("[STORAGE REQUESTS] New request ({}) handled in {} ms", request.getFileName(),
+                         System.currentTimeMillis() - start);
         }
     }
 
@@ -454,6 +455,7 @@ public class FileStorageRequestService {
     public FileStorageRequest createNewFileStorageRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             String originUrl, String storage, Optional<String> storageSubDirectory, String groupId,
             Optional<String> errorCause, Optional<FileRequestStatus> status) {
+        long start = System.currentTimeMillis();
         FileStorageRequest fileStorageRequest = new FileStorageRequest(owners, fileMetaInfo, originUrl, storage,
                 storageSubDirectory, groupId);
         fileStorageRequest.setStatus(reqStatusService.getNewStatus(fileStorageRequest, status));
@@ -463,9 +465,9 @@ public class FileStorageRequestService {
             handleStorageNotAvailable(fileStorageRequest, Optional.empty());
         } else {
             fileStorageRequestRepo.save(fileStorageRequest);
-            LOGGER.trace("New file storage request created for file <{}> to store to {} with status {}",
+            LOGGER.trace("[STORAGE REQUESTS] New file storage request created for file <{}> to store to {} with status {} in {}ms",
                          fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage(),
-                         fileStorageRequest.getStatus());
+                         fileStorageRequest.getStatus(), System.currentTimeMillis() - start);
         }
         return fileStorageRequest;
     }
@@ -492,6 +494,7 @@ public class FileStorageRequestService {
      * @param fileStorageRequest
      */
     private void handleStorageNotAvailable(FileStorageRequest fileStorageRequest, Optional<String> errorCause) {
+        long start = System.currentTimeMillis();
         // The storage destination is unknown, we can already set the request in error status
         String lErrorCause = errorCause.orElse(String
                 .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown or disabled.",
@@ -511,6 +514,8 @@ public class FileStorageRequestService {
                                          fileStorageRequest.getStorage(), fileStorageRequest.getStorageSubDirectory(),
                                          fileStorageRequest.getOwners(), lErrorCause);
         }
+        LOGGER.debug("[STORAGE REQUESTS] Request {} set as error in {} ms. Cause : ",
+                     fileStorageRequest.getMetaInfo().getFileName(), System.currentTimeMillis() - start, lErrorCause);
     }
 
     public void handleSuccess(Collection<FileStorageRequestResultDTO> results) {
@@ -586,6 +591,7 @@ public class FileStorageRequestService {
      */
     private Optional<FileReference> handleFileToStoreAlreadyExists(FileReference fileReference,
             FileStorageRequestDTO request, String groupId) {
+        long start = System.currentTimeMillis();
         FileReference updatedFileRef = null;
         FileReferenceMetaInfo newMetaInfo = request.buildMetaInfo();
         Optional<FileDeletionRequest> deletionRequest = fileDelReqService.search(fileReference);
@@ -608,6 +614,8 @@ public class FileStorageRequestService {
             reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE, request.getChecksum(),
                                            request.getStorage(), request.getOptionalSubDirectory().orElse(null),
                                            Sets.newHashSet(request.getOwner()), updatedFileRef);
+            LOGGER.debug("[STORAGE REQUESTS] Storage request {} succeded for existing reference {} in {}ms.",
+                         updatedFileRef.getId(), System.currentTimeMillis() - start);
         }
         return Optional.ofNullable(updatedFileRef);
     }

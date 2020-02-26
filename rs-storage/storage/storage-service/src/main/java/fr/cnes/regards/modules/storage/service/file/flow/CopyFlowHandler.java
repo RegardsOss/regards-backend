@@ -87,7 +87,7 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
         String tenant = wrapper.getTenant();
         CopyFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
-        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (100 * BULK_SIZE))) {
+        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (10 * BULK_SIZE))) {
             // Do not overload the concurrent queue if the configured listener does not handle queued message faster
             try {
                 LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
@@ -129,24 +129,26 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
                 runtimeTenantResolver.forceTenant(entry.getKey());
                 ConcurrentLinkedQueue<CopyFlowItem> tenantItems = entry.getValue();
                 List<CopyFlowItem> list = new ArrayList<>();
-                // Build a 10_000 (at most) documents bulk request
-                for (int i = 0; i < BULK_SIZE; i++) {
-                    CopyFlowItem doc = tenantItems.poll();
-                    if (doc == null) {
-                        // Less than BULK_SIZE documents, bulk save what we have already
-                        break;
-                    } else { // enqueue document
-                        list.add(doc);
+                do {
+                    // Build a 10_000 (at most) documents bulk request
+                    for (int i = 0; i < BULK_SIZE; i++) {
+                        CopyFlowItem doc = tenantItems.poll();
+                        if (doc == null) {
+                            // Less than BULK_SIZE documents, bulk save what we have already
+                            break;
+                        } else { // enqueue document
+                            list.add(doc);
+                        }
                     }
-                }
-                if (!list.isEmpty()) {
-                    LOGGER.debug("[COPY FLOW HANDLER] Bulk saving {} CopyFlowItem...", list.size());
-                    long start = System.currentTimeMillis();
-                    fileCopyReqService.copy(list);
-                    LOGGER.debug("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms", list.size(),
-                                 System.currentTimeMillis() - start);
-                    list.clear();
-                }
+                    if (!list.isEmpty()) {
+                        LOGGER.debug("[COPY FLOW HANDLER] Bulk saving {} CopyFlowItem...", list.size());
+                        long start = System.currentTimeMillis();
+                        fileCopyReqService.copy(list);
+                        LOGGER.debug("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms", list.size(),
+                                     System.currentTimeMillis() - start);
+                        list.clear();
+                    }
+                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

@@ -116,6 +116,7 @@ public class FileReferenceRequestService {
             Collection<FileReference> existingOnes, Collection<FileDeletionRequest> existingDeletionRequests) {
         Set<FileReference> fileRefs = Sets.newHashSet();
         for (FileReferenceRequestDTO file : requests) {
+            long start = System.currentTimeMillis();
             // Check if the file already exists for the storage destination
             Optional<FileReference> oFileRef = existingOnes.stream()
                     .filter(f -> f.getMetaInfo().getChecksum().equals(file.getChecksum())
@@ -138,6 +139,9 @@ public class FileReferenceRequestService {
                                                  file.getStorage(), e.getMessage(), Sets.newHashSet(groupId));
                 reqGrpService.requestError(groupId, FileRequestType.REFERENCE, file.getChecksum(), file.getStorage(),
                                            null, Sets.newHashSet(file.getOwner()), e.getMessage());
+            } finally {
+                LOGGER.trace("[REFERENCE REQUEST] New reference request ({}) handled in {}ms", file.getFileName(),
+                             System.currentTimeMillis() - start);
             }
         }
         return fileRefs;
