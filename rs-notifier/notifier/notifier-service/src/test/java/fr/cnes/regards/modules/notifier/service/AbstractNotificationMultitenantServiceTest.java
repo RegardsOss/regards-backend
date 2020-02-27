@@ -51,9 +51,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
-import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactory;
-import fr.cnes.regards.modules.model.service.xml.IComputationPluginService;
 import fr.cnes.regards.modules.notifier.dao.INotificationActionRepository;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.dao.IRecipientRepository;
@@ -115,16 +112,6 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
 
     @Autowired(required = false)
     private IRabbitVirtualHostAdmin vhostAdmin;
-
-    @Autowired
-    protected MultitenantFlattenedAttributeAdapterFactory factory;
-
-    // Mock for test purpose
-    @Autowired
-    protected IComputationPluginService cps;
-
-    @Autowired
-    protected IModelAttrAssocClient modelAttrAssocClientMock;
 
     @Autowired
     protected NotificationConfigurationProperties configuration;

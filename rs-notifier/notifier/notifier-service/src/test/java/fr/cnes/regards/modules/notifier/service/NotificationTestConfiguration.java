@@ -18,13 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
-import org.mockito.Mockito;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import fr.cnes.regards.modules.model.client.IAttributeModelClient;
-import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
-import fr.cnes.regards.modules.model.service.xml.IComputationPluginService;
 
 /**
  * @author Marc SORDI
@@ -33,18 +27,4 @@ import fr.cnes.regards.modules.model.service.xml.IComputationPluginService;
 @Configuration
 public class NotificationTestConfiguration {
 
-    @Bean
-    public IModelAttrAssocClient modelAttrAssocClient() {
-        return Mockito.mock(IModelAttrAssocClient.class);
-    }
-
-    @Bean // Used in model service
-    public IComputationPluginService computationPluginService() {
-        return Mockito.mock(IComputationPluginService.class);
-    }
-
-    @Bean
-    public IAttributeModelClient attributeModelClient() {
-        return Mockito.mock(IAttributeModelClient.class);
-    }
 }
