@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import java.time.OffsetDateTime;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -168,18 +169,18 @@ public class RequestStatusService {
      * Update delayed {@link FileStorageRequest}s that can be handled.
      */
     public void checkDelayedStorageRequests() {
-        int nbDelayedrequestUpdated = 0;
+        Set<FileStorageRequest> toUpdate = Sets.newHashSet();
         for (FileStorageRequest defayledRequest : storageReqRepo.findByStatus(FileRequestStatus.DELAYED,
                                                                               PageRequest.of(0, 500))) {
             // Check new status for the delayed request
             if (getNewStatus(defayledRequest, Optional.empty()) == FileRequestStatus.TO_DO) {
                 defayledRequest.setStatus(FileRequestStatus.TO_DO);
-                storageReqRepo.save(defayledRequest);
-                nbDelayedrequestUpdated++;
+                toUpdate.add(defayledRequest);
             }
         }
-        if (nbDelayedrequestUpdated > 0) {
-            LOGGER.debug("[STORAGE REQUEST] {} delayed requests can be hanle now.", nbDelayedrequestUpdated);
+        if (!toUpdate.isEmpty()) {
+            storageReqRepo.saveAll(toUpdate);
+            LOGGER.debug("[STORAGE REQUEST] {} delayed requests can be hanle now.", toUpdate.size());
         }
     }
 
@@ -187,18 +188,18 @@ public class RequestStatusService {
      * Update delayed {@link FileStorageRequest}s that can be handled.
      */
     public void checkDelayedDeleteRequests() {
-        int nbDelayedrequestUpdated = 0;
+        Set<FileDeletionRequest> toUpdate = Sets.newHashSet();
         for (FileDeletionRequest defayledRequest : deletionReqRepo.findByStatus(FileRequestStatus.DELAYED,
                                                                                 PageRequest.of(0, 500))) {
             // Check new status for the delayed request
             if (getNewStatus(defayledRequest, Optional.empty()) == FileRequestStatus.TO_DO) {
                 defayledRequest.setStatus(FileRequestStatus.TO_DO);
-                deletionReqRepo.save(defayledRequest);
-                nbDelayedrequestUpdated++;
+                toUpdate.add(defayledRequest);
             }
         }
-        if (nbDelayedrequestUpdated > 0) {
-            LOGGER.debug("[DELETE REQUEST] {} delayed requests can be hanle now.", nbDelayedrequestUpdated);
+        if (!toUpdate.isEmpty()) {
+            deletionReqRepo.saveAll(toUpdate);
+            LOGGER.debug("[DELETE REQUEST] {} delayed requests can be hanle now.", toUpdate.size());
         }
     }
 
@@ -206,18 +207,18 @@ public class RequestStatusService {
      * Update delayed {@link FileCopyRequest}s that can be handled.
      */
     public void checkDelayedCopyRequests() {
-        int nbDelayedrequestUpdated = 0;
+        Set<FileCopyRequest> toUpdate = Sets.newHashSet();
         for (FileCopyRequest defayledRequest : copyReqRepo.findByStatus(FileRequestStatus.DELAYED,
                                                                         PageRequest.of(0, 500))) {
             // Check new status for the delayed request
             if (getNewStatus(defayledRequest, Optional.empty()) == FileRequestStatus.TO_DO) {
                 defayledRequest.setStatus(FileRequestStatus.TO_DO);
-                copyReqRepo.save(defayledRequest);
-                nbDelayedrequestUpdated++;
+                toUpdate.add(defayledRequest);
             }
         }
-        if (nbDelayedrequestUpdated > 0) {
-            LOGGER.debug("[COPY REQUEST] {} delayed requests can be hanle now.", nbDelayedrequestUpdated);
+        if (!toUpdate.isEmpty()) {
+            copyReqRepo.saveAll(toUpdate);
+            LOGGER.debug("[COPY REQUEST] {} delayed requests can be hanle now.", toUpdate.size());
         }
     }
 
