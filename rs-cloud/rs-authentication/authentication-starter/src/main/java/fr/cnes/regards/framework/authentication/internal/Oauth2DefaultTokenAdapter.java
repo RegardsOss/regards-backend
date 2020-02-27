@@ -9,7 +9,6 @@ import java.util.StringJoiner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -83,8 +82,7 @@ public class Oauth2DefaultTokenAdapter extends TypeAdapter<DefaultOAuth2AccessTo
 
     @Override
     public DefaultOAuth2AccessToken read(JsonReader jsonReader) throws IOException {
-        OAuth2AccessToken token = DefaultOAuth2AccessToken
-                .valueOf(gson.fromJson(jsonReader, LinkedHashMap.class));
+        OAuth2AccessToken token = DefaultOAuth2AccessToken.valueOf(gson.fromJson(jsonReader, LinkedHashMap.class));
         return (DefaultOAuth2AccessToken) token;
     }
 
