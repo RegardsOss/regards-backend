@@ -234,6 +234,9 @@ public class IngestRequestService implements IIngestRequestService {
             if (!remoteStepGroupIds.isEmpty()) {
                 // Register request info to identify storage callback events
                 request.setRemoteStepGroupIds(remoteStepGroupIds);
+                // Put the request as un-schedule.
+                // The answering event from storage will put again the request to be executed
+                request.setState(InternalRequestState.TO_SCHEDULE);
                 // Keep track of the request
                 saveRequest(request);
             } else {
