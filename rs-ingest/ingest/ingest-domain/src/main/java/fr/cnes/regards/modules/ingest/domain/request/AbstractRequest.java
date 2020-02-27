@@ -56,8 +56,9 @@ import org.hibernate.annotations.TypeDefs;
 @Entity
 @Table(name = "t_request",
     indexes = {
-        @Index(name = "idx_request_search", columnList = "session_owner,session_name,provider_id"),
-        @Index(name = "idx_request_remote_step_group_ids", columnList = "remote_step_group_ids")
+            @Index(name = "idx_request_search", columnList = "session_owner,session_name,provider_id"),
+            @Index(name = "idx_request_aip_id", columnList = "aip_id"),
+            @Index(name = "idx_request_remote_step_group_ids", columnList = "remote_step_group_ids")
 })
 @DiscriminatorColumn(name = "dtype", length = AbstractRequest.MAX_TYPE_LENGTH)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
