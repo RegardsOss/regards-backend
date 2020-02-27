@@ -233,7 +233,8 @@ public class FileReferenceRequestService {
                             request.getOwner(), fileReference.getMetaInfo().getFileName(),
                             fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
             fileRefEventPublisher.storeSuccess(fileReference, message, groupIds);
-            return fileRefService.addOwner(fileReference, request.getOwner());
+            fileReference.getOwners().add(request.getOwner());
+            return fileReference;
         }
     }
 

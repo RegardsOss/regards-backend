@@ -217,21 +217,32 @@ public class RequestsGroupService {
         // To do so, we order on id to ensure to not handle same requests multiple times.
         Page<RequestGroup> response = reqGroupRepository.findAll(PageRequest.of(0, 500, Direction.ASC, "id"));
         long totalChecked = response.getTotalElements();
-        int nbGroupsDone = 0;
+        Set<RequestGroup> groupDones = Sets.newHashSet();
         if (totalChecked > 0) {
             do {
                 Iterator<RequestGroup> it = response.getContent().iterator();
                 do {
-                    nbGroupsDone += checkRequestsGroupDone(it.next()) ? 1 : 0;
+                    RequestGroup reqGrp = it.next();
+                    if (checkRequestsGroupDone(reqGrp)) {
+                        groupDones.add(reqGrp);
+                    } else {
+                        checkRequestGroupExpired(reqGrp);
+                    }
                 } while (it.hasNext());
                 response = reqGroupRepository.findAll(response.getPageable().next());
-            } while (response.hasNext() && (nbGroupsDone < MAX_REQUEST_PER_TRANSACTION));
+            } while (response.hasNext() && (groupDones.size() < MAX_REQUEST_PER_TRANSACTION));
         }
         String message = "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}";
-        if (nbGroupsDone > 0) {
-            LOGGER.info(message, System.currentTimeMillis() - start, nbGroupsDone, totalChecked);
+        if (!groupDones.isEmpty()) {
+            Set<RequestResultInfo> infos = groupReqInfoRepository
+                    .findByGroupIdIn(groupDones.stream().map(g -> g.getId()).collect(Collectors.toSet()));
+            for (RequestGroup group : groupDones) {
+                groupDone(group,
+                          infos.stream().filter(i -> i.getGroupId().equals(group.getId())).collect(Collectors.toSet()));
+            }
+            LOGGER.info(message, System.currentTimeMillis() - start, groupDones.size(), totalChecked);
         } else {
-            LOGGER.debug(message, System.currentTimeMillis() - start, nbGroupsDone, totalChecked);
+            LOGGER.debug(message, System.currentTimeMillis() - start, 0, totalChecked);
         }
     }
 
@@ -264,13 +275,7 @@ public class RequestsGroupService {
             default:
                 break;
         }
-        // IF finished send a terminated group request event
-        if (isDone) {
-            groupDone(reqGrp);
-            return true;
-        } else {
-            return checkRequestGroupExpired(reqGrp);
-        }
+        return isDone;
     }
 
     /**
@@ -324,8 +329,8 @@ public class RequestsGroupService {
         return expired;
     }
 
-    private void groupDone(RequestGroup reqGrp) {
-        groupDone(reqGrp, Optional.empty());
+    private void groupDone(RequestGroup reqGrp, Set<RequestResultInfo> infos) {
+        groupDone(reqGrp, infos, Optional.empty());
     }
 
     /**
@@ -333,9 +338,8 @@ public class RequestsGroupService {
      * @param groupId
      * @param type
      */
-    private void groupDone(RequestGroup reqGrp, Optional<FlowItemStatus> forcedStatus) {
-        // 1. Do only one database request, then dispatch results between success and errors
-        Set<RequestResultInfo> resultInfos = groupReqInfoRepository.findByGroupId(reqGrp.getId());
+    private void groupDone(RequestGroup reqGrp, Set<RequestResultInfo> resultInfos,
+            Optional<FlowItemStatus> forcedStatus) {
         Set<RequestResultInfo> errors = Sets.newHashSet();
         Set<RequestResultInfo> successes = Sets.newHashSet();
         for (RequestResultInfo info : resultInfos) {
@@ -363,7 +367,6 @@ public class RequestsGroupService {
         // 3. Clear
         groupReqInfoRepository.deleteByGroupId(reqGrp.getId());
         reqGroupRepository.delete(reqGrp);
-        resultInfos.clear();
     }
 
     public void deleteRequestInfoForFile(Long fileId) {
@@ -397,9 +400,13 @@ public class RequestsGroupService {
     public void deleteRequestGroups(FileRequestType type) {
         Pageable page = PageRequest.of(0, 500, Direction.ASC, "id");
         Page<RequestGroup> groups = reqGroupRepository.findByType(type, page);
+        Set<RequestResultInfo> infos = groupReqInfoRepository
+                .findByGroupIdIn(groups.stream().map(g -> g.getId()).collect(Collectors.toSet()));
         if (!groups.isEmpty()) {
             for (RequestGroup group : groups) {
-                groupDone(group, Optional.of(FlowItemStatus.ERROR));
+                groupDone(group,
+                          infos.stream().filter(i -> i.getGroupId().equals(group.getId())).collect(Collectors.toSet()),
+                          Optional.of(FlowItemStatus.ERROR));
             }
         }
     }

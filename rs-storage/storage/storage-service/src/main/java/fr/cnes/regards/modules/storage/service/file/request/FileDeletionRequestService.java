@@ -444,6 +444,11 @@ public class FileDeletionRequestService {
     }
 
     @Transactional(readOnly = true)
+    public Set<FileDeletionRequest> searchByChecksums(Set<String> checksums) {
+        return fileDeletionRequestRepo.findByFileReferenceMetaInfoChecksumIn(checksums);
+    }
+
+    @Transactional(readOnly = true)
     public Set<FileDeletionRequest> search(Set<FileReference> fileReferences) {
         return fileDeletionRequestRepo
                 .findByFileReferenceIdIn(fileReferences.stream().map(FileReference::getId).collect(Collectors.toSet()));
@@ -457,6 +462,11 @@ public class FileDeletionRequestService {
     @Transactional(readOnly = true)
     public Page<FileDeletionRequest> search(String storage, Pageable page) {
         return fileDeletionRequestRepo.findByStorage(storage, page);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<FileDeletionRequest> search(String checksum, String storage) {
+        return fileDeletionRequestRepo.findByStorageAndFileReferenceMetaInfoChecksum(checksum, storage);
     }
 
     @Transactional(readOnly = true)

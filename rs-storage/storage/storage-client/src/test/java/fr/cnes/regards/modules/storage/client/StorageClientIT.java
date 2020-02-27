@@ -24,6 +24,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Set;
@@ -41,6 +42,7 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.FileSystemUtils;
 
 import com.google.common.collect.Sets;
 
@@ -50,6 +52,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
@@ -75,12 +78,11 @@ import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineTestClient;
  * @author sbinda
  *
  */
-@ActiveProfiles({ "testAmqp", "storageTest", "noschedule" })
+@ActiveProfiles({ "testAmqp", "storageTest" })
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
-                "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true" },
-        locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
+        "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true", "regards.scheduler.pool.size=6",
+        "regards.jobs.pool.size=5" }, locations = { "classpath:application-test.properties" })
 public class StorageClientIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageClientIT.class);
@@ -184,6 +186,47 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         // Wait for storage ends
         waitRequestEnds(2, 60);
         Assert.assertEquals("Two requests should be created", 2, infos.size());
+    }
+
+    @Test
+    public void storeBulk() throws NoSuchAlgorithmException, IOException, InterruptedException {
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+
+        FileSystemUtils.deleteRecursively(Paths.get("target/store"));
+        Files.createDirectory(Paths.get("target/store"));
+        int nbGroups = 1_100;
+        Set<Path> filesToStore = Sets.newHashSet();
+        for (int i = 0; i < nbGroups; i++) {
+            Path path = Paths.get("target/store/file_" + i + ".txt");
+            String str = "fichier de test " + i;
+            byte[] strToBytes = str.getBytes();
+            Files.write(path, strToBytes);
+            filesToStore.add(path);
+        }
+
+        Path fileCommon = Paths.get("src/test/resources/income/file_common.txt");
+        String csCommon = ChecksumUtils.computeHexChecksum(fileCommon, "MD5");
+
+        int cpt = 0;
+        for (Path file : filesToStore) {
+            cpt++;
+            String owner = "owner-" + cpt;
+            Set<FileStorageRequestDTO> files = Sets.newHashSet();
+            String cs = ChecksumUtils.computeHexChecksum(file, "MD5");
+            files.add(FileStorageRequestDTO
+                    .build(file.getFileName().toString(), cs, "MD5", "application/octet-stream", owner,
+                           (new URL("file", null, file.toAbsolutePath().toString())).toString(), ONLINE_CONF, null));
+            files.add(FileStorageRequestDTO
+                    .build(fileCommon.getFileName().toString(), csCommon, "MD5", "application/octet-stream", owner,
+                           (new URL("file", null, fileCommon.toAbsolutePath().toString())).toString(), ONLINE_CONF,
+                           null));
+            client.store(files);
+        }
+
+        waitRequestEnds(nbGroups, 240);
+
+        Assert.assertEquals(nbGroups, listener.getNbRequestEnds());
+
     }
 
     @Test

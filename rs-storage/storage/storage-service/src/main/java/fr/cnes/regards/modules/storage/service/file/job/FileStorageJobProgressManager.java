@@ -84,14 +84,15 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
     }
 
     public void bulkSave() {
+        long start = System.currentTimeMillis();
         Set<FileStorageRequestResultDTO> successes = handledRequest.stream().filter(r -> !r.isError())
                 .collect(Collectors.toSet());
         Set<FileStorageRequestResultDTO> errors = handledRequest.stream().filter(r -> r.isError())
                 .collect(Collectors.toSet());
-        LOG.debug("[STORE END] Saving job requests final status ({} successes & {} errors).", successes.size(),
-                  errors.size());
         storageRequestService.handleSuccess(successes);
         storageRequestService.handleError(errors);
+        LOG.debug("[STORE END] Job requests final status updated ({} successes & {} errors) in {}ms.", successes.size(),
+                  errors.size(), System.currentTimeMillis() - start);
     }
 
     /**

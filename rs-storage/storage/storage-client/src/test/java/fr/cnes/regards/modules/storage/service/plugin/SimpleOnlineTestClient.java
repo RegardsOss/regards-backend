@@ -136,7 +136,7 @@ public class SimpleOnlineTestClient implements IOnlineStorageLocation {
         String fileName = fileRefRequest.getMetaInfo().getFileName();
         if (Pattern.matches(doNotHandlePattern, fileName)) {
             // Do nothing to test not handled files
-            LOGGER.info("File {} ignored for storage", fileName);
+            LOGGER.debug("File {} ignored for storage", fileName);
             return;
         } else if (Pattern.matches(errorFilePattern, fileName)) {
             progressManager.storageFailed(fileRefRequest, "Specific error generated for tests");
@@ -157,8 +157,8 @@ public class SimpleOnlineTestClient implements IOnlineStorageLocation {
                 if (!Files.exists(Paths.get(storedUrl))) {
                     Files.createFile(Paths.get(storedUrl));
                 }
-                LOGGER.info("[SImpleOnLine Plugin] Storage succeed for file {}",
-                            fileRefRequest.getMetaInfo().getFileName());
+                LOGGER.debug("[SImpleOnLine Plugin] Storage succeed for file {}",
+                             fileRefRequest.getMetaInfo().getFileName());
                 progressManager.storageSucceed(fileRefRequest, new URL("file", null, storedUrl), 10L);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);

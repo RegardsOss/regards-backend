@@ -137,9 +137,10 @@ public class FileStorageRequestService {
         Set<String> checksums = list.stream().map(StorageFlowItem::getFiles).flatMap(Set::stream)
                 .map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet());
         Set<FileReference> existingOnes = fileRefService.search(checksums);
-        Set<FileStorageRequest> existingRequests = fileStorageRequestRepo.findByMetaInfoChecksumIn(checksums);
+        Set<FileStorageRequest> existingRequests = Sets.newHashSet();
+        Set<FileDeletionRequest> existingDeletionRequests = fileDelReqService.searchByChecksums(checksums);
         for (StorageFlowItem item : list) {
-            store(item.getFiles(), item.getGroupId(), existingOnes, existingRequests);
+            store(item.getFiles(), item.getGroupId(), existingOnes, existingRequests, existingDeletionRequests);
             reqGroupService.granted(item.getGroupId(), FileRequestType.STORAGE, item.getFiles().size(),
                                     getRequestExpirationDate());
         }
@@ -154,7 +155,8 @@ public class FileStorageRequestService {
         Set<String> checksums = requests.stream().map(FileStorageRequestDTO::getChecksum).collect(Collectors.toSet());
         Set<FileReference> existingOnes = fileRefService.search(checksums);
         Set<FileStorageRequest> existingRequests = fileStorageRequestRepo.findByMetaInfoChecksumIn(checksums);
-        store(requests, groupId, existingOnes, existingRequests);
+        Set<FileDeletionRequest> existingDeletionRequests = fileDelReqService.searchByChecksums(checksums);
+        store(requests, groupId, existingOnes, existingRequests, existingDeletionRequests);
     }
 
     /**
@@ -166,7 +168,8 @@ public class FileStorageRequestService {
      * @param existingRequests
      */
     public void store(Collection<FileStorageRequestDTO> requests, String groupId,
-            Collection<FileReference> existingOnes, Set<FileStorageRequest> existingRequests) {
+            Collection<FileReference> existingOnes, Set<FileStorageRequest> existingRequests,
+            Set<FileDeletionRequest> existingDeletionRequests) {
         // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
         LOGGER.trace("[STORAGE REQUESTS] Handling {} requests ...", requests.size());
         for (FileStorageRequestDTO request : requests) {
@@ -180,7 +183,11 @@ public class FileStorageRequestService {
                     .filter(f -> f.getMetaInfo().getChecksum().equals(request.getChecksum())
                             && f.getStorage().equals(request.getStorage()))
                     .findFirst();
-            RequestResult result = handleRequest(request, oFileRef, oReq, groupId);
+            Optional<FileDeletionRequest> oDelReq = existingDeletionRequests.stream()
+                    .filter(f -> f.getFileReference().getMetaInfo().getChecksum().equals(request.getChecksum())
+                            && f.getStorage().equals(request.getStorage()))
+                    .findFirst();
+            RequestResult result = handleRequest(request, oFileRef, oReq, oDelReq, groupId);
             if (result.getFileReference().isPresent()) {
                 // Update file reference in the list of file references existing
                 existingOnes.removeIf(f -> f.getId().equals(result.getFileReference().get().getId()));
@@ -210,10 +217,11 @@ public class FileStorageRequestService {
             String storage, Optional<String> subDirectory, String groupId) {
         Optional<FileReference> oFileRef = fileRefService.search(storage, metaInfo.getChecksum());
         Optional<FileStorageRequest> oReq = fileStorageRequestRepo.findByMetaInfoChecksum(metaInfo.getChecksum());
+        Optional<FileDeletionRequest> oDeletionReq = fileDelReqService.search(metaInfo.getChecksum(), storage);
         return handleRequest(FileStorageRequestDTO.build(metaInfo.getFileName(), metaInfo.getChecksum(),
                                                          metaInfo.getAlgorithm(), metaInfo.getMimeType().toString(),
                                                          owner, originUrl, storage, subDirectory),
-                             oFileRef, oReq, groupId).getFileReference();
+                             oFileRef, oReq, oDeletionReq, groupId).getFileReference();
     }
 
     /**
@@ -261,16 +269,13 @@ public class FileStorageRequestService {
      * @throws MalformedURLException
      */
     private RequestResult handleRequest(FileStorageRequestDTO request, Optional<FileReference> fileRef,
-            Optional<FileStorageRequest> oReq, String groupId) {
+            Optional<FileStorageRequest> oReq, Optional<FileDeletionRequest> oDeletionReq, String groupId) {
         if (fileRef.isPresent()) {
-            return handleFileToStoreAlreadyExists(fileRef.get(), request, groupId);
-        } else if (oReq.isPresent() && (oReq.get().getStatus() != FileRequestStatus.PENDING)) {
+            return handleFileToStoreAlreadyExists(fileRef.get(), request, oDeletionReq, groupId);
+        } else if (oReq.isPresent()) {
             FileStorageRequest existingReq = oReq.get();
             existingReq.getOwners().add(request.getOwner());
             existingReq.getGroupIds().add(groupId);
-            if (existingReq.getStatus() == FileRequestStatus.ERROR) {
-                existingReq.setStatus(FileRequestStatus.TO_DO);
-            }
             FileStorageRequest updatedReq = update(existingReq);
             LOGGER.trace("[STORAGE REQUESTS] Existing request ({}) updated to handle same file of request ({})",
                          existingReq.getMetaInfo().getFileName(), request.getFileName());
@@ -462,6 +467,8 @@ public class FileStorageRequestService {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
         Collection<FileStorageRequest> remainingRequests = Sets.newHashSet();
         remainingRequests.addAll(fileStorageRequests);
+        // FIXME : Check if file reference exists before schedule storage job.
+        // see handleFileToStoreAlreadyExists
         try {
             PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
             IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
@@ -588,6 +595,7 @@ public class FileStorageRequestService {
         for (FileStorageRequestResultDTO result : results) {
             FileStorageRequest request = result.getRequest();
             FileReferenceMetaInfo reqMetaInfos = request.getMetaInfo();
+            Set<FileReference> fileRefs = Sets.newHashSet();
             for (String owner : result.getRequest().getOwners()) {
                 try {
                     FileReferenceMetaInfo fileMeta = new FileReferenceMetaInfo(reqMetaInfos.getChecksum(),
@@ -596,20 +604,24 @@ public class FileStorageRequestService {
                     fileMeta.setHeight(reqMetaInfos.getHeight());
                     fileMeta.setWidth(reqMetaInfos.getWidth());
                     fileMeta.setType(reqMetaInfos.getType());
-                    FileReference fileRef = fileRefReqService
+                    fileRefs.add(fileRefReqService
                             .reference(owner, fileMeta, new FileLocation(request.getStorage(), result.getStoredUrl()),
-                                       request.getGroupIds());
-                    for (String groupId : request.getGroupIds()) {
-                        reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE,
-                                                       fileRef.getMetaInfo().getChecksum(),
-                                                       fileRef.getLocation().getStorage(),
-                                                       request.getStorageSubDirectory(), request.getOwners(), fileRef);
-                    }
+                                       request.getGroupIds()));
                 } catch (ModuleException e) {
                     LOGGER.error(e.getMessage(), e);
                     handleError(request, e.getMessage());
                 }
             }
+
+            for (String groupId : request.getGroupIds()) {
+                for (FileReference fileRef : fileRefs) {
+                    reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE,
+                                                   fileRef.getMetaInfo().getChecksum(),
+                                                   fileRef.getLocation().getStorage(), request.getStorageSubDirectory(),
+                                                   request.getOwners(), fileRef);
+                }
+            }
+
             // Delete the FileRefRequest as it has been handled
             delete(request);
         }
@@ -656,34 +668,28 @@ public class FileStorageRequestService {
      * @return {@link FileReference} updated or null.
      */
     private RequestResult handleFileToStoreAlreadyExists(FileReference fileReference, FileStorageRequestDTO request,
-            String groupId) {
+            Optional<FileDeletionRequest> oDeletionRequest, String groupId) {
         long start = System.currentTimeMillis();
-        FileReference updatedFileRef = null;
         FileReferenceMetaInfo newMetaInfo = request.buildMetaInfo();
-        Optional<FileDeletionRequest> deletionRequest = fileDelReqService.search(fileReference);
-        if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
+        if (oDeletionRequest.isPresent()) {
             // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
             return RequestResult.build(createNewFileStorageRequest(Sets.newHashSet(request.getOwner()), newMetaInfo,
                                                                    request.getOriginUrl(), request.getStorage(),
                                                                    request.getOptionalSubDirectory(), groupId,
                                                                    Optional.empty(), Optional.empty()));
         } else {
-            if (deletionRequest.isPresent()) {
-                // Delete not running deletion request to add the new owner
-                fileDelReqService.delete(deletionRequest.get());
-            }
             String message = String
                     .format("New owner <%s> added to existing referenced file <%s> at <%s> (checksum: %s) ",
                             request.getOwner(), fileReference.getMetaInfo().getFileName(),
                             fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
             eventPublisher.storeSuccess(fileReference, message, Sets.newHashSet(groupId));
-            updatedFileRef = fileRefService.addOwner(fileReference, request.getOwner());
+            fileReference.getOwners().add(request.getOwner());
             reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE, request.getChecksum(),
                                            request.getStorage(), request.getOptionalSubDirectory().orElse(null),
-                                           Sets.newHashSet(request.getOwner()), updatedFileRef);
-            LOGGER.debug("[STORAGE REQUESTS] Storage request {} succeded for existing reference {} in {}ms.",
-                         updatedFileRef.getId(), System.currentTimeMillis() - start);
-            return RequestResult.build(updatedFileRef);
+                                           Sets.newHashSet(request.getOwner()), fileReference);
+            LOGGER.trace("[STORAGE REQUESTS] Storage request {} succeded for existing reference {} in {}ms.",
+                         request.getFileName(), fileReference.getId(), System.currentTimeMillis() - start);
+            return RequestResult.build(fileReference);
         }
     }
 

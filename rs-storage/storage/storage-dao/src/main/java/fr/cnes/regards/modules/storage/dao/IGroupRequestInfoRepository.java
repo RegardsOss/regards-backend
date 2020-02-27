@@ -59,4 +59,6 @@ public interface IGroupRequestInfoRepository extends JpaRepository<RequestResult
      */
     Set<RequestResultInfo> findByGroupIdAndError(String groupId, boolean isError);
 
+    Set<RequestResultInfo> findByGroupIdIn(Set<String> groupIds);
+
 }
