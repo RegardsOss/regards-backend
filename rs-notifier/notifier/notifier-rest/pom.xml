@@ -52,5 +52,11 @@
             <groupId>fr.cnes.regards.modules.notifier</groupId>
             <artifactId>notifier-service</artifactId>
         </dependency>
+        <!-- documentation -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-webmvc-core</artifactId>
+            <version>1.2.32</version>
+        </dependency>
 	</dependencies>
 </project>

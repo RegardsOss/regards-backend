@@ -26,6 +26,10 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.notifier.domain.Recipient;
 import fr.cnes.regards.modules.notifier.service.IRecipientService;
 import fr.cnes.reguards.modules.notifier.dto.RecipientDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * REST interface for managing data {@link Recipient}
@@ -54,7 +58,10 @@ public class RecipientController implements IResourceController<RecipientDto> {
      */
     @ResourceAccess(description = "List all recipient")
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<PagedModel<EntityModel<RecipientDto>>> getRecipients(Pageable page,
+    @Operation(summary = "List all recipient", description = "List all recipient")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Recipients") })
+    public ResponseEntity<PagedModel<EntityModel<RecipientDto>>> getRecipients(
+            @Parameter(description = "Request page") Pageable page,
             final PagedResourcesAssembler<RecipientDto> assembler) {
         return ResponseEntity.ok(toPagedResources(this.recipientService.getRecipients(page), assembler));
     }
@@ -65,7 +72,10 @@ public class RecipientController implements IResourceController<RecipientDto> {
      */
     @ResourceAccess(description = "Create a recipient")
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<EntityModel<RecipientDto>> createRecipient(@Valid @RequestBody RecipientDto toCreate) {
+    @Operation(summary = "Create a recipient", description = "Create a recipient")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Created Recipient") })
+    public ResponseEntity<EntityModel<RecipientDto>> createRecipient(
+            @Parameter(description = "Recipient to create") @Valid @RequestBody RecipientDto toCreate) {
         return ResponseEntity.ok(toResource(this.recipientService.createOrUpdateRecipient(toCreate)));
     }
 
@@ -75,7 +85,10 @@ public class RecipientController implements IResourceController<RecipientDto> {
      */
     @ResourceAccess(description = "Update a recipient")
     @RequestMapping(method = RequestMethod.PUT)
-    public ResponseEntity<EntityModel<RecipientDto>> updateRecipient(@Valid @RequestBody RecipientDto toUpdate) {
+    @Operation(summary = "Update a recipient", description = "Update a recipient")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Updated Recipient") })
+    public ResponseEntity<EntityModel<RecipientDto>> updateRecipient(
+            @Parameter(description = "Recipient to update") @Valid @RequestBody RecipientDto toUpdate) {
         return ResponseEntity.ok(toResource(this.recipientService.createOrUpdateRecipient(toUpdate)));
     }
 
@@ -84,7 +97,10 @@ public class RecipientController implements IResourceController<RecipientDto> {
      */
     @ResourceAccess(description = "Delete a recipient")
     @RequestMapping(method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deleteRecipient(@PathVariable("id") Long id) {
+    @Operation(summary = "Delete a recipient", description = "Delete a recipient")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200") })
+    public ResponseEntity<Void> deleteRecipient(
+            @Parameter(description = "Recipient to delete id") @PathVariable("id") Long id) {
         this.recipientService.deleteRecipient(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

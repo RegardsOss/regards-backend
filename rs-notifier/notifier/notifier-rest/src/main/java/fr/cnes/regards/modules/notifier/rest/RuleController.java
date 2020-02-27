@@ -27,6 +27,10 @@ import fr.cnes.regards.modules.notifier.domain.Recipient;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.service.IRuleService;
 import fr.cnes.reguards.modules.notifier.dto.RuleDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * REST interface for managing data {@link Rule}
@@ -53,10 +57,12 @@ public class RuleController implements IResourceController<RuleDto> {
      * @param assembler
      * @return paged list of {@link RuleDto}
      */
-    @ResourceAccess(description = "List all rules")
+    @ResourceAccess(description = "List all Rules")
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<PagedModel<EntityModel<RuleDto>>> getRules(Pageable page,
-            final PagedResourcesAssembler<RuleDto> assembler) {
+    @Operation(summary = "List all rules", description = "List all Rules")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All Rules") })
+    public ResponseEntity<PagedModel<EntityModel<RuleDto>>> getRules(
+            @Parameter(description = "Wanted page") Pageable page, final PagedResourcesAssembler<RuleDto> assembler) {
         return ResponseEntity.ok(toPagedResources(this.ruleService.getRules(page), assembler));
     }
 
@@ -64,9 +70,12 @@ public class RuleController implements IResourceController<RuleDto> {
      * Create a {@link Rule}
      * @return the created {@link Rule}
      */
-    @ResourceAccess(description = "Create a rule")
+    @ResourceAccess(description = "Create a Rule")
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<EntityModel<RuleDto>> createRule(@Valid @RequestBody RuleDto toCreate) {
+    @Operation(summary = "Create a rule", description = "Create a Rule")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Created Rule") })
+    public ResponseEntity<EntityModel<RuleDto>> createRule(
+            @Parameter(description = "Rule to create") @Valid @RequestBody RuleDto toCreate) {
         return ResponseEntity.ok(toResource(this.ruleService.createOrUpdateRule(toCreate)));
     }
 
@@ -74,9 +83,12 @@ public class RuleController implements IResourceController<RuleDto> {
      * Update a {@link Rule}
      * @return the updated {@link Rule}
      */
-    @ResourceAccess(description = "Update a recipient")
+    @ResourceAccess(description = "Update a Rule")
     @RequestMapping(method = RequestMethod.PUT)
-    public ResponseEntity<EntityModel<RuleDto>> updateRule(@Valid @RequestBody RuleDto toUpdate) {
+    @Operation(summary = "Update a rule", description = "Update a Rule")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Updated Rule") })
+    public ResponseEntity<EntityModel<RuleDto>> updateRule(
+            @Parameter(description = "Rule to update") @Valid @RequestBody RuleDto toUpdate) {
         return ResponseEntity.ok(toResource(this.ruleService.createOrUpdateRule(toUpdate)));
     }
 
@@ -85,6 +97,8 @@ public class RuleController implements IResourceController<RuleDto> {
      */
     @ResourceAccess(description = "Delete a rule")
     @RequestMapping(method = RequestMethod.DELETE)
+    @Operation(summary = "Delete a rule", description = "Delete a rule")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200") })
     public ResponseEntity<Void> deleteRecipient(@PathVariable("id") Long id) {
         this.ruleService.deleteRule(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
