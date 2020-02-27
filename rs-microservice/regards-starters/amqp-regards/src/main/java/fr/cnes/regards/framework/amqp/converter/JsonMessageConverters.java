@@ -50,7 +50,7 @@ public class JsonMessageConverters implements MessageConverter {
     /**
      * Registered JSON message converters
      */
-    private ConcurrentMap<JsonMessageConverter, MessageConverter> converters = new ConcurrentHashMap<>();
+    private final ConcurrentMap<JsonMessageConverter, MessageConverter> converters = new ConcurrentHashMap<>();
 
     @Override
     public Message toMessage(Object object, MessageProperties messageProperties) throws MessageConversionException {

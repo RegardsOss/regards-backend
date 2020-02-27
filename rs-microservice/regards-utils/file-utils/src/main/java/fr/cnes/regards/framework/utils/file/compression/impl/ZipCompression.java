@@ -147,9 +147,8 @@ public class ZipCompression extends AbstractRunnableCompression {
 
                     try (FileInputStream fi = new FileInputStream(fileNow);
                             BufferedInputStream origin = new BufferedInputStream(fi, BUFFER)) {
-                        int count = 0;
-                        byte data[] = new byte[BUFFER];
-                        count = origin.read(data);
+                        byte[] data = new byte[BUFFER];
+                        int count = origin.read(data);
 
                         while (count != -1) {
                             compressedSize += count;
