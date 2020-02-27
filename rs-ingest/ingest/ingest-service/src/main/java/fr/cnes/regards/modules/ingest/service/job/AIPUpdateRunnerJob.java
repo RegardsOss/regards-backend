@@ -109,7 +109,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.debug("[AIP UPDATE JOB] Running job for {} AIPUpdateRequest(s) requests", requestByAIP.size());
+        logger.debug("[AIP UPDATE JOB] Running job for {} AIPUpdateRequest(s) requests", requestByAIP.size());
         long start = System.currentTimeMillis();
         List<AIPEntity> updates = new ArrayList<>();
         long numberOfDeletionRequest = 0L;
@@ -132,7 +132,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                     if (aipWrapper.hasDeletionRequests()) {
                         // Request files deletion
                         Collection<FileDeletionRequestDTO> deletionRequests = aipWrapper.getDeletionRequests();
-                        LOGGER.trace("[AIP {}] Run {} deletion requests on storage.", aipWrapper.getAip().getAipId(),
+                        logger.trace("[AIP {}] Run {} deletion requests on storage.", aipWrapper.getAip().getAipId(),
                                      deletionRequests.size());
                         numberOfDeletionRequest += deletionRequests.size();
                         storageClient.delete(deletionRequests);
@@ -141,13 +141,13 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                         // AIP content has changed, so store the new AIP file to every storage location
                         // Schedule manifest storage
                         Set<OAISDataObjectLocation> manifestLocations = aipWrapper.getAip().getManifestLocations();
-                        LOGGER.trace("[AIP {}] Schedule manifest storage on {} locations.",
+                        logger.trace("[AIP {}] Schedule manifest storage on {} locations.",
                                      aipWrapper.getAip().getAipId(), manifestLocations.size());
                         numberOfLocations += manifestLocations.size();
                         numberOfStorageScheduled++;
                         aipStoreMetaDataService.schedule(aipWrapper.getAip(), manifestLocations, true, true);
                     } else {
-                        LOGGER.trace("[AIP {}] Update tasks executed have not modified the AIP content. Manifest does not need to be updated on storage locations.",
+                        logger.trace("[AIP {}] Update tasks executed have not modified the AIP content. Manifest does not need to be updated on storage locations.",
                                      aipWrapper.getAip().getAipId());
                         numberOfUnmodifiedManifests++;
                     }
@@ -159,7 +159,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         // this use of Thread.interrupted is really wanted. we need to clear the interrupted flag so hibernate
         // transaction can be realized to update requests states.
         boolean interrupted = Thread.interrupted();
-        LOGGER.info(this.getClass().getSimpleName()
+        logger.info(this.getClass().getSimpleName()
                 + ": {} manifests storage scheduled on {} locations. {} file deletion requested. {} unmodified manifests.",
                     numberOfStorageScheduled, numberOfLocations, numberOfDeletionRequest, numberOfUnmodifiedManifests);
         // Keep only ERROR requests
@@ -183,7 +183,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
             Thread.currentThread().interrupt();
         }
 
-        LOGGER.debug("[AIP UPDATE JOB] Job handled for {} AIPUpdateRequest(s) requests in {}ms", requestByAIP.size(),
+        logger.debug("[AIP UPDATE JOB] Job handled for {} AIPUpdateRequest(s) requests in {}ms", requestByAIP.size(),
                      System.currentTimeMillis() - start);
     }
 
@@ -225,7 +225,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                         break;
                 }
             } catch (ModuleException e) {
-                LOGGER.warn("An error occured while updating aip {}: {}", aip.getAip().getAipId(), e.getMessage());
+                logger.warn("An error occured while updating aip {}: {}", aip.getAip().getAipId(), e.getMessage());
                 // Save error inside requests
                 updateRequest.addError(e.getMessage());
                 updateRequest.setState(InternalRequestState.ERROR);

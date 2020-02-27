@@ -70,7 +70,7 @@ public class RequestDeletionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.debug("[REQUEST DELETION JOB] Running job ...");
+        logger.debug("Running job ...");
         long start = System.currentTimeMillis();
         int nbRequestsDeleted = 0;
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
@@ -87,7 +87,7 @@ public class RequestDeletionJob extends AbstractJob<Void> {
             advanceCompletion();
             nbRequestsDeleted += requestsPage.getNumberOfElements();
         } while (requestsPage.hasNext());
-        LOGGER.debug("[REQUEST DELETION JOB] Job handled for {} AbstractRequest(s) in {}ms", nbRequestsDeleted,
+        logger.debug("Job handled for {} AbstractRequest(s) in {}ms", nbRequestsDeleted,
                      System.currentTimeMillis() - start);
     }
 

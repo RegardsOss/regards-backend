@@ -66,7 +66,7 @@ public class RequestPendingScheduler {
     private final Semaphore semaphore = new Semaphore(1, true);
 
     @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:3000}", initialDelay = 1_000)
-    public void handleUpdatesCreatorRequests() throws ModuleException {
+    public void handleUpdatesCreatorRequests() {
         schedule("handleUpdatesCreatorRequests", () -> {
             requestService.unblockRequests(RequestTypeEnum.AIP_UPDATES_CREATOR);
             return null;
@@ -74,7 +74,7 @@ public class RequestPendingScheduler {
     }
 
     @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:3000}", initialDelay = 1_100)
-    public void handleOAISDeletionRequests() throws ModuleException {
+    public void handleOAISDeletionRequests() {
         schedule("handleOAISDeletionRequests", () -> {
             requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION);
             return null;
@@ -82,7 +82,7 @@ public class RequestPendingScheduler {
     }
 
     @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:3000}", initialDelay = 1_200)
-    public void handleOAISDeletionCreator() throws ModuleException {
+    public void handleOAISDeletionCreator() {
         schedule("handleOAISDeletionCreator", () -> {
             requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION_CREATOR);
             return null;
@@ -90,7 +90,7 @@ public class RequestPendingScheduler {
     }
 
     @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:3000}", initialDelay = 1_300)
-    public void handleStorageMetaDataRequests() throws ModuleException {
+    public void handleStorageMetaDataRequests() {
         schedule("handleStorageMetaDataRequests", () -> {
             requestService.unblockRequests(RequestTypeEnum.STORE_METADATA);
             return null;
@@ -98,7 +98,7 @@ public class RequestPendingScheduler {
     }
 
     @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:1000}", initialDelay = 1_400)
-    public void handleUpdateRequests() throws ModuleException {
+    public void handleUpdateRequests() {
         schedule("handleUpdateRequests", () -> {
             requestService.unblockRequests(RequestTypeEnum.UPDATE);
             return null;
@@ -120,7 +120,7 @@ public class RequestPendingScheduler {
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("Error runing scheduling task {}. Cause : {}", taskName, e.getMessage());
+            LOGGER.error("Error running scheduling task {}. Cause : {}", taskName, e.getMessage());
         } finally {
             semaphore.release();
         }

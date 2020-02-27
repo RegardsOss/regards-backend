@@ -58,8 +58,6 @@ import fr.cnes.regards.modules.ingest.service.request.RequestService;
  */
 public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OAISDeletionsCreatorJob.class);
-
     public static final String REQUEST_ID = "REQUEST_ID";
 
     private int totalPages = 0;
@@ -100,7 +98,7 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.debug("[OAIS DELETION CREATOR JOB] Running job ...");
+        logger.debug("[OAIS DELETION CREATOR JOB] Running job ...");
         long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, aipIterationLimit, Sort.Direction.ASC, "id");
         Page<AIPEntity> aipsPage;
@@ -111,7 +109,7 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
         do {
             OAISDeletionCreatorPayload deletionPayload = deletionCreator.getConfig();
             aipsPage = aipRepository.findByFilters(deletionPayload, pageRequest);
-            LOGGER.info("[OAIS DELETION CREATOR JOB] Scheduling deletion of {} aips", aipsPage.getNumberOfElements());
+            logger.info("[OAIS DELETION CREATOR JOB] Scheduling deletion of {} aips", aipsPage.getNumberOfElements());
             // Save number of pages to publish job advancement
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();
@@ -129,7 +127,7 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
         // Delete the request
         requestService.deleteRequest(deletionCreator);
 
-        LOGGER.debug("[OAIS DELETION CREATOR JOB] {} AIPUpdateRequest(s) scheduled in {}ms", nbRequestScheduled,
+        logger.debug("[OAIS DELETION CREATOR JOB] {} AIPUpdateRequest(s) scheduled in {}ms", nbRequestScheduled,
                      System.currentTimeMillis() - start);
     }
 

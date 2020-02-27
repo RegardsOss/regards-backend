@@ -78,7 +78,7 @@ public class RequestRetryJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.debug("[REQUEST RETRY JOB] Running job ...");
+        logger.debug("Running job ...");
         long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
         // Override state in filter
@@ -110,7 +110,7 @@ public class RequestRetryJob extends AbstractJob<Void> {
             nbRelaunchedRequests += byRequestType.size();
             advanceCompletion();
         } while (requestsPage.hasNext());
-        LOGGER.debug("[REQUEST RETRY JOB] Job handled for {} AbstractRequest(s) in {}ms", nbRelaunchedRequests,
+        logger.debug("Job handled for {} AbstractRequest(s) in {}ms", nbRelaunchedRequests,
                      System.currentTimeMillis() - start);
     }
 

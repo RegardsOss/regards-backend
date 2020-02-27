@@ -69,10 +69,10 @@ public class OAISDeletionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.debug("[OAIS DELETION JOB] Running job for {} OAISDeletionRequest(s) requests", requests.size());
+        logger.debug("Running job for {} OAISDeletionRequest(s) requests", requests.size());
         long start = System.currentTimeMillis();
         oaisDeletionRequestService.runDeletion(requests);
-        LOGGER.debug("[OAIS DELETION JOB] Job handled for {} OAISDeletionRequest(s) requests in {}ms", requests.size(),
+        logger.debug("Job handled for {} OAISDeletionRequest(s) requests in {}ms", requests.size(),
                      System.currentTimeMillis() - start);
     }
 

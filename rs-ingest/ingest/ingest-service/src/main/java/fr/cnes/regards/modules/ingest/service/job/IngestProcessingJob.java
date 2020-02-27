@@ -212,22 +212,22 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                         aipEntities = request.getAips();
                         break;
                     default:
-                        LOGGER.debug("{}SIP \"{}\" ingestion has been retried and nothing had to be done in local",
+                        logger.debug("{}SIP \"{}\" ingestion has been retried and nothing had to be done in local",
                                      INFO_TAB, request.getSip().getId());
                         break;
                 }
                 sipIngested++;
-                LOGGER.debug("{}SIP \"{}\" ingested in {} ms", INFO_TAB, request.getSip().getId(),
+                logger.debug("{}SIP \"{}\" ingested in {} ms", INFO_TAB, request.getSip().getId(),
                              System.currentTimeMillis() - start2);
 
             } catch (ProcessingStepException e) {
-                LOGGER.error("SIP \"{}\" ingestion error", request.getSip().getId());
+                logger.error("SIP \"{}\" ingestion error", request.getSip().getId());
                 sipInError++;
                 String msg = String.format("Error while ingesting SIP \"%s\" in request \"%s\"",
                                            request.getSip().getId(), request.getRequestId());
                 notifMsg.add(msg);
-                LOGGER.error(msg);
-                LOGGER.error("Ingestion step error", e);
+                logger.error(msg);
+                logger.error("Ingestion step error", e);
                 // Continue with following SIPs
             } finally {
                 sesssionNotifier.productGenerationEnd(request.getMetadata().getSessionOwner(),
@@ -239,10 +239,10 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         if (sipInError > 0) {
             notificationClient.notify(notifMsg.toString(), "Error occurred during SIPs Ingestion.",
                                       NotificationLevel.INFO, DefaultRole.ADMIN);
-            LOGGER.info("{}{} SIP(s) INGESTED and {} in ERROR in {} ms", INFO_TAB, sipIngested, sipInError,
+            logger.info("{}{} SIP(s) INGESTED and {} in ERROR in {} ms", INFO_TAB, sipIngested, sipInError,
                         System.currentTimeMillis() - start);
         } else {
-            LOGGER.info("{}{} SIP(s) INGESTED in {} ms", INFO_TAB, sipIngested, System.currentTimeMillis() - start);
+            logger.info("{}{} SIP(s) INGESTED in {} ms", INFO_TAB, sipIngested, System.currentTimeMillis() - start);
         }
     }
 
