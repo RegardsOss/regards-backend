@@ -58,10 +58,7 @@ public class OAISDeletionRequest extends AbstractRequest {
      * AIP to delete
      */
     @ManyToOne
-    @JoinColumn(name = "aip_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_update_request_aip"),
-        // Cannot update or insert AIPs through this type of request
-        updatable = false, insertable = false
-    )
+    @JoinColumn(name = "aip_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_update_request_aip"))
     private AIPEntity aip;
 
     public static OAISDeletionRequest build(AIPEntity aipToDelete, SessionDeletionMode deletionMode,
