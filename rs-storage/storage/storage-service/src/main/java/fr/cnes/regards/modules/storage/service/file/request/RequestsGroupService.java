@@ -30,6 +30,7 @@ import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -76,7 +77,8 @@ public class RequestsGroupService {
      * Maximum number of request group to handle in one transaction. This is limited to avoid issue one too much
      * amqp message to send at a time.
      */
-    private static final int MAX_REQUEST_PER_TRANSACTION = 1000;
+    @Value("${regards.storage.groups.requests.bulk:100}")
+    private final Integer maxRequestPerTransaction = 100;
 
     @Autowired
     private IPublisher publisher;
@@ -230,7 +232,7 @@ public class RequestsGroupService {
                     }
                 } while (it.hasNext());
                 response = reqGroupRepository.findAll(response.getPageable().next());
-            } while (response.hasNext() && (groupDones.size() < MAX_REQUEST_PER_TRANSACTION));
+            } while (response.hasNext() && (groupDones.size() < maxRequestPerTransaction));
         }
         String message = "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}";
         if (!groupDones.isEmpty()) {

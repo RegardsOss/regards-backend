@@ -51,7 +51,7 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileStorageReques
  * @author Sébastien Binda
  */
 @Component
-@Profile("!noscheduler")
+@Profile("!noschedule")
 @EnableScheduling
 public class FileRequestScheduler {
 

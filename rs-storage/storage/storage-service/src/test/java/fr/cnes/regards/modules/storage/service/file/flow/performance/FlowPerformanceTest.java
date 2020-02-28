@@ -68,7 +68,7 @@ import fr.cnes.regards.modules.storage.service.file.flow.StorageFlowItemHandler;
  * Performances tests for creating and store new file references.
  * @author Sébastien Binda
  */
-@ActiveProfiles({ "noscheduler" })
+@ActiveProfiles({ "noschedule" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_perf_tests",
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-local.properties" })
 @Ignore("Performances tests")

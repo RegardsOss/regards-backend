@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
@@ -46,6 +47,7 @@ import org.springframework.util.FileSystemUtils;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -60,13 +62,20 @@ import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.dao.IRequestGroupRepository;
+import fr.cnes.regards.modules.storage.domain.database.FileLocation;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
+import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
+import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
 import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
@@ -119,6 +128,9 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IFileReferenceRepository fileRefRepo;
+
+    @Autowired
+    private IPublisher publisher;
 
     private Path fileToStore;
 
@@ -173,6 +185,29 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
+    public void eventListenerTest() throws InterruptedException {
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        listener.reset();
+        // Simulate multiples message from storage service
+        int nbMessages = 10_000;
+        for (int i = 0; i < nbMessages; i++) {
+            String groupId = "group_" + i;
+            String checksum = UUID.randomUUID().toString();
+            FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum, "UUID", "file" + i, 10L,
+                    MediaType.APPLICATION_JSON);
+            RequestResultInfo resultInfo = new RequestResultInfo(groupId, FileRequestType.STORAGE, checksum, "storage",
+                    "path", Sets.newHashSet("owner"));
+            resultInfo.setResultFile(new FileReference("owner", metaInfo, new FileLocation("storage", "path")));
+            publisher.publish(FileRequestsGroupEvent.build(groupId, FileRequestType.STORAGE, FlowItemStatus.SUCCESS,
+                                                           Sets.newHashSet(resultInfo)));
+            LOGGER.info(" -------> Message sent");
+        }
+        LOGGER.info(" -------> Start waiting for all responses received !!!!!!!!!");
+        // Wait for all events received
+        waitRequestEnds(nbMessages, 60);
+    }
+
+    @Test
     public void storeWithMultipleRequests() throws MalformedURLException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Set<FileStorageRequestDTO> files = Sets.newHashSet();
@@ -190,6 +225,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void storeBulk() throws NoSuchAlgorithmException, IOException, InterruptedException {
+
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         FileSystemUtils.deleteRecursively(Paths.get("target/store"));
@@ -204,7 +240,10 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
             filesToStore.add(path);
         }
 
-        Path fileCommon = Paths.get("src/test/resources/income/file_common.txt");
+        Path fileCommon = Paths.get("target/store/file_common.txt");
+        String str = "fichier de test commun";
+        byte[] strToBytes = str.getBytes();
+        Files.write(fileCommon, strToBytes);
         String csCommon = ChecksumUtils.computeHexChecksum(fileCommon, "MD5");
 
         int cpt = 0;

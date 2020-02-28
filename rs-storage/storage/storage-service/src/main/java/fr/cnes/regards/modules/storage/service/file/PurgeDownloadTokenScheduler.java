@@ -35,7 +35,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
  *
  */
 @Component
-@Profile("!noscheduler")
+@Profile("!noschedule")
 @EnableScheduling
 public class PurgeDownloadTokenScheduler {
 

@@ -131,9 +131,8 @@ public class FileRequestGroupEventHandler
                     LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileRequestsGroupEvent...", list.size());
                     long start = System.currentTimeMillis();
                     handle(list);
-                    LOGGER.info("[STORAGE RESPONSES HANDLER] {} FileRequestsGroupEvent handled in {} ms", list.size(),
-                                System.currentTimeMillis() - start);
-                    list.clear();
+                    LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileRequestsGroupEvent handled in {} ms", list.size(),
+                                 System.currentTimeMillis() - start);
                 }
             } finally {
                 runtimeTenantResolver.clearTenant();
@@ -161,6 +160,8 @@ public class FileRequestGroupEventHandler
                     break;
             }
         }
+        LOGGER.trace("[STORAGE RESPONSES HANDLER] handling {} FileRequestsGroupEvent(s) dispatch by {} dones, {} granted, {} denied",
+                     events.size(), dones.size(), granted.size(), denied.size());
         handleDone(dones);
         handleGranted(granted);
         handleDenied(denied);

@@ -57,8 +57,9 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
 
     /**
      * Bulk size limit to handle messages
+     * NOTE : Over 100 performance are decreased
      */
-    @Value("${regards.storage.store.items.bulk.size:1000}")
+    @Value("${regards.storage.store.items.bulk.size:100}")
     private int BULK_SIZE;
 
     @Autowired

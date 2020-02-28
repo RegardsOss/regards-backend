@@ -46,9 +46,11 @@ import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailable
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 
 /**
+ * Test class
+ *
  * @author Sébastien Binda
  */
-@ActiveProfiles({ "noscheduler" })
+@ActiveProfiles({ "noschedule" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_tests",
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class FileDownloadServiceTest extends AbstractStorageTest {
