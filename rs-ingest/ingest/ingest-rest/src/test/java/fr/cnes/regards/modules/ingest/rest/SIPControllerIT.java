@@ -38,6 +38,7 @@ import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -70,7 +71,9 @@ import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
  *
  */
 @RegardsTransactional
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_it" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_it",
+        "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
+@ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPControllerIT.class);
@@ -283,36 +286,6 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH, filePath,
                                  requestBuilderCustomizer, "Should be able to import a partial valid SIP collection");
     }
-
-    // FIXME replace with request error
-    //    @Test
-    //    @Requirement("REGARDS_DSL_ING_PRO_310")
-    //    @Purpose("Load SIP with validation errors")
-    //    public void searchSipWithErrors() {
-    //
-    //        // Create SIP
-    //        SIPBuilder sipBuilder = new SIPBuilder("SIP_001");
-    //        sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"),
-    //                                                                "sdsdfm1211vd");
-    //        sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
-    //                             "http://www.iana.org/assignments/media-types/application/fits",
-    //                             MediaType.valueOf("application/fits"));
-    //        sipBuilder.addContentInformation();
-    //        SIP sip = sipBuilder.build();
-    //
-    //        // Store SIP entity
-    //        String sessionOwner = "session";
-    //        String session = OffsetDateTime.now().toString();
-    //        IngestMetadata metadata = IngestMetadata.build(sessionOwner, session,
-    //                                                       IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
-    //        SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(), metadata, sip, 1, SIPState.ERROR, EntityType.DATA);
-    //        sipEntity.setChecksum("12332323f2ds3d6g6df");
-    //        sipService.saveSIPEntity(sipEntity);
-    //
-    //        // Get SIPS with search API
-    //        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-    //        performDefaultGet(SIPController.TYPE_MAPPING, requestBuilderCustomizer, "Should found valid SIP");
-    //    }
 
     private SIP buildSipOne(String providerId, String fileName) {
 

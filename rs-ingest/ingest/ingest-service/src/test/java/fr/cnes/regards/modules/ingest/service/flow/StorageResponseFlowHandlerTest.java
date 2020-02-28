@@ -74,7 +74,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  * @author sbinda
  *
  */
-@ActiveProfiles({ "noscheduler" })
+@ActiveProfiles({ "noschedule" })
 @TestPropertySource(
         properties = { "spring.jpa.show-sql=false",
                 "spring.jpa.properties.hibernate.default_schema=ingest_request_tests" },

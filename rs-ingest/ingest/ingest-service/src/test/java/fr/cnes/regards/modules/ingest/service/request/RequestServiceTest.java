@@ -74,7 +74,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
                 "regards.aips.save-metadata.bulk.delay=20000000", "regards.amqp.enabled=true",
                 "eureka.client.enabled=false", "regards.scheduler.pool.size=0", "regards.ingest.maxBulkSize=100" },
         locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
+@ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
 public class RequestServiceTest extends AbstractIngestRequestTest {
 
     protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());

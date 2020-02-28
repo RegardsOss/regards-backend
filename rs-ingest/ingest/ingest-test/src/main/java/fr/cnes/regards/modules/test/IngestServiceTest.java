@@ -45,7 +45,6 @@ import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
-import fr.cnes.regards.modules.storage.client.FileReferenceEventHandler;
 import fr.cnes.regards.modules.storage.client.FileRequestGroupEventHandler;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 
@@ -106,7 +105,6 @@ public class IngestServiceTest {
                 jobInfoRepo.deleteAll();
                 pluginConfRepo.deleteAllInBatch();
                 cleanAMQPQueues(FileRequestGroupEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-                cleanAMQPQueues(FileReferenceEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
                 done = true;
             } catch (DataAccessException e) {
                 LOGGER.error(e.getMessage(), e);

@@ -59,8 +59,8 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
  */
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=update_scanner_job", "regards.amqp.enabled=true",
-                "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
-                "regards.ingest.request.schedule.delay=100000000" },
+                "regards.ingest.aip.update.bulk.delay=100000000", "regards.aips.save-metadata.bulk.delay=100",
+                "eureka.client.enabled=false", "regards.ingest.request.schedule.delay=100000000" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {

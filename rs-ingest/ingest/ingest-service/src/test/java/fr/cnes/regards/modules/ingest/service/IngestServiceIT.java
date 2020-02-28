@@ -62,7 +62,8 @@ import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
  * @author Sébastien Binda
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=ingest", "eureka.client.enabled=false" },
+        properties = { "spring.jpa.properties.hibernate.default_schema=ingest", "eureka.client.enabled=false",
+                "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" },
         locations = { "classpath:application-test.properties" })
 public class IngestServiceIT extends IngestMultitenantServiceTest {
 

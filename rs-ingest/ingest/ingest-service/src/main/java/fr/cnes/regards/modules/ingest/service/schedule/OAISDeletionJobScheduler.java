@@ -91,7 +91,7 @@ public class OAISDeletionJobScheduler {
     /**
      * Bulk save queued items every second.
      */
-    @Scheduled(fixedDelayString = "${regards.ingest.aip.update.bulk.delay:10000}")
+    @Scheduled(fixedDelayString = "${regards.ingest.aip.delete.bulk.delay:10000}")
     protected void handleQueue() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

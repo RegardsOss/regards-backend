@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
  * @author Léo Mieulet
  */
 @Component
-@Profile("!noscheduler")
+@Profile("!noschedule")
 @EnableScheduling
 public class RequestPendingScheduler {
 

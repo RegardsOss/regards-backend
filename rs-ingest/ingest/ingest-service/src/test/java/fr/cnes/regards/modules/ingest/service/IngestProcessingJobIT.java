@@ -76,7 +76,8 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
  * @author Sébastien Binda
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=ingestjob", "eureka.client.enabled=false" })
+        properties = { "spring.jpa.properties.hibernate.default_schema=ingestjob", "eureka.client.enabled=false",
+                "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
 public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")

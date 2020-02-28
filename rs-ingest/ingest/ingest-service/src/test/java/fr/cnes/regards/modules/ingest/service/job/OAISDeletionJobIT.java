@@ -57,8 +57,8 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=deletion_job",
-        "regards.amqp.enabled=true", "eureka.client.enabled=false" },
-        locations = { "classpath:application-test.properties" })
+        "regards.amqp.enabled=true", "eureka.client.enabled=false", "regards.aips.save-metadata.bulk.delay=100",
+        "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class OAISDeletionJobIT extends IngestMultitenantServiceTest {
 

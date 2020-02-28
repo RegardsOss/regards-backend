@@ -69,9 +69,9 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  * Test {@link AIPUpdateRunnerJob}
  * @author Léo Mieulet
  */
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=update_oais_job", "regards.amqp.enabled=true",
-                "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false" },
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=update_oais_job",
+        "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000",
+        "regards.aips.save-metadata.bulk.delay=100", "eureka.client.enabled=false" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
