@@ -66,7 +66,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * <br/>
  * @author Marc Sordi
  *
- * Use {@link InformationPackageProperties} fluent API
+ * @deprecated Use {@link InformationPackageProperties} fluent API
  */
 @Deprecated
 public class ContentInformationBuilder implements IOAISBuilder<ContentInformation> {

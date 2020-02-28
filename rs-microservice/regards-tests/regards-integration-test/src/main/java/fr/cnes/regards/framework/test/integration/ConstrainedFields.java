@@ -77,7 +77,7 @@ public class ConstrainedFields {
      */
     public FieldDescriptor withPath(String payloadPrefixPath, String payloadPath, String propertyPath,
             String description, String extraConstraints) {
-        StringBuffer constraints = new StringBuffer(StringUtils.collectionToDelimitedString(
+        StringBuilder constraints = new StringBuilder(StringUtils.collectionToDelimitedString(
                 constraintDescriptions.descriptionsForProperty(propertyPath), ", "));
         if (extraConstraints != null) {
             if (constraints.length() > 0) {

@@ -125,7 +125,6 @@ public final class XlsxHelper {
 
                     // Write file
                     wb.write(out);
-                    wb.close();
                 } catch (IOException e) {
                     final String message = "Error while writing XLSX file";
                     LOG.error(message, e);

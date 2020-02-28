@@ -33,7 +33,7 @@ import fr.cnes.regards.framework.test.integration.ConstrainedFields;
  */
 public class GeoJsonFieldDescriptors {
 
-    private String prefix;
+    private final String prefix;
 
     public GeoJsonFieldDescriptors() {
         super();

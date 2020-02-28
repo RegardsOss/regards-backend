@@ -34,6 +34,8 @@ import org.springframework.validation.FieldError;
  */
 public final class ErrorTranslator {
 
+    private ErrorTranslator() {}
+
     /**
      * Build a set of error string from a not empty {@link Errors} object.
      */

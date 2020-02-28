@@ -165,6 +165,7 @@ public class JobInfo {
         switch (status) {
             case QUEUED:
                 this.status.setQueuedDate(OffsetDateTime.now());
+                // There is not break because either being QUEUED or PENDING or TO_BE_RUN completion is 0
             case PENDING:
             case TO_BE_RUN:
                 this.status.setPercentCompleted(0);

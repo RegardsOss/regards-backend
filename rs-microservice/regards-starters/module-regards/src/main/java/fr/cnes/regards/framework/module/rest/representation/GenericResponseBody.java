@@ -20,6 +20,8 @@ package fr.cnes.regards.framework.module.rest.representation;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Generic response body with containing a single message and key value pairs
@@ -29,7 +31,7 @@ public class GenericResponseBody {
 
     private String message;
 
-    private final Map<String, Object> properties = new HashMap<>();
+    private final ConcurrentMap<String, Object> properties = new ConcurrentHashMap<>();
 
     public GenericResponseBody() {
         // Default constructor

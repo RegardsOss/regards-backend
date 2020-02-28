@@ -55,8 +55,8 @@ public class MultiValueMapAdapter
 
     @Override
     public JsonElement serialize(MultiValueMap<Object, Object> src, Type type, JsonSerializationContext context) {
-        final Map<Object, List<Object>> map = new HashMap<>();
-        src.forEach((key, value) -> map.put(key, value));
+        Map<Object, List<Object>> map = new HashMap<>();
+        src.forEach(map::put);
         return context.serialize(map);
     }
 
