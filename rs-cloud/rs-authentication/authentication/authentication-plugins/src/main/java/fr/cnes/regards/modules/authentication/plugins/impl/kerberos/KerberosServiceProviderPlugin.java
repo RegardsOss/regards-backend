@@ -212,7 +212,7 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
 
             @Override
             public AppConfigurationEntry[] getAppConfigurationEntry(final String pName) {
-                final Map<String, String> options = new HashMap<>();
+                Map<String, String> options = new HashMap<>();
                 options.put("principal", pPrincipal);
                 options.put("realm", pRealm);
                 options.put("keyTab", pKeyTab.getAbsolutePath());

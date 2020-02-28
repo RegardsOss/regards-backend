@@ -34,6 +34,8 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.proxy.ProxyfiedHttpClient;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author sbinda
@@ -78,7 +80,7 @@ public class SimpleHostRoutingWithProxyFilter extends SimpleHostRoutingFilter {
         RequestContext ctx = RequestContext.getCurrentContext();
         ctx.getZuulRequestHeaders().put(HEADER_HOST, ctx.getRouteHost().getHost());
         RequestContext context = RequestContext.getCurrentContext();
-        Map<String, List<String>> newParameterMap = new HashMap<>();
+        ConcurrentMap<String, List<String>> newParameterMap = new ConcurrentHashMap<>();
 
         String[] parameters = ctx.getRouteHost().getQuery().split("&");
         for (int i = 0; i < parameters.length; i++) {

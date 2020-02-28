@@ -36,7 +36,7 @@ public class AuthenticationException extends OAuth2Exception {
 
     public AuthenticationException(final String pMsg, final AuthenticationStatus pStatus) {
         super(pMsg);
-        this.addAdditionalInformation(ERROR_TYPE_KEY, pStatus.toString());
+        super.addAdditionalInformation(ERROR_TYPE_KEY, pStatus.toString());
     }
 
 }

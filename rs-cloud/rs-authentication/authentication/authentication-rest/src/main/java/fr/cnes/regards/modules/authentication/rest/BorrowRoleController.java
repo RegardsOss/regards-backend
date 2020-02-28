@@ -32,7 +32,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
-import fr.cnes.regards.modules.authentication.service.role.CoupleJwtRole;
 import fr.cnes.regards.modules.authentication.service.role.IBorrowRoleService;
 
 /**
