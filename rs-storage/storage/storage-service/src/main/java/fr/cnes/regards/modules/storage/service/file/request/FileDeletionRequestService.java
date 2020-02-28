@@ -466,7 +466,7 @@ public class FileDeletionRequestService {
 
     @Transactional(readOnly = true)
     public Optional<FileDeletionRequest> search(String checksum, String storage) {
-        return fileDeletionRequestRepo.findByStorageAndFileReferenceMetaInfoChecksum(checksum, storage);
+        return fileDeletionRequestRepo.findByStorageAndFileReferenceMetaInfoChecksum(storage, checksum);
     }
 
     @Transactional(readOnly = true)

@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -61,6 +62,7 @@ import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_loc_rest_it",
         "regards.storage.cache.path=target/cache" })
+@ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final String TARGET_STORAGE = "target";

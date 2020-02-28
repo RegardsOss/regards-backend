@@ -276,10 +276,13 @@ public class FileStorageRequestService {
             FileStorageRequest existingReq = oReq.get();
             existingReq.getOwners().add(request.getOwner());
             existingReq.getGroupIds().add(groupId);
-            FileStorageRequest updatedReq = update(existingReq);
+            if (existingReq.getStatus() == FileRequestStatus.ERROR) {
+                // Allow retry of error requests when the same request is sent
+                existingReq.setStatus(FileRequestStatus.TO_DO);
+            }
             LOGGER.trace("[STORAGE REQUESTS] Existing request ({}) updated to handle same file of request ({})",
                          existingReq.getMetaInfo().getFileName(), request.getFileName());
-            return RequestResult.build(updatedReq);
+            return RequestResult.build(existingReq);
         } else {
             Optional<String> cause = Optional.empty();
             Optional<FileRequestStatus> status = Optional.empty();

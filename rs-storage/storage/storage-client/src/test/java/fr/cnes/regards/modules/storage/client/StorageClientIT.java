@@ -87,11 +87,12 @@ import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineTestClient;
  * @author sbinda
  *
  */
-@ActiveProfiles({ "testAmqp", "storageTest" })
+@ActiveProfiles(value = { "default", "test", "testAmqp", "storageTest" }, inheritProfiles = false)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
-        "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true", "regards.scheduler.pool.size=6",
-        "regards.jobs.pool.size=5" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
+                "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true" },
+        locations = { "classpath:application-test.properties" })
 public class StorageClientIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageClientIT.class);
@@ -189,7 +190,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         listener.reset();
         // Simulate multiples message from storage service
-        int nbMessages = 10_000;
+        int nbMessages = 1_000;
         for (int i = 0; i < nbMessages; i++) {
             String groupId = "group_" + i;
             String checksum = UUID.randomUUID().toString();
@@ -200,7 +201,6 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
             resultInfo.setResultFile(new FileReference("owner", metaInfo, new FileLocation("storage", "path")));
             publisher.publish(FileRequestsGroupEvent.build(groupId, FileRequestType.STORAGE, FlowItemStatus.SUCCESS,
                                                            Sets.newHashSet(resultInfo)));
-            LOGGER.info(" -------> Message sent");
         }
         LOGGER.info(" -------> Start waiting for all responses received !!!!!!!!!");
         // Wait for all events received
@@ -230,7 +230,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
 
         FileSystemUtils.deleteRecursively(Paths.get("target/store"));
         Files.createDirectory(Paths.get("target/store"));
-        int nbGroups = 1_100;
+        int nbGroups = 110;
         Set<Path> filesToStore = Sets.newHashSet();
         for (int i = 0; i < nbGroups; i++) {
             Path path = Paths.get("target/store/file_" + i + ".txt");
@@ -651,7 +651,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         // 1 Copy group requests should be over
         // 1 Availability requests should be over (created by the copy process)
         // 1 Storage group by file. Each group is created after availability event for each file.
-        waitRequestEnds(1 + 1 + restorableFileChecksums.size(), 15);
+        waitRequestEnds(1 + 1 + restorableFileChecksums.size(), 30);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue(String.format("Request should be successful for request id %s", info.getGroupId()),
                           listener.getSuccess().containsKey(info));
@@ -678,7 +678,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         // 1 Copy request
         // 1 Availability request
         // 1 Storage request
-        waitRequestEnds(3, 20);
+        waitRequestEnds(3, 40);
 
         Assert.assertTrue("Request group should be granted", listener.getGranted().contains(info));
     }
