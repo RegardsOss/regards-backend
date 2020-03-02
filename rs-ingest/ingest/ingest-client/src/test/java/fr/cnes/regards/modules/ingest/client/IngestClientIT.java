@@ -107,7 +107,7 @@ public class IngestClientIT extends AbstractRegardsWebIT {
         RequestInfo clientInfo = ingestClient.ingest(IngestMetadataDto
                 .build("sessionOwner", "session", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                        Sets.newHashSet("cat 1"), StorageMetadata.build("disk")), create(providerId));
-        ingestServiceTest.waitForIngestion(1, 5_000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(1, 15_000, SIPState.STORED);
 
         Mockito.verify(listener, Mockito.times(1)).onGranted(Mockito.anyCollection());
         Assert.assertEquals(clientInfo.getRequestId(), listener.getGranted().iterator().next().getRequestId());
