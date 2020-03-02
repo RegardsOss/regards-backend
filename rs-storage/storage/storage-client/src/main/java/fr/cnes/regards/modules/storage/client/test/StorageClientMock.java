@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.client.test;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -80,6 +81,20 @@ public class StorageClientMock implements IStorageClient {
 
     @Override
     public RequestInfo store(FileStorageRequestDTO file) {
+        return store(Sets.newHashSet(file).iterator().next());
+    }
+
+    /**
+     * Throw an exception if the setBehavior method have not been called
+     */
+    private void checkInit() {
+        if (!shouldReturnGranted.isPresent() && !shouldReturnSuccess.isPresent()) {
+            throw new RuntimeException("Please call setBehavior before using the StorageClientMock");
+        }
+    }
+
+    @Override
+    public Collection<RequestInfo> store(Collection<FileStorageRequestDTO> files) {
         checkInit();
         RequestInfo requestInfo = RequestInfo.build();
 
@@ -91,15 +106,19 @@ public class StorageClientMock implements IStorageClient {
             firstStatus = FlowItemStatus.DENIED;
         }
 
-        RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(), FileRequestType.STORAGE,
-                file.getChecksum(), file.getStorage(), file.getOptionalSubDirectory().orElse(null),
-                Sets.newHashSet(file.getOwner()));
+        List<RequestResultInfo> requestInfos = new ArrayList<>();
+        for (FileStorageRequestDTO file : files) {
+            RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(), FileRequestType.STORAGE,
+                    file.getChecksum(), file.getStorage(), file.getOptionalSubDirectory().orElse(null),
+                    Sets.newHashSet(file.getOwner()));
 
-        resultInfo.setResultFile(new FileReference(file.getOwner(),
-                new FileReferenceMetaInfo(file.getChecksum(), file.getAlgorithm(), file.getFileName(), 1000L,
-                        MimeType.valueOf(file.getMimeType())),
-                new FileLocation(file.getStorage(), "http://somedomain.com/api/v1/storage/file/2")));
-        List<RequestResultInfo> requestInfos = Collections.singletonList(resultInfo);
+            resultInfo.setResultFile(new FileReference(file.getOwner(),
+                    new FileReferenceMetaInfo(file.getChecksum(), file.getAlgorithm(), file.getFileName(), 1000L,
+                            MimeType.valueOf(file.getMimeType())),
+                    new FileLocation(file.getStorage(), "http://somedomain.com/api/v1/storage/file/2")));
+            requestInfos.add(resultInfo);
+        }
+
         publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.STORAGE, firstStatus,
                                                        requestInfos));
 
@@ -115,21 +134,7 @@ public class StorageClientMock implements IStorageClient {
                                                            secondStatus, requestInfos));
         }
 
-        return requestInfo;
-    }
-
-    /**
-     * Throw an exception if the setBehavior method have not been called
-     */
-    private void checkInit() {
-        if (!shouldReturnGranted.isPresent() && !shouldReturnSuccess.isPresent()) {
-            throw new RuntimeException("Please call setBehavior before using the StorageClientMock");
-        }
-    }
-
-    @Override
-    public Collection<RequestInfo> store(Collection<FileStorageRequestDTO> files) {
-        return Sets.newHashSet(store(files.iterator().next()));
+        return Sets.newHashSet(requestInfo);
     }
 
     @Override
