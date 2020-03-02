@@ -18,20 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -69,6 +55,18 @@ import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
 
 /**
  * Manage ingest requests
@@ -157,7 +155,7 @@ public class IngestRequestService implements IIngestRequestService {
                 Set<Long> ids;
                 ids = IJob.getValue(jobInfo.getParametersAsMap(), IngestProcessingJob.IDS_PARAMETER, type);
                 List<IngestRequest> requests = loadByIds(ids);
-                requests.forEach(r -> handleIngestJobFailed(r, null, null));
+                requests.forEach(r -> handleIngestJobFailed(r, null, jobInfo.getStatus().getStackTrace()));
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 String message = String.format("Ingest request job with id \"%s\" fails with status \"%s\"",
                                                jobEvent.getJobId(),
@@ -403,7 +401,7 @@ public class IngestRequestService implements IIngestRequestService {
 
     private void saveAndPublishErrorRequest(IngestRequest request, @Nullable String message) {
         // Mutate request
-        request.addError(String.format("Storage request error with id \"%s\" and SIP provider id \"%s\"",
+        request.addError(String.format("The ingest request with id \"%s\" and SIP provider id \"%s\" failed",
                                        request.getRequestId(),
                                        request.getSip().getId()));
         request.setState(InternalRequestState.ERROR);

@@ -135,7 +135,7 @@ public class RequestService implements IRequestService {
     @Override
     public void handleRemoteRequestGranted(Set<RequestInfo> requests) {
         // Do not track at the moment : the ongoing request could send a success too quickly
-        // and could cause unnecessary concurrent access to thehandleRemoteRequestGranted database!
+        // and could cause unnecessary concurrent access to the database!
         for (RequestInfo ri : requests) {
             LOGGER.debug("Storage request granted with id \"{}\"", ri.getGroupId());
         }
