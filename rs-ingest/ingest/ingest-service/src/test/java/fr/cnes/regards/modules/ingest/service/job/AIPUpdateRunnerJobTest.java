@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
 
@@ -33,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -140,22 +140,35 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         jobInfoRepository.deleteAll();
     }
 
-    public void initData() {
+    public void initData() throws InterruptedException {
 
         long nbSIP = 6;
-        publishSIPEvent(create("1", TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("3", TAG_1), Lists.newArrayList(STORAGE_2, STORAGE_3), SESSION_0, SESSION_OWNER_0,
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_0,
                         CATEGORIES_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), Lists.newArrayList(STORAGE_2, STORAGE_3),
+                        SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
 
         // useless entities for this test
-        publishSIPEvent(create("6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("2", TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_1, CATEGORIES_1);
-        publishSIPEvent(create("4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORIES_1);
-        publishSIPEvent(create("5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0,
+                        CATEGORIES_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_1,
+                        CATEGORIES_1);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1,
+                        CATEGORIES_1);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1,
+                        CATEGORIES_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
         // Wait STORE_META request over
         ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000);
+
+        // Check init datas contains the storage to remove in this test
+        Page<AIPEntity> aips = aipService.findByFilters(SearchAIPsParameters.build(), PageRequest.of(0, 200));
+        List<AIPEntity> aipsContent = aips.getContent();
+        for (AIPEntity aip : aipsContent) {
+            LOGGER.info("Intial AIP {}/{} tags : {}, categories : {}, storages : {}", aip.getProviderId(),
+                        aip.getState(), aip.getTags(), aip.getCategories(), aip.getStorages());
+        }
     }
 
     /**
@@ -210,15 +223,20 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
     /**
      * Test to add/remove TAGS and categories to an existing list of AIPs.
      * @throws ModuleException
+     * @throws InterruptedException
      */
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_420"), @Requirement("REGARDS_DSL_STO_AIP_430"),
             @Requirement("REGARDS_DSL_STO_AIP_210") })
     @Purpose("Check that specific informations can be updated in AIP properties")
-    public void testUpdateJob() throws ModuleException {
+    public void testUpdateJob() throws ModuleException, InterruptedException {
         ingestServiceTest.waitAllRequestsFinished(20_000);
         storageClient.setBehavior(true, true);
         initData();
+
+        LOGGER.info("TAGS ADD : {}, REMOVE {}", TAG_2, TAG_3);
+        LOGGER.info("CATEGORIES ADD : {}, REMOVE {}", CATEGORIES_2, CATEGORIES_0);
+        LOGGER.info("STORAGES REMOVE : {}", STORAGE_3);
         aipService.registerUpdatesCreator(AIPUpdateParametersDto
                 .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0), TAG_2,
                        TAG_3, CATEGORIES_2, CATEGORIES_0, Lists.newArrayList(STORAGE_3)));
@@ -227,12 +245,11 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         waitForUpdateTaskCreated(nbSipConcerned * nbTasksPerSip, 10_000);
         JobInfo updateJob = updateFlowHandler.getUpdateJob();
         runAndWaitJob(Lists.newArrayList(updateJob));
-        Pageable pageRequest = PageRequest.of(0, 200);
 
         Page<AIPEntity> aips = aipService
                 .findByFilters(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
-                               pageRequest);
-        List<AIPEntity> aipsContent = aips.getContent();
+                               PageRequest.of(0, 200));
+        Collection<AIPEntity> aipsContent = aips.getContent();
         for (AIPEntity aip : aipsContent) {
             Assert.assertEquals(3, aip.getTags().size());
             // TAG_3 are not existing anymore on entities
@@ -240,7 +257,6 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
             Assert.assertEquals(1, aip.getCategories().size());
             // Only one category remaining
             Assert.assertEquals(CATEGORIES_2.get(0), aip.getCategories().iterator().next());
-            LOGGER.info("Sometimes this test dies, sometimes not. AIP storages are  : {}", aip.getStorages());
             // No more STORAGE_3
             Assert.assertFalse(aip.getStorages().contains(STORAGE_3));
         }
@@ -252,9 +268,8 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         storageClient.setBehavior(true, true);
         initData();
 
-        Page<AIPEntity> aips = aipService
-                .findByFilters(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
-                               PageRequest.of(0, 200));
+        Page<AIPEntity> aips = aipService.findByFilters(SearchAIPsParameters.build().withSession(SESSION_0)
+                .withSessionOwner(SESSION_OWNER_0).withStorage(STORAGE_1), PageRequest.of(0, 200));
         AIPEntity toUpdate = aips.getContent().get(0);
         String providerId = toUpdate.getProviderId();
         Assert.assertEquals("Before adding the new location the data object should contains only one location", 1,

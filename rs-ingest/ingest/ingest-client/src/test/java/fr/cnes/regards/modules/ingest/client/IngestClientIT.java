@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.client;
 
 import java.nio.file.Paths;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -119,10 +120,10 @@ public class IngestClientIT extends AbstractRegardsWebIT {
 
     private SIP create(String providerId) {
 
+        String fileName = String.format("file-%s.dat", providerId);
         SIP sip = SIP.build(EntityType.DATA, providerId);
-        sip.withDataObject(DataType.RAWDATA,
-                           Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"), "MD5",
-                           "azertyuiopqsdfmlmld");
+        sip.withDataObject(DataType.RAWDATA, Paths.get("src", "main", "test", "resources", "data", fileName), "MD5",
+                           UUID.randomUUID().toString());
         sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
         sip.registerContentInformation();
 
