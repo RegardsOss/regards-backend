@@ -137,7 +137,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
      */
     public void addDescriptiveInformation(String key, Object value) {
         Assert.hasLength(key, "Descriptive information key is required");
-        Assert.notNull(value, "Descriptive information value is required");
+        Assert.notNull(value, String.format("The value of the descriptive information [%s] is null", key));
         descriptiveInformation.put(key, value);
     }
 
