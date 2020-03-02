@@ -104,10 +104,10 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                                              AIPUpdateFileLocationTask.buildAddLocationTask(Lists.newArrayList(sr)));
                         found = true;
                         count++;
-                        LOGGER.info("File {}(checksum={}, type={}) as been copied to {} and is associated to AIP {}",
-                                    sr.getResultFile().getMetaInfo().getFileName(),
-                                    sr.getResultFile().getMetaInfo().getChecksum(),
-                                    sr.getResultFile().getMetaInfo().getType(), sr.getRequestStorage(), fileOwner);
+                        LOGGER.debug("File {}(checksum={}, type={}) as been copied to {} and is associated to AIP {}",
+                                     sr.getResultFile().getMetaInfo().getFileName(),
+                                     sr.getResultFile().getMetaInfo().getChecksum(),
+                                     sr.getResultFile().getMetaInfo().getType(), sr.getRequestStorage(), fileOwner);
                     }
                 }
                 if (!found) {
@@ -118,7 +118,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                 }
             }
         }
-        LOGGER.info("{} copied files event received. {} associated to existing AIPs", total, count);
+        LOGGER.debug("{} copied files event received. {} associated to existing AIPs", total, count);
         // To improve performance, retrieve all requested AIPs in one request
         Collection<AIPEntity> aips = aipService.findByAipIds(newFileLocations.keySet());
         // Then dispatch each update task by AIPentity
