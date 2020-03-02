@@ -26,8 +26,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
@@ -239,8 +237,8 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         if (sipInError > 0) {
             notificationClient.notify(notifMsg.toString(), "Error occurred during SIPs Ingestion.",
                                       NotificationLevel.INFO, DefaultRole.ADMIN);
-            logger.info("{}{} SIP(s) INGESTED and {} in ERROR in {} ms", INFO_TAB, sipIngested, sipInError,
-                        System.currentTimeMillis() - start);
+            logger.error("{}{} SIP(s) INGESTED and {} in ERROR in {} ms", INFO_TAB, sipIngested, sipInError,
+                         System.currentTimeMillis() - start);
         } else {
             logger.info("{}{} SIP(s) INGESTED in {} ms", INFO_TAB, sipIngested, System.currentTimeMillis() - start);
         }

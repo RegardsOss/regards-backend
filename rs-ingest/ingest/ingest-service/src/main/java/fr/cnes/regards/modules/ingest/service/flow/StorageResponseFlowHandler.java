@@ -175,8 +175,8 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
     public void onStoreSuccess(Set<RequestInfo> requestInfos) {
         List<AbstractRequest> requests = getRequests(requestInfos);
         for (RequestInfo ri : requestInfos) {
-            LOGGER.info("[STORAGE RESPONSE HANDLER] handling success storage request {} with {} success / {} errors",
-                        ri.getGroupId(), ri.getSuccessRequests().size(), ri.getErrorRequests().size());
+            LOGGER.debug("[STORAGE RESPONSE HANDLER] handling success storage request {} with {} success / {} errors",
+                         ri.getGroupId(), ri.getSuccessRequests().size(), ri.getErrorRequests().size());
             boolean found = false;
             for (AbstractRequest request : requests) {
                 if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {

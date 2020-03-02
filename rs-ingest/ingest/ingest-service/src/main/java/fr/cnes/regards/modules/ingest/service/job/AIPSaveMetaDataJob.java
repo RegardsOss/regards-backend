@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.reflect.TypeToken;
@@ -119,9 +117,9 @@ public class AIPSaveMetaDataJob extends AbstractJob<Void> {
             Thread.currentThread().interrupt();
         } else {
             aipSaveMetaDataService.handle(requests, aipsToUpdate, filesToDelete);
-            logger.info(this.getClass().getSimpleName()
+            logger.debug(this.getClass().getSimpleName()
                     + ": {} manifests updated, {} manifests deleted on {} locations.", aipsToUpdate.size(),
-                        filesToDelete.size(), locations.size());
+                         filesToDelete.size(), locations.size());
         }
         logger.debug("[AIP SAVE META JOB] Job handled for {} AIPStoreMetaDataRequest(s) requests in {}ms",
                      requests.size(), System.currentTimeMillis() - start);

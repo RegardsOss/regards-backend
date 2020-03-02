@@ -57,8 +57,8 @@ public class UpdateAIPLocation implements IUpdateStep {
             updated = aipStorageService.removeAIPLocations(aipWrapper.getAip(),
                                                            updateFileLocation.getFileLocationUpdates());
         }
-        LOGGER.info("[AIP {}] Running update task {}. updated={} manifestUpdate={}", aipWrapper.getAip().getAipId(),
-                    taskType.toString(), updated.isAipEntityUpdated(), updated.isAipUpdated());
+        LOGGER.debug("[AIP {}] Running update task {}. updated={} manifestUpdate={}", aipWrapper.getAip().getAipId(),
+                     taskType.toString(), updated.isAipEntityUpdated(), updated.isAipUpdated());
         if (updated.isAipEntityUpdated()) {
             aipWrapper.markAsUpdated(updated.isAipUpdated());
         }

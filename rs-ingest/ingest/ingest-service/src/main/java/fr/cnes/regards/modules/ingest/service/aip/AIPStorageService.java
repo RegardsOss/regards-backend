@@ -353,11 +353,11 @@ public class AIPStorageService implements IAIPStorageService {
                                                          eventInfo.getResultFile().getMetaInfo().getFileName(),
                                                          eventInfo.getResultFile().getMetaInfo().getChecksum(),
                                                          storageLocation));
-                    LOGGER.info("[AIP {}] New location {} for file {}", aip.getAipId(), storageLocation,
-                                eventInfo.getResultFile().getMetaInfo().getFileName());
+                    LOGGER.debug("[AIP {}] New location {} for file {}", aip.getAipId(), storageLocation,
+                                 eventInfo.getResultFile().getMetaInfo().getFileName());
                 } else {
-                    LOGGER.info("[AIP {}] Location {} for file {} already exists", aip.getAipId(), storageLocation,
-                                ci.getDataObject().getFilename());
+                    LOGGER.debug("[AIP {}] Location {} for file {} already exists", aip.getAipId(), storageLocation,
+                                 ci.getDataObject().getFilename());
                 }
             } else if (isManifest(eventInfo)) {
                 // The event concern the AIP manifest itself
@@ -371,7 +371,7 @@ public class AIPStorageService implements IAIPStorageService {
                                                               storageLocation, eventInfo.getRequestStorePath()));
                     aip.setManifestLocations(newManifestLocation);
                 } else {
-                    LOGGER.info("[AIP {}] Manifest location {} already exists", aip.getAipId(), storageLocation);
+                    LOGGER.debug("[AIP {}] Manifest location {} already exists", aip.getAipId(), storageLocation);
                 }
             }
         }
@@ -539,7 +539,7 @@ public class AIPStorageService implements IAIPStorageService {
         }
 
         // Make a request group for all these aips
-        LOGGER.info("[AIP STORE META REQUEST] Sending {} storage request to storage client.", files.size());
+        LOGGER.info("[AIP STORE META REQUEST] Sending {} storage requests to storage client.", files.size());
         Collection<RequestInfo> infos = storageClient.store(files);
         return infos.stream().map(RequestInfo::getGroupId).collect(Collectors.toList());
     }
