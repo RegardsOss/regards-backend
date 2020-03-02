@@ -142,7 +142,10 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                 String name = (String) feature.getProperties().get(featureId);
                 SIPBuilder builder = new SIPBuilder(name);
                 for (String property : feature.getProperties().keySet()) {
-                    builder.addDescriptiveInformation(property, feature.getProperties().get(property));
+                    Object value = feature.getProperties().get(property);
+                    if (value != null) {
+                        builder.addDescriptiveInformation(property, value);
+                    }
                 }
 
                 // Check for RAWDATA if any
