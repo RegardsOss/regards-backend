@@ -43,6 +43,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.RepresentationInformation;
@@ -265,6 +266,11 @@ public class AIPStorageService implements IAIPStorageService {
 
                     // Ensure the AIP storage list is updated
                     aipEntity.getStorages().add(storeRequestInfo.getRequestStorage());
+
+                    String eventMessage = String.format("Data file %s stored on %s at %s.", metaInfo.getFileName(),
+                                                        fileLocation.getStorage(), fileLocation.getUrl());
+                    aipEntity.getAip().withEvent(EventType.STORAGE.toString(), eventMessage,
+                                                 resultFile.getStorageDate());
                 }
             }
 
@@ -273,17 +279,26 @@ public class AIPStorageService implements IAIPStorageService {
                     .filter(AIPStorageService::isManifest).collect(Collectors.toSet());
             for (RequestResultInfoDTO storeRequestInfo : storeRequestInfosForAIPManifest) {
                 if (storeRequestInfo.getRequestOwners().contains(aipEntity.getAipId())) {
+                    FileReferenceDTO resultFile = storeRequestInfo.getResultFile();
+                    FileReferenceMetaInfoDTO metaInfo = resultFile.getMetaInfo();
+                    FileLocationDTO fileLocation = resultFile.getLocation();
+
                     Set<OAISDataObjectLocation> manifestLocations = aipEntity.getManifestLocations();
                     // Remove any old reference to this storage
                     Set<OAISDataObjectLocation> newManifestLocations = manifestLocations.stream()
                             .filter(ml -> !ml.getStorage().equals(storeRequestInfo.getRequestStorage()))
                             .collect(Collectors.toSet());
                     // Generate the new ObjectLocation
-                    newManifestLocations.add(OAISDataObjectLocation
-                            .build(storeRequestInfo.getResultFile().getLocation().getUrl(),
-                                   storeRequestInfo.getRequestStorage(), storeRequestInfo.getRequestStorePath()));
+                    newManifestLocations.add(OAISDataObjectLocation.build(fileLocation.getUrl(),
+                                                                          storeRequestInfo.getRequestStorage(),
+                                                                          storeRequestInfo.getRequestStorePath()));
                     // Save it
                     aipEntity.setManifestLocations(newManifestLocations);
+
+                    String eventMessage = String.format("Manifest %s stored on %s at %s.", metaInfo.getFileName(),
+                                                        fileLocation.getStorage(), fileLocation.getUrl());
+                    aipEntity.getAip().withEvent(EventType.STORAGE.toString(), eventMessage,
+                                                 resultFile.getStorageDate());
 
                     // Ensure the AIP storage list is updated
                     aipEntity.getStorages().add(storeRequestInfo.getRequestStorage());
