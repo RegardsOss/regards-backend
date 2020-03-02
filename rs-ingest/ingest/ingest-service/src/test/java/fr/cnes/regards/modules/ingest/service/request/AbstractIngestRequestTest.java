@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -72,13 +73,23 @@ public abstract class AbstractIngestRequestTest extends AbstractMultitenantServi
     protected IAbstractRequestRepository abstractRequestRepository;
 
     @Before
-    public void init() {
+    public void init() throws InterruptedException {
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        abstractRequestRepository.deleteAll();
-        aipRepo.deleteAll();
-        sipRepo.deleteAll();
+        boolean retry = false;
+        do {
+            try {
+                abstractRequestRepository.deleteAll();
+                aipRepo.deleteAll();
+                sipRepo.deleteAll();
+                retry = false;
+            } catch (DataAccessException e) {
+                // Retry only once. May be an error of previous transactional context.
+                retry = !retry;
+                Thread.sleep(2_000);
+            }
+        } while (retry);
     }
 
     protected void initSipAndAip(String checksum, String providerId) {
