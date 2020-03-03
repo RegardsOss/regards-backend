@@ -598,6 +598,10 @@ public class ProductService implements IProductService {
                 product.setSipState(ProductSIPState.INGESTION_FAILED);
                 product.setIpId(info.getSipId());
                 product.setError(errorMessage.toString());
+                // Ensure the production job is locked
+                if (product.getLastPostProductionJobInfo() != null) {
+                    jobInfoService.lock(product.getLastPostProductionJobInfo());
+                }
                 save(product);
             } else {
                 LOGGER.warn("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider",
