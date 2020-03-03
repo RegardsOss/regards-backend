@@ -18,13 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.service.flow;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,7 +170,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
 
     @Override
     public void onStoreSuccess(Set<RequestInfo> requestInfos) {
-        List<AbstractRequest> requests = getRequests(requestInfos);
+        List<AbstractRequest> requests = requestService.getRequests(requestInfos);
         for (RequestInfo ri : requestInfos) {
             LOGGER.debug("[STORAGE RESPONSE HANDLER] handling success storage request {} with {} success / {} errors",
                          ri.getGroupId(), ri.getSuccessRequests().size(), ri.getErrorRequests().size());
@@ -203,8 +200,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
 
     @Override
     public void onStoreError(Set<RequestInfo> requestInfos) {
-        List<AbstractRequest> requests = requestService.findRequestsByGroupIdIn(requestInfos.stream()
-                .map(RequestInfo::getGroupId).collect(Collectors.toList()));
+        List<AbstractRequest> requests = requestService.getRequests(requestInfos);
         for (RequestInfo ri : requestInfos) {
             for (AbstractRequest request : requests) {
                 if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
@@ -230,26 +226,4 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
         ingestRequestService.handleRemoteRequestDenied(requests);
     }
 
-    /**
-     * Retrieve {@link AbstractRequest}s associated to the given storage respones associated by groupId.
-     *
-     * @param requestInfos
-     * @return
-     */
-    private List<AbstractRequest> getRequests(Set<RequestInfo> requestInfos) {
-        List<String> groupIds = requestInfos.stream().map(RequestInfo::getGroupId).collect(Collectors.toList());
-        List<AbstractRequest> requests = new ArrayList<>();
-        // To avoid sql too long request, divide the liste of groupIds to search for in subList of 100 groupIds at most.
-        final int chunkSize = 100;
-        if (groupIds.size() > chunkSize) {
-            final AtomicInteger counter = new AtomicInteger();
-            groupIds.stream().collect(Collectors.groupingBy(it -> counter.getAndIncrement() / chunkSize)).values()
-                    .forEach(list -> {
-                        requests.addAll(requestService.findRequestsByGroupIdIn(list));
-                    });
-        } else {
-            requests.addAll(requestService.findRequestsByGroupIdIn(groupIds));
-        }
-        return requests;
-    }
 }

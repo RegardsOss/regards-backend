@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -213,7 +214,8 @@ public class RequestService implements IRequestService {
 
     @Override
     public void scheduleRequestDeletionJob(SearchRequestsParameters filters) {
-        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestDeletionJob.CRITERIA_JOB_PARAM_NAME, filters));
+        Set<JobParameter> jobParameters = Sets
+                .newHashSet(new JobParameter(RequestDeletionJob.CRITERIA_JOB_PARAM_NAME, filters));
         // Schedule request deletion job
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_DELETION_JOB_PRIORITY.getPriority(),
                 jobParameters, authResolver.getUser(), RequestDeletionJob.class.getName());
@@ -223,7 +225,8 @@ public class RequestService implements IRequestService {
 
     @Override
     public void scheduleRequestRetryJob(SearchRequestsParameters filters) {
-        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestRetryJob.CRITERIA_JOB_PARAM_NAME, filters));
+        Set<JobParameter> jobParameters = Sets
+                .newHashSet(new JobParameter(RequestRetryJob.CRITERIA_JOB_PARAM_NAME, filters));
         // Schedule request retry job
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_RETRY_JOB_PRIORITY.getPriority(), jobParameters,
                 authResolver.getUser(), RequestRetryJob.class.getName());
@@ -440,6 +443,24 @@ public class RequestService implements IRequestService {
                         .format("You should not use this method for requests having [%s] type", request.getDtype()));
         }
         return abstractRequestRepository.exists(spec);
+    }
+
+    @Override
+    public List<AbstractRequest> getRequests(Set<RequestInfo> requestInfos) {
+        List<String> groupIds = requestInfos.stream().map(RequestInfo::getGroupId).collect(Collectors.toList());
+        List<AbstractRequest> requests = new ArrayList<>();
+        // To avoid sql too long request, divide the list of groupIds to search for in subList of 100 groupIds at most.
+        final int chunkSize = 100;
+        if (groupIds.size() > chunkSize) {
+            final AtomicInteger counter = new AtomicInteger();
+            groupIds.stream().collect(Collectors.groupingBy(it -> counter.getAndIncrement() / chunkSize)).values()
+                    .forEach(list -> {
+                        requests.addAll(findRequestsByGroupIdIn(list));
+                    });
+        } else {
+            requests.addAll(findRequestsByGroupIdIn(groupIds));
+        }
+        return requests;
     }
 
 }

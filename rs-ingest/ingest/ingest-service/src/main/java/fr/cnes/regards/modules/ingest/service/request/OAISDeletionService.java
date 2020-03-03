@@ -18,6 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
@@ -34,18 +47,6 @@ import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Service to handle {@link OAISDeletionCreatorRequest}s
@@ -114,8 +115,7 @@ public class OAISDeletionService implements IOAISDeletionService {
 
     @Override
     public void handleRemoteDeleteSuccess(Set<RequestInfo> requestInfos) {
-        List<AbstractRequest> requests = requestService.findRequestsByGroupIdIn(requestInfos.stream()
-                .map(RequestInfo::getGroupId).collect(Collectors.toList()));
+        List<AbstractRequest> requests = requestService.getRequests(requestInfos);
         for (RequestInfo ri : requestInfos) {
             for (AbstractRequest request : requests) {
                 if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
@@ -146,13 +146,13 @@ public class OAISDeletionService implements IOAISDeletionService {
                     // Start by deleting the request itself
                     requestService.deleteRequest(request);
                     aipService.processDeletion(sipToDelete.getSipId(),
-                            request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                                               request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
                     sipService.processDeletion(sipToDelete.getSipId(),
-                            request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                                               request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
                 }
             } catch (Exception e) {
                 String errorMsg = String.format("Deletion request %s of AIP %s could not be executed", request.getId(),
-                        request.getAip().getAipId());
+                                                request.getAip().getAipId());
                 LOGGER.error(errorMsg, e);
                 request.setState(InternalRequestState.ERROR);
                 request.addError(errorMsg);
@@ -174,4 +174,5 @@ public class OAISDeletionService implements IOAISDeletionService {
             Thread.currentThread().interrupt();
         }
     }
+
 }

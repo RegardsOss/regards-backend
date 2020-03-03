@@ -149,4 +149,12 @@ public interface IRequestService {
     void deleteRequest(AbstractRequest request);
 
     boolean isJobRequest(AbstractRequest request);
+
+    /**
+     * Retrieve {@link AbstractRequest}s associated to the given storage respones associated by groupId.
+     *
+     * @param requestInfos
+     * @return
+     */
+    public List<AbstractRequest> getRequests(Set<RequestInfo> requestInfos);
 }
