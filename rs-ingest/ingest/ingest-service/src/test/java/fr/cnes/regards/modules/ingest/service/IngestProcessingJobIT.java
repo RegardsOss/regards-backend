@@ -20,8 +20,10 @@ package fr.cnes.regards.modules.ingest.service;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -35,6 +37,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -47,12 +50,16 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
+import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
+import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
@@ -61,6 +68,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
+import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPTaggingTestPlugin;
@@ -69,7 +77,12 @@ import fr.cnes.regards.modules.ingest.service.plugin.PreprocessingTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
+import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
+import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * Test class to verify {@link IngestProcessingJob}.
@@ -114,8 +127,17 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
     @SpyBean
     private IIngestRequestService ingestRequestService;
 
+    @Autowired
+    private IIngestRequestRepository ingestRequestRepo;
+
+    @Autowired
+    private IAIPStoreMetaDataRepository storeMetaRequestRepo;
+
     @SpyBean
     private IStorageClient storageClient;
+
+    @Autowired
+    private StorageResponseFlowHandler storageResponseHandler;
 
     @Override
     public void doInit() throws ModuleException {
@@ -170,8 +192,9 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
                                                CATEGORIES, STORAGE_METADATA));
 
         Path filePath = Paths.get("data1.fits");
+        String checksum = "sdsdfm1211vd";
         SIP sip = SIP.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST);
-        sip.withDataObject(DataType.RAWDATA, filePath, "sdsdfm1211vd");
+        sip.withDataObject(DataType.RAWDATA, filePath, checksum);
         sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
         sip.registerContentInformation();
@@ -196,6 +219,103 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
                 .anyMatch(req -> req.getOriginUrl().equals(OAISDataObjectLocation.build(filePath).getUrl())));
         Assert.assertTrue("File storage is not valid in storage request", storageArgs.getValue().stream()
                 .anyMatch(req -> req.getStorage().equals(STORAGE_METADATA.getPluginBusinessId())));
+
+        // Check status of IngestRequest
+        List<IngestRequest> reqs = ingestRequestRepo.findByProviderId(resultSip.getProviderId());
+        Assert.assertEquals(1, reqs.size());
+        IngestRequest req = reqs.get(0);
+        Assert.assertEquals(1, req.getAips().size());
+        Assert.assertEquals(IngestRequestStep.REMOTE_STORAGE_REQUESTED, req.getStep());
+        Assert.assertEquals(InternalRequestState.TO_SCHEDULE, req.getState());
+        AIPEntity aip = req.getAips().get(0);
+
+        String remoteStepGroupId = req.getRemoteStepGroupIds().get(0);
+        RequestResultInfoDTO success = RequestResultInfoDTO
+                .build(remoteStepGroupId, checksum, STORAGE_METADATA.getPluginBusinessId(), null,
+                       Sets.newHashSet(aip.getAipId()),
+                       FileReferenceDTO.build(OffsetDateTime.now(),
+                                              FileReferenceMetaInfoDTO.build(checksum, "MD5", "file.name", 10L, null,
+                                                                             null, MediaType.APPLICATION_JSON, "type"),
+                                              FileLocationDTO.build(STORAGE_METADATA.getPluginBusinessId(),
+                                                                    "file:///test/file.name"),
+                                              Sets.newHashSet(aip.getAipId())),
+                       null);
+        RequestInfo ri = RequestInfo.build(remoteStepGroupId, Sets.newHashSet(success), Sets.newHashSet());
+        Set<RequestInfo> requestInfos = Sets.newHashSet(ri);
+        // Simulate error response from storage
+        storageResponseHandler.onStoreSuccess(requestInfos);
+
+        // Check status of IngestRequest
+        reqs = ingestRequestRepo.findByProviderId(resultSip.getProviderId());
+        Assert.assertEquals("Request sould be deleted as requests is done success", 0, reqs.size());
+        List<AIPStoreMetaDataRequest> metaReqs = storeMetaRequestRepo.findAllByAipIdIn(Lists.newArrayList(aip.getId()));
+        Assert.assertEquals(1, metaReqs.size());
+
+    }
+
+    @Requirements({ @Requirement("REGARDS_DSL_ING_PRO_160"), @Requirement("REGARDS_DSL_STO_AIP_010") })
+    @Purpose("Test default process chain to ingest a new SIP provided by value and ask for files storage")
+    @Test
+    public void testDefaultProcessingChainWithError() {
+        // Init a SIP in database with state CREATED and managed with default chain
+        SIPCollection sips = SIPCollection
+                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                               CATEGORIES, STORAGE_METADATA));
+
+        Path filePath = Paths.get("data1.fits");
+        String checksum = "sdsdfm1211vd";
+        SIP sip = SIP.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST);
+        sip.withDataObject(DataType.RAWDATA, filePath, checksum);
+        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+                       MediaType.valueOf("application/fits"));
+        sip.registerContentInformation();
+        sips.add(sip);
+
+        // Ingest
+        Collection<IngestRequestFlowItem> items = IngestService.sipToFlow(sips);
+        ingestService.handleIngestRequests(items);
+        ingestServiceTest.waitForIngestion(1, FIVE_SECONDS);
+
+        SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_DEFAULT_CHAIN_ID_TEST);
+        Assert.assertNotNull(resultSip);
+        Assert.assertEquals(SIPState.INGESTED, resultSip.getState());
+        Assert.assertEquals(SESSION_OWNER, resultSip.getSessionOwner());
+        Assert.assertEquals(SESSION, resultSip.getSession());
+
+        // Check that files storage has been requested
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Collection<FileStorageRequestDTO>> storageArgs = ArgumentCaptor.forClass(Collection.class);
+        Mockito.verify(storageClient, Mockito.times(1)).store(storageArgs.capture());
+        Assert.assertTrue("File storage url is not vali in storage request", storageArgs.getValue().stream()
+                .anyMatch(req -> req.getOriginUrl().equals(OAISDataObjectLocation.build(filePath).getUrl())));
+        Assert.assertTrue("File storage is not valid in storage request", storageArgs.getValue().stream()
+                .anyMatch(req -> req.getStorage().equals(STORAGE_METADATA.getPluginBusinessId())));
+
+        // Check status of IngestRequest
+        List<IngestRequest> reqs = ingestRequestRepo.findByProviderId(resultSip.getProviderId());
+        Assert.assertEquals(1, reqs.size());
+        IngestRequest req = reqs.get(0);
+        Assert.assertEquals(1, req.getAips().size());
+        Assert.assertEquals(IngestRequestStep.REMOTE_STORAGE_REQUESTED, req.getStep());
+        Assert.assertEquals(InternalRequestState.TO_SCHEDULE, req.getState());
+        AIPEntity aip = req.getAips().get(0);
+
+        String remoteStepGroupId = req.getRemoteStepGroupIds().get(0);
+        RequestResultInfoDTO error = RequestResultInfoDTO
+                .build(remoteStepGroupId, checksum, STORAGE_METADATA.getPluginBusinessId(), null,
+                       Sets.newHashSet(aip.getAipId()), new FileReferenceDTO(), "simulated error");
+        RequestInfo ri = RequestInfo.build(remoteStepGroupId, Sets.newHashSet(), Sets.newHashSet(error));
+        Set<RequestInfo> requestInfos = Sets.newHashSet(ri);
+        // Simulate error response from storage
+        storageResponseHandler.onStoreError(requestInfos);
+
+        // Check status of IngestRequest
+        reqs = ingestRequestRepo.findByProviderId(resultSip.getProviderId());
+        Assert.assertEquals(1, reqs.size());
+        req = reqs.get(0);
+        Assert.assertEquals(1, req.getAips().size());
+        Assert.assertEquals(IngestRequestStep.REMOTE_STORAGE_ERROR, req.getStep());
+        Assert.assertEquals(InternalRequestState.ERROR, req.getState());
     }
 
     @Requirement("REGARDS_DSL_ING_PRO_160")

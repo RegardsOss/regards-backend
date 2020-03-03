@@ -80,4 +80,7 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
     boolean existsByAipsIdAndState(Long id, InternalRequestState state);
 
     List<IngestRequest> findAllByAipsIdIn(List<Long> aipIds);
+
+    @EntityGraph(attributePaths = "aips")
+    List<IngestRequest> findByProviderId(String providerId);
 }
