@@ -115,7 +115,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                 }
             }
         }
-        LOGGER.debug("{} copied files event received. {} associated to existing AIPs", total, count);
+        LOGGER.info("{} copied files event received. {} associated to existing AIPs", total, count);
         // To improve performance, retrieve all requested AIPs in one request
         Collection<AIPEntity> aips = aipService.findByAipIds(newFileLocations.keySet());
         // Then dispatch each update task by AIPentity

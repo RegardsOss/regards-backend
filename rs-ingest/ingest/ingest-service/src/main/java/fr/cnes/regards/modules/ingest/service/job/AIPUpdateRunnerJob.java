@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
@@ -115,7 +113,6 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         long numberOfDeletionRequest = 0L;
         long numberOfStorageScheduled = 0L;
         long numberOfUnmodifiedManifests = 0L;
-        long numberOfLocations = 0L;
         for (String aipId : requestByAIP.keySet()) {
             // Get the ordered list of task to execute on this AIP
             List<AIPUpdateRequest> updateRequests = getOrderedTaskList(aipId);
@@ -143,7 +140,6 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                         Set<OAISDataObjectLocation> manifestLocations = aipWrapper.getAip().getManifestLocations();
                         logger.trace("[AIP {}] Schedule manifest storage on {} locations.",
                                      aipWrapper.getAip().getAipId(), manifestLocations.size());
-                        numberOfLocations += manifestLocations.size();
                         numberOfStorageScheduled++;
                         aipStoreMetaDataService.schedule(aipWrapper.getAip(), manifestLocations, true, true);
                     } else {
@@ -160,8 +156,8 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         // transaction can be realized to update requests states.
         boolean interrupted = Thread.interrupted();
         logger.info(this.getClass().getSimpleName()
-                + ": {} manifests storage scheduled on {} locations. {} file deletion requested. {} unmodified manifests.",
-                    numberOfStorageScheduled, numberOfLocations, numberOfDeletionRequest, numberOfUnmodifiedManifests);
+                + ": {} manifests storage scheduled. {} file deletion requested. {} unmodified manifests.",
+                    numberOfStorageScheduled, numberOfDeletionRequest, numberOfUnmodifiedManifests);
         // Keep only ERROR requests
         List<AIPUpdateRequest> succeedRequestsToDelete = requestByAIP.values().stream()
                 .filter(request -> (request.getState() != InternalRequestState.ERROR)
