@@ -1,0 +1,3 @@
+CREATE INDEX idx_file_cache_file_ref ON t_file_cache_request(file_ref_id);
+
+CREATE INDEX idx_file_deletion_file_ref ON t_file_deletion_request(file_reference);

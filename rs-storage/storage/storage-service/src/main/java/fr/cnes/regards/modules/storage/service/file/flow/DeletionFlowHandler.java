@@ -57,7 +57,7 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeletionFlowHandler.class);
 
-    @Value("${regards.storage.deletion.items.bulk.size:1000}")
+    @Value("${regards.storage.deletion.items.bulk.size:100}")
     private int BULK_SIZE;
 
     @Autowired

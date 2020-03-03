@@ -49,7 +49,8 @@ import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 @Table(name = "t_file_cache_request",
         indexes = { @Index(name = "idx_file_cache_request_grp", columnList = "group_id"),
                 @Index(name = "idx_file_cache_request_cs", columnList = "checksum"),
-                @Index(name = "idx_file_cache_request_storage", columnList = "storage") },
+                @Index(name = "idx_file_cache_request_storage", columnList = "storage"),
+                @Index(name = "idx_file_cache_file_ref", columnList = "file_ref_id") },
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_t_file_cache_request_checksum", columnNames = { "checksum" }) })
 public class FileCacheRequest {
