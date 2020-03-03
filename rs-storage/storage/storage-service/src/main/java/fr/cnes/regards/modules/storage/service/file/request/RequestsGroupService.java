@@ -358,7 +358,7 @@ public class RequestsGroupService {
             publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(), reqGrp.getType(),
                                                            forcedStatus.orElse(FlowItemStatus.SUCCESS), successes));
             if (successes.isEmpty()) {
-                LOGGER.error("[{} GROUP {} {}] No success requests associated to terminated group",
+                LOGGER.debug("[{} GROUP {} {}] No success requests associated to terminated group",
                              forcedStatus.orElse(FlowItemStatus.SUCCESS).toString(), reqGrp.getType(), reqGrp.getId());
             }
         } else {

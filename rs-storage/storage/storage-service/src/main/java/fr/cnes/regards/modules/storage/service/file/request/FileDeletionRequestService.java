@@ -177,7 +177,7 @@ public class FileDeletionRequestService {
     public Collection<JobInfo> scheduleJobs(FileRequestStatus status, Collection<String> storages) {
         Collection<JobInfo> jobList = Lists.newArrayList();
         if (!lockDeletionProcess(false, 30)) {
-            LOGGER.trace("[DELETION REQUESTS] Deletion process is delayed. A deletion process is already running.");
+            LOGGER.info("[DELETION REQUESTS] Deletion process is delayed. A deletion process is already running.");
             return jobList;
         }
         try {

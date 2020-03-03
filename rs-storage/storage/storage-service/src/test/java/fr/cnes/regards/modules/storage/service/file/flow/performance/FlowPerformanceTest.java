@@ -49,6 +49,7 @@ import fr.cnes.regards.modules.storage.dao.FileReferenceSpecification;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
@@ -258,6 +259,31 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         } while ((loops < 100) && (nbToDelete != (total - page.getTotalElements())));
 
         Assert.assertEquals("500 ref should be deleted", nbToDelete, total - page.getTotalElements());
+    }
+
+    @Test
+    public void deleteStoredFiles() throws InterruptedException {
+        LOGGER.info(" --------     DELETE TEST     --------- ");
+        int nbToDelete = 500;
+        Page<FileReference> page = fileRefService.search(NEARLINE_CONF_LABEL,
+                                                         PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
+        for (FileReference fileRef : page.getContent()) {
+            DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO
+                    .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
+                           fileRef.getOwners().iterator().next(), false), UUID.randomUUID().toString());
+            TenantWrapper<DeletionFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+            deleteHandler.handle(wrapper);
+        }
+        LOGGER.info("Waiting ....");
+        int loops = 0;
+        Page<FileDeletionRequest> pageDel = null;
+        do {
+            Thread.sleep(500);
+            pageDel = fileDeletionRequestService.search(NEARLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"));
+            loops++;
+        } while ((loops < 100) && (pageDel.getTotalElements() < nbToDelete));
+
+        Assert.assertEquals("500 deletion requests should be created", nbToDelete, pageDel.getTotalElements());
     }
 
     @Test
