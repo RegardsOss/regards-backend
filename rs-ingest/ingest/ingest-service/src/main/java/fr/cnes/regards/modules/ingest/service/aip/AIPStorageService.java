@@ -342,11 +342,12 @@ public class AIPStorageService implements IAIPStorageService {
                     ci.getDataObject().getLocations()
                             .add(OAISDataObjectLocation.build(eventInfo.getResultFile().getLocation().getUrl(),
                                                               storageLocation, eventInfo.getRequestStorePath()));
-                    aip.getAip().withEvent("update",
-                                           String.format("File %s [%s] is now stored on %s.",
+                    aip.getAip().withEvent(EventType.UPDATE.toString(),
+                                           String.format("File %s [%s] is now stored on %s at %s.",
                                                          eventInfo.getResultFile().getMetaInfo().getFileName(),
                                                          eventInfo.getResultFile().getMetaInfo().getChecksum(),
-                                                         storageLocation));
+                                                         storageLocation,
+                                                         eventInfo.getResultFile().getLocation().getUrl()));
                     LOGGER.debug("[AIP {}] New location {} for file {}", aip.getAipId(), storageLocation,
                                  eventInfo.getResultFile().getMetaInfo().getFileName());
                 } else {
@@ -398,7 +399,7 @@ public class AIPStorageService implements IAIPStorageService {
                     Set<OAISDataObjectLocation> updatedDataObject = ci.getDataObject().getLocations().stream()
                             .filter(l -> !l.getStorage().equals(storageLocation)).collect(Collectors.toSet());
                     ci.getDataObject().setLocations(updatedDataObject);
-                    aip.getAip().withEvent("update",
+                    aip.getAip().withEvent(EventType.UPDATE.toString(),
                                            String.format("File %s [%s] is not stored anymore on %s.",
                                                          eventInfo.getResultFile().getMetaInfo().getFileName(),
                                                          eventInfo.getResultFile().getMetaInfo().getChecksum(),
