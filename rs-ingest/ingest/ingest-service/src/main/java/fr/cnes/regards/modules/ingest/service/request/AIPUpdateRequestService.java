@@ -66,12 +66,14 @@ public class AIPUpdateRequestService {
      * @param updateTasks  {@link AbstractAIPUpdateTask}s update tasks
      */
     public int create(Collection<AIPEntity> aips, Collection<AbstractAIPUpdateTask> updateTasks) {
-        List<Long> aipIds = aips.stream().map(wr -> wr.getId()).collect(Collectors.toList());
-        List<AIPUpdateRequest> runningRequests = aipUpdateRequestRepository.findRunningRequestAndAipIdIn(aipIds);
-        List<AbstractRequest> requests = createRequests(aips, updateTasks, runningRequests);
         int nbScheduled = 0;
-        if (!requests.isEmpty()) {
-            nbScheduled = requestService.scheduleRequests(requests);
+        if (!aips.isEmpty()) {
+            List<Long> aipIds = aips.stream().map(wr -> wr.getId()).collect(Collectors.toList());
+            List<AIPUpdateRequest> runningRequests = aipUpdateRequestRepository.findRunningRequestAndAipIdIn(aipIds);
+            List<AbstractRequest> requests = createRequests(aips, updateTasks, runningRequests);
+            if (!requests.isEmpty()) {
+                nbScheduled = requestService.scheduleRequests(requests);
+            }
         }
         return nbScheduled;
     }
@@ -82,13 +84,17 @@ public class AIPUpdateRequestService {
      * @param aipTasks Map key : {@link AIPEntity} to update, value : {@link AbstractAIPUpdateTask}s to apply for update
      */
     public int create(Multimap<AIPEntity, AbstractAIPUpdateTask> aipTasks) {
+        int nbScheduled = 0;
         List<AbstractRequest> requests = new ArrayList<>();
-        List<Long> aipIds = aipTasks.keySet().stream().map(wr -> wr.getId()).collect(Collectors.toList());
-        List<AIPUpdateRequest> runningRequests = aipUpdateRequestRepository.findRunningRequestAndAipIdIn(aipIds);
-        aipTasks.asMap().forEach((aipEntity, tasks) -> {
-            requests.addAll(createRequests(Lists.newArrayList(aipEntity), tasks, runningRequests));
-        });
-        return requestService.scheduleRequests(requests);
+        if (!aipTasks.isEmpty()) {
+            List<Long> aipIds = aipTasks.keySet().stream().map(wr -> wr.getId()).collect(Collectors.toList());
+            List<AIPUpdateRequest> runningRequests = aipUpdateRequestRepository.findRunningRequestAndAipIdIn(aipIds);
+            aipTasks.asMap().forEach((aipEntity, tasks) -> {
+                requests.addAll(createRequests(Lists.newArrayList(aipEntity), tasks, runningRequests));
+            });
+            nbScheduled = requestService.scheduleRequests(requests);
+        }
+        return nbScheduled;
     }
 
     /**
