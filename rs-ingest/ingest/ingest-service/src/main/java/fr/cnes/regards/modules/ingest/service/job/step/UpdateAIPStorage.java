@@ -25,13 +25,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPRemoveStorageTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 
 /**
+ * Update step to remove all {@link OAISDataObjectLocation}s of an {@link AIP} for a given storage identifier.
+ *
  * @author Léo Mieulet
  */
 public class UpdateAIPStorage implements IUpdateStep {

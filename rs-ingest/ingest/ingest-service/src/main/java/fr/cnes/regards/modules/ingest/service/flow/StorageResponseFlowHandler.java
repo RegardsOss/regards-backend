@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.flow;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -60,7 +61,6 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 @MultitenantTransactional
 public class StorageResponseFlowHandler implements IStorageRequestListener {
 
-    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageResponseFlowHandler.class);
 
     @Autowired
@@ -85,51 +85,19 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
     public void onCopySuccess(Set<RequestInfo> requests) {
         // When a AIP is successfully copied to a new location, we have to update local AIP to add the new location.
         // Dispatch each success copy request by AIP to update
-        Multimap<String, AbstractAIPUpdateTask> newFileLocations = ArrayListMultimap.create();
-        int count = 0;
-        int total = 0;
-        for (RequestInfo r : requests) {
-            // For each copy group request in success, check unitary file copy requests succeeded
-            for (RequestResultInfoDTO sr : r.getSuccessRequests()) {
-                total++;
-                // For each file successfully copied, check if at least one of the owners of the file is an AIP.
-                boolean found = false;
-                for (String fileOwner : sr.getResultFile().getOwners()) {
-                    if (UniformResourceName.isValidUrn(fileOwner)) {
-                        // If so, associate the AIPUpdateFileLocationTask to the aip.
-                        newFileLocations.put(fileOwner,
-                                             AIPUpdateFileLocationTask.buildAddLocationTask(Lists.newArrayList(sr)));
-                        found = true;
-                        count++;
-                        LOGGER.debug("File {}(checksum={}, type={}) as been copied to {} and is associated to AIP {}",
-                                     sr.getResultFile().getMetaInfo().getFileName(),
-                                     sr.getResultFile().getMetaInfo().getChecksum(),
-                                     sr.getResultFile().getMetaInfo().getType(), sr.getRequestStorage(), fileOwner);
-                    }
-                }
-                if (!found) {
-                    LOGGER.warn("File {}(checksum={}, type={}) as been copied to {} but is not associated to any AIP",
-                                sr.getResultFile().getMetaInfo().getFileName(),
-                                sr.getResultFile().getMetaInfo().getChecksum(),
-                                sr.getResultFile().getMetaInfo().getType(), sr.getRequestStorage());
-                }
-            }
-        }
-        LOGGER.info("{} copied files event received. {} associated to existing AIPs", total, count);
+        Multimap<String, AbstractAIPUpdateTask> updateTasksByAIPId = createAIPUpdateTasksByAIP(requests);
         // To improve performance, retrieve all requested AIPs in one request
-        Collection<AIPEntity> aips = aipService.findByAipIds(newFileLocations.keySet());
+        Collection<AIPEntity> aips = aipService.findByAipIds(updateTasksByAIPId.keySet());
         // Then dispatch each update task by AIPentity
-        Multimap<AIPEntity, AbstractAIPUpdateTask> newFileLocationsWithAIP = ArrayListMultimap.create();
-        newFileLocations.asMap().forEach((aipId, tasks) -> {
+        Multimap<AIPEntity, AbstractAIPUpdateTask> updateTasksByAIP = ArrayListMultimap.create();
+        updateTasksByAIPId.asMap().forEach((aipId, tasks) -> {
             Optional<AIPEntity> aip = aips.stream().filter(a -> a.getAipId().equals(aipId)).findFirst();
             if (aip.isPresent()) {
-                newFileLocationsWithAIP.putAll(aip.get(), tasks);
+                updateTasksByAIP.putAll(aip.get(), tasks);
             }
         });
-        newFileLocations.clear();
         // Finally, creates the AIPUpdateLocationRequests
-        aipUpdateRequestService.create(newFileLocationsWithAIP);
-        newFileLocationsWithAIP.clear();
+        aipUpdateRequestService.create(updateTasksByAIP);
     }
 
     @Override
@@ -224,6 +192,47 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
     @Override
     public void onRequestDenied(Set<RequestInfo> requests) {
         ingestRequestService.handleRemoteRequestDenied(requests);
+    }
+
+    /**
+     * Create a map associates AIP identifier to a list of update tasks associated to the requests info responses from storage
+     * client.
+     * @param requestsInfo {@link RequestInfo}s from storage client.
+     * @return {@link Map} key: AIP identifier. Values: {@link AbstractAIPUpdateTask}s
+     */
+    private Multimap<String, AbstractAIPUpdateTask> createAIPUpdateTasksByAIP(Collection<RequestInfo> requestsInfo) {
+        Multimap<String, AbstractAIPUpdateTask> newFileLocations = ArrayListMultimap.create();
+        int count = 0;
+        int total = 0;
+        for (RequestInfo r : requestsInfo) {
+            // For each copy group request in success, check unitary file copy requests succeeded
+            for (RequestResultInfoDTO sr : r.getSuccessRequests()) {
+                total++;
+                // For each file successfully copied, check if at least one of the owners of the file is an AIP.
+                boolean found = false;
+                for (String fileOwner : sr.getResultFile().getOwners()) {
+                    if (UniformResourceName.isValidUrn(fileOwner)) {
+                        // If so, associate the AIPUpdateFileLocationTask to the aip.
+                        newFileLocations.put(fileOwner,
+                                             AIPUpdateFileLocationTask.buildAddLocationTask(Lists.newArrayList(sr)));
+                        found = true;
+                        count++;
+                        LOGGER.debug("File {}(checksum={}, type={}) as been copied to {} and is associated to AIP {}",
+                                     sr.getResultFile().getMetaInfo().getFileName(),
+                                     sr.getResultFile().getMetaInfo().getChecksum(),
+                                     sr.getResultFile().getMetaInfo().getType(), sr.getRequestStorage(), fileOwner);
+                    }
+                }
+                if (!found) {
+                    LOGGER.warn("File {}(checksum={}, type={}) as been copied to {} but is not associated to any AIP",
+                                sr.getResultFile().getMetaInfo().getFileName(),
+                                sr.getResultFile().getMetaInfo().getChecksum(),
+                                sr.getResultFile().getMetaInfo().getType(), sr.getRequestStorage());
+                }
+            }
+        }
+        LOGGER.info("{} copied files event received. {} associated to existing AIPs", total, count);
+        return newFileLocations;
     }
 
 }

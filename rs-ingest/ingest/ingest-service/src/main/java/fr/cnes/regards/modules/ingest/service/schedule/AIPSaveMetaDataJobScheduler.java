@@ -48,7 +48,7 @@ public class AIPSaveMetaDataJobScheduler {
     /**
      * Bulk save queued items every second.
      */
-    @Scheduled(fixedDelayString = "${regards.aips.save-metadata.bulk.delay:1200000}", initialDelay = 1_000)
+    @Scheduled(fixedDelayString = "${regards.aips.save-metadata.bulk.delay:10000}", initialDelay = 1_000)
     protected void schduleAIPSaveMetaDataJobs() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
