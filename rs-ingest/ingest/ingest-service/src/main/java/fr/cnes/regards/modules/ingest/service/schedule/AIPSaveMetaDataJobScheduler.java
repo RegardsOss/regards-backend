@@ -55,7 +55,6 @@ public class AIPSaveMetaDataJobScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 boolean stop = false;
                 do {
-                    // Call transactional proxy
                     stop = !aipMetadataService.scheduleJobs();
                 } while (!stop);
             } finally {

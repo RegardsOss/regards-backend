@@ -18,39 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.service.schedule;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
-import fr.cnes.regards.modules.ingest.service.job.AIPUpdateRunnerJob;
-import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
-import fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob;
-import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
+import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateService;
 
 /**
  * This component scans the AIPUpdateRepo and regroups tasks by aip to update
@@ -62,34 +38,14 @@ import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 @MultitenantTransactional
 public class AIPUpdateJobScheduler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdateJobScheduler.class);
-
-    @Autowired
-    private IAIPUpdateRequestRepository aipUpdateRequestRepository;
-
-    @Autowired
-    private AIPUpdateRequestService aipUpdateRequestService;
-
-    @Autowired
-    private IAbstractRequestRepository abstractRequestRepository;
-
-    @Autowired
-    private AIPUpdateJobScheduler self;
-
-    @Autowired
-    private JobInfoService jobInfoService;
-
     @Autowired
     private ITenantResolver tenantResolver;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    /**
-     * Limit number of AIPs to retrieve in one page.
-     */
-    @Value("${regards.ingest.aips.scan.iteration-limit:100}")
-    private Integer updateRequestIterationLimit;
+    @Autowired
+    private AIPUpdateService aipUpdateService;
 
     /**
      * Bulk save queued items every second.
@@ -99,52 +55,14 @@ public class AIPUpdateJobScheduler {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                // Call transactional proxy
-                self.scheduleUpdateJobs();
+                boolean stop = false;
+                do {
+                    stop = aipUpdateService.scheduleJob() == null;
+                } while (!stop);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
         }
     }
 
-    public void scheduleUpdateJobs() {
-        JobInfo jobInfo = getUpdateJob();
-        if (jobInfo != null) {
-            LOGGER.debug("Schedule {} job with id {}", OAISDeletionJob.class.getName(), jobInfo.getId());
-        }
-    }
-
-    public JobInfo getUpdateJob() {
-        JobInfo jobInfo = null;
-        LOGGER.trace("[OAIS UPDATE SCHEDULER] Scheduling job ...");
-        long start = System.currentTimeMillis();
-        Pageable pageRequest = PageRequest.of(0, updateRequestIterationLimit, Sort.Direction.ASC, "id");
-        // Fetch the first list of update request to handle
-        Page<AIPUpdateRequest> waitingRequest = aipUpdateRequestRepository.findWaitingRequest(pageRequest);
-        if (!waitingRequest.isEmpty()) {
-            // Fetch all update request linked to same aips
-            List<AIPUpdateRequest> contents = waitingRequest.getContent();
-            List<AIPUpdateRequest> requests = new ArrayList<>(contents);
-            List<Long> aipIds = contents.stream().map(wr -> wr.getAip().getId()).collect(Collectors.toList());
-            List<AIPUpdateRequest> linkedTasks = aipUpdateRequestRepository.findAllByAipIdIn(aipIds);
-            requests.addAll(linkedTasks);
-            aipUpdateRequestService.updateState(requests, InternalRequestState.RUNNING);
-
-            // Make a list of content ids
-            List<Long> requestIds = requests.stream().map(AIPUpdateRequest::getId).collect(Collectors.toList());
-
-            // Change request state
-            abstractRequestRepository.updateStates(requestIds, InternalRequestState.RUNNING);
-
-            // Schedule deletion job
-            Set<JobParameter> jobParameters = Sets.newHashSet();
-            jobParameters.add(new JobParameter(AIPUpdateRunnerJob.UPDATE_REQUEST_IDS, requestIds));
-            jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_RUNNER_PRIORITY.getPriority(), jobParameters,
-                    null, AIPUpdateRunnerJob.class.getName());
-            jobInfoService.createAsQueued(jobInfo);
-            LOGGER.debug("[OAIS UPDATE SCHEDULER] 1 Job scheduled for {} AIPUpdateRequest(s) in {} ms",
-                         waitingRequest.getNumberOfElements(), System.currentTimeMillis() - start);
-        }
-        return jobInfo;
-    }
 }
