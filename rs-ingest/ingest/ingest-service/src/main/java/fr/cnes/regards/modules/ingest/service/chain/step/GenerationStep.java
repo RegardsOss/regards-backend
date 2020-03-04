@@ -31,6 +31,7 @@ import org.springframework.validation.Validator;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -76,6 +77,8 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
         // Add version to AIP
         for (AIP aip : aips) {
             aip.setVersion(sipEntity.getVersion());
+            aip.withEvent(EventType.SUBMISSION.toString(),
+                          String.format("AIP created for SIP .", sipEntity.getProviderId()));
         }
 
         // Validate
