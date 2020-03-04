@@ -78,7 +78,7 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
         for (AIP aip : aips) {
             aip.setVersion(sipEntity.getVersion());
             aip.withEvent(EventType.SUBMISSION.toString(),
-                          String.format("AIP created for SIP .", sipEntity.getProviderId()));
+                          String.format("AIP created for SIP %s.", sipEntity.getProviderId()));
         }
 
         // Validate
