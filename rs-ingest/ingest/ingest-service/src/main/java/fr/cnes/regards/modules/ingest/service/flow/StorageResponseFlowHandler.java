@@ -83,6 +83,8 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
 
     @Override
     public void onCopySuccess(Set<RequestInfo> requests) {
+        long start = System.currentTimeMillis();
+        LOGGER.debug("[COPY RESPONSE HANDLER] Handling {} copy group requests", requests.size());
         // When a AIP is successfully copied to a new location, we have to update local AIP to add the new location.
         // Dispatch each success copy request by AIP to update
         Multimap<String, AbstractAIPUpdateTask> updateTasksByAIPId = createAIPUpdateTasksByAIP(requests);
@@ -97,11 +99,14 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
             }
         });
         // Finally, creates the AIPUpdateLocationRequests
-        aipUpdateRequestService.create(updateTasksByAIP);
+        int nbScheduled = aipUpdateRequestService.create(updateTasksByAIP);
+        LOGGER.debug("[COPY RESPONSE HANDLER] {} update requests scheduled in {}ms", nbScheduled,
+                     System.currentTimeMillis() - start);
     }
 
     @Override
     public void onCopyError(Set<RequestInfo> requests) {
+        LOGGER.debug("[COPY RESPONSE HANDLER] Handling {} copy error group requests", requests.size());
         // handle success requests if any
         onCopySuccess(requests);
     }
@@ -118,26 +123,31 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
 
     @Override
     public void onDeletionSuccess(Set<RequestInfo> requests) {
+        LOGGER.debug("[DELETION RESPONSE HANDLER] Handling {} deletion group requests", requests.size());
         deleteRequestService.handleRemoteDeleteSuccess(requests);
     }
 
     @Override
     public void onDeletionError(Set<RequestInfo> requests) {
+        LOGGER.debug("[DELETION RESPONSE HANDLER] Handling {} deletion error group requests", requests.size());
         deleteRequestService.handleRemoteDeleteError(requests);
     }
 
     @Override
     public void onReferenceSuccess(Set<RequestInfo> requests) {
+        LOGGER.debug("[REFERENCE RESPONSE HANDLER] Handling {} reference group requests", requests.size());
         ingestRequestService.handleRemoteReferenceSuccess(requests);
     }
 
     @Override
     public void onReferenceError(Set<RequestInfo> requests) {
+        LOGGER.debug("[REFERENCE RESPONSE HANDLER] Handling {} reference error group requests", requests.size());
         ingestRequestService.handleRemoteReferenceError(requests);
     }
 
     @Override
     public void onStoreSuccess(Set<RequestInfo> requestInfos) {
+        LOGGER.debug("[STORAGE RESPONSE HANDLER] Handling {} storage group requests", requestInfos.size());
         List<AbstractRequest> requests = requestService.getRequests(requestInfos);
         for (RequestInfo ri : requestInfos) {
             LOGGER.debug("[STORAGE RESPONSE HANDLER] handling success storage request {} with {} success / {} errors",
@@ -168,6 +178,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
 
     @Override
     public void onStoreError(Set<RequestInfo> requestInfos) {
+        LOGGER.debug("[STORAGE RESPONSE HANDLER] Handling {} storage error group requests", requestInfos.size());
         List<AbstractRequest> requests = requestService.getRequests(requestInfos);
         for (RequestInfo ri : requestInfos) {
             for (AbstractRequest request : requests) {
@@ -231,7 +242,8 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                 }
             }
         }
-        LOGGER.info("{} copied files event received. {} associated to existing AIPs", total, count);
+        LOGGER.info("{} copied files event received from {} groups. {} associated to existing AIPs", total,
+                    requestsInfo.size(), count);
         return newFileLocations;
     }
 

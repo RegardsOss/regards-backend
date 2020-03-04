@@ -103,7 +103,7 @@ public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
 
         Assert.assertEquals(0, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
                 .getTotalElements());
-        aipUpdateReqService.create(aipEntity, updateTasks);
+        aipUpdateReqService.create(Lists.newArrayList(aipEntity), updateTasks);
         // Two new update requests should be created
         Assert.assertEquals(2, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
                 .getTotalElements());
@@ -116,7 +116,7 @@ public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
                 .buildAddLocationTask(Lists.newArrayList(RequestResultInfoDTO
                         .build("groupId", "checksum", "somewhere", null, Sets.newHashSet("someone"),
                                simulatefileReference(checksum, aipEntity.getAipId()), null)));
-        aipUpdateReqService.create(aipEntity, Sets.newHashSet(newTask));
+        aipUpdateReqService.create(Lists.newArrayList(aipEntity), Sets.newHashSet(newTask));
         // The new update request should be blocked as requests are already running for the give aip
         Assert.assertEquals(1, aipUpdateReqService.search(InternalRequestState.BLOCKED, PageRequest.of(0, 10))
                 .getTotalElements());
