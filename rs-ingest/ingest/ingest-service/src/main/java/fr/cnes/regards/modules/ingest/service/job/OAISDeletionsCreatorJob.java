@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -109,7 +107,7 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
         do {
             OAISDeletionCreatorPayload deletionPayload = deletionCreator.getConfig();
             aipsPage = aipRepository.findByFilters(deletionPayload, pageRequest);
-            logger.info("[OAIS DELETION CREATOR JOB] Scheduling deletion of {} aips", aipsPage.getNumberOfElements());
+            logger.debug("[OAIS DELETION CREATOR JOB] Scheduling deletion of {} aips", aipsPage.getNumberOfElements());
             // Save number of pages to publish job advancement
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();
@@ -127,8 +125,8 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
         // Delete the request
         requestService.deleteRequest(deletionCreator);
 
-        logger.debug("[OAIS DELETION CREATOR JOB] {} AIPUpdateRequest(s) scheduled in {}ms", nbRequestScheduled,
-                     System.currentTimeMillis() - start);
+        logger.info("[OAIS DELETION CREATOR JOB] {} AIPUpdateRequest(s) scheduled in {}ms", nbRequestScheduled,
+                    System.currentTimeMillis() - start);
     }
 
     @Override

@@ -280,7 +280,6 @@ public class AIPStorageService implements IAIPStorageService {
             for (RequestResultInfoDTO storeRequestInfo : storeRequestInfosForAIPManifest) {
                 if (storeRequestInfo.getRequestOwners().contains(aipEntity.getAipId())) {
                     FileReferenceDTO resultFile = storeRequestInfo.getResultFile();
-                    FileReferenceMetaInfoDTO metaInfo = resultFile.getMetaInfo();
                     FileLocationDTO fileLocation = resultFile.getLocation();
 
                     Set<OAISDataObjectLocation> manifestLocations = aipEntity.getManifestLocations();
@@ -294,11 +293,6 @@ public class AIPStorageService implements IAIPStorageService {
                                                                           storeRequestInfo.getRequestStorePath()));
                     // Save it
                     aipEntity.setManifestLocations(newManifestLocations);
-
-                    String eventMessage = String.format("Manifest %s stored on %s at %s.", metaInfo.getFileName(),
-                                                        fileLocation.getStorage(), fileLocation.getUrl());
-                    aipEntity.getAip().withEvent(EventType.STORAGE.toString(), eventMessage,
-                                                 resultFile.getStorageDate());
 
                     // Ensure the AIP storage list is updated
                     aipEntity.getStorages().add(storeRequestInfo.getRequestStorage());
