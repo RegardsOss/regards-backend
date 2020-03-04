@@ -96,7 +96,9 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         storageLocationDestinationId = parameters.get(STORAGE_LOCATION_DESTINATION_ID).getValue();
         sourcePath = parameters.get(SOURCE_PATH).getValue();
         destinationPath = parameters.get(DESTINATION_PATH).getValue();
-        types = parameters.get(FILE_TYPES).getValue();
+        if (parameters.get(FILE_TYPES) != null) {
+            types = parameters.get(FILE_TYPES).getValue();
+        }
     }
 
     @Override
