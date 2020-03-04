@@ -142,6 +142,17 @@ public class FileReferenceService {
     }
 
     /**
+     * Search for all {@link FileReference}s associated to the given storage location.
+     * @param storage
+     * @param pageable
+     * @return {@link FileReference}s
+     */
+    @Transactional(readOnly = true)
+    public Page<FileReference> search(String storage, Collection<String> types, Pageable pageable) {
+        return fileRefRepo.findByLocationStorageAndMetaInfoTypeIn(storage, types, pageable);
+    }
+
+    /**
      * Search for a {@link FileReference} associated to the given storage location and matching the given checksum.
      * @param storage
      * @param checksum

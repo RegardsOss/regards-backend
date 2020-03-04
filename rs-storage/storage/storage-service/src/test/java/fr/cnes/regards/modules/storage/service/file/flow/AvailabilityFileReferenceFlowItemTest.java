@@ -112,9 +112,9 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
         // Simulate storage of a file in two locations near line and online
         String checksum = UUID.randomUUID().toString();
         this.generateStoredFileReference(checksum, "owner", "file.online.nealine.test", ONLINE_CONF_LABEL,
-                                         Optional.empty());
+                                         Optional.empty(), Optional.empty());
         this.generateStoredFileReference(checksum, "owner", "file.online.nealine.test", NEARLINE_CONF_LABEL,
-                                         Optional.empty());
+                                         Optional.empty(), Optional.empty());
 
         Set<String> checksums = Sets.newHashSet(file1.getMetaInfo().getChecksum(), file2.getMetaInfo().getChecksum(),
                                                 file3.getMetaInfo().getChecksum(), file4.getMetaInfo().getChecksum(),

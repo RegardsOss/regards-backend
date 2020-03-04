@@ -388,17 +388,18 @@ public class FileCopyRequestService {
      * @return
      */
     public JobInfo scheduleJob(String storageLocationId, String sourcePath, String destinationStorageId,
-            Optional<String> destinationPath) {
+            Optional<String> destinationPath, Collection<String> types) {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_SOURCE_ID, storageLocationId));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_DESTINATION_ID,
                 destinationStorageId));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SOURCE_PATH, sourcePath));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH, destinationPath.orElse("")));
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.FILE_TYPES, types));
         JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_COPY_JOB.getPriority(),
                 parameters, authResolver.getUser(), FileCopyRequestsCreatorJob.class.getName()));
-        LOGGER.debug("[COPY REQUESTS] Job scheduled to copy files from {}(dir={}) to {}(dir={}) for path {}.",
-                     storageLocationId, sourcePath, destinationStorageId, destinationPath.orElse(""));
+        LOGGER.debug("[COPY REQUESTS] Job scheduled to copy files from {}(dir={}) to {}(dir={}) for types {}.",
+                     storageLocationId, sourcePath, destinationStorageId, destinationPath.orElse(""), types);
         return jobInfo;
     }
 

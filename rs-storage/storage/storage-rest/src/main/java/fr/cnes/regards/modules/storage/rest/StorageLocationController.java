@@ -223,7 +223,8 @@ public class StorageLocationController implements IResourceController<StorageLoc
         Assert.notNull(parameters.getTo(), "Destination copy parameters can not be null");
         Assert.notNull(parameters.getTo().getStorage(), "Destination storage location copy parameters can not be null");
         service.copyFiles(parameters.getFrom().getStorage(), parameters.getFrom().getUrl(),
-                          parameters.getTo().getStorage(), Optional.ofNullable(parameters.getTo().getUrl()));
+                          parameters.getTo().getStorage(), Optional.ofNullable(parameters.getTo().getUrl()),
+                          parameters.getTypes());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

@@ -218,10 +218,11 @@ public class FileStorageRequestService {
         Optional<FileReference> oFileRef = fileRefService.search(storage, metaInfo.getChecksum());
         Optional<FileStorageRequest> oReq = fileStorageRequestRepo.findByMetaInfoChecksum(metaInfo.getChecksum());
         Optional<FileDeletionRequest> oDeletionReq = fileDelReqService.search(metaInfo.getChecksum(), storage);
-        return handleRequest(FileStorageRequestDTO.build(metaInfo.getFileName(), metaInfo.getChecksum(),
-                                                         metaInfo.getAlgorithm(), metaInfo.getMimeType().toString(),
-                                                         owner, originUrl, storage, subDirectory),
-                             oFileRef, oReq, oDeletionReq, groupId).getFileReference();
+        FileStorageRequestDTO request = FileStorageRequestDTO
+                .build(metaInfo.getFileName(), metaInfo.getChecksum(), metaInfo.getAlgorithm(),
+                       metaInfo.getMimeType().toString(), owner, originUrl, storage, subDirectory);
+        request.withType(metaInfo.getType());
+        return handleRequest(request, oFileRef, oReq, oDeletionReq, groupId).getFileReference();
     }
 
     /**

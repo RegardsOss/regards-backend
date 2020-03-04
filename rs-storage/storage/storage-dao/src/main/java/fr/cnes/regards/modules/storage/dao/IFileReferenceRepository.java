@@ -45,6 +45,9 @@ public interface IFileReferenceRepository
 
     Optional<FileReference> findByLocationStorageAndMetaInfoChecksum(String storage, String checksum);
 
+    Page<FileReference> findByLocationStorageAndMetaInfoTypeIn(String storage, Collection<String> type,
+            Pageable pageable);
+
     Set<FileReference> findByMetaInfoChecksum(String checksum);
 
     Set<FileReference> findByMetaInfoChecksumIn(Collection<String> checksums);

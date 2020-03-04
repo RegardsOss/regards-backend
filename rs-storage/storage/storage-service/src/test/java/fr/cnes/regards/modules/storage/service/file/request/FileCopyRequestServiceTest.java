@@ -82,15 +82,15 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Long nbFiles = 20L;
         for (int i = 0; i < nbFiles; i++) {
             generateStoredFileReference(UUID.randomUUID().toString(), owner, String.format("file-%d.test", i),
-                                        ONLINE_CONF_LABEL, Optional.of(pathToCopy));
+                                        ONLINE_CONF_LABEL, Optional.of(pathToCopy), Optional.of("plop"));
         }
         for (int i = 0; i < 5; i++) {
             generateStoredFileReference(UUID.randomUUID().toString(), owner, String.format("file-%d.test", i),
-                                        ONLINE_CONF_LABEL, Optional.of("/rep/two"));
+                                        ONLINE_CONF_LABEL, Optional.of("/rep/two"), Optional.of("plop"));
         }
         JobInfo ji = fileCopyRequestService.scheduleJob(ONLINE_CONF_LABEL,
                                                         SimpleOnlineDataStorage.BASE_URL + pathToCopy,
-                                                        NEARLINE_CONF_LABEL, Optional.empty());
+                                                        NEARLINE_CONF_LABEL, Optional.empty(), Sets.newHashSet("plop"));
         Assert.assertNotNull("A job should be created", ji);
         Mockito.reset(publisher);
         jobService.runJob(ji, getDefaultTenant()).get();

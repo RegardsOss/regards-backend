@@ -341,8 +341,8 @@ public class StorageLocationService {
      * @param destinationPath
      */
     public void copyFiles(String storageLocationId, String sourcePath, String destinationStorageId,
-            Optional<String> destinationPath) {
-        copyService.scheduleJob(storageLocationId, sourcePath, destinationStorageId, destinationPath);
+            Optional<String> destinationPath, Collection<String> types) {
+        copyService.scheduleJob(storageLocationId, sourcePath, destinationStorageId, destinationPath, types);
     }
 
     /**

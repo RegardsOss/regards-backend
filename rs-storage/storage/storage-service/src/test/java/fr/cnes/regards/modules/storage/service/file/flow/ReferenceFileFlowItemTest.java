@@ -138,7 +138,7 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
         FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL,
-                                                                 Optional.empty());
+                                                                 Optional.empty(), Optional.empty());
         String storage = fileRef.getLocation().getStorage();
         // One store event should be sent
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -173,7 +173,8 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
         String storage = "aStorage";
-        this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL, Optional.empty());
+        this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL, Optional.empty(),
+                                         Optional.empty());
         // Create a new bus message File reference request
         ReferenceFlowItem item = ReferenceFlowItem
                 .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,

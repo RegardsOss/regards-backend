@@ -66,6 +66,8 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     public static final String DESTINATION_PATH = "destinationPath";
 
+    public static final String FILE_TYPES = "types";
+
     @Autowired
     private IPublisher publisher;
 
@@ -83,6 +85,8 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     private String destinationPath;
 
+    private Set<String> types = Sets.newHashSet();
+
     private int totalPages = 0;
 
     @Override
@@ -92,6 +96,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         storageLocationDestinationId = parameters.get(STORAGE_LOCATION_DESTINATION_ID).getValue();
         sourcePath = parameters.get(SOURCE_PATH).getValue();
         destinationPath = parameters.get(DESTINATION_PATH).getValue();
+        types = parameters.get(FILE_TYPES).getValue();
     }
 
     @Override
@@ -111,7 +116,11 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             long nbFilesToCopy = 0L;
             do {
                 // Search for all file references matching the given storage location.
-                pageResults = fileRefService.search(storageLocationSourceId, pageRequest);
+                if (types.isEmpty()) {
+                    pageResults = fileRefService.search(storageLocationSourceId, pageRequest);
+                } else {
+                    pageResults = fileRefService.search(storageLocationSourceId, types, pageRequest);
+                }
                 totalPages = pageResults.getTotalPages();
                 String groupId = UUID.randomUUID().toString();
                 Set<FileCopyRequestDTO> requests = Sets.newHashSet();

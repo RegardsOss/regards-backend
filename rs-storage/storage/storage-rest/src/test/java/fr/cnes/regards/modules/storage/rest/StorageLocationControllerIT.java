@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -198,7 +199,8 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         performDefaultPost(StorageLocationController.BASE_PATH + StorageLocationController.FILES
                 + StorageLocationController.COPY,
-                           CopyFilesParametersDTO.build("somewhere", "/dir/one", "somewhere-else", null),
+                           CopyFilesParametersDTO.build("somewhere", "/dir/one", "somewhere-else", null,
+                                                        Sets.newHashSet()),
                            requestBuilderCustomizer, "Expect ok status.");
     }
 

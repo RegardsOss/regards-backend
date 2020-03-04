@@ -281,7 +281,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected FileReference generateRandomStoredOnlineFileReference(String fileName, Optional<String> subDir)
             throws InterruptedException, ExecutionException {
         return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", fileName, ONLINE_CONF_LABEL,
-                                                subDir);
+                                                subDir, Optional.empty());
     }
 
     protected FileReference generateRandomStoredNearlineFileReference()
@@ -292,7 +292,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected FileReference generateRandomStoredNearlineFileReference(String fileName, Optional<String> subDir)
             throws InterruptedException, ExecutionException {
         return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", fileName, NEARLINE_CONF_LABEL,
-                                                subDir);
+                                                subDir, Optional.empty());
     }
 
     protected Optional<FileReference> generateStoredFileReferenceAlreadyReferenced(String checksum, String storage,
@@ -306,9 +306,10 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     }
 
     protected FileReference generateStoredFileReference(String checksum, String owner, String fileName, String storage,
-            Optional<String> subDir) throws InterruptedException, ExecutionException {
+            Optional<String> subDir, Optional<String> type) throws InterruptedException, ExecutionException {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 1024L,
                 MediaType.APPLICATION_OCTET_STREAM);
+        fileMetaInfo.withType(type.orElse(null));
         FileLocation destination = new FileLocation(storage, "/in/this/directory");
         // Run file reference creation.
         stoReqService.handleRequest(owner, fileMetaInfo, originUrl, storage, subDir, UUID.randomUUID().toString());

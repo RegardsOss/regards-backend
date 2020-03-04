@@ -76,7 +76,7 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
         Long nbFiles = 20L;
         for (int i = 0; i < nbFiles; i++) {
             generateStoredFileReference(UUID.randomUUID().toString(), owner, String.format("file-%d.test", i),
-                                        ONLINE_CONF_LABEL, Optional.empty());
+                                        ONLINE_CONF_LABEL, Optional.empty(), Optional.empty());
         }
         JobInfo ji = fileDeletionRequestService.scheduleJob(ONLINE_CONF_LABEL, false);
         Assert.assertNotNull("A job should be created", ji);
@@ -138,7 +138,7 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
         String fileChecksum = "file-1";
         String firstOwner = "first-owner";
         FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "delErr.file1.test",
-                                                            ONLINE_CONF_LABEL, Optional.empty());
+                                                            ONLINE_CONF_LABEL, Optional.empty(), Optional.empty());
         Assert.assertNotNull("File reference should have been created", fileRef);
         Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
 
@@ -193,7 +193,7 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
             String firstOwner = "first-owner";
             String secondOwner = "second-owner";
             FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "file.test", pluginConf,
-                                                                Optional.empty());
+                                                                Optional.empty(), Optional.empty());
             Assert.assertNotNull("File reference should have been created", fileRef);
             Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
             Optional<FileReference> oFileRef = generateStoredFileReferenceAlreadyReferenced(fileChecksum,
