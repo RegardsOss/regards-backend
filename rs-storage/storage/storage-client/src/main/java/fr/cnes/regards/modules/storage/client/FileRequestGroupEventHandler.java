@@ -58,7 +58,7 @@ public class FileRequestGroupEventHandler
     /**
      * Bulk size limit to handle messages
      */
-    @Value("${regards.storage.client.responses.items.bulk.size:1000}")
+    @Value("${regards.storage.client.responses.items.bulk.size:100}")
     private int BULK_SIZE;
 
     @Autowired(required = false)

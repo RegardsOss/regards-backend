@@ -87,8 +87,6 @@ public class FileDeletionRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDeletionRequestService.class);
 
-    private static final int NB_REFERENCE_BY_PAGE = 1000;
-
     @Autowired
     private IFileDeletetionRequestRepository fileDeletionRequestRepo;
 
@@ -133,6 +131,9 @@ public class FileDeletionRequestService {
 
     @Value("${regards.storage.deletion.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
+
+    @Value("${regards.storage.deletion.requests.per.job:100}")
+    private Integer nbRequestsPerJob;
 
     /**
      * Create a new {@link FileDeletionRequest}.
@@ -192,7 +193,7 @@ public class FileDeletionRequestService {
                 Long maxId = 0L;
                 // Always search the first page of requests until there is no requests anymore.
                 // To do so, we order on id to ensure to not handle same requests multiple times.
-                Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
+                Pageable page = PageRequest.of(0, nbRequestsPerJob, Direction.ASC, "id");
                 do {
                     deletionRequestPage = fileDeletionRequestRepo
                             .findByStorageAndStatusAndIdGreaterThan(storage, status, maxId, page);

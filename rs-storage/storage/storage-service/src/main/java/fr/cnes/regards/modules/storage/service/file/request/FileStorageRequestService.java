@@ -88,8 +88,6 @@ public class FileStorageRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageRequestService.class);
 
-    private static final int NB_REFERENCE_BY_PAGE = 1000;
-
     @Autowired
     private IPluginService pluginService;
 
@@ -128,6 +126,9 @@ public class FileStorageRequestService {
 
     @Value("${regards.storage.storage.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
+
+    @Value("${regards.storage.storage.requests.per.job:100}")
+    private Integer nbRequestsPerJob;
 
     /**
      * Initialize new storage requests from Flow items.
@@ -381,7 +382,7 @@ public class FileStorageRequestService {
      * Update all {@link FileStorageRequest} in error status to change status to {@link FileRequestStatus#TO_DO} for the given owners.
      */
     public void retry(Collection<String> owners) {
-        Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by(Direction.ASC, "id"));
+        Pageable page = PageRequest.of(0, nbRequestsPerJob, Sort.by(Direction.ASC, "id"));
         Page<FileStorageRequest> results;
         do {
             results = fileStorageRequestRepo.findByOwnersInAndStatus(owners, FileRequestStatus.ERROR, page);
@@ -424,7 +425,7 @@ public class FileStorageRequestService {
             Long maxId = 0L;
             // Always search the first page of requests until there is no requests anymore.
             // To do so, we order on id to ensure to not handle same requests multiple times.
-            Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Sort.by("id"));
+            Pageable page = PageRequest.of(0, nbRequestsPerJob, Sort.by("id"));
             do {
                 // Always retrieve first page, as request status are updated during job scheduling method.
                 if ((owners != null) && !owners.isEmpty()) {
