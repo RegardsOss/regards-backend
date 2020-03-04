@@ -91,6 +91,9 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
             if (request.getState() != InternalRequestState.ERROR) {
                 // Register request info to identify storage callback events
                 request.setRemoteStepGroupIds(requestIds);
+                // Put the request as un-schedule.
+                // The answering event from storage will put again the request to be executed
+                request.setState(InternalRequestState.TO_SCHEDULE);
             }
         }
 
