@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -195,8 +196,15 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public InputStream retrieve(FileReference fileRef) throws IOException {
-        return (new URL(fileRef.getLocation().getUrl())).openStream();
+    public InputStream retrieve(FileReference fileRef) throws ModuleException {
+        try {
+            return (new URL(fileRef.getLocation().getUrl())).openStream();
+        } catch (IOException e) {
+            String errorMessage = String.format("[TEST STORAGE PLUGIN] file %s is not a valid URL to retrieve.",
+                                                fileRef.getLocation().getUrl());
+            LOGGER.error(errorMessage, e);
+            throw new ModuleException(errorMessage);
+        }
     }
 
     @Override

@@ -575,7 +575,7 @@ public class FileStorageRequestService {
         long start = System.currentTimeMillis();
         // The storage destination is unknown, we can already set the request in error status
         String lErrorCause = errorCause.orElse(String
-                .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown or disabled.",
+                .format("Storage request <%s> cannot be handle as destination storage <%s> is unknown or not accessible (offline).",
                         fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage()));
         fileStorageRequest.setStatus(FileRequestStatus.ERROR);
         fileStorageRequest.setErrorCause(lErrorCause);
@@ -592,7 +592,7 @@ public class FileStorageRequestService {
                                          fileStorageRequest.getStorage(), fileStorageRequest.getStorageSubDirectory(),
                                          fileStorageRequest.getOwners(), lErrorCause);
         }
-        LOGGER.debug("[STORAGE REQUESTS] Request {} set as error in {} ms. Cause : ",
+        LOGGER.debug("[STORAGE REQUESTS] Request {} set as error in {} ms. Cause : {}",
                      fileStorageRequest.getMetaInfo().getFileName(), System.currentTimeMillis() - start, lErrorCause);
     }
 
