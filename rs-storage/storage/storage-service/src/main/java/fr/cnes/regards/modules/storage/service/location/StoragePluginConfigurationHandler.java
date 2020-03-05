@@ -74,7 +74,14 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
     @EventListener(ApplicationStartedEvent.class)
     public void init() {
         subscriber.subscribeTo(BroadcastPluginConfEvent.class, this);
-        tenantResolver.getAllActiveTenants().forEach(this::refresh);
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            try {
+                refresh();
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
     }
 
     /**
@@ -122,7 +129,7 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
     public Set<String> getConfiguredStorages() {
         if ((this.storages.get(runtimeTenantResolver.getTenant()) == null)
                 || this.storages.get(runtimeTenantResolver.getTenant()).isEmpty()) {
-            this.refresh(runtimeTenantResolver.getTenant());
+            this.refresh();
             LOGGER.info("[STORAGE CONFIGURATION] Plugin configuration list refreshed !");
         }
         return this.storages.get(runtimeTenantResolver.getTenant());
@@ -131,10 +138,10 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
     /**
      * Return all the online storage location configured {@link PluginConfiguration} labels.
      */
-    public Set<String> getConfiguredOnlineStorages() {
+    private Set<String> getConfiguredOnlineStorages() {
         if ((this.onlineStorages.get(runtimeTenantResolver.getTenant()) == null)
                 || this.onlineStorages.get(runtimeTenantResolver.getTenant()).isEmpty()) {
-            this.refresh(runtimeTenantResolver.getTenant());
+            this.refresh();
         }
         return this.onlineStorages.get(runtimeTenantResolver.getTenant());
     }
@@ -143,24 +150,12 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
      * Refresh the list of configured storage locations for the current user tenant.
      */
     public void refresh() {
-        this.refresh(runtimeTenantResolver.getTenant());
-    }
-
-    /**
-     * Refresh the list of configured storage locations for the given tenant.
-     */
-    private void refresh(String tenant) {
-        runtimeTenantResolver.forceTenant(tenant);
-        try {
-            List<PluginConfiguration> confs = pluginService.getPluginConfigurationsByType(IStorageLocation.class);
-            List<PluginConfiguration> onlineConfs = confs.stream()
-                    .filter(c -> c.getInterfaceNames().contains(IOnlineStorageLocation.class.getName()))
-                    .collect(Collectors.toList());
-            confs.forEach(c -> this.storages.put(tenant, c.getLabel()));
-            onlineConfs.forEach(c -> this.onlineStorages.put(tenant, c.getLabel()));
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+        List<PluginConfiguration> confs = pluginService.getPluginConfigurationsByType(IStorageLocation.class);
+        List<PluginConfiguration> onlineConfs = confs.stream()
+                .filter(c -> c.getInterfaceNames().contains(IOnlineStorageLocation.class.getName()))
+                .collect(Collectors.toList());
+        confs.forEach(c -> this.storages.put(runtimeTenantResolver.getTenant(), c.getLabel()));
+        onlineConfs.forEach(c -> this.onlineStorages.put(runtimeTenantResolver.getTenant(), c.getLabel()));
     }
 
     public boolean isOnline(String storage) {
