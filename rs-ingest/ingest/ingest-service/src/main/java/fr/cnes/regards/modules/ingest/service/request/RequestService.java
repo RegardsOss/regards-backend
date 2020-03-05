@@ -175,7 +175,7 @@ public class RequestService implements IRequestService {
         ingestRequestRepository.deleteAll(requests);
 
         List<AIPStoreMetaDataRequest> storeMetaRequests = aipStoreMetaDataRepository.findAllByAipIdIn(aipIds);
-        storeMetaRequests.forEach(sessionNotifier::aipStoreMetaRequestErrorDeleted);
+        storeMetaRequests.forEach(sessionNotifier::decrementMetaStoreError);
         aipStoreMetaDataRepository.deleteAll(storeMetaRequests);
 
         List<AIPUpdateRequest> updateRequests = aipUpdateRequestRepository.findAllByAipIdIn(aipIds);
@@ -314,7 +314,7 @@ public class RequestService implements IRequestService {
         if (request instanceof IngestRequest) {
             sessionNotifier.ingestRequestErrorDeleted((IngestRequest) request);
         } else if (request instanceof AIPStoreMetaDataRequest) {
-            sessionNotifier.aipStoreMetaRequestErrorDeleted((AIPStoreMetaDataRequest) request);
+            sessionNotifier.decrementMetaStoreError((AIPStoreMetaDataRequest) request);
         }
         request.setState(InternalRequestState.TO_SCHEDULE);
         request.clearError();

@@ -62,7 +62,6 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     /**
      * Retrieve a list of aips thanks to their aipId
      * @param aipIds
-     * @return
      */
     Set<AIPEntity> findByAipIdIn(Collection<String> aipIds);
 

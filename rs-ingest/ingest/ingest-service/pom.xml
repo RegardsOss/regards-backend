@@ -45,7 +45,7 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.session-manager</groupId>
-			<artifactId>session-manager-domain</artifactId>
+			<artifactId>session-manager-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>

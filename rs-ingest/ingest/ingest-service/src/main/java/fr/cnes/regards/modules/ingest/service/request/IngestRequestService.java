@@ -18,8 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -55,18 +70,6 @@ import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Service;
 
 /**
  * Manage ingest requests
@@ -128,16 +131,18 @@ public class IngestRequestService implements IIngestRequestService {
         jobParameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, ids));
         jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, chainName));
         // Lock job info
-        JobInfo jobInfo = new JobInfo(false,
-                                      IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
-                                      jobParameters,
-                                      authResolver.getUser(),
-                                      IngestProcessingJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
+                jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
         // Lock job to avoid automatic deletion. The job must be unlock when the link to the request is removed.
         jobInfo.setLocked(true);
         jobInfoService.createAsQueued(jobInfo);
 
-        // Attach job
+        for (IngestRequest request : requests) {
+            // Attach job
+            request.setJobInfo(jobInfo);
+            // Monitoring
+            sessionNotifier.incrementProductCount(request);
+        }
         requests.forEach(r -> r.setJobInfo(jobInfo));
     }
 
@@ -158,8 +163,7 @@ public class IngestRequestService implements IIngestRequestService {
                 requests.forEach(r -> handleIngestJobFailed(r, null, jobInfo.getStatus().getStackTrace()));
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 String message = String.format("Ingest request job with id \"%s\" fails with status \"%s\"",
-                                               jobEvent.getJobId(),
-                                               jobEvent.getJobEventType());
+                                               jobEvent.getJobId(), jobEvent.getJobEventType());
                 LOGGER.error(message, e);
                 notificationClient.notify(message, "Ingest job failure", NotificationLevel.ERROR, DefaultRole.ADMIN);
             }
@@ -178,10 +182,8 @@ public class IngestRequestService implements IIngestRequestService {
 
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null,
-                                                   null,
-                                                   RequestState.GRANTED,
-                                                   request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null, null,
+                                                   RequestState.GRANTED, request.getErrors()));
     }
 
     @Override
@@ -189,10 +191,22 @@ public class IngestRequestService implements IIngestRequestService {
         // Do not keep track of the request
         // Publish DENIED request
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null,
-                                                   null,
-                                                   RequestState.DENIED,
-                                                   request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null, null,
+                                                   RequestState.DENIED, request.getErrors()));
+    }
+
+    @Override
+    public void handleUnknownChain(List<IngestRequest> requests) {
+        // Monitoring
+        for (IngestRequest request : requests) {
+            sessionNotifier.incrementProductGenerationError(request);
+        }
+    }
+
+    @Override
+    public void handleIngestJobStart(IngestRequest request) {
+        // Monitoring
+        sessionNotifier.incrementProductGenerationPending(request);
     }
 
     @Override
@@ -203,11 +217,14 @@ public class IngestRequestService implements IIngestRequestService {
         }
         // Keep track of the error
         saveAndPublishErrorRequest(request, errorMessage);
+
+        // Monitoring
+        sessionNotifier.decrementProductGenerationPending(request);
+        sessionNotifier.incrementProductGenerationError(request);
     }
 
     @Override
     public List<AIPEntity> handleIngestJobSucceed(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
-
         // Save SIP entity
         sipEntity = sipService.save(sipEntity);
 
@@ -216,6 +233,9 @@ public class IngestRequestService implements IIngestRequestService {
         // Attach generated AIPs to the current request
         request.setAips(aipEntities);
         requestRemoteStorage(request);
+
+        // Monitoring
+        sessionNotifier.decrementProductGenerationPending(request);
 
         return aipEntities;
     }
@@ -237,6 +257,8 @@ public class IngestRequestService implements IIngestRequestService {
                 request.setState(InternalRequestState.TO_SCHEDULE);
                 // Keep track of the request
                 saveRequest(request);
+                // Monitoring
+                sessionNotifier.incrementProductStorePending(request);
             } else {
                 // No files to store for the request AIPs. We can immediately store the manifest.
                 finalizeSuccessfulRequest(request);
@@ -248,7 +270,10 @@ public class IngestRequestService implements IIngestRequestService {
                             e.getMessage());
             LOGGER.debug(message, e);
             saveAndPublishErrorRequest(request, message);
-            sessionNotifier.productStoreError(request.getSessionOwner(), request.getSession(), request.getAips());
+            // Monitoring
+            // Decrement from above
+            sessionNotifier.decrementProductStorePending(request);
+            sessionNotifier.incrementProductStoreError(request);
         }
     }
 
@@ -272,6 +297,11 @@ public class IngestRequestService implements IIngestRequestService {
                         saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
                         break;
                 }
+
+                // Monitoring
+                // Decrement from #requestRemoteStorage
+                sessionNotifier.decrementProductStorePending(request);
+                sessionNotifier.incrementProductStoreError(request);
             }
         }
     }
@@ -308,32 +338,30 @@ public class IngestRequestService implements IIngestRequestService {
 
         List<AIPEntity> aips = request.getAips();
 
-        if ((aips == null) || aips.isEmpty()) {
-            LOGGER.error("No aips provided to finalize success requests");
-            return;
-        }
-
         // Change AIP state
         for (AIPEntity aipEntity : aips) {
             aipEntity.setState(AIPState.STORED);
             aipService.save(aipEntity);
         }
-        sessionNotifier.productStoreSuccess(request.getSessionOwner(), request.getSession(), aips);
+
+        // Monitoring
+        // Decrement from #requestRemoteStorage
+        sessionNotifier.decrementProductStorePending(request);
+        // Even if no file is present in AIP, we consider the product as stored
+        sessionNotifier.incrementProductStoreSuccess(request);
 
         // Schedule manifest storage
         aipSaveMetaDataService.schedule(aips, request.getMetadata().getStorages(), false, true);
-        sessionNotifier.productMetaStorePending(request.getSessionOwner(), request.getSession(), aips);
+        // Monitoring
+        sessionNotifier.incrementMetaStorePending(request);
 
         // Update SIP state
         SIPEntity sipEntity = aips.get(0).getSip();
         sipEntity.setState(SIPState.STORED);
         sipService.save(sipEntity);
         // Publish SUCCESSFUL request
-        publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip().getId(),
-                                                   sipEntity.getSipId(),
-                                                   RequestState.SUCCESS,
-                                                   request.getErrors()));
+        publisher.publish(IngestRequestEvent.build(request.getRequestId(), request.getSip().getId(),
+                                                   sipEntity.getSipId(), RequestState.SUCCESS, request.getErrors()));
     }
 
     @Override
@@ -354,8 +382,11 @@ public class IngestRequestService implements IIngestRequestService {
         }
         // Keep track of the error
         saveAndPublishErrorRequest(request, errorMessage);
-        // Send session notification
-        sessionNotifier.productStoreError(request.getSessionOwner(), request.getSession(), request.getAips());
+        // Monitoring
+        // Decrement from #requestRemoteStorage
+        sessionNotifier.decrementProductStorePending(request);
+        // Even if no file is present in AIP, we consider the product as stored
+        sessionNotifier.incrementProductStoreSuccess(request);
     }
 
     @Override
@@ -365,8 +396,7 @@ public class IngestRequestService implements IIngestRequestService {
             Optional<IngestRequest> requestOp = ingestRequestRepository.findOneWithAIPs(ri.getGroupId());
             if (requestOp.isPresent()) {
                 IngestRequest request = requestOp.get();
-                if (request.getStep()
-                        == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
+                if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
                     aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), ri.getSuccessRequests());
                     List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, ri);
                     if (!remoteStepGroupIds.isEmpty()) {
@@ -394,7 +424,10 @@ public class IngestRequestService implements IIngestRequestService {
                 }
                 updateRequestWithErrors(request, ri.getErrorRequests(), "Error occurred while storing AIP references");
                 saveAndPublishErrorRequest(request, null);
-                sessionNotifier.productStoreError(request.getSessionOwner(), request.getSession(), request.getAips());
+                // Monitoring
+                // Decrement from #requestRemoteStorage
+                sessionNotifier.decrementProductStorePending(request);
+                sessionNotifier.incrementProductStoreError(request);
             }
         }
     }
@@ -402,8 +435,7 @@ public class IngestRequestService implements IIngestRequestService {
     private void saveAndPublishErrorRequest(IngestRequest request, @Nullable String message) {
         // Mutate request
         request.addError(String.format("The ingest request with id \"%s\" and SIP provider id \"%s\" failed",
-                                       request.getRequestId(),
-                                       request.getSip().getId()));
+                                       request.getRequestId(), request.getSip().getId()));
         request.setState(InternalRequestState.ERROR);
         if (message != null) {
             request.addError(message);
@@ -413,10 +445,8 @@ public class IngestRequestService implements IIngestRequestService {
         saveRequestAndCheck(request);
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null,
-                                                   null,
-                                                   RequestState.ERROR,
-                                                   request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null, null,
+                                                   RequestState.ERROR, request.getErrors()));
     }
 
     /**

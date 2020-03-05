@@ -67,6 +67,16 @@ public interface IIngestRequestService {
     void handleRequestDenied(IngestRequest request);
 
     /**
+     * Handle unknown chain while loading job parameters
+     */
+    void handleUnknownChain(List<IngestRequest> requests);
+
+    /**
+     * Handle ingest job start for specified request
+     */
+    void handleIngestJobStart(IngestRequest request);
+
+    /**
      * Handle request error during job processing
      */
     void handleIngestJobFailed(IngestRequest request, SIPEntity entity, String errorMessage);

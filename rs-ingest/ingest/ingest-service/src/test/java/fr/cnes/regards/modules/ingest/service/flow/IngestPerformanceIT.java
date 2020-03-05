@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.flow;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.junit.Test;
@@ -31,9 +30,11 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.sessionmanager.client.SessionNotificationPublisher;
 
 /**
  * Test SIP flow handling
@@ -46,7 +47,7 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
                 "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100", "eureka.client.enabled=false",
                 "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" },
         locations = { "classpath:application-test.properties" })
-@ActiveProfiles("testAmqp")
+@ActiveProfiles({ "testAmqp", "StorageClientMock" })
 public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestPerformanceIT.class);
@@ -55,6 +56,9 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private ISubscriber subscriber;
+
+    @Autowired
+    private SessionNotificationPublisher sessionNotifier;
 
     @Override
     public void doInit() {
@@ -73,8 +77,8 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 
         long start = System.currentTimeMillis();
         long existingItems = 0;
-        long maxloops = 1000;
-        String session = OffsetDateTime.now().toString();
+        long maxloops = 10;
+        String session = "session";// OffsetDateTime.now().toString();
         for (long i = 0; i < maxloops; i++) {
             SIP sip = create("provider" + i, null);
             // Create event
@@ -82,10 +86,13 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
         }
 
         // Wait
-        ingestServiceTest.waitForIngestion(maxloops, maxloops * 1000);
+        // ingestServiceTest.waitForIngestion(maxloops, maxloops * 1000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(maxloops, maxloops * 10000, SIPState.STORED);
 
         LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", maxloops + existingItems,
                     System.currentTimeMillis() - start);
+
+        sessionNotifier.debugSession();
     }
 
 }
