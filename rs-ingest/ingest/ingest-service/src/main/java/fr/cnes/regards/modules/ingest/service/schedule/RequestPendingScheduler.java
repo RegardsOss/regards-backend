@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.request;
+package fr.cnes.regards.modules.ingest.service.schedule;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
+import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 
 /**
  * Scheduler to periodically check if there is some pending request that can be scheduled
