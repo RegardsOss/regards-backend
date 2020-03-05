@@ -40,6 +40,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
@@ -70,6 +73,9 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     @Autowired
     private IPublisher publisher;
+
+    @Autowired
+    private INotificationClient notifClient;
 
     @Autowired
     private FileReferenceService fileRefService;
@@ -149,8 +155,15 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                 publisher.publish(CopyFlowItem.build(requests, groupId));
                 pageRequest = pageRequest.next();
             } while (pageResults.hasNext());
-            LOGGER.info("[COPY JOB] {} files to copy from storage location {} to {} calculated in {}ms", nbFilesToCopy,
-                        storageLocationSourceId, storageLocationDestinationId, System.currentTimeMillis() - start);
+            String message = String.format("Copy process found %s files to copy from %s:%s to %s:%s.", nbFilesToCopy,
+                                           storageLocationSourceId, sourcePath, storageLocationDestinationId,
+                                           destinationPath);
+            if (nbFilesToCopy > 0) {
+                message = message
+                        + " Copy of files is now running, to monitor copy process go to storage locations page.";
+            }
+            LOGGER.info("[COPY JOB] {} All jobs scheduled in {}ms", message, System.currentTimeMillis() - start);
+            notifClient.notify(message, "Copy files", NotificationLevel.INFO, DefaultRole.EXPLOIT);
         } finally {
             if (locked) {
                 fileCopyReqService.releaseLock();

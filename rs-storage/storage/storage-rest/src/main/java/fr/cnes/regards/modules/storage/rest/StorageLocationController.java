@@ -290,7 +290,10 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @Override
     public Resource<StorageLocationDTO> toResource(StorageLocationDTO location, Object... extras) {
         Resource<StorageLocationDTO> resource = new Resource<>(location);
-        if ((location != null) && (location.getName() != null) && location.getName().equals(CacheService.CACHE_NAME)) {
+        if (location == null) {
+            return resource;
+        }
+        if ((location.getName() != null) && location.getName().equals(CacheService.CACHE_NAME)) {
             resourceService.addLink(resource, this.getClass(), "deleteFiles", "deleteFiles",
                                     MethodParamFactory.build(String.class, location.getName()),
                                     MethodParamFactory.build(Boolean.class));
