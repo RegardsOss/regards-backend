@@ -161,9 +161,12 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             if (nbFilesToCopy > 0) {
                 message = message
                         + " Copy of files is now running, to monitor copy process go to storage locations page.";
+                notifClient.notify(message, "Copy files", NotificationLevel.INFO, DefaultRole.EXPLOIT);
+            } else {
+                notifClient.notify(message, "Copy files", NotificationLevel.WARNING, DefaultRole.EXPLOIT);
             }
             LOGGER.info("[COPY JOB] {} All jobs scheduled in {}ms", message, System.currentTimeMillis() - start);
-            notifClient.notify(message, "Copy files", NotificationLevel.INFO, DefaultRole.EXPLOIT);
+
         } finally {
             if (locked) {
                 fileCopyReqService.releaseLock();
