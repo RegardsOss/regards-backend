@@ -360,8 +360,8 @@ public class FileStorageRequestService {
         if (fileStorageRequestRepo.existsById(fileStorageRequest.getId())) {
             fileStorageRequestRepo.deleteById(fileStorageRequest.getId());
         } else {
-            LOGGER.warn("Unable to delete file storage request {} cause it does not exists",
-                        fileStorageRequest.getId());
+            LOGGER.debug("Unable to delete file storage request {} cause it does not exists",
+                         fileStorageRequest.getId());
         }
     }
 
