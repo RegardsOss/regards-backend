@@ -67,37 +67,15 @@ public class AIPUpdateRequestService {
      */
     public int create(Collection<AIPEntity> aips, Collection<AbstractAIPUpdateTask> updateTasks) {
         int nbScheduled = 0;
-        // Test if there is some AIPs referenced by some running requests
-        List<Long> aipIds = aips.stream().map(wr -> wr.getId()).collect(Collectors.toList());
-        if (!aipIds.isEmpty()) {
+        if (!aips.isEmpty()) {
+            List<Long> aipIds = aips.stream().map(wr -> wr.getId()).collect(Collectors.toList());
             List<AIPUpdateRequest> runningRequests = aipUpdateRequestRepository.findRunningRequestAndAipIdIn(aipIds);
-            // Create the list of AIP id (and not aipId!)
-            List<Long> runningAIPIds = runningRequests.stream().map(wr -> wr.getAip().getId())
-                    .collect(Collectors.toList());
-
-            List<AbstractRequest> requests = new ArrayList<>();
-            for (AIPEntity aip : aips) {
-                // Create the request as pending if there is already a running request
-                boolean isPending = runningAIPIds.contains(aip.getId());
-                List<AIPUpdateRequest> generatedRequests = AIPUpdateRequest.build(aip, updateTasks, isPending);
-                for (AIPUpdateRequest request : generatedRequests) {
-                    requests.add(request);
-                }
+            List<AbstractRequest> requests = createRequests(aips, updateTasks, runningRequests);
+            if (!requests.isEmpty()) {
+                nbScheduled = requestService.scheduleRequests(requests);
             }
-            requestService.scheduleRequests(requests);
-            nbScheduled = requests.size();
         }
         return nbScheduled;
-    }
-
-    /**
-     * Creates new {@link AIPUpdateRequest}s for the given {@link AIPEntity} and each given {@link AbstractAIPUpdateTask}
-     *
-     * @param aip {@link AIPEntity} to update
-     * @param updateTasks  {@link AbstractAIPUpdateTask}s update tasks
-     */
-    public void create(AIPEntity aip, Collection<AbstractAIPUpdateTask> updateTasks) {
-        create(Lists.newArrayList(aip), updateTasks);
     }
 
     /**
@@ -105,10 +83,42 @@ public class AIPUpdateRequestService {
      *
      * @param aipTasks Map key : {@link AIPEntity} to update, value : {@link AbstractAIPUpdateTask}s to apply for update
      */
-    public void create(Multimap<AIPEntity, AbstractAIPUpdateTask> aipTasks) {
-        aipTasks.asMap().forEach((aipEntity, tasks) -> {
-            create(aipEntity, tasks);
-        });
+    public int create(Multimap<AIPEntity, AbstractAIPUpdateTask> aipTasks) {
+        int nbScheduled = 0;
+        List<AbstractRequest> requests = new ArrayList<>();
+        if (!aipTasks.isEmpty()) {
+            List<Long> aipIds = aipTasks.keySet().stream().map(wr -> wr.getId()).collect(Collectors.toList());
+            List<AIPUpdateRequest> runningRequests = aipUpdateRequestRepository.findRunningRequestAndAipIdIn(aipIds);
+            aipTasks.asMap().forEach((aipEntity, tasks) -> {
+                requests.addAll(createRequests(Lists.newArrayList(aipEntity), tasks, runningRequests));
+            });
+            nbScheduled = requestService.scheduleRequests(requests);
+        }
+        return nbScheduled;
+    }
+
+    /**
+     * Generates  {@link AbstractRequest}s from list of {@link AIPEntity}s with same list of {@link AbstractAIPUpdateTask}s
+     * @param aips
+     * @param updateTasks
+     * @param runningRequests
+     * @return {@link AbstractRequest}s created
+     */
+    private List<AbstractRequest> createRequests(Collection<AIPEntity> aips,
+            Collection<AbstractAIPUpdateTask> updateTasks, List<AIPUpdateRequest> runningRequests) {
+        List<AbstractRequest> requests = new ArrayList<>();
+        // Test if there is some AIPs referenced by some running requests
+        // Create the list of AIP id (and not aipId!)
+        List<Long> runningAIPIds = runningRequests.stream().map(wr -> wr.getAip().getId()).collect(Collectors.toList());
+        for (AIPEntity aip : aips) {
+            // Create the request as pending if there is already a running request
+            boolean isPending = runningAIPIds.contains(aip.getId());
+            List<AIPUpdateRequest> generatedRequests = AIPUpdateRequest.build(aip, updateTasks, isPending);
+            for (AIPUpdateRequest request : generatedRequests) {
+                requests.add(request);
+            }
+        }
+        return requests;
     }
 
     /**

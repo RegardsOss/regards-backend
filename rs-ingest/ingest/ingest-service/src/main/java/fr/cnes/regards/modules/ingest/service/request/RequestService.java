@@ -362,7 +362,7 @@ public class RequestService implements IRequestService {
                     if (!history.contains(request.getSessionOwner(), request.getSession())) {
                         // Check if the request can be processed right now
                         request = scheduleRequest(request);
-
+                        nbRequestScheduled++;
                         // Store if request for this session can be executed right now
                         history.put(request.getSessionOwner(), request.getSession(), request.getState());
                     }

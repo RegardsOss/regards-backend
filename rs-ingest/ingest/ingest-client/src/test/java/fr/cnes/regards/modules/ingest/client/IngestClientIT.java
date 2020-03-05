@@ -57,10 +57,10 @@ import fr.cnes.regards.modules.test.IngestServiceTest;
  *
  * @author Marc SORDI
  */
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=ingestclient", "regards.amqp.enabled=true" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestclient",
+        "regards.amqp.enabled=true", "regards.aips.save-metadata.bulk.delay=100" })
 @ContextConfiguration(classes = { IngestClientIT.IngestConfiguration.class })
-@ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
+@ActiveProfiles(value = { "default", "test", "testAmqp", "StorageClientMock" }, inheritProfiles = false)
 public class IngestClientIT extends AbstractRegardsWebIT {
 
     @SuppressWarnings("unused")

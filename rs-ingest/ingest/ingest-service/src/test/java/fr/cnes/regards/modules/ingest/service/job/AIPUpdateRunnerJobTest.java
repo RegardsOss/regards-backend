@@ -55,9 +55,9 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
-import fr.cnes.regards.modules.ingest.service.schedule.AIPUpdateJobScheduler;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
@@ -89,7 +89,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
     private IAIPService aipService;
 
     @Autowired
-    private AIPUpdateJobScheduler updateFlowHandler;
+    private AIPUpdateService aipUpdateService;
 
     @Autowired
     private StorageResponseFlowHandler storageListener;
@@ -243,7 +243,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         long nbSipConcerned = 2;
         long nbTasksPerSip = 5;
         waitForUpdateTaskCreated(nbSipConcerned * nbTasksPerSip, 10_000);
-        JobInfo updateJob = updateFlowHandler.getUpdateJob();
+        JobInfo updateJob = aipUpdateService.scheduleJob();
         runAndWaitJob(Lists.newArrayList(updateJob));
 
         Page<AIPEntity> aips = aipService
@@ -290,7 +290,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
 
         storageListener.onCopySuccess(requests);
 
-        JobInfo updateJob = updateFlowHandler.getUpdateJob();
+        JobInfo updateJob = aipUpdateService.scheduleJob();
         runAndWaitJob(Lists.newArrayList(updateJob));
 
         // Check that the new location is added to the AIP in DB.

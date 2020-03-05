@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -470,18 +469,6 @@ public class IngestRequestService implements IIngestRequestService {
             jobInfo.setLocked(true);
             jobInfoService.save(jobInfo);
             request.setJobInfo(jobInfo);
-        }
-        // Check associated aips always exists
-        if (checkAips && (request.getAips() != null)) {
-            List<AIPEntity> toRemove = new ArrayList<AIPEntity>();
-            for (AIPEntity aip : request.getAips()) {
-                if ((aip.getId() == null) || aipRepo.existsById(aip.getId())) {
-                    toRemove.add(aip);
-                }
-            }
-            if (!toRemove.isEmpty()) {
-                toRemove.forEach(a -> request.removeAip(a));
-            }
         }
         return ingestRequestRepository.save(request);
     }
