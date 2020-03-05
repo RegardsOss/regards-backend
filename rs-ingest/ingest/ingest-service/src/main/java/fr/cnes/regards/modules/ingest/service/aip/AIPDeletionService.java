@@ -70,7 +70,7 @@ public class AIPDeletionService {
     /**
      * Limit number of AIPs to retrieve in one page.
      */
-    @Value("${regards.ingest.aips.scan.iteration-limit:1000}")
+    @Value("${regards.ingest.aips.scan.iteration-limit:100}")
     private Integer deletionRequestIterationLimit;
 
     public JobInfo scheduleJob() {
