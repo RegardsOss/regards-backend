@@ -42,6 +42,10 @@ import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
 import fr.cnes.regards.modules.feature.service.IFeatureUpdateService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * Controller REST handling {@link Feature} collections.
@@ -69,10 +73,13 @@ public class FeatureController implements IResourceController<RequestInfo<?>> {
      * @param collection {@link FeatureUpdateCollection} it contain all {@link Feature} to handle
      * @return {@link RequestInfo}
      */
+    @Operation(summary = "Publish a new feature and return the request id",
+            description = "Publish a new feature and return the request id")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "A RequestInfo") })
+    @ResourceAccess(description = "Publish a new feature and return the request id")
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
-    @ResourceAccess(description = "Public a feature and return the request id")
-    public ResponseEntity<EntityModel<RequestInfo<?>>> createFeatures(
-            @Valid @RequestBody FeatureCreationCollection collection) {
+    public ResponseEntity<EntityModel<RequestInfo<?>>> createFeatures(@Parameter(
+            description = "Contain all Features to handle") @Valid @RequestBody FeatureCreationCollection collection) {
 
         RequestInfo<String> info = this.featureCreationService.registerRequests(collection);
         return new ResponseEntity<>(toResource(info), computeStatus(info));
@@ -84,10 +91,13 @@ public class FeatureController implements IResourceController<RequestInfo<?>> {
      * @param collection {@link FeatureUpdateCollection} it contain all {@link Feature} to handle
      * @return {@link RequestInfo}
      */
+    @Operation(summary = "Publish a feature and return the request id",
+            description = "Publish a feature and return the request id")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "A RequestInfo") })
     @RequestMapping(method = RequestMethod.PATCH, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
-    @ResourceAccess(description = "Public a feature and return the request id")
-    public ResponseEntity<EntityModel<RequestInfo<?>>> updateFeatures(
-            @Valid @RequestBody FeatureUpdateCollection collection) {
+    @ResourceAccess(description = "Publish a feature and return the request id")
+    public ResponseEntity<EntityModel<RequestInfo<?>>> updateFeatures(@Parameter(
+            description = "Contain all Features to handle") @Valid @RequestBody FeatureUpdateCollection collection) {
 
         RequestInfo<FeatureUniformResourceName> info = this.featureUpdateService.registerRequests(collection);
         return new ResponseEntity<>(toResource(info), computeStatus(info));

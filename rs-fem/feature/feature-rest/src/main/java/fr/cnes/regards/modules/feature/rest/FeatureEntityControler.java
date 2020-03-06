@@ -45,6 +45,10 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.service.IDataObjectFeatureService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * End point to get {@link DataObjectFeature} contain data of the last created/modified {@link FeatureEntity}
@@ -72,11 +76,17 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
      * @param lastUpdateDate las modification date that we want {@link Feature}
      * @return {@link RequestInfo} a {@link Page} of {@link FeatureEntityDto}
      */
+    @Operation(summary = "Get features according last update date and model",
+            description = "Get features according last update date and model")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Get features according last update date and model") })
     @RequestMapping(method = RequestMethod.GET, produces = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
-    @ResourceAccess(description = "Get a feature according last update date")
-    public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> getFeatures(@RequestParam("model") String model,
-            @RequestParam("lastUpdateDate") OffsetDateTime lastUpdateDate, Pageable page,
-            PagedResourcesAssembler<FeatureEntityDto> assembler) {
+    @ResourceAccess(description = "Get features according last update date")
+    public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> getFeatures(
+            @Parameter(description = "Model used to filter feature") @RequestParam("model") String model,
+            @Parameter(
+                    description = "Last update date used to filter features") @RequestParam("lastUpdateDate") OffsetDateTime lastUpdateDate,
+            Pageable page, PagedResourcesAssembler<FeatureEntityDto> assembler) {
 
         return new ResponseEntity<>(toPagedResources(dataObjectFeature.findAll(model, page, lastUpdateDate), assembler),
                 HttpStatus.OK);
