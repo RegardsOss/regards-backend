@@ -152,7 +152,7 @@ public class SIPController implements IResourceController<SIPEntity> {
         if (hasGranted && hasDenied) {
             status = HttpStatus.PARTIAL_CONTENT; // 206
         } else if (hasDenied) {
-            status = HttpStatus.NO_CONTENT; // 204
+            status = HttpStatus.UNPROCESSABLE_ENTITY; // 422
         } else {
             status = HttpStatus.CREATED; // 201
         }
