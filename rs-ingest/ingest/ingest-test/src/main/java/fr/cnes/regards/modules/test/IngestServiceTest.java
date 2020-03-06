@@ -40,6 +40,8 @@ import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
@@ -173,6 +175,64 @@ public class IngestServiceTest {
             if (timerStop(expectedSips, end, sipCount, String
                     .format("Timeout after waiting for %s SIPs in %s. Acutal=%s. Total count %s (no specific status)",
                             expectedSips, sipState != null ? sipState.toString() : "ALL_STATUS", sipCount,
+                            totalCount))) {
+                break;
+            }
+        } while (true);
+    }
+
+    /**
+     * Helper method to wait for AIP ingestion
+     */
+    public void waitForAIP(long expectedSips, long timeout, AIPState aipState) {
+        long end = System.currentTimeMillis() + timeout;
+        // Wait
+        long aipCount = 0;
+        do {
+            long newCount = 0;
+            long totalCount = aipRepository.count();
+            if (aipState != null) {
+                newCount = aipRepository.countByState(aipState);
+            } else {
+                newCount = totalCount;
+            }
+            if (newCount != aipCount) {
+                LOGGER.info("{} new SIP(s) {} in database", newCount - aipCount,
+                            aipState != null ? aipState.toString() : "ALL_STATUS");
+            }
+            aipCount = newCount;
+            if (timerStop(expectedSips, end, aipCount, String
+                    .format("Timeout after waiting for %s SIPs in %s. Acutal=%s. Total count %s (no specific status)",
+                            expectedSips, aipState != null ? aipState.toString() : "ALL_STATUS", aipCount,
+                            totalCount))) {
+                break;
+            }
+        } while (true);
+    }
+
+    /**
+     * Helper method to wait for ingest request state
+     */
+    public void waitForIngestRequest(long expectedSips, long timeout, InternalRequestState requestState) {
+        long end = System.currentTimeMillis() + timeout;
+        // Wait
+        long requestCount = 0;
+        do {
+            long newCount = 0;
+            long totalCount = ingestRequestRepository.count();
+            if (requestState != null) {
+                newCount = ingestRequestRepository.countByState(requestState);
+            } else {
+                newCount = totalCount;
+            }
+            if (newCount != requestCount) {
+                LOGGER.info("{} new SIP(s) {} in database", newCount - requestCount,
+                            requestState != null ? requestState.toString() : "ALL_STATUS");
+            }
+            requestCount = newCount;
+            if (timerStop(expectedSips, end, requestCount, String
+                    .format("Timeout after waiting for %s SIPs in %s. Acutal=%s. Total count %s (no specific status)",
+                            expectedSips, requestState != null ? requestState.toString() : "ALL_STATUS", requestCount,
                             totalCount))) {
                 break;
             }

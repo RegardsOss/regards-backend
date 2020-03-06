@@ -48,7 +48,6 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
@@ -102,9 +101,6 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Autowired
     private IAIPService aipService;
-
-    @Autowired
-    private IAIPRepository aipRepo;
 
     @Autowired
     private IAIPStorageService aipStorageService;
@@ -260,7 +256,7 @@ public class IngestRequestService implements IIngestRequestService {
                 sessionNotifier.incrementProductStorePending(request);
             } else {
                 // No files to store for the request AIPs. We can immediately store the manifest.
-                finalizeSuccessfulRequest(request);
+                finalizeSuccessfulRequest(request, false);
             }
         } catch (ModuleException e) {
             // Keep track of the error
@@ -316,7 +312,7 @@ public class IngestRequestService implements IIngestRequestService {
                 saveRequest(request);
             } else {
                 // The current request is over
-                finalizeSuccessfulRequest(request);
+                finalizeSuccessfulRequest(request, true);
             }
         } else {
             // Keep track of the error
@@ -331,7 +327,7 @@ public class IngestRequestService implements IIngestRequestService {
         return remoteStepGroupIds;
     }
 
-    private void finalizeSuccessfulRequest(IngestRequest request) {
+    private void finalizeSuccessfulRequest(IngestRequest request, boolean afterStorage) {
         // Clean
         deleteRequest(request);
 
@@ -345,7 +341,9 @@ public class IngestRequestService implements IIngestRequestService {
 
         // Monitoring
         // Decrement from #requestRemoteStorage
-        sessionNotifier.decrementProductStorePending(request);
+        if (afterStorage) {
+            sessionNotifier.decrementProductStorePending(request);
+        }
         // Even if no file is present in AIP, we consider the product as stored
         sessionNotifier.incrementProductStoreSuccess(request);
 
@@ -402,7 +400,7 @@ public class IngestRequestService implements IIngestRequestService {
                         saveRequest(request);
                     } else {
                         // The current request is over
-                        finalizeSuccessfulRequest(request);
+                        finalizeSuccessfulRequest(request, true);
                     }
                 }
             }

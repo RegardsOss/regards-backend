@@ -28,6 +28,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 
 /**
@@ -64,5 +65,10 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
      * @param aipIds
      */
     Set<AIPEntity> findByAipIdIn(Collection<String> aipIds);
+
+    /**
+     * For testing purpose only
+     */
+    long countByState(AIPState sipState);
 
 }

@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.ingest.service.session;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -160,7 +161,11 @@ public class SessionNotifier {
     public void requestDeleted(AbstractRequest request) {
         // If INGEST request is in error status then we can decrement the number of generation error
         if ((request.getState() == InternalRequestState.ERROR) && (request instanceof IngestRequest)) {
-            ingestRequestErrorDeleted((IngestRequest) request);
+            // Load with AIPs
+            Optional<IngestRequest> oReq = ingestRequestRepository.findById(request.getId());
+            if (oReq.isPresent()) {
+                ingestRequestErrorDeleted(oReq.get());
+            }
         }
 
     }

@@ -197,7 +197,6 @@ public class AIPStorageService implements IAIPStorageService {
 
     /**
      * @param dataObject
-     * @return
      * @throws ModuleException
      */
     private void validateForReference(OAISDataObject dataObject) throws ModuleException {
