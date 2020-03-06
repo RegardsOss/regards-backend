@@ -133,6 +133,45 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
     }
 
     @Test
+    public void deleteFileStoredMultiple() throws EntityNotFoundException, InterruptedException, ExecutionException {
+
+        String fileChecksum = "file-1";
+        String firstOwner = "first-owner";
+        String secondOwner = "second-owner";
+        FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "file.test", ONLINE_CONF_LABEL,
+                                                            Optional.empty(), Optional.empty());
+        Assert.assertNotNull("File reference should have been created", fileRef);
+        Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
+        Optional<FileReference> oFileRef = generateStoredFileReferenceAlreadyReferenced(fileChecksum,
+                                                                                        fileRef.getLocation()
+                                                                                                .getStorage(),
+                                                                                        secondOwner);
+        Assert.assertTrue("File reference should be updated", oFileRef.isPresent());
+        Assert.assertTrue("File reference should belongs to first owner",
+                          oFileRef.get().getOwners().contains(firstOwner));
+        Assert.assertTrue("File reference should belongs to second owner",
+                          oFileRef.get().getOwners().contains(secondOwner));
+        fileRef = oFileRef.get();
+
+        // Create deletion request for each owner
+        FileDeletionRequestDTO request = FileDeletionRequestDTO
+                .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), firstOwner, false);
+        FileDeletionRequestDTO request2 = FileDeletionRequestDTO
+                .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), secondOwner, false);
+        FileDeletionRequestDTO request3 = FileDeletionRequestDTO
+                .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), "other-owner", false);
+        fileDeletionRequestService.handle(Sets.newHashSet(request, request2, request3), UUID.randomUUID().toString());
+
+        // Re-submit same request for one owner
+        fileDeletionRequestService.handle(Sets.newHashSet(request3), UUID.randomUUID().toString());
+
+        // File reference should be deleted
+        Optional<FileDeletionRequest> afterDeletion = fileDeletionRequestService.search(fileRef);
+        Assert.assertTrue("File deletion request should exists", afterDeletion.isPresent());
+
+    }
+
+    @Test
     public void deleteFileReferenceError() throws EntityNotFoundException, InterruptedException, ExecutionException {
 
         String fileChecksum = "file-1";

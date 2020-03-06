@@ -19,7 +19,9 @@
 package fr.cnes.regards.modules.storage.service.file.job;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -100,12 +102,16 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
             do {
                 // Search for all file references of the given storage location
                 pageResults = fileRefService.search(storage, pageRequest);
+                Set<String> checksums = pageResults.stream().map(f -> f.getMetaInfo().getChecksum())
+                        .collect(Collectors.toSet());
+                Set<FileDeletionRequest> delRequests = fileDelReqService.searchByChecksums(checksums);
                 for (FileReference fileRef : pageResults.getContent()) {
                     // For each :
                     // If file is owned send a deletion event for each owner.
                     // Else create deletion request
                     if (fileRef.getOwners().isEmpty()) {
-                        fileDelReqService.create(fileRef, forceDelete, requestGroupId, FileRequestStatus.TO_DO);
+                        fileDelReqService.create(fileRef, forceDelete, requestGroupId, delRequests,
+                                                 FileRequestStatus.TO_DO);
                         nbREquests++;
                     } else {
                         for (String owner : fileRef.getOwners()) {

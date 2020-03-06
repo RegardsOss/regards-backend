@@ -141,31 +141,36 @@ public class FileDeletionRequestService {
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
      * @param groupId Business identifier of the deletion request
      */
-    public void create(FileReference fileReferenceToDelete, boolean forceDelete, String groupId,
-            FileRequestStatus status) {
-        Optional<FileDeletionRequest> existingOne = fileDeletionRequestRepo
-                .findByFileReferenceId(fileReferenceToDelete.getId());
+    public FileDeletionRequest create(FileReference fileReferenceToDelete, boolean forceDelete, String groupId,
+            Collection<FileDeletionRequest> existingRequests, FileRequestStatus status) {
+        Optional<FileDeletionRequest> existingOne = existingRequests.stream()
+                .filter(r -> r.getFileReference().getId().equals(fileReferenceToDelete.getId())).findFirst();
+        FileDeletionRequest request;
         if (!existingOne.isPresent()) {
             // Create new deletion request
             FileDeletionRequest newDelRequest = new FileDeletionRequest(fileReferenceToDelete, forceDelete, groupId,
                     status);
             newDelRequest.setStatus(reqStatusService.getNewStatus(newDelRequest, Optional.of(status)));
-            fileDeletionRequestRepo.save(newDelRequest);
+            request = fileDeletionRequestRepo.save(newDelRequest);
+            existingRequests.add(request);
         } else {
             // Retry deletion if error
-            retry(existingOne.get(), forceDelete);
+            request = retry(existingOne.get(), forceDelete);
         }
+        return request;
     }
 
     /**
      * Update all {@link FileDeletionRequest} in error status to change status to {@link FileRequestStatus#TO_DO}.
      */
-    private void retry(FileDeletionRequest req, boolean forceDelete) {
-        if (req.getStatus() == FileRequestStatus.ERROR) {
-            req.setStatus(FileRequestStatus.TO_DO);
-            req.setErrorCause(null);
-            req.setForceDelete(forceDelete);
-            updateFileDeletionRequest(req);
+    private FileDeletionRequest retry(FileDeletionRequest request, boolean forceDelete) {
+        if (request.getStatus() == FileRequestStatus.ERROR) {
+            request.setStatus(FileRequestStatus.TO_DO);
+            request.setErrorCause(null);
+            request.setForceDelete(forceDelete);
+            return updateFileDeletionRequest(request);
+        } else {
+            return request;
         }
     }
 
@@ -352,8 +357,11 @@ public class FileDeletionRequestService {
      * @param list
      */
     public void handle(List<DeletionFlowItem> list) {
-        Set<FileReference> existingOnes = fileRefService.search(list.stream().map(DeletionFlowItem::getFiles)
-                .flatMap(Set::stream).map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet()));
+        Set<String> checksums = list.stream().map(DeletionFlowItem::getFiles).flatMap(Set::stream)
+                .map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet());
+        Set<FileReference> existingOnes = fileRefService.search(checksums);
+        Set<FileDeletionRequest> fileDeletionRequests = fileDeletionRequestRepo
+                .findByFileReferenceMetaInfoChecksumIn(checksums);
         for (DeletionFlowItem item : list) {
             if (fileCopyReqService.isFileCopyRunning(item.getFiles().stream().map(i -> i.getChecksum())
                     .collect(Collectors.toSet()))) {
@@ -363,7 +371,7 @@ public class FileDeletionRequestService {
             } else {
                 reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size(),
                                         getRequestExpirationDate());
-                handle(item.getFiles(), item.getGroupId(), existingOnes);
+                handle(item.getFiles(), item.getGroupId(), existingOnes, fileDeletionRequests);
             }
         }
     }
@@ -374,9 +382,11 @@ public class FileDeletionRequestService {
      * @param groupId
      */
     public void handle(Collection<FileDeletionRequestDTO> requests, String groupId) {
-        Set<FileReference> existingOnes = fileRefService
-                .search(requests.stream().map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet()));
-        handle(requests, groupId, existingOnes);
+        Set<String> checksums = requests.stream().map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet());
+        Set<FileReference> existingOnes = fileRefService.search(checksums);
+        Set<FileDeletionRequest> fileDeletionRequests = fileDeletionRequestRepo
+                .findByFileReferenceMetaInfoChecksumIn(checksums);
+        handle(requests, groupId, existingOnes, fileDeletionRequests);
     }
 
     /**
@@ -387,14 +397,15 @@ public class FileDeletionRequestService {
      * @param existingOnes
      */
     public void handle(Collection<FileDeletionRequestDTO> requests, String groupId,
-            Collection<FileReference> existingOnes) {
+            Collection<FileReference> existingOnes, Collection<FileDeletionRequest> existingRequests) {
         for (FileDeletionRequestDTO request : requests) {
             Optional<FileReference> oFileRef = existingOnes.stream()
                     .filter(f -> f.getLocation().getStorage().equals(request.getStorage())
                             && f.getMetaInfo().getChecksum().equals(request.getChecksum()))
                     .findFirst();
             if (oFileRef.isPresent()) {
-                removeOwner(oFileRef.get(), request.getOwner(), request.isForceDelete(), groupId);
+                FileReference fileRef = oFileRef.get();
+                removeOwner(fileRef, request.getOwner(), request.isForceDelete(), existingRequests, groupId);
             }
             // In all case, inform caller that deletion request is success.
             reqGroupService.requestSuccess(groupId, FileRequestType.DELETION, request.getChecksum(),
@@ -408,13 +419,14 @@ public class FileDeletionRequestService {
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
      * @param groupId Business identifier of the deletion request
      */
-    private void removeOwner(FileReference fileReference, String owner, boolean forceDelete, String groupId) {
+    private void removeOwner(FileReference fileReference, String owner, boolean forceDelete,
+            Collection<FileDeletionRequest> existingRequests, String groupId) {
         fileRefService.removeOwner(fileReference, owner, groupId);
         // If file reference does not belongs to anyone anymore, delete file reference
         if (fileReference.getOwners().isEmpty()) {
             if (storageHandler.getConfiguredStorages().contains(fileReference.getLocation().getStorage())) {
                 // If the file is stored on an accessible storage, create a new deletion request
-                create(fileReference, forceDelete, groupId, FileRequestStatus.TO_DO);
+                create(fileReference, forceDelete, groupId, existingRequests, FileRequestStatus.TO_DO);
             } else {
                 // Delete associated cache request if any
                 fileCacheReqService.delete(fileReference);
@@ -428,10 +440,10 @@ public class FileDeletionRequestService {
      * Update a {@link FileDeletionRequest}
      * @param fileDeletionRequest
      */
-    public void updateFileDeletionRequest(FileDeletionRequest fileDeletionRequest) {
+    public FileDeletionRequest updateFileDeletionRequest(FileDeletionRequest fileDeletionRequest) {
         Assert.notNull(fileDeletionRequest, "File deletion request to update cannot be null");
         Assert.notNull(fileDeletionRequest.getId(), "File deletion request to update identifier cannot be null");
-        fileDeletionRequestRepo.save(fileDeletionRequest);
+        return fileDeletionRequestRepo.save(fileDeletionRequest);
     }
 
     /**

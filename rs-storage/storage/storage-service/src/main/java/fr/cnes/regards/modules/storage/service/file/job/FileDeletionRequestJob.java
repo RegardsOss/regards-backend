@@ -115,8 +115,10 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
                                     req.getFileReference().getMetaInfo().getChecksum(), errorCause));
                 }
             }
-            LOGGER.debug("[DELETION JOB] Deletion job handled in {}ms for {} deletion requests",
-                         System.currentTimeMillis() - start, nbRequestToHandle);
+            if (nbRequestToHandle > 0) {
+                LOGGER.info("[DELETION JOB] Deletion job handled in {}ms for {} deletion requests",
+                            System.currentTimeMillis() - start, nbRequestToHandle);
+            }
         }
     }
 
