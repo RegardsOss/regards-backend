@@ -51,4 +51,7 @@ public interface INotificationRequestRepository extends JpaRepository<Notificati
     @Modifying
     @Query("update NotificationRequest nr set nr.step = :newStep where nr.id in :ids ")
     public void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
+
+    @Query("select distinct fcr.requestId from NotificationRequest fcr")
+    public Set<String> findRequestId();
 }

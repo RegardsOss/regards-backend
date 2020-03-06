@@ -54,4 +54,7 @@ public interface IFeatureDeletionRequestRepository extends JpaRepository<Feature
     @Modifying
     @Query("update FeatureDeletionRequest fcr set fcr.step = :newStep where fcr.id in :ids ")
     public void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
+
+    @Query("select distinct fcr.requestId from FeatureDeletionRequest fcr")
+    public Set<String> findRequestId();
 }

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
@@ -39,4 +40,7 @@ public interface IFeatureUpdateRequestRepository extends JpaRepository<FeatureUp
      * Sorting requests is useful to manage several update requests on a same target entity!
      */
     List<FeatureUpdateRequest> findAllByIdInOrderByRequestDateAsc(Set<Long> ids);
+
+    @Query("select distinct fcr.requestId from FeatureUpdateRequest fcr")
+    public Set<String> findRequestId();
 }

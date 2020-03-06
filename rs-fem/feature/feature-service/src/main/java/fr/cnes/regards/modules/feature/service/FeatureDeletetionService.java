@@ -114,8 +114,9 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
 
         List<FeatureDeletionRequest> grantedRequests = new ArrayList<>();
         RequestInfo<FeatureUniformResourceName> requestInfo = new RequestInfo<>();
+        Set<String> existingRequestIds = this.deletionRepo.findRequestId();
 
-        events.forEach(item -> prepareFeatureDeletionRequest(item, grantedRequests, requestInfo));
+        events.forEach(item -> prepareFeatureDeletionRequest(item, grantedRequests, requestInfo, existingRequestIds));
         LOGGER.trace("------------->>> {} deletion requests prepared in {} ms", grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
 
@@ -127,11 +128,17 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
     }
 
     private void prepareFeatureDeletionRequest(FeatureDeletionRequestEvent item,
-            List<FeatureDeletionRequest> grantedRequests, RequestInfo<FeatureUniformResourceName> requestInfo) {
+            List<FeatureDeletionRequest> grantedRequests, RequestInfo<FeatureUniformResourceName> requestInfo,
+            Set<String> existingRequestIds) {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureDeletionRequest.class.getName());
-
         validator.validate(item, errors);
+
+        if (existingRequestIds.contains(item.getRequestId())
+                || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
+            errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
+        }
+
         if (errors.hasErrors()) {
             LOGGER.debug("Error during founded FeatureDeletionRequest validation {}", errors.toString());
             requestInfo.addDeniedRequest(item.getUrn(), ErrorTranslator.getErrors(errors));

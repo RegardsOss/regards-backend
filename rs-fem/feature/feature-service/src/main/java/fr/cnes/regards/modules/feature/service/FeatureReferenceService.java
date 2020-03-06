@@ -108,8 +108,9 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
 
         List<FeatureReferenceRequest> grantedRequests = new ArrayList<>();
         RequestInfo<String> requestInfo = new RequestInfo<>();
+        Set<String> existingRequestIds = this.featureReferenceRequestRepo.findRequestId();
 
-        events.forEach(item -> prepareFeatureReferenceRequest(item, grantedRequests, requestInfo));
+        events.forEach(item -> prepareFeatureReferenceRequest(item, grantedRequests, requestInfo, existingRequestIds));
         LOGGER.trace("------------->>> {} creation requests prepared in {} ms", grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
 
@@ -122,16 +123,24 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
     }
 
     /**
-     * @param item
-     * @param grantedRequests
+     * @param item {@link FeatureReferenceRequestEvent} to verify
+     * @param grantedRequests validated {@link FeatureReferenceRequestEvent}
      * @param requestInfo
+     * @param existingRequestIds list of existing request in database
      */
     private void prepareFeatureReferenceRequest(FeatureReferenceRequestEvent item,
-            List<FeatureReferenceRequest> grantedRequests, RequestInfo<String> requestInfo) {
+            List<FeatureReferenceRequest> grantedRequests, RequestInfo<String> requestInfo,
+            Set<String> existingRequestIds) {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureReferenceRequestEvent.class.getName());
 
         validator.validate(item, errors);
+
+        if (existingRequestIds.contains(item.getRequestId())
+                || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
+            errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
+        }
+
         if (errors.hasErrors()) {
             LOGGER.debug("Error during founded FeatureReferenceRequestEvent validation {}", errors.toString());
             // FIXME le null est-ce vraimment une bonne idée? le monde sera-t-il un jour en paix?

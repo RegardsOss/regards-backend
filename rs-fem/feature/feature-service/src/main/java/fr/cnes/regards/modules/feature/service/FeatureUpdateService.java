@@ -126,7 +126,9 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
         List<FeatureUpdateRequest> grantedRequests = new ArrayList<>();
         RequestInfo<FeatureUniformResourceName> requestInfo = new RequestInfo<>();
-        events.forEach(item -> prepareFeatureUpdateRequest(item, grantedRequests, requestInfo));
+        Set<String> existingRequestIds = this.featureUpdateRequestRepo.findRequestId();
+
+        events.forEach(item -> prepareFeatureUpdateRequest(item, grantedRequests, requestInfo, existingRequestIds));
 
         // Batch save
         updateRepo.saveAll(grantedRequests);
@@ -150,13 +152,19 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
     /**
      * Validate, save and publish a new request
+     * @param existingRequestIds
      */
     private void prepareFeatureUpdateRequest(FeatureUpdateRequestEvent item, List<FeatureUpdateRequest> grantedRequests,
-            RequestInfo<FeatureUniformResourceName> requestInfo) {
+            RequestInfo<FeatureUniformResourceName> requestInfo, Set<String> existingRequestIds) {
 
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureUpdateRequestEvent.class.getName());
         validator.validate(item, errors);
+
+        if (existingRequestIds.contains(item.getRequestId())
+                || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
+            errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
+        }
 
         if (errors.hasErrors()) {
             // Publish DENIED request (do not persist it in DB)

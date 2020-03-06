@@ -114,6 +114,39 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getValue().size());
     }
 
+    @Test
+    public void testFeatureCreationWithDuplicateRequestId() throws InterruptedException {
+
+        // mock the publish method to not broke other tests in notifier manager
+        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationActionEvent.class));
+
+        List<FeatureCreationRequestEvent> events = new ArrayList<>();
+
+        super.initFeatureCreationRequestEvent(events, properties.getMaxBulkSize());
+
+        // clear file to test notifications without files and put the same request id
+        events.stream().forEach(request -> {
+            request.setRequestId("1");
+            request.getFeature().getFiles().clear();
+        });
+        this.featureCreationService.registerRequests(events);
+
+        assertEquals(1, this.featureCreationRequestRepo.count());
+
+        this.featureCreationService.scheduleRequests();
+
+        int cpt = 0;
+        long featureNumberInDatabase;
+        do {
+            featureNumberInDatabase = this.featureRepo.count();
+            Thread.sleep(1000);
+            cpt++;
+        } while ((cpt < 100) && (featureNumberInDatabase != 1));
+
+        // only 1 feature should be created
+        assertEquals(1, this.featureRepo.count());
+    }
+
     /**
      * Test creation of properties.getMaxBulkSize() features one will be invalid test that this
      * one will not be sored in databse

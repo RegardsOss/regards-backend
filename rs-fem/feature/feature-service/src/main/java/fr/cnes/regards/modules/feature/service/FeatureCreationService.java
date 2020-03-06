@@ -148,8 +148,9 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
 
         List<FeatureCreationRequest> grantedRequests = new ArrayList<>();
         RequestInfo<String> requestInfo = new RequestInfo<>();
+        Set<String> existingRequestIds = this.featureCreationRequestRepo.findRequestId();
 
-        events.forEach(item -> prepareFeatureCreationRequest(item, grantedRequests, requestInfo));
+        events.forEach(item -> prepareFeatureCreationRequest(item, grantedRequests, requestInfo, existingRequestIds));
         LOGGER.trace("------------->>> {} creation requests prepared in {} ms", grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
 
@@ -178,14 +179,20 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
      * @param item            request to manage
      * @param grantedRequests collection of granted requests to populate
      * @param requestInfo store request registration state
+     * @param existingRequestIds list of existing request ids in database (its a unique constraint)
      */
     private void prepareFeatureCreationRequest(FeatureCreationRequestEvent item,
-            List<FeatureCreationRequest> grantedRequests, RequestInfo<String> requestInfo) {
+            List<FeatureCreationRequest> grantedRequests, RequestInfo<String> requestInfo,
+            Set<String> existingRequestIds) {
 
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureCreationRequestEvent.class.getName());
 
         validator.validate(item, errors);
+        if (existingRequestIds.contains(item.getRequestId())
+                || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
+            errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
+        }
         if (errors.hasErrors()) {
             LOGGER.error("Error during creation event {} validation : {}", item.getRequestId(), errors.toString());
             requestInfo.addDeniedRequest(item.getRequestId(), ErrorTranslator.getErrors(errors));

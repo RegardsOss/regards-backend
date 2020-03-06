@@ -53,4 +53,7 @@ public interface IFeatureReferenceRequestRepository extends JpaRepository<Featur
     @Modifying
     @Query("update FeatureReferenceRequest frr set frr.step = :newStep where frr.id in :ids ")
     public void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
+
+    @Query("select distinct fcr.requestId from FeatureReferenceRequest fcr")
+    public Set<String> findRequestId();
 }

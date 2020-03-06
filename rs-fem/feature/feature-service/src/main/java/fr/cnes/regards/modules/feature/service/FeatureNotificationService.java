@@ -102,8 +102,9 @@ public class FeatureNotificationService implements IFeatureNotificationService {
         long registrationStart = System.currentTimeMillis();
 
         List<NotificationRequest> notificationsRequest = new ArrayList<>();
+        Set<String> existingRequestIds = this.notificationRequestRepo.findRequestId();
 
-        events.forEach(item -> prepareNotificationRequest(item, notificationsRequest));
+        events.forEach(item -> prepareNotificationRequest(item, notificationsRequest, existingRequestIds));
         LOGGER.trace("------------->>> {} deletion requests prepared in {} ms", notificationsRequest.size(),
                      System.currentTimeMillis() - registrationStart);
 
@@ -117,14 +118,21 @@ public class FeatureNotificationService implements IFeatureNotificationService {
     /**
      * Prepare {@link NotificationRequest} from {@link NotificationRequestEvent} to register in database
      * @param item {@link NotificationRequestEvent} source
-     * @param notificationsRequest list of {@link NotificationRequest} to prepare
+     * @param notificationsRequest list of {@link NotificationRequest} granted
+     * @param existingRequestIds list of existing request in database
      */
     private void prepareNotificationRequest(NotificationRequestEvent item,
-            List<NotificationRequest> notificationsRequest) {
+            List<NotificationRequest> notificationsRequest, Set<String> existingRequestIds) {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureDeletionRequest.class.getName());
 
         validator.validate(item, errors);
+
+        if (existingRequestIds.contains(item.getRequestId()) || notificationsRequest.stream()
+                .anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
+            errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
+        }
+
         if (errors.hasErrors()) {
             LOGGER.debug("Error during founded NotificationRequestEvent validation {}", errors.toString());
             publisher.publish(FeatureRequestEvent.build(item.getRequestId(), null, item.getUrn(), RequestState.DENIED,

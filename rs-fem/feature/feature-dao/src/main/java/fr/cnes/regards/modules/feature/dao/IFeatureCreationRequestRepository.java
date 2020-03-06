@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.feature.dao;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
@@ -29,4 +30,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 public interface IFeatureCreationRequestRepository extends JpaRepository<FeatureCreationRequest, Long> {
 
     public Set<FeatureCreationRequest> findByGroupIdIn(Set<String> groupIds);
+
+    @Query("select distinct fcr.requestId from FeatureCreationRequest fcr")
+    public Set<String> findRequestId();
 }
