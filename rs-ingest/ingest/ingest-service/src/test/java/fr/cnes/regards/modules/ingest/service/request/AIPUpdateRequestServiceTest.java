@@ -45,8 +45,8 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  * @author Sébastien Binda
  */
 @ActiveProfiles({ "noschedule" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_aip_update_request" },
-        locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_aip_update_request",
+        "spring.jpa.show-sql=true" }, locations = { "classpath:application-test.properties" })
 public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
 
     @Autowired

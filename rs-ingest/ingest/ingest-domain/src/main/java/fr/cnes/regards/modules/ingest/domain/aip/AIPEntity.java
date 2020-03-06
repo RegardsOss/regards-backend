@@ -90,6 +90,7 @@ public class AIPEntity extends AbstractAIPEntity {
         aipEntity.setSessionOwner(sip.getSessionOwner());
         aipEntity.setSession(sip.getSession());
         aipEntity.setCategories(sip.getCategories());
+        aipEntity.setVersion(aip.getVersion());
         return aipEntity;
     }
 

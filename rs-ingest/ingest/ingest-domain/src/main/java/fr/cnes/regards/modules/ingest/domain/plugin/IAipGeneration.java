@@ -23,6 +23,7 @@ import java.util.List;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.exception.AIPGenerationException;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
@@ -47,6 +48,6 @@ public interface IAipGeneration {
      * @param providerId the provider id of the generated {@link AIP}
      * @return generated {@link AIP}
      */
-    List<AIP> generate(SIP sip, UniformResourceName aipId, UniformResourceName sipId, String providerId)
+    List<AIP> generate(SIPEntity sip, UniformResourceName aipId, UniformResourceName sipId, String providerId)
             throws AIPGenerationException;
 }

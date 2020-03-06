@@ -173,6 +173,10 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH, body, requestBuilderCustomizer,
                            "Should retrieve AIPEntities");
+
+        // Try a research with pagination and sort options
+        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + "?page=0&size=20&sort=version,ASC", body,
+                           requestBuilderCustomizer, "Should retrieve AIPEntities");
     }
 
     @Test

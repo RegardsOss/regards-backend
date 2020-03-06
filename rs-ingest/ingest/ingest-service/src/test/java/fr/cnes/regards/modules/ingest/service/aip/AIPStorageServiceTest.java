@@ -129,7 +129,7 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
                        AIP.build(sipEntity.getSip(),
                                  UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
                                                                      getDefaultTenant(), 1),
-                                 Optional.ofNullable(sipEntity.getSipIdUrn()), providerId));
+                                 Optional.ofNullable(sipEntity.getSipIdUrn()), providerId, sipEntity.getVersion()));
         aipEntity1.setStorages(Sets.newHashSet(LOCATION, LOCATION_2, LOCATION_3));
         aipEntity1.setChecksum("some checksum");
     }

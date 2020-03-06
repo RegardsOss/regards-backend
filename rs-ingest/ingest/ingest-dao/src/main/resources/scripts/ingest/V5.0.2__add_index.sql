@@ -1,1 +1,0 @@
-CREATE INDEX idx_aip_sip_id ON t_aip(sip_id);
