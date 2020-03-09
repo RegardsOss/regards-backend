@@ -50,7 +50,7 @@ public class SessionNotifier {
     /**
      * The name of the property gathering all metadata about this processing step
      */
-    private static final String GLOBAL_SESSION_STEP = "dataprovider";
+    public static final String GLOBAL_SESSION_STEP = "dataprovider";
 
     /**
      * Name of the property that stores the current state (running, done)
@@ -78,7 +78,7 @@ public class SessionNotifier {
         notifyChangeProductState(product, Optional.empty(), Optional.of(nextSipState));
     }
 
-    public void notifyChangeProductState(Product product, Optional<ProductState> nextState,
+    private void notifyChangeProductState(Product product, Optional<ProductState> nextState,
             Optional<ISipState> nexSipState) {
         Optional<SessionProductPropertyEnum> current = getProperty(product.getState(), product.getSipState());
         Optional<SessionProductPropertyEnum> next = getProperty(nextState.orElse(product.getState()),

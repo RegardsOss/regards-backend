@@ -52,6 +52,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
@@ -63,6 +64,9 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
+import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
+import fr.cnes.regards.modules.acquisition.service.session.SessionProductPropertyEnum;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
 
 /**
  * Launch a chain with very long plugin actions and stop it.
@@ -96,6 +100,9 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
     @Autowired
     private IPluginConfigurationRepository pluginRepo;
 
+    @Autowired
+    private SessionNotificationHandler notifHandler;
+
     @Before
     public void before() {
         pluginRepo.deleteAll();
@@ -105,7 +112,8 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
     /**
      * Create chain with slow SIP generation plugin
      */
-    private AcquisitionProcessingChain createProcessingChain(String label, Path searchDir) throws ModuleException {
+    private AcquisitionProcessingChain createProcessingChain(String label, Class<?> sipGenPluginClass, Path searchDir,
+            Path searchDirThumbnail) throws ModuleException {
 
         // Create a processing chain
         AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
@@ -134,6 +142,25 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
 
         processingChain.addFileInfo(fileInfo);
 
+        if (searchDirThumbnail != null) {
+            AcquisitionFileInfo fileInfo2 = new AcquisitionFileInfo();
+            fileInfo2.setMandatory(Boolean.TRUE);
+            fileInfo2.setComment("A comment 2");
+            fileInfo2.setMimeType(MediaType.IMAGE_PNG);
+            fileInfo2.setDataType(DataType.THUMBNAIL);
+
+            Set<IPluginParam> parameters2 = IPluginParam.set(IPluginParam
+                    .build(GlobDiskScanning.FIELD_DIRS,
+                           PluginParameterTransformer.toJson(Arrays.asList(searchDirThumbnail.toString()))));
+
+            PluginConfiguration scanPlugin2 = PluginUtils.getPluginConfiguration(parameters2, GlobDiskScanning.class);
+            scanPlugin2.setIsActive(true);
+            scanPlugin2.setLabel("Scan plugin");
+            fileInfo2.setScanPlugin(scanPlugin2);
+
+            processingChain.addFileInfo(fileInfo2);
+        }
+
         // Validation
         PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
                                                                                   DefaultFileValidation.class);
@@ -142,15 +169,16 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
+        Set<IPluginParam> productParameters = IPluginParam
+                .set(IPluginParam.build(DefaultProductPlugin.FIELD_REMOVE_EXT, Boolean.TRUE));
+        PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(productParameters,
                                                                                DefaultProductPlugin.class);
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin");
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                              LongLastingSIPGeneration.class);
+        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(), sipGenPluginClass);
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
@@ -191,10 +219,113 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
     }
 
     @Test
+    public void startChainWithIncompletes() throws ModuleException, InterruptedException {
+        // Create a chain
+        AcquisitionProcessingChain processingChain = createProcessingChain("Start Stop 1", DefaultSIPGeneration.class,
+                                                                           Paths.get("src", "test", "resources",
+                                                                                     "startstop", "fake")
+                                                                                   .toAbsolutePath(),
+                                                                           Paths.get("src", "test", "resources",
+                                                                                     "startstop", "images")
+                                                                                   .toAbsolutePath());
+        // Start chain
+        processingService.startManualChain(processingChain.getId(), Optional.empty(), false);
+
+        // Check all products are registered
+        long productCount;
+        int loops = 100;
+        do {
+            Thread.sleep(1_000);
+            loops--;
+            productCount = productRepository.count();
+        } while ((productCount < 100) && (loops != 0));
+
+        if (loops == 0) {
+            Assert.fail();
+        }
+
+        // Check that no running jobs remain
+        loops = 100;
+        long runningAcquisitionJobs;
+        long runningGenerationJobs = 0;
+        do {
+            Thread.sleep(1_000);
+            loops--;
+            runningAcquisitionJobs = jobInfoService.retrieveJobsCount(ProductAcquisitionJob.class.getName(),
+                                                                      JobStatus.RUNNING);
+            runningGenerationJobs = jobInfoService.retrieveJobsCount(SIPGenerationJob.class.getName(),
+                                                                     JobStatus.RUNNING);
+        } while (((runningAcquisitionJobs != 0) || (runningGenerationJobs != 0)) && (loops != 0));
+
+        if (loops == 0) {
+            Assert.assertEquals(0, runningAcquisitionJobs);
+            Assert.assertEquals(0, runningGenerationJobs);
+        }
+
+        // At the end, 95 product must be valid / 5 incompletes
+        loops = 100;
+        long validProducts;
+        do {
+            Thread.sleep(1_000);
+            loops--;
+            validProducts = productRepository
+                    .countByProcessingChainAndSipStateIn(processingChain, Arrays.asList(ProductSIPState.SUBMITTED));
+        } while ((validProducts < 95) && (loops != 0));
+
+        if (loops == 0) {
+            Assert.assertEquals(95, validProducts);
+        }
+
+        Assert.assertEquals(5, productRepository
+                .countByProcessingChainAndStateIn(processingChain, Arrays.asList(ProductState.ACQUIRING)));
+
+        // Check notification for acquired files
+        // --- 195 files scanned / 100 data / 95 images
+        Assert.assertEquals(195,
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                          SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getValue(),
+                                                          SessionNotificationOperator.INC));
+        // Check notification for completed files
+        // -- 95 products set to COMPLETED status
+        Assert.assertEquals(95,
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                          SessionProductPropertyEnum.PROPERTY_COMPLETED.getValue(),
+                                                          SessionNotificationOperator.INC));
+        // -- 95 products pass from COMPLETED to GENERATED
+        Assert.assertEquals(95,
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                          SessionProductPropertyEnum.PROPERTY_COMPLETED.getValue(),
+                                                          SessionNotificationOperator.DEC));
+        // Check notification for incomplet files
+        // --- After All 5 products should be incomplets
+        int inc = notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getValue(),
+                                                SessionNotificationOperator.INC);
+        int dec = notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getValue(),
+                                                SessionNotificationOperator.DEC);
+        Assert.assertEquals(5, inc - dec);
+
+        // Check notification for generated products files
+        Assert.assertEquals(95,
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                          SessionProductPropertyEnum.PROPERTY_GENERATED.getValue(),
+                                                          SessionNotificationOperator.INC));
+        Assert.assertEquals(0,
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                          SessionProductPropertyEnum.PROPERTY_GENERATED.getValue(),
+                                                          SessionNotificationOperator.DEC));
+    }
+
+    @Test
     public void startAndStop() throws ModuleException, InterruptedException {
         // Create a chain
-        AcquisitionProcessingChain processingChain = createProcessingChain("Start Stop 1", Paths
-                .get("src", "test", "resources", "startstop", "fake").toAbsolutePath());
+        AcquisitionProcessingChain processingChain = createProcessingChain("Start Stop 1",
+                                                                           LongLastingSIPGeneration.class,
+                                                                           Paths.get("src", "test", "resources",
+                                                                                     "startstop", "fake")
+                                                                                   .toAbsolutePath(),
+                                                                           null);
 
         // Start chain
         processingService.startManualChain(processingChain.getId(), Optional.empty(), false);
@@ -265,6 +396,39 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         if (loops == 0) {
             Assert.fail();
         }
+
+        // Check notification for acquired files
+        Assert.assertEquals(100,
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                          SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getValue(),
+                                                          SessionNotificationOperator.INC));
+        // Check notification for generated products files
+        Assert.assertEquals(100,
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                          SessionProductPropertyEnum.PROPERTY_GENERATED.getValue(),
+                                                          SessionNotificationOperator.INC));
+        Assert.assertEquals(0,
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                          SessionProductPropertyEnum.PROPERTY_GENERATED.getValue(),
+                                                          SessionNotificationOperator.DEC));
+        // Check notification for completed files
+        Assert.assertEquals(100,
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                          SessionProductPropertyEnum.PROPERTY_COMPLETED.getValue(),
+                                                          SessionNotificationOperator.INC));
+        Assert.assertEquals(100,
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                          SessionProductPropertyEnum.PROPERTY_COMPLETED.getValue(),
+                                                          SessionNotificationOperator.DEC));
+        // Check notification for incomplet files
+        Assert.assertEquals(0,
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                          SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getValue(),
+                                                          SessionNotificationOperator.INC));
+        Assert.assertEquals(0,
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                          SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getValue(),
+                                                          SessionNotificationOperator.DEC));
     }
 
 }
