@@ -21,12 +21,13 @@ package fr.cnes.regards.modules.storage.service.file.job;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -35,13 +36,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
-import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
 
 /**
  * JOB to handle deletion requests on many {@link FileReference}s.<br>
@@ -66,9 +64,6 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
 
     @Autowired
     private FileDeletionRequestService fileDelReqService;
-
-    @Autowired
-    private RequestsGroupService reqGrpService;
 
     /**
      * The job parameters as a map
@@ -98,35 +93,25 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
             LOGGER.info("[DELETION JOB] Calculate all files to delete for storage location {} (forceDelete={})",
                         storage, forceDelete);
             String requestGroupId = String.format("DELETION-%s", UUID.randomUUID().toString());
-            int nbREquests = 0;
+            Set<FileDeletionRequestDTO> deletionRequests = Sets.newHashSet();
             do {
                 // Search for all file references of the given storage location
                 pageResults = fileRefService.search(storage, pageRequest);
-                Set<String> checksums = pageResults.stream().map(f -> f.getMetaInfo().getChecksum())
-                        .collect(Collectors.toSet());
-                Set<FileDeletionRequest> delRequests = fileDelReqService.searchByChecksums(checksums);
                 for (FileReference fileRef : pageResults.getContent()) {
-                    // For each :
-                    // If file is owned send a deletion event for each owner.
-                    // Else create deletion request
-                    if (fileRef.getOwners().isEmpty()) {
-                        fileDelReqService.create(fileRef, forceDelete, requestGroupId, delRequests,
-                                                 FileRequestStatus.TO_DO);
-                        nbREquests++;
-                    } else {
-                        for (String owner : fileRef.getOwners()) {
-                            publisher.publish(DeletionFlowItem.build(FileDeletionRequestDTO
-                                    .build(fileRef.getMetaInfo().getChecksum(), storage, owner, forceDelete),
-                                                                     requestGroupId));
+                    for (String owner : fileRef.getOwners()) {
+                        deletionRequests.add(FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(), storage,
+                                                                          owner, forceDelete));
+                        if (deletionRequests.size() == DeletionFlowItem.MAX_REQUEST_PER_GROUP) {
+                            publisher.publish(DeletionFlowItem.build(deletionRequests, requestGroupId));
+                            deletionRequests.clear();
+                            requestGroupId = String.format("DELETION-%s", UUID.randomUUID().toString());
                         }
                     }
                 }
                 pageRequest = pageRequest.next();
             } while (pageResults.hasNext());
-            if (nbREquests > 0) {
-                // Send group granted request
-                reqGrpService.granted(requestGroupId, FileRequestType.DELETION, nbREquests,
-                                      fileDelReqService.getRequestExpirationDate());
+            if (!deletionRequests.isEmpty()) {
+                publisher.publish(DeletionFlowItem.build(deletionRequests, requestGroupId));
             }
             LOGGER.info("[DELETION JOB] {} files to delete for storage location {} calculated in {}ms",
                         pageResults.getTotalElements(), storage, System.currentTimeMillis() - start);
