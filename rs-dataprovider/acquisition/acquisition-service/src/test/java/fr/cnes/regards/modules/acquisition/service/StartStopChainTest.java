@@ -220,6 +220,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void startChainWithIncompletes() throws ModuleException, InterruptedException {
+        notifHandler.clear();
         // Create a chain
         AcquisitionProcessingChain processingChain = createProcessingChain("Start Stop 1", DefaultSIPGeneration.class,
                                                                            Paths.get("src", "test", "resources",
