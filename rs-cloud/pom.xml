@@ -43,5 +43,6 @@
         <module>rs-gateway</module>
         <module>rs-registry</module>
         <module>rs-authentication</module>
+        <module>bootstrap-openapi-ui</module>
     </modules>
 </project>
