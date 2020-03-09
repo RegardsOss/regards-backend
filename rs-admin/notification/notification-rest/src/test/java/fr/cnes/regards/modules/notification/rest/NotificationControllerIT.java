@@ -19,7 +19,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.util.MimeTypeUtils;
 
 import com.google.common.collect.Sets;
 
@@ -151,7 +150,7 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void testNotifSummary() {
         String token = jwtService.generateToken(getDefaultTenant(), "project.admin@test.fr", DefaultRole.PROJECT_ADMIN.toString());
-        performGet(NotificationController.NOTIFICATION_PATH + NotificationController.SUMMARY, token,
+        performGet(NotificationController.NOTIFICATION_PATH + NotificationController.SUMMARY_PATH, token,
                    customizer().expectStatusOk(), "Could not retrieve notification summary");
     }
 
