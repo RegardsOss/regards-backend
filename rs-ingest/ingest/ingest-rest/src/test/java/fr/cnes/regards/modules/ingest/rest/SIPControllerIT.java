@@ -18,32 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.restdocs.payload.PayloadDocumentation;
-import org.springframework.restdocs.request.ParameterDescriptor;
-import org.springframework.restdocs.request.RequestDocumentation;
-import org.springframework.restdocs.snippet.Attributes;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.geojson.GeoJsonFieldDescriptors;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.geojson.OaisFieldDescriptors;
@@ -62,6 +37,27 @@ import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.hamcrest.Matchers;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
+import org.springframework.restdocs.request.ParameterDescriptor;
+import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.snippet.Attributes;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 /**
  *
@@ -113,7 +109,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         collection.add(firstSIPwithGeometry);
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         documentSipRequestBody(requestBuilderCustomizer);
 
@@ -159,7 +155,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         collection.add(buildSipOne("SIP_002", "data2.fits"));
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
 
         performDefaultPost(SIPController.TYPE_MAPPING, collection, requestBuilderCustomizer,
@@ -231,7 +227,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         collection.add(sip.registerContentInformation());
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.PARTIAL_CONTENT)
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
                 .addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         performDefaultPost(SIPController.TYPE_MAPPING, collection, requestBuilderCustomizer,
                            "Partial valid collection should be submitted.");
@@ -244,7 +240,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         final Path filePath = Paths.get("src", "test", "resources", "sipCollection.json");
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
 
         documentFileRequestParameters(requestBuilderCustomizer);
 
@@ -267,7 +263,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         final Path filePath = Paths.get("src", "test", "resources", "invalidSipCollection.json");
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.PARTIAL_CONTENT);
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         documentFileRequestParameters(requestBuilderCustomizer);
 
         performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH, filePath,
@@ -281,7 +277,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         final Path filePath = Paths.get("src", "test", "resources", "allInvalidSipCollection.json");
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.PARTIAL_CONTENT);
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
 
         performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH, filePath,
                                  requestBuilderCustomizer, "Should be able to import a partial valid SIP collection");
