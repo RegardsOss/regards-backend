@@ -43,7 +43,7 @@ import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
         properties = { "spring.jpa.properties.hibernate.default_schema=notification_perf",
                 "regards.amqp.enabled=true" },
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties" })
-@ActiveProfiles(value = { "testAmqp" })
+@ActiveProfiles(value = { "testAmqp", "noscheduler" })
 public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTest {
 
     @Test

@@ -44,7 +44,7 @@ import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=notification_job", "regards.amqp.enabled=true" },
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties" })
-@ActiveProfiles(value = { "testAmqp" })
+@ActiveProfiles(value = { "testAmqp", "noscheduler" })
 public class NotificationJobIT extends AbstractNotificationMultitenantServiceTest {
 
     /**
@@ -75,6 +75,7 @@ public class NotificationJobIT extends AbstractNotificationMultitenantServiceTes
         Thread.sleep(5000);
         JobInfo failJob = this.jobInforepo.findAll().iterator().next();
         failJob.updateStatus(JobStatus.QUEUED);
+        // this static variable will make succed/fail recipient plugin according it value
         RECIPIENT_FAIL = false;
         this.jobInforepo.save(failJob);
         waitDatabaseCreation(this.recipientErrorRepo, 0, 60);

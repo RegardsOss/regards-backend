@@ -67,7 +67,7 @@ import fr.cnes.regards.modules.notifier.plugin.RecipientSender9;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notification",
         "regards.amqp.enabled=true", "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
         "spring.jpa.properties.hibernate.order_inserts=true" })
-@ActiveProfiles(value = { "testAmqp" })
+@ActiveProfiles(value = { "testAmqp", "noscheduler" })
 public class NotificationServiceIT extends AbstractNotificationMultitenantServiceTest {
 
     @Autowired
