@@ -222,6 +222,11 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
     }
 
     private boolean haveFiles(FeatureDeletionRequest fdr, FeatureEntity feature) {
+        // if non existing urn we will skip this check
+        if (feature == null) {
+            LOGGER.warn(String.format("Trying to delete a non existing feature with urn %s", fdr.getUrn().toString()));
+            return true;
+        }
         return (feature.getFeature().getFiles() != null) && !feature.getFeature().getFiles().isEmpty();
     }
 
