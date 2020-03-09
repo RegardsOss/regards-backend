@@ -312,7 +312,10 @@ public class RequestService implements IRequestService {
     public void switchRequestState(AbstractRequest request) {
         // Handle requests tracked by notifications
         if (request instanceof IngestRequest) {
-            sessionNotifier.ingestRequestErrorDeleted((IngestRequest) request);
+            Optional<IngestRequest> ingReq = ingestRequestRepository.findById(request.getId());
+            if (ingReq.isPresent()) {
+                sessionNotifier.ingestRequestErrorDeleted(ingReq.get());
+            }
         } else if (request instanceof AIPStoreMetaDataRequest) {
             sessionNotifier.decrementMetaStoreError((AIPStoreMetaDataRequest) request);
         }

@@ -276,7 +276,7 @@ public class IngestRequestService implements IIngestRequestService {
     public void handleRemoteRequestDenied(Set<RequestInfo> requests) {
         for (RequestInfo ri : requests) {
             // Retrieve request
-            Optional<IngestRequest> requestOp = ingestRequestRepository.findOne(ri.getGroupId());
+            Optional<IngestRequest> requestOp = ingestRequestRepository.findOneWithAIPs(ri.getGroupId());
             if (requestOp.isPresent()) {
                 IngestRequest request = requestOp.get();
                 switch (request.getStep()) {
@@ -383,7 +383,7 @@ public class IngestRequestService implements IIngestRequestService {
         // Decrement from #requestRemoteStorage
         sessionNotifier.decrementProductStorePending(request);
         // Even if no file is present in AIP, we consider the product as stored
-        sessionNotifier.incrementProductStoreSuccess(request);
+        sessionNotifier.incrementProductStoreError(request);
     }
 
     @Override

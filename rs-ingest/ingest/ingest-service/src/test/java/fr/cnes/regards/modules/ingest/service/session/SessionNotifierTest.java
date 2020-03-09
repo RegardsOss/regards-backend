@@ -29,7 +29,6 @@ import java.util.Set;
 import org.assertj.core.util.Sets;
 import org.junit.Before;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -57,9 +56,6 @@ import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOp
         properties = { "spring.jpa.properties.hibernate.default_schema=session_notif", "eureka.client.enabled=false" },
         locations = { "classpath:application-test.properties" })
 public class SessionNotifierTest extends AbstractMultitenantServiceTest {
-
-    @Autowired
-    private SessionNotifier sessionNotifier;
 
     @SpyBean
     private IPublisher publisher;
