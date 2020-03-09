@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -73,7 +73,7 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
         UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, sipId.getEntityType(),
                 sipId.getTenant(), sipId.getEntityId(), sipId.getVersion());
         // Launch AIP generation
-        List<AIP> aips = generation.generate(sipEntity.getSip(), aipId, sipId, sipEntity.getSip().getId());
+        List<AIP> aips = generation.generate(sipEntity, aipId, sipId, sipEntity.getSip().getId());
         // Add version to AIP
         for (AIP aip : aips) {
             aip.setVersion(sipEntity.getVersion());

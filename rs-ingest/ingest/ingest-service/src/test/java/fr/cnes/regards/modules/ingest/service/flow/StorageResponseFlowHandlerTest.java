@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -127,7 +127,7 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         aipId.setOaisIdentifier(OAISIdentifier.AIP);
         String fileName = UUID.randomUUID().toString();
         String storedUrl = "storage://in/the/place/" + fileToStoreChecksum;
-        AIP aip = AIP.build(EntityType.DATA, aipId, Optional.of(sipId), providerId);
+        AIP aip = AIP.build(EntityType.DATA, aipId, Optional.of(sipId), providerId, sipEntity.getVersion());
         aip.withDataObject(DataType.RAWDATA, Paths.get("file:///somewhere/", fileName), "MD5", fileToStoreChecksum);
         aip.withSyntax(mimeType);
         aip.registerContentInformation();

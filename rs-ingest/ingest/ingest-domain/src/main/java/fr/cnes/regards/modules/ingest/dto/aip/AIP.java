@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -134,13 +134,14 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
      * @param providerId the provider id
      */
     public static AIP build(EntityType type, UniformResourceName aipId, Optional<UniformResourceName> sipId,
-            String providerId) {
+            String providerId, Integer version) {
         Assert.notNull(type, "Entity type is required.");
         Assert.notNull(aipId, "Uniform resource Name is required.");
         Assert.notNull(providerId, "Provider id is required.");
         AIP aip = new AIP().withIdAndType(aipId, type);
         aip.setSipId(sipId.orElse(null));
         aip.setProviderId(providerId);
+        aip.setVersion(version);
         return aip;
     }
 
@@ -151,8 +152,8 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
      * @param sipId SIP URN
      * @param providerId the provider id
      */
-    public static AIP build(SIP sip, UniformResourceName aipId, Optional<UniformResourceName> sipId,
-            String providerId) {
+    public static AIP build(SIP sip, UniformResourceName aipId, Optional<UniformResourceName> sipId, String providerId,
+            Integer version) {
         Assert.notNull(sip, "Valid SIP is required.");
         Assert.notNull(aipId, "Uniform resource Name is required.");
         Assert.notNull(providerId, "Provider id is required.");
@@ -164,6 +165,7 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
         aip.setGeometry(sip.getGeometry());
         // Propagate properties from SIP
         aip.setProperties(sip.getProperties());
+        aip.setVersion(version);
         return aip;
     }
 }

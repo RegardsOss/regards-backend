@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,15 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.domain.sip;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -38,13 +33,19 @@ import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * System POJO for storing SIP.
@@ -67,12 +68,12 @@ import org.hibernate.annotations.TypeDefs;
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class SIPEntity extends AbstractOAISEntity {
 
-
     /**
      * Length used as the checksum column definition.
      * Why 128? it allows to use sha-512. That should limit issues with checksum length for a few years
      */
     public static final int CHECKSUM_MAX_LENGTH = 128;
+
     public static final int MAX_URN_SIZE = 128;
 
     @Id
@@ -87,14 +88,6 @@ public class SIPEntity extends AbstractOAISEntity {
     @NotBlank(message = "SIP ID is required")
     @Column(name = "sipId", length = MAX_URN_SIZE)
     private String sipId;
-
-    /**
-     * SIP version : this value is also reported in {@link #sipId} and must be the same
-     */
-    @NotNull(message = "Version is required")
-    @Min(1)
-    @Max(999)
-    private Integer version;
 
     @NotNull(message = "SIP state is required")
     @Enumerated(EnumType.STRING)
@@ -157,19 +150,11 @@ public class SIPEntity extends AbstractOAISEntity {
         return id;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
-
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (sipId == null ? 0 : sipId.hashCode());
+        result = (prime * result) + (sipId == null ? 0 : sipId.hashCode());
         return result;
     }
 

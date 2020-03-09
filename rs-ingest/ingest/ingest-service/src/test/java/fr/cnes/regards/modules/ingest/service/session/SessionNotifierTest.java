@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -93,13 +93,13 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
                        AIP.build(sipEntity.getSip(),
                                  UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
                                                                      getDefaultTenant(), 1),
-                                 Optional.ofNullable(sipEntity.getSipIdUrn()), providerId));
+                                 Optional.ofNullable(sipEntity.getSipIdUrn()), providerId, sipEntity.getVersion()));
         aipEntity2 = AIPEntity
                 .build(sipEntity, AIPState.GENERATED,
                        AIP.build(sipEntity.getSip(),
                                  UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
                                                                      getDefaultTenant(), 1),
-                                 Optional.ofNullable(sipEntity.getSipIdUrn()), providerId));
+                                 Optional.ofNullable(sipEntity.getSipIdUrn()), providerId, sipEntity.getVersion()));
         aips.add(aipEntity1);
         aips.add(aipEntity2);
         Mockito.clearInvocations(publisher);

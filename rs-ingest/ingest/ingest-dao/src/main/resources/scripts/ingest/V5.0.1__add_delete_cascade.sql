@@ -1,2 +1,0 @@
-alter table t_request drop constraint fk_update_request_update_task_id;
-alter table t_request add constraint fk_update_request_update_task_id foreign key (update_task_id) references t_update_task on delete cascade;

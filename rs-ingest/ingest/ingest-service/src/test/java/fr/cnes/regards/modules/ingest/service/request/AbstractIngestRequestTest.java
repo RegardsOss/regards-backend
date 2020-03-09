@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -103,7 +103,7 @@ public abstract class AbstractIngestRequestTest extends AbstractMultitenantServi
         UniformResourceName sipId = sipEntity.getSipIdUrn();
         UniformResourceName aipId = UniformResourceName.fromString(sipEntity.getSipIdUrn().toString());
         aipId.setOaisIdentifier(OAISIdentifier.AIP);
-        AIP aip = AIP.build(EntityType.DATA, aipId, Optional.of(sipId), providerId);
+        AIP aip = AIP.build(EntityType.DATA, aipId, Optional.of(sipId), providerId, sipEntity.getVersion());
         aipEntity = AIPEntity.build(sipEntity, AIPState.STORED, aip);
         aipEntity = aipRepo.save(aipEntity);
     }
