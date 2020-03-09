@@ -534,7 +534,6 @@ public class ProductService implements IProductService {
         for (String session : sessions) {
             if (!existsByProcessingChainAndSipStateIn(chain, ProductSIPState.SCHEDULED)) {
                 sessionNotifier.notifyEndingChain(chain.getLabel(), session);
-                break;
             }
         }
     }
