@@ -111,7 +111,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     protected SIP create(String providerId, List<String> tags) {
         String fileName = String.format("file-%s.dat", providerId);
         SIP sip = SIP.build(EntityType.DATA, providerId);
-        sip.withDataObject(DataType.RAWDATA, Paths.get("src", "main", "test", "resources", "data", fileName), "MD5",
+        sip.withDataObject(DataType.RAWDATA, Paths.get("src", "test", "resources", "data", fileName), "MD5",
                            UUID.randomUUID().toString());
         sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
         sip.registerContentInformation();
