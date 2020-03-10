@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.geojson;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.geojson.geometry.GeometryCollection;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
@@ -68,6 +69,7 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
     private IGeometry normalizedGeometry = IGeometry.unlocated();
 
     @Valid
+    @NotNull
     protected P properties;
 
     public AbstractFeature() {
@@ -110,7 +112,7 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + (id == null ? 0 : id.hashCode());
+        result = (prime * result) + (id == null ? 0 : id.hashCode());
         return result;
     }
 
