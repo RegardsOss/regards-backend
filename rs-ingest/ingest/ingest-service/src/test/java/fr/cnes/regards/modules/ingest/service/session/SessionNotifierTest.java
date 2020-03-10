@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.assertj.core.util.Sets;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.annotation.DirtiesContext;
@@ -55,6 +56,7 @@ import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOp
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=session_notif", "eureka.client.enabled=false" },
         locations = { "classpath:application-test.properties" })
+@Ignore
 public class SessionNotifierTest extends AbstractMultitenantServiceTest {
 
     @SpyBean
