@@ -2,19 +2,19 @@ package fr.cnes.regards.modules.acquisition.service.session;
 
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
+import fr.cnes.regards.modules.sessionmanager.client.ISessionNotificationClient;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
 
 /**
@@ -68,7 +68,12 @@ public class SessionNotifier {
     private static final String STATE_VALUE_STOP = "DONE";
 
     @Autowired
-    private IPublisher publisher;
+    private ISessionNotificationClient notificationClient;
+
+    @PostConstruct
+    public void init() {
+        notificationClient.setStep(GLOBAL_SESSION_STEP);
+    }
 
     public void notifyChangeProductState(Product product, ProductState nextState) {
         notifyChangeProductState(product, Optional.of(nextState), Optional.empty());
@@ -93,9 +98,13 @@ public class SessionNotifier {
     }
 
     public void notifyStartingChain(String sessionOwner, String session) {
-        publisher.publish(SessionMonitoringEvent.build(sessionOwner, session, SessionNotificationState.OK,
-                                                       GLOBAL_SESSION_STEP, SessionNotificationOperator.REPLACE,
-                                                       PROPERTY_STATE, STATE_VALUE_START));
+        notificationClient.stepValue(sessionOwner, session, PROPERTY_STATE, SessionNotificationState.OK,
+                                     STATE_VALUE_START);
+    }
+
+    public void notifyEndingChain(String sessionOwner, String session) {
+        notificationClient.stepValue(sessionOwner, session, PROPERTY_STATE, SessionNotificationState.OK,
+                                     STATE_VALUE_STOP);
     }
 
     public void notifyProductDeleted(String sessionOwner, Product product) {
@@ -134,7 +143,7 @@ public class SessionNotifier {
      * @param label
      * @param product
      */
-    public void notifyProductChangeSession(String productName, String sessionOwner, String session,
+    private void notifyProductChangeSession(String productName, String sessionOwner, String session,
             String newSessionOwner, String newSession, ProductState productState, ISipState sipState,
             long nbAcquiredFiles) {
         // Decrement number of scanned files
@@ -154,12 +163,6 @@ public class SessionNotifier {
         }
     }
 
-    public void notifyEndingChain(String sessionOwner, String session) {
-        publisher.publish(SessionMonitoringEvent.build(sessionOwner, session, SessionNotificationState.OK,
-                                                       GLOBAL_SESSION_STEP, SessionNotificationOperator.REPLACE,
-                                                       PROPERTY_STATE, STATE_VALUE_STOP));
-    }
-
     private void notifyIncrementSession(String sessionOwner, String session, ProductState state, ISipState sipState) {
         Optional<SessionProductPropertyEnum> property = getProperty(state, sipState);
         if (property.isPresent()) {
@@ -175,11 +178,8 @@ public class SessionNotifier {
 
     private void notifyIncrementSession(String sessionOwner, String session, SessionProductPropertyEnum property,
             long nbItems) {
-        // Add one to the new state
-        SessionMonitoringEvent event = SessionMonitoringEvent
-                .build(sessionOwner, session, property.getState(), GLOBAL_SESSION_STEP, SessionNotificationOperator.INC,
-                       property.getValue(), nbItems);
-        publisher.publish(event);
+        notificationClient.increment(sessionOwner, sessionOwner, property.getValue(), SessionNotificationState.OK,
+                                     nbItems);
     }
 
     private void notifyDecrementSession(String sessionOwner, String session, ProductState state, ISipState sipState) {
@@ -197,11 +197,8 @@ public class SessionNotifier {
 
     private void notifyDecrementSession(String sessionOwner, String session, SessionProductPropertyEnum property,
             long nbItems) {
-        // Add one to the new state
-        SessionMonitoringEvent event = SessionMonitoringEvent
-                .build(sessionOwner, session, SessionNotificationState.OK, GLOBAL_SESSION_STEP,
-                       SessionNotificationOperator.DEC, property.getValue(), nbItems);
-        publisher.publish(event);
+        notificationClient.decrement(sessionOwner, sessionOwner, property.getValue(), SessionNotificationState.OK,
+                                     nbItems);
     }
 
     private Optional<SessionProductPropertyEnum> getProperty(ProductState state, ISipState sipState) {
