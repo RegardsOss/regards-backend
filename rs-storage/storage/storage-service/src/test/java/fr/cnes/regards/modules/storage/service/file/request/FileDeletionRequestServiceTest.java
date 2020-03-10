@@ -83,8 +83,8 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
         Mockito.reset(publisher);
         jobService.runJob(ji, getDefaultTenant()).get();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        // A deletion request should be created for each file
-        Mockito.verify(publisher, Mockito.times(20)).publish(Mockito.any(DeletionFlowItem.class));
+        // A deletion request should be created for a group request containing each file
+        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(DeletionFlowItem.class));
     }
 
     @Test
