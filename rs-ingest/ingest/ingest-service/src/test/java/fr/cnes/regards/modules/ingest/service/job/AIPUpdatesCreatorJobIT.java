@@ -52,6 +52,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.sessionmanager.client.SessionNotificationPublisher;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
 /**
@@ -67,6 +68,9 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdateRunnerJobTest.class);
+
+    @Autowired
+    private SessionNotificationPublisher sessionNotifier;
 
     @Autowired
     private StorageClientMock storageClient;
@@ -119,6 +123,11 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         abstractRequestRepository.deleteAll();
         jobInfoRepository.deleteAll();
+    }
+
+    @Override
+    protected void doAfter() throws Exception {
+        sessionNotifier.debugSession();
     }
 
     public void initData() {

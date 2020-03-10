@@ -144,7 +144,10 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
                                                              requestInfo.getSuccessRequests());
         // Save the AIP
         aipService.save(request.getAip());
-        sessionNotifier.productMetaStoredSuccess(request.getAip());
+        // Monitoring
+        // Decrement from IngestRequestService#finalizeSuccessfulRequest (AIP per AIP)
+        sessionNotifier.decrementMetaStorePending(request);
+        sessionNotifier.incrementMetaStoreSuccess(request);
 
         // Delete the request
         aipStoreMetaDataRepository.delete(request);
@@ -156,7 +159,10 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
                 .collect(Collectors.toSet()));
         request.setState(InternalRequestState.ERROR);
         aipStoreMetaDataRepository.save(request);
-        sessionNotifier.productMetaStoredError(request.getAip());
+        // Monitoring
+        // Decrement from IngestRequestService#finalizeSuccessfulRequest (AIP per AIP)
+        sessionNotifier.decrementMetaStorePending(request);
+        sessionNotifier.incrementMetaStoreError(request);
     }
 
     @Override
