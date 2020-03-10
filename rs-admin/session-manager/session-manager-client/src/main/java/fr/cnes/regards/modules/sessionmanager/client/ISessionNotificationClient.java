@@ -33,4 +33,7 @@ public interface ISessionNotificationClient {
 
     void decrement(String sessionOwner, String session, String property, SessionNotificationState notifState,
             long value);
+
+    void stepValue(String sessionOwner, String session, String property, SessionNotificationState notifState,
+            String value);
 }

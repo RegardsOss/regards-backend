@@ -94,6 +94,17 @@ public class SessionNotificationPublisher implements ISessionNotificationClient 
         }
     }
 
+    @Override
+    public void stepValue(String sessionOwner, String session, String property, SessionNotificationState notifState,
+            String value) {
+        SessionMonitoringEvent event = SessionMonitoringEvent.build(sessionOwner, session, notifState, monitoringStep,
+                                                                    SessionNotificationOperator.REPLACE, property,
+                                                                    value);
+        publisher.publish(event);
+        String key = getCacheKey(sessionOwner, session, property, notifState);
+        LOGGER.trace("Session tracked element {} = {}", key, value);
+    }
+
     private String getCacheKey(String sessionOwner, String session, String property,
             SessionNotificationState notifState) {
         StringBuilder builder = new StringBuilder();
