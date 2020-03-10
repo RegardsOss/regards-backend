@@ -246,7 +246,7 @@ public class StorageLocationService {
             if (conf.isPresent() && (conf.get().getAllocatedSizeInKo() != null)
                     && (conf.get().getAllocatedSizeInKo() > 0L)) {
                 Double ratio = (Double.valueOf(storage.getTotalSizeOfReferencedFilesInKo())
-                        / (conf.get().getAllocatedSizeInKo() * 1024L)) * 100;
+                        / (conf.get().getAllocatedSizeInKo())) * 100;
                 if (ratio >= criticalThreshold) {
                     String message = String
                             .format("Storage location %s has reach its disk usage critical threshold. %nActual occupation: %.2f%%, critical threshold: %s%%",
