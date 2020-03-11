@@ -135,9 +135,13 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         pluginConfRepository.deleteAllInBatch();
 
         // Prepare data repositories
-        FileUtils.forceDelete(TARGET_DATA_PATH.toFile());
+        if (Files.exists(TARGET_DATA_PATH)) {
+            FileUtils.forceDelete(TARGET_DATA_PATH.toFile());
+        }
         Files.createDirectories(TARGET_DATA_PATH);
-        FileUtils.forceDelete(TARGET_BROWSE_PATH.toFile());
+        if (Files.exists(TARGET_BROWSE_PATH)) {
+            FileUtils.forceDelete(TARGET_BROWSE_PATH.toFile());
+        }
         Files.createDirectories(TARGET_BROWSE_PATH);
 
         notificationClient.clearCache();
@@ -242,7 +246,7 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file", new HashSet<>()));
         processingChain.setStorages(storages);
 
-        // Save processing chain
+        // Save processing chainJe vois q
         return processingService.createChain(processingChain);
     }
 
@@ -317,7 +321,7 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         }
 
         processingService.manageRegisteredFiles(processingChain, session);
-        productService.manageUpdatedProducts(processingChain, session);
+        productService.manageUpdatedProducts(processingChain);
 
         // Check registered files
         if (assertResult) {
