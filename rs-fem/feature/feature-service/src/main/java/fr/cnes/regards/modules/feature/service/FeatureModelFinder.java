@@ -29,6 +29,8 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.model.client.IModelClient;
+import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.service.validation.AbstractCacheableModelFinder;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
@@ -43,10 +45,18 @@ public class FeatureModelFinder extends AbstractCacheableModelFinder implements 
     @Autowired
     private IModelAttrAssocClient modelAttrAssocClient;
 
+    @Autowired
+    private IModelClient modelClient;
+
     @Override
     protected List<ModelAttrAssoc> loadAttributesByModel(String modelName) {
         try {
             FeignSecurityManager.asSystem();
+            ResponseEntity<List<EntityModel<Model>>> modelResponse = modelClient.getModels(null);
+            // if the model doesn't exists we return null
+            if (!modelResponse.getBody().stream().anyMatch(model -> model.getContent().getName().equals(modelName))) {
+                return null;
+            }
             ResponseEntity<List<EntityModel<ModelAttrAssoc>>> response = modelAttrAssocClient
                     .getModelAttrAssocs(modelName);
             List<ModelAttrAssoc> attModelAssocs = new ArrayList<>();
