@@ -2,10 +2,10 @@
   "primaryPane": "ALWAYS_EXPANDED",
   "facets": {
     "enabledFor": {
-      "DATA": false,
-      "DATASET": false
+      "DATA": true,
+      "DATASET": true
     },
-    "initiallyEnabled": false,
+    "initiallyEnabled": true,
     "list": []
   },
   "restrictions": {
@@ -16,16 +16,60 @@
   },
   "viewsGroups": {
     "DATA": {
-      "enableDownload": true,
-      "tabTitle": {
-        "en": "",
-        "fr": ""
-      },
-      "initialMode": "TABLE",
-      "sorting": [],
       "enabled": true,
+      "tabTitle": {},
+      "initialMode": "TABLE",
+      "enableDownload": false,
+      "sorting": [
+        {
+          "attributes": [
+            {
+              "name": "label"
+            }
+          ]
+        }
+      ],
       "views": {
         "TABLE": {
+          "enabled": true,
+          "attributes": [
+            {
+              "attributes": [
+                {
+                  "name": "files"
+                }
+              ],
+              "label": {
+                "en": "Thumbnail",
+                "fr": "Vignette"
+              }
+            },
+            {
+              "attributes": [
+                {
+                  "name": "label"
+                }
+              ],
+              "label": {
+                "en": "Label",
+                "fr": "Libellé"
+              }
+            },
+            {
+              "attributes": [
+                {
+                  "name": "providerId"
+                }
+              ],
+              "label": {
+                "en": "Provider ID",
+                "fr": "ID fournisseur"
+              }
+            }
+          ]
+        },
+        "QUICKLOOK": {
+          "enabled": true,
           "attributes": [
             {
               "attributes": [
@@ -41,60 +85,58 @@
             {
               "attributes": [
                 {
-                  "name": "id"
+                  "name": "providerId"
                 }
               ],
               "label": {
-                "en": "Identifier",
-                "fr": "Identifiant"
+                "en": "Provider ID",
+                "fr": "ID fournisseur"
+              }
+            }
+          ]
+        },
+        "MAP": {
+          "enabled": false,
+          "attributes": [],
+          "backgroundLayer": {
+            "url": null,
+            "type": "AsynchroneWMS"
+          }
+        }
+      }
+    },
+    "DATASET": {
+      "enabled": true,
+      "tabTitle": {},
+      "initialMode": "TABLE",
+      "sorting": [],
+      "views": {
+        "TABLE": {
+          "enabled": true,
+          "attributes": [
+            {
+              "attributes": [
+                {
+                  "name": "label"
+                }
+              ],
+              "label": {
+                "en": "Label",
+                "fr": "Libellé"
               }
             },
             {
               "attributes": [
                 {
-                  "name": "files.THUMBNAIL[0]"
+                  "name": "providerId"
                 }
               ],
               "label": {
-                "en": "Thumbnail",
-                "fr": "Vignette"
+                "en": "Provider ID",
+                "fr": "ID fournisseur"
               }
             }
-          ],
-          "enabled": true
-        },
-        "QUICKLOOK": {
-          "attributes": [],
-          "enabled": false
-        },
-        "MAP": {
-          "attributes": [],
-          "enabled": false
-        }
-      },
-      "facets": {
-        "initiallyEnabled": false,
-        "list": [],
-        "enabled": false
-      }
-    },
-    "DATASET": {
-      "tabTitle": {},
-      "initialMode": "LIST",
-      "sorting": [],
-      "enabled": false,
-      "views": {
-        "TABLE": {
-          "attributes": [],
-          "enabled": false
-        },
-        "QUICKLOOK": {
-          "attributes": [],
-          "enabled": false
-        },
-        "MAP": {
-          "attributes": [],
-          "enabled": false
+          ]
         }
       }
     }
