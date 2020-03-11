@@ -48,6 +48,8 @@ public class SessionNotificationPublisher implements ISessionNotificationClient 
 
     private final Map<String, Long> notifCache = new ConcurrentHashMap<>();
 
+    private final Map<String, String> stateCache = new ConcurrentHashMap<>();
+
     @Override
     public void setStep(String step) {
         this.monitoringStep = step;
@@ -101,8 +103,11 @@ public class SessionNotificationPublisher implements ISessionNotificationClient 
                                                                     SessionNotificationOperator.REPLACE, property,
                                                                     value);
         publisher.publish(event);
+
+        // Cache
         String key = getCacheKey(sessionOwner, session, property, notifState);
-        LOGGER.trace("Session tracked element {} = {}", key, value);
+        stateCache.put(key, notifCache.get(key) + value);
+        LOGGER.trace("Session tracked element {} = {}", key, stateCache.get(key));
     }
 
     private String getCacheKey(String sessionOwner, String session, String property,
@@ -118,12 +123,59 @@ public class SessionNotificationPublisher implements ISessionNotificationClient 
         return builder.toString();
     }
 
+    public void clearCache() {
+        notifCache.clear();
+        stateCache.clear();
+    }
+
     /**
      * Make a dump of the cache value
      */
     public void debugSession() {
         for (Entry<String, Long> entry : notifCache.entrySet()) {
-            LOGGER.debug("[CACHE DUMP] Session tracked element {} = {}", entry.getKey(), entry.getValue());
+            LOGGER.debug("[CACHE DUMP / counter] Session tracked element {} = {}", entry.getKey(), entry.getValue());
         }
+        for (Entry<String, String> entry : stateCache.entrySet()) {
+            LOGGER.debug("[CACHE DUMP / state] Session tracked element {} = {}", entry.getKey(), entry.getValue());
+        }
+    }
+
+    /**
+     * Assert that counter has expected count!
+     */
+    public boolean assertCount(String sessionOwner, String session, String property,
+            SessionNotificationState notifState, Long expectedCount) {
+        String key = getCacheKey(sessionOwner, session, property, notifState);
+        Long count = notifCache.get(key);
+        boolean result = ((count == null) && (expectedCount == null))
+                || ((count != null) && count.equals(expectedCount));
+
+        // Debug
+        if (result) {
+            LOGGER.debug("Session tracked element {} : accurate expected count \"{}\"", key, expectedCount);
+        } else {
+            LOGGER.error("Session tracked element {} : expected count \"{}\" but was \"{}\"", key, expectedCount,
+                         count);
+        }
+        return result;
+    }
+
+    /**
+     * Assert that state has expected one!
+     */
+    public boolean assertState(String sessionOwner, String session, String property,
+            SessionNotificationState notifState, String expectedState) {
+        String key = getCacheKey(sessionOwner, session, property, notifState);
+        String state = stateCache.get(key);
+        boolean result = (state != null) && state.equals(expectedState);
+
+        // Debug
+        if (result) {
+            LOGGER.debug("Session tracked element {} : accurate expected state \"{}\"", key, expectedState);
+        } else {
+            LOGGER.error("Session tracked element {} : expected state \"{}\" but was \"{}\"", key, expectedState,
+                         state);
+        }
+        return result;
     }
 }

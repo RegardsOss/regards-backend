@@ -21,5 +21,6 @@ package fr.cnes.regards.modules.sessionmanager.domain;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("serial")
 public class SessionLifeCycle extends HashMap<String, Map<String, Object>> {
 }

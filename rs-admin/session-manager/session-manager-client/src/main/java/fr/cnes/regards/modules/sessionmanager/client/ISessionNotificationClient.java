@@ -23,7 +23,9 @@ import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationSt
 public interface ISessionNotificationClient {
 
     /**
-     * Allows to mutate step affected by {@link #increment(String, String, String, SessionNotificationState, long)} or {@link #decrement(String, String, String, SessionNotificationState, long)} actons.
+     * Allows to mutate step affected by {@link #increment(String, String, String, SessionNotificationState, long)},
+     * {@link #decrement(String, String, String, SessionNotificationState, long)}
+     * or {@link #stepValue(String, String, String, SessionNotificationState, String)} actions.
      * <br/> Default : spring.application.name
      */
     void setStep(String step);
