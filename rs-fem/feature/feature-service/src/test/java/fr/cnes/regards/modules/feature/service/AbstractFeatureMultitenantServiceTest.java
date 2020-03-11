@@ -64,6 +64,8 @@ import fr.cnes.regards.modules.feature.service.flow.FeatureReferenceRequestEvent
 import fr.cnes.regards.modules.feature.service.flow.FeatureUpdateRequestEventHandler;
 import fr.cnes.regards.modules.feature.service.flow.NotificationRequestEventHandler;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.model.client.IModelClient;
+import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
@@ -85,6 +87,9 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
     @Autowired
     protected IModelAttrAssocClient modelAttrAssocClientMock;
+
+    @Autowired
+    protected IModelClient modelClientMock;
 
     @Autowired
     protected MultitenantFlattenedAttributeAdapterFactory factory;
@@ -251,6 +256,11 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             factory.registerAttributes(tenant, atts);
 
             // Mock client
+            List<EntityModel<Model>> models = new ArrayList<EntityModel<Model>>();
+            Model mockModel = Mockito.mock(Model.class);
+            Mockito.when(mockModel.getName()).thenReturn(modelName);
+            models.add(new EntityModel<Model>(mockModel));
+            Mockito.when(modelClientMock.getModels(null)).thenReturn(ResponseEntity.ok(models));
             Mockito.when(modelAttrAssocClientMock.getModelAttrAssocs(modelName))
                     .thenReturn(ResponseEntity.ok(resources));
 
