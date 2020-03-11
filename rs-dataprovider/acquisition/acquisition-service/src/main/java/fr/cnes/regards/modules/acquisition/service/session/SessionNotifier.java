@@ -75,10 +75,6 @@ public class SessionNotifier {
         notificationClient.setStep(GLOBAL_SESSION_STEP);
     }
 
-    public void notifyChangeProductState(Product product, ProductState nextState) {
-        notifyChangeProductState(product, Optional.of(nextState), Optional.empty());
-    }
-
     public void notifyChangeProductState(Product product, ISipState nextSipState) {
         notifyChangeProductState(product, Optional.empty(), Optional.of(nextSipState));
     }
@@ -178,8 +174,7 @@ public class SessionNotifier {
 
     private void notifyIncrementSession(String sessionOwner, String session, SessionProductPropertyEnum property,
             long nbItems) {
-        notificationClient.increment(sessionOwner, sessionOwner, property.getValue(), SessionNotificationState.OK,
-                                     nbItems);
+        notificationClient.increment(sessionOwner, session, property.getValue(), SessionNotificationState.OK, nbItems);
     }
 
     private void notifyDecrementSession(String sessionOwner, String session, ProductState state, ISipState sipState) {
@@ -197,8 +192,7 @@ public class SessionNotifier {
 
     private void notifyDecrementSession(String sessionOwner, String session, SessionProductPropertyEnum property,
             long nbItems) {
-        notificationClient.decrement(sessionOwner, sessionOwner, property.getValue(), SessionNotificationState.OK,
-                                     nbItems);
+        notificationClient.decrement(sessionOwner, session, property.getValue(), SessionNotificationState.OK, nbItems);
     }
 
     private Optional<SessionProductPropertyEnum> getProperty(ProductState state, ISipState sipState) {

@@ -196,10 +196,12 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
     @Test
     public void acquisitionWorkflowTest() throws ModuleException {
 
+        String session = "session1";
+
         AcquisitionProcessingChain processingChain = createProcessingChain();
         //AcquisitionProcessingChain processingChain = processingService.getFullChains().get(0);
 
-        processingService.scanAndRegisterFiles(processingChain, "session1");
+        processingService.scanAndRegisterFiles(processingChain, session);
 
         // Check registered files
         for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
@@ -209,7 +211,7 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
             Assert.assertEquals(1, inProgressFiles.getTotalElements());
         }
 
-        processingService.manageRegisteredFiles(processingChain);
+        processingService.manageRegisteredFiles(processingChain, session);
 
         // Check registered files
         for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
