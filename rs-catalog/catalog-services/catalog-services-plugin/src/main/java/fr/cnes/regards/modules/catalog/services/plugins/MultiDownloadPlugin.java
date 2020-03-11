@@ -185,7 +185,7 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
                                                                       "None of the selected files are available for download");
         }
 
-        // Create and stream the ZIP archive containg all downloadable files
+        // Create and stream the ZIP archive containing all downloadable files
         return CatalogPluginResponseFactory
                 .createStreamSuccessResponse(response, getFilesAsZip(toDownloadFilesMap), getArchiveName(),
                                              MediaType.APPLICATION_OCTET_STREAM);
