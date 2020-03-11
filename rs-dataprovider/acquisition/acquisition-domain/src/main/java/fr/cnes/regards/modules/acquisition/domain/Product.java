@@ -49,12 +49,6 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -183,7 +177,7 @@ public class Product {
     public int hashCode() { // NOSONAR
         final int prime = 31;
         int result = 1;
-        result = prime * result + (productName == null ? 0 : productName.hashCode()); // NOSONAR
+        result = (prime * result) + (productName == null ? 0 : productName.hashCode()); // NOSONAR
         return result;
     }
 

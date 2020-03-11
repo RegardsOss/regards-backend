@@ -71,7 +71,6 @@ import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.PostAcquisitionJob;
-import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.session.SessionChangingStateProbe;
 import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
@@ -355,7 +354,7 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Set<Product> linkAcquisitionFilesToProducts(AcquisitionProcessingChain processingChain,
+    public Set<Product> linkAcquisitionFilesToProducts(AcquisitionProcessingChain processingChain, String session,
             List<AcquisitionFile> validFiles) throws ModuleException {
 
         // Get product plugin
@@ -365,11 +364,6 @@ public class ProductService implements IProductService {
         } catch (NotAvailablePluginConfigurationException e1) {
             throw new ModuleException("Unable to run product generation for disabled acquisition chain.", e1);
         }
-
-        // Get current session
-        Map<String, JobParameter> jobsParameters = processingChain.getLastProductAcquisitionJobInfo()
-                .getParametersAsMap();
-        String session = jobsParameters.get(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION).getValue();
 
         // Compute the  list of products to create or update
         Multimap<String, AcquisitionFile> validFilesByProductName = ArrayListMultimap.create();
