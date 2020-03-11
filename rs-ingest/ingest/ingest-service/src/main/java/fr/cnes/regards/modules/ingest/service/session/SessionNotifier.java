@@ -142,6 +142,11 @@ public class SessionNotifier {
                                   SessionNotificationState.OK, 1);
     }
 
+    public void decrementMetaStoreSuccess(AIPStoreMetaDataRequest request) {
+        sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_META_STORED,
+                                  SessionNotificationState.OK, 1);
+    }
+
     public void incrementMetaStoreError(AIPStoreMetaDataRequest request) {
         sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_META_STORE_ERROR,
                                   SessionNotificationState.ERROR, 1);
@@ -208,6 +213,7 @@ public class SessionNotifier {
         int nbGenerated = 0;
         int nbStored = 0;
         int nbStorePending = 0;
+        int nbManifestStored = 0;
         for (AIPEntity aip : aips) {
             // Check if an ingest request exists in error status for the given AIP. If exists, so the product is not
             // referenced as store pending in the session but as store error.
@@ -220,6 +226,9 @@ public class SessionNotifier {
                     break;
                 case STORED:
                     nbStored++;
+                    if (!aip.getManifestLocations().isEmpty()) {
+                        nbManifestStored++;
+                    }
                     break;
                 case DELETED:
                 default:
@@ -234,7 +243,10 @@ public class SessionNotifier {
         if (nbStored > 0) {
             // -x product_stored
             sessionNotifier.decrement(sessionOwner, session, PRODUCT_STORED, SessionNotificationState.OK, nbStored);
-            // TODO -x product_meta_stored ???
+            if (nbManifestStored > 0) {
+                sessionNotifier.decrement(sessionOwner, session, PRODUCT_META_STORED, SessionNotificationState.OK,
+                                          nbManifestStored);
+            }
         }
         sessionNotifier.decrement(sessionOwner, session, PRODUCT_COUNT, SessionNotificationState.OK,
                                   nbGenerated + nbStored);
