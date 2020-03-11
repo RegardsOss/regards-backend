@@ -19,16 +19,16 @@
 
 package fr.cnes.regards.modules.acquisition.dao;
 
+import org.junit.Ignore;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
 
 /**
  * Generate data provider database
  * @author Christophe Mertz
  */
+// @TestPropertySource(properties = { "regards.jpa.multitenant.migrationTool=FLYWAYDB" })
+@Ignore
 public class DataProviderSQLGenerator extends AbstractScriptGeneratorTest {
 
-    @Override
-    public void generate() {
-        super.generate();
-    }
 }
