@@ -155,6 +155,7 @@ public class Feature extends AbstractFeature<Set<IProperty<?>>, String> {
         feature.setModel(model);
         feature.setGeometry(geometry);
         feature.setId(id);
+        feature.setProperties(new HashSet<>());
         return feature;
     }
 
