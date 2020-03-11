@@ -25,6 +25,7 @@ import org.springframework.context.annotation.PropertySource;
 
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.model.client.IModelClient;
 import fr.cnes.regards.modules.model.service.xml.IComputationPluginService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
@@ -50,6 +51,11 @@ public class FeatureTestConfiguration {
     @Bean
     public IAttributeModelClient attributeModelClient() {
         return Mockito.mock(IAttributeModelClient.class);
+    }
+
+    @Bean
+    public IModelClient modelClient() {
+        return Mockito.mock(IModelClient.class);
     }
 
     @Bean
