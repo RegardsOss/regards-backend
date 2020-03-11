@@ -315,6 +315,7 @@ public class RequestService implements IRequestService {
             Optional<IngestRequest> ingReq = ingestRequestRepository.findById(request.getId());
             if (ingReq.isPresent()) {
                 sessionNotifier.ingestRequestErrorDeleted(ingReq.get());
+                sessionNotifier.decrementProductCount(ingReq.get());
             }
         } else if (request instanceof AIPStoreMetaDataRequest) {
             sessionNotifier.decrementMetaStoreError((AIPStoreMetaDataRequest) request);
