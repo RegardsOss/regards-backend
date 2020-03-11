@@ -160,7 +160,6 @@ public class IngestProcessingJob extends AbstractJob<Void> {
             this.request = request;
             try {
                 long start2 = System.currentTimeMillis();
-                ingestRequestService.handleIngestJobStart(request);
                 List<AIP> aips;
                 // retry the process only from the the step needed
                 switch (request.getStep()) {
@@ -171,6 +170,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                     case LOCAL_GENERATION:
                     case LOCAL_TAGGING:
                     case LOCAL_POST_PROCESSING:
+                        ingestRequestService.handleIngestJobStart(request);
                         // Internal preparation step (no plugin involved)
                         currentEntity = initStep.execute(request);
                         // Step 1 : optional preprocessing
