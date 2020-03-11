@@ -230,12 +230,13 @@ public interface IAcquisitionProcessingService {
      * Manage new registered file : prepare or fulfill products and schedule SIP generation as soon as possible
      * @return number of scheduled products
      */
-    long manageRegisteredFiles(AcquisitionProcessingChain processingChain) throws ModuleException;
+    long manageRegisteredFiles(AcquisitionProcessingChain processingChain, String session) throws ModuleException;
 
     /**
      * Same action as {@link #manageRegisteredFiles(AcquisitionProcessingChain)} but in a new transaction and by page
      */
-    ProductsPage manageRegisteredFilesByPage(AcquisitionProcessingChain processingChain) throws ModuleException;
+    ProductsPage manageRegisteredFilesByPage(AcquisitionProcessingChain processingChain, String session)
+            throws ModuleException;
 
     /**
      * Restart jobs in {@link ProductSIPState#SCHEDULED_INTERRUPTED} for processing chain
