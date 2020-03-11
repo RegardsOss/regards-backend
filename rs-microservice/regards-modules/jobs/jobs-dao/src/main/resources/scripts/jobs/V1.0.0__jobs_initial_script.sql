@@ -2,7 +2,7 @@ create table t_job_info (id uuid not null, class_name varchar(255), queued_date 
 create table t_job_parameters (job_id uuid not null, class_name varchar(255), name varchar(100) not null, value text, primary key (job_id, name));
 alter table t_job_parameters add constraint fk_job_param foreign key (job_id) references t_job_info;
 
-create table t_task (id int8 not null, column parent_id int8, primary key (id));
+create table t_task (id int8 not null, parent_id int8, primary key (id));
 create table ta_task_job_info (job_info_id uuid, task_id int8 not null, primary key (task_id));
 
 create sequence seq_task start 1 increment 50;
