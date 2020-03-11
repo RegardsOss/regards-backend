@@ -107,12 +107,7 @@ public class SessionNotifier {
 
     public void decrementProductStorePending(IngestRequest request) {
         sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_STORE_PENDING,
-                SessionNotificationState.OK, request.getAips().size());
-    }
-
-    public void decrementProductStore(IngestRequest request) {
-        sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_STORED,
-                SessionNotificationState.OK, request.getAips().size());
+                                  SessionNotificationState.OK, request.getAips().size());
     }
 
     public void incrementProductStoreSuccess(IngestRequest request) {
@@ -169,17 +164,12 @@ public class SessionNotifier {
     * @param request
     */
     public void requestDeleted(AbstractRequest request) {
-        // If INGEST request
-        if (request instanceof IngestRequest) {
+        // If INGEST request is in error status then we can decrement the number of generation error
+        if ((request.getState() == InternalRequestState.ERROR) && (request instanceof IngestRequest)) {
             // Load with AIPs
             Optional<IngestRequest> oReq = ingestRequestRepository.findById(request.getId());
             if (oReq.isPresent()) {
-                // We can decrement the number of products
-                decrementProductStore(oReq.get());
-                // If request is in error status then we can decrement the number of generation error
-                if (request.getState() == InternalRequestState.ERROR) {
-                    ingestRequestErrorDeleted(oReq.get());
-                }
+                ingestRequestErrorDeleted(oReq.get());
             }
         }
 
