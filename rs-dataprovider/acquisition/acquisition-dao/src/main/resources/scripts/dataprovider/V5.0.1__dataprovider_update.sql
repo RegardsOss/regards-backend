@@ -1,1 +1,0 @@
-alter table t_acq_processing_chain drop column generation_retry_enabled;
