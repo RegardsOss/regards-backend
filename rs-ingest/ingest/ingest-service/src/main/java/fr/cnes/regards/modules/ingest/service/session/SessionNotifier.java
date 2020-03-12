@@ -149,7 +149,13 @@ public class SessionNotifier {
 
     public void incrementMetaStoreSuccess(AIPStoreMetaDataRequest request) {
         sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_META_STORED,
-                                  SessionNotificationState.OK, 1);
+                SessionNotificationState.OK, 1);
+    }
+
+
+    public void decrementMetaStoreSuccess(String sessionOwner, String session, Integer nbAips) {
+        sessionNotifier.increment(sessionOwner, session, PRODUCT_META_STORED,
+                SessionNotificationState.OK, nbAips);
     }
 
     public void incrementMetaStoreError(AIPStoreMetaDataRequest request) {

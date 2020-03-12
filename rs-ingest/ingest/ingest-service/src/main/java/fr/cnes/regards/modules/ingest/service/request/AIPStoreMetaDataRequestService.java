@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import com.google.common.collect.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -76,7 +78,7 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
 
     @Override
     public void handle(List<AIPStoreMetaDataRequest> requests, List<AIPEntity> aipsToUpdate,
-            List<FileDeletionRequestDTO> filesToDelete) {
+            List<FileDeletionRequestDTO> filesToDelete, Table<String, String, Integer> nbManifestRemoved) {
         List<String> requestIds = new ArrayList<>();
         try {
             // Store AIPs meta data requests
@@ -96,6 +98,15 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
                 request.setState(InternalRequestState.TO_SCHEDULE);
             }
         }
+        // Monitor all manifest removed
+        for (String sessionOwner : nbManifestRemoved.columnKeySet()) {
+            Map<String, Integer> row = nbManifestRemoved.row(sessionOwner);
+            for (String session : row.keySet()) {
+                Integer nbRemoved = row.get(session);
+                sessionNotifier.decrementMetaStoreSuccess(sessionOwner, session, nbRemoved);
+            }
+        }
+
 
         // Save request status
         aipStoreMetaDataRepository.saveAll(requests);
