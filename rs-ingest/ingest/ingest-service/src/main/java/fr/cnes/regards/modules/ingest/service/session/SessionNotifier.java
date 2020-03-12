@@ -69,6 +69,11 @@ public class SessionNotifier {
         incrementProductCount(request, 1);
     }
 
+    public void decrementProductCount(IngestRequest request) {
+        sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_COUNT,
+                                  SessionNotificationState.OK, 1);
+    }
+
     // AIP generation
 
     public void incrementProductGenerationPending(IngestRequest request) {
@@ -107,12 +112,12 @@ public class SessionNotifier {
 
     public void decrementProductStorePending(IngestRequest request) {
         sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_STORE_PENDING,
-                SessionNotificationState.OK, request.getAips().size());
+                                  SessionNotificationState.OK, request.getAips().size());
     }
 
     public void decrementProductStore(IngestRequest request) {
         sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_STORED,
-                SessionNotificationState.OK, request.getAips().size());
+                                  SessionNotificationState.OK, request.getAips().size());
     }
 
     public void incrementProductStoreSuccess(IngestRequest request) {
