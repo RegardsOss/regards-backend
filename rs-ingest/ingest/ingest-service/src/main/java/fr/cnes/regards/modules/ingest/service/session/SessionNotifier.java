@@ -132,9 +132,9 @@ public class SessionNotifier {
 
     // AIP storage
 
-    public void incrementMetaStorePending(IngestRequest request) {
-        sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_META_STORE_PENDING,
-                                  SessionNotificationState.OK, request.getAips().size());
+    public void incrementMetaStorePending(AIPEntity aip) {
+        sessionNotifier.increment(aip.getSessionOwner(), aip.getSession(), PRODUCT_META_STORE_PENDING,
+                SessionNotificationState.OK, 1);
     }
 
     public void decrementMetaStorePending(AIPStoreMetaDataRequest request) {
@@ -144,11 +144,6 @@ public class SessionNotifier {
 
     public void incrementMetaStoreSuccess(AIPStoreMetaDataRequest request) {
         sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_META_STORED,
-                                  SessionNotificationState.OK, 1);
-    }
-
-    public void decrementMetaStoreSuccess(AIPStoreMetaDataRequest request) {
-        sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_META_STORED,
                                   SessionNotificationState.OK, 1);
     }
 
