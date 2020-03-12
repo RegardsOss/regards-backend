@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.configuration.dao;
 
 import com.google.gson.Gson;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -244,7 +245,7 @@ public class MigrationV5Test {
         writeToSQL(outputFolder, modules);
     }
 
-    @Test
+    @Ignore
     public void generateConfigurationsFiles() throws Exception {
         // Note: fake test, just example for migrator (here from folder with all migrated elements)
         List<Path> inputDumpFiles = Files.list(Paths.get("/home/rmechali/Bureau/tempo/input")).collect(Collectors.toList());
