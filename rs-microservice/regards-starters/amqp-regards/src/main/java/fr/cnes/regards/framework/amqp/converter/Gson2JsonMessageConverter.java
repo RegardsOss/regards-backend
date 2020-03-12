@@ -52,7 +52,7 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
 
     public static final String DEFAULT_CHARSET = "UTF-8";
 
-    private Gson gson;
+    private final Gson gson;
 
     public Gson2JsonMessageConverter(Gson gson) {
         this.gson = gson;
@@ -79,9 +79,11 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
                 content = gson.fromJson(json, type);
             } catch (IOException | ClassNotFoundException e) {
                 LOGGER.warn("Could not convert incoming message", e);
+                throw new MessageConversionException("Could not convert incoming message", e);
             }
         } else {
             LOGGER.warn("Could not convert incoming message");
+            throw new MessageConversionException("Could not convert incoming message");
         }
         if (content == null) {
             content = message.getBody();
