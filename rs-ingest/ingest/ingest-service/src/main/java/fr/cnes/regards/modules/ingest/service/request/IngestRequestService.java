@@ -349,8 +349,6 @@ public class IngestRequestService implements IIngestRequestService {
 
         // Schedule manifest storage
         aipSaveMetaDataService.schedule(aips, request.getMetadata().getStorages(), false, true);
-        // Monitoring
-        sessionNotifier.incrementMetaStorePending(request);
 
         // Update SIP state
         SIPEntity sipEntity = aips.get(0).getSip();

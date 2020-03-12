@@ -133,6 +133,7 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
 
     private void scheduleRequest(AIPEntity aip, Set<StoreLocation> storages, boolean removeCurrentMetaData,
             boolean computeChecksum) {
+        sessionNotifier.incrementMetaStorePending(aip);
         requestService
                 .scheduleRequest(AIPStoreMetaDataRequest.build(aip, storages, removeCurrentMetaData, computeChecksum));
     }
