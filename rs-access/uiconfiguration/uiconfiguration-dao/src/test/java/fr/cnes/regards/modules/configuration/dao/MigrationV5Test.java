@@ -1,19 +1,21 @@
 package fr.cnes.regards.modules.configuration.dao;
 
 import com.google.gson.Gson;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * This test holds migrating script from v4+ to v1.0.x. It is by no way meant to be a test...
+ *
  * @author Raphaël Mechali
  */
 public class MigrationV5Test {
@@ -135,26 +137,77 @@ public class MigrationV5Test {
         // nothing to do
     }
 
-    public static void writeFile(String outputFolder, String conf, int fileIndex, boolean backup) throws IOException {
-        // A - Build file name: .../module_{index}{_backup?}.json
-        String outputFile = outputFolder + (outputFolder.endsWith("/") ? "" : "/") + "module_" + fileIndex + (backup ? "_backup" : "") + ".json";
+    public static String retreatConfiguration(String built) {
         // remove doubles conversion from gson...
-        String toSave = conf.replaceAll("\\.0", "");
-        Files.write(Paths.get(outputFile), toSave.getBytes());
+        return built.replaceAll("\\.0", "");
     }
 
-    public static void v04toV1Configuration(String modulesDumpPath, String outputFolder, boolean backup) throws IOException {
+    public static void writeConfFile(String outputFolder, String conf, int fileIndex, boolean backup) throws IOException {
+        // A - Build file name: .../module_{index}{_backup?}.json
+        String outputFile = outputFolder + (outputFolder.endsWith("/") ? "" : "/") + "module_" + fileIndex + (backup ? "_backup" : "") + ".json";
+        Files.write(Paths.get(outputFile), conf.getBytes());
+    }
+
+    public static Object extractValue(Map<String, Object> source, List<String> path) {
+        String nextField = path.remove(0);
+        Object nextSource = source.get(nextField);
+        if (nextSource == null || path.isEmpty()) {
+            return nextSource;
+        }
+        return extractValue((Map<String, Object>) nextSource, path);
+    }
+
+
+    public static String toSQLStringValue(Map<String, Object> source, String field) {
+        String s = (String) extractValue(source, new ArrayList<>(Arrays.asList(field.split("\\."))));
+        return s == null ? "NULL" : "'" + s + "'";
+    }
+
+    public static String toSQLBoolValue(Map<String, Object> source, String field) {
+        Boolean b = (Boolean) extractValue(source, new ArrayList<>(Arrays.asList(field.split("\\."))));
+        return b == null || !b ? "FALSE" : "TRUE";
+    }
+
+    public static void writeToSQL(String outputFolder, List<Map<String, Object>> modules) throws IOException {
+        String sqlInsertionScript = "DELETE FROM accessproject.t_ui_module;\n" +
+                "INSERT INTO accessproject.t_ui_module(id,type,description,container,active,applicationid,home,customiconurl,icontype,title,conf)\n"
+                + "VALUES\n";
+        List<String> insertedModules = new ArrayList<>(modules.size());
+        for (Map<String, Object> module : modules) {
+            Map<String, Object> moduleContent = (Map<String, Object>) module.get("content");
+            List<String> values = new ArrayList<>(11);
+            values.add("nextval('accessproject.seq_ui_module')"); // ID
+            values.add(toSQLStringValue(moduleContent, "type")); // type
+            values.add(toSQLStringValue(moduleContent, "description")); // description
+            values.add(toSQLStringValue(moduleContent, "container")); // container
+            values.add(toSQLBoolValue(moduleContent, "active")); // active
+            values.add(toSQLStringValue(moduleContent, "applicationId")); // application ID
+            values.add(toSQLBoolValue(moduleContent, "page.home")); // home
+            values.add(toSQLStringValue(moduleContent, "page.customIconURL")); // custom icon URL
+            values.add(toSQLStringValue(moduleContent, "page.iconType"));
+            values.add(toSQLStringValue(moduleContent, "page.title")); // title
+            values.add(toSQLStringValue(moduleContent, "conf")); // conf
+
+            insertedModules.add("\t(" + String.join(", ", values) + ")");
+        }
+        sqlInsertionScript += String.join(",\n", insertedModules) + ";";
+        String outputSQLFile = outputFolder + (outputFolder.endsWith("/") ? "" : "/") + "insert_updated_modules.sql";
+        Files.write(Paths.get(outputSQLFile), sqlInsertionScript.getBytes());
+    }
+
+
+    public static void v04toV1Configuration(String modulesDumpPath, String outputFolder, boolean backup, boolean newConf) throws IOException {
         // 1 - Extract modules list from dump
         Gson gson = new Gson();
         String fileAsString = new String(Files.readAllBytes(Paths.get(modulesDumpPath)));
         Map<String, Object> confAsMap = gson.fromJson(fileAsString, Map.class);
         List<Map<String, Object>> modules = (List<Map<String, Object>>) confAsMap.get("content");
 
-        // 2 - Foe each module entry, generate file after update
+        // 2 - Fo' each module entry, generate file after update
         int fileIndex = 0;
         for (Map<String, Object> module : modules) {
             Map<String, Object> content = (Map<String, Object>) module.get("content");
-            int id = (int) Math.round((Double)content.get("id"));
+            int id = (int) Math.round((Double) content.get("id"));
             String type = (String) content.get("type");
             String conf = (String) content.get("conf");
             Consumer<Map<String, Object>> updater = null;
@@ -177,21 +230,42 @@ public class MigrationV5Test {
             }
             // 2 - Serialize file configuration
             if (backup) {
-                writeFile(outputFolder, conf, fileIndex, true);
+                writeConfFile(outputFolder, conf, fileIndex, true);
             }
-            String updatedConf = buildUpdatedConfiguration(conf, updater);
-            writeFile(outputFolder, updatedConf, fileIndex, false);
+            String updatedConf = retreatConfiguration(buildUpdatedConfiguration(conf, updater));
+            if (newConf) {
+                writeConfFile(outputFolder, updatedConf, fileIndex, false);
+            }
             fileIndex++;
+            // 3 - Update module as well for later SQL insert statement
+            content.put("conf", updatedConf);
         }
+        // All modules where updated: serialize into an sql script
+        writeToSQL(outputFolder, modules);
     }
 
-    @Ignore
+    @Test
     public void generateConfigurationsFiles() throws Exception {
-        // Note: fake test, just example for migrator
-        // Expected input #1: Modules list dump, from rs-access/modules (root, with both content and metadata fields)
-        // Expected input #2: Path to the folder that will hold backup and updated files
-        // Backup: Should generate backup configuration files too?
-        v04toV1Configuration("src/test/resources/modules_cdpp.json", "/home/rmechali/Bureau/tempo/CDPP/", true);
+        // Note: fake test, just example for migrator (here from folder with all migrated elements)
+        List<Path> inputDumpFiles = Files.list(Paths.get("/home/rmechali/Bureau/tempo/input")).collect(Collectors.toList());
+        for (Path p : inputDumpFiles) {
+            // A - Create folder for that project
+            String fileName = p.getFileName().toString();
+            String[] parts = fileName.split("\\.");
+            String outputFolderName = parts[0];
+            File outputFolder = new File("/home/rmechali/Bureau/tempo/output/" + outputFolderName);
+            if (!outputFolder.exists()) {
+                if (!outputFolder.mkdir()) {
+                    throw new RuntimeException("Failed creating folder at " + outputFolder.getAbsolutePath());
+                }
+            }
+            // Parameter #1: Modules list dump, from rs-access/modules (root, with both content and metadata fields)
+            // Parameter #2: Path to the folder that will hold backup, updated files and insertion script
+            // Parameter #3: Should write on HDD backup configuration files?
+            // Parameter #4: Should write on HDD new configuration files?
+            v04toV1Configuration("/home/rmechali/Bureau/tempo/input/" + p.getFileName(), outputFolder.getAbsolutePath(), true, true);
+
+        }
     }
 
 }
