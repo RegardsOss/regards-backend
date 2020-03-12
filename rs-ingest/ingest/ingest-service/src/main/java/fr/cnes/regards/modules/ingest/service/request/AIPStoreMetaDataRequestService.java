@@ -99,10 +99,10 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
             }
         }
         // Monitor all manifest removed
-        for (String sessionOwner : nbManifestRemoved.columnKeySet()) {
-            Map<String, Integer> column = nbManifestRemoved.column(sessionOwner);
-            for (String session : column.keySet()) {
-                Integer nbRemoved = column.get(session);
+        for (String session : nbManifestRemoved.columnKeySet()) {
+            Map<String, Integer> column = nbManifestRemoved.column(session);
+            for (String sessionOwner : column.keySet()) {
+                Integer nbRemoved = column.get(sessionOwner);
                 LOGGER.info("Decrement {} stored meta for session {} - {}", nbRemoved,
                         sessionOwner, session);
                 sessionNotifier.decrementMetaStoreSuccess(sessionOwner, session, nbRemoved);
