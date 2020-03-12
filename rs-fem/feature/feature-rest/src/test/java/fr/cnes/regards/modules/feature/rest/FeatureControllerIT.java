@@ -49,6 +49,8 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureValidationService;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.model.client.IModelClient;
+import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
@@ -74,6 +76,9 @@ public class FeatureControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IComputationPluginService cps;
+
+    @Autowired
+    protected IModelClient modelClientMock;
 
     @Autowired
     private MultitenantFlattenedAttributeAdapterFactory factory;
@@ -114,6 +119,11 @@ public class FeatureControllerIT extends AbstractRegardsTransactionalIT {
             factory.registerAttributes(tenant, atts);
 
             // Mock client
+            List<EntityModel<Model>> models = new ArrayList<EntityModel<Model>>();
+            Model mockModel = Mockito.mock(Model.class);
+            Mockito.when(mockModel.getName()).thenReturn(modelName);
+            models.add(new EntityModel<Model>(mockModel));
+            Mockito.when(modelClientMock.getModels(null)).thenReturn(ResponseEntity.ok(models));
             Mockito.when(modelAttrAssocClientMock.getModelAttrAssocs(modelName))
                     .thenReturn(ResponseEntity.ok(resources));
 

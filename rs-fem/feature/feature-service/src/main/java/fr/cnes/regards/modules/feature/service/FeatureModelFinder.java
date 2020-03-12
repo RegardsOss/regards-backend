@@ -53,8 +53,10 @@ public class FeatureModelFinder extends AbstractCacheableModelFinder implements 
         try {
             FeignSecurityManager.asSystem();
             ResponseEntity<List<EntityModel<Model>>> modelResponse = modelClient.getModels(null);
+
             // if the model doesn't exists we return null
-            if (!modelResponse.getBody().stream().anyMatch(model -> model.getContent().getName().equals(modelName))) {
+            if ((modelResponse == null) || !modelResponse.getBody().stream()
+                    .anyMatch(model -> model.getContent().getName().equals(modelName))) {
                 return null;
             }
             ResponseEntity<List<EntityModel<ModelAttrAssoc>>> response = modelAttrAssocClient
