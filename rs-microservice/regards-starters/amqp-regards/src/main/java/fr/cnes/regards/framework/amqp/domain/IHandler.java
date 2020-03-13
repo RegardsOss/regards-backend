@@ -58,12 +58,13 @@ public interface IHandler<M> {
      */
     @Deprecated
     default void handle(TenantWrapper<M> wrapper) {
-        // Deprecated
+        throw new UnsupportedOperationException("This method is deprecated");
     }
 
     default void handle(String tenant, M message) {
         // Default implementation for compatibility
         // This interface will be required in next version
+        handle(TenantWrapper.build(message, tenant));
     }
 
     @SuppressWarnings("unchecked")

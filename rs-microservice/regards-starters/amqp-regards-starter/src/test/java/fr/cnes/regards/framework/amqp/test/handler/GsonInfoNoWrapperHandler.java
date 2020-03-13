@@ -16,23 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp;
+package fr.cnes.regards.framework.amqp.test.handler;
 
-import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.test.event.GsonInfo;
 
 /**
- * {@link IPollerContract} allows to poll {@link IPollable} events for current tenant. This interface represents the
- * common poller contract whether we are in a multitenant or an instance context.
- * @author Sylvain Vissière-Guérinet
- * @author Marc Sordi
+ *
+ * Event using GSON message converter
+ * @author Marc SORDI
+ *
  */
-@FunctionalInterface
-public interface IPollerContract {
+public class GsonInfoNoWrapperHandler extends AbstractNoWrapperReceiver<GsonInfo> {
 
-    /**
-     * @param <T> {@link IPollable} event
-     * @param event {@link IPollable} event
-     * @return {@link IPollable} event in a tenant wrapper
-     */
-    <T extends IPollable> T poll(Class<T> event);
+    @Override
+    protected void doHandle(String tenant, GsonInfo message) {
+        super.doHandle(tenant, message);
+    }
 }

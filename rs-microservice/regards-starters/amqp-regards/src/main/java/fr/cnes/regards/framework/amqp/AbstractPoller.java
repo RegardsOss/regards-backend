@@ -70,7 +70,7 @@ public abstract class AbstractPoller implements IPollerContract {
     }
 
     @Override
-    public <T extends IPollable> TenantWrapper<T> poll(Class<T> pEvent) {
+    public <T extends IPollable> T poll(Class<T> pEvent) {
         String tenant = resolveTenant();
         return poll(tenant, resolveVirtualHost(tenant), pEvent, WorkerMode.UNICAST,
                     EventUtils.getTargetRestriction(pEvent));
@@ -98,8 +98,7 @@ public abstract class AbstractPoller implements IPollerContract {
      * @return event in a {@link TenantWrapper}
      */
     @SuppressWarnings("unchecked")
-    protected <T> TenantWrapper<T> poll(String tenant, String virtualHost, Class<T> eventType, WorkerMode workerMode,
-            Target target) {
+    protected <T> T poll(String tenant, String virtualHost, Class<T> eventType, WorkerMode workerMode, Target target) {
 
         LOGGER.debug("Polling event {} for tenant {} (Target : {}, WorkerMode : {} )", eventType.getName(), tenant,
                      target, workerMode);
@@ -113,7 +112,7 @@ public abstract class AbstractPoller implements IPollerContract {
             amqpAdmin.declareBinding(queue, exchange, workerMode);
 
             // routing key is unnecessary for fanout exchanges but is for direct exchanges
-            return (TenantWrapper<T>) rabbitTemplate.receiveAndConvert(queue.getName(), 0);
+            return (T) rabbitTemplate.receiveAndConvert(queue.getName(), 0);
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }

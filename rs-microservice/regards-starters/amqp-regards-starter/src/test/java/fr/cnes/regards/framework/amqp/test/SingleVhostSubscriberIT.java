@@ -134,6 +134,11 @@ public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
     }
 
     @Override
+    public void publishInfoNoWrapperWithGson() {
+        super.publishInfoNoWrapperWithGson();
+    }
+
+    @Override
     public void testErrorMsg() throws InterruptedException {
         super.testErrorMsg();
     }

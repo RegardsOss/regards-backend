@@ -29,7 +29,7 @@ import org.springframework.amqp.support.converter.MessageConversionException;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -46,8 +46,6 @@ public class JsonMessageConverters implements MessageConverter {
 
     private static final String CONVERTER_TYPE_HEADER = "__ctype__";
 
-    public static final String TENANT_HEADER = "__tenant__";
-
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
@@ -61,16 +59,9 @@ public class JsonMessageConverters implements MessageConverter {
 
     @Override
     public Message toMessage(Object object, MessageProperties messageProperties) throws MessageConversionException {
-        // Retrieve wrapper event
-        TenantWrapper<?> wrapper = (TenantWrapper<?>) object;
-        JsonMessageConverter jmc = EventUtils.getMessageConverter(wrapper.getContent().getClass());
+        JsonMessageConverter jmc = EventUtils.getMessageConverter(object.getClass());
         // Add converter selector
-        messageProperties.getHeaders().put(JsonMessageConverters.CONVERTER_TYPE_HEADER, jmc);
-        // Add wrapped type information for Gson deserialization
-        messageProperties.getHeaders().put(Gson2JsonMessageConverter.WRAPPED_TYPE_HEADER,
-                                           wrapper.getContent().getClass().getName());
-        // Add tenant for Gson tenant specific deserialization
-        messageProperties.getHeaders().put(JsonMessageConverters.TENANT_HEADER, wrapper.getTenant());
+        messageProperties.setHeader(JsonMessageConverters.CONVERTER_TYPE_HEADER, jmc);
         return selectConverter(jmc).toMessage(object, messageProperties);
     }
 
@@ -84,11 +75,11 @@ public class JsonMessageConverters implements MessageConverter {
             throw new MessageConversionException(errorMessage);
         }
 
-        String tenant = messageProperties.getHeader(TENANT_HEADER);
+        String tenant = messageProperties.getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
         String runtimeTenant = runtimeTenantResolver.getTenant();
 
         // Check if tenant already set and match!
-        if (tenant != null && runtimeTenant != null && !runtimeTenant.equals(tenant)) {
+        if ((tenant != null) && (runtimeTenant != null) && !runtimeTenant.equals(tenant)) {
             String errorMessage = String
                     .format("Inconsistent tenant resolution : runtime tenant \"%s\" does not match with message one : \"%s\"",
                             runtimeTenant, tenant);
@@ -97,12 +88,12 @@ public class JsonMessageConverters implements MessageConverter {
         }
 
         try {
-            if (tenant != null && runtimeTenant == null) {
+            if ((tenant != null) && (runtimeTenant == null)) {
                 runtimeTenantResolver.forceTenant(tenant);
             }
             return selectConverter(message.getMessageProperties()).fromMessage(message);
         } finally {
-            if (tenant != null && runtimeTenant == null) {
+            if ((tenant != null) && (runtimeTenant == null)) {
                 runtimeTenantResolver.clearTenant();
             }
         }

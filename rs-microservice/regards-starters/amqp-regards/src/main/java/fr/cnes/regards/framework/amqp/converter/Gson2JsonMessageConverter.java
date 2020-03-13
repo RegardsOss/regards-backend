@@ -36,6 +36,7 @@ import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.amqp.configuration.RabbitVersion;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 
 /**
@@ -48,11 +49,11 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Gson2JsonMessageConverter.class);
 
-    public static final String WRAPPED_TYPE_HEADER = "__gson_wrapped_type__";
+    private static final String WRAPPED_TYPE_HEADER = "__gson_wrapped_type__";
 
     public static final String DEFAULT_CHARSET = "UTF-8";
 
-    private Gson gson;
+    private final Gson gson;
 
     public Gson2JsonMessageConverter(Gson gson) {
         this.gson = gson;
@@ -64,6 +65,8 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
         messageProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
         messageProperties.setContentEncoding(DEFAULT_CHARSET);
         messageProperties.setContentLength(bytes.length);
+        // Add wrapped type information for Gson deserialization
+        messageProperties.setHeader(Gson2JsonMessageConverter.WRAPPED_TYPE_HEADER, object.getClass().getName());
         return new Message(bytes, messageProperties);
     }
 
@@ -74,10 +77,8 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
         if (messageProperties != null) {
             try (Reader json = new InputStreamReader(new ByteArrayInputStream(message.getBody()),
                     Charset.forName("UTF-8"))) {
-                Class<?> eventType = Class.forName((String) messageProperties.getHeaders().get(WRAPPED_TYPE_HEADER));
-                Type type = createTypeToken(eventType).getType();
-                content = gson.fromJson(json, type);
-            } catch (IOException | ClassNotFoundException e) {
+                content = gson.fromJson(json, createTypeToken(message));
+            } catch (IOException e) {
                 LOGGER.warn("Could not convert incoming message", e);
             }
         } else {
@@ -87,6 +88,21 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
             content = message.getBody();
         }
         return content;
+    }
+
+    private static Type createTypeToken(Message message) throws MessageConversionException {
+        try {
+            Class<?> eventType = Class.forName((String) message.getMessageProperties().getHeader(WRAPPED_TYPE_HEADER));
+            if (RabbitVersion.isVersion1_1(message)) {
+                return TypeToken.of(eventType).getType();
+            } else if (RabbitVersion.isVersion1(message)) {
+                return createTypeToken(eventType).getType();
+            } else {
+                throw new MessageConversionException("Unknown message api version");
+            }
+        } catch (ClassNotFoundException e) {
+            throw new MessageConversionException("Cannot convert incoming message", e);
+        }
     }
 
     @SuppressWarnings("serial")
