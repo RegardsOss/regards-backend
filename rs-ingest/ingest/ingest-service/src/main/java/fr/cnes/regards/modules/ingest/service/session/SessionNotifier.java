@@ -154,7 +154,7 @@ public class SessionNotifier {
 
 
     public void decrementMetaStoreSuccess(String sessionOwner, String session, Integer nbAips) {
-        sessionNotifier.increment(sessionOwner, session, PRODUCT_META_STORED,
+        sessionNotifier.decrement(sessionOwner, session, PRODUCT_META_STORED,
                 SessionNotificationState.OK, nbAips);
     }
 
