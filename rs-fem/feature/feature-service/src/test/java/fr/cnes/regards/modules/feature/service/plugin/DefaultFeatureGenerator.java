@@ -26,6 +26,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.request.FeatureReferenceRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
 
 /**
  * Default plugin notification sender
@@ -35,16 +37,22 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 @Plugin(author = "REGARDS Team", description = "Default recipient sender", id = "DefaultFeatureGenerator",
         version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
-public class DefaultFeatureGenerator implements IFeatureCreationRequestEventGenerator {
+public class DefaultFeatureGenerator extends AbstractFeatureMultitenantServiceTest
+        implements IFeatureCreationRequestEventGenerator {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Override
     public Feature createFeatureRequestEvent(FeatureReferenceRequest reference) {
-
-        return Feature.build("id " + reference.getLocation(), null, IGeometry.point(IGeometry.position(10.0, 20.0)),
-                             EntityType.DATA, runtimeTenantResolver.getTenant());
+        String model = mockModelClient("feature_model_01.xml", cps, factory, runtimeTenantResolver.getTenant(),
+                                       modelAttrAssocClientMock);
+        Feature toAdd = Feature.build("id " + reference.getLocation(), null,
+                                      IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model);
+        toAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
+        toAdd.addProperty(IProperty.buildObject("file_characterization",
+                                                IProperty.buildBoolean("valid", Boolean.TRUE)));
+        return toAdd;
     }
 
 }

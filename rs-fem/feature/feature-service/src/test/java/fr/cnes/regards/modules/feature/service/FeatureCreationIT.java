@@ -51,6 +51,7 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
 
 @TestPropertySource(
@@ -188,9 +189,15 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     @Test
     public void testRegisterScheduleProcess() {
         List<Feature> features = new ArrayList<>();
+        String model = mockModelClient("feature_model_01.xml", cps, factory, this.getDefaultTenant(),
+                                       modelAttrAssocClientMock);
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
-            features.add(Feature.build("id" + i, null, IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA,
-                                       "model"));
+            Feature toAdd = Feature.build("id" + i, null, IGeometry.point(IGeometry.position(10.0, 20.0)),
+                                          EntityType.DATA, model);
+            features.add(toAdd);
+            toAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
+            toAdd.addProperty(IProperty.buildObject("file_characterization",
+                                                    IProperty.buildBoolean("valid", Boolean.TRUE)));
         }
 
         StorageMetadata.build("id ");
