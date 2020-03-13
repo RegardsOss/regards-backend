@@ -35,6 +35,7 @@ import org.springframework.amqp.support.converter.MessageConversionException;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 
@@ -77,7 +78,7 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
                 Class<?> eventType = Class.forName((String) messageProperties.getHeaders().get(WRAPPED_TYPE_HEADER));
                 Type type = createTypeToken(eventType).getType();
                 content = gson.fromJson(json, type);
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException | ClassNotFoundException | JsonParseException e) {
                 LOGGER.warn("Could not convert incoming message", e);
                 throw new MessageConversionException("Could not convert incoming message", e);
             }
