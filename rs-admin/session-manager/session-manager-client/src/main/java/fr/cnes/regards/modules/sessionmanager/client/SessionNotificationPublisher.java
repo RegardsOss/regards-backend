@@ -65,11 +65,7 @@ public class SessionNotificationPublisher implements ISessionNotificationClient 
 
         // Cache
         String key = getCacheKey(sessionOwner, session, property, notifState);
-        if (notifCache.containsKey(key)) {
-            notifCache.put(key, notifCache.get(key) + value);
-        } else {
-            notifCache.put(key, value);
-        }
+        notifCache.merge(key, value, Long::sum);
         LOGGER.trace("Session tracked element {} = {}", key, notifCache.get(key));
     }
 
@@ -83,11 +79,7 @@ public class SessionNotificationPublisher implements ISessionNotificationClient 
 
         // Cache
         String key = getCacheKey(sessionOwner, session, property, notifState);
-        if (notifCache.containsKey(key)) {
-            notifCache.put(key, notifCache.get(key) - value);
-        } else {
-            notifCache.put(key, value);
-        }
+        notifCache.merge(key, -value, Long::sum);
         if (notifCache.get(key) < 0) {
             // Value may be negative after restart!
             LOGGER.warn("Session tracked element {} = {}", key, notifCache.get(key));
