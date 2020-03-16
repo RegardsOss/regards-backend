@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.notifier.domain;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -62,7 +63,7 @@ public class Rule {
     @Column(name = "enable", nullable = false)
     private boolean enable = true;
 
-    @OneToMany()
+    @OneToMany(cascade = { CascadeType.REMOVE }, orphanRemoval = true)
     @JoinColumn(name = "rule_id", foreignKey = @ForeignKey(name = "fk_rule_id"))
     private Set<Recipient> recipients = new HashSet<Recipient>();
 
