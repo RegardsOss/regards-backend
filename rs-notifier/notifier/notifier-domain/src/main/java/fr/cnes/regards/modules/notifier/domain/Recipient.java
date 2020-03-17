@@ -30,6 +30,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.reguards.modules.notifier.dto.RecipientDto;
 
 /**
  * @author kevin
@@ -66,9 +67,10 @@ public class Recipient {
         this.recipientPlugin = recipientPlugin;
     }
 
-    public static Recipient build(PluginConfiguration plugin) {
+    public static Recipient build(RecipientDto dto) {
         Recipient recipient = new Recipient();
-        recipient.setRecipientPlugin(plugin);
+        recipient.setId(dto.getId());
+        recipient.setRecipientPlugin(dto.getPluginConf());
 
         return recipient;
     }

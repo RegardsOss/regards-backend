@@ -62,7 +62,7 @@ public class RecipientService implements IRecipientService {
     @Override
     public RecipientDto createOrUpdateRecipient(@Valid RecipientDto dto) throws ModuleException {
         Rule rule = this.ruleRepo.getOne(dto.getRuleId());
-        Recipient toSave = Recipient.build(dto.getPluginConf());
+        Recipient toSave = Recipient.build(dto);
         Recipient result = this.recipientRepo.save(toSave);
         if (result == null) {
             throw new ModuleException(String.format("No Recipient found with id %d", toSave.getId()));
