@@ -208,7 +208,8 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
         recipientPlugin.setPluginId(fail ? "fail" : "DefaultRecipientSender");
         recipientPlugin = this.pluginConfRepo.save(recipientPlugin);
 
-        Recipient recipient = Recipient.build(recipientPlugin);
+        Recipient recipient = new Recipient();
+        recipient.setRecipientPlugin(recipientPlugin);
         recipient = this.recipientRepo.save(recipient);
 
         Rule rule = Rule.build(null, rulePlugin, true);
@@ -222,7 +223,8 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
             recipientPlugin.setLabel("test recipient");
             recipientPlugin.setPluginId("RecipientSender" + (i + 1));
             recipientPlugin = this.pluginConfRepo.save(recipientPlugin);
-            recipient = Recipient.build(recipientPlugin);
+            recipient = new Recipient();
+            recipient.setRecipientPlugin(recipientPlugin);
             this.recipientRepo.save(recipient);
             rule.getRecipients().add(recipient);
         }
