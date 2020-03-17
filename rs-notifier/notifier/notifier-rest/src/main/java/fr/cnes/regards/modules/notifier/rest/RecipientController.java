@@ -127,9 +127,9 @@ public class RecipientController implements IResourceController<RecipientDto> {
         resourceService.addLink(resource, this.getClass(), "getRecipients", LinkRels.SELF,
                                 MethodParamFactory.build(Pageable.class));
         resourceService.addLink(resource, this.getClass(), "createRecipient", LinkRels.CREATE,
-                                MethodParamFactory.build(Pageable.class));
+                                MethodParamFactory.build(RecipientDto.class, element));
         resourceService.addLink(resource, this.getClass(), "updateRecipient", LinkRels.UPDATE,
-                                MethodParamFactory.build(Pageable.class));
+                                MethodParamFactory.build(RecipientDto.class, element));
         resourceService.addLink(resource, this.getClass(), "deleteRecipient", LinkRels.DELETE,
                                 MethodParamFactory.build(Long.class, element.getId()));
         return resource;

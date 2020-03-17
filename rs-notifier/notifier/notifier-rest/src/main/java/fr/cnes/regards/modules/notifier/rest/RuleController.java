@@ -126,9 +126,9 @@ public class RuleController implements IResourceController<RuleDto> {
         resourceService.addLink(resource, this.getClass(), "getRules", LinkRels.SELF,
                                 MethodParamFactory.build(Pageable.class));
         resourceService.addLink(resource, this.getClass(), "createRule", LinkRels.CREATE,
-                                MethodParamFactory.build(Pageable.class));
+                                MethodParamFactory.build(RuleDto.class, element));
         resourceService.addLink(resource, this.getClass(), "updateRule", LinkRels.UPDATE,
-                                MethodParamFactory.build(Pageable.class));
+                                MethodParamFactory.build(RuleDto.class, element));
         resourceService.addLink(resource, this.getClass(), "deleteRule", LinkRels.DELETE,
                                 MethodParamFactory.build(Long.class, element.getId()));
         return resource;
