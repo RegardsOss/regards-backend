@@ -23,6 +23,7 @@ import javax.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.reguards.modules.notifier.dto.RuleDto;
 
@@ -38,8 +39,9 @@ public interface IRuleService {
      * Create or update a {@link Rule} from a {@link RuleDto}
      * @param toCreate
      * @return {@link RuleDto} from the created {@link Rule}
+     * @throws ModuleException if during an update id is unknow
      */
-    public RuleDto createOrUpdateRule(@Valid RuleDto toCreate);
+    public RuleDto createOrUpdateRule(@Valid RuleDto toCreate) throws ModuleException;
 
     /**
      * Delete a {@link Rule} by its id

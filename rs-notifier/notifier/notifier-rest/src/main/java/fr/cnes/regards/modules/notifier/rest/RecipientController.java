@@ -5,6 +5,8 @@ package fr.cnes.regards.modules.notifier.rest;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -12,6 +14,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +25,7 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.notifier.domain.Recipient;
 import fr.cnes.regards.modules.notifier.service.IRecipientService;
@@ -39,6 +43,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RestController
 @RequestMapping(RecipientController.RECIPIENT)
 public class RecipientController implements IResourceController<RecipientDto> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RecipientController.class);
 
     public static final String RECIPIENT = "/recipient";
 
@@ -76,19 +82,28 @@ public class RecipientController implements IResourceController<RecipientDto> {
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Created Recipient") })
     public ResponseEntity<EntityModel<RecipientDto>> createRecipient(
             @Parameter(description = "Recipient to create") @Valid @RequestBody RecipientDto toCreate) {
-        return ResponseEntity.ok(toResource(this.recipientService.createOrUpdateRecipient(toCreate)));
+        Assert.isNull(toCreate.getId(), "Its a creation id must me null!");
+        try {
+            return ResponseEntity.ok(toResource(this.recipientService.createOrUpdateRecipient(toCreate)));
+        } catch (ModuleException e) {
+            LOGGER.error("Impossible! how can it throwed for a creation", e);
+            return null;
+        }
     }
 
     /**
      * Update a {@link Recipient}
      * @return the updated {@link Recipient}
+     * @throws ModuleException if unknow id
      */
     @ResourceAccess(description = "Update a recipient")
     @RequestMapping(method = RequestMethod.PUT)
     @Operation(summary = "Update a recipient", description = "Update a recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Updated Recipient") })
     public ResponseEntity<EntityModel<RecipientDto>> updateRecipient(
-            @Parameter(description = "Recipient to update") @Valid @RequestBody RecipientDto toUpdate) {
+            @Parameter(description = "Recipient to update") @Valid @RequestBody RecipientDto toUpdate)
+            throws ModuleException {
+        Assert.notNull(toUpdate.getId(), "Its a validation id must not be null!");
         return ResponseEntity.ok(toResource(this.recipientService.createOrUpdateRecipient(toUpdate)));
     }
 
@@ -96,7 +111,7 @@ public class RecipientController implements IResourceController<RecipientDto> {
      * Delete a {@link Recipient}
      */
     @ResourceAccess(description = "Delete a recipient")
-    @RequestMapping(method = RequestMethod.DELETE)
+    @RequestMapping(path = ID, method = RequestMethod.DELETE)
     @Operation(summary = "Delete a recipient", description = "Delete a recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200") })
     public ResponseEntity<Void> deleteRecipient(

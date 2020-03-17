@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.reguards.modules.notifier.dto.RuleDto;
@@ -54,10 +55,13 @@ public class RuleService implements IRuleService {
     }
 
     @Override
-    public RuleDto createOrUpdateRule(@Valid RuleDto toCreate) {
-        Rule toSave = Rule.build(toCreate.getId(), toCreate.getPluginConf(), toCreate.isEnabled());
-        Rule created = this.ruleRepo.save(toSave);
-        return RuleDto.build(created.getId(), created.getRulePlugin(), toCreate.isEnabled());
+    public RuleDto createOrUpdateRule(@Valid RuleDto dto) throws ModuleException {
+        Rule toSave = Rule.build(dto.getId(), dto.getPluginConf(), dto.isEnabled());
+        Rule result = this.ruleRepo.save(toSave);
+        if (result == null) {
+            throw new ModuleException(String.format("No Rule found with id %d", toSave.getId()));
+        }
+        return RuleDto.build(result.getId(), result.getRulePlugin(), dto.isEnabled());
     }
 
     @Override

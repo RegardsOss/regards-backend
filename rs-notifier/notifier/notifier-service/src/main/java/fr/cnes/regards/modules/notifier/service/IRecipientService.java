@@ -23,6 +23,7 @@ import javax.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.notifier.domain.Recipient;
 import fr.cnes.reguards.modules.notifier.dto.RecipientDto;
 
@@ -39,8 +40,9 @@ public interface IRecipientService {
      * Create or update a {@link Recipient} from a {@link RecipientDto}
      * @param toCreate
      * @return {@link RecipientDto} from the created {@link Recipient}
+     * @throws ModuleException if during an update id is unknow
      */
-    public RecipientDto createOrUpdateRecipient(@Valid RecipientDto toCreate);
+    public RecipientDto createOrUpdateRecipient(@Valid RecipientDto toCreate) throws ModuleException;
 
     /**
      * Delete a {@link Recipient} by its id

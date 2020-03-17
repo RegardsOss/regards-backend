@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.notifier.dao.IRecipientRepository;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Recipient;
@@ -59,12 +60,15 @@ public class RecipientService implements IRecipientService {
     }
 
     @Override
-    public RecipientDto createOrUpdateRecipient(@Valid RecipientDto toCreate) {
-        Rule rule = this.ruleRepo.getOne(toCreate.getRuleId());
-        Recipient toSave = Recipient.build(toCreate.getPluginConf());
-        Recipient created = this.recipientRepo.save(toSave);
+    public RecipientDto createOrUpdateRecipient(@Valid RecipientDto dto) throws ModuleException {
+        Rule rule = this.ruleRepo.getOne(dto.getRuleId());
+        Recipient toSave = Recipient.build(dto.getPluginConf());
+        Recipient result = this.recipientRepo.save(toSave);
+        if (result == null) {
+            throw new ModuleException(String.format("No Recipient found with id %d", toSave.getId()));
+        }
         rule.getRecipients().add(toSave);
-        return RecipientDto.build(created.getId(), created.getRecipientPlugin());
+        return RecipientDto.build(result.getId(), result.getRecipientPlugin());
     }
 
     @Override

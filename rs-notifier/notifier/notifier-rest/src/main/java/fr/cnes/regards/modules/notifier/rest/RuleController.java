@@ -5,6 +5,8 @@ package fr.cnes.regards.modules.notifier.rest;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -12,6 +14,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +25,7 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.notifier.domain.Recipient;
 import fr.cnes.regards.modules.notifier.domain.Rule;
@@ -40,6 +44,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RestController
 @RequestMapping(RuleController.RULE)
 public class RuleController implements IResourceController<RuleDto> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RecipientController.class);
 
     public static final String RULE = "/rule";
 
@@ -76,19 +82,28 @@ public class RuleController implements IResourceController<RuleDto> {
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Created Rule") })
     public ResponseEntity<EntityModel<RuleDto>> createRule(
             @Parameter(description = "Rule to create") @Valid @RequestBody RuleDto toCreate) {
-        return ResponseEntity.ok(toResource(this.ruleService.createOrUpdateRule(toCreate)));
+        Assert.isNull(toCreate.getId(), "Its a creation id must me null!");
+        try {
+            return ResponseEntity.ok(toResource(this.ruleService.createOrUpdateRule(toCreate)));
+        } catch (ModuleException e) {
+            LOGGER.error("Impossible! how can it throwed for a creation", e);
+            return null;
+        }
     }
 
     /**
      * Update a {@link Rule}
      * @return the updated {@link Rule}
+     * @throws ModuleException if unkow id
      */
     @ResourceAccess(description = "Update a Rule")
     @RequestMapping(method = RequestMethod.PUT)
     @Operation(summary = "Update a rule", description = "Update a Rule")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Updated Rule") })
     public ResponseEntity<EntityModel<RuleDto>> updateRule(
-            @Parameter(description = "Rule to update") @Valid @RequestBody RuleDto toUpdate) {
+            @Parameter(description = "Rule to update") @Valid @RequestBody RuleDto toUpdate) throws ModuleException {
+        Assert.notNull(toUpdate.getId(), "Its a validation id must not be null!");
+
         return ResponseEntity.ok(toResource(this.ruleService.createOrUpdateRule(toUpdate)));
     }
 
@@ -96,7 +111,7 @@ public class RuleController implements IResourceController<RuleDto> {
      * Delete a {@link Recipient}
      */
     @ResourceAccess(description = "Delete a rule")
-    @RequestMapping(method = RequestMethod.DELETE)
+    @RequestMapping(path = ID, method = RequestMethod.DELETE)
     @Operation(summary = "Delete a rule", description = "Delete a rule")
     @ApiResponses(value = { @ApiResponse(responseCode = "200") })
     public ResponseEntity<Void> deleteRecipient(@PathVariable("id") Long id) {
