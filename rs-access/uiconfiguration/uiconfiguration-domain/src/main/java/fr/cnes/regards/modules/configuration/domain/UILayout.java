@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -42,7 +42,7 @@ import org.hibernate.annotations.Type;
 @Entity
 @Table(name = "t_ui_layout",
         uniqueConstraints = { @UniqueConstraint(name = "uk_ui_layout_application_id", columnNames = {"application_id"})})
-public class Layout {
+public class UILayout {
 
     /**
      * Unique id
@@ -107,7 +107,7 @@ public class Layout {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Layout other = (Layout) obj;
+        final UILayout other = (UILayout) obj;
         if (applicationId == null) {
             if (other.applicationId != null) {
                 return false;

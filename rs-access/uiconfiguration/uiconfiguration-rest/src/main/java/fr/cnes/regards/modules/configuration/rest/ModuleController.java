@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -62,7 +62,7 @@ import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.configuration.domain.Layout;
+import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.domain.Module;
 import fr.cnes.regards.modules.configuration.service.IModuleService;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
@@ -103,7 +103,7 @@ public class ModuleController implements IResourceController<Module> {
      * Entry point to retrieve a modules for a given application id {@link Module}.
      * @param applicationId
      * @param moduleId
-     * @return {@link Layout}
+     * @return {@link UILayout}
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -124,7 +124,7 @@ public class ModuleController implements IResourceController<Module> {
      * @param type
      * @param pageable
      * @param assembler
-     * @return {@link Layout}
+     * @return {@link UILayout}
      */
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
