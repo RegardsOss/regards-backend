@@ -66,6 +66,9 @@ public class RecipientService implements IRecipientService {
         if (this.recipientRepo.existsById(toSave.getId()) == false) {
             throw new ModuleException(String.format("No Recipient found with id %d", toSave.getId()));
         }
+        if (rule == null) {
+            throw new ModuleException(String.format("No Rule found with id %d", dto.getRuleId()));
+        }
         Recipient result = this.recipientRepo.save(toSave);
 
         rule.getRecipients().add(toSave);
