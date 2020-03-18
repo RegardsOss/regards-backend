@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.amqp.converter;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
@@ -48,6 +47,8 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 public class Gson2JsonMessageConverter extends AbstractMessageConverter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Gson2JsonMessageConverter.class);
+
+    private static final String CONVERSION_ERROR = "Cannot convert incoming message : %s";
 
     private static final String WRAPPED_TYPE_HEADER = "__gson_wrapped_type__";
 
@@ -78,11 +79,15 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
             try (Reader json = new InputStreamReader(new ByteArrayInputStream(message.getBody()),
                     Charset.forName("UTF-8"))) {
                 content = gson.fromJson(json, createTypeToken(message));
-            } catch (IOException e) {
-                LOGGER.warn("Could not convert incoming message", e);
+            } catch (Exception e) {
+                String errorMessage = String.format(CONVERSION_ERROR, "unexpected error");
+                LOGGER.error(errorMessage, e);
+                throw new MessageConversionException(errorMessage, e);
             }
         } else {
-            LOGGER.warn("Could not convert incoming message");
+            String errorMessage = String.format(CONVERSION_ERROR, "no message properties");
+            LOGGER.error(errorMessage);
+            throw new MessageConversionException(errorMessage);
         }
         if (content == null) {
             content = message.getBody();
@@ -101,6 +106,8 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
                 throw new MessageConversionException("Unknown message api version");
             }
         } catch (ClassNotFoundException e) {
+            String errorMessage = String.format(CONVERSION_ERROR, "JAVA event type no found");
+            LOGGER.error(errorMessage, e);
             throw new MessageConversionException("Cannot convert incoming message", e);
         }
     }
