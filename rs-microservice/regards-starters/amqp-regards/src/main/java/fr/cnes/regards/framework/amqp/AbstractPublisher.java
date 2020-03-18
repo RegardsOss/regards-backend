@@ -259,7 +259,6 @@ public abstract class AbstractPublisher implements IPublisherContract {
         rabbitTemplate.convertAndSend(exchangeName, routingKey, event, pMessage -> {
             MessageProperties messageProperties = pMessage.getMessageProperties();
             messageProperties.setHeader(AmqpConstants.REGARDS_TENANT_HEADER, tenant);
-            messageProperties.setHeader(AmqpConstants.REGARDS_API_VERSION_HEADER, AmqpConstants.REGARDS_VERSION_1_1);
             messageProperties.setPriority(priority);
             return new Message(pMessage.getBody(), messageProperties);
         });

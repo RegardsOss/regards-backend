@@ -26,12 +26,11 @@ public class RabbitVersion {
     }
 
     public static boolean isVersion1(Message message) {
-        String apiVersion = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_API_VERSION_HEADER);
-        return (apiVersion == null) || apiVersion.equals(AmqpConstants.REGARDS_VERSION_1_0);
+        return message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER) == null;
     }
 
     public static boolean isVersion1_1(Message message) {
-        String apiVersion = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_API_VERSION_HEADER);
-        return (apiVersion != null) && apiVersion.equals(AmqpConstants.REGARDS_VERSION_1_1);
+        String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+        return (tenant != null) && !tenant.isEmpty();
     }
 }
