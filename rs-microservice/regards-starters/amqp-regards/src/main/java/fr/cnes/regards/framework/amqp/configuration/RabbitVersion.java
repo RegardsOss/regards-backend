@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,28 +18,19 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
-/**
- * AMQP utility constants
- * @author Marc Sordi
- */
-public final class AmqpConstants {
+import org.springframework.amqp.core.Message;
 
-    /**
-     * Base name for the AMQP manager virtual host.
-     */
-    public static final String AMQP_INSTANCE_MANAGER = "regards.instance.manager";
+public class RabbitVersion {
 
-    public static final String AMQP_MULTITENANT_MANAGER = "regards.multitenant.manager";
+    private RabbitVersion() {
+    }
 
-    public static final String INSTANCE_TENANT = "instance";
+    public static boolean isVersion1(Message message) {
+        return message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER) == null;
+    }
 
-    /**
-     * Headers
-     */
-    public static final String REGARDS_HEADER_NS = "regards.";
-
-    public static final String REGARDS_TENANT_HEADER = REGARDS_HEADER_NS + "tenant";
-
-    private AmqpConstants() {
+    public static boolean isVersion1_1(Message message) {
+        String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+        return (tenant != null) && !tenant.isEmpty();
     }
 }

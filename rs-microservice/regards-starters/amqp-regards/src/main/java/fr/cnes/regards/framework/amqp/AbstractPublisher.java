@@ -32,9 +32,9 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
@@ -244,7 +244,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
     }
 
     /**
-     * Publish event in tenant virtual host
+     * Publish event in tenant virtual
      * @param <T> event type
      * @param tenant tenant
      * @param exchangeName {@link Exchange} name
@@ -255,11 +255,10 @@ public abstract class AbstractPublisher implements IPublisherContract {
     private final <T> void publishMessageByTenant(String tenant, String exchangeName, String routingKey, T event,
             int priority) {
 
-        // Message to publish
-        TenantWrapper<T> messageSended = TenantWrapper.build(event, tenant);
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
-        rabbitTemplate.convertAndSend(exchangeName, routingKey, messageSended, pMessage -> {
+        rabbitTemplate.convertAndSend(exchangeName, routingKey, event, pMessage -> {
             MessageProperties messageProperties = pMessage.getMessageProperties();
+            messageProperties.setHeader(AmqpConstants.REGARDS_TENANT_HEADER, tenant);
             messageProperties.setPriority(priority);
             return new Message(pMessage.getBody(), messageProperties);
         });

@@ -48,6 +48,7 @@ import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.RabbitMessageListenerAdapter;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -317,9 +318,6 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
 
             IBatchHandler<?> batchHandler = (IBatchHandler<?>) handler;
-            // Do not requeue messages
-            // container.setErrorHandler(errorHandler);
-            // container.setDefaultRequeueRejected(false);
             container.setConsumerBatchEnabled(true);
             container.setDeBatchingEnabled(true); // Required if consumer batch enabled is true
             container.setBatchSize(batchHandler.getBatchSize());
@@ -331,7 +329,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         } else {
             container.setChannelTransacted(true);
             container.setDefaultRequeueRejected(false);
-            MessageListenerAdapter messageListener = new MessageListenerAdapter(handler, DEFAULT_HANDLING_METHOD);
+            MessageListenerAdapter messageListener = new RabbitMessageListenerAdapter(handler, DEFAULT_HANDLING_METHOD);
             messageListener.setMessageConverter(messageConverter);
             container.setMessageListener(messageListener);
         }

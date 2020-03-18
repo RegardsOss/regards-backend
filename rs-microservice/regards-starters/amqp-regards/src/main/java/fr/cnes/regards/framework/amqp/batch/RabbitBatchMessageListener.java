@@ -43,6 +43,8 @@ import com.rabbitmq.client.Channel;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.configuration.RabbitVersion;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -98,9 +100,14 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
             try {
                 Object converted = messageConverter.fromMessage(message);
-                if (TenantWrapper.class.isAssignableFrom(converted.getClass())) {
+                if (RabbitVersion.isVersion1(message) && TenantWrapper.class.isAssignableFrom(converted.getClass())) {
+                    // REGARDS API V1.0
                     TenantWrapper<?> wrapper = (TenantWrapper<?>) converted;
                     convertedMessages.put(wrapper.getTenant(), buildBatchMessage(message, wrapper.getContent()));
+                } else if (RabbitVersion.isVersion1_1(message)) {
+                    // REGARDS API V1.1
+                    String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+                    convertedMessages.put(tenant, buildBatchMessage(message, converted));
                 } else {
                     handleWrapperError(message, channel);
                 }

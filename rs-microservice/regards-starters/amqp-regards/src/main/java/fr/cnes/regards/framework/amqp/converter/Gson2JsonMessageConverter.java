@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.amqp.converter;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
@@ -35,8 +34,8 @@ import org.springframework.amqp.support.converter.MessageConversionException;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
 
+import fr.cnes.regards.framework.amqp.configuration.RabbitVersion;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 
 /**
@@ -49,7 +48,9 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Gson2JsonMessageConverter.class);
 
-    public static final String WRAPPED_TYPE_HEADER = "__gson_wrapped_type__";
+    private static final String CONVERSION_ERROR = "Cannot convert incoming message : %s";
+
+    private static final String WRAPPED_TYPE_HEADER = "__gson_wrapped_type__";
 
     public static final String DEFAULT_CHARSET = "UTF-8";
 
@@ -65,6 +66,8 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
         messageProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
         messageProperties.setContentEncoding(DEFAULT_CHARSET);
         messageProperties.setContentLength(bytes.length);
+        // Add wrapped type information for Gson deserialization
+        messageProperties.setHeader(Gson2JsonMessageConverter.WRAPPED_TYPE_HEADER, object.getClass().getName());
         return new Message(bytes, messageProperties);
     }
 
@@ -75,21 +78,38 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
         if (messageProperties != null) {
             try (Reader json = new InputStreamReader(new ByteArrayInputStream(message.getBody()),
                     Charset.forName("UTF-8"))) {
-                Class<?> eventType = Class.forName((String) messageProperties.getHeaders().get(WRAPPED_TYPE_HEADER));
-                Type type = createTypeToken(eventType).getType();
-                content = gson.fromJson(json, type);
-            } catch (IOException | ClassNotFoundException | JsonParseException e) {
-                LOGGER.warn("Could not convert incoming message", e);
-                throw new MessageConversionException("Could not convert incoming message", e);
+                content = gson.fromJson(json, createTypeToken(message));
+            } catch (Exception e) {
+                String errorMessage = String.format(CONVERSION_ERROR, "unexpected error");
+                LOGGER.error(errorMessage, e);
+                throw new MessageConversionException(errorMessage, e);
             }
         } else {
-            LOGGER.warn("Could not convert incoming message");
-            throw new MessageConversionException("Could not convert incoming message");
+            String errorMessage = String.format(CONVERSION_ERROR, "no message properties");
+            LOGGER.error(errorMessage);
+            throw new MessageConversionException(errorMessage);
         }
         if (content == null) {
             content = message.getBody();
         }
         return content;
+    }
+
+    private static Type createTypeToken(Message message) throws MessageConversionException {
+        try {
+            Class<?> eventType = Class.forName((String) message.getMessageProperties().getHeader(WRAPPED_TYPE_HEADER));
+            if (RabbitVersion.isVersion1_1(message)) {
+                return TypeToken.of(eventType).getType();
+            } else if (RabbitVersion.isVersion1(message)) {
+                return createTypeToken(eventType).getType();
+            } else {
+                throw new MessageConversionException("Unknown message api version");
+            }
+        } catch (ClassNotFoundException e) {
+            String errorMessage = String.format(CONVERSION_ERROR, "JAVA event type no found");
+            LOGGER.error(errorMessage, e);
+            throw new MessageConversionException("Cannot convert incoming message", e);
+        }
     }
 
     @SuppressWarnings("serial")
