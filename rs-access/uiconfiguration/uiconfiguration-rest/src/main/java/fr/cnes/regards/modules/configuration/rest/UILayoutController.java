@@ -41,8 +41,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.configuration.domain.Layout;
-import fr.cnes.regards.modules.configuration.service.ILayoutService;
+import fr.cnes.regards.modules.configuration.domain.UILayout;
+import fr.cnes.regards.modules.configuration.service.IUILayoutService;
 
 /**
  * REST controller for the microservice Access
@@ -52,60 +52,60 @@ import fr.cnes.regards.modules.configuration.service.ILayoutService;
  */
 @RestController
 @RequestMapping("/layouts")
-public class LayoutController implements IResourceController<Layout> {
+public class UILayoutController implements IResourceController<UILayout> {
 
     @Autowired
-    private ILayoutService layoutService;
+    private IUILayoutService UILayoutService;
 
     @Autowired
     private IResourceService resourceService;
 
     /**
-     * Entry point to retrieve a {@link Layout}
+     * Entry point to retrieve a {@link UILayout}
      * @param applicationId
      *
-     * @return {@link Layout}
+     * @return {@link UILayout}
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = "/{applicationId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve IHM layout configuration for the given applicationId",
+    @ResourceAccess(description = "Endpoint to retrieve IHM UILayout configuration for the given applicationId",
             role = DefaultRole.PUBLIC)
-    public HttpEntity<EntityModel<Layout>> retrieveLayout(@PathVariable("applicationId") final String applicationId)
+    public HttpEntity<EntityModel<UILayout>> retrieveUILayout(@PathVariable("applicationId") final String applicationId)
             throws EntityNotFoundException {
-        final Layout layout = layoutService.retrieveLayout(applicationId);
-        final EntityModel<Layout> resource = toResource(layout);
+        final UILayout UILayout = UILayoutService.retrieveLayout(applicationId);
+        final EntityModel<UILayout> resource = toResource(UILayout);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     /**
-     * Entry point to update {@link Layout}
+     * Entry point to update {@link UILayout}
      * @param applicationId
-     * @param layout
+     * @param UILayout
      *
-     * @return updated {@link Layout}
+     * @return updated {@link UILayout}
      * @throws EntityException
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = "/{applicationId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve IHM layout configuration for the given applicationId",
+    @ResourceAccess(description = "Endpoint to retrieve IHM UILayout configuration for the given applicationId",
             role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<EntityModel<Layout>> updateLayout(@PathVariable("applicationId") final String applicationId,
-            @Valid @RequestBody final Layout layout) throws EntityException {
-        final Layout updated = layoutService.updateLayout(layout);
-        final EntityModel<Layout> resource = toResource(updated);
+    public HttpEntity<EntityModel<UILayout>> updateUILayout(@PathVariable("applicationId") final String applicationId,
+            @Valid @RequestBody final UILayout UILayout) throws EntityException {
+        final UILayout updated = UILayoutService.updateLayout(UILayout);
+        final EntityModel<UILayout> resource = toResource(updated);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @Override
-    public EntityModel<Layout> toResource(final Layout element, final Object... extras) {
-        final EntityModel<Layout> resource = resourceService.toResource(element);
-        resourceService.addLink(resource, this.getClass(), "retrieveLayout", LinkRels.SELF,
+    public EntityModel<UILayout> toResource(final UILayout element, final Object... extras) {
+        final EntityModel<UILayout> resource = resourceService.toResource(element);
+        resourceService.addLink(resource, this.getClass(), "retrieveUILayout", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, element.getApplicationId()));
-        resourceService.addLink(resource, this.getClass(), "updateLayout", LinkRels.UPDATE,
+        resourceService.addLink(resource, this.getClass(), "updateUILayout", LinkRels.UPDATE,
                                 MethodParamFactory.build(String.class, element.getApplicationId()),
-                                MethodParamFactory.build(Layout.class));
+                                MethodParamFactory.build(UILayout.class));
         return resource;
     }
 

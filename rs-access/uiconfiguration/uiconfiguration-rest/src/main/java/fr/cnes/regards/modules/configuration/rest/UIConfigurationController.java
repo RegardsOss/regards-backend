@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.configuration.rest;
 
+import fr.cnes.regards.modules.configuration.service.IUIConfigurationService;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +23,8 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.configuration.domain.Configuration;
+import fr.cnes.regards.modules.configuration.domain.UIConfiguration;
 import fr.cnes.regards.modules.configuration.domain.ConfigurationDTO;
-import fr.cnes.regards.modules.configuration.service.IConfigurationService;
 
 /**
  * REST controller for the microservice Access
@@ -34,21 +34,26 @@ import fr.cnes.regards.modules.configuration.service.IConfigurationService;
  */
 @RestController
 @RequestMapping("/configuration")
-public class ConfigurationController implements IResourceController<ConfigurationDTO> {
+public class UIConfigurationController implements IResourceController<ConfigurationDTO> {
+
+    public static final String CONFIGURATION_PATH = "/configuration";
+
+    public static final String APPLICATION_ID_PATH = "/{applicationId}";
 
     @Autowired
-    private IConfigurationService configurationService;
+    private IUIConfigurationService configurationService;
 
     @Autowired
     private IResourceService resourceService;
 
     /**
-     * Entry point to retrieve a {@link Configuration}
+     * Entry point to retrieve a {@link UIConfiguration}
      * @param applicationId
      *
-     * @return {@link Configuration}
+     * @return {@link UIConfiguration}
      */
-    @RequestMapping(value = "/{applicationId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = APPLICATION_ID_PATH, method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve Configuration for the given applicationId",
             role = DefaultRole.PUBLIC)
@@ -66,12 +71,12 @@ public class ConfigurationController implements IResourceController<Configuratio
     }
 
     /**
-     * Entry point to add a {@link Configuration}
+     * Entry point to add a {@link UIConfiguration}
      * @param applicationId
      *
-     * @return {@link Configuration}
+     * @return {@link UIConfiguration}
      */
-    @RequestMapping(value = "/{applicationId}", method = RequestMethod.POST,
+    @RequestMapping(value = APPLICATION_ID_PATH, method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to add a Configuration", role = DefaultRole.ADMIN)
@@ -84,12 +89,13 @@ public class ConfigurationController implements IResourceController<Configuratio
     }
 
     /**
-     * Entry point to update a {@link Configuration}
+     * Entry point to update a {@link UIConfiguration}
      * @param applicationId
      *
-     * @return {@link Configuration}
+     * @return {@link UIConfiguration}
      */
-    @RequestMapping(value = "/{applicationId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = APPLICATION_ID_PATH, method = RequestMethod.PUT,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update a Configuration", role = DefaultRole.ADMIN)
     public HttpEntity<EntityModel<ConfigurationDTO>> updateConfiguration(
