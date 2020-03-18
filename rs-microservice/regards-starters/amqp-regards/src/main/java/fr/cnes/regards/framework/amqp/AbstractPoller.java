@@ -28,7 +28,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -95,7 +94,7 @@ public abstract class AbstractPoller implements IPollerContract {
      * @param eventType event to poll
      * @param workerMode {@link WorkerMode}
      * @param target {@link Target}
-     * @return event in a {@link TenantWrapper}
+     * @return event
      */
     @SuppressWarnings("unchecked")
     protected <T> T poll(String tenant, String virtualHost, Class<T> eventType, WorkerMode workerMode, Target target) {

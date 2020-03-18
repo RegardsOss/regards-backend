@@ -30,7 +30,6 @@ import org.springframework.util.ErrorHandler;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
@@ -67,7 +66,7 @@ public class RegardsErrorHandler implements ErrorHandler {
 
     /**
      * This method notifies AMQP failure to INSTANCE_ADMIN and if possible to PROJECT_ADMIN.<br/>
-     * To notify PROJECT_ADMIN, this method uses {@link TenantWrapper#getTenant()} property to retrieve the target tenant.
+     * To notify PROJECT_ADMIN, this method uses only work with tenant header.
      */
     @Override
     public void handleError(Throwable t) {

@@ -331,7 +331,7 @@ public abstract class AbstractSubscriberIT {
     private class ErrorHandler extends AbstractReceiver<ErrorEvent> {
 
         @Override
-        public void handle(TenantWrapper<ErrorEvent> wrapper) {
+        public void handle(String tenant, ErrorEvent message) {
             throw new RuntimeException("Because");
         }
     }
