@@ -57,7 +57,7 @@ public class RuleService implements IRuleService {
     @Override
     public RuleDto createOrUpdateRule(@Valid RuleDto dto) throws ModuleException {
         Rule toSave = Rule.build(dto.getId(), dto.getPluginConf(), dto.isEnabled());
-        if (this.ruleRepo.existsById(toSave.getId()) == false) {
+        if ((toSave.getId() != null) && (this.ruleRepo.existsById(toSave.getId()) == false)) {
             throw new ModuleException(String.format("No Rule found with id %d", toSave.getId()));
         }
         Rule result = this.ruleRepo.save(toSave);

@@ -82,7 +82,7 @@ public class RuleController implements IResourceController<RuleDto> {
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Created Rule") })
     public ResponseEntity<EntityModel<RuleDto>> createRule(
             @Parameter(description = "Rule to create") @Valid @RequestBody RuleDto toCreate) {
-        Assert.isNull(toCreate.getId(), "Its a creation id must me null!");
+        Assert.isNull(toCreate.getId(), "Its a creation id must be null!");
         try {
             return ResponseEntity.ok(toResource(this.ruleService.createOrUpdateRule(toCreate)));
         } catch (ModuleException e) {

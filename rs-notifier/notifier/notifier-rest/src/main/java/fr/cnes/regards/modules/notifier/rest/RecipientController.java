@@ -82,7 +82,7 @@ public class RecipientController implements IResourceController<RecipientDto> {
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Created Recipient") })
     public ResponseEntity<EntityModel<RecipientDto>> createRecipient(
             @Parameter(description = "Recipient to create") @Valid @RequestBody RecipientDto toCreate) {
-        Assert.isNull(toCreate.getId(), "Its a creation id must me null!");
+        Assert.isNull(toCreate.getId(), "Its a creation id must be null!");
         try {
             return ResponseEntity.ok(toResource(this.recipientService.createOrUpdateRecipient(toCreate)));
         } catch (ModuleException e) {
