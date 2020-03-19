@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -248,7 +249,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
         List<LightFeatureCreationRequest> requestsToSchedule = new ArrayList<>();
 
         List<LightFeatureCreationRequest> dbRequests = this.featureCreationRequestLightRepo
-                .findRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED, PageRequest
+                .findRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(), PageRequest
                         .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
 
         if (!dbRequests.isEmpty()) {

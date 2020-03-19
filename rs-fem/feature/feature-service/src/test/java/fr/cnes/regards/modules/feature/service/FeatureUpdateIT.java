@@ -223,7 +223,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         this.waitUpdateRequestDeletion(properties.getMaxBulkSize() / 2, 10000);
 
         List<LightFeatureUpdateRequest> scheduled = this.lightFeatureUpdateRequestRepository
-                .findRequestsToSchedule(PageRequest.of(0, properties.getMaxBulkSize()), OffsetDateTime.now());
+                .findRequestsToSchedule(OffsetDateTime.now(), PageRequest.of(0, properties.getMaxBulkSize()),
+                                        OffsetDateTime.now());
         // half of scheduled should be with priority HIGH
         assertEquals(properties.getMaxBulkSize().intValue() / 2, scheduled.size());
         // check that remaining FeatureUpdateRequest all their their priority not to high

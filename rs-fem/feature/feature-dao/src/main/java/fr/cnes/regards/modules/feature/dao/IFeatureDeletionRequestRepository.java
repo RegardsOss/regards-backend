@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
+import java.time.OffsetDateTime;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -40,10 +41,13 @@ public interface IFeatureDeletionRequestRepository extends JpaRepository<Feature
 
     public Set<FeatureDeletionRequest> findByGroupIdIn(Set<String> groupId);
 
-    public Set<FeatureDeletionRequest> findByStep(FeatureRequestStep step);
+    @Query("select fdr from FeatureDeletionRequest fdr where fdr.step = :step and fdr.requestDate <= :now")
+    public Set<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step,
+            @Param("now") OffsetDateTime offsetDateTime);
 
-    @Query("select fdr from FeatureDeletionRequest fdr where fdr.step = :step and fdr.requestDate <= OffsetDateTime.now()")
-    public Page<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step, Pageable page);
+    @Query("select fdr from FeatureDeletionRequest fdr where fdr.step = :step and fdr.requestDate <= :now")
+    public Page<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step,
+            @Param("now") OffsetDateTime now, Pageable page);
 
     public void deleteByIdIn(Set<Long> ids);
 

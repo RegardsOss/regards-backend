@@ -213,7 +213,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
         long scheduleStart = System.currentTimeMillis();
         List<LightFeatureUpdateRequest> requestsToSchedule = this.lightFeatureUpdateRequestRepo
-                .findRequestsToSchedule(PageRequest.of(0, this.properties.getMaxBulkSize()),
+                .findRequestsToSchedule(OffsetDateTime.now(), PageRequest.of(0, this.properties.getMaxBulkSize()),
                                         OffsetDateTime.now().minusSeconds(this.properties.getDelayBeforeProcessing()));
 
         if (!requestsToSchedule.isEmpty()) {
@@ -256,7 +256,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
      */
     private void filterUrnInDeletion(List<LightFeatureUpdateRequest> requestsToSchedule) {
         Set<FeatureUniformResourceName> deletionUrnScheduled = this.featureDeletionRepo
-                .findByStep(FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED).stream()
+                .findByStep(FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED, OffsetDateTime.now()).stream()
                 .map(request -> request.getUrn()).collect(Collectors.toSet());
         Set<LightFeatureUpdateRequest> errors = requestsToSchedule.stream()
                 .filter(request -> deletionUrnScheduled.contains(request.getUrn())).collect(Collectors.toSet());

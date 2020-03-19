@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -45,13 +46,14 @@ public interface ILightFeatureCreationRequestRepository extends JpaRepository<Li
     /**
      * Get a page of {@link LightFeatureCreationRequest} with specified step.
      * A creation request cannot be scheduled if one is already scheduled with same provider id.
+     * @param now current date we not schedule future request
      * @return a list of {@link FeatureCreationRequest}
      */
     @Query("select request from LightFeatureCreationRequest request where request.providerId not in ("
             + " select scheduledRequest.providerId from LightFeatureCreationRequest scheduledRequest"
-            + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.step = :step and request.requestDate <= OffsetDateTime.now()")
+            + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.step = :step and request.requestDate <= :now")
     public List<LightFeatureCreationRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
-            Pageable page);
+            @Param("now") OffsetDateTime now, Pageable page);
 
     /**
      * Update {@link FeatureRequestStep} step

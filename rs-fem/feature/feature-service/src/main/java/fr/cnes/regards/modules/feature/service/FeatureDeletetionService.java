@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -170,7 +171,7 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
         List<FeatureDeletionRequest> requestsToSchedule = new ArrayList<>();
 
         Page<FeatureDeletionRequest> dbRequests = this.deletionRepo
-                .findByStep(FeatureRequestStep.LOCAL_DELAYED, PageRequest
+                .findByStep(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(), PageRequest
                         .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
 
         if (!dbRequests.isEmpty()) {

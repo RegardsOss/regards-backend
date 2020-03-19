@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -174,7 +175,7 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
         Set<Long> requestIds = new HashSet<>();
 
         List<FeatureReferenceRequest> requestsToSchedule = this.featureReferenceRequestRepo
-                .findByStep(FeatureRequestStep.LOCAL_DELAYED, PageRequest
+                .findByStep(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(), PageRequest
                         .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
         requestIds.addAll(requestsToSchedule.stream().map(request -> request.getId()).collect(Collectors.toList()));
         if (!requestsToSchedule.isEmpty()) {

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -40,10 +41,12 @@ public interface IFeatureCopyRequestRepository extends JpaRepository<FeatureCopy
 
     /**
      * Get a page of {@link FeatureCopyRequest} with specified step.
+     * @param now current date we will not schedule future requests
      * @return a list of {@link FeatureCopyRequest}
      */
-    @Query("select fcr from FeatureCopyRequest fcr where fcr.step = :localDelayed and fcr.requestDate <= OffsetDateTime.now()")
-    List<FeatureCopyRequest> findByStep(@Param("localDelayed") FeatureRequestStep localDelayed, Pageable page);
+    @Query("select fcr from FeatureCopyRequest fcr where fcr.step = :localDelayed and fcr.requestDate <= :now")
+    List<FeatureCopyRequest> findByStep(@Param("localDelayed") FeatureRequestStep localDelayed,
+            @Param("now") OffsetDateTime now, Pageable page);
 
     /**
      * Update {@link FeatureRequestStep} step

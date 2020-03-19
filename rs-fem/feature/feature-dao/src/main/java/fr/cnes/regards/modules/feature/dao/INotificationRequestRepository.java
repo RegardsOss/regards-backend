@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
+import java.time.OffsetDateTime;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -39,8 +40,9 @@ import fr.cnes.regards.modules.feature.domain.request.NotificationRequest;
 @Repository
 public interface INotificationRequestRepository extends JpaRepository<NotificationRequest, Long> {
 
-    @Query("select fcr from NotificationRequest fcr where fcr.step = :step and fcr.requestDate <= OffsetDateTime.now()")
-    public Page<NotificationRequest> findByStep(@Param("step") FeatureRequestStep step, Pageable page);
+    @Query("select fcr from NotificationRequest fcr where fcr.step = :step and fcr.requestDate <= :now")
+    public Page<NotificationRequest> findByStep(@Param("step") FeatureRequestStep step,
+            @Param("now") OffsetDateTime now, Pageable page);
 
     public void deleteByIdIn(Set<Long> ids);
 

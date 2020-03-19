@@ -44,14 +44,16 @@ public interface ILightFeatureUpdateRequestRepository extends JpaRepository<Ligh
     /**
      * Get {@link LightFeatureUpdateRequest} with a {@link Feature} urn not assigned to an other {@link LightFeatureUpdateRequest}
      * with it step set to LOCAL_SCHEDULED an ordered by registration date and before a delay
+     * @param now current date we will not schedule future requests
      * @param page contain the number of {@link LightFeatureUpdateRequest} to return
      * @param delay we want {@link LightFeatureUpdateRequest} with registration date before this delay
      * @return list of {@link LightFeatureUpdateRequest}
      */
     @Query("select request from LightFeatureUpdateRequest request where request.urn not in ("
             + " select scheduledRequest.urn from LightFeatureUpdateRequest scheduledRequest"
-            + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.registrationDate <= :delay and request.requestDate <= OffsetDateTime.now() order by request.priority, request.requestDate ")
-    public List<LightFeatureUpdateRequest> findRequestsToSchedule(Pageable page, @Param("delay") OffsetDateTime delay);
+            + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.registrationDate <= :delay and request.requestDate <= :now order by request.priority, request.requestDate ")
+    public List<LightFeatureUpdateRequest> findRequestsToSchedule(@Param("now") OffsetDateTime now, Pageable page,
+            @Param("delay") OffsetDateTime delay);
 
     /**
      * Update {@link LightFeatureUpdateRequest} step
