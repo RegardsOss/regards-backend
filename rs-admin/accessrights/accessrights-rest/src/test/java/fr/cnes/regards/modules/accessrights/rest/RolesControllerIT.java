@@ -251,12 +251,12 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
                 DefaultRole.REGISTERED_USER.name());
         performGet(RoleController.TYPE_MAPPING + RoleController.SHOULD_ACCESS_TO_RESOURCE, projectAdminJwt,
                 customizer().expectStatusOk().expectToHaveToString("$", "true"),
-                "Failed to validate role hierarchie", DefaultRole.PUBLIC);
+                "Failed to validate role hierarchie", DefaultRole.PUBLIC.toString());
 
 
         performGet(RoleController.TYPE_MAPPING + RoleController.SHOULD_ACCESS_TO_RESOURCE, projectAdminJwt,
                 customizer().expectStatusOk().expectToHaveToString("$", "false"),
-                "users is not above instance admin", DefaultRole.ADMIN);
+                "users is not above instance admin", DefaultRole.ADMIN.toString());
     }
 
 }
