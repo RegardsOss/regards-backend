@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.access.services.rest.aggregator;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

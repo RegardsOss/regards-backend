@@ -117,6 +117,25 @@ public class UIPluginDefinition {
     @Enumerated(EnumType.STRING)
     private Set<EntityType> entityTypes = new HashSet<>();
 
+    /**
+     * Minimal role to return the module on user app
+     */
+    @Column(name = "role_name", nullable = false)
+    private String roleName;
+
+    public static UIPluginDefinition build(String name, String sourcePath, UIPluginTypesEnum type) {
+        return UIPluginDefinition.build(name, sourcePath, type, "PUBLIC");
+    }
+
+    public static UIPluginDefinition build(String name, String sourcePath, UIPluginTypesEnum type, String roleName) {
+        UIPluginDefinition pluginDefinition = new UIPluginDefinition();
+        pluginDefinition.setName(name);
+        pluginDefinition.setSourcePath(sourcePath);
+        pluginDefinition.setType(type);
+        pluginDefinition.setRoleName(roleName);
+        return pluginDefinition;
+    }
+
     public Long getId() {
         return id;
     }
@@ -189,6 +208,14 @@ public class UIPluginDefinition {
      */
     public void setEntityTypes(Set<EntityType> entityTypes) {
         this.entityTypes = entityTypes;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
 
     @Override

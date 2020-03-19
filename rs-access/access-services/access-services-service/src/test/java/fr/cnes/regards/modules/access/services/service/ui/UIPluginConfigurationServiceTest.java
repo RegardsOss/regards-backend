@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import java.util.stream.Stream;
 
 import org.junit.After;
@@ -57,6 +58,8 @@ public class UIPluginConfigurationServiceTest {
 
     private IPublisher publisher;
 
+    private IRolesClient rolesClient;
+
     /**
      * @throws java.lang.Exception
      */
@@ -66,9 +69,10 @@ public class UIPluginConfigurationServiceTest {
         linkedUiPluginRespository = Mockito.mock(ILinkUIPluginsDatasetsRepository.class);
         repository = Mockito.mock(IUIPluginConfigurationRepository.class);
         publisher = Mockito.mock(IPublisher.class);
+        rolesClient = Mockito.mock(IRolesClient.class);
 
         pluginConfigurationService = new UIPluginConfigurationService(pluginRepository, linkedUiPluginRespository,
-                repository, publisher);
+                repository, publisher, rolesClient);
     }
 
     /**

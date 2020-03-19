@@ -120,46 +120,32 @@ public class UIPluginDefinitionService
         final List<UIPluginDefinition> plugins = repository.findAll();
         if (plugins.isEmpty()) {
             // Create string plugin
-            UIPluginDefinition plugin = new UIPluginDefinition();
-            plugin.setName("string-criteria");
-            plugin.setSourcePath("/plugins/criterion/string/plugin.js");
-            plugin.setType(UIPluginTypesEnum.CRITERIA);
+            UIPluginDefinition plugin = UIPluginDefinition.build("string-criteria",
+                    "/plugins/criterion/string/plugin.js", UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
 
-            plugin = new UIPluginDefinition();
-            plugin.setName("full-text-criteria");
-            plugin.setSourcePath("/plugins/criterion/full-text/plugin.js");
-            plugin.setType(UIPluginTypesEnum.CRITERIA);
+            plugin = UIPluginDefinition.build("full-text-criteria",
+                    "/plugins/criterion/full-text/plugin.js", UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
 
-            plugin = new UIPluginDefinition();
-            plugin.setName("numerical-criteria");
-            plugin.setSourcePath("/plugins/criterion/numerical/plugin.js");
-            plugin.setType(UIPluginTypesEnum.CRITERIA);
+            plugin = UIPluginDefinition.build("numerical-criteria",
+                    "/plugins/criterion/numerical/plugin.js", UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
 
-            plugin = new UIPluginDefinition();
-            plugin.setName("two-numerical-criteria");
-            plugin.setSourcePath("/plugins/criterion/two-numerical/plugin.js");
-            plugin.setType(UIPluginTypesEnum.CRITERIA);
+            plugin = UIPluginDefinition.build("two-numerical-criteria",
+                    "/plugins/criterion/two-numerical/plugin.js", UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
 
-            plugin = new UIPluginDefinition();
-            plugin.setName("temporal-criteria");
-            plugin.setSourcePath("/plugins/criterion/temporal/plugin.js");
-            plugin.setType(UIPluginTypesEnum.CRITERIA);
+            plugin = UIPluginDefinition.build("temporal-criteria",
+                    "/plugins/criterion/temporal/plugin.js", UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
 
-            plugin = new UIPluginDefinition();
-            plugin.setName("two-temporal-criteria");
-            plugin.setSourcePath("/plugins/criterion/two-temporal/plugin.js");
-            plugin.setType(UIPluginTypesEnum.CRITERIA);
+            plugin = UIPluginDefinition.build("two-temporal-criteria",
+                    "/plugins/criterion/two-temporal/plugin.js", UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
 
-            plugin = new UIPluginDefinition();
-            plugin.setName("enumerated-criteria");
-            plugin.setSourcePath("/plugins/criterion/enumerated/plugin.js");
-            plugin.setType(UIPluginTypesEnum.CRITERIA);
+            plugin = UIPluginDefinition.build("enumerated-criteria",
+                    "/plugins/criterion/enumerated/plugin.js", UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
         }
     }

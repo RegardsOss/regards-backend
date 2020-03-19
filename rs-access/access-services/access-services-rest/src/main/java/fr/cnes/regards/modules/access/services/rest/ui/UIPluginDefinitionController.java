@@ -109,7 +109,7 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
     public HttpEntity<PagedModel<EntityModel<UIPluginDefinition>>> retrievePlugins(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             @RequestParam(value = "type", required = false) final UIPluginTypesEnum type,
-            final PagedResourcesAssembler<UIPluginDefinition> assembler) throws EntityInvalidException {
+            final PagedResourcesAssembler<UIPluginDefinition> assembler) {
 
         final Page<UIPluginDefinition> plugins;
         if (type != null) {
@@ -156,7 +156,7 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
             @Valid @RequestBody final UIPluginDefinition inPlugin) throws EntityException {
 
         if (!inPlugin.getId().equals(pluginId)) {
-            throw new EntityInvalidException("Invalide application identifier for plugin");
+            throw new EntityInvalidException("Invalid application identifier for plugin");
         }
         final UIPluginDefinition plugin = service.updatePlugin(inPlugin);
         final EntityModel<UIPluginDefinition> resource = toResource(plugin);

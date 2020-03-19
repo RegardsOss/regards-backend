@@ -37,7 +37,6 @@ import org.hibernate.annotations.Type;
  * Layout configuration for projects IHMs
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @Entity
 @Table(name = "t_ui_layout",
