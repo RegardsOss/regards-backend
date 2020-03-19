@@ -18,50 +18,36 @@
  */
 package fr.cnes.regards.modules.notifier.service.flow;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.reguards.modules.notifier.dto.out.NotificationEvent;
-
 /**
  * Default amqp queue used by default recipient plugin
  * @author kevin
  *
  */
-@Component
-@Profile("!nohandler")
-public class NotificationEventHandler
-        implements IBatchHandler<NotificationEvent>, ApplicationListener<ApplicationReadyEvent> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationEventHandler.class);
-
-    @Autowired
-    private ISubscriber subscriber;
-
-    @Override
-    public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(NotificationEvent.class, this);
-
-    }
-
-    @Override
-    public boolean validate(String tenant, NotificationEvent message) {
-        return true;
-
-    }
-
-    @Override
-    public void handleBatch(String tenant, List<NotificationEvent> messages) {
-        LOGGER.debug(String.format("Notification handler reception of %s messages", messages.size()));
-    }
-
-}
+//@Component
+//@Profile("!nohandler")
+//public class NotificationEventHandler
+//        implements IBatchHandler<NotificationEvent>, ApplicationListener<ApplicationReadyEvent> {
+//
+//    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationEventHandler.class);
+//
+//    @Autowired
+//    private ISubscriber subscriber;
+//
+//    @Override
+//    public void onApplicationEvent(ApplicationReadyEvent event) {
+//        subscriber.subscribeTo(NotificationEvent.class, this);
+//
+//    }
+//
+//    @Override
+//    public boolean validate(String tenant, NotificationEvent message) {
+//        return true;
+//
+//    }
+//
+//    @Override
+//    public void handleBatch(String tenant, List<NotificationEvent> messages) {
+//        LOGGER.debug(String.format("Notification handler reception of %s messages", messages.size()));
+//    }
+//
+//}
