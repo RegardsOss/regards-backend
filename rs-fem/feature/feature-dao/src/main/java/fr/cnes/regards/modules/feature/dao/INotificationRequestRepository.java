@@ -39,7 +39,8 @@ import fr.cnes.regards.modules.feature.domain.request.NotificationRequest;
 @Repository
 public interface INotificationRequestRepository extends JpaRepository<NotificationRequest, Long> {
 
-    public Page<NotificationRequest> findByStep(FeatureRequestStep step, Pageable page);
+    @Query("select fcr from NotificationRequest fcr where fcr.step = :step and fcr.requestDate <= OffsetDateTime.now()")
+    public Page<NotificationRequest> findByStep(@Param("step") FeatureRequestStep step, Pageable page);
 
     public void deleteByIdIn(Set<Long> ids);
 

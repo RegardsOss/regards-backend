@@ -49,7 +49,7 @@ public interface ILightFeatureCreationRequestRepository extends JpaRepository<Li
      */
     @Query("select request from LightFeatureCreationRequest request where request.providerId not in ("
             + " select scheduledRequest.providerId from LightFeatureCreationRequest scheduledRequest"
-            + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.step = :step")
+            + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.step = :step and request.requestDate <= OffsetDateTime.now()")
     public List<LightFeatureCreationRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
             Pageable page);
 

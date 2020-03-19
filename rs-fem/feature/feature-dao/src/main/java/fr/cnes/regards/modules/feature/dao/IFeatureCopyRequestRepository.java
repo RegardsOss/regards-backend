@@ -42,7 +42,8 @@ public interface IFeatureCopyRequestRepository extends JpaRepository<FeatureCopy
      * Get a page of {@link FeatureCopyRequest} with specified step.
      * @return a list of {@link FeatureCopyRequest}
      */
-    List<FeatureCopyRequest> findByStep(FeatureRequestStep localDelayed, Pageable page);
+    @Query("select fcr from FeatureCopyRequest fcr where fcr.step = :localDelayed and fcr.requestDate <= OffsetDateTime.now()")
+    List<FeatureCopyRequest> findByStep(@Param("localDelayed") FeatureRequestStep localDelayed, Pageable page);
 
     /**
      * Update {@link FeatureRequestStep} step

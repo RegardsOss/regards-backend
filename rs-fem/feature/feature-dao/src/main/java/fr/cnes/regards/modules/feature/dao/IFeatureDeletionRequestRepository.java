@@ -42,7 +42,8 @@ public interface IFeatureDeletionRequestRepository extends JpaRepository<Feature
 
     public Set<FeatureDeletionRequest> findByStep(FeatureRequestStep step);
 
-    public Page<FeatureDeletionRequest> findByStep(FeatureRequestStep step, Pageable page);
+    @Query("select fdr from FeatureDeletionRequest fdr where fdr.step = :step and fdr.requestDate <= OffsetDateTime.now()")
+    public Page<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step, Pageable page);
 
     public void deleteByIdIn(Set<Long> ids);
 

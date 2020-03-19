@@ -23,7 +23,6 @@ import java.util.UUID;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
 import javax.validation.constraints.Size;
 
 /**
@@ -36,7 +35,6 @@ public abstract class AbstractRequestEvent {
     @Size(max = 36)
     protected String requestId;
 
-    @Past(message = "Request time must be a past date")
     @NotNull(message = "Request time is required")
     private OffsetDateTime requestDate;
 

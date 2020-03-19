@@ -43,7 +43,8 @@ public interface IFeatureReferenceRequestRepository extends JpaRepository<Featur
      * Get a page of {@link FeatureReferenceRequest} with specified step.
      * @return a list of {@link FeatureCreationRequest}
      */
-    List<FeatureReferenceRequest> findByStep(FeatureRequestStep localDelayed, Pageable page);
+    @Query("select frr from FeatureReferenceRequest frr where frr.step = :localDelayed and frr.requestDate <= OffsetDateTime.now()")
+    List<FeatureReferenceRequest> findByStep(@Param("localDelayed") FeatureRequestStep localDelayed, Pageable page);
 
     /**
      * Update {@link FeatureRequestStep} step
