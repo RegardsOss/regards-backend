@@ -73,6 +73,8 @@ public class RoleController implements IResourceController<Role> {
 
     public static final String ROLE_DESCENDANTS = ROLE_MAPPING + "/descendants";
 
+    public static final String SHOULD_ACCESS_TO_RESOURCE = "/include" + ROLE_MAPPING;
+
     /**
      * Mapping for retrieving borrowable role of the current user
      */
@@ -173,6 +175,20 @@ public class RoleController implements IResourceController<Role> {
     public ResponseEntity<Set<Role>> retrieveRoleDescendants(@PathVariable("role_name") String roleName)
             throws EntityNotFoundException {
         return new ResponseEntity<>(roleService.getDescendants(roleService.retrieveRole(roleName)), HttpStatus.OK);
+    }
+
+    /**
+     * Define the endpoint to determine if the provided ${@link Role} is inferior to the one brought by the current request
+     * @param roleName that should be inferior
+     * @return true when the current role should have access to something requiring at least the provided role
+     * @throws EntityNotFoundException if some role does not exists
+     */
+    @ResourceAccess(description = "Return true if the role provided is included by the current role", role = DefaultRole.PUBLIC)
+    @RequestMapping(method = RequestMethod.GET, path = SHOULD_ACCESS_TO_RESOURCE)
+    public ResponseEntity<Boolean> shouldAccessToResourceRequiring(@PathVariable("role_name") String roleName)
+            throws EntityNotFoundException {
+        boolean result = roleService.isCurrentRoleSuperiorTo(roleName);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     /**

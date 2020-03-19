@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import java.util.List;
 import java.util.Set;
 
@@ -59,6 +60,8 @@ public interface IRolesClient { // NOSONAR
     String ROLE_MAPPING = "/{role_name}";
 
     String ROLE_DESCENDANTS = ROLE_MAPPING + "/descendants";
+
+    String SHOULD_ACCESS_TO_RESOURCE = "/include" + ROLE_MAPPING;
 
     /**
      * Mapping for retrieving borrowable role of the current user
@@ -146,4 +149,13 @@ public interface IRolesClient { // NOSONAR
     @RequestMapping(method = RequestMethod.DELETE, value = ROLE_MAPPING)
     ResponseEntity<Void> removeRole(@PathVariable("role_name") final String pRoleName);
 
+    /**
+     * Define the endpoint to determine if the provided ${@link Role} is inferior to the one brought by the current request
+     * @param roleName that should be inferior
+     * @return true when the current role should have access to something requiring at least the provided role
+     * @throws EntityNotFoundException if some role does not exists
+     */
+    @RequestMapping(method = RequestMethod.GET, path = SHOULD_ACCESS_TO_RESOURCE)
+    ResponseEntity<Boolean> shouldAccessToResourceRequiring(@PathVariable("role_name") String roleName)
+            throws EntityNotFoundException;
 }

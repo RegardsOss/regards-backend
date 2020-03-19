@@ -242,4 +242,21 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(ROLE_TEST)));
     }
 
+
+    @Test
+    public void testShouldAccessToResourceRequiring() {
+        // Use PROJECT ADMIN
+        String projectAdminJwt = manageSecurity(getDefaultTenant(), RoleResourceController.TYPE_MAPPING,
+                RequestMethod.GET, getDefaultUserEmail(),
+                DefaultRole.REGISTERED_USER.name());
+        performGet(RoleController.TYPE_MAPPING + RoleController.SHOULD_ACCESS_TO_RESOURCE, projectAdminJwt,
+                customizer().expectStatusOk().expectToHaveToString("$", "true"),
+                "Failed to validate role hierarchie", DefaultRole.PUBLIC);
+
+
+        performGet(RoleController.TYPE_MAPPING + RoleController.SHOULD_ACCESS_TO_RESOURCE, projectAdminJwt,
+                customizer().expectStatusOk().expectToHaveToString("$", "false"),
+                "users is not above instance admin", DefaultRole.ADMIN);
+    }
+
 }

@@ -292,4 +292,10 @@ public interface IRoleService {
      * Init all default roles for the current tenant
      */
     void initDefaultRoles();
+
+    /**
+     * @param roleName ${@link Role} to compare with
+     * @return true if the current user role is superior to the provided one
+     */
+    boolean isCurrentRoleSuperiorTo(String roleName) throws EntityNotFoundException;
 }
