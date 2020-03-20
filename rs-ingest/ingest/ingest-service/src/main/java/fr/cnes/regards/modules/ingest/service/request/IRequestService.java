@@ -94,6 +94,13 @@ public interface IRequestService {
     AbstractRequest scheduleRequest(AbstractRequest request);
 
     /**
+     * Check the given request is runnable or should  be delayed.
+     * @param request
+     * @return
+     */
+    public boolean shouldDelayRequest(AbstractRequest request);
+
+    /**
      * Abort every {@link fr.cnes.regards.modules.ingest.domain.request.InternalRequestState#RUNNING}. <br>
      * This is an asynchronous method. So tenant has to be given in order to be able to do database queries.
      * @param tenant

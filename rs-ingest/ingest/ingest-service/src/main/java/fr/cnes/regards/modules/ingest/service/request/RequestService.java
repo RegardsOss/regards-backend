@@ -418,7 +418,7 @@ public class RequestService implements IRequestService {
      * Try to find some request in a ready state that can prevent the provided {@link AbstractRequest} request
      * to be executed right now
      */
-    private boolean shouldDelayRequest(AbstractRequest request) {
+    public boolean shouldDelayRequest(AbstractRequest request) {
         Specification<AbstractRequest> spec;
         Optional<String> sessionOwnerOp = Optional.ofNullable(request.getSessionOwner());
         Optional<String> sessionOp = Optional.ofNullable(request.getSession());
