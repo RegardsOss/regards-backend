@@ -137,24 +137,34 @@ public class OAISDeletionService implements IOAISDeletionService {
         Set<OAISDeletionRequest> errors = new HashSet<>();
         while (requestIter.hasNext() && !interrupted) {
             OAISDeletionRequest request = requestIter.next();
-            AIPEntity aipToDelete = request.getAip();
-            SIPEntity sipToDelete = aipToDelete.getSip();
-            try {
-                if (request.isDeleteFiles() && !request.isRequestFilesDeleted()) {
-                    aipService.scheduleLinkedFilesDeletion(request);
-                } else {
-                    // Start by deleting the request itself
-                    requestService.deleteRequest(request);
-                    aipService.processDeletion(sipToDelete.getSipId(),
-                                               request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
-                    sipService.processDeletion(sipToDelete.getSipId(),
-                                               request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+            if (!requestService.shouldDelayRequest(request)) {
+                AIPEntity aipToDelete = request.getAip();
+                SIPEntity sipToDelete = aipToDelete.getSip();
+                try {
+                    if (request.isDeleteFiles() && !request.isRequestFilesDeleted()) {
+                        aipService.scheduleLinkedFilesDeletion(request);
+                    } else {
+                        // Start by deleting the request itself
+                        requestService.deleteRequest(request);
+                        aipService.processDeletion(sipToDelete.getSipId(),
+                                                   request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                        sipService.processDeletion(sipToDelete.getSipId(),
+                                                   request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                    }
+                } catch (Exception e) {
+                    String errorMsg = String.format("Deletion request %s of AIP %s could not be executed",
+                                                    request.getId(), request.getAip().getAipId());
+                    LOGGER.error(errorMsg, e);
+                    request.setState(InternalRequestState.ERROR);
+                    request.addError(errorMsg);
+                    errors.add(request);
                 }
-            } catch (Exception e) {
-                String errorMsg = String.format("Deletion request %s of AIP %s could not be executed", request.getId(),
-                                                request.getAip().getAipId());
-                LOGGER.error(errorMsg, e);
-                request.setState(InternalRequestState.ERROR);
+            } else {
+                String errorMsg = String
+                        .format("Deletion request %s of AIP %s could not be executed cause other requests reference same AIPs. Request is blocked.",
+                                request.getId(), request.getAip().getAipId());
+                LOGGER.warn(errorMsg);
+                request.setState(InternalRequestState.BLOCKED);
                 request.addError(errorMsg);
                 errors.add(request);
             }
