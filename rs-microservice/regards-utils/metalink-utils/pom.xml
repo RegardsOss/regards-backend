@@ -12,21 +12,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.cnes.regards.framework</groupId>
-    <artifactId>regards-utils</artifactId>
-    <version>0.5.0-SNAPSHOT</version>
-    <description>REGARDS core</description>
-    <packaging>pom</packaging>
-
     <parent>
         <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-aggregator-parent</artifactId>
+        <artifactId>regards-parent</artifactId>
         <version>0.5.0-SNAPSHOT</version>
         <relativePath/>
     </parent>
 
+    <groupId>fr.cnes.regards.framework.utils</groupId>
+    <artifactId>metalink-utils</artifactId>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-    <inceptionYear>2016</inceptionYear>
+    <inceptionYear>2020</inceptionYear>
     <licenses>
         <license>
             <name>GNU General Public License (GNU GPL)</name>
@@ -46,12 +42,30 @@
         </developer>
     </developers>
 
-    <modules>
-        <module>plugin-utils</module>
-        <module>file-utils</module>
-        <module>exception-utils</module>
-        <module>encryption-standalone</module>
-        <module>spring-utils</module>
-        <module>metalink-utils</module>
-    </modules>
+    <dependencies>
+    </dependencies>
+    
+    <build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jaxb2-maven-plugin</artifactId>
+				<version>2.5.0</version>
+				<executions>
+					<execution>
+						<id>xjc</id>
+						<goals>
+							<goal>xjc</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<packageName>fr.cnes.regards.framework.utils.metalink.schema</packageName>
+					<sources>
+						<source>src/main/resources</source>
+					</sources>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
