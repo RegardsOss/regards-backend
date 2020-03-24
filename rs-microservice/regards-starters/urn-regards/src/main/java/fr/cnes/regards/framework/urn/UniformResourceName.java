@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -33,9 +33,16 @@ import fr.cnes.regards.framework.urn.converters.UrnConverter;
 import fr.cnes.regards.framework.urn.validator.RegardsUrn;
 
 /**
- * allow us to create URN
+ * allow us to create URN with the following format:
+ * URN:StringId:entityType:tenant:UUID(entityId):Vversion[,order][:REVrevision]
  *
- * @author Kevin Marchois
+ * <br/>
+ * Example:
+ * <ul>
+ * <li>URN:SIP:Collection:CDPP::1</li>
+ * <li>URN:AIP:Collection:CDPP::1,5:REV2</li>
+ * </ul>
+ * @author Sylvain Vissiere-Guerinet
  */
 @Convert(converter = UrnConverter.class)
 @RegardsUrn

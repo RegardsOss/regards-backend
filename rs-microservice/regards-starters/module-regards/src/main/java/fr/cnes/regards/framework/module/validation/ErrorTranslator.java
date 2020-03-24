@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -33,6 +33,8 @@ import org.springframework.validation.FieldError;
  *
  */
 public final class ErrorTranslator {
+
+    private ErrorTranslator() {}
 
     /**
      * Build a set of error string from a not empty {@link Errors} object.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,6 +20,8 @@ package fr.cnes.regards.framework.amqp.converter;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +53,7 @@ public class JsonMessageConverters implements MessageConverter {
     /**
      * Registered JSON message converters
      */
-    Map<JsonMessageConverter, MessageConverter> converters = new HashMap<>();
+    private final ConcurrentMap<JsonMessageConverter, MessageConverter> converters = new ConcurrentHashMap<>();
 
     public JsonMessageConverters(IRuntimeTenantResolver runtimeTenantResolver) {
         this.runtimeTenantResolver = runtimeTenantResolver;

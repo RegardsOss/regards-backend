@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -35,7 +35,9 @@ import fr.cnes.regards.framework.test.integration.ConstrainedFields;
  */
 public class PluginConfigurationFieldDescriptors {
 
-    private String initPrefix;
+    private static final String STRING = "String";
+
+    private final String initPrefix;
 
     public PluginConfigurationFieldDescriptors() {
         super();
@@ -60,11 +62,11 @@ public class PluginConfigurationFieldDescriptors {
             lfd.add(pluginConfField.withPath(addPrefix("id"), "id", "Unique identifier").type("Long"));
         }
         lfd.add(pluginConfField.withPath(addPrefix("pluginId"), "pluginId", "Plugin configuration identifier")
-                .type("String"));
+                .type(STRING));
         lfd.add(pluginConfField.withPath(addPrefix("label"), "label", "A label to identify the configuration")
-                .type("String"));
+                .type(STRING));
         lfd.add(pluginConfField.withPath(addPrefix("version"), "version", "The version of the configuration")
-                .type("String").optional());
+                .type(STRING).optional());
         lfd.add(pluginConfField
                 .withPath(addPrefix("priorityOrder"), "priorityOrder", "The priority order of the configuration")
                 .type("Integer"));

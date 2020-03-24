@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -77,7 +77,7 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
         MessageProperties messageProperties = message.getMessageProperties();
         if (messageProperties != null) {
             try (Reader json = new InputStreamReader(new ByteArrayInputStream(message.getBody()),
-                    Charset.forName("UTF-8"))) {
+                    Charset.forName(DEFAULT_CHARSET))) {
                 content = gson.fromJson(json, createTypeToken(message));
             } catch (Exception e) {
                 String errorMessage = String.format(CONVERSION_ERROR, "unexpected error");

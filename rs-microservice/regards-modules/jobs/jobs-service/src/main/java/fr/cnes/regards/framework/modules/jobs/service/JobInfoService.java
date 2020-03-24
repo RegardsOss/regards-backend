@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -50,6 +50,8 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 @Service
 @MultitenantTransactional
 public class JobInfoService implements IJobInfoService {
+
+    public static final String SOME_FUNNY_MESSAGE = "Please use create method for creating, you dumb...";
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -104,7 +106,7 @@ public class JobInfoService implements IJobInfoService {
     @Override
     public JobInfo createAsPending(JobInfo jobInfo) {
         if (jobInfo.getId() != null) {
-            throw new IllegalArgumentException("Please use create method for creating, you dumb...");
+            throw new IllegalArgumentException(SOME_FUNNY_MESSAGE);
         }
         jobInfo.updateStatus(JobStatus.PENDING);
         return jobInfoRepository.save(jobInfo);
@@ -113,7 +115,7 @@ public class JobInfoService implements IJobInfoService {
     @Override
     public JobInfo createAsQueued(JobInfo jobInfo) {
         if (jobInfo.getId() != null) {
-            throw new IllegalArgumentException("Please use create method for creating, you dumb...");
+            throw new IllegalArgumentException(SOME_FUNNY_MESSAGE);
         }
         jobInfo.updateStatus(JobStatus.QUEUED);
         return jobInfoRepository.save(jobInfo);
@@ -122,7 +124,7 @@ public class JobInfoService implements IJobInfoService {
     @Override
     public JobInfo save(final JobInfo jobInfo) {
         if (jobInfo.getId() == null) {
-            throw new IllegalArgumentException("Please use create method for creating, you dumb...");
+            throw new IllegalArgumentException(SOME_FUNNY_MESSAGE);
         }
         return jobInfoRepository.save(jobInfo);
     }

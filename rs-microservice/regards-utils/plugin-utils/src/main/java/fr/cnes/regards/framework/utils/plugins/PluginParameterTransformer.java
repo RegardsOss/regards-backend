@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +63,8 @@ public class PluginParameterTransformer {
     private static final String SKIP_TRANSFO_MESSAGE = "Skip tranformation for parameter {}";
 
     private static Gson gsonInstance;
+
+    private PluginParameterTransformer() {}
 
     public static void setup(Gson gson) {
         gsonInstance = gson;
@@ -198,7 +202,7 @@ public class PluginParameterTransformer {
     }
 
     public static Map<String, JsonElement> toJson(Map<String, ?> value) {
-        Map<String, JsonElement> map = new HashMap<>();
+        ConcurrentMap<String, JsonElement> map = new ConcurrentHashMap<>();
         for (Entry<String, ?> entry : value.entrySet()) {
             map.put(entry.getKey(), gsonInstance.toJsonTree(entry.getValue()));
         }
