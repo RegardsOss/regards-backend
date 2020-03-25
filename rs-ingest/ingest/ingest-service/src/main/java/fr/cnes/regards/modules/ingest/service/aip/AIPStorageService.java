@@ -456,16 +456,20 @@ public class AIPStorageService implements IAIPStorageService {
 
             // Iterate over Data Objects
             for (ContentInformation ci : aip.getAip().getProperties().getContentInformations()) {
-
                 OAISDataObject dataObject = ci.getDataObject();
-                // Iterate over data object localisations
-                for (OAISDataObjectLocation l : dataObject.getLocations()) {
-                    // Check if the current storage is still there
-                    if (removedStorages.contains(l.getStorage())) {
-                        // Create a storage deletion request
-                        filesToRemove.add(FileDeletionRequestDTO.build(dataObject.getChecksum(), l.getStorage(),
-                                                                       aip.getAipId(), false));
-                    }
+                Optional<OAISDataObjectLocation> locationToRemove = dataObject.getLocations().stream()
+                        .filter(l -> removedStorages.contains(l.getStorage())).findFirst();
+                if (locationToRemove.isPresent()) {
+                    OAISDataObjectLocation loc = locationToRemove.get();
+                    LOGGER.debug("Removing location {} from dataObject {} of AIP provider id {}", loc.getStorage(),
+                                 dataObject.getFilename(), aip.getProviderId());
+                    filesToRemove.add(FileDeletionRequestDTO.build(dataObject.getChecksum(), loc.getStorage(),
+                                                                   aip.getAipId(), false));
+                    // Remove location from AIPs.
+                    // If storage deletion fails, the deletion can be rerun manually from storage interface.
+                    dataObject.getLocations().remove(loc);
+                    aip.getAip().withEvent(EventType.STORAGE.toString(), String
+                            .format("All files stored on location %s have been removed", loc.getStorage()));
                 }
             }
         }
