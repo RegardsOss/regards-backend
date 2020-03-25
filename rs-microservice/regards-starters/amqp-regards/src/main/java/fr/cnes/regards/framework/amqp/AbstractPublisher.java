@@ -22,19 +22,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.ExchangeBuilder;
+import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
@@ -58,6 +66,11 @@ public abstract class AbstractPublisher implements IPublisherContract {
     private final RabbitTemplate rabbitTemplate;
 
     /**
+     * Bean allowing us to declare queue, exchange, binding
+     */
+    private final RabbitAdmin rabbitAdmin;
+
+    /**
      * configuration initializing required bean
      */
     private final IAmqpAdmin amqpAdmin;
@@ -76,9 +89,10 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
     private final Map<String, String> routingKeysByEvent = new HashMap<>();
 
-    public AbstractPublisher(RabbitTemplate rabbitTemplate, IAmqpAdmin amqpAdmin,
+    public AbstractPublisher(RabbitTemplate rabbitTemplate, RabbitAdmin rabbitAdmin, IAmqpAdmin amqpAdmin,
             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
         this.rabbitTemplate = rabbitTemplate;
+        this.rabbitAdmin = rabbitAdmin;
         this.amqpAdmin = amqpAdmin;
         this.rabbitVirtualHostAdmin = pRabbitVirtualHostAdmin;
     }
@@ -141,6 +155,52 @@ public abstract class AbstractPublisher implements IPublisherContract {
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
+    }
+
+    @Override
+    public void broadcast(String exchangeName, Optional<String> queueName, int priority, Object message) {
+
+        LOGGER.debug("Broadcasting object {} to exchange {} with priority {}. Binded queue : {}.", message.getClass(),
+                     exchangeName, priority, queueName.orElse("None"));
+
+        String tenant = resolveTenant();
+        if (tenant == null) {
+            String errorMessage = String.format("Unable to publish event %s cause no tenant found.",
+                                                message.getClass());
+            LOGGER.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
+
+        try {
+            // Bind the connection to the right vhost
+            rabbitVirtualHostAdmin.bind(resolveVirtualHost(tenant));
+
+            // Declare AMQP elements
+
+            // Declare exchange
+            Exchange exchange = ExchangeBuilder.fanoutExchange(exchangeName).durable(true).build();
+            rabbitAdmin.declareExchange(exchange);
+
+            // Queue
+            if (queueName.isPresent()) {
+                Map<String, Object> args = new ConcurrentHashMap<>();
+                args.put("x-max-priority", RegardsAmqpAdmin.MAX_PRIORITY);
+                args.put("x-dead-letter-exchange", RegardsAmqpAdmin.REGARDS_DLX);
+                args.put("x-dead-letter-routing-key", RegardsAmqpAdmin.REGARDS_DLQ);
+                Queue queue = QueueBuilder.durable(queueName.get()).withArguments(args).build();
+                rabbitAdmin.declareQueue(queue);
+
+                // Bind queue
+                Binding binding = BindingBuilder.bind(queue).to((FanoutExchange) exchange);
+                rabbitAdmin.declareBinding(binding);
+            }
+
+            // Send message
+            publishMessageByTenant(tenant, exchangeName, RegardsAmqpAdmin.DEFAULT_ROUTING_KEY, message, priority);
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
+        }
+
     }
 
     /**
@@ -256,11 +316,11 @@ public abstract class AbstractPublisher implements IPublisherContract {
             int priority) {
 
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
-        rabbitTemplate.convertAndSend(exchangeName, routingKey, event, pMessage -> {
-            MessageProperties messageProperties = pMessage.getMessageProperties();
+        rabbitTemplate.convertAndSend(exchangeName, routingKey, event, message -> {
+            MessageProperties messageProperties = message.getMessageProperties();
             messageProperties.setHeader(AmqpConstants.REGARDS_TENANT_HEADER, tenant);
             messageProperties.setPriority(priority);
-            return new Message(pMessage.getBody(), messageProperties);
+            return new Message(message.getBody(), messageProperties);
         });
     }
 }

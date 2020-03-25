@@ -34,6 +34,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.client.RestOperations;
@@ -173,19 +174,22 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public IPublisher publisher(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            IRuntimeTenantResolver pThreadTenantResolver, RabbitTemplate rabbitTemplate) {
+    public IPublisher publisher(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, RabbitAdmin rabbitAdmin,
+            IAmqpAdmin amqpAdmin, IRuntimeTenantResolver pThreadTenantResolver, RabbitTemplate rabbitTemplate) {
         if (VirtualHostMode.MULTI.equals(amqpManagmentProperties.getMode())) {
-            return new Publisher(pRabbitVirtualHostAdmin, rabbitTemplate, amqpAdmin, pThreadTenantResolver);
+            return new Publisher(pRabbitVirtualHostAdmin, rabbitTemplate, rabbitAdmin, amqpAdmin,
+                    pThreadTenantResolver);
         } else {
-            return new SingleVhostPublisher(rabbitTemplate, amqpAdmin, pRabbitVirtualHostAdmin, pThreadTenantResolver);
+            return new SingleVhostPublisher(rabbitTemplate, rabbitAdmin, amqpAdmin, pRabbitVirtualHostAdmin,
+                    pThreadTenantResolver);
         }
     }
 
     @Bean
-    public ISubscriber subscriber(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver, RegardsErrorHandler errorHandler,
-            IRuntimeTenantResolver runtimeTenantResolver, IInstancePublisher instancePublisher, IPublisher publisher) {
+    public ISubscriber subscriber(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, RabbitAdmin rabbitAdmin,
+            IAmqpAdmin amqpAdmin, MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver,
+            RegardsErrorHandler errorHandler, IRuntimeTenantResolver runtimeTenantResolver,
+            IInstancePublisher instancePublisher, IPublisher publisher) {
         if (VirtualHostMode.MULTI.equals(amqpManagmentProperties.getMode())) {
             return new Subscriber(pRabbitVirtualHostAdmin, amqpAdmin, jsonMessageConverters, pTenantResolver,
                     errorHandler, microserviceName, instancePublisher, publisher, runtimeTenantResolver);
@@ -206,9 +210,10 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public IInstancePublisher instancePublisher(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            IRuntimeTenantResolver pThreadTenantResolver, RabbitTemplate rabbitTemplate) {
-        return new InstancePublisher(rabbitTemplate, amqpAdmin, pRabbitVirtualHostAdmin);
+    public IInstancePublisher instancePublisher(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
+            RabbitAdmin rabbitAdmin, IAmqpAdmin amqpAdmin, IRuntimeTenantResolver pThreadTenantResolver,
+            RabbitTemplate rabbitTemplate) {
+        return new InstancePublisher(rabbitTemplate, rabbitAdmin, amqpAdmin, pRabbitVirtualHostAdmin);
     }
 
     @Bean
@@ -245,6 +250,7 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
+    @Profile("!nohandler")
     public AmqpEventHandler amqpEventHandler(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
             IInstanceSubscriber pInstanceSubscriber, ISubscriber pSubscriber) {
         return new AmqpEventHandler(pRabbitVirtualHostAdmin, pInstanceSubscriber, pSubscriber);

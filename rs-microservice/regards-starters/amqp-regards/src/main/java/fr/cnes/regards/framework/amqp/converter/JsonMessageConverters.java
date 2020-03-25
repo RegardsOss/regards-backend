@@ -31,6 +31,8 @@ import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
+import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
@@ -59,10 +61,7 @@ public class JsonMessageConverters implements MessageConverter {
 
     @Override
     public Message toMessage(Object object, MessageProperties messageProperties) throws MessageConversionException {
-        JsonMessageConverter jmc = EventUtils.getMessageConverter(object.getClass());
-        // Add converter selector
-        messageProperties.setHeader(JsonMessageConverters.CONVERTER_TYPE_HEADER, jmc);
-        return selectConverter(jmc).toMessage(object, messageProperties);
+        return selectConverter(object, messageProperties).toMessage(object, messageProperties);
     }
 
     @Override
@@ -113,6 +112,21 @@ public class JsonMessageConverters implements MessageConverter {
             throw new MessageConversionException(errorMessage);
         }
         return converter;
+    }
+
+    private MessageConverter selectConverter(Object object, MessageProperties messageProperties)
+            throws MessageConversionException {
+        if (ISubscribable.class.isAssignableFrom(object.getClass())
+                || IPollable.class.isAssignableFrom(object.getClass())) {
+            JsonMessageConverter jmc = EventUtils.getMessageConverter(object.getClass());
+            MessageConverter converter = selectConverter(jmc);
+            // Inject converter selector
+            messageProperties.setHeader(JsonMessageConverters.CONVERTER_TYPE_HEADER, jmc);
+            return converter;
+        } else {
+            return selectConverter(messageProperties);
+        }
+
     }
 
     private MessageConverter selectConverter(MessageProperties messageProperties) throws MessageConversionException {
