@@ -19,11 +19,14 @@
 package fr.cnes.regards.framework.amqp.client;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +40,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 
 @Service
 @Transactional
+@SuppressWarnings("unchecked")
 public class AmqpClientPublisher {
 
     private static Logger LOGGER = LoggerFactory.getLogger(AmqpClientApplication.class);
@@ -46,25 +50,58 @@ public class AmqpClientPublisher {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public void publish(String exchangeName, Optional<String> queueName, Integer priority, String jsonPath) {
-        // Load JSON message
-        Map<String, Object> message = loadJson(jsonPath);
-        // Broadcast
-        publisher.broadcast(exchangeName, queueName, priority, message);
-    }
+    /**
+     * Publish a single message loaded from specified JSON file
+     */
+    public void publish(String exchangeName, Optional<String> queueName, Integer priority, String jsonPathString) {
 
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> loadJson(String jsonPath) {
-        Path path = Paths.get(jsonPath);
+        Path path = Paths.get(jsonPathString);
         if (!Files.exists(path)) {
-            String error = String.format("Unknow json path %s", path);
+            String error = String.format("Unknown json path %s", path);
             LOGGER.error(error);
             throw new IllegalArgumentException(error);
         }
-        try {
-            return mapper.readValue(path.toFile(), Map.class);
+
+        if (Files.isDirectory(path)) {
+            doPublishAll(exchangeName, queueName, priority, path);
+        } else {
+            doPublish(exchangeName, queueName, priority, path);
+        }
+    }
+
+    /**
+     * Publish all messages load from specified directory.
+     */
+    private void doPublishAll(String exchangeName, Optional<String> queueName, Integer priority, Path jsonPath) {
+
+        PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.json");
+
+        try (Stream<Path> walk = Files.walk(jsonPath)) {
+            walk.filter(Files::isRegularFile).filter(p -> matcher.matches(p)).forEach(p -> {
+                doPublish(exchangeName, queueName, priority, p);
+            });
+
+            //            List<String> result = walk.filter(Files::isRegularFile).filter(p -> matcher.matches(p))
+            //                    .map(p -> p.toString()).collect(Collectors.toList());
+            //            result.forEach(LOGGER::info);
+
         } catch (IOException e) {
-            String error = String.format("Cannot read json from path %s", path);
+            String error = String.format("Error inspecting directory : %s", jsonPath);
+            LOGGER.error(error, e);
+            throw new IllegalArgumentException(error);
+        }
+
+    }
+
+    private void doPublish(String exchangeName, Optional<String> queueName, Integer priority, Path jsonPath) {
+        try {
+            LOGGER.info("Loading JSON from {}", jsonPath);
+            // Load JSON message
+            Map<String, Object> message = mapper.readValue(jsonPath.toFile(), Map.class);
+            // Broadcast
+            publisher.broadcast(exchangeName, queueName, priority, message);
+        } catch (IOException e) {
+            String error = String.format("Cannot read json from path %s", jsonPath);
             LOGGER.error(error, e);
             throw new IllegalArgumentException(error);
         }

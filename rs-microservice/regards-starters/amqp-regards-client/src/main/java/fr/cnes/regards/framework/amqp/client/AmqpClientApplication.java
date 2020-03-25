@@ -46,7 +46,7 @@ public class AmqpClientApplication implements ApplicationRunner {
 
     private static final String ARG_PRIORITY = ARG_NS + "priority";
 
-    private static final String ARG_JSON_FILE = ARG_NS + "json";
+    private static final String ARG_JSON = ARG_NS + "json";
 
     @Value("${" + ARG_EXCHANGE_NAME + "}")
     private String exchangeName;
@@ -57,8 +57,8 @@ public class AmqpClientApplication implements ApplicationRunner {
     @Value("${" + ARG_PRIORITY + ":0}")
     private Integer priority;
 
-    @Value("${" + ARG_JSON_FILE + "}")
-    private String jsonPath;
+    @Value("${" + ARG_JSON + "}")
+    private String jsonPathString;
 
     @Autowired
     private AmqpClientPublisher publisher;
@@ -79,6 +79,6 @@ public class AmqpClientApplication implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         LOGGER.info("EXECUTING : command line runner");
-        publisher.publish(exchangeName, queueName, priority, jsonPath);
+        publisher.publish(exchangeName, queueName, priority, jsonPathString);
     }
 }
