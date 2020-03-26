@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +41,8 @@ import freemarker.template.TemplateException;
  */
 @Component
 public class PasswordResetListener implements ApplicationListener<OnPasswordResetEvent> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PasswordResetListener.class);
 
     /**
      * The password reset service. Autowired by Spring.
@@ -102,7 +106,7 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
         try {
             message = templateService.render(AccessRightTemplateConf.PASSWORD_RESET_TEMPLATE_NAME, data);
         } catch (final TemplateException e) {
-
+            LOGGER.debug("Template sould not be found, defaulting on simpler message", e);
             String linkUrlTemplate;
             if (event.getRequestLink() != null && event.getRequestLink().contains("?")) {
                 linkUrlTemplate = "%s&origin_url=%s&token=%s&account_email=%s";

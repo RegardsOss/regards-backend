@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -109,7 +109,7 @@ public class NotificationController implements IResourceController<Notification>
     /**
      * Controller path to retrieve notifications summary. Used for long pooling by frontend.
      */
-    public static final String SUMMARY = "/summary";
+    public static final String SUMMARY_PATH = "/summary";
 
     /**
      * The service responsible for managing notifications
@@ -234,7 +234,6 @@ public class NotificationController implements IResourceController<Notification>
     /**
      * Define the endpoint for deleting a notification
      * @param id The notification <code>id</code>
-     * @return void
      * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
     @RequestMapping(value = NOTIFICATION_ID_PATH, method = RequestMethod.DELETE)
@@ -246,13 +245,11 @@ public class NotificationController implements IResourceController<Notification>
     }
 
     /**
-     * Define the endpoint for deleting a notification
-     * @return void
-     * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
+     * Endpoint to delete read notifications
      */
     @RequestMapping(value = NOTIFICATION_DELETE_PATH, method = RequestMethod.DELETE)
-    @ResourceAccess(description = "Define the endpoint for deleting a notification", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> deleteNotification() throws EntityNotFoundException {
+    @ResourceAccess(description = "Endpoint to delete read notifications", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> deleteNotification() {
         notificationService.deleteReadNotifications();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -285,7 +282,7 @@ public class NotificationController implements IResourceController<Notification>
         return new ResponseEntity<>(settings, HttpStatus.OK);
     }
 
-    @RequestMapping(value = SUMMARY, method = RequestMethod.GET)
+    @RequestMapping(value = SUMMARY_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve summary infos about notifications", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<NotificationSummary> summary() throws EntityNotFoundException {
         Long unReads = notificationService.countUnreadNotifications();
