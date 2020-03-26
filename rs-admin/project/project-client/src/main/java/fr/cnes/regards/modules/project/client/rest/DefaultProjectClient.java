@@ -48,17 +48,17 @@ public class DefaultProjectClient implements IProjectsClient {
     private String host;
 
     @Override
-    public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(int pPage, int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<Project>>> retrieveProjectList(int pPage, int pSize) {
         throw new UnsupportedOperationException(NOT_IMPLEMENTED_IN_DEFAULT_PROJECT_CLIENT);
     }
 
     @Override
-    public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(int page, int size) {
+    public ResponseEntity<PagedModel<EntityModel<Project>>> retrievePublicProjectList(int page, int size) {
         throw new UnsupportedOperationException(NOT_IMPLEMENTED_IN_DEFAULT_PROJECT_CLIENT);
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> createProject(@Valid Project pNewProject) {
+    public ResponseEntity<EntityModel<Project>> createProject(@Valid Project pNewProject) {
         throw new UnsupportedOperationException(NOT_IMPLEMENTED_IN_DEFAULT_PROJECT_CLIENT);
     }
 
@@ -70,7 +70,7 @@ public class DefaultProjectClient implements IProjectsClient {
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> updateProject(String pProjectName, Project pProjectToUpdate) {
+    public ResponseEntity<EntityModel<Project>> updateProject(String pProjectName, Project pProjectToUpdate) {
         throw new UnsupportedOperationException(NOT_IMPLEMENTED_IN_DEFAULT_PROJECT_CLIENT);
     }
 
