@@ -79,7 +79,8 @@ import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantBootstrapP
 @ConditionalOnProperty(prefix = "regards.amqp", name = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties({ RabbitProperties.class, AmqpManagementProperties.class,
         AmqpMicroserviceProperties.class })
-@AutoConfigureAfter(name = { "fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration" })
+@AutoConfigureAfter(name = { "fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration",
+        "fr.cnes.regards.framework.feign.autoconfigure.FeignAutoConfiguration" })
 @EnableTransactionManagement
 public class AmqpAutoConfiguration {
 

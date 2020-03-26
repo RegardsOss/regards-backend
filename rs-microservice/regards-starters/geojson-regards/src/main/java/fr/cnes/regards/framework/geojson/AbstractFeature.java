@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.geojson;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.geojson.geometry.GeometryCollection;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
@@ -69,7 +68,8 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
     private IGeometry normalizedGeometry = IGeometry.unlocated();
 
     @Valid
-    @NotNull(message = "Feature properties mustn't be null")
+    // FIXME why?
+    //    @NotNull(message = "Feature properties mustn't be null")
     protected P properties;
 
     public AbstractFeature() {
