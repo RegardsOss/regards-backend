@@ -16,22 +16,33 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.domain.exception;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+package fr.cnes.regards.modules.storage.domain.dto.cache;
 
 /**
- * @author sbinda
+ * DTO to regroup cache system informations
+ *
+ * @author Sébastien Binda
  *
  */
-@SuppressWarnings("serial")
-public class NearlineFileNotAvailableException extends ModuleException {
+public class CacheDTO {
 
-    /**
-     * @param message
-     */
-    public NearlineFileNotAvailableException(String message) {
-        super(message);
+    private long sizeLimitInBytes = 0L;
+
+    private long occupedSizeInBytes = 0L;
+
+    public static CacheDTO build(long sizeLimitInBytes, long occupedSizeInBytes) {
+        CacheDTO dto = new CacheDTO();
+        dto.sizeLimitInBytes = sizeLimitInBytes;
+        dto.occupedSizeInBytes = occupedSizeInBytes;
+        return dto;
+    }
+
+    public long getSizeLimitInBytes() {
+        return sizeLimitInBytes;
+    }
+
+    public long getOccupedSizeInBytes() {
+        return occupedSizeInBytes;
     }
 
 }

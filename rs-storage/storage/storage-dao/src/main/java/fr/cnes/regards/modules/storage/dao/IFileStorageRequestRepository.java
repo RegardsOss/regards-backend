@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -55,8 +56,11 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     Page<FileStorageRequest> findAllByStorageAndStatus(String storage, FileRequestStatus status, Pageable page);
 
-    Page<FileStorageRequest> findAllByStorageAndStatusAndOwnersIn(String storage, FileRequestStatus status,
-            Collection<String> owners, Pageable page);
+    Page<FileStorageRequest> findAllByStorageAndStatusAndIdGreaterThan(String storage, FileRequestStatus status,
+            Long id, Pageable page);
+
+    Page<FileStorageRequest> findAllByStorageAndStatusAndOwnersInAndIdGreaterThan(String storage,
+            FileRequestStatus status, Collection<String> owners, Long id, Pageable page);
 
     @Query("select storage from FileStorageRequest where status = :status")
     Set<String> findStoragesByStatus(@Param("status") FileRequestStatus status);
@@ -64,6 +68,11 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
     @Modifying
     @Query("update FileStorageRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
     int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
+            @Param("id") Long id);
+
+    @Modifying
+    @Query("update FileStorageRequest fsr set fsr.status = :status, fsr.jobId = :jobId where fsr.id = :id")
+    int updateStatusAndJobId(@Param("status") FileRequestStatus status, @Param("jobId") String jobId,
             @Param("id") Long id);
 
     void deleteByStorage(String storageLocationId);
@@ -80,5 +89,9 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     boolean existsByStorageAndMetaInfoChecksumAndStatusIn(String storage, String checksum,
             Set<FileRequestStatus> ruuninstatus);
+
+    Set<FileStorageRequest> findByMetaInfoChecksumIn(Set<String> checksums);
+
+    Optional<FileStorageRequest> findByMetaInfoChecksum(String checksum);
 
 }

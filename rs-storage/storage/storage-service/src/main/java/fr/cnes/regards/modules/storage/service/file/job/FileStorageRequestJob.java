@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.job;
 
 import java.awt.Dimension;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -94,7 +95,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
         nbRequestToHandle = workingSubset.getFileReferenceRequests().size();
         LOGGER.debug("[STORAGE JOB] Runing storage job for {} storage requests", nbRequestToHandle);
         // Calculates if needed image dimensions
-        workingSubset.getFileReferenceRequests().forEach(this::calculateImageDimension);
+        workingSubset.getFileReferenceRequests().forEach(FileStorageRequestJob::calculateImageDimension);
 
         // lets instantiate the plugin to use
         IStorageLocation storagePlugin;
@@ -132,25 +133,25 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
      * This methods do the calculation only if the mimeType of the file is compatible with <image/*> type.
      * @param fileRefRequest to calculate for image dimension
      */
-    private void calculateImageDimension(FileStorageRequest fileRefRequest) {
+    public static void calculateImageDimension(FileStorageRequest fileRefRequest) {
         try {
             if (((fileRefRequest.getMetaInfo().getHeight() == null)
                     || (fileRefRequest.getMetaInfo().getWidth() == null))
                     && fileRefRequest.getMetaInfo().getMimeType().isCompatibleWith(MediaType.valueOf("image/*"))) {
                 URL localUrl = new URL(fileRefRequest.getOriginUrl());
                 if (localUrl.getProtocol().equals("file")) {
-                    Path filePath = Paths.get(localUrl.getPath());
+                    Path filePath = Paths.get(localUrl.toURI().getPath());
                     if (Files.isReadable(filePath)) {
                         Dimension dimension = CommonFileUtils.getImageDimension(filePath.toFile());
                         fileRefRequest.getMetaInfo().setHeight(((Number) dimension.getHeight()).intValue());
                         fileRefRequest.getMetaInfo().setWidth(((Number) dimension.getWidth()).intValue());
                     } else {
-                        LOGGER.warn("Error calculating image file height/width. Cause : File %s is not accessible.",
+                        LOGGER.warn("Error calculating image file height/width. Cause : File {} is not accessible.",
                                     fileRefRequest.getOriginUrl());
                     }
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             LOGGER.warn(String.format("Error calculating image file height/width. Cause : %s", e.getMessage()), e);
         }
     }

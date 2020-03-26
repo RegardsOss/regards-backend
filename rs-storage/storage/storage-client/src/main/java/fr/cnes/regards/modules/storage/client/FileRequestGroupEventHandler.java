@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -116,27 +116,24 @@ public class FileRequestGroupEventHandler
                 runtimeTenantResolver.forceTenant(entry.getKey());
                 ConcurrentLinkedQueue<FileRequestsGroupEvent> tenantItems = entry.getValue();
                 List<FileRequestsGroupEvent> list = new ArrayList<>();
-                do {
-                    // Build a 100 (at most) documents bulk request
-                    for (int i = 0; i < BULK_SIZE; i++) {
-                        FileRequestsGroupEvent doc = tenantItems.poll();
-                        if (doc == null) {
-                            // Less than BULK_SIZE documents, bulk save what we have already
-                            break;
-                        } else { // enqueue document
-                            list.add(doc);
-                        }
+                // Build a 100 (at most) documents bulk request
+                for (int i = 0; i < BULK_SIZE; i++) {
+                    FileRequestsGroupEvent doc = tenantItems.poll();
+                    if (doc == null) {
+                        // Less than BULK_SIZE documents, bulk save what we have already
+                        break;
+                    } else { // enqueue document
+                        list.add(doc);
                     }
-                    if (!list.isEmpty()) {
-                        LOGGER.debug("[STORAGE RESPONSES HANDLER] Total events queue size={}", tenantItems.size());
-                        LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileRequestsGroupEvent...", list.size());
-                        long start = System.currentTimeMillis();
-                        handle(list);
-                        LOGGER.info("[STORAGE RESPONSES HANDLER] {} FileRequestsGroupEvent handled in {} ms",
-                                    list.size(), System.currentTimeMillis() - start);
-                        list.clear();
-                    }
-                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
+                }
+                if (!list.isEmpty()) {
+                    LOGGER.debug("[STORAGE RESPONSES HANDLER] Total events queue size={}", tenantItems.size());
+                    LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileRequestsGroupEvent...", list.size());
+                    long start = System.currentTimeMillis();
+                    handle(list);
+                    LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileRequestsGroupEvent handled in {} ms", list.size(),
+                                 System.currentTimeMillis() - start);
+                }
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
@@ -163,6 +160,8 @@ public class FileRequestGroupEventHandler
                     break;
             }
         }
+        LOGGER.trace("[STORAGE RESPONSES HANDLER] handling {} FileRequestsGroupEvent(s) dispatch by {} dones, {} granted, {} denied",
+                     events.size(), dones.size(), granted.size(), denied.size());
         handleDone(dones);
         handleGranted(granted);
         handleDenied(denied);

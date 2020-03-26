@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -51,8 +51,8 @@ import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService
 public class AvailabilityFlowItemHandler
         implements ApplicationListener<ApplicationReadyEvent>, IHandler<AvailabilityFlowItem> {
 
-    @Value("${regards.storage.availability.items.bulk.size:100}")
-    private static final int BULK_SIZE = 100;
+    @Value("${regards.storage.availability.items.bulk.size:1000}")
+    private static final int BULK_SIZE = 1000;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -82,6 +82,18 @@ public class AvailabilityFlowItemHandler
         String tenant = wrapper.getTenant();
         AvailabilityFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
+        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (10 * BULK_SIZE))) {
+            // Do not overload the concurrent queue if the configured listener does not handle queued message faster
+            try {
+                LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
+                Thread.sleep(30_000);
+            } catch (InterruptedException e) {
+                LOGGER.error(String
+                        .format("Error waiting for requests handled by microservice. Current requests pool to handle = %s",
+                                items.size()),
+                             e);
+            }
+        }
         if (item.getChecksums().size() > AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
             String message = String
                     .format("Number of availability requests (%d) for group %s exeeds maximum limit of %d",

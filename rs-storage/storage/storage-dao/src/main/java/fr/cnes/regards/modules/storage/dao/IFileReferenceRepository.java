@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -44,6 +44,9 @@ public interface IFileReferenceRepository
     Page<FileReference> findByLocationStorage(String storage, Pageable page);
 
     Optional<FileReference> findByLocationStorageAndMetaInfoChecksum(String storage, String checksum);
+
+    Page<FileReference> findByLocationStorageAndMetaInfoTypeIn(String storage, Collection<String> type,
+            Pageable pageable);
 
     Set<FileReference> findByMetaInfoChecksum(String checksum);
 

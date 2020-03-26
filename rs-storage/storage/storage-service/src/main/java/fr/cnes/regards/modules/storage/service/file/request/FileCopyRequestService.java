@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
@@ -217,29 +218,34 @@ public class FileCopyRequestService {
             return;
         }
         try {
-            LOGGER.debug("[COPY REQUESTS] handling copy requests ...");
+            LOGGER.trace("[COPY REQUESTS] handling copy requests ...");
             long start = System.currentTimeMillis();
+            Long maxId = 0L;
+            // Always search the first page of requests until there is no requests anymore.
+            // To do so, we order on id to ensure to not handle same requests multiple times.
             Pageable page = PageRequest.of(0, AvailabilityFlowItem.MAX_REQUEST_PER_GROUP, Direction.ASC, "id");
             Page<FileCopyRequest> pageResp = null;
             // Allow file availability for one day to let enough time to next storage process to be perform.
             OffsetDateTime expDate = OffsetDateTime.now().plusDays(1);
             do {
                 String fileCacheGroupId = UUID.randomUUID().toString();
-                Set<String> checksums = Sets.newHashSet();
-                pageResp = copyRepository.findByStatus(status, page);
-                for (FileCopyRequest request : pageResp) {
-                    checksums.add(request.getMetaInfo().getChecksum());
-                    request.setFileCacheGroupId(fileCacheGroupId);
-                    request.setStatus(FileRequestStatus.PENDING);
-                }
+                pageResp = copyRepository.findByStatusAndIdGreaterThan(status, maxId, page);
+                if (pageResp.hasContent()) {
+                    maxId = pageResp.stream().max(Comparator.comparing(FileCopyRequest::getId)).get().getId();
+                    Set<String> checksums = Sets.newHashSet();
+                    for (FileCopyRequest request : pageResp) {
+                        checksums.add(request.getMetaInfo().getChecksum());
+                        request.setFileCacheGroupId(fileCacheGroupId);
+                        request.setStatus(FileRequestStatus.PENDING);
+                    }
 
-                if (!checksums.isEmpty()) {
-                    reqGrpService.granted(fileCacheGroupId, FileRequestType.AVAILABILITY, checksums.size(), true,
-                                          expDate);
-                    fileCacheReqService.makeAvailable(checksums, expDate, fileCacheGroupId);
+                    if (!checksums.isEmpty()) {
+                        reqGrpService.granted(fileCacheGroupId, FileRequestType.AVAILABILITY, checksums.size(), true,
+                                              expDate);
+                        fileCacheReqService.makeAvailable(checksums, expDate, fileCacheGroupId);
+                    }
                 }
-                page = page.next();
-            } while (pageResp.hasNext());
+            } while (pageResp.hasContent());
             LOGGER.debug("[COPY REQUESTS] Copy requests handled in {} ms", System.currentTimeMillis() - start);
         } finally {
             releaseLock();
@@ -376,17 +382,18 @@ public class FileCopyRequestService {
      * Schedule a job to create {@link FileCopyRequest}s for the given criterion
      */
     public JobInfo scheduleJob(String storageLocationId, String sourcePath, String destinationStorageId,
-            Optional<String> destinationPath) {
+            Optional<String> destinationPath, Collection<String> types) {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_SOURCE_ID, storageLocationId));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_DESTINATION_ID,
                 destinationStorageId));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SOURCE_PATH, sourcePath));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH, destinationPath.orElse("")));
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.FILE_TYPES, types));
         JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_COPY_JOB.getPriority(),
                 parameters, authResolver.getUser(), FileCopyRequestsCreatorJob.class.getName()));
-        LOGGER.debug("[COPY REQUESTS] Job scheduled to copy files from {}(dir={}) to {}(dir={}) for path {}.",
-                     storageLocationId, sourcePath, destinationStorageId, destinationPath.orElse(""));
+        LOGGER.debug("[COPY REQUESTS] Job scheduled to copy files from {}(dir={}) to {}(dir={}) for types {}.",
+                     storageLocationId, sourcePath, destinationStorageId, destinationPath.orElse(""), types);
         return jobInfo;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -60,10 +60,12 @@ import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequest
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
 
 /**
- * @author sbinda
+ * Test class
+ *
+ * @author Sébastien Binda
  *
  */
-@ActiveProfiles({ "noscheduler" })
+@ActiveProfiles({ "noschedule" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_availability_tests",
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
@@ -110,9 +112,9 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
         // Simulate storage of a file in two locations near line and online
         String checksum = UUID.randomUUID().toString();
         this.generateStoredFileReference(checksum, "owner", "file.online.nealine.test", ONLINE_CONF_LABEL,
-                                         Optional.empty());
+                                         Optional.empty(), Optional.empty());
         this.generateStoredFileReference(checksum, "owner", "file.online.nealine.test", NEARLINE_CONF_LABEL,
-                                         Optional.empty());
+                                         Optional.empty(), Optional.empty());
 
         Set<String> checksums = Sets.newHashSet(file1.getMetaInfo().getChecksum(), file2.getMetaInfo().getChecksum(),
                                                 file3.getMetaInfo().getChecksum(), file4.getMetaInfo().getChecksum(),

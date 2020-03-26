@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -58,7 +58,7 @@ public class ReferenceFlowItemHandler
     /**
      * Bulk size limit to handle messages
      */
-    @Value("${regards.storage.reference.items.bulk.size:100}")
+    @Value("${regards.storage.reference.items.bulk.size:1000}")
     private int BULK_SIZE;
 
     @Autowired
@@ -90,7 +90,7 @@ public class ReferenceFlowItemHandler
         ReferenceFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
         LOGGER.trace("[EVENT] New FileReferenceFlowItem received -- {}", wrapper.getContent().toString());
-        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (100 * BULK_SIZE))) {
+        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (10 * BULK_SIZE))) {
             // Do not overload the concurrent queue if the configured listener does not handle queued message faster
             try {
                 LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
@@ -135,7 +135,7 @@ public class ReferenceFlowItemHandler
     /**
      * Bulk save queued items every second.
      */
-    @Scheduled(fixedDelay = 1_000)
+    @Scheduled(fixedDelay = 1_000, initialDelay = 5_000)
     public void handleQueue() {
         for (Map.Entry<String, ConcurrentLinkedQueue<ReferenceFlowItem>> entry : items.entrySet()) {
             try {

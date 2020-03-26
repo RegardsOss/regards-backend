@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -62,6 +62,8 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileStorageReques
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileRequestInfoDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storage.service.cache.CacheScheduler;
+import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
@@ -111,6 +113,9 @@ public class StorageLocationService {
 
     @Autowired
     private StorageLocationConfigurationService pLocationConfService;
+
+    @Autowired
+    private CacheScheduler cacheScheduler;
 
     @Value("${regards.storage.data.storage.threshold.percent:70}")
     private Integer threshold;
@@ -237,10 +242,10 @@ public class StorageLocationService {
 
             // Check for occupation ratio limit reached
             Optional<StorageLocationConfiguration> conf = pLocationConfService.search(agg.getStorage());
-            if (conf.isPresent() && conf.get().getAllocatedSizeInKo() != null
-                    && conf.get().getAllocatedSizeInKo() > 0L) {
-                Double ratio = Double.valueOf(storage.getTotalSizeOfReferencedFilesInKo())
-                        / (conf.get().getAllocatedSizeInKo() * 1024L) * 100;
+            if (conf.isPresent() && (conf.get().getAllocatedSizeInKo() != null)
+                    && (conf.get().getAllocatedSizeInKo() > 0L)) {
+                Double ratio = (Double.valueOf(storage.getTotalSizeOfReferencedFilesInKo())
+                        / (conf.get().getAllocatedSizeInKo())) * 100;
                 if (ratio >= criticalThreshold) {
                     String message = String
                             .format("Storage location %s has reach its disk usage critical threshold. %nActual occupation: %.2f%%, critical threshold: %s%%",
@@ -320,7 +325,11 @@ public class StorageLocationService {
      * @throws ModuleException
      */
     public void deleteFiles(String storageLocationId, Boolean forceDelete) throws ModuleException {
-        deletionService.scheduleJob(storageLocationId, forceDelete);
+        if (storageLocationId.equals(CacheService.CACHE_NAME)) {
+            cacheScheduler.cleanCache();
+        } else {
+            deletionService.scheduleJob(storageLocationId, forceDelete);
+        }
     }
 
     /**
@@ -331,8 +340,8 @@ public class StorageLocationService {
      * @param destinationPath
      */
     public void copyFiles(String storageLocationId, String sourcePath, String destinationStorageId,
-            Optional<String> destinationPath) {
-        copyService.scheduleJob(storageLocationId, sourcePath, destinationStorageId, destinationPath);
+            Optional<String> destinationPath, Collection<String> types) {
+        copyService.scheduleJob(storageLocationId, sourcePath, destinationStorageId, destinationPath, types);
     }
 
     /**

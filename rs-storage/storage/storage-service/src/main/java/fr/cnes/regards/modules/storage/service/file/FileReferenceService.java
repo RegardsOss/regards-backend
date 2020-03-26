@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -141,6 +141,17 @@ public class FileReferenceService {
     }
 
     /**
+     * Search for all {@link FileReference}s associated to the given storage location.
+     * @param storage
+     * @param pageable
+     * @return {@link FileReference}s
+     */
+    @Transactional(readOnly = true)
+    public Page<FileReference> search(String storage, Collection<String> types, Pageable pageable) {
+        return fileRefRepo.findByLocationStorageAndMetaInfoTypeIn(storage, types, pageable);
+    }
+
+    /**
      * Search for a {@link FileReference} associated to the given storage location and matching the given checksum.
      */
     @Transactional(readOnly = true)
@@ -198,15 +209,6 @@ public class FileReferenceService {
         FileReference saved = fileRefRepo.save(updatedFile);
         fileRefEventPublisher.updated(checksum, storage, updatedFile);
         return saved;
-    }
-
-    public FileReference addOwner(FileReference fileReference, String owner) {
-        if (!fileReference.getOwners().contains(owner)) {
-            fileReference.getOwners().add(owner);
-            return fileRefRepo.save(fileReference);
-        } else {
-            return fileReference;
-        }
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.domain.plugin;
 
-import java.io.IOException;
 import java.io.InputStream;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 
@@ -34,9 +34,10 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 public interface IOnlineStorageLocation extends IStorageLocation {
 
     /**
-     * Do the retreive action for the given {@link StorageDataFile}
+     * Do retrieve action for the given {@link StorageDataFile}
      * @param data StorageDataFile to retrieve
+     * @throws ModuleException
      */
-    InputStream retrieve(FileReference fileReference) throws IOException;
+    InputStream retrieve(FileReference fileReference) throws ModuleException;
 
 }

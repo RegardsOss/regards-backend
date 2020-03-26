@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -45,10 +45,12 @@ import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
 
 /**
- * @author sbinda
+ * Test class
+ *
+ * @author Sébastien Binda
  *
  */
-@ActiveProfiles("noscheduler")
+@ActiveProfiles("noschedule")
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class StorageLocationServiceTest extends AbstractStorageTest {

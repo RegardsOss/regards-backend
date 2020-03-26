@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -115,8 +115,10 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
                                     req.getFileReference().getMetaInfo().getChecksum(), errorCause));
                 }
             }
-            LOGGER.debug("[DELETION JOB] Deletion job handled in {}ms for {} deletion requests",
-                         System.currentTimeMillis() - start, nbRequestToHandle);
+            if (nbRequestToHandle > 0) {
+                LOGGER.info("[DELETION JOB] Deletion job handled in {}ms for {} deletion requests",
+                            System.currentTimeMillis() - start, nbRequestToHandle);
+            }
         }
     }
 

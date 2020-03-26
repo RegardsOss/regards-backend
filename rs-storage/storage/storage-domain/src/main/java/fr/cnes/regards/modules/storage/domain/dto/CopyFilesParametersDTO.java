@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -17,6 +17,13 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.cnes.regards.modules.storage.domain.dto;
+
+import java.util.Collection;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 
 /**
  * POJO to handle copy files requests parameters.
@@ -36,6 +43,11 @@ public class CopyFilesParametersDTO {
     private FileLocationDTO to;
 
     /**
+     * List of {@link FileReferenceMetaInfo#getType()} to copy
+     */
+    private final Set<String> types = Sets.newHashSet();
+
+    /**
      * Build a copy request parameters object.
      * @param sourceStorage source storage location name
      * @param sourcePath source path recursively copy
@@ -44,10 +56,13 @@ public class CopyFilesParametersDTO {
      * @return {@link CopyFilesParametersDTO}
      */
     public static CopyFilesParametersDTO build(String sourceStorage, String sourcePath, String destinationStorage,
-            String destinationPath) {
+            String destinationPath, Collection<String> types) {
         CopyFilesParametersDTO dto = new CopyFilesParametersDTO();
         dto.from = FileLocationDTO.build(sourceStorage, sourcePath);
         dto.to = FileLocationDTO.build(destinationStorage, destinationPath);
+        if (types != null) {
+            dto.types.addAll(types);
+        }
         return dto;
     }
 
@@ -57,6 +72,10 @@ public class CopyFilesParametersDTO {
 
     public FileLocationDTO getTo() {
         return to;
+    }
+
+    public Set<String> getTypes() {
+        return types;
     }
 
 }

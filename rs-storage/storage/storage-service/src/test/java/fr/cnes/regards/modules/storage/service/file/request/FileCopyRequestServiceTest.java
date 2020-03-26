@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -56,10 +56,12 @@ import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineDataStorage;
 
 /**
- * @author sbinda
+ * Test class
+ *
+ * @author Sébastien Binda
  *
  */
-@ActiveProfiles({ "noscheduler" })
+@ActiveProfiles({ "noschedule" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_copy_tests",
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class FileCopyRequestServiceTest extends AbstractStorageTest {
@@ -80,15 +82,15 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Long nbFiles = 20L;
         for (int i = 0; i < nbFiles; i++) {
             generateStoredFileReference(UUID.randomUUID().toString(), owner, String.format("file-%d.test", i),
-                                        ONLINE_CONF_LABEL, Optional.of(pathToCopy));
+                                        ONLINE_CONF_LABEL, Optional.of(pathToCopy), Optional.of("plop"));
         }
         for (int i = 0; i < 5; i++) {
             generateStoredFileReference(UUID.randomUUID().toString(), owner, String.format("file-%d.test", i),
-                                        ONLINE_CONF_LABEL, Optional.of("/rep/two"));
+                                        ONLINE_CONF_LABEL, Optional.of("/rep/two"), Optional.of("plop"));
         }
         JobInfo ji = fileCopyRequestService.scheduleJob(ONLINE_CONF_LABEL,
                                                         SimpleOnlineDataStorage.BASE_URL + pathToCopy,
-                                                        NEARLINE_CONF_LABEL, Optional.empty());
+                                                        NEARLINE_CONF_LABEL, Optional.empty(), Sets.newHashSet("plop"));
         Assert.assertNotNull("A job should be created", ji);
         Mockito.reset(publisher);
         jobService.runJob(ji, getDefaultTenant()).get();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -37,6 +37,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
@@ -58,6 +59,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
+import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineTestClient;
@@ -68,6 +70,7 @@ import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineTestClient;
  * @author Sébastien Binda
  *
  */
+@ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_tests",
         "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true" })
@@ -145,8 +148,11 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
     public void retrieveStorageLocations() {
         ResponseEntity<List<EntityModel<StorageLocationDTO>>> response = client.retrieve();
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
-        Assert.assertEquals(1, response.getBody().size());
-        Assert.assertEquals(ONLINE_CONF, response.getBody().get(0).getContent().getName());
+        // Expected 2 storages. One created in init method and 1 cache system
+        Assert.assertEquals(2, response.getBody().size());
+        Assert.assertTrue(response.getBody().stream().anyMatch(s -> s.getContent().getName().equals(ONLINE_CONF)));
+        Assert.assertTrue(response.getBody().stream()
+                .anyMatch(s -> s.getContent().getName().equals(CacheService.CACHE_NAME)));
     }
 
     private StorageLocationConfiguration initDataStoragePluginConfiguration() {

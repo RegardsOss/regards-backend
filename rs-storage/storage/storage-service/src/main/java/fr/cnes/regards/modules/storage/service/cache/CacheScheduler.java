@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.storage.service.cache.job.CacheVerificationJob;
  *
  */
 @Component
-@Profile("!noscheduler")
+@Profile("!noschedule")
 @EnableScheduling
 public class CacheScheduler {
 

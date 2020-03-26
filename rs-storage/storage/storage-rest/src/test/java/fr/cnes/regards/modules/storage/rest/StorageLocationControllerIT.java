@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -61,6 +63,7 @@ import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_loc_rest_it",
         "regards.storage.cache.path=target/cache" })
+@ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final String TARGET_STORAGE = "target";
@@ -171,7 +174,8 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                                                     new StorageLocationConfiguration("plop", null, null)),
                            requestBuilderCustomizer, "Should be created");
 
-        requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$").expectToHaveSize("$", 2);
+        // Expected 3 results : One created in init mehod. One created in this test method. One default cache system.
+        requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$").expectToHaveSize("$", 3);
         performDefaultGet(StorageLocationController.BASE_PATH, requestBuilderCustomizer, "Expect ok status.");
     }
 
@@ -195,7 +199,8 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         performDefaultPost(StorageLocationController.BASE_PATH + StorageLocationController.FILES
                 + StorageLocationController.COPY,
-                           CopyFilesParametersDTO.build("somewhere", "/dir/one", "somewhere-else", null),
+                           CopyFilesParametersDTO.build("somewhere", "/dir/one", "somewhere-else", null,
+                                                        Sets.newHashSet()),
                            requestBuilderCustomizer, "Expect ok status.");
     }
 

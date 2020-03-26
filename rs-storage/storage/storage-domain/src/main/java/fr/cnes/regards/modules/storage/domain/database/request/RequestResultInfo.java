@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -49,7 +49,8 @@ import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
  *
  */
 @Entity
-@Table(name = "t_request_result_info", indexes = { @Index(name = "idx_group_id", columnList = "group_id") })
+@Table(name = "t_request_result_info", indexes = { @Index(name = "idx_group_id", columnList = "group_id"),
+        @Index(name = "idx_group_file_ref_id", columnList = "result_file_ref_id") })
 public class RequestResultInfo {
 
     @Id

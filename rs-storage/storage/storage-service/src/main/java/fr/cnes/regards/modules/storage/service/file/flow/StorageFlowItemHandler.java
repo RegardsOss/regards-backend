@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -57,6 +57,7 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
 
     /**
      * Bulk size limit to handle messages
+     * NOTE : Over 100 performance are decreased
      */
     @Value("${regards.storage.store.items.bulk.size:100}")
     private int BULK_SIZE;
@@ -89,7 +90,7 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
         String tenant = wrapper.getTenant();
         runtimeTenantResolver.forceTenant(tenant);
         LOGGER.trace("[EVENT] New FileStorageFlowItem received -- {}", wrapper.getContent().toString());
-        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (50 * BULK_SIZE))) {
+        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (10 * BULK_SIZE))) {
             // Do not overload the concurrent queue if the configured listener does not handle queued message faster
             try {
                 LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
@@ -135,7 +136,7 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
     /**
      * Bulk save queued items every second.
      */
-    @Scheduled(fixedDelay = 1_000)
+    @Scheduled(fixedDelay = 1_000, initialDelay = 5_000)
     public void handleQueue() {
         for (Map.Entry<String, ConcurrentLinkedQueue<StorageFlowItem>> entry : items.entrySet()) {
             try {
@@ -157,8 +158,8 @@ public class StorageFlowItemHandler implements ApplicationListener<ApplicationRe
                         LOGGER.debug("[STORAGE FLOW HANDLER] Bulk saving {} StorageFlowItem...", list.size());
                         long start = System.currentTimeMillis();
                         fileStorageReqService.store(list);
-                        LOGGER.debug("[STORAGE FLOW HANDLER] {} StorageFlowItem handled in {} ms", list.size(),
-                                     System.currentTimeMillis() - start);
+                        LOGGER.info("[STORAGE FLOW HANDLER] {} StorageFlowItem handled in {} ms", list.size(),
+                                    System.currentTimeMillis() - start);
                         list.clear();
                     }
                 } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved

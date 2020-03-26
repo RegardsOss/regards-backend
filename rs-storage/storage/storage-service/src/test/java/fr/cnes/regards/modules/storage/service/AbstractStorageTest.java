@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -55,6 +55,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
+import fr.cnes.regards.framework.modules.locks.dao.ILockRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
@@ -181,6 +182,9 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected IDownloadTokenRepository downloadTokenRepo;
 
     @Autowired
+    private ILockRepository lockRepo;
+
+    @Autowired
     protected RequestStatusService reqStatusService;
 
     protected String originUrl = "file://in/this/directory/file.test";
@@ -206,6 +210,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         fileRefRepo.deleteAll();
         jobInfoRepo.deleteAll();
         downloadTokenRepo.deleteAll();
+        lockRepo.deleteAll();
 
         storageLocationService.getAllLocations().forEach(f -> {
             try {
@@ -281,7 +286,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected FileReference generateRandomStoredOnlineFileReference(String fileName, Optional<String> subDir)
             throws InterruptedException, ExecutionException {
         return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", fileName, ONLINE_CONF_LABEL,
-                                                subDir);
+                                                subDir, Optional.empty());
     }
 
     protected FileReference generateRandomStoredNearlineFileReference()
@@ -292,7 +297,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected FileReference generateRandomStoredNearlineFileReference(String fileName, Optional<String> subDir)
             throws InterruptedException, ExecutionException {
         return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", fileName, NEARLINE_CONF_LABEL,
-                                                subDir);
+                                                subDir, Optional.empty());
     }
 
     protected Optional<FileReference> generateStoredFileReferenceAlreadyReferenced(String checksum, String storage,
@@ -306,9 +311,10 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     }
 
     protected FileReference generateStoredFileReference(String checksum, String owner, String fileName, String storage,
-            Optional<String> subDir) throws InterruptedException, ExecutionException {
+            Optional<String> subDir, Optional<String> type) throws InterruptedException, ExecutionException {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 1024L,
                 MediaType.APPLICATION_OCTET_STREAM);
+        fileMetaInfo.withType(type.orElse(null));
         FileLocation destination = new FileLocation(storage, "/in/this/directory");
         // Run file reference creation.
         stoReqService.handleRequest(owner, fileMetaInfo, originUrl, storage, subDir, UUID.randomUUID().toString());

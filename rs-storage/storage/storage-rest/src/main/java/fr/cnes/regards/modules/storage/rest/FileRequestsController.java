@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -45,6 +45,7 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileStorageReques
 import fr.cnes.regards.modules.storage.domain.dto.request.FileRequestInfoDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
+import fr.cnes.regards.modules.storage.service.file.request.RequestStatusService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 
 /**
@@ -64,10 +65,15 @@ public class FileRequestsController implements IResourceController<FileRequestIn
 
     public static final String TYPE_PATH = "/{type}";
 
+    public static final String STOP_PATH = "/stop";
+
     public static final String STATUS_PARAM = "status";
 
     @Autowired
     private StorageLocationService service;
+
+    @Autowired
+    private RequestStatusService reqService;
 
     /**
      * {@link IResourceService} instance
@@ -94,6 +100,16 @@ public class FileRequestsController implements IResourceController<FileRequestIn
             @RequestParam(name = STATUS_PARAM, required = false) FileRequestStatus status, Pageable page)
             throws ModuleException {
         service.deleteRequests(storageLocationId, type, Optional.ofNullable(status));
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = STOP_PATH)
+    @ResourceAccess(description = "Delete storage location", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Void> stop() {
+        reqService.stopCacheRequests();
+        reqService.stopDeletionRequests();
+        reqService.stopCopyRequests();
+        reqService.stopStorageRequests();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

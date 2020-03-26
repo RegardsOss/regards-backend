@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -23,6 +23,7 @@ import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -36,6 +37,7 @@ import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -95,8 +97,6 @@ public class FileCacheRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileCacheRequestService.class);
 
-    private static final int NB_REFERENCE_BY_PAGE = 500;
-
     @Autowired
     private IFileCacheRequestRepository repository;
 
@@ -141,6 +141,9 @@ public class FileCacheRequestService {
 
     @Autowired
     private INotificationClient notificationClient;
+
+    @Value("${regards.storage.cache.requests.per.job:100}")
+    private Integer nbRequestsPerJob;
 
     /**
      * Static variable to avoid sending notification of cache full event after each request.
@@ -304,21 +307,28 @@ public class FileCacheRequestService {
      * @return scheduled {@link JobInfo}s
      */
     public Collection<JobInfo> scheduleJobs(FileRequestStatus status) {
-        LOGGER.debug("[CACHE REQUESTS] Scheduling Cache jobs ...");
+        LOGGER.trace("[CACHE REQUESTS] Scheduling Cache jobs ...");
         long start = System.currentTimeMillis();
         Collection<JobInfo> jobList = Lists.newArrayList();
         Set<String> allStorages = repository.findStoragesByStatus(status);
         for (String storage : allStorages) {
             Page<FileCacheRequest> filesPage;
-            Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
+            Long maxId = 0L;
+            // Always search the first page of requests until there is no requests anymore.
+            // To do so, we order on id to ensure to not handle same requests multiple times.
+            Pageable page = PageRequest.of(0, nbRequestsPerJob, Direction.ASC, "id");
             do {
-                filesPage = repository.findAllByStorageAndStatus(storage, status, page);
-                List<FileCacheRequest> requests = filesPage.getContent();
-                jobList.addAll(self.scheduleJobsByStorage(storage, requests));
-                page = filesPage.nextPageable();
-            } while (filesPage.hasNext());
+                filesPage = repository.findAllByStorageAndStatusAndIdGreaterThan(storage, status, maxId, page);
+                if (filesPage.hasContent()) {
+                    maxId = filesPage.stream().max(Comparator.comparing(FileCacheRequest::getId)).get().getId();
+                    jobList.addAll(self.scheduleJobsByStorage(storage, filesPage.getContent()));
+                }
+            } while (filesPage.hasContent());
         }
-        LOGGER.debug("[CACHE REQUESTS] {} jobs scheduled in {} ms", jobList.size(), System.currentTimeMillis() - start);
+        if (!jobList.isEmpty()) {
+            LOGGER.debug("[CACHE REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
+                         System.currentTimeMillis() - start);
+        }
         return jobList;
     }
 
@@ -464,10 +474,10 @@ public class FileCacheRequestService {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileCacheRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, plgBusinessId));
         parameters.add(new JobParameter(FileCacheRequestJob.WORKING_SUB_SET, workingSubset));
-        workingSubset.getFileRestorationRequests()
-                .forEach(r -> repository.updateStatus(FileRequestStatus.PENDING, r.getId()));
         JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_CACHE_JOB.getPriority(),
                 parameters, authResolver.getUser(), FileCacheRequestJob.class.getName()));
+        workingSubset.getFileRestorationRequests().forEach(r -> repository
+                .updateStatusAndJobId(FileRequestStatus.PENDING, jobInfo.getId().toString(), r.getId()));
         em.flush();
         em.clear();
         return jobInfo;

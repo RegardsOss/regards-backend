@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -57,6 +57,9 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
 
     Page<FileDeletionRequest> findByStorageAndStatus(String storage, FileRequestStatus status, Pageable page);
 
+    Page<FileDeletionRequest> findByStorageAndStatusAndIdGreaterThan(String storage, FileRequestStatus status,
+            Long maxId, Pageable page);
+
     boolean existsByGroupId(String groupId);
 
     boolean existsByGroupIdAndStatusNot(String groupId, FileRequestStatus error);
@@ -76,11 +79,20 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
     int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
             @Param("id") Long id);
 
+    @Modifying
+    @Query("update FileDeletionRequest fdr set fdr.status = :status, fdr.jobId = :jobId where fdr.id = :id")
+    int updateStatusAndJobId(@Param("status") FileRequestStatus pending, @Param("jobId") String jobId,
+            @Param("id") Long id);
+
     boolean existsByStorageAndStatusIn(String storage, Collection<FileRequestStatus> status);
 
     boolean existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(String storage, String checksum,
             Set<FileRequestStatus> ruuninstatus);
 
     boolean existsByFileReferenceMetaInfoChecksumAndStatusIn(String checksum, Set<FileRequestStatus> ruuninstatus);
+
+    Set<FileDeletionRequest> findByFileReferenceMetaInfoChecksumIn(Set<String> checksums);
+
+    Optional<FileDeletionRequest> findByStorageAndFileReferenceMetaInfoChecksum(String checksum, String storage);
 
 }

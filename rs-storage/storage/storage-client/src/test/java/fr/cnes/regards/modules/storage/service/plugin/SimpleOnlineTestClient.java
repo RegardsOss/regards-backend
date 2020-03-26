@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -136,7 +137,7 @@ public class SimpleOnlineTestClient implements IOnlineStorageLocation {
         String fileName = fileRefRequest.getMetaInfo().getFileName();
         if (Pattern.matches(doNotHandlePattern, fileName)) {
             // Do nothing to test not handled files
-            LOGGER.info("File {} ignored for storage", fileName);
+            LOGGER.debug("File {} ignored for storage", fileName);
             return;
         } else if (Pattern.matches(errorFilePattern, fileName)) {
             progressManager.storageFailed(fileRefRequest, "Specific error generated for tests");
@@ -157,8 +158,8 @@ public class SimpleOnlineTestClient implements IOnlineStorageLocation {
                 if (!Files.exists(Paths.get(storedUrl))) {
                     Files.createFile(Paths.get(storedUrl));
                 }
-                LOGGER.info("[SImpleOnLine Plugin] Storage succeed for file {}",
-                            fileRefRequest.getMetaInfo().getFileName());
+                LOGGER.debug("[SImpleOnLine Plugin] Storage succeed for file {}",
+                             fileRefRequest.getMetaInfo().getFileName());
                 progressManager.storageSucceed(fileRefRequest, new URL("file", null, storedUrl), 10L);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
@@ -188,8 +189,15 @@ public class SimpleOnlineTestClient implements IOnlineStorageLocation {
     }
 
     @Override
-    public InputStream retrieve(FileReference fileRef) throws IOException {
-        return Files.newInputStream(Paths.get(fileRef.getLocation().getUrl()));
+    public InputStream retrieve(FileReference fileRef) throws ModuleException {
+        try {
+            return Files.newInputStream(Paths.get(fileRef.getLocation().getUrl()));
+        } catch (IOException e) {
+            String errorMessage = String.format("[TEST STORAGE PLUGIN] file %s is not a valid URL to retrieve.",
+                                                fileRef.getLocation().getUrl());
+            LOGGER.error(errorMessage, e);
+            throw new ModuleException(errorMessage);
+        }
     }
 
     @Override

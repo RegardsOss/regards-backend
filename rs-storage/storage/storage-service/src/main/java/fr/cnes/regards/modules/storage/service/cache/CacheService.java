@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
@@ -57,7 +58,10 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
+import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
+import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 
 /**
  * Service to manage temporary accessibility of {@link FileReference} stored with a {@link INearlineStorageLocation}
@@ -81,6 +85,8 @@ import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 public class CacheService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CacheService.class);
+
+    public static final String CACHE_NAME = "internal-cache";
 
     private static int BULK_SIZE = 500;
 
@@ -149,7 +155,8 @@ public class CacheService {
         do {
             shouldBeAvailableSet = cachedFileRepository.findAll(page);
             for (CacheFile shouldBeAvailable : shouldBeAvailableSet) {
-                if (Files.notExists(Paths.get(shouldBeAvailable.getLocation().getPath()))) {
+                Path path = Paths.get(shouldBeAvailable.getLocation().getPath());
+                if (Files.notExists(path)) {
                     toDelete.add(shouldBeAvailable.getId());
                 }
             }
@@ -167,23 +174,43 @@ public class CacheService {
         if (Files.exists(getTenantCachePath())) {
             page = PageRequest.of(0, BULK_SIZE, Direction.ASC, "id");
             Page<CacheFile> availableFiles;
-            int count = 0;
+            long count = 0;
             do {
                 availableFiles = cachedFileRepository.findAll(page);
-                Set<String> availableFilePaths = availableFiles.getContent().stream()
+                Set<String> referencedCacheFiles = availableFiles.getContent().stream()
                         .map(availableFile -> availableFile.getLocation().getPath().toString())
                         .collect(Collectors.toSet());
                 try (Stream<Path> stream = Files.walk(getTenantCachePath())) {
-                    count += stream.filter(path -> availableFilePaths.contains(path.toAbsolutePath().toString()))
+                 // @formatter:off
+                    count = stream
+                            .filter(path -> Files.isRegularFile(path) && !referencedCacheFiles.contains(path.toAbsolutePath().toString()))
+                            .peek(p -> LOGGER.warn("Dirty file in cache : {}.", p.toString()))
+                            .peek(CacheService::deleteFileInCache)
                             .count();
+                 // @formatter:on
                 }
                 page = availableFiles.nextPageable();
             } while (availableFiles.hasNext());
             if (count > 0) {
                 String message = String
-                        .format("{} Files in cache directory does not match system cached files. Thoses files can be deleted.<ul>");
+                        .format("%s files deleted in cache directory does not match system cached files. Thoses files are listed in storage microservice logs and can be deleted.",
+                                count);
                 notificationClient.notify(message, "Dirty cache", NotificationLevel.WARNING, DefaultRole.PROJECT_ADMIN);
             }
+        }
+    }
+
+    /**
+     * Delete a file from cache directory if
+     * @param path
+     */
+    private static void deleteFileInCache(Path path) {
+        try {
+            if (Files.getLastModifiedTime(path).toInstant().isBefore(Instant.now().minusSeconds(60 * 60 * 2))) {
+                Files.delete(path);
+            }
+        } catch (IOException e) {
+            LOGGER.error(String.format("Error deleting file %s during cache db coherence check.", path.toString()), e);
         }
     }
 
@@ -268,6 +295,10 @@ public class CacheService {
      */
     public Long getCacheSizeUsedBytes() {
         return cachedFileRepository.getTotalFileSize();
+    }
+
+    public Long getCacheSizeUsedKB() {
+        return cachedFileRepository.getTotalFileSize() / 1024;
     }
 
     /**
@@ -382,6 +413,17 @@ public class CacheService {
 
     public Long getCacheSizeLimit() {
         return maxCacheSizeKo * 1024;
+    }
+
+    public long getTotalCachedFiles() {
+        return cachedFileRepository.count();
+    }
+
+    public StorageLocationDTO toStorageLocation() {
+        StorageLocationConfiguration conf = new StorageLocationConfiguration(CACHE_NAME, null, maxCacheSizeKo);
+        conf.setStorageType(StorageType.CACHE);
+        return StorageLocationDTO.build(CACHE_NAME, getTotalCachedFiles(), getCacheSizeUsedKB(), 0L, 0L, false, false,
+                                        false, conf);
     }
 
 }

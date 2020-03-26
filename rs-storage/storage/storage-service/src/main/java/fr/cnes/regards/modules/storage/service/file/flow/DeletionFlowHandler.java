@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -88,7 +88,7 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
         String tenant = wrapper.getTenant();
         DeletionFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
-        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (50 * BULK_SIZE))) {
+        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (10 * BULK_SIZE))) {
             // Do not overload the concurrent queue if the configured listener does not handle queued message faster
             try {
                 LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
@@ -123,7 +123,7 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
     /**
      * Bulk save queued items every second.
      */
-    @Scheduled(fixedDelay = 1_000)
+    @Scheduled(fixedDelay = 1_000, initialDelay = 5_000)
     public void handleQueue() {
         for (Map.Entry<String, ConcurrentLinkedQueue<DeletionFlowItem>> entry : items.entrySet()) {
             try {

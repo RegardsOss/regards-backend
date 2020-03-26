@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -116,6 +116,7 @@ public class FileReferenceRequestService {
             Collection<FileReference> existingOnes, Collection<FileDeletionRequest> existingDeletionRequests) {
         Set<FileReference> fileRefs = Sets.newHashSet();
         for (FileReferenceRequestDTO file : requests) {
+            long start = System.currentTimeMillis();
             // Check if the file already exists for the storage destination
             Optional<FileReference> oFileRef = existingOnes.stream()
                     .filter(f -> f.getMetaInfo().getChecksum().equals(file.getChecksum())
@@ -138,6 +139,9 @@ public class FileReferenceRequestService {
                                                  file.getStorage(), e.getMessage(), Sets.newHashSet(groupId));
                 reqGrpService.requestError(groupId, FileRequestType.REFERENCE, file.getChecksum(), file.getStorage(),
                                            null, Sets.newHashSet(file.getOwner()), e.getMessage());
+            } finally {
+                LOGGER.trace("[REFERENCE REQUEST] New reference request ({}) handled in {}ms", file.getFileName(),
+                             System.currentTimeMillis() - start);
             }
         }
         return fileRefs;
@@ -229,7 +233,8 @@ public class FileReferenceRequestService {
                             request.getOwner(), fileReference.getMetaInfo().getFileName(),
                             fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
             fileRefEventPublisher.storeSuccess(fileReference, message, groupIds);
-            return fileRefService.addOwner(fileReference, request.getOwner());
+            fileReference.getOwners().add(request.getOwner());
+            return fileReference;
         }
     }
 

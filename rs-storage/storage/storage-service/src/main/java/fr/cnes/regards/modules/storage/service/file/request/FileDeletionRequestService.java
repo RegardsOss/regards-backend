@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.storage.service.file.request;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -86,8 +87,6 @@ public class FileDeletionRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDeletionRequestService.class);
 
-    private static final int NB_REFERENCE_BY_PAGE = 1000;
-
     @Autowired
     private IFileDeletetionRequestRepository fileDeletionRequestRepo;
 
@@ -133,37 +132,45 @@ public class FileDeletionRequestService {
     @Value("${regards.storage.deletion.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
 
+    @Value("${regards.storage.deletion.requests.per.job:100}")
+    private Integer nbRequestsPerJob;
+
     /**
      * Create a new {@link FileDeletionRequest}.
      * @param fileReferenceToDelete {@link FileReference} to delete
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
      * @param groupId Business identifier of the deletion request
      */
-    public void create(FileReference fileReferenceToDelete, boolean forceDelete, String groupId,
-            FileRequestStatus status) {
-        Optional<FileDeletionRequest> existingOne = fileDeletionRequestRepo
-                .findByFileReferenceId(fileReferenceToDelete.getId());
+    public FileDeletionRequest create(FileReference fileReferenceToDelete, boolean forceDelete, String groupId,
+            Collection<FileDeletionRequest> existingRequests, FileRequestStatus status) {
+        Optional<FileDeletionRequest> existingOne = existingRequests.stream()
+                .filter(r -> r.getFileReference().getId().equals(fileReferenceToDelete.getId())).findFirst();
+        FileDeletionRequest request;
         if (!existingOne.isPresent()) {
             // Create new deletion request
             FileDeletionRequest newDelRequest = new FileDeletionRequest(fileReferenceToDelete, forceDelete, groupId,
                     status);
             newDelRequest.setStatus(reqStatusService.getNewStatus(newDelRequest, Optional.of(status)));
-            fileDeletionRequestRepo.save(newDelRequest);
+            request = fileDeletionRequestRepo.save(newDelRequest);
+            existingRequests.add(request);
         } else {
             // Retry deletion if error
-            retry(existingOne.get(), forceDelete);
+            request = retry(existingOne.get(), forceDelete);
         }
+        return request;
     }
 
     /**
      * Update all {@link FileDeletionRequest} in error status to change status to {@link FileRequestStatus#TO_DO}.
      */
-    private void retry(FileDeletionRequest req, boolean forceDelete) {
-        if (req.getStatus() == FileRequestStatus.ERROR) {
-            req.setStatus(FileRequestStatus.TO_DO);
-            req.setErrorCause(null);
-            req.setForceDelete(forceDelete);
-            updateFileDeletionRequest(req);
+    private FileDeletionRequest retry(FileDeletionRequest request, boolean forceDelete) {
+        if (request.getStatus() == FileRequestStatus.ERROR) {
+            request.setStatus(FileRequestStatus.TO_DO);
+            request.setErrorCause(null);
+            request.setForceDelete(forceDelete);
+            return updateFileDeletionRequest(request);
+        } else {
+            return request;
         }
     }
 
@@ -176,11 +183,11 @@ public class FileDeletionRequestService {
     public Collection<JobInfo> scheduleJobs(FileRequestStatus status, Collection<String> storages) {
         Collection<JobInfo> jobList = Lists.newArrayList();
         if (!lockDeletionProcess(false, 30)) {
-            LOGGER.trace("[DELETION REQUESTS] Deletion process is delayed. A deletion process is already running.");
+            LOGGER.info("[DELETION REQUESTS] Deletion process is delayed. A deletion process is already running.");
             return jobList;
         }
         try {
-            LOGGER.debug("[DELETION REQUESTS] Scheduling deletion jobs ...");
+            LOGGER.trace("[DELETION REQUESTS] Scheduling deletion jobs ...");
             long start = System.currentTimeMillis();
             Set<String> allStorages = fileDeletionRequestRepo.findStoragesByStatus(status);
             Set<String> deletionToSchedule = storages != null && !storages.isEmpty()
@@ -188,12 +195,19 @@ public class FileDeletionRequestService {
                     : allStorages;
             for (String storage : deletionToSchedule) {
                 Page<FileDeletionRequest> deletionRequestPage;
-                Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE, Direction.ASC, "id");
+                Long maxId = 0L;
+                // Always search the first page of requests until there is no requests anymore.
+                // To do so, we order on id to ensure to not handle same requests multiple times.
+                Pageable page = PageRequest.of(0, nbRequestsPerJob, Direction.ASC, "id");
                 do {
-                    deletionRequestPage = fileDeletionRequestRepo.findByStorageAndStatus(storage, status, page);
-                    jobList.addAll(self.scheduleDeletionJobsByStorage(storage, deletionRequestPage));
-                    page = deletionRequestPage.nextPageable();
-                } while (deletionRequestPage.hasNext());
+                    deletionRequestPage = fileDeletionRequestRepo
+                            .findByStorageAndStatusAndIdGreaterThan(storage, status, maxId, page);
+                    if (deletionRequestPage.hasContent()) {
+                        maxId = deletionRequestPage.stream().max(Comparator.comparing(FileDeletionRequest::getId)).get()
+                                .getId();
+                        jobList.addAll(self.scheduleDeletionJobsByStorage(storage, deletionRequestPage));
+                    }
+                } while (deletionRequestPage.hasContent());
             }
             if (jobList.size() > 0) {
                 LOGGER.debug("[DELETION REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
@@ -280,10 +294,10 @@ public class FileDeletionRequestService {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, pluginConfBusinessId));
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
-        workingSubset.getFileDeletionRequests().forEach(fileRefReq -> fileDeletionRequestRepo
-                .updateStatus(FileRequestStatus.PENDING, fileRefReq.getId()));
         JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_DELETION_JOB.getPriority(),
                 parameters, authResolver.getUser(), FileDeletionRequestJob.class.getName()));
+        workingSubset.getFileDeletionRequests().forEach(fileRefReq -> fileDeletionRequestRepo
+                .updateStatusAndJobId(FileRequestStatus.PENDING, jobInfo.getId().toString(), fileRefReq.getId()));
         em.flush();
         em.clear();
         return jobInfo;
@@ -341,8 +355,11 @@ public class FileDeletionRequestService {
      * @param list
      */
     public void handle(List<DeletionFlowItem> list) {
-        Set<FileReference> existingOnes = fileRefService.search(list.stream().map(DeletionFlowItem::getFiles)
-                .flatMap(Set::stream).map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet()));
+        Set<String> checksums = list.stream().map(DeletionFlowItem::getFiles).flatMap(Set::stream)
+                .map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet());
+        Set<FileReference> existingOnes = fileRefService.search(checksums);
+        Set<FileDeletionRequest> fileDeletionRequests = fileDeletionRequestRepo
+                .findByFileReferenceMetaInfoChecksumIn(checksums);
         for (DeletionFlowItem item : list) {
             if (fileCopyReqService.isFileCopyRunning(item.getFiles().stream().map(i -> i.getChecksum())
                     .collect(Collectors.toSet()))) {
@@ -352,7 +369,7 @@ public class FileDeletionRequestService {
             } else {
                 reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size(),
                                         getRequestExpirationDate());
-                handle(item.getFiles(), item.getGroupId(), existingOnes);
+                handle(item.getFiles(), item.getGroupId(), existingOnes, fileDeletionRequests);
             }
         }
     }
@@ -363,9 +380,11 @@ public class FileDeletionRequestService {
      * @param groupId
      */
     public void handle(Collection<FileDeletionRequestDTO> requests, String groupId) {
-        Set<FileReference> existingOnes = fileRefService
-                .search(requests.stream().map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet()));
-        handle(requests, groupId, existingOnes);
+        Set<String> checksums = requests.stream().map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet());
+        Set<FileReference> existingOnes = fileRefService.search(checksums);
+        Set<FileDeletionRequest> fileDeletionRequests = fileDeletionRequestRepo
+                .findByFileReferenceMetaInfoChecksumIn(checksums);
+        handle(requests, groupId, existingOnes, fileDeletionRequests);
     }
 
     /**
@@ -376,14 +395,15 @@ public class FileDeletionRequestService {
      * @param existingOnes
      */
     public void handle(Collection<FileDeletionRequestDTO> requests, String groupId,
-            Collection<FileReference> existingOnes) {
+            Collection<FileReference> existingOnes, Collection<FileDeletionRequest> existingRequests) {
         for (FileDeletionRequestDTO request : requests) {
             Optional<FileReference> oFileRef = existingOnes.stream()
                     .filter(f -> f.getLocation().getStorage().equals(request.getStorage())
                             && f.getMetaInfo().getChecksum().equals(request.getChecksum()))
                     .findFirst();
             if (oFileRef.isPresent()) {
-                removeOwner(oFileRef.get(), request.getOwner(), request.isForceDelete(), groupId);
+                FileReference fileRef = oFileRef.get();
+                removeOwner(fileRef, request.getOwner(), request.isForceDelete(), existingRequests, groupId);
             }
             // In all case, inform caller that deletion request is success.
             reqGroupService.requestSuccess(groupId, FileRequestType.DELETION, request.getChecksum(),
@@ -397,13 +417,14 @@ public class FileDeletionRequestService {
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
      * @param groupId Business identifier of the deletion request
      */
-    private void removeOwner(FileReference fileReference, String owner, boolean forceDelete, String groupId) {
+    private void removeOwner(FileReference fileReference, String owner, boolean forceDelete,
+            Collection<FileDeletionRequest> existingRequests, String groupId) {
         fileRefService.removeOwner(fileReference, owner, groupId);
         // If file reference does not belongs to anyone anymore, delete file reference
         if (fileReference.getOwners().isEmpty()) {
             if (storageHandler.getConfiguredStorages().contains(fileReference.getLocation().getStorage())) {
                 // If the file is stored on an accessible storage, create a new deletion request
-                create(fileReference, forceDelete, groupId, FileRequestStatus.TO_DO);
+                create(fileReference, forceDelete, groupId, existingRequests, FileRequestStatus.TO_DO);
             } else {
                 // Delete associated cache request if any
                 fileCacheReqService.delete(fileReference);
@@ -417,10 +438,10 @@ public class FileDeletionRequestService {
      * Update a {@link FileDeletionRequest}
      * @param fileDeletionRequest
      */
-    public void updateFileDeletionRequest(FileDeletionRequest fileDeletionRequest) {
+    public FileDeletionRequest updateFileDeletionRequest(FileDeletionRequest fileDeletionRequest) {
         Assert.notNull(fileDeletionRequest, "File deletion request to update cannot be null");
         Assert.notNull(fileDeletionRequest.getId(), "File deletion request to update identifier cannot be null");
-        fileDeletionRequestRepo.save(fileDeletionRequest);
+        return fileDeletionRequestRepo.save(fileDeletionRequest);
     }
 
     /**
@@ -431,6 +452,11 @@ public class FileDeletionRequestService {
     @Transactional(readOnly = true)
     public Optional<FileDeletionRequest> search(FileReference fileReference) {
         return fileDeletionRequestRepo.findByFileReferenceId(fileReference.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public Set<FileDeletionRequest> searchByChecksums(Set<String> checksums) {
+        return fileDeletionRequestRepo.findByFileReferenceMetaInfoChecksumIn(checksums);
     }
 
     @Transactional(readOnly = true)
@@ -447,6 +473,11 @@ public class FileDeletionRequestService {
     @Transactional(readOnly = true)
     public Page<FileDeletionRequest> search(String storage, Pageable page) {
         return fileDeletionRequestRepo.findByStorage(storage, page);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<FileDeletionRequest> search(String checksum, String storage) {
+        return fileDeletionRequestRepo.findByStorageAndFileReferenceMetaInfoChecksum(storage, checksum);
     }
 
     @Transactional(readOnly = true)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -44,10 +44,11 @@ import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 
 /**
+ * Test class
  *
  * @author Sébastien Binda
  */
-@ActiveProfiles({ "noscheduler" })
+@ActiveProfiles({ "noschedule" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class ReferenceFileFlowItemTest extends AbstractStorageTest {
@@ -137,7 +138,7 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
         FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL,
-                                                                 Optional.empty());
+                                                                 Optional.empty(), Optional.empty());
         String storage = fileRef.getLocation().getStorage();
         // One store event should be sent
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -172,7 +173,8 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
         String storage = "aStorage";
-        this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL, Optional.empty());
+        this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL, Optional.empty(),
+                                         Optional.empty());
         // Create a new bus message File reference request
         ReferenceFlowItem item = ReferenceFlowItem
                 .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -90,7 +90,6 @@ public class FileRequestsGroupEventHandler
     }
 
     private void handleDeletionGroupDone(FileRequestsGroupEvent event) {
-        storageLocationService.monitorStorageLocations(true);
         if (event.getState() == FlowItemStatus.ERROR) {
             notificationClient
                     .notify(String.format("Requests group %s is terminated with erros. %s success and %s errors.",

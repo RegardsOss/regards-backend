@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,6 +24,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Set;
@@ -36,20 +37,24 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.FileSystemUtils;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
@@ -57,13 +62,20 @@ import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.dao.IRequestGroupRepository;
+import fr.cnes.regards.modules.storage.domain.database.FileLocation;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
+import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
+import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
 import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
@@ -75,7 +87,7 @@ import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineTestClient;
  * @author sbinda
  *
  */
-@ActiveProfiles({ "testAmqp", "storageTest", "noschedule" })
+@ActiveProfiles(value = { "default", "test", "testAmqp", "storageTest" }, inheritProfiles = false)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
@@ -117,6 +129,9 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IFileReferenceRepository fileRefRepo;
+
+    @Autowired
+    private IPublisher publisher;
 
     private Path fileToStore;
 
@@ -171,6 +186,28 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
+    public void eventListenerTest() throws InterruptedException {
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        listener.reset();
+        // Simulate multiples message from storage service
+        int nbMessages = 1_000;
+        for (int i = 0; i < nbMessages; i++) {
+            String groupId = "group_" + i;
+            String checksum = UUID.randomUUID().toString();
+            FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum, "UUID", "file" + i, 10L,
+                    MediaType.APPLICATION_JSON);
+            RequestResultInfo resultInfo = new RequestResultInfo(groupId, FileRequestType.STORAGE, checksum, "storage",
+                    "path", Sets.newHashSet("owner"));
+            resultInfo.setResultFile(new FileReference("owner", metaInfo, new FileLocation("storage", "path")));
+            publisher.publish(FileRequestsGroupEvent.build(groupId, FileRequestType.STORAGE, FlowItemStatus.SUCCESS,
+                                                           Sets.newHashSet(resultInfo)));
+        }
+        LOGGER.info(" -------> Start waiting for all responses received !!!!!!!!!");
+        // Wait for all events received
+        waitRequestEnds(nbMessages, 60);
+    }
+
+    @Test
     public void storeWithMultipleRequests() throws MalformedURLException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Set<FileStorageRequestDTO> files = Sets.newHashSet();
@@ -184,6 +221,51 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         // Wait for storage ends
         waitRequestEnds(2, 60);
         Assert.assertEquals("Two requests should be created", 2, infos.size());
+    }
+
+    @Test
+    public void storeBulk() throws NoSuchAlgorithmException, IOException, InterruptedException {
+
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+
+        FileSystemUtils.deleteRecursively(Paths.get("target/store"));
+        Files.createDirectory(Paths.get("target/store"));
+        int nbGroups = 110;
+        Set<Path> filesToStore = Sets.newHashSet();
+        for (int i = 0; i < nbGroups; i++) {
+            Path path = Paths.get("target/store/file_" + i + ".txt");
+            String str = "fichier de test " + i;
+            byte[] strToBytes = str.getBytes();
+            Files.write(path, strToBytes);
+            filesToStore.add(path);
+        }
+
+        Path fileCommon = Paths.get("target/store/file_common.txt");
+        String str = "fichier de test commun";
+        byte[] strToBytes = str.getBytes();
+        Files.write(fileCommon, strToBytes);
+        String csCommon = ChecksumUtils.computeHexChecksum(fileCommon, "MD5");
+
+        int cpt = 0;
+        for (Path file : filesToStore) {
+            cpt++;
+            String owner = "owner-" + cpt;
+            Set<FileStorageRequestDTO> files = Sets.newHashSet();
+            String cs = ChecksumUtils.computeHexChecksum(file, "MD5");
+            files.add(FileStorageRequestDTO
+                    .build(file.getFileName().toString(), cs, "MD5", "application/octet-stream", owner,
+                           (new URL("file", null, file.toAbsolutePath().toString())).toString(), ONLINE_CONF, null));
+            files.add(FileStorageRequestDTO
+                    .build(fileCommon.getFileName().toString(), csCommon, "MD5", "application/octet-stream", owner,
+                           (new URL("file", null, fileCommon.toAbsolutePath().toString())).toString(), ONLINE_CONF,
+                           null));
+            client.store(files);
+        }
+
+        waitRequestEnds(nbGroups, 240);
+
+        Assert.assertEquals(nbGroups, listener.getNbRequestEnds());
+
     }
 
     @Test
@@ -569,7 +651,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         // 1 Copy group requests should be over
         // 1 Availability requests should be over (created by the copy process)
         // 1 Storage group by file. Each group is created after availability event for each file.
-        waitRequestEnds(1 + 1 + restorableFileChecksums.size(), 15);
+        waitRequestEnds(1 + 1 + restorableFileChecksums.size(), 30);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         Assert.assertTrue(String.format("Request should be successful for request id %s", info.getGroupId()),
                           listener.getSuccess().containsKey(info));
@@ -596,7 +678,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         // 1 Copy request
         // 1 Availability request
         // 1 Storage request
-        waitRequestEnds(3, 20);
+        waitRequestEnds(3, 40);
 
         Assert.assertTrue("Request group should be granted", listener.getGranted().contains(info));
     }

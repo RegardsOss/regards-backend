@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -52,10 +52,12 @@ import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequest
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
 
 /**
+ * Test class
+ *
  * @author Sébastien Binda
  *
  */
-@ActiveProfiles({ "noscheduler" })
+@ActiveProfiles({ "noschedule" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
@@ -164,7 +166,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         String checksum = UUID.randomUUID().toString();
         String owner = "owner";
         FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test", ONLINE_CONF_LABEL,
-                                                                 Optional.empty());
+                                                                 Optional.empty(), Optional.empty());
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
@@ -210,7 +212,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         String checksum = UUID.randomUUID().toString();
         String owner = "owner";
         FileReference fileRef = this.generateStoredFileReference(checksum, owner, "delErr.file.test", ONLINE_CONF_LABEL,
-                                                                 Optional.empty());
+                                                                 Optional.empty(), Optional.empty());
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
@@ -256,7 +258,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         String checksum = UUID.randomUUID().toString();
         String owner = "owner";
         FileReference fileRef = this.generateStoredFileReference(checksum, owner, "delErr.file.test", ONLINE_CONF_LABEL,
-                                                                 Optional.empty());
+                                                                 Optional.empty(), Optional.empty());
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, true),
@@ -296,7 +298,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         String checksum = UUID.randomUUID().toString();
         String owner = "owner";
         FileReference fileRef = this.generateStoredFileReference(checksum, owner, "delErr.file.test", ONLINE_CONF_LABEL,
-                                                                 Optional.empty());
+                                                                 Optional.empty(), Optional.empty());
 
         Assert.assertTrue("There should be file ref created",
                           fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());

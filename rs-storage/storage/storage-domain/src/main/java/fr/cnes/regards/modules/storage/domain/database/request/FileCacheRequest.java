@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -49,7 +49,8 @@ import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 @Table(name = "t_file_cache_request",
         indexes = { @Index(name = "idx_file_cache_request_grp", columnList = "group_id"),
                 @Index(name = "idx_file_cache_request_cs", columnList = "checksum"),
-                @Index(name = "idx_file_cache_request_storage", columnList = "storage") },
+                @Index(name = "idx_file_cache_request_storage", columnList = "storage"),
+                @Index(name = "idx_file_cache_file_ref", columnList = "file_ref_id") },
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_t_file_cache_request_checksum", columnNames = { "checksum" }) })
 public class FileCacheRequest {
@@ -95,6 +96,9 @@ public class FileCacheRequest {
     @Column(name = "creation_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private final OffsetDateTime creationDate;
+
+    @Column(name = "job_id")
+    private String jobId;
 
     public FileCacheRequest(FileReference fileReference, String restorationDirectory, OffsetDateTime expirationDate,
             String groupId) {
@@ -172,6 +176,14 @@ public class FileCacheRequest {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
     }
 
 }

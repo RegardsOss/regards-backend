@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -37,10 +37,12 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 
 /**
- * @author sbinda
+ * Test class
+ *
+ * @author Sébastien Binda
  *
  */
-@ActiveProfiles({ "noscheduler" })
+@ActiveProfiles({ "noschedule" })
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
                 "regards.storage.cache.path=target/cache", "regards.storage.cache.size.limit.ko.per.tenant:10" },

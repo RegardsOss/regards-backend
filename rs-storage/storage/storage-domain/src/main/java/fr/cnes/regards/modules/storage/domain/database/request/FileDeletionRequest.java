@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -51,7 +51,8 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 @Entity
 @Table(name = "t_file_deletion_request",
         indexes = { @Index(name = "idx_file_deletion_request", columnList = "storage"),
-                @Index(name = "idx_file_deletion_grp", columnList = "group_id") },
+                @Index(name = "idx_file_deletion_grp", columnList = "group_id"),
+                @Index(name = "idx_file_deletion_file_ref", columnList = "file_reference") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_t_file_deletion_request_file_reference",
                 columnNames = { "file_reference" }) })
 public class FileDeletionRequest {
@@ -88,6 +89,9 @@ public class FileDeletionRequest {
     @Column(name = "creation_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private final OffsetDateTime creationDate;
+
+    @Column(name = "job_id")
+    private String jobId;
 
     public FileDeletionRequest() {
         super();
@@ -173,6 +177,14 @@ public class FileDeletionRequest {
 
     public OffsetDateTime getCreationDate() {
         return creationDate;
+    }
+
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -49,6 +49,9 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
 
     Page<FileCacheRequest> findAllByStorageAndStatus(String storage, FileRequestStatus status, Pageable page);
 
+    Page<FileCacheRequest> findAllByStorageAndStatusAndIdGreaterThan(String storage, FileRequestStatus status,
+            Long maxId, Pageable page);
+
     Set<FileCacheRequest> findByGroupId(String groupId);
 
     Set<FileCacheRequest> findByGroupIdAndStatus(String groupId, FileRequestStatus status);
@@ -68,6 +71,11 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
     @Modifying
     @Query("update FileCacheRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
     int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
+            @Param("id") Long id);
+
+    @Modifying
+    @Query("update FileCacheRequest fcr set fcr.status = :status, fcr.jobId = :jobId where fcr.id = :id")
+    int updateStatusAndJobId(@Param("status") FileRequestStatus pending, @Param("jobId") String jobId,
             @Param("id") Long id);
 
     @Query("select coalesce(sum(fcr.fileSize),0) from FileCacheRequest fcr where fcr.status = 'PENDING'")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -54,10 +54,12 @@ import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 
 /**
- * @author sbinda
+ * Test class
+ *
+ * @author Sébastien Binda
  *
  */
-@ActiveProfiles({ "noscheduler" })
+@ActiveProfiles({ "noschedule" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_deletion_tests",
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class FileDeletionRequestServiceTest extends AbstractStorageTest {
@@ -74,15 +76,15 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
         Long nbFiles = 20L;
         for (int i = 0; i < nbFiles; i++) {
             generateStoredFileReference(UUID.randomUUID().toString(), owner, String.format("file-%d.test", i),
-                                        ONLINE_CONF_LABEL, Optional.empty());
+                                        ONLINE_CONF_LABEL, Optional.empty(), Optional.empty());
         }
         JobInfo ji = fileDeletionRequestService.scheduleJob(ONLINE_CONF_LABEL, false);
         Assert.assertNotNull("A job should be created", ji);
         Mockito.reset(publisher);
         jobService.runJob(ji, getDefaultTenant()).get();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        // A deletion request should be created for each file
-        Mockito.verify(publisher, Mockito.times(20)).publish(Mockito.any(DeletionFlowItem.class));
+        // A deletion request should be created for a group request containing each file
+        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(DeletionFlowItem.class));
     }
 
     @Test
@@ -131,12 +133,51 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
     }
 
     @Test
+    public void deleteFileStoredMultiple() throws EntityNotFoundException, InterruptedException, ExecutionException {
+
+        String fileChecksum = "file-1";
+        String firstOwner = "first-owner";
+        String secondOwner = "second-owner";
+        FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "file.test", ONLINE_CONF_LABEL,
+                                                            Optional.empty(), Optional.empty());
+        Assert.assertNotNull("File reference should have been created", fileRef);
+        Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
+        Optional<FileReference> oFileRef = generateStoredFileReferenceAlreadyReferenced(fileChecksum,
+                                                                                        fileRef.getLocation()
+                                                                                                .getStorage(),
+                                                                                        secondOwner);
+        Assert.assertTrue("File reference should be updated", oFileRef.isPresent());
+        Assert.assertTrue("File reference should belongs to first owner",
+                          oFileRef.get().getOwners().contains(firstOwner));
+        Assert.assertTrue("File reference should belongs to second owner",
+                          oFileRef.get().getOwners().contains(secondOwner));
+        fileRef = oFileRef.get();
+
+        // Create deletion request for each owner
+        FileDeletionRequestDTO request = FileDeletionRequestDTO
+                .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), firstOwner, false);
+        FileDeletionRequestDTO request2 = FileDeletionRequestDTO
+                .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), secondOwner, false);
+        FileDeletionRequestDTO request3 = FileDeletionRequestDTO
+                .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), "other-owner", false);
+        fileDeletionRequestService.handle(Sets.newHashSet(request, request2, request3), UUID.randomUUID().toString());
+
+        // Re-submit same request for one owner
+        fileDeletionRequestService.handle(Sets.newHashSet(request3), UUID.randomUUID().toString());
+
+        // File reference should be deleted
+        Optional<FileDeletionRequest> afterDeletion = fileDeletionRequestService.search(fileRef);
+        Assert.assertTrue("File deletion request should exists", afterDeletion.isPresent());
+
+    }
+
+    @Test
     public void deleteFileReferenceError() throws EntityNotFoundException, InterruptedException, ExecutionException {
 
         String fileChecksum = "file-1";
         String firstOwner = "first-owner";
         FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "delErr.file1.test",
-                                                            ONLINE_CONF_LABEL, Optional.empty());
+                                                            ONLINE_CONF_LABEL, Optional.empty(), Optional.empty());
         Assert.assertNotNull("File reference should have been created", fileRef);
         Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
 
@@ -191,7 +232,7 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
             String firstOwner = "first-owner";
             String secondOwner = "second-owner";
             FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "file.test", pluginConf,
-                                                                Optional.empty());
+                                                                Optional.empty(), Optional.empty());
             Assert.assertNotNull("File reference should have been created", fileRef);
             Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
             Optional<FileReference> oFileRef = generateStoredFileReferenceAlreadyReferenced(fileChecksum,

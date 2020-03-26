@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -40,6 +40,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
@@ -66,8 +69,13 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     public static final String DESTINATION_PATH = "destinationPath";
 
+    public static final String FILE_TYPES = "types";
+
     @Autowired
     private IPublisher publisher;
+
+    @Autowired
+    private INotificationClient notifClient;
 
     @Autowired
     private FileReferenceService fileRefService;
@@ -83,6 +91,8 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     private String destinationPath;
 
+    private Set<String> types = Sets.newHashSet();
+
     private int totalPages = 0;
 
     @Override
@@ -92,6 +102,9 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         storageLocationDestinationId = parameters.get(STORAGE_LOCATION_DESTINATION_ID).getValue();
         sourcePath = parameters.get(SOURCE_PATH).getValue();
         destinationPath = parameters.get(DESTINATION_PATH).getValue();
+        if (parameters.get(FILE_TYPES) != null) {
+            types = parameters.get(FILE_TYPES).getValue();
+        }
     }
 
     @Override
@@ -111,7 +124,11 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             long nbFilesToCopy = 0L;
             do {
                 // Search for all file references matching the given storage location.
-                pageResults = fileRefService.search(storageLocationSourceId, pageRequest);
+                if (types.isEmpty()) {
+                    pageResults = fileRefService.search(storageLocationSourceId, pageRequest);
+                } else {
+                    pageResults = fileRefService.search(storageLocationSourceId, types, pageRequest);
+                }
                 totalPages = pageResults.getTotalPages();
                 String groupId = UUID.randomUUID().toString();
                 Set<FileCopyRequestDTO> requests = Sets.newHashSet();
@@ -138,8 +155,18 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                 publisher.publish(CopyFlowItem.build(requests, groupId));
                 pageRequest = pageRequest.next();
             } while (pageResults.hasNext());
-            LOGGER.info("[COPY JOB] {} files to copy from storage location {} to {} calculated in {}ms", nbFilesToCopy,
-                        storageLocationSourceId, storageLocationDestinationId, System.currentTimeMillis() - start);
+            String message = String.format("Copy process found %s files to copy from %s:%s to %s:%s.", nbFilesToCopy,
+                                           storageLocationSourceId, sourcePath, storageLocationDestinationId,
+                                           destinationPath);
+            if (nbFilesToCopy > 0) {
+                message = message
+                        + " Copy of files is now running, to monitor copy process go to storage locations page.";
+                notifClient.notify(message, "Copy files", NotificationLevel.INFO, DefaultRole.EXPLOIT);
+            } else {
+                notifClient.notify(message, "Copy files", NotificationLevel.WARNING, DefaultRole.EXPLOIT);
+            }
+            LOGGER.info("[COPY JOB] {} All jobs scheduled in {}ms", message, System.currentTimeMillis() - start);
+
         } finally {
             if (locked) {
                 fileCopyReqService.releaseLock();

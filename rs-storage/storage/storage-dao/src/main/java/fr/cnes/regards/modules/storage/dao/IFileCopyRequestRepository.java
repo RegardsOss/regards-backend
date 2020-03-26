@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -43,6 +43,8 @@ public interface IFileCopyRequestRepository
         extends JpaRepository<FileCopyRequest, Long>, JpaSpecificationExecutor<FileCopyRequest> {
 
     Page<FileCopyRequest> findByStatus(FileRequestStatus status, Pageable page);
+
+    Page<FileCopyRequest> findByStatusAndIdGreaterThan(FileRequestStatus status, Long id, Pageable page);
 
     Set<FileCopyRequest> findByMetaInfoChecksum(String checksum);
 

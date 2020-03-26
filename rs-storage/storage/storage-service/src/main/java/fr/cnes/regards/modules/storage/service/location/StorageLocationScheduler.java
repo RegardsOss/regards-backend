@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.storage.service.location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -63,7 +64,12 @@ public class StorageLocationScheduler {
     @Autowired
     private ILockService lockService;
 
-    @Scheduled(fixedDelayString = "${regards.storage.check.data.storage.disk.usage.rate:60000}",
+    @Value("${regards.storage.data.storage.threshold.percent:20}")
+    private Integer fullCalculationRatio;
+
+    private int lightCalculationCount = 0;
+
+    @Scheduled(fixedDelayString = "${regards.storage.check.data.storage.disk.usage.rate:10000}",
             initialDelay = 60 * 1000)
     public void monitorDataStorages() {
 
@@ -72,7 +78,13 @@ public class StorageLocationScheduler {
             obtainLock();
             try {
                 long startTime = System.currentTimeMillis();
-                storageLocationService.monitorStorageLocations(false);
+                if (lightCalculationCount > fullCalculationRatio) {
+                    storageLocationService.monitorStorageLocations(true);
+                    lightCalculationCount = 0;
+                } else {
+                    storageLocationService.monitorStorageLocations(false);
+                    lightCalculationCount++;
+                }
                 LOGGER.trace("Data storages monitoring done in {}ms", System.currentTimeMillis() - startTime);
             } finally {
                 releaseLock();
