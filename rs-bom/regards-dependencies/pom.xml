@@ -175,7 +175,7 @@
 		<spring.cloud.version>Hoxton.RELEASE</spring.cloud.version>
         <!-- Take a version that retrieve a version of Hibernate that correctly
             manage uk naming while inheriting classes with JOINED strategy -->
-		<spring.boot.version>2.2.1.RELEASE</spring.boot.version>
+		<spring.boot.version>2.2.5.RELEASE</spring.boot.version>
         <!-- Spring OAuth is no more into spring-boot, only client is (From what
             i understood) -->
         <spring-security-oauth2-autoconfigure>2.2.0.RELEASE</spring-security-oauth2-autoconfigure>
