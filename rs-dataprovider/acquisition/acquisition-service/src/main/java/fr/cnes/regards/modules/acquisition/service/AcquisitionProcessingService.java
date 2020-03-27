@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -621,7 +621,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
         processingChain.setLastProductAcquisitionJobInfo(jobInfo);
         acqChainRepository.save(processingChain);
-
     }
 
     @Override
@@ -672,7 +671,16 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 return 0;
             }
         });
-        registerFiles(scannedFiles.iterator(), fileInfo, scanningDate, session, sessionOwner);
+        if (!scannedFiles.isEmpty()) {
+            registerFiles(scannedFiles.iterator(), fileInfo, scanningDate, session, sessionOwner);
+        }
+        if (scanningDate.isPresent()) {
+            LOGGER.info("[{} - {}] Scan for files <{}> found {} files with last update date > {} ", sessionOwner,
+                        session, fileInfo.getComment(), scannedFiles.size(), scanningDate.get().toString());
+        } else {
+            LOGGER.info("[{} - {}] Scan for files <{}> found {} files with no date filter.", sessionOwner, session,
+                        fileInfo.getComment(), scannedFiles.size());
+        }
     }
 
     private void streamAndRegisterFiles(AcquisitionFileInfo fileInfo, IFluxScanPlugin scanPlugin,
@@ -775,11 +783,12 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public long manageRegisteredFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
+    public long manageRegisteredFiles(AcquisitionProcessingChain processingChain, String session)
+            throws ModuleException {
         long nbProductsScheduled = 0L;
         boolean stop = false;
         while (!Thread.currentThread().isInterrupted() && !stop) {
-            ProductsPage resp = self.manageRegisteredFilesByPage(processingChain);
+            ProductsPage resp = self.manageRegisteredFilesByPage(processingChain, session);
             // Works as long as there is at least one page left
             nbProductsScheduled += resp.getScheduled();
             stop = !resp.hasNext();
@@ -793,7 +802,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public ProductsPage manageRegisteredFilesByPage(AcquisitionProcessingChain processingChain) throws ModuleException {
+    public ProductsPage manageRegisteredFilesByPage(AcquisitionProcessingChain processingChain, String session)
+            throws ModuleException {
 
         // - Retrieve first page of new registered files
         Page<AcquisitionFile> page = acqFileRepository
@@ -845,7 +855,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                      validFiles.size(), page.getNumberOfElements() - validFiles.size());
 
         // Build and schedule products, for a subset of the current file page
-        Set<Product> products = productService.linkAcquisitionFilesToProducts(processingChain, validFiles);
+        Set<Product> products = productService.linkAcquisitionFilesToProducts(processingChain, session, validFiles);
         LOGGER.debug("{} file(s) handles, {} product(s) created or updated in {} milliseconds",
                      page.getNumberOfElements(), products.size(), System.currentTimeMillis() - startTime);
 

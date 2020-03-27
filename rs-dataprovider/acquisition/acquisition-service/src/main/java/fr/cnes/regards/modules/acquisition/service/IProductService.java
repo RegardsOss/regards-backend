@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -156,9 +156,10 @@ public interface IProductService {
      * If product is completed or finished, a SIP generation job is scheduled.
      *
      * @param processingChain the related {@link AcquisitionProcessingChain}
+     * @param session job session
      * @return the existing {@link Product} corresponding to the product name
      */
-    Set<Product> linkAcquisitionFilesToProducts(AcquisitionProcessingChain processingChain,
+    Set<Product> linkAcquisitionFilesToProducts(AcquisitionProcessingChain processingChain, String session,
             List<AcquisitionFile> validFiles) throws ModuleException;
 
     /**

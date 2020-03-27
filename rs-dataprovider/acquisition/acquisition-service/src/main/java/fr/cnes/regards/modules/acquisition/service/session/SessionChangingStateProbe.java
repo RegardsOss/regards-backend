@@ -50,7 +50,7 @@ public class SessionChangingStateProbe {
             sessionChangingStateProbe.initialProductSIPState = initialProduct.getSipState();
             // In case product changed from session we have to calculate number of files scanned in the previous session.
             // This count is used after to decrement files acquired in the old session.
-            sessionChangingStateProbe.initalNbAcquiredFiles = initialProduct.getAcquisitionFiles().size();
+            sessionChangingStateProbe.initalNbAcquiredFiles = initialProduct.getActiveAcquisitionFiles().size();
         }
         return sessionChangingStateProbe;
     }
