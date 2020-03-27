@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -72,6 +72,8 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
 
     public static final String FIELD_FEATURE_ID = "featureId";
 
+    public static final String ALLOW_EMPTY_FEATURES = "allowEmptyFeatures";
+
     @Autowired
     private Gson gson;
 
@@ -82,6 +84,11 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
     @PluginParameter(name = FIELD_FEATURE_ID,
             label = "Json path to access the identifier of each feature in the geojson file", optional = false)
     private String featureId;
+
+    @PluginParameter(name = ALLOW_EMPTY_FEATURES,
+            label = "Generate features with no files (raw, thumbnail & description) associated.", optional = true,
+            defaultValue = "false")
+    private boolean allowEmptyFeature;
 
     @Override
     public List<Path> scan(Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
@@ -135,12 +142,16 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                 String name = (String) feature.getProperties().get(featureId);
                 SIPBuilder builder = new SIPBuilder(name);
                 for (String property : feature.getProperties().keySet()) {
-                    builder.addDescriptiveInformation(property, feature.getProperties().get(property));
+                    Object value = feature.getProperties().get(property);
+                    if (value != null) {
+                        builder.addDescriptiveInformation(property, value);
+                    }
                 }
 
                 // Check for RAWDATA if any
                 Path rawDataFile = Paths.get(entry.getParent().toString(), name + ".dat");
-                Path thumbnailFile = Paths.get(entry.getParent().toString(), name + ".png");
+                Path thumbnailFilePng = Paths.get(entry.getParent().toString(), name + ".png");
+                Path thumbnailFileJpg = Paths.get(entry.getParent().toString(), name + ".jpg");
                 Path descFile = Paths.get(entry.getParent().toString(), name + ".pdf");
 
                 if (Files.exists(rawDataFile)) {
@@ -152,20 +163,37 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                     builder.getContentInformationBuilder().setSyntax(MediaType.APPLICATION_OCTET_STREAM);
                     builder.addContentInformation();
                 }
-                if (Files.exists(thumbnailFile)) {
-                    String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(thumbnailFile.toFile()),
+                if (Files.exists(thumbnailFilePng)) {
+                    String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(thumbnailFilePng.toFile()),
                                                                        "MD5");
-                    builder.getContentInformationBuilder().setDataObject(DataType.THUMBNAIL,
-                                                                         thumbnailFile.toAbsolutePath(),
-                                                                         thumbnailFile.getFileName().toString(), "MD5",
-                                                                         checksum, thumbnailFile.toFile().length());
+                    builder.getContentInformationBuilder()
+                            .setDataObject(DataType.THUMBNAIL, thumbnailFilePng.toAbsolutePath(),
+                                           thumbnailFilePng.getFileName().toString(), "MD5", checksum,
+                                           thumbnailFilePng.toFile().length());
                     builder.getContentInformationBuilder().setSyntax(MediaType.IMAGE_PNG);
                     builder.addContentInformation();
 
-                    builder.getContentInformationBuilder().setDataObject(DataType.QUICKLOOK_SD,
-                                                                         thumbnailFile.toAbsolutePath(),
-                                                                         thumbnailFile.getFileName().toString(), "MD5",
-                                                                         checksum, thumbnailFile.toFile().length());
+                    builder.getContentInformationBuilder()
+                            .setDataObject(DataType.QUICKLOOK_SD, thumbnailFilePng.toAbsolutePath(),
+                                           thumbnailFilePng.getFileName().toString(), "MD5", checksum,
+                                           thumbnailFilePng.toFile().length());
+                    builder.getContentInformationBuilder().setSyntax(MediaType.IMAGE_PNG);
+                    builder.addContentInformation();
+                }
+                if (Files.exists(thumbnailFileJpg)) {
+                    String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(thumbnailFileJpg.toFile()),
+                                                                       "MD5");
+                    builder.getContentInformationBuilder()
+                            .setDataObject(DataType.THUMBNAIL, thumbnailFileJpg.toAbsolutePath(),
+                                           thumbnailFileJpg.getFileName().toString(), "MD5", checksum,
+                                           thumbnailFileJpg.toFile().length());
+                    builder.getContentInformationBuilder().setSyntax(MediaType.IMAGE_PNG);
+                    builder.addContentInformation();
+
+                    builder.getContentInformationBuilder()
+                            .setDataObject(DataType.QUICKLOOK_SD, thumbnailFileJpg.toAbsolutePath(),
+                                           thumbnailFileJpg.getFileName().toString(), "MD5", checksum,
+                                           thumbnailFileJpg.toFile().length());
                     builder.getContentInformationBuilder().setSyntax(MediaType.IMAGE_PNG);
                     builder.addContentInformation();
                 }
@@ -182,7 +210,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                 SIP sip = builder.build();
                 sip.setGeometry(feature.getGeometry());
 
-                if (!sip.getProperties().getContentInformations().isEmpty()) {
+                if (!sip.getProperties().getContentInformations().isEmpty() || allowEmptyFeature) {
                     Path file = Paths.get(entry.getParent().toString(), name + ".json");
                     generatedFiles.add(Files.write(file, Arrays.asList(gson.toJson(sip)), Charset.forName("UTF-8")));
                 }

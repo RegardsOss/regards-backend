@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -303,8 +303,9 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         AcquisitionProcessingChain processingChain = createProcessingChainWithStream(Paths
                 .get("src/test/resources/data/income/stream_test"));
         Mockito.reset(publisher);
-        processingService.scanAndRegisterFiles(processingChain, "session1");
-        processingService.manageRegisteredFiles(processingChain);
+        String session = "session1";
+        processingService.scanAndRegisterFiles(processingChain, session);
+        processingService.manageRegisteredFiles(processingChain, session);
         Assert.assertEquals("Invalid number of files registered", 5, acqFileRepository.findAll().size());
         Assert.assertEquals("Invalid number of products", 5, productRepository.findAll().size());
     }
@@ -318,14 +319,15 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
         Mockito.reset(publisher);
 
-        processingService.scanAndRegisterFiles(processingChain, "session1");
+        String session = "session1";
+        processingService.scanAndRegisterFiles(processingChain, session);
 
         // Check registered files
         Page<AcquisitionFile> inProgressFiles = acqFileRepository
                 .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo, PageRequest.of(0, 1));
         Assert.assertTrue(inProgressFiles.getTotalElements() == 4);
 
-        processingService.manageRegisteredFiles(processingChain);
+        processingService.manageRegisteredFiles(processingChain, session);
 
         // Check registered files
         inProgressFiles = acqFileRepository
@@ -411,21 +413,4 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         Assert.assertNotNull(incGenerated);
         Assert.assertEquals(4, incGenerated.intValue());
     }
-
-    //    @Test
-    //    public void testScan() throws ModuleException {
-    //        runtimeTenantResolver.forceTenant(getDefaultTenant());
-    //
-    //        AcquisitionProcessingChain processingChain = createProcessingChain(Paths
-    //                .get("/home/msordi/git/rs-e2e/data/cdpp/dataobjects/DA_TC_ARC_ISO_DENSITE/results/data2"));
-    //
-    //        long startTime = System.currentTimeMillis();
-    //        processingService.scanAndRegisterFiles(processingChain);
-    //
-    //        LOGGER.info("Scan action took {} milliseconds", System.currentTimeMillis() - startTime);
-    //
-    //        processingService.manageRegisteredFiles(processingChain);
-    //
-    //        LOGGER.info("Manage action took {} milliseconds", System.currentTimeMillis() - startTime);
-    //    }
 }

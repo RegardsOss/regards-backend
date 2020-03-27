@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -129,12 +129,14 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 success.add(product);
                 generatedCount++;
             } catch (Exception e) {
-                String message = String.format("Error while generating product \"%s\"", product.getProductName());
-                logger.error(message, e);
-                sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR);
-                product.setSipState(ProductSIPState.GENERATION_ERROR);
-                product.setError(e.getMessage());
-                errors.add(product);
+                if (!Thread.currentThread().isInterrupted()) {
+                    String message = String.format("Error while generating product \"%s\"", product.getProductName());
+                    logger.error(message, e);
+                    sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR);
+                    product.setSipState(ProductSIPState.GENERATION_ERROR);
+                    product.setError(e.getMessage());
+                    errors.add(product);
+                }
             }
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -31,10 +31,14 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 
@@ -63,6 +67,9 @@ public class GlobDiskScanning implements IScanPlugin {
             optional = true)
     private String glob;
 
+    @Autowired
+    private INotificationClient notifClient;
+
     @Override
     public List<Path> scan(Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
 
@@ -73,7 +80,11 @@ public class GlobDiskScanning implements IScanPlugin {
             if (Files.isDirectory(dirPath)) {
                 scannedFiles.addAll(scanDirectory(dirPath, lastModificationDate));
             } else {
-                LOGGER.error("Invalid directory path : {}", dirPath.toString());
+                String message = String.format("Configured directory %s for scan does not exists or is not accessible.",
+                                               dirPath.toString());
+                LOGGER.error(message);
+                notifClient.notify(message, "Acquisition chain invalid", NotificationLevel.WARNING, DefaultRole.EXPLOIT,
+                                   DefaultRole.ADMIN, DefaultRole.PROJECT_ADMIN);
             }
         }
         return scannedFiles;

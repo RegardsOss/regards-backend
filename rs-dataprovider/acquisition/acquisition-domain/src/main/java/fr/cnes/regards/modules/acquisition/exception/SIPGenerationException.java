@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,10 +24,14 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  * SIPGenerationException thrown by ProductService while sending SIP to ingest
  * @author Sébastien Binda
  */
+@SuppressWarnings("serial")
 public class SIPGenerationException extends ModuleException {
 
-    public SIPGenerationException(String pMessage) {
-        super(pMessage);
+    public SIPGenerationException(String message) {
+        super(message);
     }
 
+    public SIPGenerationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
