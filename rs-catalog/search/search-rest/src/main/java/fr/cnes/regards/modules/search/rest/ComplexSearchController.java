@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.search.rest;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +28,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,6 +46,8 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
+import fr.cnes.regards.modules.dam.gson.entities.IAttributeHelper;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
@@ -54,6 +59,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.engine.ISearchEngineDispatcher;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
+import fr.cnes.regards.modules.search.service.SearchException;
 
 /**
  * Complex search controller. Handle complex searches on catalog with multiple search requests. Each request handles :
@@ -71,6 +77,8 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
     public static final String TYPE_MAPPING = "/complex/search";
 
     public static final String SUMMARY_MAPPING = "/summary";
+
+    public static final String SEARCH_DATAOBJECTS_ATTRIBUTES = "dataobjects/attributes";
 
     /**
      * To build resource links
@@ -90,6 +98,9 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
     @Autowired
     protected IBusinessSearchService searchService;
 
+    @Autowired
+    private IAttributeHelper attributeHelper;
+
     /**
      * Compute a DocFileSummary for current user, for specified request context, for asked file types (see
      * {@link DataType})
@@ -106,7 +117,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
         }
 
         List<DataType> dataTypes = complexSearchRequest.getDataTypes();
-        if (dataTypes == null || dataTypes.isEmpty()) {
+        if ((dataTypes == null) || dataTypes.isEmpty()) {
             dataTypes = Lists.newArrayList();
             for (DataType type : DataType.values()) {
                 dataTypes.add(type);
@@ -138,6 +149,16 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
         return new ResponseEntity<>(toPagedResources(facetPage, assembler), HttpStatus.OK);
     }
 
+    @RequestMapping(method = RequestMethod.POST, value = ComplexSearchController.SEARCH_DATAOBJECTS_ATTRIBUTES)
+    @ResourceAccess(description = "Get dataobject property values", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Set<AttributeModel>> searchDataobjectsAttributes(@RequestBody SearchRequest searchRequest,
+            @RequestHeader HttpHeaders headers) throws SearchException, ModuleException {
+        List<String> modelNames = searchService.retrieveEnumeratedPropertyValues(computeComplexCriterion(searchRequest),
+                                                                                 SearchType.DATAOBJECTS, "model", 100,
+                                                                                 null);
+        return ResponseEntity.ok(attributeHelper.getAllCommonAttributes(modelNames));
+    }
+
     /**
      * Compute a {@link SearchRequest} to a {@link ICriterion}
      * @throws ModuleException
@@ -166,7 +187,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
         }
 
         // Include ids criterion
-        if (searchRequest.getEntityIdsToInclude() != null && !searchRequest.getEntityIdsToInclude().isEmpty()) {
+        if ((searchRequest.getEntityIdsToInclude() != null) && !searchRequest.getEntityIdsToInclude().isEmpty()) {
             ICriterion idsCrit = null;
             for (String ipId : searchRequest.getEntityIdsToInclude()) {
                 if (idsCrit == null) {
@@ -181,7 +202,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
         }
 
         // Exclude ids criterion
-        if (searchRequest.getEntityIdsToExclude() != null && !searchRequest.getEntityIdsToExclude().isEmpty()) {
+        if ((searchRequest.getEntityIdsToExclude() != null) && !searchRequest.getEntityIdsToExclude().isEmpty()) {
             for (String ipId : searchRequest.getEntityIdsToExclude()) {
                 reqCrit = ICriterion.and(reqCrit, ICriterion.not(ICriterion.eq(StaticProperties.IP_ID, ipId)));
             }
