@@ -105,7 +105,7 @@ public class SwaggerAutoConfiguration {
 
     private SecurityScheme securityScheme() {
         GrantType grantType = new ResourceOwnerPasswordCredentialsGrant(
-                "http://127.0.0.1/api/v1/rs-authentication/oauth/token");
+                String.format("http://%s/api/v1/rs-authentication/oauth/token", regardsSwaggerHost));
 
         return new OAuthBuilder().name("REGARDS OAuth").grantTypes(Arrays.asList(grantType))
                 .scopes(Arrays.asList(scopes())).build();
