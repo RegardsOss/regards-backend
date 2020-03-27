@@ -1,7 +1,7 @@
 package fr.cnes.regards.modules.order.service.job;
 
 /**
- * Service for scrubscribe to the StorageFileLitener 
+ * Service for subscribe to the StorageFileListener
  * @author Kevin Marchois
  *
  */

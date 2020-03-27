@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -289,6 +289,8 @@ public class OrderService implements IOrderService {
 
             // Count of files managed by Storage (internal)
             int internalFilesCount = 0;
+            // Count number of subOrder created to compute expiration date
+            int subOrderNumber = 0;
             // External files count
             int externalFilesCount = 0;
             // Dataset selections
@@ -318,6 +320,7 @@ public class OrderService implements IOrderService {
                             // Create all bucket data files at once
                             dataFileService.create(storageBucketFiles);
                             createStorageSubOrder(basket, dsTask, storageBucketFiles, order, role, priority);
+                            subOrderNumber++;
                             storageBucketFiles.clear();
                         }
                         // If external bucket files count > MAX_EXTERNAL_BUCKET_FILE_COUNT, add a new bucket
@@ -338,6 +341,7 @@ public class OrderService implements IOrderService {
                     // Create all bucket data files at once
                     dataFileService.create(storageBucketFiles);
                     createStorageSubOrder(basket, dsTask, storageBucketFiles, order, role, priority);
+                    subOrderNumber++;
                 }
                 if (!externalBucketFiles.isEmpty()) {
                     externalFilesCount += externalBucketFiles.size();
@@ -353,7 +357,7 @@ public class OrderService implements IOrderService {
             }
             // Compute order expiration date using number of sub order created + 2,
             // that gives time to users to download there last suborders
-            order.setExpirationDate(OffsetDateTime.now().plusDays((order.getDatasetTasks().size()+2)*orderValidationPeriodDays));
+            order.setExpirationDate(OffsetDateTime.now().plusDays((subOrderNumber+2)*orderValidationPeriodDays));
             // In case order contains only external files, percent completion can be set to 100%, else completion is
             // computed when files are available (even if some external files exist, this case will not (often) occur
             if ((internalFilesCount == 0) && (externalFilesCount > 0)) {
@@ -517,7 +521,6 @@ public class OrderService implements IOrderService {
     private void createStorageSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order,
             String role, int priority) {
         LOGGER.info("Creating storage sub-order of {} files", bucketFiles.size());
-        OffsetDateTime expirationDate = order.getExpirationDate();
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
         currentFilesTask.setOwner(order.getOwner());
@@ -743,7 +746,6 @@ public class OrderService implements IOrderService {
                         dataFile.setDownloadError("Error while downloading external file\n" + sw.toString());
                         downloadErrorFiles.add(dataFile);
                         i.remove();
-                        continue;
                     }
                 } else { // Managed by Storage
                     String aip = dataFile.getIpId().toString();
@@ -774,7 +776,6 @@ public class OrderService implements IOrderService {
                         dataFile.setDownloadError(
                                 "Cannot retrieve data file from storage, feign downloadFile method returns " + (
                                         response == null ? "null" : response.toString()));
-                        continue;
                     } else { // Download ok
                         try (InputStream is = response.body().asInputStream()) {
                             readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, aip, is);

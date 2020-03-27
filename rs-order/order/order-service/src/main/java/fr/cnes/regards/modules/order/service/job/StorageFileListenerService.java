@@ -10,6 +10,9 @@ import fr.cnes.regards.modules.storage.client.IStorageFileListener;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 
+/**
+ * Handle storage AMQP message that can be received. Empty methods concerns messages that are of no importance for rs-order
+ */
 @Service
 public class StorageFileListenerService implements IStorageFileListener, IStorageFileListenerService {
 
