@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -32,6 +32,8 @@ public class JUnitLogRule implements TestRule {
 
     private static final Logger LOG = LoggerFactory.getLogger(JUnitLogRule.class);
 
+    public static final String DELIMITOR = "-----------------------------";
+
     @Override
     public Statement apply(Statement base, Description description) {
         return new Statement() {
@@ -47,19 +49,19 @@ public class JUnitLogRule implements TestRule {
             }
 
             private void after(Description description) {
-                LOG.info("-----------------------------");
+                LOG.info(DELIMITOR);
                 LOG.info("");
                 LOG.info("END - {}", description);
                 LOG.info("");
-                LOG.info("-----------------------------");
+                LOG.info(DELIMITOR);
             }
 
             private void before(Description description) {
-                LOG.info("-----------------------------");
+                LOG.info(DELIMITOR);
                 LOG.info("");
                 LOG.info("START - {}", description);
                 LOG.info("");
-                LOG.info("-----------------------------");
+                LOG.info(DELIMITOR);
             }
         };
     }

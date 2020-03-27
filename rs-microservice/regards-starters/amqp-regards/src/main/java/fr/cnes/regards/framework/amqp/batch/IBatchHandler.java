@@ -28,21 +28,21 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 
 /**
- * @param <T> Type of Event you are handling
+ * @param <M> Type of messages you are handling
  *
  * Interface identifying classes that can handle message from the broker
  * @author svissier
  */
-public interface IBatchHandler<T> extends IHandler<T> {
+public interface IBatchHandler<M> extends IHandler<M> {
 
     /**
      * Logger instance
      */
     Logger LOGGER = LoggerFactory.getLogger(IBatchHandler.class);
 
-    default void handleBatchAndLog(String tenant, List<T> messages) {
+    default void handleBatchAndLog(String tenant, List<M> messages) {
         if (LOGGER.isTraceEnabled()) {
-            for (T message : messages) {
+            for (M message : messages) {
                 LOGGER.trace("Received {}, From {}", message.getClass().getSimpleName(), tenant);
                 LOGGER.trace("Event received: {}", message.toString());
             }
@@ -61,7 +61,7 @@ public interface IBatchHandler<T> extends IHandler<T> {
      * @param message messages to manage
      * @return <code>true</code> is message is valid.
      */
-    boolean validate(String tenant, T message);
+    boolean validate(String tenant, M message);
 
     /**
      * This method is called once for each tenant with messages in the current batch.<br/>
@@ -70,7 +70,7 @@ public interface IBatchHandler<T> extends IHandler<T> {
      * @param tenant related message tenant
      * @param messages messages to manage
      */
-    void handleBatch(String tenant, List<T> messages);
+    void handleBatch(String tenant, List<M> messages);
 
     /**
      * @return batch size. Look at {@link SimpleMessageListenerContainer#setBatchSize(int)} for better understanding.
@@ -87,7 +87,7 @@ public interface IBatchHandler<T> extends IHandler<T> {
     }
 
     @Override
-    default void handle(TenantWrapper<T> wrapper) {
+    default void handle(TenantWrapper<M> wrapper) {
         throw new UnsupportedOperationException("Should never be called by the container");
     }
 }

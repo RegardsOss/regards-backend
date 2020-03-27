@@ -90,12 +90,14 @@ public class LockService implements ILockService {
         boolean lockByThisCall = false;
         while (!lockByThisCall) {
             lockByThisCall = obtainLockOrSkip(name, owner, expiresIn);
-            try {
-                Thread.sleep(retry);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                LOG.error("Lock could not be acquired", e);
-                return false;
+            if (!lockByThisCall) {
+                try {
+                    Thread.sleep(retry);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    LOG.error("Lock could not be acquired", e);
+                    return false;
+                }
             }
         }
         return lockByThisCall;

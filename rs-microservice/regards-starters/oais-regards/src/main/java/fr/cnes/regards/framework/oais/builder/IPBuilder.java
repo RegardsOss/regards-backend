@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -65,7 +65,7 @@ import fr.cnes.regards.framework.urn.EntityType;
  * To define descriptive information, just call {@link IPBuilder#addDescriptiveInformation(String, Object)}.
  * @author Marc Sordi
  *
- * Use {@link InformationPackageProperties} fluent API instead
+ * @deprecated {@link InformationPackageProperties} fluent API instead
  */
 @Deprecated
 public abstract class IPBuilder<T extends AbstractInformationPackage<?>> implements IOAISBuilder<T> {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -27,8 +27,9 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 /**
  * Tenant wrapper.
- * This class is Cloneable because of rs-order ForwardingDataFileEventHandlerService class. See this class for more
- * informations
+ * FIXME: This class is Cloneable because of rs-order ForwardingDataFileEventHandlerService class. See this class for more
+ * FIXME: information. This class no longer exist and has been replaced but new storage communication logic.
+ * FIXME: Cloneable seems no longer necessary. Being 1 week before delivery, lets just hold on on remove and do this latter
  * @param <T> type of event that is wrapped
  * @author svissier
  * @author oroussel

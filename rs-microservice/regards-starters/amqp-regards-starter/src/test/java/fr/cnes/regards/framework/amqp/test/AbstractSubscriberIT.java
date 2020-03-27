@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -54,6 +54,7 @@ import fr.cnes.regards.framework.amqp.test.event.UnicastInfo;
 import fr.cnes.regards.framework.amqp.test.handler.AbstractInfoReceiver;
 import fr.cnes.regards.framework.amqp.test.handler.AbstractReceiver;
 import fr.cnes.regards.framework.amqp.test.handler.GsonInfoHandler;
+import fr.cnes.regards.framework.amqp.test.handler.GsonInfoNoWrapperHandler;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -112,6 +113,17 @@ public abstract class AbstractSubscriberIT {
     @Test
     public void publishInfoWithGson() {
         GsonInfoHandler handler = new GsonInfoHandler();
+        subscriber.subscribeTo(GsonInfo.class, handler, true);
+        publisher.publish(new GsonInfo());
+        handler.assertCount(1);
+    }
+
+    @Requirement("REGARDS_DSL_CMP_ARC_030")
+    @Requirement("REGARDS_DSL_CMP_ARC_160")
+    @Purpose("Publish and receive a broadcast event without restriction with GSON message converter")
+    @Test
+    public void publishInfoNoWrapperWithGson() {
+        GsonInfoNoWrapperHandler handler = new GsonInfoNoWrapperHandler();
         subscriber.subscribeTo(GsonInfo.class, handler, true);
         publisher.publish(new GsonInfo());
         handler.assertCount(1);
@@ -319,7 +331,7 @@ public abstract class AbstractSubscriberIT {
     private class ErrorHandler extends AbstractReceiver<ErrorEvent> {
 
         @Override
-        public void handle(TenantWrapper<ErrorEvent> wrapper) {
+        public void handle(String tenant, ErrorEvent message) {
             throw new RuntimeException("Because");
         }
     }

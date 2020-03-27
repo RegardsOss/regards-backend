@@ -1,5 +1,11 @@
 package fr.cnes.regards.framework.encryption;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -7,11 +13,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,7 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
  */
 public class AESEncryptionService implements IEncryptionService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(BlowfishEncryptionService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AESEncryptionService.class);
 
     private static final String AES_NAME = "AES";
 
@@ -46,7 +47,8 @@ public class AESEncryptionService implements IEncryptionService {
 
             blowfish.init(Cipher.ENCRYPT_MODE, secretKey, ivParamSpec);
             return DatatypeConverter.printBase64Binary(blowfish.doFinal(toEncrypt.getBytes()));
-        } catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+        } catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException
+                | NoSuchPaddingException e) {
             //those two exception should never occur
             LOG.error("There was an issue with encryption using Blowfish", e);
             throw new RsRuntimeException(e);
@@ -66,7 +68,8 @@ public class AESEncryptionService implements IEncryptionService {
             Cipher blowfish = Cipher.getInstance(AES_INSTANCE);
             blowfish.init(Cipher.DECRYPT_MODE, secretKey, ivParamSpec);
             return new String(blowfish.doFinal(DatatypeConverter.parseBase64Binary(toDecrypt)));
-        } catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+        } catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException
+                | NoSuchPaddingException e) {
             //those two exception should never occur
             LOG.error("There was an issue with encryption using Blowfish", e);
             throw new RsRuntimeException(e);

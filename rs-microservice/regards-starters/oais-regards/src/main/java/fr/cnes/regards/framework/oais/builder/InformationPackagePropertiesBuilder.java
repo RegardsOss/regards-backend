@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -42,7 +42,7 @@ import fr.cnes.regards.framework.urn.DataType;
  * Information package properties builder
  * @author Marc Sordi
  *
- * Use {@link InformationPackageProperties} fluent API
+ * @deprecated {@link InformationPackageProperties} fluent API
  */
 @Deprecated
 public class InformationPackagePropertiesBuilder implements IOAISBuilder<InformationPackageProperties> {
@@ -136,7 +136,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
      */
     public void addDescriptiveInformation(String key, Object value) {
         Assert.hasLength(key, "Descriptive information key is required");
-        Assert.notNull(value, "Descriptive information value is required");
+        Assert.notNull(value, String.format("The value of the descriptive information [%s] is null", key));
         descriptiveInformation.put(key, value);
     }
 

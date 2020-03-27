@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.jpa.utils;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -140,23 +141,25 @@ public final class DataSourceHelper {
 
         LOGGER.info("\n{}\nCreating a HIKARI CP datasource for tenant {} with url {}\n{}", HR, tenant, url, HR);
 
-        // Loading static properties
-        Properties properties = new Properties();
-        properties.load(DataSourceHelper.class.getResourceAsStream("hikari.properties"));
+        try (InputStream hikariPropertiesIS = DataSourceHelper.class.getResourceAsStream("hikari.properties")) {
+            // Loading static properties
+            Properties properties = new Properties();
+            properties.load(hikariPropertiesIS);
 
-        HikariConfig config = new HikariConfig(properties);
-        config.setJdbcUrl(url);
-        config.setUsername(userName);
-        config.setPassword(password);
-        // For maximum performance, HikariCP does not recommend setting this value so minimumIdle = maximumPoolSize
-        config.setMinimumIdle(minPoolSize);
-        config.setMaximumPoolSize(maxPoolSize);
-        config.setPoolName(String.format("Hikari-Pool-%s", tenant));
-        config.setIdleTimeout(30000L);
-        // Postgres schema configuration
-        config.setConnectionInitSql("SET search_path to " + schemaIdentifier);
+            HikariConfig config = new HikariConfig(properties);
+            config.setJdbcUrl(url);
+            config.setUsername(userName);
+            config.setPassword(password);
+            // For maximum performance, HikariCP does not recommend setting this value so minimumIdle = maximumPoolSize
+            config.setMinimumIdle(minPoolSize);
+            config.setMaximumPoolSize(maxPoolSize);
+            config.setPoolName(String.format("Hikari-Pool-%s", tenant));
+            config.setIdleTimeout(30000L);
+            // Postgres schema configuration
+            config.setConnectionInitSql("SET search_path to " + schemaIdentifier);
 
-        return new HikariDataSource(config);
+            return new HikariDataSource(config);
+        }
     }
 
     /**

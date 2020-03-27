@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -58,6 +58,18 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginPa
 public final class PluginParameterUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginParameterUtils.class);
+
+    private static final String SKIPPING_VALUE_INJECTION_FOR_OPTIONAL = "Skipping value injection for optional parameter {}. No param configured!";
+
+    private static final String PARAMETER_NOT_FOUND_IN_PLUGIN_CONFIGURATION = "Issue with Plugin %s and one of its configuration %s, parameter %s not found.";
+
+    private static final String NO_VALUE_SPECIFIED_FOR_OPTIONNAL_PARAMETER = "Skipping value injection for optional parameter {}. No value specified!";
+
+    private static final String PLUGIN_PARAMETER_INJECTED = "Plugin parameter \"{}\" injected!";
+
+    private static final String NO_PLUGIN_PARAMETER_VALUE_AND_IS_REQUIRED = "Issue with Plugin %s and one of its configuration %s, parameter %s has no default value and is required.";
+
+    private static final String EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN = "Exception while processing param <%s> in plugin class <%s> with param <%s>.";
 
     /**
      * Retrieve List of {@link PluginParamDescriptor} by reflection on class fields
@@ -266,7 +278,7 @@ public final class PluginParameterUtils {
     }
 
     /**
-     * Retrieve the {@link ParamType} associated to the given {@link Field}
+     * Retrieve the {@link PluginParamType} associated to the given {@link Field}
      * @param field {@link Field} to get type from
      */
     private static PluginParamType getFieldParameterType(Field field) {
@@ -489,11 +501,11 @@ public final class PluginParameterUtils {
 
         if (param == null) {
             if (paramAnnotation.optional()) {
-                LOGGER.debug("Skipping value injection for optional parameter {}. No param configured!", parameterName);
+                LOGGER.debug(SKIPPING_VALUE_INJECTION_FOR_OPTIONAL, parameterName);
                 return;
             } else {
                 throw new IllegalArgumentException(
-                        String.format("Issue with Plugin %s and one of its configuration %s, parameter %s not found.",
+                        String.format(PARAMETER_NOT_FOUND_IN_PLUGIN_CONFIGURATION,
                                       conf.getPluginId(), conf.getLabel(), parameterName));
             }
         }
@@ -503,14 +515,14 @@ public final class PluginParameterUtils {
 
         // Stop if no value and optional parameter
         if (!param.hasValue() && paramAnnotation.optional()) {
-            LOGGER.debug("Skipping value injection for optional parameter {}. No value specified!", parameterName);
+            LOGGER.debug(NO_VALUE_SPECIFIED_FOR_OPTIONNAL_PARAMETER, parameterName);
             return;
         }
 
         // At this point, if the parameter value is not set, there is a problem
         if (!param.hasValue()) {
             throw new IllegalArgumentException(String
-                    .format("Issue with Plugin %s and one of its configuration %s, parameter %s has no default value and is required.",
+                    .format(NO_PLUGIN_PARAMETER_VALUE_AND_IS_REQUIRED,
                             conf.getPluginId(), conf.getLabel(), parameterName));
         }
 
@@ -521,11 +533,11 @@ public final class PluginParameterUtils {
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception
             throw new PluginUtilsRuntimeException(
-                    String.format("Exception while processing param <%s> in plugin class <%s> with param <%s>.",
+                    String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
                                   paramAnnotation.label(), plugin.getClass(), param),
                     e);
         }
-        LOGGER.debug("Plugin parameter \"{}\" injected!", paramAnnotation.label());
+        LOGGER.debug(PLUGIN_PARAMETER_INJECTED, paramAnnotation.label());
     }
 
     /**
@@ -551,14 +563,14 @@ public final class PluginParameterUtils {
 
         if (param == null) {
             if (paramAnnotation.optional() && paramAnnotation.defaultValue().isEmpty()) {
-                LOGGER.debug("Skipping value injection for optional parameter {}. No param configured!", parameterName);
+                LOGGER.debug(SKIPPING_VALUE_INJECTION_FOR_OPTIONAL, parameterName);
                 return;
             } else if (!paramAnnotation.defaultValue().isEmpty()) {
                 // Init a parameter on the fly
                 param = buildByType(typeWrapper.getType(), parameterName);
             } else {
                 throw new IllegalArgumentException(
-                        String.format("Issue with Plugin %s and one of its configuration %s, parameter %s not found.",
+                        String.format(PARAMETER_NOT_FOUND_IN_PLUGIN_CONFIGURATION,
                                       conf.getPluginId(), conf.getLabel(), parameterName));
             }
         }
@@ -575,14 +587,14 @@ public final class PluginParameterUtils {
 
         // Stop if no value and optional parameter
         if (!param.hasValue() && paramAnnotation.optional()) {
-            LOGGER.debug("Skipping value injection for optional parameter {}. No value specified!", parameterName);
+            LOGGER.debug(NO_VALUE_SPECIFIED_FOR_OPTIONNAL_PARAMETER, parameterName);
             return;
         }
 
         // At this point, if the parameter value is not set, there is a problem
         if (!param.hasValue()) {
             throw new IllegalArgumentException(String
-                    .format("Issue with Plugin %s and one of its configuration %s, parameter %s has no default value and is required.",
+                    .format(NO_PLUGIN_PARAMETER_VALUE_AND_IS_REQUIRED,
                             conf.getPluginId(), conf.getLabel(), parameterName));
         }
 
@@ -607,11 +619,11 @@ public final class PluginParameterUtils {
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception
             throw new PluginUtilsRuntimeException(
-                    String.format("Exception while processing param <%s> in plugin class <%s> with param <%s>.",
+                    String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
                                   paramAnnotation.label(), plugin.getClass(), param),
                     e);
         }
-        LOGGER.debug("Plugin parameter \"{}\" injected!", paramAnnotation.label());
+        LOGGER.debug(PLUGIN_PARAMETER_INJECTED, paramAnnotation.label());
     }
 
     /**
@@ -636,11 +648,11 @@ public final class PluginParameterUtils {
 
         if (param == null) {
             if (paramAnnotation.optional()) {
-                LOGGER.debug("Skipping value injection for optional parameter {}. No param configured!", parameterName);
+                LOGGER.debug(SKIPPING_VALUE_INJECTION_FOR_OPTIONAL, parameterName);
                 return;
             } else {
                 throw new IllegalArgumentException(
-                        String.format("Issue with Plugin %s and one of its configuration %s, parameter %s not found.",
+                        String.format(PARAMETER_NOT_FOUND_IN_PLUGIN_CONFIGURATION,
                                       conf.getPluginId(), conf.getLabel(), parameterName));
             }
         }
@@ -650,14 +662,14 @@ public final class PluginParameterUtils {
 
         // Stop if no value and optional parameter
         if (!param.hasValue() && paramAnnotation.optional()) {
-            LOGGER.debug("Skipping value injection for optional parameter {}. No value specified!", parameterName);
+            LOGGER.debug(NO_VALUE_SPECIFIED_FOR_OPTIONNAL_PARAMETER, parameterName);
             return;
         }
 
         // At this point, if the parameter value is not set, there is a problem
         if (!param.hasValue()) {
             throw new IllegalArgumentException(String
-                    .format("Issue with Plugin %s and one of its configuration %s, parameter %s has no default value and is required.",
+                    .format(NO_PLUGIN_PARAMETER_VALUE_AND_IS_REQUIRED,
                             conf.getPluginId(), conf.getLabel(), parameterName));
         }
 
@@ -675,11 +687,11 @@ public final class PluginParameterUtils {
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 // Propagate exception
                 throw new PluginUtilsRuntimeException(
-                        String.format("Exception while processing param <%s> in plugin class <%s> with param <%s>.",
+                        String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
                                       paramAnnotation.label(), plugin.getClass(), param),
                         e);
             }
-            LOGGER.debug("Plugin parameter \"{}\" injected!", paramAnnotation.label());
+            LOGGER.debug(PLUGIN_PARAMETER_INJECTED, paramAnnotation.label());
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -22,6 +22,8 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.validation.constraints.NotNull;
 
@@ -103,7 +105,7 @@ public class PreservationDescriptionInformation {
     private final InformationPackageMap contextInformation = new InformationPackageMap();
 
     @NotNull(message = "Reference information is required")
-    private final Map<String, String> referenceInformation = new HashMap<>();
+    private final ConcurrentMap<String, String> referenceInformation = new ConcurrentHashMap<>();
 
     @NotNull(message = "Provenance information is required")
     private final ProvenanceInformation provenanceInformation = new ProvenanceInformation();

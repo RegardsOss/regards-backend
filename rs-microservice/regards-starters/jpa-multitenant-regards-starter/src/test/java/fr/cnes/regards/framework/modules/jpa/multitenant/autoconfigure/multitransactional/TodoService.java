@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,9 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 
 /**
@@ -70,10 +70,10 @@ public class TodoService implements ITodoService {
     @RegardsTransactional
     public Todo pollAndSave(boolean pCrash) {
         // Poll todo
-        TenantWrapper<TodoEvent> wrapper = poller.poll(TodoEvent.class);
+        TodoEvent polled = poller.poll(TodoEvent.class);
         // Save in database
         Todo todo = new Todo();
-        todo.setLabel(wrapper.getContent().getLabel());
+        todo.setLabel(polled.getLabel());
         todo = todoRepository.save(todo);
         // Crash?
         if (pCrash) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -38,6 +38,8 @@ public class OAISDataObjectLocation {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OAISDataObjectLocation.class);
 
+    private static final String URL_REQUIRED = "URL is required";
+
     /**
      * Storage identifier may be null, so the file is directly accessible through FILE or HTTP URL protocol
      */
@@ -46,7 +48,7 @@ public class OAISDataObjectLocation {
     /**
      * URL to access the file
      */
-    @NotNull(message = "URL is required")
+    @NotNull(message = URL_REQUIRED)
     private String url;
 
     /**
@@ -58,7 +60,7 @@ public class OAISDataObjectLocation {
      * Build a file location directly accessible through FILE or HTTP URL protocol
      */
     public static OAISDataObjectLocation build(String url) {
-        Assert.notNull(url, "URL is required");
+        Assert.notNull(url, URL_REQUIRED);
         return buildInternal(url, null, null);
     }
 
@@ -68,7 +70,7 @@ public class OAISDataObjectLocation {
      * else just treated as a reference.
      */
     public static OAISDataObjectLocation build(String url, String storage) {
-        Assert.notNull(url, "URL is required");
+        Assert.notNull(url, URL_REQUIRED);
         Assert.hasText(storage, "Storage identifier is required");
         return buildInternal(url, storage, null);
     }
@@ -79,7 +81,7 @@ public class OAISDataObjectLocation {
      * else just treated as a reference.
      */
     public static OAISDataObjectLocation build(String url, String storage, String storePath) {
-        Assert.notNull(url, "URL is required");
+        Assert.notNull(url, URL_REQUIRED);
         Assert.hasText(storage, "Storage identifier is required");
         return buildInternal(url, storage, storePath);
     }

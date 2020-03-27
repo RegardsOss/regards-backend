@@ -60,5 +60,6 @@
         <module>exception-utils</module>
         <module>encryption-standalone</module>
         <module>spring-utils</module>
+        <module>metalink-utils</module>
     </modules>
 </project>

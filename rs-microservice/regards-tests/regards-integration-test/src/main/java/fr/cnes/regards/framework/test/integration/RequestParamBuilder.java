@@ -33,7 +33,7 @@ public final class RequestParamBuilder {
     }
 
     /**
-     * Use {@link RequestBuilderCustomizer#addParameter(String, String...)} instead.
+     * @deprecated {@link RequestBuilderCustomizer#addParameter(String, String...)} instead.
      */
     @Deprecated
     public static RequestParamBuilder build() {

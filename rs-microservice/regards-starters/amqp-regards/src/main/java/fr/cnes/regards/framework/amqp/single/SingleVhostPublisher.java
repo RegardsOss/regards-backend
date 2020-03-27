@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.amqp.single;
 
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import fr.cnes.regards.framework.amqp.AbstractPublisher;
@@ -35,9 +36,9 @@ public class SingleVhostPublisher extends AbstractPublisher implements IPublishe
 
     private final IRuntimeTenantResolver threadTenantResolver;
 
-    public SingleVhostPublisher(RabbitTemplate rabbitTemplate, IAmqpAdmin amqpAdmin,
+    public SingleVhostPublisher(RabbitTemplate rabbitTemplate, RabbitAdmin rabbitAdmin, IAmqpAdmin amqpAdmin,
             IRabbitVirtualHostAdmin rabbitVirtualHostAdmin, IRuntimeTenantResolver threadTenantResolver) {
-        super(rabbitTemplate, amqpAdmin, rabbitVirtualHostAdmin);
+        super(rabbitTemplate, rabbitAdmin, amqpAdmin, rabbitVirtualHostAdmin);
         this.threadTenantResolver = threadTenantResolver;
     }
 

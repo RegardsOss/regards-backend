@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.framework.amqp.converter;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +29,10 @@ import org.springframework.amqp.support.converter.MessageConversionException;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
+import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
@@ -46,14 +48,12 @@ public class JsonMessageConverters implements MessageConverter {
 
     private static final String CONVERTER_TYPE_HEADER = "__ctype__";
 
-    public static final String TENANT_HEADER = "__tenant__";
-
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Registered JSON message converters
      */
-    Map<JsonMessageConverter, MessageConverter> converters = new HashMap<>();
+    private final ConcurrentMap<JsonMessageConverter, MessageConverter> converters = new ConcurrentHashMap<>();
 
     public JsonMessageConverters(IRuntimeTenantResolver runtimeTenantResolver) {
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -61,17 +61,7 @@ public class JsonMessageConverters implements MessageConverter {
 
     @Override
     public Message toMessage(Object object, MessageProperties messageProperties) throws MessageConversionException {
-        // Retrieve wrapper event
-        TenantWrapper<?> wrapper = (TenantWrapper<?>) object;
-        JsonMessageConverter jmc = EventUtils.getMessageConverter(wrapper.getContent().getClass());
-        // Add converter selector
-        messageProperties.getHeaders().put(JsonMessageConverters.CONVERTER_TYPE_HEADER, jmc);
-        // Add wrapped type information for Gson deserialization
-        messageProperties.getHeaders().put(Gson2JsonMessageConverter.WRAPPED_TYPE_HEADER,
-                                           wrapper.getContent().getClass().getName());
-        // Add tenant for Gson tenant specific deserialization
-        messageProperties.getHeaders().put(JsonMessageConverters.TENANT_HEADER, wrapper.getTenant());
-        return selectConverter(jmc).toMessage(object, messageProperties);
+        return selectConverter(object, messageProperties).toMessage(object, messageProperties);
     }
 
     @Override
@@ -84,11 +74,11 @@ public class JsonMessageConverters implements MessageConverter {
             throw new MessageConversionException(errorMessage);
         }
 
-        String tenant = messageProperties.getHeader(TENANT_HEADER);
+        String tenant = messageProperties.getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
         String runtimeTenant = runtimeTenantResolver.getTenant();
 
         // Check if tenant already set and match!
-        if (tenant != null && runtimeTenant != null && !runtimeTenant.equals(tenant)) {
+        if ((tenant != null) && (runtimeTenant != null) && !runtimeTenant.equals(tenant)) {
             String errorMessage = String
                     .format("Inconsistent tenant resolution : runtime tenant \"%s\" does not match with message one : \"%s\"",
                             runtimeTenant, tenant);
@@ -97,12 +87,12 @@ public class JsonMessageConverters implements MessageConverter {
         }
 
         try {
-            if (tenant != null && runtimeTenant == null) {
+            if ((tenant != null) && (runtimeTenant == null)) {
                 runtimeTenantResolver.forceTenant(tenant);
             }
             return selectConverter(message.getMessageProperties()).fromMessage(message);
         } finally {
-            if (tenant != null && runtimeTenant == null) {
+            if ((tenant != null) && (runtimeTenant == null)) {
                 runtimeTenantResolver.clearTenant();
             }
         }
@@ -122,6 +112,21 @@ public class JsonMessageConverters implements MessageConverter {
             throw new MessageConversionException(errorMessage);
         }
         return converter;
+    }
+
+    private MessageConverter selectConverter(Object object, MessageProperties messageProperties)
+            throws MessageConversionException {
+        if (ISubscribable.class.isAssignableFrom(object.getClass())
+                || IPollable.class.isAssignableFrom(object.getClass())) {
+            JsonMessageConverter jmc = EventUtils.getMessageConverter(object.getClass());
+            MessageConverter converter = selectConverter(jmc);
+            // Inject converter selector
+            messageProperties.setHeader(JsonMessageConverters.CONVERTER_TYPE_HEADER, jmc);
+            return converter;
+        } else {
+            return selectConverter(messageProperties);
+        }
+
     }
 
     private MessageConverter selectConverter(MessageProperties messageProperties) throws MessageConversionException {

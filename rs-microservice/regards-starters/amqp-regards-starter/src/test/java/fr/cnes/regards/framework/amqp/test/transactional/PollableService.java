@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.amqp.IPoller;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 
 /**
@@ -39,14 +38,14 @@ public class PollableService {
     }
 
     @Transactional
-    public <T extends IPollable> TenantWrapper<T> transactionalPoll(Class<T> eventType, boolean crash) {
-        TenantWrapper<T> wrapper = poller.poll(eventType);
+    public <T extends IPollable> T transactionalPoll(Class<T> eventType, boolean crash) {
+        T pollled = poller.poll(eventType);
         // Do something : for instance, store in database not to lose event
         if (crash) {
             // An error occurs : transaction manager will rollback database and restore AMQP event on server
             throw new UnsupportedOperationException("Poll fails!");
         } else {
-            return wrapper;
+            return pollled;
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -68,6 +68,8 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
     private IGeometry normalizedGeometry = IGeometry.unlocated();
 
     @Valid
+    // FIXME why?
+    //    @NotNull(message = "Feature properties mustn't be null")
     protected P properties;
 
     public AbstractFeature() {
@@ -110,7 +112,7 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + (id == null ? 0 : id.hashCode());
+        result = (prime * result) + (id == null ? 0 : id.hashCode());
         return result;
     }
 
