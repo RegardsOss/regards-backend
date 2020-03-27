@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -332,7 +332,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                             attributeConf.getRight(), queryParam.getValue()));
                 }
             } catch (OpenSearchUnknownParameter e) {
-                LOGGER.warn("Parameter not found in REGARDS models attributes.");
+                LOGGER.warn("Parameter not found in REGARDS models attributes.", e);
                 // Adding unknown parameters in search parameters in case an IOpenSearchExtension can handle it.
                 searchParameters.add(new SearchParameter(queryParam.getKey(), null, null, queryParam.getValue()));
             }
@@ -438,7 +438,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                 }
             } catch (OpenSearchUnknownParameter e) {
                 // Nothing to do
-                LOGGER.info("Sort parameter invalid {}", order.getProperty());
+                LOGGER.info("Sort parameter invalid {}", order.getProperty(), e);
             }
         });
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -35,6 +35,8 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.Un
  * @author Sébastien Binda
  */
 public class AttributeCriterionBuilder {
+
+    public static final String INVALID_OPERATOR_S_FOR_STRING_PARAMETER_S = "Invalid operator %s for string parameter %s";
 
     private AttributeCriterionBuilder() {
     }
@@ -108,7 +110,7 @@ public class AttributeCriterionBuilder {
             case LE:
             case LT:
                 throw new UnsupportedCriterionOperator(
-                        String.format("Invalid operator %s for string parameter %s", operator.toString(), attribute));
+                        String.format(INVALID_OPERATOR_S_FOR_STRING_PARAMETER_S, operator.toString(), attribute));
             case EQ:
             default:
                 return IFeatureCriterion.eq(attribute, Boolean.valueOf(value));
@@ -253,7 +255,7 @@ public class AttributeCriterionBuilder {
             case LE:
             case LT:
                 throw new UnsupportedCriterionOperator(
-                        String.format("Invalid operator %s for string parameter %s", operator.toString(), attribute));
+                        String.format(INVALID_OPERATOR_S_FOR_STRING_PARAMETER_S, operator.toString(), attribute));
             case EQ:
             default:
                 return IFeatureCriterion.eq(attribute, value);
@@ -277,7 +279,7 @@ public class AttributeCriterionBuilder {
             case LE:
             case LT:
                 throw new UnsupportedCriterionOperator(
-                        String.format("Invalid operator %s for string parameter %s", operator.toString(), attribute));
+                        String.format(INVALID_OPERATOR_S_FOR_STRING_PARAMETER_S, operator.toString(), attribute));
             case EQ:
             default:
                 return IFeatureCriterion.contains(attribute, value);

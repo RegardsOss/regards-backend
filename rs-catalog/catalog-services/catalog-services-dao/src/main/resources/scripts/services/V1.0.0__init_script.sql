@@ -1,4 +1,3 @@
-/* Search */
 create table t_link_service_dataset (linkId int8 not null, dataset_id varchar(256) not null, primary key (linkId));
 create table ta_link_service_dataset_plugins (dataset_id int8 not null, service_configuration_id int8 not null, primary key (dataset_id, service_configuration_id));
 alter table t_link_service_dataset add constraint uk_link_service_dataset_dataset_id unique (dataset_id);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -52,18 +52,6 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 public interface ICatalogSearchService {
 
     /**
-     * Perform an OpenSearch request on a type.
-     * @param allParams all query parameters
-     * @param searchKey the search key containing the search type and the result type
-     * @param facets the facets applicable
-     * @return the page of elements matching the query
-     * @throws SearchException when an error occurs while parsing the query
-     */
-    @Deprecated // Only use method with ICriterion
-    <S, R extends IIndexable> FacetPage<R> search(MultiValueMap<String, String> allParams, SearchKey<S, R> searchKey,
-            List<String> facets, Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
-
-    /**
      * Perform a business request on specified entity type
      * @param criterion business criterions
      * @param searchKey the search key containing the search type and the result type
@@ -79,19 +67,6 @@ public interface ICatalogSearchService {
      */
     <R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchType searchType, List<String> facets,
             Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
-
-    /**
-     * Compute summary for given request
-     * @param allParams OpenSearch request
-     * @param searchKey search key
-     * @param dataset dataset concerned by the request
-     * @param dataTypes file types on which to compute summary
-     * @return summary
-     */
-    @Deprecated // Only use method with ICriterion
-    DocFilesSummary computeDatasetsSummary(MultiValueMap<String, String> allParams,
-            SimpleSearchKey<DataObject> searchKey, UniformResourceName dataset, List<DataType> dataTypes)
-            throws SearchException;
 
     /**
      * Compute summary for given request
@@ -118,20 +93,6 @@ public interface ICatalogSearchService {
      */
     <E extends AbstractEntity<?>> E get(UniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException;
-
-    /**
-     * Retrieve given STRING property enumerated values (limited by maxCount, partial text contains and
-     * openSearch request from allParams (as usual)).
-     * @param propertyPath concerned STRING property path
-     * @param allParams opensearch request
-     * @param partialText text that property should contains (can be null)
-     * @param maxCount maximum result count
-     */
-    @Deprecated // Only use method with ICriterion
-    <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(MultiValueMap<String, String> allParams,
-            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText)
-            throws SearchException, OpenSearchUnknownParameter;
-
     /**
      * Retrieve property values for specified property name
      * @param criterion business criterions

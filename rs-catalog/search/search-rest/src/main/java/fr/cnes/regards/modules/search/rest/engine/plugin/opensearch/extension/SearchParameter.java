@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -56,7 +56,7 @@ public class SearchParameter {
     public SearchParameter(String name, AttributeModel attributeModel, ParameterConfiguration configuration,
             List<String> searchValues) {
         super();
-        this.setName(name);
+        this.name = name;
         this.attributeModel = attributeModel;
         this.configuration = configuration;
         this.searchValues = searchValues;

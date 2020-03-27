@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -139,26 +139,6 @@ public class CatalogSearchService implements ICatalogSearchService {
         this.pageableConverter = pageableConverter;
     }
 
-    @Deprecated // Only use method with ICriterion
-    @Override
-    public <S, R extends IIndexable> FacetPage<R> search(MultiValueMap<String, String> allParams,
-            SearchKey<S, R> inSearchKey, List<String> facets, Pageable pageable)
-            throws SearchException, OpenSearchUnknownParameter {
-        try {
-            // Build criterion from query
-            ICriterion criterion = openSearchService.parse(allParams);
-            return this.search(criterion, inSearchKey, facets, pageable);
-        } catch (OpenSearchParseException e) {
-            String message = "No query parameter";
-            if (allParams != null) {
-                StringJoiner sj = new StringJoiner("&");
-                allParams.forEach((key, value) -> sj.add(key + "=" + value));
-                message = sj.toString();
-            }
-            throw new SearchException(message, e);
-        }
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> inSearchKey,
@@ -287,26 +267,6 @@ public class CatalogSearchService implements ICatalogSearchService {
                 "You do not have access to this " + entity.getClass().getSimpleName());
     }
 
-    @Deprecated // Only use method with ICriterion
-    @Override
-    public DocFilesSummary computeDatasetsSummary(MultiValueMap<String, String> allParams,
-            SimpleSearchKey<DataObject> searchKey, UniformResourceName dataset, List<DataType> dataTypes)
-            throws SearchException {
-        try {
-            // Build criterion from query
-            ICriterion criterion = openSearchService.parse(allParams);
-            return this.computeDatasetsSummary(criterion, searchKey, dataset, dataTypes);
-        } catch (OpenSearchParseException e) {
-            String message = "No query parameter";
-            if (allParams != null) {
-                StringJoiner sj = new StringJoiner("&");
-                allParams.forEach((key, value) -> sj.add(key + "=" + value));
-                message = sj.toString();
-            }
-            throw new SearchException(message, e);
-        }
-    }
-
     @Override
     public DocFilesSummary computeDatasetsSummary(ICriterion criterion, SimpleSearchKey<DataObject> searchKey,
             UniformResourceName dataset, List<DataType> dataTypes) throws SearchException {
@@ -382,26 +342,6 @@ public class CatalogSearchService implements ICatalogSearchService {
                     i.remove();
                 }
             }
-        }
-    }
-
-    @Deprecated // Only use method with ICriterion
-    @Override
-    public <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(MultiValueMap<String, String> allParams,
-            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText)
-            throws SearchException, OpenSearchUnknownParameter {
-        try {
-            // Build criterion from query
-            ICriterion criterion = openSearchService.parse(allParams);
-            return retrieveEnumeratedPropertyValues(criterion, searchKey, propertyPath, maxCount, partialText);
-        } catch (OpenSearchParseException e) {
-            String message = "No query parameter";
-            if (allParams != null) {
-                StringJoiner sj = new StringJoiner("&");
-                allParams.forEach((key, value) -> sj.add(key + "=" + value));
-                message = sj.toString();
-            }
-            throw new SearchException(message, e);
         }
     }
 

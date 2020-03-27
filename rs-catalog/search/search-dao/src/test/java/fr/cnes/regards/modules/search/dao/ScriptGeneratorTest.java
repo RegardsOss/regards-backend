@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.search.dao;
 
-import org.junit.Ignore;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
 
 /**
  * @author Sébastien Binda
  */
-@Ignore
+// @TestPropertySource(properties = { "regards.jpa.multitenant.migrationTool=FLYWAYDB" })
+//@Ignore
 public class ScriptGeneratorTest extends AbstractScriptGeneratorTest {
 
 }

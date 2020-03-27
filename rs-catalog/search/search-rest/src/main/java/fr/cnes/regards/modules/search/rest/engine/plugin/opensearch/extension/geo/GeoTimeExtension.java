@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -92,6 +92,8 @@ public class GeoTimeExtension extends AbstractExtension {
 
     public static final String RADIUS_PARAMETER = "radius";
 
+    public static final String S_S = "{%s:%s}";
+
     @Override
     public void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
             Feature feature, String token) {
@@ -109,11 +111,11 @@ public class GeoTimeExtension extends AbstractExtension {
     @Override
     public void applyToDescriptionParameter(OpenSearchParameter parameter, DescriptionParameter descParameter) {
         ParameterConfiguration conf = descParameter.getConfiguration();
-        if (conf != null && TIME_NS.equals(conf.getNamespace()) && TIME_START_PARAMETER.equals(conf.getName())) {
-            parameter.setValue(String.format("{%s:%s}", TIME_NS, TIME_START_PARAMETER));
+        if ((conf != null) && TIME_NS.equals(conf.getNamespace()) && TIME_START_PARAMETER.equals(conf.getName())) {
+            parameter.setValue(String.format(S_S, TIME_NS, TIME_START_PARAMETER));
         }
-        if (conf != null && TIME_NS.equals(conf.getNamespace()) && TIME_END_PARAMETER.equals(conf.getName())) {
-            parameter.setValue(String.format("{%s:%s}", TIME_NS, TIME_END_PARAMETER));
+        if ((conf != null) && TIME_NS.equals(conf.getNamespace()) && TIME_END_PARAMETER.equals(conf.getName())) {
+            parameter.setValue(String.format(S_S, TIME_NS, TIME_END_PARAMETER));
         }
     }
 
@@ -121,26 +123,26 @@ public class GeoTimeExtension extends AbstractExtension {
     public List<OpenSearchParameter> addParametersToDescription() {
         List<OpenSearchParameter> geoParameters = Lists.newArrayList();
         geoParameters
-                .add(builderParameter(GEO_PARAMETER, String.format("{%s:%s}", GEO_NS, GEO_PARAMETER),
+                .add(builderParameter(GEO_PARAMETER, String.format(S_S, GEO_NS, GEO_PARAMETER),
                                       "Defined in Well Known Text standard (WKT) with coordinates in decimal degrees (EPSG:4326)",
                                       null));
         geoParameters
-                .add(builderParameter(BOX_PARAMETER, String.format("{%s:%s}", GEO_NS, BOX_PARAMETER),
+                .add(builderParameter(BOX_PARAMETER, String.format(S_S, GEO_NS, BOX_PARAMETER),
                                       "Defined by 'west, south, east, north' coordinates of longitude, latitude, in decimal degrees (EPSG:4326)",
                                       BOX_PATTERN));
         // To implement
         // geoParameters.add(builderParameter(LOCATION_PARAMETER, String.format("{%s:%s}", GEO_NS, LOCATION_PARAMETER),
         // "Location string e.g. Paris, France", null));
         geoParameters
-                .add(builderParameter(LON_PARAMETER, String.format("{%s:%s}", GEO_NS, LON_PARAMETER),
+                .add(builderParameter(LON_PARAMETER, String.format(S_S, GEO_NS, LON_PARAMETER),
                                       "Longitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lat",
                                       null, "180", "-180"));
         geoParameters
-                .add(builderParameter(LAT_PARAMETER, String.format("{%s:%s}", GEO_NS, LAT_PARAMETER),
+                .add(builderParameter(LAT_PARAMETER, String.format(S_S, GEO_NS, LAT_PARAMETER),
                                       "Latitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lon",
                                       null, "90", "-90"));
         geoParameters
-                .add(builderParameter(RADIUS_PARAMETER, String.format("{%s:%s}", GEO_NS, RADIUS_PARAMETER),
+                .add(builderParameter(RADIUS_PARAMETER, String.format(S_S, GEO_NS, RADIUS_PARAMETER),
                                       "Latitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lon",
                                       null, null, "1"));
         return geoParameters;
@@ -168,6 +170,9 @@ public class GeoTimeExtension extends AbstractExtension {
                         break;
                     case TIME_NS:
                         timeParameters.add(parameter);
+                        break;
+                    default:
+                        // nothing to do
                         break;
                 }
             } else {

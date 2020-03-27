@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -59,6 +59,8 @@ public class AccessRightFilter implements IAccessRightFilter {
     private static final Function<AccessGroup, ICriterion> GROUP_TO_CRITERION = group -> ICriterion
             .eq(Terms.GROUPS.getName(), group.getName());
 
+    private static final String CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP = "Cannot set access right filter because user %s does not have any access group";
+
     /**
      * Provides access groups for a user with cache facilities. Autowired by Spring.
      */
@@ -95,8 +97,8 @@ public class AccessRightFilter implements IAccessRightFilter {
         Assert.notNull(role, "Unknown request user role!");
 
         // For default ROLE, avoid feign request
-        if (role.equals(DefaultRole.ADMIN.toString()) || role.equals(DefaultRole.PROJECT_ADMIN.toString())
-                || role.equals(DefaultRole.INSTANCE_ADMIN.toString())) {
+        if (role.equals(DefaultRole.ADMIN.toString()) || role.equals(DefaultRole.PROJECT_ADMIN.toString()) || role
+                .equals(DefaultRole.INSTANCE_ADMIN.toString())) {
             return true;
         }
 
@@ -120,17 +122,17 @@ public class AccessRightFilter implements IAccessRightFilter {
         if (!isAdmin()) {
 
             // Retrieve public groups
-            Set<AccessGroup> accessGroups = new HashSet<>(
-                    cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
+            Set<AccessGroup> accessGroups = new HashSet<>(cache.getPublicAccessGroups(runtimeTenantResolver
+                                                                                              .getTenant()));
 
             // Add explicitly associated group
             accessGroups.addAll(cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant()));
 
             // Throw an error if no access group
             if (accessGroups.isEmpty()) {
-                String errorMessage = String
-                        .format("Cannot set access right filter because user %s does not have " + "any access group",
-                                authResolver.getUser());
+                String errorMessage = String.format(
+                        CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
+                        authResolver.getUser());
                 LOGGER.error(errorMessage);
                 throw new AccessRightFilterException(errorMessage);
             }
@@ -160,17 +162,17 @@ public class AccessRightFilter implements IAccessRightFilter {
         if (!isAdmin()) {
 
             // Retrieve public groups
-            Set<AccessGroup> accessGroups = new HashSet<>(
-                    cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
+            Set<AccessGroup> accessGroups = new HashSet<>(cache.getPublicAccessGroups(runtimeTenantResolver
+                                                                                              .getTenant()));
 
             // Add explicitly associated group
             accessGroups.addAll(cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant()));
 
             // Throw an error if no access group
             if (accessGroups.isEmpty()) {
-                String errorMessage = String
-                        .format("Cannot set access right filter because user %s does not have " + "any access group",
-                                authResolver.getUser());
+                String errorMessage = String.format(
+                        CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
+                        authResolver.getUser());
                 LOGGER.error(errorMessage);
                 throw new AccessRightFilterException(errorMessage);
             }
@@ -199,17 +201,17 @@ public class AccessRightFilter implements IAccessRightFilter {
         if (!isAdmin()) {
 
             // Retrieve public groups
-            Set<AccessGroup> accessGroups = new HashSet<>(
-                    cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
+            Set<AccessGroup> accessGroups = new HashSet<>(cache.getPublicAccessGroups(runtimeTenantResolver
+                                                                                              .getTenant()));
 
             // Add explicitly associated group
             accessGroups.addAll(cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant()));
 
             // Throw an error if no access group
             if (accessGroups.isEmpty()) {
-                String errorMessage = String
-                        .format("Cannot set access right filter because user %s does not have " + "any access group",
-                                authResolver.getUser());
+                String errorMessage = String.format(
+                        CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
+                        authResolver.getUser());
                 LOGGER.error(errorMessage);
                 throw new AccessRightFilterException(errorMessage);
             }

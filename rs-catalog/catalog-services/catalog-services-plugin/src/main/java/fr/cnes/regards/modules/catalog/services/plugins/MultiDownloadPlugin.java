@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -186,10 +186,10 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
                                            "None of the selected files are available for download");
         }
 
-        // Create and stream the ZIP archive containg all downloadable files
-        return CatalogPluginResponseFactory.createStreamSuccessResponse(response, getFilesAsZip(toDownloadFilesMap),
-                                                                        getArchiveName(),
-                                                                        MediaType.APPLICATION_OCTET_STREAM);
+        // Create and stream the ZIP archive containing all downloadable files
+        return CatalogPluginResponseFactory
+                .createStreamSuccessResponse(response, getFilesAsZip(toDownloadFilesMap), getArchiveName(),
+                                             MediaType.APPLICATION_OCTET_STREAM);
     }
 
     /**
