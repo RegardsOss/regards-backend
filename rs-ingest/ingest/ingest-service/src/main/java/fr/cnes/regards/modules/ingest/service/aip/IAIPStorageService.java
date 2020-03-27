@@ -89,14 +89,12 @@ public interface IAIPStorageService {
     /**
      * Extract from a storage metadata list (during ingestion) the list of storage we'll use to save metadata
      * @param storages
-     * @return
      */
     Set<StoreLocation> getManifestStoreLocationsByStorageMetadata(Set<StorageMetadata> storages);
 
     /**
      * Extract from the AIP OAISDataObjectLocations the list of storage already in use to (re)save AIP
      * @param manifestLocations
-     * @return
      */
     Set<StoreLocation> getManifestStoreLocationsByLocation(Set<OAISDataObjectLocation> manifestLocations);
 }

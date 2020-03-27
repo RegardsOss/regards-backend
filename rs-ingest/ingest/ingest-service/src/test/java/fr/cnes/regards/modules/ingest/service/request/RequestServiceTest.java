@@ -122,14 +122,14 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         sip4 = sipRepository.save(sip4);
 
         AIP aip = AIP.build(sip4.getSip(),
-                            UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                            OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
                             Optional.empty(), "SIP_001", sip4.getVersion());
         AIPEntity aipEntity = AIPEntity.build(sip4, AIPState.GENERATED, aip);
 
         aipEntity = aipRepository.save(aipEntity);
 
         AIP aip2 = AIP.build(sip4.getSip(),
-                             UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                             OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
                              Optional.empty(), "SIP_002", sip4.getVersion());
         AIPEntity aipEntity2 = AIPEntity.build(sip4, AIPState.GENERATED, aip2);
 

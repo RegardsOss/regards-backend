@@ -49,6 +49,6 @@ public interface IAipGeneration {
      * @param providerId the provider id of the generated {@link AIP}
      * @return generated {@link AIP}
      */
-    List<AIP> generate(SIPEntity sip, UniformResourceName aipId, UniformResourceName sipId, String providerId)
+    List<AIP> generate(SIPEntity sip, OaisUniformResourceName aipId, OaisUniformResourceName sipId, String providerId)
             throws AIPGenerationException;
 }

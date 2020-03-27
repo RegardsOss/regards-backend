@@ -96,7 +96,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
                 + IngestProcessingChainController.EXPORT_PATH, requestBuilderCustomizer,
                                                         "Default processing chain should be exported",
                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
-        assertMediaType(resultActions, MediaType.APPLICATION_JSON_UTF8);
+        assertMediaType(resultActions, MediaType.APPLICATION_JSON);
         String chain = payload(resultActions);
         Assert.assertNotNull(chain);
     }
@@ -126,7 +126,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     @Test
     public void createIngestProcessingChain() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         performDefaultPost(IngestProcessingChainController.TYPE_MAPPING, this.create(), requestBuilderCustomizer,
                            "Ingest processing creation error");
     }
@@ -151,8 +151,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         ingestProcessingChain.getGenerationPlugin().setId(new Long(genPluginId));
 
         RequestBuilderCustomizer putRequestBuilderCustomizer = customizer().expectStatusOk();
-        putRequestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE,
-                                              GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        putRequestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         putRequestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
@@ -173,7 +172,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
                            requestBuilderCustomizer, "Ingest processing creation error");
 
         requestBuilderCustomizer = customizer().expectStatusOk();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))

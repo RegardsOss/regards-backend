@@ -202,7 +202,7 @@ public class AIPService implements IAIPService {
         // Populate response
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + aip.getProviderId() + ".json");
         // NOTE : Do not set content type after download. It can be ignored.
-        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         // Stream AIP file
         try {

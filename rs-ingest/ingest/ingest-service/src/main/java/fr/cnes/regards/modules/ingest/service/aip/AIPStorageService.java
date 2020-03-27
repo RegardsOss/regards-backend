@@ -589,9 +589,9 @@ public class AIPStorageService implements IAIPStorageService {
                 }
             }
             FileStorageRequestDTO storageRequest = FileStorageRequestDTO
-                    .build(aip.getId().toString(), checksum, AIPService.MD5_ALGORITHM,
-                           MediaType.APPLICATION_JSON_UTF8_VALUE, aip.getId().toString(), originUrl.toString(),
-                           storeLocation.getStorage(), Optional.ofNullable(storePath));
+                    .build(aip.getId().toString(), checksum, AIPService.MD5_ALGORITHM, MediaType.APPLICATION_JSON_VALUE,
+                           aip.getId().toString(), originUrl.toString(), storeLocation.getStorage(),
+                           Optional.ofNullable(storePath));
             storageRequest.withType(DataType.AIP.toString());
             files.add(storageRequest);
         }

@@ -120,8 +120,8 @@ public class DefaultAipTaggingTest {
         String filename = "test.netcdf";
         String md5 = "plifplafplouf";
 
-        AIP single = AIP.build(EntityType.DATA, UniformResourceName.fromString(aipUrn),
-                               Optional.of(UniformResourceName.fromString(sipUrn)), providerId, 1);
+        AIP single = AIP.build(EntityType.DATA, OaisUniformResourceName.fromString(aipUrn),
+                               Optional.of(OaisUniformResourceName.fromString(sipUrn)), providerId, 1);
         single.withDataObject(DataType.RAWDATA, Paths.get("target", filename), md5);
         single.registerContentInformation();
 

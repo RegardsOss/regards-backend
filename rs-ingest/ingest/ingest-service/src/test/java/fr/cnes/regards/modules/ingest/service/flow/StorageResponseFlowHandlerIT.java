@@ -148,7 +148,7 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceTest {
 
         SIP sip = SIP.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA, dataFile, MD5_ALGORITHM, checksum);
-        sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
+        sip.withSyntax(MediaType.APPLICATION_JSON);
         sip.registerContentInformation();
         if ((tags != null) && !tags.isEmpty()) {
             sip.withContextTags(tags.toArray(new String[0]));

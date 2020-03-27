@@ -45,8 +45,8 @@ public class AIPGenerationTestPlugin implements IAipGeneration {
     private ProcessingChainTestErrorSimulator errorSimulator;
 
     @Override
-    public List<AIP> generate(SIPEntity sip, UniformResourceName aipId, UniformResourceName sipId, String providerId)
-            throws AIPGenerationException {
+    public List<AIP> generate(SIPEntity sip, OaisUniformResourceName aipId, OaisUniformResourceName sipId,
+            String providerId) throws AIPGenerationException {
         if (AIPGenerationTestPlugin.class.equals(errorSimulator.getSimulateErrorForStep())) {
             throw new AIPGenerationException("Simulated exception for step AIPGenerationTestPlugin");
         }

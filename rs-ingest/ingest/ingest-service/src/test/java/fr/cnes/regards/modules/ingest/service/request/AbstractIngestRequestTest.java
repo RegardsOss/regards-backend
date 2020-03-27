@@ -100,9 +100,9 @@ public abstract class AbstractIngestRequestTest extends AbstractMultitenantServi
         sipEntity.setChecksum(checksum);
         sipEntity.setLastUpdate(OffsetDateTime.now());
         sipEntity = sipRepo.save(sipEntity);
-        UniformResourceName sipId = sipEntity.getSipIdUrn();
-        UniformResourceName aipId = UniformResourceName.fromString(sipEntity.getSipIdUrn().toString());
-        aipId.setOaisIdentifier(OAISIdentifier.AIP);
+        OaisUniformResourceName sipId = sipEntity.getSipIdUrn();
+        OaisUniformResourceName aipId = OaisUniformResourceName.fromString(sipEntity.getSipIdUrn().toString());
+        aipId.setIdentifier(OAISIdentifier.AIP);
         AIP aip = AIP.build(EntityType.DATA, aipId, Optional.of(sipId), providerId, sipEntity.getVersion());
         aipEntity = AIPEntity.build(sipEntity, AIPState.STORED, aip);
         aipEntity = aipRepo.save(aipEntity);

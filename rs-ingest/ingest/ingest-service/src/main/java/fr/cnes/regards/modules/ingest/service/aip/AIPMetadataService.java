@@ -75,7 +75,6 @@ public class AIPMetadataService {
 
     /**
      * Schedule Jobs
-     * @return
      */
     public boolean scheduleJobs() {
         JobInfo jobInfo = null;

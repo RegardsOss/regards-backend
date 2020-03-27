@@ -113,7 +113,7 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         String session = "session";
         String storage = "storage";
         String storePath = null;
-        MimeType mimeType = MediaType.APPLICATION_JSON_UTF8;
+        MimeType mimeType = MediaType.APPLICATION_JSON;
         SIP sip = SIP.build(EntityType.DATA, providerId);
         SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(),
                                               IngestMetadata.build(sessionOwner, session, "ingestChain",
@@ -141,11 +141,12 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         Collection<RequestResultInfoDTO> results = Sets.newHashSet();
         if (metaStorage) {
             results.add(RequestResultInfoDTO
-                    .build(groupId, aipEntity.getChecksum(), storage, storePath, owners, FileReferenceDTO
-                            .build(OffsetDateTime.now(),
-                                   FileReferenceMetaInfoDTO.build(aipEntity.getChecksum(), "MD5", fileName, 10L, null,
-                                                                  null, MediaType.APPLICATION_JSON_UTF8, null),
-                                   FileLocationDTO.build(storage, storedUrl), owners),
+                    .build(groupId, aipEntity.getChecksum(), storage, storePath, owners,
+                           FileReferenceDTO
+                                   .build(OffsetDateTime.now(),
+                                          FileReferenceMetaInfoDTO.build(aipEntity.getChecksum(), "MD5", fileName, 10L,
+                                                                         null, null, MediaType.APPLICATION_JSON, null),
+                                          FileLocationDTO.build(storage, storedUrl), owners),
                            null));
             AIPStoreMetaDataRequest request = AIPStoreMetaDataRequest
                     .build(aipEntity, Sets.newHashSet(StoreLocation.build(storage, storePath)), true, true);
@@ -154,11 +155,12 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
 
         } else {
             results.add(RequestResultInfoDTO
-                    .build(groupId, fileToStoreChecksum, storage, storePath, owners, FileReferenceDTO
-                            .build(OffsetDateTime.now(),
-                                   FileReferenceMetaInfoDTO.build(fileToStoreChecksum, "MD5", fileName, 10L, null, null,
-                                                                  MediaType.APPLICATION_JSON_UTF8, null),
-                                   FileLocationDTO.build(storage, storedUrl), owners),
+                    .build(groupId, fileToStoreChecksum, storage, storePath, owners,
+                           FileReferenceDTO
+                                   .build(OffsetDateTime.now(),
+                                          FileReferenceMetaInfoDTO.build(fileToStoreChecksum, "MD5", fileName, 10L,
+                                                                         null, null, MediaType.APPLICATION_JSON, null),
+                                          FileLocationDTO.build(storage, storedUrl), owners),
                            null));
             IngestRequest request = IngestRequest.build(IngestMetadata
                     .build(sessionOwner, session, "ingestChain", Sets.newHashSet(), StorageMetadata.build(storage)),

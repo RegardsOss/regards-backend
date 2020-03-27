@@ -38,8 +38,8 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 public class FakeAIPGenerationTestPlugin implements IAipGeneration {
 
     @Override
-    public List<AIP> generate(SIPEntity sip, UniformResourceName aipId, UniformResourceName sipId, String providerId)
-            throws AIPGenerationException {
+    public List<AIP> generate(SIPEntity sip, OaisUniformResourceName aipId, OaisUniformResourceName sipId,
+            String providerId) throws AIPGenerationException {
         return null;
     }
 

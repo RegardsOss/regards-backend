@@ -113,7 +113,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         SIP sip = SIP.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA, Paths.get("src", "test", "resources", "data", fileName), "MD5",
                            UUID.randomUUID().toString());
-        sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
+        sip.withSyntax(MediaType.APPLICATION_JSON);
         sip.registerContentInformation();
         if ((tags != null) && !tags.isEmpty()) {
             sip.withContextTags(tags.toArray(new String[0]));

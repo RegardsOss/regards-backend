@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
-import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
 
 /**
  * OAIS Deletion process service.
@@ -74,8 +75,6 @@ public interface IOAISDeletionService {
 
     /**
      * Delete all OAIS entities related to these criteria
-     * @return
-     * @param requests
      */
     void runDeletion(Collection<OAISDeletionRequest> requests);
 }

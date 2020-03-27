@@ -222,7 +222,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                 // For each file successfully copied, check if at least one of the owners of the file is an AIP.
                 boolean found = false;
                 for (String fileOwner : sr.getResultFile().getOwners()) {
-                    if (UniformResourceName.isValidUrn(fileOwner)) {
+                    if (OaisUniformResourceName.isValidUrn(fileOwner)) {
                         // If so, associate the AIPUpdateFileLocationTask to the aip.
                         newFileLocations.put(fileOwner,
                                              AIPUpdateFileLocationTask.buildAddLocationTask(Lists.newArrayList(sr)));

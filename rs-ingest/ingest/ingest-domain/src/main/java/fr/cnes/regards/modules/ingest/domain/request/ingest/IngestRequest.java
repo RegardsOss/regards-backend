@@ -171,7 +171,7 @@ public class IngestRequest extends AbstractRequest {
 
     /**
      * Remove given AIP from the list of AIPs of this request
-     * @param {@link AIPEntity} to remove
+     * @param a {@link AIPEntity} to remove
      */
     public void removeAip(AIPEntity a) {
         if (aips.contains(a)) {

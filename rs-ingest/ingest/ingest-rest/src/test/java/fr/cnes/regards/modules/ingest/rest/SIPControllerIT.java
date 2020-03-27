@@ -18,25 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.geojson.GeoJsonFieldDescriptors;
-import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
-import fr.cnes.regards.framework.geojson.OaisFieldDescriptors;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.ConstrainedFields;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
-import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -44,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -131,7 +113,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         documentSipRequestBody(requestBuilderCustomizer);
 
         performDefaultPost(SIPController.TYPE_MAPPING, collection, requestBuilderCustomizer,
@@ -177,7 +159,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
 
         performDefaultPost(SIPController.TYPE_MAPPING, collection, requestBuilderCustomizer,
                            "SIP collection should be submitted.");
@@ -249,7 +231,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
-                .addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+                .addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         performDefaultPost(SIPController.TYPE_MAPPING, collection, requestBuilderCustomizer,
                            "Partial valid collection should be submitted.");
     }

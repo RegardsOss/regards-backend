@@ -89,20 +89,21 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
         aipEntity1 = AIPEntity
                 .build(sipEntity, AIPState.GENERATED,
                        AIP.build(sipEntity.getSip(),
-                                 UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
-                                                                     getDefaultTenant(), 1),
+                                 OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
+                                                                         getDefaultTenant(), 1),
                                  Optional.ofNullable(sipEntity.getSipIdUrn()), providerId, sipEntity.getVersion()));
         aipEntity2 = AIPEntity
                 .build(sipEntity, AIPState.GENERATED,
                        AIP.build(sipEntity.getSip(),
-                                 UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
-                                                                     getDefaultTenant(), 1),
+                                 OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
+                                                                         getDefaultTenant(), 1),
                                  Optional.ofNullable(sipEntity.getSipIdUrn()), providerId, sipEntity.getVersion()));
         aips.add(aipEntity1);
         aips.add(aipEntity2);
         Mockito.clearInvocations(publisher);
     }
 
+    @SuppressWarnings("unused")
     private Map<String, Long> getResultUsingNotifs(List<SessionMonitoringEvent> allValues) {
         Map<String, Long> result = new HashMap<>();
         for (SessionMonitoringEvent e : allValues) {
