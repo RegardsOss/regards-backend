@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -31,6 +31,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.Valid;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
@@ -49,8 +51,10 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AIPUpdateRequest extends AbstractRequest {
 
-    @OneToOne(cascade = CascadeType.ALL)
+    //CascadeType.DELETE is not effective with @ManyToOne, so lets set all cascaded operation
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH})
     @JoinColumn(name = "update_task_id", foreignKey = @ForeignKey(name = "fk_update_request_update_task_id"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @Valid
     private AbstractAIPUpdateTask updateTask;
 

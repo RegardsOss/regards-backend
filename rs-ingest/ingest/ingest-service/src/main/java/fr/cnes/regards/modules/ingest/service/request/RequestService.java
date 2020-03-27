@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,11 +19,13 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -134,7 +136,7 @@ public class RequestService implements IRequestService {
     @Override
     public void handleRemoteRequestGranted(Set<RequestInfo> requests) {
         // Do not track at the moment : the ongoing request could send a success too quickly
-        // and could cause unnecessary concurrent access to thehandleRemoteRequestGranted database!
+        // and could cause unnecessary concurrent access to the database!
         for (RequestInfo ri : requests) {
             LOGGER.debug("Storage request granted with id \"{}\"", ri.getGroupId());
         }
@@ -173,7 +175,7 @@ public class RequestService implements IRequestService {
         ingestRequestRepository.deleteAll(requests);
 
         List<AIPStoreMetaDataRequest> storeMetaRequests = aipStoreMetaDataRepository.findAllByAipIdIn(aipIds);
-        storeMetaRequests.forEach(sessionNotifier::aipStoreMetaRequestErrorDeleted);
+        storeMetaRequests.forEach(sessionNotifier::decrementMetaStoreError);
         aipStoreMetaDataRepository.deleteAll(storeMetaRequests);
 
         List<AIPUpdateRequest> updateRequests = aipUpdateRequestRepository.findAllByAipIdIn(aipIds);
@@ -212,7 +214,8 @@ public class RequestService implements IRequestService {
 
     @Override
     public void scheduleRequestDeletionJob(SearchRequestsParameters filters) {
-        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestDeletionJob.CRITERIA, filters));
+        Set<JobParameter> jobParameters = Sets
+                .newHashSet(new JobParameter(RequestDeletionJob.CRITERIA_JOB_PARAM_NAME, filters));
         // Schedule request deletion job
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_DELETION_JOB_PRIORITY.getPriority(),
                 jobParameters, authResolver.getUser(), RequestDeletionJob.class.getName());
@@ -222,7 +225,8 @@ public class RequestService implements IRequestService {
 
     @Override
     public void scheduleRequestRetryJob(SearchRequestsParameters filters) {
-        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestRetryJob.CRITERIA, filters));
+        Set<JobParameter> jobParameters = Sets
+                .newHashSet(new JobParameter(RequestRetryJob.CRITERIA_JOB_PARAM_NAME, filters));
         // Schedule request retry job
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_RETRY_JOB_PRIORITY.getPriority(), jobParameters,
                 authResolver.getUser(), RequestRetryJob.class.getName());
@@ -308,12 +312,23 @@ public class RequestService implements IRequestService {
     public void switchRequestState(AbstractRequest request) {
         // Handle requests tracked by notifications
         if (request instanceof IngestRequest) {
-            sessionNotifier.ingestRequestErrorDeleted((IngestRequest) request);
+            Optional<IngestRequest> ingReq = ingestRequestRepository.findById(request.getId());
+            if (ingReq.isPresent()) {
+                sessionNotifier.ingestRequestErrorDeleted(ingReq.get());
+                sessionNotifier.decrementProductCount(ingReq.get());
+            }
         } else if (request instanceof AIPStoreMetaDataRequest) {
-            sessionNotifier.aipStoreMetaRequestErrorDeleted((AIPStoreMetaDataRequest) request);
+            sessionNotifier.decrementMetaStoreError((AIPStoreMetaDataRequest) request);
         }
         request.setState(InternalRequestState.TO_SCHEDULE);
         request.clearError();
+    }
+
+    @Override
+    public void deleteRequests(Collection<AbstractRequest> requests) {
+        for (AbstractRequest request : requests) {
+            deleteRequest(request);
+        }
     }
 
     @Override
@@ -338,7 +353,8 @@ public class RequestService implements IRequestService {
      * @param requests to schedule
      */
     @Override
-    public void scheduleRequests(List<AbstractRequest> requests) {
+    public int scheduleRequests(List<AbstractRequest> requests) {
+        int nbRequestScheduled = 0;
         // Store request state (can be scheduled right now ?) by session
         Table<String, String, InternalRequestState> history = HashBasedTable.create();
 
@@ -350,7 +366,7 @@ public class RequestService implements IRequestService {
                     if (!history.contains(request.getSessionOwner(), request.getSession())) {
                         // Check if the request can be processed right now
                         request = scheduleRequest(request);
-
+                        nbRequestScheduled++;
                         // Store if request for this session can be executed right now
                         history.put(request.getSessionOwner(), request.getSession(), request.getState());
                     }
@@ -360,11 +376,13 @@ public class RequestService implements IRequestService {
                 } else {
                     // Schedule the request
                     scheduleRequest(request);
+                    nbRequestScheduled++;
                 }
             } else {
                 abstractRequestRepository.save(request);
             }
         }
+        return nbRequestScheduled;
     }
 
     @Override
@@ -400,7 +418,7 @@ public class RequestService implements IRequestService {
      * Try to find some request in a ready state that can prevent the provided {@link AbstractRequest} request
      * to be executed right now
      */
-    private boolean shouldDelayRequest(AbstractRequest request) {
+    public boolean shouldDelayRequest(AbstractRequest request) {
         Specification<AbstractRequest> spec;
         Optional<String> sessionOwnerOp = Optional.ofNullable(request.getSessionOwner());
         Optional<String> sessionOp = Optional.ofNullable(request.getSession());
@@ -429,6 +447,24 @@ public class RequestService implements IRequestService {
                         .format("You should not use this method for requests having [%s] type", request.getDtype()));
         }
         return abstractRequestRepository.exists(spec);
+    }
+
+    @Override
+    public List<AbstractRequest> getRequests(Set<RequestInfo> requestInfos) {
+        List<String> groupIds = requestInfos.stream().map(RequestInfo::getGroupId).collect(Collectors.toList());
+        List<AbstractRequest> requests = new ArrayList<>();
+        // To avoid sql too long request, divide the list of groupIds to search for in subList of 100 groupIds at most.
+        final int chunkSize = 100;
+        if (groupIds.size() > chunkSize) {
+            final AtomicInteger counter = new AtomicInteger();
+            groupIds.stream().collect(Collectors.groupingBy(it -> counter.getAndIncrement() / chunkSize)).values()
+                    .forEach(list -> {
+                        requests.addAll(findRequestsByGroupIdIn(list));
+                    });
+        } else {
+            requests.addAll(findRequestsByGroupIdIn(groupIds));
+        }
+        return requests;
     }
 
 }

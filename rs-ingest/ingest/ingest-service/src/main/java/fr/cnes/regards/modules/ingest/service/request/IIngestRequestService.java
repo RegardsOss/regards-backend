@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -65,6 +65,16 @@ public interface IIngestRequestService {
      * Handle request denied during request handling
      */
     void handleRequestDenied(IngestRequest request);
+
+    /**
+     * Handle unknown chain while loading job parameters
+     */
+    void handleUnknownChain(List<IngestRequest> requests);
+
+    /**
+     * Handle ingest job start for specified request
+     */
+    void handleIngestJobStart(IngestRequest request);
 
     /**
      * Handle request error during job processing

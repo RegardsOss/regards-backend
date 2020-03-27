@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -25,6 +25,8 @@ import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.MappedSuperclass;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -60,6 +62,14 @@ public abstract class AbstractOAISEntity {
     @NotBlank(message = "Provider ID is required")
     @Column(name = "provider_id", length = 100, nullable = false)
     private String providerId;
+
+    /**
+     * Version : this value is also reported in {@link #sipId} and must be the same
+     */
+    @NotNull(message = "Version is required")
+    @Min(1)
+    @Max(999)
+    private Integer version;
 
     @Column(columnDefinition = "jsonb")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
@@ -139,5 +149,13 @@ public abstract class AbstractOAISEntity {
 
     public void setIpType(EntityType ipType) {
         this.ipType = ipType;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service;
 
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -108,11 +109,11 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     }
 
     protected SIP create(String providerId, List<String> tags) {
+        String fileName = String.format("file-%s.dat", providerId);
         SIP sip = SIP.build(EntityType.DATA, providerId);
-        sip.withDataObject(DataType.RAWDATA,
-                           Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"), "MD5",
-                           "azertyuiopqsdfmlmld");
-        sip.withSyntax(MediaType.APPLICATION_JSON);
+        sip.withDataObject(DataType.RAWDATA, Paths.get("src", "test", "resources", "data", fileName), "MD5",
+                           UUID.randomUUID().toString());
+        sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
         sip.registerContentInformation();
         if ((tags != null) && !tags.isEmpty()) {
             sip.withContextTags(tags.toArray(new String[0]));

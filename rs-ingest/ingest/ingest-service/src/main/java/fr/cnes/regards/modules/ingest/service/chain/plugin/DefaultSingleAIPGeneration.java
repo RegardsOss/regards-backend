@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -25,8 +25,8 @@ import java.util.Optional;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * Default AIP generation plugin. The plugin automatically build a single AIP based on SIP information.
@@ -39,10 +39,9 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 public class DefaultSingleAIPGeneration implements IAipGeneration {
 
     @Override
-    public List<AIP> generate(SIP sip, OaisUniformResourceName aipId, OaisUniformResourceName sipId,
-            String providerId) {
+    public List<AIP> generate(SIPEntity sip, UniformResourceName aipId, UniformResourceName sipId, String providerId) {
         List<AIP> aips = new ArrayList<>();
-        aips.add(AIP.build(sip, aipId, Optional.of(sipId), providerId));
+        aips.add(AIP.build(sip.getSip(), aipId, Optional.of(sipId), providerId, sip.getVersion()));
         return aips;
     }
 }

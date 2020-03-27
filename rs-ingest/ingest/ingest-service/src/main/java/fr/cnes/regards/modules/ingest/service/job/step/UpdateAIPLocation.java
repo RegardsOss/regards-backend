@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -25,15 +25,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocationTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateResult;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
+ * Update step to add/remove a {@link OAISDataObjectLocation} to an {@link AIP} {@link OAISDataObject}
+ *
  * @author Léo Mieulet
  */
 public class UpdateAIPLocation implements IUpdateStep {
@@ -57,8 +62,8 @@ public class UpdateAIPLocation implements IUpdateStep {
             updated = aipStorageService.removeAIPLocations(aipWrapper.getAip(),
                                                            updateFileLocation.getFileLocationUpdates());
         }
-        LOGGER.info("[AIP {}] Running update task {}. updated={} manifestUpdate={}", aipWrapper.getAip().getAipId(),
-                    taskType.toString(), updated.isAipEntityUpdated(), updated.isAipUpdated());
+        LOGGER.debug("[AIP {}] Running update task {}. updated={} manifestUpdate={}", aipWrapper.getAip().getAipId(),
+                     taskType.toString(), updated.isAipEntityUpdated(), updated.isAipUpdated());
         if (updated.isAipEntityUpdated()) {
             aipWrapper.markAsUpdated(updated.isAipUpdated());
         }

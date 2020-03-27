@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,26 +18,39 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.mapper.IOAISDeletionPayloadMapper;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorPayload;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Service to handle {@link OAISDeletionCreatorRequest}s
+ * And the {@link fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob} algoritm
  *
  * @author Sébastien Binda
  *
@@ -45,6 +58,8 @@ import org.springframework.stereotype.Service;
 @Service
 @MultitenantTransactional
 public class OAISDeletionService implements IOAISDeletionService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OAISDeletionService.class);
 
     @Autowired
     private IOAISDeletionCreatorRepository creatorRepository;
@@ -57,6 +72,15 @@ public class OAISDeletionService implements IOAISDeletionService {
 
     @Autowired
     private IOAISDeletionPayloadMapper deletionRequestMapper;
+
+    @Autowired
+    private IAIPService aipService;
+
+    @Autowired
+    private ISIPService sipService;
+
+    @Autowired
+    private IOAISDeletionRequestRepository deletionRequestRepository;
 
     @Override
     public Optional<OAISDeletionCreatorRequest> searchCreator(Long requestId) {
@@ -91,8 +115,7 @@ public class OAISDeletionService implements IOAISDeletionService {
 
     @Override
     public void handleRemoteDeleteSuccess(Set<RequestInfo> requestInfos) {
-        List<AbstractRequest> requests = requestService.findRequestsByGroupIdIn(requestInfos.stream()
-                .map(RequestInfo::getGroupId).collect(Collectors.toList()));
+        List<AbstractRequest> requests = requestService.getRequests(requestInfos);
         for (RequestInfo ri : requestInfos) {
             for (AbstractRequest request : requests) {
                 if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
@@ -106,4 +129,60 @@ public class OAISDeletionService implements IOAISDeletionService {
             }
         }
     }
+
+    @Override
+    public void runDeletion(Collection<OAISDeletionRequest> requests) {
+        Iterator<OAISDeletionRequest> requestIter = requests.iterator();
+        boolean interrupted = Thread.currentThread().isInterrupted();
+        Set<OAISDeletionRequest> errors = new HashSet<>();
+        while (requestIter.hasNext() && !interrupted) {
+            OAISDeletionRequest request = requestIter.next();
+            if (!requestService.shouldDelayRequest(request)) {
+                AIPEntity aipToDelete = request.getAip();
+                SIPEntity sipToDelete = aipToDelete.getSip();
+                try {
+                    if (request.isDeleteFiles() && !request.isRequestFilesDeleted()) {
+                        aipService.scheduleLinkedFilesDeletion(request);
+                    } else {
+                        // Start by deleting the request itself
+                        requestService.deleteRequest(request);
+                        aipService.processDeletion(sipToDelete.getSipId(),
+                                                   request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                        sipService.processDeletion(sipToDelete.getSipId(),
+                                                   request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                    }
+                } catch (Exception e) {
+                    String errorMsg = String.format("Deletion request %s of AIP %s could not be executed",
+                                                    request.getId(), request.getAip().getAipId());
+                    LOGGER.error(errorMsg, e);
+                    request.setState(InternalRequestState.ERROR);
+                    request.addError(errorMsg);
+                    errors.add(request);
+                }
+            } else {
+                String errorMsg = String
+                        .format("Deletion request %s of AIP %s could not be executed cause other requests reference same AIPs. Request is blocked.",
+                                request.getId(), request.getAip().getAipId());
+                LOGGER.warn(errorMsg);
+                request.setState(InternalRequestState.BLOCKED);
+                request.addError(errorMsg);
+                errors.add(request);
+            }
+            interrupted = Thread.currentThread().isInterrupted();
+        }
+        // abort requests that could not be handled
+        ArrayList<OAISDeletionRequest> aborted = new ArrayList<>();
+        while (requestIter.hasNext()) {
+            OAISDeletionRequest request = requestIter.next();
+            request.setState(InternalRequestState.ABORTED);
+            aborted.add(request);
+        }
+        interrupted = Thread.interrupted();
+        deletionRequestRepository.saveAll(errors);
+        deletionRequestRepository.saveAll(aborted);
+        if (interrupted) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
 }

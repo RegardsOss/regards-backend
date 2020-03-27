@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
         @Index(name = "idx_aip_provider_id", columnList = "provider_id"),
         @Index(name = "idx_aip_storage", columnList = "storages"), @Index(name = "idx_aip_tags", columnList = "tags"),
         @Index(name = "idx_aip_categories", columnList = "categories"),
-        @Index(name = "idx_aip_state", columnList = "state"), })
+        @Index(name = "idx_aip_sip_id", columnList = "sip_id"), @Index(name = "idx_aip_state", columnList = "state"), })
 public class AIPEntity extends AbstractAIPEntity {
 
     /**
@@ -90,6 +90,7 @@ public class AIPEntity extends AbstractAIPEntity {
         aipEntity.setSessionOwner(sip.getSessionOwner());
         aipEntity.setSession(sip.getSession());
         aipEntity.setCategories(sip.getCategories());
+        aipEntity.setVersion(aip.getVersion());
         return aipEntity;
     }
 

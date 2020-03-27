@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -37,31 +37,31 @@ public class NativeSelectQuery {
     /**
      * SQL select part
      */
-    private String selectClause;
+    private final String selectClause;
 
     /**
      * SQL where part
      */
-    private String whereClause;
+    private final String fromClause;
 
     /**
      * Predicates
      */
-    private Set<String> predicates;
+    private final Set<String> predicates;
 
     /**
      * Named parameters
      */
-    private Map<String, String> params;
+    private final Map<String, String> params;
 
     /**
      * Date named parameters
      */
-    private Map<String, Date> dateParams;
+    private final Map<String, Date> dateParams;
 
-    public NativeSelectQuery(String selectClause, String whereClause) {
+    public NativeSelectQuery(String selectClause, String fromClause) {
         this.selectClause = selectClause;
-        this.whereClause = whereClause;
+        this.fromClause = fromClause;
         params = new HashMap<>();
         dateParams = new HashMap<>();
         predicates = new HashSet<>();
@@ -72,12 +72,12 @@ public class NativeSelectQuery {
      */
     public String getSQL() {
         StringBuilder request = new StringBuilder("SELECT ").append(selectClause).append(" FROM ")
-                .append(whereClause);
+                .append(fromClause);
 
         if (!predicates.isEmpty()) {
             request.append(" WHERE ");
             Joiner.on(" AND ").appendTo(request, predicates);
-        };
+        }
         return request.toString();
     }
 

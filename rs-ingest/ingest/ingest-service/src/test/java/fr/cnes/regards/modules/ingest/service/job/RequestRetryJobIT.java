@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -78,7 +78,8 @@ import fr.cnes.regards.modules.ingest.service.request.IRequestService;
  */
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=request_retry_job", "regards.amqp.enabled=true",
-                "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false", },
+                "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
+                "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp" })
 public class RequestRetryJobIT extends IngestMultitenantServiceTest {
@@ -155,16 +156,16 @@ public class RequestRetryJobIT extends IngestMultitenantServiceTest {
         sip4 = sipRepository.save(sip4);
 
         AIP aip = AIP.build(sip4.getSip(),
-                            OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
-                            Optional.empty(), "SIP_001");
+                            UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                            Optional.empty(), "SIP_001", sip4.getVersion());
         aip.setIpType(EntityType.DATA);
         AIPEntity aipEntity = AIPEntity.build(sip4, AIPState.GENERATED, aip);
 
         aipEntity = aipRepository.save(aipEntity);
 
         AIP aip2 = AIP.build(sip4.getSip(),
-                             OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
-                             Optional.empty(), "SIP_002");
+                             UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                             Optional.empty(), "SIP_002", sip4.getVersion());
         AIPEntity aipEntity2 = AIPEntity.build(sip4, AIPState.GENERATED, aip2);
 
         aipEntity2 = aipRepository.save(aipEntity2);
@@ -191,9 +192,10 @@ public class RequestRetryJobIT extends IngestMultitenantServiceTest {
         updateRequest.get(0).setState(InternalRequestState.ERROR);
         aipUpdateRequestRepository.saveAll(updateRequest);
 
-        ingestRequestRepository
-                .save(IngestRequest.build(mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
-                                          IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip()));
+        IngestRequest ir = IngestRequest.build(mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
+                                               IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip());
+        ir.setAips(aips);
+        ingestRequestRepository.save(ir);
         OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest();
         deletionRequest.setCreationDate(OffsetDateTime.now());
         deletionRequest.setState(InternalRequestState.ERROR);

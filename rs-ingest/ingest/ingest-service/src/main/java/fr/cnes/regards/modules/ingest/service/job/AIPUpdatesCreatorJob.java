@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.ingest.service.job;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -73,7 +75,7 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
     /**
      * Limit number of AIPs to retrieve in one page.
      */
-    @Value("${regards.ingest.aips.scan.iteration-limit:100}")
+    @Value("${regards.ingest.aips.scan.iteration-limit:1000}")
     private Integer aipIterationLimit;
 
     @Override
@@ -91,20 +93,23 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        logger.debug("[AIP UPDATE CREATOR JOB] Running job ...");
+        long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, aipIterationLimit, Sort.Direction.ASC, "id");
         Page<AIPEntity> aipsPage;
+        int nbScheduled = 0;
         // Set the request as running
         request.setState(InternalRequestState.RUNNING);
         aipUpdatesCreatorRepository.save(request);
         AIPUpdateParametersDto updateTask = request.getConfig();
         aipsPage = aipRepository.findByFilters(updateTask.getCriteria(), pageRequest);
-        while(aipsPage.hasContent()) {
+        while (aipsPage.hasContent()) {
             aipsPage = aipRepository.findByFilters(updateTask.getCriteria(), pageRequest);
             // Save number of pages to publish job advancement
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();
             }
-            aipUpdateReqService.create(aipsPage.getContent(), AbstractAIPUpdateTask.build(updateTask));
+            nbScheduled += aipUpdateReqService.create(aipsPage.getContent(), AbstractAIPUpdateTask.build(updateTask));
             if (totalPages > 0) {
                 advanceCompletion();
             }
@@ -112,6 +117,9 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
         }
         // Delete the request
         requestService.deleteRequest(request);
+
+        logger.debug("[AIP UPDATE JOB] {} AIPUpdateRequest(s) scheduled in {}ms", nbScheduled,
+                     System.currentTimeMillis() - start);
     }
 
     @Override

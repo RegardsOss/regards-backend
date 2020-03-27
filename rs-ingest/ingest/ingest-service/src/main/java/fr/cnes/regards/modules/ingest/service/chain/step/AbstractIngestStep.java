@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -51,6 +51,11 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
 
     protected Set<String> errors;
 
+    public O execute(I in) throws ProcessingStepException {
+        errors = new HashSet<>();
+        return super.execute(in);
+    }
+
     public AbstractIngestStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
         super(job);
         this.ingestChain = ingestChain;
@@ -71,9 +76,21 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
         errors.add(error);
     }
 
+    /**
+     * Prepend the error message list with the one provided
+     */
+    protected void prependError(String error) {
+        Set<String> updatedErrors = new HashSet<>();
+        updatedErrors.add(error);
+        if (errors != null) {
+            updatedErrors.addAll(errors);
+        }
+        errors = updatedErrors;
+    }
+
     protected void handleRequestError(String error) {
         Assert.hasText(error, "Error message is required");
-        addError(error);
+        prependError(error);
         job.getCurrentRequest().setState(InternalRequestState.ERROR);
         job.getCurrentRequest().setErrors(errors);
         ingestRequestService.handleIngestJobFailed(job.getCurrentRequest(), job.getCurrentEntity(), error);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -33,8 +33,6 @@ import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -90,14 +88,6 @@ public class SIPEntity extends AbstractOAISEntity {
     @NotBlank(message = "SIP ID is required")
     @Column(name = "sipId", length = MAX_URN_SIZE)
     private String sipId;
-
-    /**
-     * SIP version : this value is also reported in {@link #sipId} and must be the same
-     */
-    @NotNull(message = "Version is required")
-    @Min(1)
-    @Max(999)
-    private Integer version;
 
     @NotNull(message = "SIP state is required")
     @Enumerated(EnumType.STRING)
@@ -158,14 +148,6 @@ public class SIPEntity extends AbstractOAISEntity {
 
     public Long getId() {
         return id;
-    }
-
-    public Integer getVersion() {
-        return version;
-    }
-
-    public void setVersion(Integer version) {
-        this.version = version;
     }
 
     @Override

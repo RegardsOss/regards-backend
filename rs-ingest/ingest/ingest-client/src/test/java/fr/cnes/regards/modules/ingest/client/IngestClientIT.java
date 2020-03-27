@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.client;
 
 import java.nio.file.Paths;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -56,10 +57,10 @@ import fr.cnes.regards.modules.test.IngestServiceTest;
  *
  * @author Marc SORDI
  */
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=ingestclient", "regards.amqp.enabled=true" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestclient",
+        "regards.amqp.enabled=true", "regards.aips.save-metadata.bulk.delay=100" })
 @ContextConfiguration(classes = { IngestClientIT.IngestConfiguration.class })
-@ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
+@ActiveProfiles(value = { "default", "test", "testAmqp", "StorageClientMock" }, inheritProfiles = false)
 public class IngestClientIT extends AbstractRegardsWebIT {
 
     @SuppressWarnings("unused")
@@ -106,7 +107,7 @@ public class IngestClientIT extends AbstractRegardsWebIT {
         RequestInfo clientInfo = ingestClient.ingest(IngestMetadataDto
                 .build("sessionOwner", "session", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                        Sets.newHashSet("cat 1"), StorageMetadata.build("disk")), create(providerId));
-        ingestServiceTest.waitForIngestion(1, 5_000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(1, 15_000, SIPState.STORED);
 
         Mockito.verify(listener, Mockito.times(1)).onGranted(Mockito.anyCollection());
         Assert.assertEquals(clientInfo.getRequestId(), listener.getGranted().iterator().next().getRequestId());
@@ -119,11 +120,11 @@ public class IngestClientIT extends AbstractRegardsWebIT {
 
     private SIP create(String providerId) {
 
+        String fileName = String.format("file-%s.dat", providerId);
         SIP sip = SIP.build(EntityType.DATA, providerId);
-        sip.withDataObject(DataType.RAWDATA,
-                           Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"), "MD5",
-                           "azertyuiopqsdfmlmld");
-        sip.withSyntax(MediaType.APPLICATION_JSON);
+        sip.withDataObject(DataType.RAWDATA, Paths.get("src", "main", "test", "resources", "data", fileName), "MD5",
+                           UUID.randomUUID().toString());
+        sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
         sip.registerContentInformation();
 
         // Add creation event

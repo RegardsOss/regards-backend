@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,7 +54,6 @@ import fr.cnes.regards.modules.ingest.service.chain.step.PreprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
-import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 
 /**
  * This job manages processing chain for AIP generation from a SIP
@@ -81,9 +79,6 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     @Autowired
     private INotificationClient notificationClient;
-
-    @Autowired
-    private SessionNotifier sesssionNotifier;
 
     private IngestProcessingChain ingestChain;
 
@@ -117,10 +112,8 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         Optional<IngestProcessingChain> chain = processingChainRepository.findOneByName(processingChainName);
         if (!chain.isPresent()) {
             String message = String.format("No related chain has been found for value \"%s\"", processingChainName);
-            for (IngestRequest r : requests) {
-                sesssionNotifier.productGenerationError(r.getMetadata().getSessionOwner(),
-                                                        r.getMetadata().getSession());
-            }
+            // Monitoring
+            ingestRequestService.handleUnknownChain(requests);
             handleInvalidParameter(CHAIN_NAME_PARAMETER, message);
         } else {
             ingestChain = chain.get();
@@ -165,12 +158,8 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         for (IngestRequest request : requests) {
             //FIXME add logic to handle interruption
             this.request = request;
-            // We can't use {@link IngestRequest.getAips()} because this is a lazy list not fetched here
-            List<AIPEntity> aipEntities = new ArrayList<>();
             try {
                 long start2 = System.currentTimeMillis();
-                sesssionNotifier.productGenerationStart(request.getMetadata().getSessionOwner(),
-                                                        request.getMetadata().getSession());
                 List<AIP> aips;
                 // retry the process only from the the step needed
                 switch (request.getStep()) {
@@ -181,6 +170,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                     case LOCAL_GENERATION:
                     case LOCAL_TAGGING:
                     case LOCAL_POST_PROCESSING:
+                        ingestRequestService.handleIngestJobStart(request);
                         // Internal preparation step (no plugin involved)
                         currentEntity = initStep.execute(request);
                         // Step 1 : optional preprocessing
@@ -197,7 +187,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                         postprocessingStep.execute(sip);
                         // Internal finalization step (no plugin involved)
                         // Do all persistence actions in this step
-                        aipEntities = finalStep.execute(aips);
+                        finalStep.execute(aips);
                         break;
                     case LOCAL_FINAL:
                     case REMOTE_STORAGE_REQUESTED:
@@ -206,41 +196,37 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                         // According to storage dev, it is better to simply request a new storage,
                         // if request already exists anyway it will be retried
                         ingestRequestService.requestRemoteStorage(request);
-                        // AIPs has been generated during previous execution of process
-                        aipEntities = request.getAips();
+
                         break;
                     default:
-                        LOGGER.debug("{}SIP \"{}\" ingestion has been retried and nothing had to be done in local",
+                        logger.debug("{}SIP \"{}\" ingestion has been retried and nothing had to be done in local",
                                      INFO_TAB, request.getSip().getId());
                         break;
                 }
                 sipIngested++;
-                LOGGER.debug("{}SIP \"{}\" ingested in {} ms", INFO_TAB, request.getSip().getId(),
+                logger.debug("{}SIP \"{}\" ingested in {} ms", INFO_TAB, request.getSip().getId(),
                              System.currentTimeMillis() - start2);
 
             } catch (ProcessingStepException e) {
-                LOGGER.error("SIP \"{}\" ingestion error", request.getSip().getId());
+                logger.error("SIP \"{}\" ingestion error", request.getSip().getId());
                 sipInError++;
                 String msg = String.format("Error while ingesting SIP \"%s\" in request \"%s\"",
                                            request.getSip().getId(), request.getRequestId());
                 notifMsg.add(msg);
-                LOGGER.error(msg);
-                LOGGER.error("Ingestion step error", e);
+                logger.error(msg);
+                logger.error("Ingestion step error", e);
                 // Continue with following SIPs
-            } finally {
-                sesssionNotifier.productGenerationEnd(request.getMetadata().getSessionOwner(),
-                                                      request.getMetadata().getSession(), aipEntities);
             }
         }
 
-        // notify if errors occured
+        // notify if errors occurred
         if (sipInError > 0) {
             notificationClient.notify(notifMsg.toString(), "Error occurred during SIPs Ingestion.",
                                       NotificationLevel.INFO, DefaultRole.ADMIN);
-            LOGGER.info("{}{} SIP(s) INGESTED and {} in ERROR in {} ms", INFO_TAB, sipIngested, sipInError,
-                        System.currentTimeMillis() - start);
+            logger.error("{}{} SIP(s) INGESTED and {} in ERROR in {} ms", INFO_TAB, sipIngested, sipInError,
+                         System.currentTimeMillis() - start);
         } else {
-            LOGGER.info("{}{} SIP(s) INGESTED in {} ms", INFO_TAB, sipIngested, System.currentTimeMillis() - start);
+            logger.info("{}{} SIP(s) INGESTED in {} ms", INFO_TAB, sipIngested, System.currentTimeMillis() - start);
         }
     }
 

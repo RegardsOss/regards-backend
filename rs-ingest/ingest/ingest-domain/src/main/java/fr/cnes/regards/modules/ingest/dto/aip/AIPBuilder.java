@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.urn.EntityType;
  * AIP Builder. Used to create AIP.
  * @author Marc Sordi
  *
- * Use {@link AIP} fluent API instead
+ * @deprecated {@link AIP} fluent API instead
  */
 @Deprecated
 public class AIPBuilder extends IPBuilder<AIP> {

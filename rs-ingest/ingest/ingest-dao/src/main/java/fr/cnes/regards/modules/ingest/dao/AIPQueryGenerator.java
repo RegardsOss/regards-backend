@@ -38,15 +38,16 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
  */
 public class AIPQueryGenerator {
 
+    public static final String FROM_AIP = "{h-schema}t_aip ";
+
     private AIPQueryGenerator() {
     }
 
     /**
      * Return an SQL query that retrieve all tags used by a set of entities
-     * @return
      */
     public static NativeSelectQuery searchAipTagsUsingSQL(SearchFacetsAIPsParameters filters) {
-        NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(tags)", "{h-schema}t_aip ");
+        NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(tags)", FROM_AIP);
 
         query = generatePredicates(query, filters.getState(), filters.getLastUpdate().getFrom(),
                                    filters.getLastUpdate().getTo(), filters.getSessionOwner(), filters.getSession(),
@@ -60,11 +61,9 @@ public class AIPQueryGenerator {
 
     /**
      * Return an SQL query that retrieve all storages used by a set of entities
-     * @return
      */
     public static NativeSelectQuery searchAipStoragesUsingSQL(SearchFacetsAIPsParameters filters) {
-        NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(storages)",
-                "{h-schema}t_aip ");
+        NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(storages)", FROM_AIP);
 
         query = generatePredicates(query, filters.getState(), filters.getLastUpdate().getFrom(),
                                    filters.getLastUpdate().getTo(), filters.getSessionOwner(), filters.getSession(),
@@ -78,11 +77,9 @@ public class AIPQueryGenerator {
 
     /**
      * Return an SQL query that retrieve all categories used by a set of entities
-     * @return
      */
     public static NativeSelectQuery searchAipCategoriesUsingSQL(SearchFacetsAIPsParameters filters) {
-        NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(categories)",
-                "{h-schema}t_aip ");
+        NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(categories)", FROM_AIP);
 
         query = generatePredicates(query, filters.getState(), filters.getLastUpdate().getFrom(),
                                    filters.getLastUpdate().getTo(), filters.getSessionOwner(), filters.getSession(),

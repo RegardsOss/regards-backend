@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -27,6 +27,8 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
  * @author Sébastien Binda
  */
 public class RequestTypeConstant {
+
+    private RequestTypeConstant() {}
 
     public static final String STORE_METADATA_VALUE = "STORE_METADATA";
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -29,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -56,7 +57,9 @@ import fr.cnes.regards.modules.ingest.service.plugin.FakeValidationTestPlugin;
  *
  */
 @RegardsTransactional
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_it" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_it",
+        "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
+@ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 public class IngestProcessingChainControllerIT extends AbstractRegardsTransactionalIT {
 
     private final static String INGEST_PROCESSING_DESCRIPTION = "The ingestion processing chain name";
@@ -93,7 +96,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
                 + IngestProcessingChainController.EXPORT_PATH, requestBuilderCustomizer,
                                                         "Default processing chain should be exported",
                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
-        assertMediaType(resultActions, MediaType.APPLICATION_JSON);
+        assertMediaType(resultActions, MediaType.APPLICATION_JSON_UTF8);
         String chain = payload(resultActions);
         Assert.assertNotNull(chain);
     }
@@ -123,7 +126,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     @Test
     public void createIngestProcessingChain() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         performDefaultPost(IngestProcessingChainController.TYPE_MAPPING, this.create(), requestBuilderCustomizer,
                            "Ingest processing creation error");
     }
@@ -148,7 +151,8 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         ingestProcessingChain.getGenerationPlugin().setId(new Long(genPluginId));
 
         RequestBuilderCustomizer putRequestBuilderCustomizer = customizer().expectStatusOk();
-        putRequestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        putRequestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE,
+                                              GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         putRequestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
@@ -169,7 +173,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
                            requestBuilderCustomizer, "Ingest processing creation error");
 
         requestBuilderCustomizer = customizer().expectStatusOk();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))

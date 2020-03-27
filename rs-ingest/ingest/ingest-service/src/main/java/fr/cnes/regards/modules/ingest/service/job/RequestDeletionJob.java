@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.ingest.service.request.RequestService;
  */
 public class RequestDeletionJob extends AbstractJob<Void> {
 
-    public static final String CRITERIA = "CRITERIA";
+    public static final String CRITERIA_JOB_PARAM_NAME = "CRITERIA";
 
     @Autowired
     private RequestService requestService;
@@ -53,7 +53,7 @@ public class RequestDeletionJob extends AbstractJob<Void> {
     /**
      * Limit number of requests to retrieve in one page.
      */
-    @Value("${regards.request.deletion.iteration-limit:100}")
+    @Value("${regards.request.deletion.iteration-limit:1000}")
     private Integer requestIterationLimit;
 
     private int totalPages = 0;
@@ -65,11 +65,14 @@ public class RequestDeletionJob extends AbstractJob<Void> {
             throws JobParameterMissingException, JobParameterInvalidException {
 
         // Retrieve deletion payload
-        criteria = getValue(parameters, CRITERIA);
+        criteria = getValue(parameters, CRITERIA_JOB_PARAM_NAME);
     }
 
     @Override
     public void run() {
+        logger.debug("Running job ...");
+        long start = System.currentTimeMillis();
+        int nbRequestsDeleted = 0;
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
         criteria.setStateExcluded(InternalRequestState.RUNNING);
         Page<AbstractRequest> requestsPage;
@@ -80,11 +83,12 @@ public class RequestDeletionJob extends AbstractJob<Void> {
             if (totalPages < requestsPage.getTotalPages()) {
                 totalPages = requestsPage.getTotalPages();
             }
-            for (AbstractRequest request : requestsPage) {
-                requestService.deleteRequest(request);
-            }
+            requestService.deleteRequests(requestsPage.getContent());
             advanceCompletion();
+            nbRequestsDeleted += requestsPage.getNumberOfElements();
         } while (requestsPage.hasNext());
+        logger.debug("Job handled for {} AbstractRequest(s) in {}ms", nbRequestsDeleted,
+                     System.currentTimeMillis() - start);
     }
 
     @Override

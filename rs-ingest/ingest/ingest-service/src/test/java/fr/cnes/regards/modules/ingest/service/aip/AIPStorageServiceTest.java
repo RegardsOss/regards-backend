@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -127,9 +127,9 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
         aipEntity1 = AIPEntity
                 .build(sipEntity, AIPState.GENERATED,
                        AIP.build(sipEntity.getSip(),
-                                 OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
-                                                                         getDefaultTenant(), 1),
-                                 Optional.ofNullable(sipEntity.getSipIdUrn()), providerId));
+                                 UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
+                                                                     getDefaultTenant(), 1),
+                                 Optional.ofNullable(sipEntity.getSipIdUrn()), providerId, sipEntity.getVersion()));
         aipEntity1.setStorages(Sets.newHashSet(LOCATION, LOCATION_2, LOCATION_3));
         aipEntity1.setChecksum("some checksum");
     }

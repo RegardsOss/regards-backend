@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,13 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
-import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -33,6 +27,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Propagation;
+
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
 
 /**
  * @author Léo Mieulet
@@ -75,13 +77,13 @@ public interface IRequestService {
      */
     void deleteAllByAip(Set<AIPEntity> aipsRelatedToSip);
 
-
     /**
      * Save provided requests into the repository
      * If requests cannot be run right now, their status will change to pending
      * @param requests of the same type. Can concern several sessions
+     * @return number of scheduled requests
      */
-    void scheduleRequests(List<AbstractRequest> requests);
+    int scheduleRequests(List<AbstractRequest> requests);
 
     /**
      * Save provided request into the repository
@@ -90,6 +92,13 @@ public interface IRequestService {
      * @return
      */
     AbstractRequest scheduleRequest(AbstractRequest request);
+
+    /**
+     * Check the given request is runnable or should  be delayed.
+     * @param request
+     * @return
+     */
+    public boolean shouldDelayRequest(AbstractRequest request);
 
     /**
      * Abort every {@link fr.cnes.regards.modules.ingest.domain.request.InternalRequestState#RUNNING}. <br>
@@ -138,6 +147,8 @@ public interface IRequestService {
 
     void switchRequestState(AbstractRequest request);
 
+    void deleteRequests(Collection<AbstractRequest> requests);
+
     /**
      * Delete the provided {@link AbstractRequest}, ensure related jobs are unlocked
      * @param request the request to delete
@@ -145,4 +156,12 @@ public interface IRequestService {
     void deleteRequest(AbstractRequest request);
 
     boolean isJobRequest(AbstractRequest request);
+
+    /**
+     * Retrieve {@link AbstractRequest}s associated to the given storage respones associated by groupId.
+     *
+     * @param requestInfos
+     * @return
+     */
+    public List<AbstractRequest> getRequests(Set<RequestInfo> requestInfos);
 }

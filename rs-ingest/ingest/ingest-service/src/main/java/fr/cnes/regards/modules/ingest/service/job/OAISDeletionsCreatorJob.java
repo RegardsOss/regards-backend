@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +37,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionCreatorRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorPayload;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
@@ -72,7 +75,7 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
     /**
      * Limit number of AIPs to retrieve in one page.
      */
-    @Value("${regards.ingest.aips.scan.iteration-limit:100}")
+    @Value("${regards.ingest.aips.scan.iteration-limit:1000}")
     private Integer aipIterationLimit;
 
     private OAISDeletionCreatorRequest deletionCreator;
@@ -93,24 +96,27 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        logger.debug("[OAIS DELETION CREATOR JOB] Running job ...");
+        long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, aipIterationLimit, Sort.Direction.ASC, "id");
         Page<AIPEntity> aipsPage;
+        int nbRequestScheduled = 0;
         // Set the request as running
         deletionCreator.setState(InternalRequestState.RUNNING);
         oaisDeletionCreatorRepo.save(deletionCreator);
         do {
             OAISDeletionCreatorPayload deletionPayload = deletionCreator.getConfig();
             aipsPage = aipRepository.findByFilters(deletionPayload, pageRequest);
-            LOGGER.info("[OAIS DELETION CREATOR JOB] Scheduling deletion of {} aips", aipsPage.getNumberOfElements());
+            logger.debug("[OAIS DELETION CREATOR JOB] Scheduling deletion of {} aips", aipsPage.getNumberOfElements());
             // Save number of pages to publish job advancement
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();
             }
-            for (AIPEntity aip : aipsPage) {
-                OAISDeletionRequest odr = OAISDeletionRequest.build(aip, deletionPayload.getDeletionMode(),
-                                                                    deletionPayload.getDeletePhysicalFiles());
-                requestService.scheduleRequest(odr);
-            }
+            List<AbstractRequest> requests = aipsPage.stream()
+                    .map(aip -> OAISDeletionRequest.build(aip, deletionPayload.getDeletionMode(),
+                                                          deletionPayload.getDeletePhysicalFiles()))
+                    .collect(Collectors.toList());
+            nbRequestScheduled += requestService.scheduleRequests(requests);
             if (totalPages > 0) {
                 advanceCompletion();
             }
@@ -118,6 +124,9 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
         } while (aipsPage.hasNext());
         // Delete the request
         requestService.deleteRequest(deletionCreator);
+
+        logger.info("[OAIS DELETION CREATOR JOB] {} AIPUpdateRequest(s) scheduled in {}ms", nbRequestScheduled,
+                    System.currentTimeMillis() - start);
     }
 
     @Override

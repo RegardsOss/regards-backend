@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import com.google.common.collect.Table;
 import java.util.List;
 import java.util.Set;
 
@@ -38,12 +39,12 @@ public interface IAIPStoreMetaDataRequestService {
     /**
      * Execute given {@link AIPStoreMetaDataRequest}s
      * @param requests
-     * @param aipsToStore
      * @param aipsToUpdate
      * @param filesToDelete
+     * @param nbManifestRemoved
      */
     void handle(List<AIPStoreMetaDataRequest> requests, List<AIPEntity> aipsToUpdate,
-            List<FileDeletionRequestDTO> filesToDelete);
+            List<FileDeletionRequestDTO> filesToDelete, Table<String, String, Integer> nbManifestRemoved);
 
     /**
      * Schedule new {@link AIPStoreMetaDataRequest}s associated to given {@link AIPEntity}s

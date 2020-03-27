@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -81,10 +81,11 @@ import fr.cnes.regards.modules.test.IngestServiceTest;
 * @author Léo Mieulet
 *
 */
-@ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_controller_it",
-        "regards.amqp.enabled=true" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=aip_controller_it", "regards.amqp.enabled=true",
+                "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
 @ContextConfiguration(classes = { AIPControllerIT.Config.class })
+@ActiveProfiles(value = { "default", "test", "testAmqp", "StorageClientMock" }, inheritProfiles = false)
 public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
     @Configuration
@@ -126,7 +127,6 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         ingestServiceTest.init();
         // resend the event of AppReady to reinit default data
         springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
     }
 
     public void createAIP(String providerId, Set<String> categories, String sessionOwner, String session,
@@ -173,6 +173,10 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH, body, requestBuilderCustomizer,
                            "Should retrieve AIPEntities");
+
+        // Try a research with pagination and sort options
+        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + "?page=0&size=20&sort=version,ASC", body,
+                           requestBuilderCustomizer, "Should retrieve AIPEntities");
     }
 
     @Test

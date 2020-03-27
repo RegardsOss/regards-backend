@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -80,10 +80,12 @@ public abstract class AbstractRequestFlowHandler<T extends ISubscribable> implem
                             items.add(item);
                         }
                     }
-                    LOGGER.debug("Processing bulk of {} items", items.size());
+                    LOGGER.trace("Processing bulk of {} items", items.size());
                     long start = System.currentTimeMillis();
                     processBulk(items);
-                    LOGGER.debug("{} items registered in {} ms", items.size(), System.currentTimeMillis() - start);
+                    if (!items.isEmpty()) {
+                        LOGGER.debug("{} items registered in {} ms", items.size(), System.currentTimeMillis() - start);
+                    }
                     items.clear();
                 } while (tenantItems.size() >= getBulkSize()); // continue while more than BULK_SIZE items are to be saved
             } finally {

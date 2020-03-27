@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import com.google.common.collect.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -76,7 +78,7 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
 
     @Override
     public void handle(List<AIPStoreMetaDataRequest> requests, List<AIPEntity> aipsToUpdate,
-            List<FileDeletionRequestDTO> filesToDelete) {
+            List<FileDeletionRequestDTO> filesToDelete, Table<String, String, Integer> nbManifestRemoved) {
         List<String> requestIds = new ArrayList<>();
         try {
             // Store AIPs meta data requests
@@ -91,8 +93,22 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
             if (request.getState() != InternalRequestState.ERROR) {
                 // Register request info to identify storage callback events
                 request.setRemoteStepGroupIds(requestIds);
+                // Put the request as un-schedule.
+                // The answering event from storage will put again the request to be executed
+                request.setState(InternalRequestState.TO_SCHEDULE);
             }
         }
+        // Monitor all manifest removed
+        for (String session : nbManifestRemoved.columnKeySet()) {
+            Map<String, Integer> column = nbManifestRemoved.column(session);
+            for (String sessionOwner : column.keySet()) {
+                Integer nbRemoved = column.get(sessionOwner);
+                LOGGER.info("Decrement {} stored meta for session {} - {}", nbRemoved,
+                        sessionOwner, session);
+                sessionNotifier.decrementMetaStoreSuccess(sessionOwner, session, nbRemoved);
+            }
+        }
+
 
         // Save request status
         aipStoreMetaDataRepository.saveAll(requests);
@@ -130,6 +146,7 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
 
     private void scheduleRequest(AIPEntity aip, Set<StoreLocation> storages, boolean removeCurrentMetaData,
             boolean computeChecksum) {
+        sessionNotifier.incrementMetaStorePending(aip);
         requestService
                 .scheduleRequest(AIPStoreMetaDataRequest.build(aip, storages, removeCurrentMetaData, computeChecksum));
     }
@@ -141,7 +158,10 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
                                                              requestInfo.getSuccessRequests());
         // Save the AIP
         aipService.save(request.getAip());
-        sessionNotifier.productMetaStoredSuccess(request.getAip());
+        // Monitoring
+        // Decrement from IngestRequestService#finalizeSuccessfulRequest (AIP per AIP)
+        sessionNotifier.decrementMetaStorePending(request);
+        sessionNotifier.incrementMetaStoreSuccess(request);
 
         // Delete the request
         aipStoreMetaDataRepository.delete(request);
@@ -153,7 +173,10 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
                 .collect(Collectors.toSet()));
         request.setState(InternalRequestState.ERROR);
         aipStoreMetaDataRepository.save(request);
-        sessionNotifier.productMetaStoredError(request.getAip());
+        // Monitoring
+        // Decrement from IngestRequestService#finalizeSuccessfulRequest (AIP per AIP)
+        sessionNotifier.decrementMetaStorePending(request);
+        sessionNotifier.incrementMetaStoreError(request);
     }
 
     @Override

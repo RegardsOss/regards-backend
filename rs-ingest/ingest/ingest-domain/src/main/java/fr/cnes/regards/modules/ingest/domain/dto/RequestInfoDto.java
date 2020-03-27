@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,9 +19,10 @@
 package fr.cnes.regards.modules.ingest.domain.dto;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * REST ingest request response information
@@ -33,12 +34,12 @@ public class RequestInfoDto {
     /**
      * Mapping between SIP id and request id
      */
-    private final Map<String, String> granted = new HashMap<>();
+    private final ConcurrentMap<String, String> granted = new ConcurrentHashMap<>();
 
     /**
      * Mapping between SIP id and denied reason
      */
-    private final Map<String, String> denied = new HashMap<>();
+    private final ConcurrentMap<String, String> denied = new ConcurrentHashMap<>();
 
     private List<String> messages;
 

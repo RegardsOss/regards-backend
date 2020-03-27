@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -52,6 +52,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.sessionmanager.client.SessionNotificationPublisher;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
 /**
@@ -59,14 +60,17 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
  */
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=update_scanner_job", "regards.amqp.enabled=true",
-                "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
-                "regards.ingest.request.schedule.delay=100000000" },
+                "regards.ingest.aip.update.bulk.delay=100000000", "regards.aips.save-metadata.bulk.delay=100",
+                "eureka.client.enabled=false", "regards.ingest.request.schedule.delay=100000000" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdateRunnerJobTest.class);
+
+    @Autowired
+    private SessionNotificationPublisher sessionNotifier;
 
     @Autowired
     private StorageClientMock storageClient;
@@ -119,6 +123,11 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         abstractRequestRepository.deleteAll();
         jobInfoRepository.deleteAll();
+    }
+
+    @Override
+    protected void doAfter() throws Exception {
+        sessionNotifier.debugSession();
     }
 
     public void initData() {

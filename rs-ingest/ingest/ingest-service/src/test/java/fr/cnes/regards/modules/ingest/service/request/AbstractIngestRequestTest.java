@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -72,13 +73,23 @@ public abstract class AbstractIngestRequestTest extends AbstractMultitenantServi
     protected IAbstractRequestRepository abstractRequestRepository;
 
     @Before
-    public void init() {
+    public void init() throws InterruptedException {
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        abstractRequestRepository.deleteAll();
-        aipRepo.deleteAll();
-        sipRepo.deleteAll();
+        boolean retry = false;
+        do {
+            try {
+                abstractRequestRepository.deleteAll();
+                aipRepo.deleteAll();
+                sipRepo.deleteAll();
+                retry = false;
+            } catch (DataAccessException e) {
+                // Retry only once. May be an error of previous transactional context.
+                retry = !retry;
+                Thread.sleep(2_000);
+            }
+        } while (retry);
     }
 
     protected void initSipAndAip(String checksum, String providerId) {
@@ -89,10 +100,10 @@ public abstract class AbstractIngestRequestTest extends AbstractMultitenantServi
         sipEntity.setChecksum(checksum);
         sipEntity.setLastUpdate(OffsetDateTime.now());
         sipEntity = sipRepo.save(sipEntity);
-        OaisUniformResourceName sipId = sipEntity.getSipIdUrn();
-        OaisUniformResourceName aipId = new OaisUniformResourceName(OAISIdentifier.AIP, sipId.getEntityType(),
-                sipId.getTenant(), sipId.getEntityId(), sipId.getVersion());
-        AIP aip = AIP.build(EntityType.DATA, aipId, Optional.of(sipId), providerId);
+        UniformResourceName sipId = sipEntity.getSipIdUrn();
+        UniformResourceName aipId = UniformResourceName.fromString(sipEntity.getSipIdUrn().toString());
+        aipId.setOaisIdentifier(OAISIdentifier.AIP);
+        AIP aip = AIP.build(EntityType.DATA, aipId, Optional.of(sipId), providerId, sipEntity.getVersion());
         aipEntity = AIPEntity.build(sipEntity, AIPState.STORED, aip);
         aipEntity = aipRepo.save(aipEntity);
     }

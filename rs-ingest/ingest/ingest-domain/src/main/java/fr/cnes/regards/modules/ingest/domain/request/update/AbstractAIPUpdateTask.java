@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.update;
 
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -34,12 +34,14 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+
 /**
  * @author Léo Mieulet
  */
 @Entity
 @Table(name = "t_update_task")
-@DiscriminatorColumn(name = "dtype", length = 16)
+@DiscriminatorColumn(name = "dtype", length = 32)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public abstract class AbstractAIPUpdateTask {
 
@@ -83,24 +85,24 @@ public abstract class AbstractAIPUpdateTask {
     public static List<AbstractAIPUpdateTask> build(AIPUpdateParametersDto updateTaskDto) {
         List<AbstractAIPUpdateTask> result = new ArrayList<>();
         if (!updateTaskDto.getAddCategories().isEmpty()) {
-            result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.ADD_CATEGORY,
-                    AIPUpdateState.READY, updateTaskDto.getAddCategories()));
+            result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.ADD_CATEGORY, AIPUpdateState.READY,
+                                                   updateTaskDto.getAddCategories()));
         }
         if (!updateTaskDto.getRemoveCategories().isEmpty()) {
-            result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.REMOVE_CATEGORY,
-                    AIPUpdateState.READY, updateTaskDto.getRemoveCategories()));
+            result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.REMOVE_CATEGORY, AIPUpdateState.READY,
+                                                   updateTaskDto.getRemoveCategories()));
         }
         if (!updateTaskDto.getAddTags().isEmpty()) {
-            result.add(AIPUpdateTagTask.build(AIPUpdateTaskType.ADD_TAG,
-                    AIPUpdateState.READY, updateTaskDto.getAddTags()));
+            result.add(AIPUpdateTagTask.build(AIPUpdateTaskType.ADD_TAG, AIPUpdateState.READY,
+                                              updateTaskDto.getAddTags()));
         }
         if (!updateTaskDto.getRemoveTags().isEmpty()) {
-            result.add(AIPUpdateTagTask.build(AIPUpdateTaskType.REMOVE_TAG,
-                    AIPUpdateState.READY, updateTaskDto.getRemoveTags()));
+            result.add(AIPUpdateTagTask.build(AIPUpdateTaskType.REMOVE_TAG, AIPUpdateState.READY,
+                                              updateTaskDto.getRemoveTags()));
         }
         if (!updateTaskDto.getRemoveStorages().isEmpty()) {
-            result.add(AIPRemoveStorageTask.build(AIPUpdateTaskType.REMOVE_STORAGE,
-                    AIPUpdateState.READY, updateTaskDto.getRemoveStorages()));
+            result.add(AIPRemoveStorageTask.build(AIPUpdateTaskType.REMOVE_STORAGE, AIPUpdateState.READY,
+                                                  updateTaskDto.getRemoveStorages()));
         }
         return result;
     }

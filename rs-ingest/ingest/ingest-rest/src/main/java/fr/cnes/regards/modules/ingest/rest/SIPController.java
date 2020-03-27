@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -115,7 +115,7 @@ public class SIPController implements IResourceController<SIPEntity> {
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
     public ResponseEntity<RequestInfoDto> ingest(@RequestBody SIPCollection sips) throws ModuleException {
         RequestInfoDto requestInfo = ingestService.handleSIPCollection(sips);
-        return ResponseEntity.status(computeStatus(requestInfo)).body(requestInfo);
+        return ResponseEntity.status(HttpStatus.OK).body(requestInfo);
     }
 
     /**
@@ -133,30 +133,12 @@ public class SIPController implements IResourceController<SIPEntity> {
             throws ModuleException {
         try {
             RequestInfoDto requestInfo = ingestService.handleSIPCollection(file.getInputStream());
-            return ResponseEntity.status(computeStatus(requestInfo)).body(requestInfo);
+            return ResponseEntity.status(HttpStatus.OK).body(requestInfo);
         } catch (IOException e) {
             final String message = "Error with file stream while importing model.";
             LOGGER.error(message, e);
             throw new ModuleException(e);
         }
-    }
-
-    /**
-     * Compute {@link HttpStatus} according to information return by the service
-     */
-    private HttpStatus computeStatus(RequestInfoDto info) {
-        Boolean hasGranted = !info.getGranted().isEmpty();
-        Boolean hasDenied = !info.getDenied().isEmpty();
-
-        HttpStatus status;
-        if (hasGranted && hasDenied) {
-            status = HttpStatus.PARTIAL_CONTENT; // 206
-        } else if (hasDenied) {
-            status = HttpStatus.NO_CONTENT; // 204
-        } else {
-            status = HttpStatus.CREATED; // 201
-        }
-        return status;
     }
 
     @ResourceAccess(description = "Search for SIPEntities with optional criterion.", role = DefaultRole.EXPLOIT)

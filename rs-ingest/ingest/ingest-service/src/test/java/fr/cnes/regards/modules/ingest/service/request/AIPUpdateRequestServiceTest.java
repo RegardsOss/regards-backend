@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,8 +18,18 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateCategoryTask;
@@ -28,22 +38,15 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
-import java.util.Set;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test class for {@link AIPUpdateRequestService}
  *
  * @author Sébastien Binda
  */
-@ActiveProfiles({ "noscheduler" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_aip_update_request" },
-        locations = { "classpath:application-test.properties" })
+@ActiveProfiles({ "noschedule" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_aip_update_request",
+        "spring.jpa.show-sql=true" }, locations = { "classpath:application-test.properties" })
 public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
 
     @Autowired
@@ -100,7 +103,7 @@ public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
 
         Assert.assertEquals(0, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
                 .getTotalElements());
-        aipUpdateReqService.create(aipEntity, updateTasks);
+        aipUpdateReqService.create(Lists.newArrayList(aipEntity), updateTasks);
         // Two new update requests should be created
         Assert.assertEquals(2, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
                 .getTotalElements());
@@ -113,7 +116,7 @@ public class AIPUpdateRequestServiceTest extends AbstractIngestRequestTest {
                 .buildAddLocationTask(Lists.newArrayList(RequestResultInfoDTO
                         .build("groupId", "checksum", "somewhere", null, Sets.newHashSet("someone"),
                                simulatefileReference(checksum, aipEntity.getAipId()), null)));
-        aipUpdateReqService.create(aipEntity, Sets.newHashSet(newTask));
+        aipUpdateReqService.create(Lists.newArrayList(aipEntity), Sets.newHashSet(newTask));
         // The new update request should be blocked as requests are already running for the give aip
         Assert.assertEquals(1, aipUpdateReqService.search(InternalRequestState.BLOCKED, PageRequest.of(0, 10))
                 .getTotalElements());

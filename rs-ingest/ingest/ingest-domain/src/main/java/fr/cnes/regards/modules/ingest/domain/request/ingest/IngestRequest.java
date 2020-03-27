@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -122,7 +122,6 @@ public class IngestRequest extends AbstractRequest {
     public void setStep(IngestRequestStep step, long remoteStepTimeout) {
         this.config.setStep(step, remoteStepTimeout);
         this.setRemoteStepDeadline(OffsetDateTime.now().plusMinutes(remoteStepTimeout));
-        ;
     }
 
     public List<AIPEntity> getAips() {

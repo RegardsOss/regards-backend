@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -41,7 +41,7 @@ import fr.cnes.regards.framework.urn.EntityType;
  *
  * @author Marc Sordi
  *
- * Use {@link SIP} fluent API instead
+ * @deprecated {@link SIP} fluent API instead
  */
 @Deprecated
 public class SIPBuilder extends IPBuilder<SIP> {

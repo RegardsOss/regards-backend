@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -58,7 +58,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
-import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 
 /**
  * Ingest management service
@@ -91,9 +90,6 @@ public class IngestService implements IIngestService {
     @Autowired
     private IIngestRequestService ingestRequestService;
 
-    @Autowired
-    private SessionNotifier sessionNotifier;
-
     /**
      * Validate, save and publish a new request
      * @param item request to manage
@@ -123,8 +119,6 @@ public class IngestService implements IIngestService {
                                                     metadataMapper.dtoToMetadata(item.getMetadata()), state,
                                                     IngestRequestStep.LOCAL_SCHEDULED, item.getSip());
         ingestRequestService.handleRequestGranted(request);
-        // Notify session for handled requests
-        sessionNotifier.productsGranted(item.getMetadata().getSessionOwner(), item.getMetadata().getSession(), 1);
         // return granted request
         return request;
     }
@@ -231,8 +225,6 @@ public class IngestService implements IIngestService {
         ingestRequestService.handleRequestGranted(request);
         // Trace granted request
         info.addGrantedRequest(sip.getId(), request.getRequestId());
-        // Add New product to product count
-        sessionNotifier.productsGranted(ingestMetadata.getSessionOwner(), ingestMetadata.getSession(), 1);
         // Add to granted request collection
         grantedRequests.add(request);
     }

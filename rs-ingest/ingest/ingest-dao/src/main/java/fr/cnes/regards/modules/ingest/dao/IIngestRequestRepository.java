@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -37,6 +37,10 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
  */
 @Repository
 public interface IIngestRequestRepository extends JpaRepository<IngestRequest, Long> {
+
+    @Override
+    @EntityGraph(attributePaths = "aips")
+    Optional<IngestRequest> findById(Long id);
 
     /**
      * Get request by ids
@@ -79,5 +83,14 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
 
     boolean existsByAipsIdAndState(Long id, InternalRequestState state);
 
+    @EntityGraph(attributePaths = "aips")
     List<IngestRequest> findAllByAipsIdIn(List<Long> aipIds);
+
+    @EntityGraph(attributePaths = "aips")
+    List<IngestRequest> findByProviderId(String providerId);
+
+    /**
+     * For testing purpose only
+     */
+    long countByState(InternalRequestState state);
 }

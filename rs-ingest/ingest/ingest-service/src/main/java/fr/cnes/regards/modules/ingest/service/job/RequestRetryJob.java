@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -27,17 +40,6 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.request.IRequestRetryService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 /**
  * This job handles request retry
@@ -48,7 +50,7 @@ import org.springframework.data.domain.Sort;
  */
 public class RequestRetryJob extends AbstractJob<Void> {
 
-    public static final String CRITERIA = "CRITERIA";
+    public static final String CRITERIA_JOB_PARAM_NAME = "CRITERIA";
 
     @Autowired
     private RequestService requestService;
@@ -59,7 +61,7 @@ public class RequestRetryJob extends AbstractJob<Void> {
     /**
      * Limit number of requests to retrieve in one page.
      */
-    @Value("${regards.request.retry.iteration-limit:100}")
+    @Value("${regards.request.retry.iteration-limit:1000}")
     private Integer requestIterationLimit;
 
     private int totalPages = 0;
@@ -71,17 +73,20 @@ public class RequestRetryJob extends AbstractJob<Void> {
             throws JobParameterMissingException, JobParameterInvalidException {
 
         // Retrieve request criteria payload
-        criteria = getValue(parameters, CRITERIA);
+        criteria = getValue(parameters, CRITERIA_JOB_PARAM_NAME);
     }
 
     @Override
     public void run() {
+        logger.debug("Running job ...");
+        long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
         // Override state in filter
         criteria.setStates(new HashSet<>());
         criteria.addState(InternalRequestState.ERROR);
         criteria.addState(InternalRequestState.ABORTED);
         criteria.setStateExcluded(null);
+        int nbRelaunchedRequests = 0;
         Page<AbstractRequest> requestsPage;
         do {
             // Page request isn't modified, as entities doesn't keep the ERROR state, on every page fetched
@@ -102,8 +107,11 @@ public class RequestRetryJob extends AbstractJob<Void> {
             for (List<AbstractRequest> requestsByType : byRequestType.values()) {
                 retryRequestService.relaunchRequests(requestsByType);
             }
+            nbRelaunchedRequests += byRequestType.size();
             advanceCompletion();
         } while (requestsPage.hasNext());
+        logger.debug("Job handled for {} AbstractRequest(s) in {}ms", nbRelaunchedRequests,
+                     System.currentTimeMillis() - start);
     }
 
     @Override
