@@ -27,6 +27,8 @@
 	<include
 		resource="fr/cnes/regards/framework/logbackappender/file_appender.xml" />
 
+	<logger name="fr.cnes.regards.microservices.openapi.web" level="debug" />
+
 	<root level="info">
 		<appender-ref ref="STDOUT" />
 	</root>

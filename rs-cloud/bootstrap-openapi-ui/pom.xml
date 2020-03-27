@@ -37,7 +37,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sonar.language>java</sonar.language>
 		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
-		<fr.cnes.regards.docker.image.name>${project.artifactId}</fr.cnes.regards.docker.image.name>
+		<fr.cnes.regards.docker.image.name>rs-openapi-ui</fr.cnes.regards.docker.image.name>
 		<springdoc.version>1.2.33</springdoc.version>
 	</properties>
 
@@ -46,9 +46,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-		<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-autoconfigure</artifactId> 
-			<exclusions> <exclusion> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-tomcat</artifactId> 
-			</exclusion> </exclusions> </dependency> -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jetty</artifactId>
@@ -63,6 +60,12 @@
 			<artifactId>springdoc-openapi-ui</artifactId>
 			<!-- FIXME -->
 			<version>${springdoc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-common</artifactId>
+			<!-- FIXME -->
+			<version>2.7.0</version>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
