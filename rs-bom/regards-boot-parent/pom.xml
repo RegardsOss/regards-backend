@@ -21,11 +21,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.cnes.regards</groupId>
     <artifactId>regards-boot-parent</artifactId>
     <packaging>pom</packaging>
 
-    <name>Regards Boot Parent</name>
     <description>Aggregates the frontend-boot and all [microservice]-boot modules</description>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
@@ -51,7 +49,7 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-parent</artifactId>
-        <version>0.5.0-SNAPSHOT</version>
+        <version>GEODE</version>
         <relativePath>../regards-parent/</relativePath>
     </parent>
 
@@ -74,7 +72,7 @@
                         <skipDockerBuild>false</skipDockerBuild>
                         <forceTags>true</forceTags>
                         <imageName>${docker.registry.host}/${fr.cnes.regards.docker.image.name}</imageName>
-                        <baseImage>${docker.registry.host}/${docker.registry.baseImage}</baseImage>
+                        <baseImage>${docker.registry.host}/${docker.registry.baseImage}:GEODE</baseImage>
                         <serverId>REGARDS-DockerHub</serverId>
                         <registryUrl>${docker.registry.host}</registryUrl>
                         <imageTags>
@@ -96,8 +94,8 @@
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
                     <version>5.2.1</version>
-		    <configuration>
-			<skip>true</skip>
+		            <configuration>
+			            <skip>true</skip>
                         <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
                         <suppressionFiles>
                             <!-- This file is located into regards-suppress-cve dependency -->
@@ -115,7 +113,7 @@
                         <dependency>
                             <groupId>fr.cnes.regards</groupId>
                             <artifactId>regards-suppress-cve</artifactId>
-                            <version>0.5.0-SNAPSHOT</version>
+                            <version>GEODE</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -141,7 +139,7 @@
 	<dependency>
             <groupId>fr.cnes.regards</groupId>
             <artifactId>regards-suppress-cve</artifactId>
-            <version>0.5.0-SNAPSHOT</version>
+            <version>GEODE</version>
         </dependency>
 </dependencies>
 

@@ -23,10 +23,9 @@
 
     <groupId>fr.cnes.regards</groupId>
     <artifactId>regards-aggregator-parent</artifactId>
-    <version>0.5.0-SNAPSHOT</version>
+    <version>GEODE</version>
     <packaging>pom</packaging>
 
-    <name>Regards Aggregator Parent</name>
     <description>Aggregates all microservices and the frontend</description>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
