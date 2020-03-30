@@ -36,6 +36,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -79,8 +80,9 @@ public class LdapAuthenticationPluginTest {
                      IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_CN, "ou=people,ou=commun"),
                      IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, "email"));
         try {
+            PluginConfiguration conf = PluginConfiguration.build(LdapAuthenticationPlugin.class, "", parameters);
             // instantiate plugin
-            plugin = PluginUtils.getPlugin(parameters, LdapAuthenticationPlugin.class, new HashMap<>());
+            plugin = PluginUtils.getPlugin(conf, new HashMap<>());
             Assert.assertNotNull(plugin);
         } catch (final PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
             Assert.fail();

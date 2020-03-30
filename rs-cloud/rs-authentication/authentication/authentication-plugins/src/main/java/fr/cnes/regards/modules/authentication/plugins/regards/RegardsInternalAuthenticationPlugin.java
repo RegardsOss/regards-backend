@@ -21,11 +21,11 @@ package fr.cnes.regards.modules.authentication.plugins.regards;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.hateoas.EntityModel;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -66,7 +66,7 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
         // Validate password as system
         try {
             FeignSecurityManager.asSystem();
-            ResponseEntity<Resource<Account>> response = accountsClient.retrieveAccounByEmail(pEmail);
+            ResponseEntity<EntityModel<Account>> response = accountsClient.retrieveAccounByEmail(pEmail);
             if ((response != null) && (response.getBody() != null) && (response.getBody().getContent() != null)
                     && !response.getBody().getContent().getExternal()) {
                 validateResponse = accountsClient.validatePassword(pEmail, pPassword);

@@ -18,11 +18,8 @@
  */
 package fr.cnes.regards.framework.authentication.autoconfigure;
 
-import java.time.OffsetDateTime;
 import java.util.Base64;
-import java.util.Date;
 
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -39,7 +36,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.jayway.jsonpath.JsonPath;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -101,7 +97,7 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
     private String basicPassword;
 
     @Value("${jwt.validityDelay:120}")
-    private long validityDelay = 120;
+    private final long validityDelay = 120;
 
     /**
      * Spring Mock Mvc to simulare REST requests.
@@ -147,10 +143,10 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
                     .andExpect(MockMvcResultMatchers.status().isUnauthorized());
 
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
-                                    .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + invalidBasicString)
-                                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
-                                    .param(GRANT_TYPE, PASSWORD).param(SCOPE, "scope1").param(USER_NAME, "name1")
-                                    .param(PASSWORD, "mdp")).andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                    .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + invalidBasicString)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
+                    .param(SCOPE, "scope1").param(USER_NAME, "name1").param(PASSWORD, "mdp"))
+                    .andExpect(MockMvcResultMatchers.status().isUnauthorized());
             // CHECKSTYLE:OFF
         } catch (final Exception e) {
             // CHECKSTYLE:ON
@@ -171,10 +167,10 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
-                                    .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
-                                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
-                                    .param(GRANT_TYPE, PASSWORD).param(SCOPE, "PROJECT").param(USER_NAME, "name2")
-                                    .param(PASSWORD, AuthenticationTestConfiguration.INVALID_PASSWORD))
+                    .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
+                    .param(SCOPE, "PROJECT").param(USER_NAME, "name2")
+                    .param(PASSWORD, AuthenticationTestConfiguration.INVALID_PASSWORD))
                     .andExpect(MockMvcResultMatchers.status().is4xxClientError());
         } catch (final Exception e) { // NOSONAR
             e.printStackTrace();
@@ -193,12 +189,12 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
             String basicString = String.format("%s:%s", basicUserName, basicPassword);
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
-            ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
-                                                           .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
-                                                           .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
-                                                           .param(GRANT_TYPE, PASSWORD).param(SCOPE, "PROJECT")
-                                                           .param(USER_NAME, "test@regards.fr").param(PASSWORD,
-                                                                                                      AuthenticationTestConfiguration.VALID_PASSWORD))
+            ResultActions result = mockMvc
+                    .perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
+                            .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
+                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
+                            .param(GRANT_TYPE, PASSWORD).param(SCOPE, "PROJECT").param(USER_NAME, "test@regards.fr")
+                            .param(PASSWORD, AuthenticationTestConfiguration.VALID_PASSWORD))
                     .andExpect(MockMvcResultMatchers.status().isOk())
                     .andExpect(MockMvcResultMatchers.jsonPath("$.access_token").exists())
                     .andExpect(MockMvcResultMatchers.jsonPath("$.email").exists())

@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
@@ -67,9 +67,9 @@ public class BorrowRoleService implements IBorrowRoleService {
     }
 
     @Override
-    public DefaultOAuth2AccessToken switchTo(String targetRoleName) throws JwtException, EntityOperationForbiddenException {
+    public DefaultOAuth2AccessToken switchTo(String targetRoleName)
+            throws JwtException, EntityOperationForbiddenException {
         Set<String> borrowableRoleNames = getBorrowableRoleNames();
-
 
         JWTAuthentication currentToken = jwtService.getCurrentToken();
         if (!borrowableRoleNames.contains(targetRoleName)) {
@@ -80,9 +80,8 @@ public class BorrowRoleService implements IBorrowRoleService {
         String name = currentToken.getName();
         String tenant = currentToken.getTenant();
         String email = currentToken.getUser().getEmail();
-        DefaultOAuth2AccessToken newToken = new DefaultOAuth2AccessToken(jwtService.generateToken(tenant,
-                                                                                                  name,
-                                                                                                  email, targetRoleName));
+        DefaultOAuth2AccessToken newToken = new DefaultOAuth2AccessToken(
+                jwtService.generateToken(tenant, name, email, targetRoleName));
         newToken.setAdditionalInformation(jwtService.generateClaims(tenant, targetRoleName, name, email));
         newToken.setExpiration(Date.from(jwtService.getExpirationDate(OffsetDateTime.now()).toInstant()));
         //FIXME: refreshToken(jti) is not set here to avoid not analysed behaviour,
@@ -94,7 +93,7 @@ public class BorrowRoleService implements IBorrowRoleService {
 
     private Set<String> getBorrowableRoleNames() {
         //DO NOT USE FEIGN SECURITY MANAGER HERE: we need to know the user who send the request
-        ResponseEntity<List<Resource<Role>>> response = rolesClient.getBorrowableRoles();
+        ResponseEntity<List<EntityModel<Role>>> response = rolesClient.getBorrowableRoles();
         final HttpStatus responseStatus = response.getStatusCode();
         if (!HttpUtils.isSuccess(responseStatus)) {
             // if it gets here it's mainly because of 404 so it means entity not found

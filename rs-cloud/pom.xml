@@ -34,7 +34,7 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-aggregator-parent</artifactId>
-        <version>0.5.0-SNAPSHOT</version>
+        <version>GEODE</version>
         <relativePath></relativePath>
     </parent>
 
@@ -43,5 +43,6 @@
         <module>rs-gateway</module>
         <module>rs-registry</module>
         <module>rs-authentication</module>
+        <module>bootstrap-openapi-ui</module>
     </modules>
 </project>

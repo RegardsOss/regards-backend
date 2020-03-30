@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -246,7 +246,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         try {
             IProjectsClient projectsClient = beanFactory.getBean(IProjectsClient.class);
 
-            ResponseEntity<Resource<Project>> response = projectsClient.retrieveProject(scope);
+            ResponseEntity<EntityModel<Project>> response = projectsClient.retrieveProject(scope);
             return response.getStatusCode().equals(HttpStatus.OK);
         } catch (BeansException e) {
             String message = "Context not initialized, Projects client not available";
@@ -307,7 +307,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             try {
                 FeignSecurityManager.asSystem();
                 // Retrieve user account
-                ResponseEntity<Resource<Account>> accountClientResponse = accountClient
+                ResponseEntity<EntityModel<Account>> accountClientResponse = accountClient
                         .retrieveAccounByEmail(userEmail);
 
                 if (!accountClientResponse.getStatusCode().equals(HttpStatus.OK)) {
@@ -344,7 +344,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 // Retrieve user projectUser
                 try {
                     FeignSecurityManager.asSystem();
-                    ResponseEntity<Resource<ProjectUser>> projectUserClientResponse = projectUsersClient
+                    ResponseEntity<EntityModel<ProjectUser>> projectUserClientResponse = projectUsersClient
                             .retrieveProjectUserByEmail(userEmail);
 
                     if (!projectUserClientResponse.getStatusCode().equals(HttpStatus.OK)) {
@@ -452,7 +452,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
             try {
                 FeignSecurityManager.asSystem();
-                ResponseEntity<Resource<ProjectUser>> response = projectUsersClient.retrieveProjectUserByEmail(email);
+                ResponseEntity<EntityModel<ProjectUser>> response = projectUsersClient
+                        .retrieveProjectUserByEmail(email);
                 if (response.getStatusCode() == HttpStatus.OK) {
                     ProjectUser projectUser = response.getBody().getContent();
                     // In regards system login is same as email

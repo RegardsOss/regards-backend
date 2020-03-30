@@ -27,7 +27,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -143,15 +143,15 @@ public class Oauth2AuthenticationManagerTest {
 
         // Mock Administration Projects client
         final IProjectsClient projectsClientMock = Mockito.mock(IProjectsClient.class);
-        final ResponseEntity<Resource<Project>> response = new ResponseEntity<>(HttpStatus.OK);
+        final ResponseEntity<EntityModel<Project>> response = new ResponseEntity<>(HttpStatus.OK);
         Mockito.when(projectsClientMock.retrieveProject(Mockito.anyString())).thenReturn(response);
         Mockito.when(beanFactoryMock.getBean(IProjectsClient.class)).thenReturn(projectsClientMock);
 
         // Mock Administration Projects client
         accountsClientMock = Mockito.mock(IAccountsClient.class);
-        final Resource<Account> resource = new Resource<>(validAccount);
+        final EntityModel<Account> EntityModel = new EntityModel<>(validAccount);
         Mockito.when(accountsClientMock.retrieveAccounByEmail(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(resource, HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel, HttpStatus.OK));
 
         registrationClientMock = Mockito.mock(IRegistrationClient.class);
 
@@ -159,8 +159,8 @@ public class Oauth2AuthenticationManagerTest {
         Mockito.when(beanFactoryMock.getBean(IRegistrationClient.class)).thenReturn(registrationClientMock);
 
         projectUsersClientMock = Mockito.mock(IProjectUsersClient.class);
-        final Resource<ProjectUser> resourceUser = new Resource<>(validUser);
-        final ResponseEntity<Resource<ProjectUser>> resp = new ResponseEntity<>(resourceUser, HttpStatus.OK);
+        final EntityModel<ProjectUser> EntityModelUser = new EntityModel<>(validUser);
+        final ResponseEntity<EntityModel<ProjectUser>> resp = new ResponseEntity<>(EntityModelUser, HttpStatus.OK);
         Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(resp);
         Mockito.when(beanFactoryMock.getBean(IProjectUsersClient.class)).thenReturn(projectUsersClientMock);
 
@@ -220,14 +220,14 @@ public class Oauth2AuthenticationManagerTest {
         Mockito.when(auth.getDetails()).thenReturn(mockedDetails);
 
         // Mock a valid project user
-        final Resource<ProjectUser> resourceUser = new Resource<>(validUser);
-        final ResponseEntity<Resource<ProjectUser>> resp = new ResponseEntity<>(resourceUser, HttpStatus.OK);
+        final EntityModel<ProjectUser> EntityModelUser = new EntityModel<>(validUser);
+        final ResponseEntity<EntityModel<ProjectUser>> resp = new ResponseEntity<>(EntityModelUser, HttpStatus.OK);
         Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(resp);
 
         // Mock a valid account
-        final Resource<Account> resource = new Resource<>(validAccount);
+        final EntityModel<Account> EntityModel = new EntityModel<>(validAccount);
         Mockito.when(accountsClientMock.retrieveAccounByEmail(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(resource, HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel, HttpStatus.OK));
 
         // Run authentication process
         manager.authenticate(auth);
@@ -285,9 +285,9 @@ public class Oauth2AuthenticationManagerTest {
         user.setRole(new Role());
         user.setStatus(UserStatus.WAITING_ACCESS);
 
-        final Resource<ProjectUser> resource = new Resource<>(user);
+        final EntityModel<ProjectUser> EntityModel = new EntityModel<>(user);
         Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(resource, HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel, HttpStatus.OK));
 
         // Run authentication process
         try {

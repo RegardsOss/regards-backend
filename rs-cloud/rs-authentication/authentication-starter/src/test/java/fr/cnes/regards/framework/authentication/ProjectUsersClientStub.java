@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.context.annotation.Primary;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.PagedResources.PageMetadata;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -50,16 +50,16 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     private static List<ProjectUser> users = new ArrayList<>();
 
     @Override
-    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveProjectUserList(final int pPage,
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(final int pPage,
             final int pSize) {
         final PageMetadata metadata = new PageMetadata(pSize, pPage, users.size());
-        final PagedResources<Resource<ProjectUser>> resource = new PagedResources<>(HateoasUtils.wrapList(users),
-                                                                                    metadata, new ArrayList<>());
+        final PagedModel<EntityModel<ProjectUser>> resource = new PagedModel<>(HateoasUtils.wrapList(users), metadata,
+                new ArrayList<>());
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUserByEmail(final String pUserEmail) {
+    public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUserByEmail(final String pUserEmail) {
         ProjectUser result = null;
         for (final ProjectUser user : users) {
             if (user.getEmail().equals(pUserEmail)) {
@@ -74,7 +74,7 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     }
 
     @Override
-    public ResponseEntity<Resource<ProjectUser>> updateProjectUser(final Long pUserId,
+    public ResponseEntity<EntityModel<ProjectUser>> updateProjectUser(final Long pUserId,
             final ProjectUser pUpdatedProjectUser) {
         return null;
     }
@@ -85,25 +85,25 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     }
 
     @Override
-    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveAccessRequestList(final int pPage,
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(final int pPage,
             final int pSize) {
         return null;
     }
 
     @Override
-    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(final Long pRoleId,
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(final Long pRoleId,
             final int pPage, final int pSize) {
         return null;
     }
 
     @Override
-    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUsersList(String pRole, int pPage,
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(String pRole, int pPage,
             int pSize) {
         return null;
     }
 
     @Override
-    public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(final Long pUserId) {
+    public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUser(final Long pUserId) {
         return null;
     }
 
@@ -118,7 +118,7 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     }
 
     @Override
-    public ResponseEntity<Resource<ProjectUser>> createUser(final AccessRequestDto pDto) {
+    public ResponseEntity<EntityModel<ProjectUser>> createUser(final AccessRequestDto pDto) {
         return null;
     }
 

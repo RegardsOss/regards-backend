@@ -32,7 +32,6 @@ import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.swagger.autoconfigure.SwaggerAutoConfiguration;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
@@ -40,7 +39,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @author Sylvain Vissiere-Guerinet
  */
 @ComponentScan(basePackages = { "fr.cnes.regards.framework.authentication.role" })
-@EnableAutoConfiguration(exclude = { SwaggerAutoConfiguration.class })
+//@EnableAutoConfiguration(exclude = { SwaggerAutoConfiguration.class })
+@EnableAutoConfiguration
 @Configuration
 public class BorrowRoleITConfiguration {
 
